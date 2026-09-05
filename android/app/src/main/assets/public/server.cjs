@@ -876,7 +876,21 @@ ${userMessage}`;
     const shouldEnableSearch = !hasImage && (normalizedMsg.includes("search") || normalizedMsg.includes("browse") || normalizedMsg.includes("live") || normalizedMsg.includes("current") || normalizedMsg.includes("weather") || normalizedMsg.includes("news") || normalizedMsg.includes("rates") || normalizedMsg.includes("today") || normalizedMsg.includes("current events") || normalizedMsg.includes("recent") || normalizedMsg.includes("latest") || normalizedMsg.includes("exchange") || normalizedMsg.includes("stats") || normalizedMsg.includes("price") || normalizedMsg.includes("fact") || normalizedMsg.includes("forecast") || normalizedMsg.includes("who is"));
     let systemInstruction = "";
     if (isEvaluation === "true" || isEvaluation === true) {
-      systemInstruction = `You are a strict academic examiner. DO NOT act as a standard tutor. Your SOLE purpose is to grade the student's answer based on their grade level. YOU MUST output strictly using this format:
+      if (customSystemInstruction) {
+        systemInstruction = `${customSystemInstruction}
+
+CRITICAL MULTI-MODAL EVALUATION RULE:
+The student's submitted response may contain TYPED TEXT, an ATTACHED IMAGE (handwritten paper, photo of working, or drawn graph/diagram), or BOTH.
+You MUST thoroughly examine, read, and evaluate BOTH the attached image AND the typed text.
+Read all handwritten calculations, algebraic steps, graphs, diagrams, and written paragraphs in the image carefully, and integrate them with any typed text before providing scores and feedback!`;
+      } else {
+        systemInstruction = `You are a strict academic examiner. DO NOT act as a standard tutor. Your SOLE purpose is to grade the student's answer based on their grade level.
+CRITICAL MULTI-MODAL EVALUATION RULE:
+The student's submitted response may contain TYPED TEXT, an ATTACHED IMAGE (handwritten paper, photo of working, or drawn graph/diagram), or BOTH.
+You MUST thoroughly examine, read, and evaluate BOTH the attached image AND the typed text.
+Read all handwritten calculations, algebraic steps, graphs, diagrams, and written paragraphs in the image carefully, and integrate them with any typed text before scoring!
+
+YOU MUST output strictly using this format:
 
 ## Grade-Level Assessment
 [Pass/Fail/Needs Improvement for this grade level]
@@ -891,6 +905,7 @@ ${userMessage}`;
 
 ## Examiner Feedback & Ideal Solution
 [Explain mistakes and provide the perfect 10/10 mathematical solution]`;
+      }
     } else {
       systemInstruction = customSystemInstruction || getSystemInstruction(mode, targetLanguage);
       if (profileContext) {
@@ -2727,21 +2742,93 @@ function getCollegeBoardSubjectGuidelines(subject, questionType) {
 - Rubric: Clearly specify which psychological concepts earn points and required justifications.`;
     }
   }
+  if (s.includes("macro")) {
+    if (questionType === "objective") {
+      return `AP MACROECONOMICS EXAM SPECIFICATIONS (College Board CED):
+- Coverage: Units 1\u20136 (Basic Economic Concepts, Economic Indicators & Business Cycle, National Income & Price Determination [AD-AS], Financial Sector [Money Market, Banking, Reserve System], Long-Run Consequences of Stabilization [Phillips Curve, Growth], Open Economy [FOREX, Balance of Payments]).
+- STRICT CED BOUNDARY: GDP tests ONLY final goods and services produced domestically in a given period to prevent double counting (intermediate goods, non-production transactions, second-hand sales, transfer payments, and non-market activities are strictly excluded). Real vs. Nominal GDP, GDP Deflator, CPI, Inflation rate, and 3 types of unemployment (frictional, structural, cyclical).
+- STRICT EXCLUSION: Absolutely NO GNP (Gross National Product), NNP (Net National Product), IS-LM curve, or graduate macroeconomic accounting outside the AP CED.
+- Distractors: Confusing shifts of AD or SRAS with movements along the curve, misapplying spending multiplier (1/(1-MPC)) vs tax multiplier (-MPC/(1-MPC)), or confusing money market with loanable funds.`;
+    } else {
+      return `AP MACROECONOMICS FREE RESPONSE STANDARDS (Official College Board Section II Structure):
+- Structure:
+  1. Question 1: Long FRQ (10\u201312 Points, ~25\u201330 min) - Comprehensive scenario requiring student to DRAW a correctly labeled graph (e.g. AD-AS model with recessionary/inflationary gap, Phillips Curve, Money Market, or Loanable Funds), show shifts with directional arrows, and calculate policy multipliers.
+  2. Question 2: Short FRQ (5\u20136 Points, ~15 min) - Targeted monetary policy (Reserve Market with administered rates / IORB, bank balance sheet, or open market operations) or fiscal policy.
+  3. Question 3: Short FRQ (5\u20136 Points, ~15 min) - International economics / FOREX (Foreign Exchange market graph or currency appreciation/depreciation) and Balance of Payments (Current vs Financial Account).
+- MANDATORY GRAPH REQUIREMENT:
+  * Prompts must include authentic College Board graphing language: "Draw a correctly labeled graph of [Model Name] and show each of the following: (i) Initial equilibrium... (ii) The effect of [Policy/Shock] with a directional arrow..."
+  * 'modelAnswer' MUST contain a clear "**Visual Graph Blueprint & Key Details**" describing: Axes labels, curve slopes, initial equilibrium, shift direction with arrow, and new equilibrium.
+  * 'scoringRubric' MUST allocate distinct points for graph axes, curve shapes, and directional shifts.
+- Math Transparency: In any GDP expenditure calculation, always show explicit substitution with parentheses for negative components, e.g. GDP = C + I + G + X_n = 500 + 150 + 200 + (-30) = 820 (never just '850 - 30').`;
+    }
+  }
+  if (s.includes("micro")) {
+    if (questionType === "objective") {
+      return `AP MICROECONOMICS EXAM SPECIFICATIONS (College Board CED):
+- Coverage: Units 1\u20136 (Basic Economic Concepts, Supply & Demand, Production/Cost/Perfect Competition, Imperfect Competition [Monopoly, Oligopoly, Monopolistic Comp], Factor Markets, Market Failure & Government Intervention).
+- Strict CED Scope: Elasticities (Price, Income, Cross-Price), Consumer/Producer surplus, Deadweight loss, Short-run & Long-run cost curves (MC, ATC, AVC, AFC), MR=MC rule, Payoff matrices (Dominant strategy, Nash equilibrium), Derived demand for labor (MRP=MFC), Externalities (Pigouvian taxes/subsidies), Public goods.
+- STRICT EXCLUSION: Absolutely NO multivariable calculus / Lagrange multipliers, No Cournot calculus, No indifference curves.
+- Distractors: Confusing diminishing marginal returns with negative returns, or confusing shutdown rule (P < AVC) with exit in the long run (P < ATC).`;
+    } else {
+      return `AP MICROECONOMICS FREE RESPONSE STANDARDS (Official College Board Section II Structure):
+- Structure:
+  1. Question 1: Long FRQ (10\u201312 Points, ~25\u201330 min) - Market structures scenario requiring student to DRAW side-by-side market and firm graphs for perfect competition, or a monopoly graph showing profit-maximizing quantity, price, and deadweight loss.
+  2. Question 2: Short FRQ (5\u20136 Points, ~15 min) - Game Theory payoff matrix analysis (dominant strategies, Nash equilibrium) or Factor market (labor hiring).
+  3. Question 3: Short FRQ (5\u20136 Points, ~15 min) - Market failure / Externalities (drawing/describing marginal social cost vs marginal private cost and deadweight loss) or elasticity.
+- MANDATORY GRAPH REQUIREMENT:
+  * Prompts must include authentic graphing language: "Draw a correctly labeled graph of..."
+  * 'modelAnswer' MUST contain a clear "**Visual Graph Blueprint & Key Details**" describing: Axes labels (P and Q), cost/revenue curves, equilibrium points, and shaded surplus/deadweight loss areas.
+  * 'scoringRubric' MUST allocate distinct points for graph axes, curve shapes, and labeling.`;
+    }
+  }
   if (s.includes("economic")) {
     if (questionType === "objective") {
-      return `AP MICRO & MACROECONOMICS EXAM SPECIFICATIONS (College Board CED):
-- Microeconomics: Supply & demand elasticity, consumer/producer surplus, market structures (perfect competition, monopoly, oligopoly), externalities, marginal cost/revenue, factor markets.
-- Macroeconomics: GDP, inflation, unemployment, Aggregate Demand / Aggregate Supply (AD-AS), fiscal policy, monetary policy (Federal Reserve tools), Money Market, Loanable Funds, Phillips Curve, Foreign Exchange.
-- Distractors: Confusing shifts of a curve with movements along a curve, or miscalculating tax incidence / multiplier effects.`;
+      return `AP ECONOMICS EXAM SPECIFICATIONS (College Board CED):
+- Strictly adhere to official AP Microeconomics or AP Macroeconomics CED units. Focus on final goods for GDP, supply/demand, market structures, and policy models. Exclude GNP/NNP and non-CED college math.`;
     } else {
       return `AP ECONOMICS FREE RESPONSE STANDARDS (College Board CED):
-- Formats:
-  1. Long FRQ (10 points, ~30 min): Multi-part scenario with explicit graphing instructions (e.g., 'Draw a correctly labeled graph of the money market and show the effect of an open market purchase of bonds on the nominal interest rate').
-  2. Short FRQ (5 points, ~15 min): Targeted calculations (elasticity, spending multiplier, balance of payments) and directional explanations.
-- Rubric: Explicit points for graph labeling, curve shift directions, and numerical calculations.`;
+- Q1 Long FRQ (10\u201312 pts) with mandatory graph drawing; Q2\u20133 Short FRQs (5\u20136 pts each). Provide Visual Graph Blueprint in model solution and rubric points for graphs.`;
     }
   }
   return `College Board AP Course and Exam Description standards for ${subject}. High rigor, analytical thinking, stimulus-based.`;
+}
+function shuffleQuestionOptions(q) {
+  if (!q || !Array.isArray(q.options) || q.options.length < 2) return q;
+  const rawCorrect = (q.correctAnswer || "").trim();
+  const cleanCorrect = rawCorrect.replace(/^[A-D][\).\s:-]+/i, "").trim().toLowerCase();
+  const optionObjs = q.options.map((opt) => {
+    const rawOpt = (opt || "").trim();
+    const cleanOpt = rawOpt.replace(/^[A-D][\).\s:-]+/i, "").trim();
+    const isCorrect = cleanCorrect && cleanOpt.toLowerCase() === cleanCorrect || rawCorrect && rawOpt.toLowerCase() === rawCorrect.toLowerCase();
+    return { cleanText: cleanOpt, isCorrect };
+  });
+  if (!optionObjs.some((o) => o.isCorrect)) {
+    const matchedIdx = optionObjs.findIndex((o) => cleanCorrect && o.cleanText.toLowerCase().includes(cleanCorrect));
+    if (matchedIdx !== -1) {
+      optionObjs[matchedIdx].isCorrect = true;
+    } else {
+      const prefixMatch = rawCorrect.match(/^([A-D])/i);
+      if (prefixMatch) {
+        const letterIdx = prefixMatch[1].toUpperCase().charCodeAt(0) - 65;
+        if (optionObjs[letterIdx]) optionObjs[letterIdx].isCorrect = true;
+      } else {
+        optionObjs[0].isCorrect = true;
+      }
+    }
+  }
+  for (let i = optionObjs.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [optionObjs[i], optionObjs[j]] = [optionObjs[j], optionObjs[i]];
+  }
+  const letters = ["A", "B", "C", "D"];
+  const newOptions = optionObjs.map((item, idx) => `${letters[idx] || idx + 1}) ${item.cleanText}`);
+  const correctIdx = optionObjs.findIndex((item) => item.isCorrect);
+  const newCorrectAnswer = correctIdx !== -1 ? newOptions[correctIdx] : newOptions[0];
+  return {
+    ...q,
+    options: newOptions,
+    correctAnswer: newCorrectAnswer
+  };
 }
 app.post("/api/generate-ap-questions", async (req, res) => {
   try {
@@ -2762,7 +2849,7 @@ OFFICIAL GRADE-LEVEL PEDAGOGICAL CALIBRATION: GRADE 9 (FRESHMAN AP TRACK - AGE ~
 - Cognitive Profile: High school freshmen embarking on their foundational AP coursework.
 - Question Scaffolding: Anchor every question in clear, accessible real-world stimuli, spatial maps, demographic profiles (DTM), or intuitive algorithmic logic. Avoid confusing academic trick wording.
 - Official Command Verbs: Strictly train the student on College Board foundational verbs: "Identify", "Define", "Describe" (observable trends/features), and "Explain" (clear cause-and-effect 'how' or 'why' X leads to Y).
-- Explanations & Model Solutions: Break down reasoning step-by-step with supportive educational scaffolding, explaining why the correct choice is true and how to avoid classic 9th-grade misconceptions.`;
+- Explanations & Model Solutions: Clear pedagogical explanations with supportive educational scaffolding, explaining why the correct choice is true and how to avoid classic 9th-grade misconceptions.`;
     } else if (g.includes("10th") || g.includes("sophomore")) {
       gradeCalibrationInstruction = `
 OFFICIAL GRADE-LEVEL PEDAGOGICAL CALIBRATION: GRADE 10 (SOPHOMORE AP TRACK - AGE ~15-16):
@@ -2788,7 +2875,103 @@ OFFICIAL GRADE-LEVEL PEDAGOGICAL CALIBRATION: GRADE 12 (SENIOR AP / UNIVERSITY C
       gradeCalibrationInstruction = `
 OFFICIAL GRADE-LEVEL PEDAGOGICAL CALIBRATION: ADVANCED PLACEMENT (HIGH SCHOOL TO COLLEGE):
 - Rigor: Standard College Board AP Course and Exam Description (CED) college-level rigor.
-- Explanations: Clear, authoritative step-by-step breakdown according to official College Board scoring rubrics.`;
+- Explanations: Clear, authoritative breakdown according to official College Board scoring rubrics.`;
+    }
+    const isPureConceptualSubject = /history|government|gov|english|literature|reading|psychology|geography|aphg|art|music|humanities|politics/i.test(s);
+    const isQuantitativeSubject = /calculus|physics|statistics|chemistry|quant|algebra|geometry|math/i.test(s);
+    let explanationInstruction = "";
+    let explanationSample = "";
+    if (isPureConceptualSubject) {
+      explanationInstruction = `5. RIGOROUS CONCEPTUAL AP EXPLANATION FORMATTING:
+   - The "explanation" field MUST NEVER be a single dense paragraph. Format with clean Markdown and clear paragraph line breaks (
+
+).
+   - STRICT PROHIBITION: Do NOT use "Step 1", "Step 2", "Step 3", or formula/calculation headings. This is a purely conceptual/qualitative humanities & social science subject.
+   - You MUST follow this clean College Board structure:
+     **Conceptual Rationale:**
+     Explain the governing historical cause-and-effect, legal/constitutional precedent, psychological principle, or literary device that proves why the correct answer is true.
+     
+     **Why Distractors Are Incorrect:**
+     - **Option [Letter]:** Specific explanation of why this option is factually, historically, or logically inaccurate.
+     - **Option [Letter]:** Specific flaw or distractor trap.
+     - **Option [Letter]:** Why this option does not address the prompt.`;
+      explanationSample = `"**Conceptual Rationale:**
+
+Historical cause-and-effect or core principle explaining why Option A is correct...
+
+**Why Distractors Are Incorrect:**
+- **Option B:** Explain the factual or chronological inaccuracy.
+- **Option C:** Explain why this concept applies to a different era or theory.
+- **Option D:** Explain why this premise is false."`;
+    } else if (isQuantitativeSubject) {
+      explanationInstruction = `5. DYNAMIC AP EXPLANATION FORMATTING (CALCULATION VS CONCEPTUAL):
+   - The "explanation" field MUST NEVER be a single dense paragraph. Always format with clean Markdown and clear paragraph line breaks (
+
+).
+   - CHECK IF THIS SPECIFIC QUESTION INVOLVES FORMULAS OR NUMERICAL CALCULATIONS:
+     * FOR CALCULATION / QUANTITATIVE QUESTIONS ONLY (Involving arithmetic, formulas, or numbers):
+       **Step 1: Formula & Given Values**
+       State the governing formula or law in LaTeX ($...$).
+       
+       **Step 2: Step-by-Step Calculation**
+       Show the intermediate substitution and calculation steps.
+       
+       **Step 3: Conclusion & Option Verification**
+       Verify how the final numerical result matches the correct option.
+       
+       **Why Distractors Are Incorrect:**
+       - **Option [Letter]:** Calculation trap, sign error, or formula slip.
+       - **Option [Letter]:** Misconception trap.
+       - **Option [Letter]:** Distractor flaw.
+
+     * FOR CONCEPTUAL / QUALITATIVE QUESTIONS (NO calculations or numbers required):
+       STRICTLY FORBIDDEN to use "Step 1", "Step 2", or calculation steps! Instead use:
+       **Conceptual Rationale:**
+       Explain the scientific law, conceptual mechanism, or theoretical principle.
+       
+       **Why Distractors Are Incorrect:**
+       - **Option [Letter]:** Conceptual misconception or flawed logic.
+       - **Option [Letter]:** Distractor flaw.
+       - **Option [Letter]:** Distractor flaw.`;
+      explanationSample = `"If calculation: **Step 1: Formula & Given Values**
+$F = ma$
+
+**Step 2: Step-by-Step Calculation**
+$F = (2)(10) = 20\\\\text{ N}$
+
+**Step 3: Conclusion**
+Matches Option A.
+
+**Why Distractors Are Incorrect:**
+- **Option B:** Multiplied incorrectly.
+
+If conceptual (no calculation): **Conceptual Rationale:**
+Newton's First Law states...
+
+**Why Distractors Are Incorrect:**
+- **Option B:** Confuses inertia with force."`;
+    } else {
+      explanationInstruction = `5. DYNAMIC AP EXPLANATION FORMATTING (CALCULATION VS CONCEPTUAL):
+   - The "explanation" field MUST NEVER be a single dense paragraph. Always format with clean Markdown and clear paragraph line breaks (
+
+).
+   - ONLY use "Step 1", "Step 2", "Step 3" if the question EXPLICITLY requires a mathematical calculation (e.g. Hardy-Weinberg math, price elasticity math).
+   - If the question is conceptual or qualitative (e.g., cell structure, natural selection, fiscal policy, algorithmic logic), DO NOT use "Step 1" or calculation steps! Instead use:
+     **Conceptual Rationale:**
+     Explain the governing principle, biological mechanism, or economic model.
+     
+     **Why Distractors Are Incorrect:**
+     - **Option [Letter]:** Specific flaw or misconception.
+     - **Option [Letter]:** Specific flaw or misconception.
+     - **Option [Letter]:** Specific flaw or misconception.`;
+      explanationSample = `"**Conceptual Rationale:**
+
+Explain the core principle, mechanism, or theory...
+
+**Why Distractors Are Incorrect:**
+- **Option B:** Explain the conceptual misconception.
+- **Option C:** Explain why this is flawed.
+- **Option D:** Explain why this choice is incorrect."`;
     }
     if (type === "objective") {
       const systemInstruction = `You are a Senior College Board AP Exam Chief Examiner and Master Test Developer.
@@ -2797,14 +2980,26 @@ Your task is to generate exactly ${requestedCount} authentic, high-caliber AP Ex
 
 CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
 1. RIGOR & DEPTH: Every question must test deep conceptual understanding, analytical thinking, or multi-step problem solving as defined in the official College Board AP Course and Exam Description (CED). Avoid trivial recall or surface-level trivia.
-2. MANDATORY PRE-SOLVE & OPTION VERIFICATION (CRITICAL):
-   - Before outputting options, you MUST solve the question step-by-step to arrive at the definite, mathematically and scientifically verified answer.
+2. MANDATORY PRE-SOLVE & 100% ACCURACY VERIFICATION (CRITICAL):
+   - For all subjects, especially STEM (Calculus, Physics, Chemistry, Biology, Economics, Computer Science):
+     You MUST execute a rigorous 3-pass internal solve before finalizing the question and options:
+     * Pass 1: Identify all given numbers, units, boundary conditions, and the governing formula or theorem.
+     * Pass 2: Execute algebraic substitutions and arithmetic operations step-by-step. Double-check all derivatives, integrals, unit conversions, and algebraic signs (+/-).
+     * Pass 3: Confirm that the final calculated value or conceptual conclusion is 100% mathematically and scientifically accurate.
    - EXACTLY ONE OF THE 4 OPTIONS (A, B, C, or D) MUST BE 100% CORRECT. Under no circumstances should all 4 options be wrong, and under no circumstances should the true answer be missing from the options list!
    - "correctAnswer" MUST BE VERBATIM IDENTICAL: The "correctAnswer" property MUST be an exact character-for-character match to the corresponding option in the "options" array.
-3. AUTHENTIC 4 OPTIONS: Exactly 4 options labeled "A) ...", "B) ...", "C) ...", "D) ...". Distractors must represent plausible, authentic student misconceptions, calculation slips, or conceptual confusions (not random nonsense).
+3. AUTHENTIC 4 OPTIONS & BALANCED KEY DISTRIBUTION (CRITICAL):
+   - Exactly 4 options labeled "A) ...", "B) ...", "C) ...", "D) ...".
+   - You MUST vary the correct answer key (A, B, C, D) randomly and evenly across all questions. Under NO circumstances should the same option letter (e.g. A or B) be the correct answer for multiple consecutive questions! Distribute correct keys so each of A, B, C, D is used approximately 25% of the time.
+   - Distractors must represent plausible, authentic student misconceptions, calculation slips, or conceptual confusions (not random nonsense).
 4. STIMULUS-BASED WHEN APPLICABLE: Provide real AP-style contextual stimulus (e.g. data tables, experimental setups, code segments, or historical/rhetorical excerpts) if appropriate for the subject.
-5. DETAILED AP EXPLANATION: Explain WHY the correct option is right with step-by-step logic, and explicitly break down why each distractor is incorrect. Use LaTeX ($...$ or $$...$$) for mathematical expressions or chemical reactions.
-6. AP EXAM SKILL/UNIT TAG: Label the relevant AP Unit or Skill practiced.
+5. STRICT AP CED SYLLABUS BOUNDARIES (NO POST-AP / COLLEGE BLEED):
+   - Every question must adhere strictly to current official College Board AP Course and Exam Description (CED) topics.
+   - Absolutely forbidden to introduce out-of-scope post-AP concepts (e.g. In AP Macro, test strictly GDP [final goods only, double-counting exclusion], real/nominal GDP, CPI, unemployment\u2014NEVER introduce GNP, NNP, or IS-LM; in AP Micro, test standard graphs and algebra\u2014NEVER introduce multivariable calculus; etc.).
+6. FORMULA SUBSTITUTION TRANSPARENCY:
+   - When calculations are explained, always show full algebraic substitution with explicit signs and parentheses. If adding a negative quantity (e.g. net exports $X_n = -30$, acceleration $a = -9.8$, or negative delta H), write $+ (-30)$ instead of omitting the sign, so students never confuse negative additions with subtractions like depreciation or taxes.
+${explanationInstruction}
+7. AP EXAM SKILL/UNIT TAG: Label the relevant AP Unit or Skill practiced.
 
 ${subjectGuidelines}
 ${gradeCalibrationInstruction}
@@ -2823,7 +3018,7 @@ Return ONLY a valid JSON array of objects with this exact structure:
       "D) Option 4"
     ],
     "correctAnswer": "A) Option 1",
-    "explanation": "Detailed College Board explanation breaking down why A is correct and why B, C, D are common traps.",
+    "explanation": ${explanationSample},
     "skill": "Relevant AP Unit / Skill Tag"
   }
 ]`;
@@ -2836,8 +3031,7 @@ Return ONLY a valid JSON array of objects with this exact structure:
           config: {
             systemInstruction: { parts: [{ text: systemInstruction }] },
             responseMimeType: "application/json",
-            temperature: 0.2,
-            thinkingConfig: { thinkingBudget: 0 }
+            temperature: 0.25
           }
         });
         generatedText = response.text || "";
@@ -2856,7 +3050,8 @@ Return ONLY a valid JSON array of objects with this exact structure:
         if (found) questionsList = found;
       }
       if (questionsList.length > 0) {
-        return res.json({ questions: questionsList, questionType: "objective", subject, count: questionsList.length });
+        const shuffledList = questionsList.map(shuffleQuestionOptions);
+        return res.json({ questions: shuffledList, questionType: "objective", subject, count: shuffledList.length });
       }
       throw new Error("Failed to generate a valid AP objective questions structure.");
     } else {
@@ -2865,11 +3060,32 @@ The student is preparing for the AP ${subject} Exam.
 Your task is to generate exactly ${requestedCount} authentic, high-yield AP Exam FREE RESPONSE / SUBJECTIVE QUESTIONS for: "${targetTopic}".
 
 CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
-1. AUTHENTIC MULTI-PART STRUCTURE: AP Free Response Questions always consist of clearly delineated sub-parts: (a), (b), (c) (and optionally (d)). Each sub-part must clearly test specific College Board cognitive skills (e.g., Identify, Calculate, Justify, Explain, Describe, Graph, Show).
-2. CLEAR LINE BREAKS: Separate each part with a double newline '\\n\\n' so each part starts clearly on a new line.
-3. OFFICIAL SCORING GUIDELINES & POINT BREAKDOWN: Provide a precise, point-by-point College Board Reader rubric in an array 'scoringRubric'. Each item should state what earns the point (e.g., '+1 pt for applying product rule', '+1 pt for correctly stating units', '+1 pt for citing historical document').
-4. HIGH-SCORING MODEL ANSWER: Provide a complete, maximum-points exemplary student response in 'modelAnswer' addressing each part (a), (b), (c) with clear steps and LaTeX formatting.
-5. TOTAL POINTS: Total point value for this problem (e.g. 9 points for Calculus/CSA, 10 points for Chem, 7 points for DBQ, 4 points for Short FRQ).
+1. AUTHENTIC MULTI-PART STRUCTURE: AP Free Response Questions always consist of clearly delineated sub-parts: (a), (b), (c) (and optionally (d), (e)). Each sub-part must clearly test specific College Board cognitive skills (e.g., Identify, Calculate, Justify, Explain, Describe, Graph, Show).
+2. REAL EXAM SECTION II STRUCTURE & WEIGHTING:
+   - For 3-question exams (e.g. AP Macroeconomics, AP Microeconomics, AP Environmental Science):
+     * Question 1 is a LONG FRQ (~10\u201312 Points, ~25\u201330 min): Requires multi-part conceptual and graphical synthesis (e.g. drawing AD-AS model, money market, or market structure curves with shift arrows).
+     * Questions 2 & 3 are SHORT FRQs (~5\u20136 Points each, ~15 min): Targeted policy calculation or specific market model.
+   - For other exams (Calculus: 9 pts each; Physics: 10\u201312 pts; Chemistry/Biology: Long 10 pts, Short 4 pts).
+3. MANDATORY GRAPH / DIAGRAM BLUEPRINTS (FOR GRAPH-BASED SUBJECTS):
+   - For all subjects testing graphs or diagrams (Macroeconomics, Microeconomics, Physics, Calculus, Chemistry):
+     * At least one question (specifically the Long FRQ) MUST require students to draw, label, and manipulate graphs: "Draw a correctly labeled graph/diagram of [Model] and show each of the following: (i)... (ii)..."
+     * In 'modelAnswer', include a dedicated section:
+       "**Visual Graph Blueprint & Key Details:**"
+       - Horizontal & Vertical Axes (e.g., Real GDP Y on x-axis, Price Level PL on y-axis)
+       - Curves Plotted (e.g., Downward-sloping AD_1, upward-sloping SRAS_1, vertical LRAS at Y_f)
+       - Initial Equilibrium (e.g., PL_1, Y_1)
+       - Shifts & Directional Arrows (e.g., AD curve shifts rightward to AD_2 with labeled arrow ->)
+       - New Equilibrium (e.g., Higher price level PL_2, higher real output Y_2)
+     * In 'scoringRubric', award explicit partial-credit points for axes labeling, curve shapes, and directional shifts with arrows.
+4. STRICT AP CED SCOPE (NO POST-AP / COLLEGE BLEED):
+   - Every question must adhere strictly to current official College Board AP Course and Exam Description (CED) topics.
+   - Strictly exclude out-of-scope concepts (e.g. In AP Macro, test GDP [final goods only, double-counting exclusion], real/nominal, CPI, unemployment types\u2014NEVER introduce GNP, NNP, or IS-LM; in AP Micro, test standard graphs and algebra\u2014NEVER introduce multivariable calculus or indifference curves; etc.).
+5. FORMULA SUBSTITUTION TRANSPARENCY:
+   - When showing mathematical calculations or model solutions, ALWAYS explicitly preserve formula terms and use parentheses for negative quantities: e.g. for GDP expenditure approach with negative net exports, write $GDP = C + I + G + X_n = 500 + 150 + 200 + (-30) = 820$ (NEVER write confusing abbreviations like '850 - 30' which students could mistake for depreciation). Label every substituted quantity clearly.
+6. CLEAR LINE BREAKS: Separate each part with a double newline '\\n\\n' so each part starts clearly on a new line.
+7. OFFICIAL SCORING GUIDELINES & POINT BREAKDOWN: Provide a precise, point-by-point College Board Reader rubric in an array 'scoringRubric'. Each item should state what earns the point (e.g., '+1 pt for correctly labeled axes and AD curve', '+1 pt for showing rightward shift of AD with directional arrow', '+1 pt for stating new equilibrium price level').
+8. HIGH-SCORING MODEL ANSWER: Provide a complete, maximum-points exemplary student response in 'modelAnswer' addressing each part (a), (b), (c) with clear steps and LaTeX formatting.
+9. TOTAL POINTS: Total point value for this problem (e.g. 10\u201312 points for Long FRQ, 5\u20136 points for Short FRQ, 9 points for Calculus/CSA, 7 points for DBQ).
 
 ${subjectGuidelines}
 ${gradeCalibrationInstruction}
