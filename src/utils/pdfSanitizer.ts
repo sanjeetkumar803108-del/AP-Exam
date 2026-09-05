@@ -1,0 +1,110 @@
+/**
+ * Universal PDF Text Sanitizer for jsPDF Standard Fonts (Helvetica, Times, Courier).
+ * 
+ * Maps Unicode emojis, surrogate pairs, IPA pronunciation symbols, Greek math glyphs,
+ * smart quotes, and unprintable glyphs into clean, universally renderable PDF symbols 
+ * so exported PDFs never display garbled symbols (like âœ¨, ðŸ“š, ï¿½, ???) or excessive spacing.
+ */
+
+export function sanitizePdfText(text: string): string {
+  if (!text) return '';
+
+  let str = text;
+
+  // 1. Normalize Unicode IPA Pronunciation & Phonetic Symbols to readable Latin typography
+  const phoneticMap: Record<string, string> = {
+    'ə': 'e', 'ǝ': 'e', 'æ': 'ae', 'œ': 'oe', 'ʌ': 'u', 'ɑ': 'a', 'ɒ': 'o',
+    'ɔ': 'o', 'ɛ': 'e', 'ɜ': 'er', 'ɪ': 'i', 'ʊ': 'u', 'iː': 'ee', 'uː': 'oo',
+    'ɔː': 'or', 'ɑː': 'ah', 'ɜː': 'ur', 'eɪ': 'ay', 'aɪ': 'eye', 'ɔɪ': 'oy',
+    'aʊ': 'ow', 'əʊ': 'oh', 'oʊ': 'oh', 'ɪə': 'eer', 'eə': 'air', 'ʊə': 'oor',
+    'θ': 'th', 'ð': 'th', 'ʃ': 'sh', 'ʒ': 'zh', 'ʧ': 'ch', 'tʃ': 'ch',
+    'ʤ': 'j', 'dʒ': 'j', 'ŋ': 'ng', 'ɡ': 'g', 'ɣ': 'gh', 'ʁ': 'r', 'ɾ': 'r',
+    'ʔ': "'", 'ˈ': "'", 'ˌ': ',', 'ː': ':', 'ˑ': '.', '̃': '~'
+  };
+
+  for (const [symbol, replacement] of Object.entries(phoneticMap)) {
+    str = str.split(symbol).join(replacement);
+  }
+
+  // 2. Convert common status, rating, bullet, and direction emojis to standard printable PDF glyphs
+  str = str
+    .replace(/[\u2705\u2714\u2611\u{1F5F8}]/gu, '✓ ')
+    .replace(/[\u274C\u274E\u2716\u2718\u{1F5D9}]/gu, '✗ ')
+    .replace(/[\u26A0\u{1F6A8}]/gu, '[!] ')
+    .replace(/[\u27A1\u{1F449}\u25B6\u2794\u279C]/gu, '→ ')
+    .replace(/[\u2B05\u{1F448}\u25C0]/gu, '← ')
+    .replace(/[\u2B06\u{1F53C}\u25B2]/gu, '↑ ')
+    .replace(/[\u2B07\u{1F53D}\u25BC]/gu, '↓ ')
+    .replace(/[\u2B50\u{1F31F}\u2728\u2734]/gu, '★ ')
+    .replace(/[\u{1F4A1}]/gu, '[Tip] ')
+    .replace(/[\u{1F511}]/gu, '[Key] ')
+    .replace(/[\u{1F4CC}\u{1F4CD}]/gu, '• ')
+    .replace(/[\u{1F3AF}\u{1F680}\u{1F4DA}\u{1F9E0}\u26A1\u{1F50D}\u{1F4DD}\u{1F399}\u{1F525}\u{1F3C6}\u{1F393}\u{1F4D6}\u{1F3F7}]/gu, '• ')
+    .replace(/0\uFE0F?\u20E3/gu, '0. ')
+    .replace(/1\uFE0F?\u20E3/gu, '1. ')
+    .replace(/2\uFE0F?\u20E3/gu, '2. ')
+    .replace(/3\uFE0F?\u20E3/gu, '3. ')
+    .replace(/4\uFE0F?\u20E3/gu, '4. ')
+    .replace(/5\uFE0F?\u20E3/gu, '5. ')
+    .replace(/6\uFE0F?\u20E3/gu, '6. ')
+    .replace(/7\uFE0F?\u20E3/gu, '7. ')
+    .replace(/8\uFE0F?\u20E3/gu, '8. ')
+    .replace(/9\uFE0F?\u20E3/gu, '9. ')
+    .replace(/\u{1F51F}/gu, '10. ');
+
+  // 3. Mathematical Greek & Scientific Unicode symbols mapping for core standard PDF fonts
+  str = str
+    .replace(/θ/g, 'theta')
+    .replace(/π/g, 'pi')
+    .replace(/α/g, 'alpha')
+    .replace(/β/g, 'beta')
+    .replace(/γ/g, 'gamma')
+    .replace(/λ/g, 'lambda')
+    .replace(/Δ/g, 'Delta')
+    .replace(/δ/g, 'delta')
+    .replace(/μ/g, 'mu')
+    .replace(/σ/g, 'sigma')
+    .replace(/ω/g, 'omega')
+    .replace(/Ω/g, 'Omega')
+    .replace(/Σ/g, 'Sum')
+    .replace(/∞/g, 'infinity')
+    .replace(/≈/g, '~=')
+    .replace(/≠/g, '!=')
+    .replace(/≤/g, '<=')
+    .replace(/≥/g, '>=')
+    .replace(/±/g, '+/-')
+    .replace(/×/g, '*')
+    .replace(/÷/g, '/')
+    .replace(/√/g, 'sqrt')
+    .replace(/∫/g, 'integral');
+
+  // 4. Normalize Latin diacritics / accents (e.g. ā, ē, ī, ō, ū, ñ, é, à -> a, e, i, o, u, n, e, a)
+  try {
+    str = str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  } catch (_) {}
+
+  // 5. Normalize smart quotes, dashes, and zero-width/invisible formatting characters
+  str = str
+    .replace(/[\u201C\u201D\u201E\u201F\u00AB\u00BB]/g, '"')
+    .replace(/[\u2018\u2019\u201A\u201B\u02BB\u02BC]/g, "'")
+    .replace(/[\u2013\u2014\u2015]/g, '-')
+    .replace(/\u2026/g, '...')
+    .replace(/[\u00A0\u2002\u2003\u2009]/g, ' ')
+    .replace(/[\u200B-\u200D\uFEFF]/g, '');
+
+  // 6. Cleanly convert any remaining Unicode emojis or surrogate pairs
+  try {
+    str = str.replace(/\p{Extended_Pictographic}/gu, '• ');
+  } catch (_) {
+    str = str.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '• ');
+  }
+
+  // 7. Clean up redundant spaces, extra blank lines, and repeated bullet points
+  str = str
+    .replace(/•\s*•+/g, '•')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n\s*\n\s*\n+/g, '\n\n')
+    .trim();
+
+  return str;
+}
