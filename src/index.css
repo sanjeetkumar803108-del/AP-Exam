@@ -394,4 +394,14 @@
   stop-color: #e4e4e7 !important;
 }
 
+/* 4. Graceful KaTeX Error Fallback - never show ugly red error text to students */
+.katex-error {
+  color: inherit !important;
+  background: transparent !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  white-space: normal !important;
+  border: none !important;
+}
+
 

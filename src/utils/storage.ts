@@ -1,3 +1,6 @@
+// In-memory fallback for environments where localStorage is unavailable
+const memoryStorage: Record<string, string> = {};
+
 export const safeGetItem = (key: string, defaultValue: string | null = null): string | null => {
   try {
     const val = window.localStorage.getItem(key);
@@ -16,6 +19,15 @@ export const safeSetItem = (key: string, value: string): void => {
   } catch (e) {
     memoryStorage[key] = value;
     window.dispatchEvent(new CustomEvent('academic_profile_updated', { detail: { key, value } }));
+  }
+};
+
+export const safeRemoveItem = (key: string): void => {
+  try {
+    window.localStorage.removeItem(key);
+    window.dispatchEvent(new Event('storage'));
+  } catch (e) {
+    delete memoryStorage[key];
   }
 };
 
@@ -39,5 +51,3 @@ export const safeJsonParse = <T>(jsonStr: string | null | undefined, fallback: T
     return fallback;
   }
 };
-
-const memoryStorage: Record<string, string> = {};

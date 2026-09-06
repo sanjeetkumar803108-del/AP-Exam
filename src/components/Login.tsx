@@ -21,6 +21,7 @@ import {
 import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import appLogo from '../assets/logo.svg';
+import DeveloperLoginModal from './DeveloperPortal/DeveloperLoginModal';
 
 // React Native web-compatibility components & helpers
 const require = (path: string) => {
@@ -64,7 +65,7 @@ const Alert = {
 };
 
 
-export default function Login({ onClose, onLoginSuccess, hideClose = false }: { onClose: () => void, onLoginSuccess: (target?: 'main' | 'setup' | 'onboarding') => void, hideClose?: boolean }) {
+export default function Login({ onClose, onLoginSuccess, hideClose = false }: { onClose: () => void, onLoginSuccess: (target?: 'main' | 'setup' | 'onboarding' | 'developer') => void, hideClose?: boolean }) {
   const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -72,6 +73,7 @@ export default function Login({ onClose, onLoginSuccess, hideClose = false }: { 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [showDevModal, setShowDevModal] = useState(false);
 
   // Forgot password state
   const [showForgotModal, setShowForgotModal] = useState(false);
@@ -733,10 +735,29 @@ export default function Login({ onClose, onLoginSuccess, hideClose = false }: { 
           </button>.
         </div>
         
-        <div className="mt-auto pt-6 pb-4 text-[10px] text-zinc-400 font-bold tracking-widest uppercase flex items-center justify-center gap-2">
-           Secure AI Authentication
+        <div className="mt-auto pt-6 pb-4 flex flex-col items-center justify-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowDevModal(true)}
+            className="text-[11px] font-semibold text-zinc-400 hover:text-teal-600 transition-colors cursor-pointer py-1 px-3 rounded-lg hover:bg-zinc-100"
+          >
+            Developer Account
+          </button>
+          <div className="text-[10px] text-zinc-400 font-bold tracking-widest uppercase flex items-center justify-center gap-2">
+             Secure AI Authentication
+          </div>
         </div>
       </div>
+
+      <DeveloperLoginModal
+        isOpen={showDevModal}
+        onClose={() => setShowDevModal(false)}
+        onSuccess={() => {
+          setShowDevModal(false);
+          onLoginSuccess('developer');
+          onClose();
+        }}
+      />
 
       {showForgotModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm">

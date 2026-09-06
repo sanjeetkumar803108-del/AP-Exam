@@ -225,16 +225,16 @@ export const AP_CALCULUS_AB_NOTES: APUnitNote[] = [
       }
     ],
     commonTraps: [
-      'Writing "= 0/0" on an FRQ. In AP grading, 0/0 is NOT a number. Write "Since the limit of numerator = 0 and limit of denominator = 0..." to avoid losing communication points.',
-      'Forgetting to check both one-sided limits for absolute value expressions like lim_{x->2} |x - 2| / (x - 2).',
-      'Confusing continuity with differentiability: A function can be continuous at a corner (like f(x) = |x| at x=0), but it is NOT differentiable there.'
+      'Trap 1: Writing "= 0/0" in equality chains. In AP grading, 0/0 is strictly undefined and NOT a real number. Write: "Because lim f(x) = 0 and lim g(x) = 0, this yields indeterminate form 0/0. Applying algebraic simplification/L\'Hôpital..." to avoid losing communication points.',
+      'Trap 2: Evaluating lim_{x->2} |x - 2| / (x - 2) without directional tests. From left (x->2^-), -(x-2)/(x-2) = -1. From right (x->2^+), +(x-2)/(x-2) = +1. Because -1 != +1, the overall two-sided limit DNE.',
+      'Trap 3: Assuming continuity guarantees differentiability. Sharp turn corners (e.g., f(x) = |x| at x = 0) are perfectly continuous yet non-differentiable because left and right tangent slopes disagree.',
+      'Trap 4: Miscalculating sqrt(x^2) when x -> -infinity. Remember sqrt(x^2) = |x|. When x < 0, sqrt(x^2) = -x. Factoring out in the denominator introduces a mandatory negative sign: lim_{x->-inf} (3x-1)/sqrt(4x^2+5) = 3/(-sqrt(4)) = -3/2.'
     ],
     cramSheet: [
-      'Two-sided limit exists <=> Left limit = Right limit.',
-      'Continuous at x = c <=> f(c) exists, lim f(x) exists, and lim f(x) = f(c).',
-      'Indeterminate 0/0 means DO MORE WORK (factor, conjugate, trig identity, or L\'Hôpital).',
-      'IVT requires continuity on [a, b]. It guarantees an OUTPUT value, not an input value.',
-      'For horizontal asymptotes as x -> -inf, beware of square roots: sqrt(x^2) = |x| = -x when x < 0.'
+      'Rule 01 (Existence of a Two-Sided Limit): lim_{x->c} f(x) = L exists if and only if lim_{x->c^-} f(x) = lim_{x->c^+} f(x) = L.',
+      'Rule 02 (Three-Step Continuity Definition): Function f is continuous at x = c <=> (1) f(c) is defined, (2) lim_{x->c} f(x) exists, and (3) lim_{x->c} f(x) = f(c).',
+      'Rule 03 (Indeterminate 0/0 Directive): 0/0 does NOT mean 0 or DNE. It means DO MORE WORK: Factor & Cancel, Conjugate Radical, Trig Identities, or L\'Hôpital\'s Rule.',
+      'Rule 04 (Intermediate Value Theorem - IVT): Must state continuity on closed interval [a, b]. IVT guarantees an OUTPUT value d satisfying f(c) = d, never an input coordinate!'
     ]
   },
 

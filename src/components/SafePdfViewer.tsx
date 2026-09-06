@@ -150,14 +150,24 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl }: SafePdfViewerP
           badge.innerText = `Page ${pageNum} of ${pdf.numPages}`;
           pageCard.appendChild(badge);
 
-          // Render canvas to paint the PDF pixel map
-          const viewport = page.getViewport({ scale: 1.5 }); // Crisper render for retina devices
+          // Render canvas to paint the PDF pixel map with Ultra High-Definition sharpness
+          const dpr = Math.max(window.devicePixelRatio || 1, 2);
+          const targetScale = Math.max(dpr * 1.5, 3.0); // 3x - 4.5x pixel density (300+ DPI equivalent)
+          const viewport = page.getViewport({ scale: targetScale });
           const canvas = document.createElement('canvas');
-          canvas.className = 'w-full h-auto bg-white border-0';
-          const ctx = canvas.getContext('2d');
-          
-          canvas.height = viewport.height;
-          canvas.width = viewport.width;
+          canvas.className = 'w-full h-auto bg-white border-0 block';
+          canvas.style.width = '100%';
+          canvas.style.height = 'auto';
+          canvas.style.display = 'block';
+
+          canvas.height = Math.floor(viewport.height);
+          canvas.width = Math.floor(viewport.width);
+
+          const ctx = canvas.getContext('2d', { alpha: false });
+          if (ctx) {
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+          }
 
           pageCard.appendChild(canvas);
           container.appendChild(pageCard);

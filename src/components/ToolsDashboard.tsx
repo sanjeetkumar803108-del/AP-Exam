@@ -33,7 +33,10 @@ const FEATURE_COSTS: Record<string, number> = {
   'calculator': 0,
   'image2pdf': 0,
   'pdfhistory': 0,
-  'livetutorsearch': 0
+  'livetutorsearch': 0,
+  'apnotes': 0,
+  'apsamplepapers': 0,
+  'trapradar': 0
 };
 
 const HeaderLogo = React.memo(() => (
@@ -515,8 +518,8 @@ function ToolsDashboard({
           </button>
         </div>
       </div>
-      {/* Exclusive Single Hero Feature Card: Test Prep */}
-      <div className="flex-1 flex flex-col justify-center my-auto pb-10">
+      {/* Hero Feature Cards: Test Prep & AP Notes */}
+      <div className="flex-1 flex flex-col justify-center my-auto pb-10 gap-4">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -534,10 +537,102 @@ function ToolsDashboard({
               <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
                 Test Prep
               </h2>
+              <p className="text-xs font-semibold text-zinc-500 mt-0.5">
+                Practice MCQs & FRQs with AI Scoring
+              </p>
             </div>
           </div>
           
           <div className="w-12 h-12 rounded-full bg-zinc-100 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center text-zinc-700 shrink-0 transition-colors shadow-sm">
+            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.08, ease: "easeOut" }}
+          whileHover={{ scale: 1.02, y: -2, boxShadow: "0 14px 30px -5px rgba(0, 0, 0, 0.08)" }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => handleSelectTool('apnotes')}
+          className="relative overflow-hidden bg-white border border-zinc-200/90 shadow-md rounded-[2.5rem] p-7 cursor-pointer flex items-center justify-between transition-all select-none group hover:border-purple-300 hover:shadow-lg"
+        >
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-3xl shrink-0 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+              📚
+            </div>
+            <div>
+              <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
+                AP Notes
+              </h2>
+              <p className="text-xs font-semibold text-purple-600 mt-0.5">
+                Comprehensive CED Units, Formulas & Offline PDFs
+              </p>
+            </div>
+          </div>
+          
+          <div className="w-12 h-12 rounded-full bg-zinc-100 group-hover:bg-purple-600 group-hover:text-white flex items-center justify-center text-zinc-700 shrink-0 transition-colors shadow-sm">
+            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.16, ease: "easeOut" }}
+          whileHover={{ scale: 1.02, y: -2, boxShadow: "0 14px 30px -5px rgba(0, 0, 0, 0.08)" }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => handleSelectTool('apsamplepapers')}
+          className="relative overflow-hidden bg-white border border-zinc-200/90 shadow-md rounded-[2.5rem] p-7 cursor-pointer flex items-center justify-between transition-all select-none group hover:border-emerald-300 hover:shadow-lg"
+        >
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-3xl shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
+              📑
+            </div>
+            <div>
+              <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
+                AP Sample Papers Set
+              </h2>
+              <p className="text-xs font-semibold text-emerald-600 mt-0.5">
+                Official College Board Question Sets & Mock Tests
+              </p>
+            </div>
+          </div>
+          
+          <div className="w-12 h-12 rounded-full bg-zinc-100 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center text-zinc-700 shrink-0 transition-colors shadow-sm">
+            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.24, ease: "easeOut" }}
+          whileHover={{ scale: 1.02, y: -2, boxShadow: "0 14px 30px -5px rgba(0, 0, 0, 0.08)" }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => handleSelectTool('trapradar')}
+          className="relative overflow-hidden bg-white border border-amber-200/90 shadow-md rounded-[2.5rem] p-7 cursor-pointer flex items-center justify-between transition-all select-none group hover:border-amber-400 hover:shadow-lg"
+        >
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-3xl shrink-0 group-hover:bg-gradient-to-br group-hover:from-amber-500 group-hover:to-emerald-600 group-hover:text-white transition-all duration-300">
+              🪤
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
+                  AP Trap Radar™
+                </h2>
+                <span className="text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-500 to-rose-500 text-white px-2 py-0.5 rounded-full shadow-xs">
+                  NEW • EXCLUSIVE 🔥
+                </span>
+              </div>
+              <p className="text-xs font-semibold text-amber-600 mt-0.5">
+                Master College Board Trick Options & Distractor Traps
+              </p>
+            </div>
+          </div>
+          
+          <div className="w-12 h-12 rounded-full bg-zinc-100 group-hover:bg-amber-500 group-hover:text-white flex items-center justify-center text-zinc-700 shrink-0 transition-colors shadow-sm">
             <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
           </div>
         </motion.div>

@@ -8,6 +8,11 @@ import { AP_HUMAN_GEOGRAPHY_NOTES } from './apHumanGeographyNotes';
 import { AP_ENVIRONMENTAL_SCIENCE_NOTES } from './apEnvironmentalScienceNotes';
 import { AP_CSP_NOTES } from './apCspNotes';
 import { AP_USH_NOTES } from './apUshNotes';
+import { AP_ENGLISH_LANG_NOTES } from './apEnglishLangNotes';
+import { AP_PSYCHOLOGY_NOTES } from './apPsychologyNotes';
+import { AP_CSA_NOTES } from './apComputerScienceNotes';
+import { AP_ECONOMICS_NOTES } from './apEconomicsNotes';
+import { AP_WORLD_HISTORY_NOTES } from './apWorldHistoryNotes';
 
 export * from './types';
 export { AP_CALCULUS_AB_NOTES } from './apCalculusAbNotes';
@@ -19,6 +24,11 @@ export { AP_HUMAN_GEOGRAPHY_NOTES } from './apHumanGeographyNotes';
 export { AP_ENVIRONMENTAL_SCIENCE_NOTES } from './apEnvironmentalScienceNotes';
 export { AP_CSP_NOTES } from './apCspNotes';
 export { AP_USH_NOTES } from './apUshNotes';
+export { AP_ENGLISH_LANG_NOTES } from './apEnglishLangNotes';
+export { AP_PSYCHOLOGY_NOTES } from './apPsychologyNotes';
+export { AP_CSA_NOTES } from './apComputerScienceNotes';
+export { AP_ECONOMICS_NOTES } from './apEconomicsNotes';
+export { AP_WORLD_HISTORY_NOTES } from './apWorldHistoryNotes';
 
 export interface APSubjectNoteEntry {
   subjectId: string;
@@ -30,6 +40,7 @@ export interface APSubjectNoteEntry {
   gradient: string;
   badge: string;
   description: string;
+  gradeLevels?: ('9th' | '10th' | '11th' | '12th')[];
   notes: APUnitNote[];
 }
 
@@ -40,10 +51,11 @@ export const AP_NOTES_REGISTRY: Record<string, APSubjectNoteEntry> = {
     shortCode: 'CALC AB',
     category: 'STEM & Math',
     icon: '📐',
-    accentColor: '#3B82F6',
-    gradient: 'from-blue-600 via-indigo-600 to-blue-800',
+    accentColor: '#2563EB',
+    gradient: 'from-blue-600 via-indigo-700 to-blue-900',
     badge: 'Foundational',
     description: 'Limits, Derivatives, Analytical Applications, Definite Integrals & Differential Equations (Units 1–8)',
+    gradeLevels: ['11th', '12th'],
     notes: AP_CALCULUS_AB_NOTES
   },
   'ap-calculus-bc': {
@@ -52,10 +64,11 @@ export const AP_NOTES_REGISTRY: Record<string, APSubjectNoteEntry> = {
     shortCode: 'CALC BC',
     category: 'STEM & Math',
     icon: '📈',
-    accentColor: '#6366F1',
-    gradient: 'from-indigo-600 via-purple-600 to-violet-800',
+    accentColor: '#7C3AED',
+    gradient: 'from-purple-600 via-violet-700 to-indigo-900',
     badge: 'Advanced (+2 Units)',
     description: 'All Calculus AB Core Curriculum PLUS 2 Advanced BC-Exclusive Units: Parametric/Polar/Vectors & Infinite Sequences and Series (Units 1–10)',
+    gradeLevels: ['11th', '12th'],
     notes: AP_CALCULUS_BC_NOTES
   },
   'ap-physics': {
@@ -64,10 +77,11 @@ export const AP_NOTES_REGISTRY: Record<string, APSubjectNoteEntry> = {
     shortCode: 'PHYS 1',
     category: 'Sciences',
     icon: '⚡',
-    accentColor: '#F59E0B',
-    gradient: 'from-amber-500 via-orange-500 to-amber-700',
+    accentColor: '#EA580C',
+    gradient: 'from-amber-600 via-orange-600 to-amber-900',
     badge: 'Conceptual',
     description: 'Kinematics, Dynamics, Work-Energy, Momentum, Torque, Rotational Dynamics, Oscillations & Fluids (Units 1–8)',
+    gradeLevels: ['9th', '10th', '11th', '12th'],
     notes: AP_PHYSICS_1_NOTES
   },
   'ap-chemistry': {
@@ -76,10 +90,11 @@ export const AP_NOTES_REGISTRY: Record<string, APSubjectNoteEntry> = {
     shortCode: 'CHEM',
     category: 'Sciences',
     icon: '⚗️',
-    accentColor: '#8B5CF6',
-    gradient: 'from-purple-600 via-violet-600 to-indigo-800',
+    accentColor: '#A21CAF',
+    gradient: 'from-fuchsia-600 via-purple-700 to-violet-900',
     badge: 'Challenging',
     description: 'Atomic Models, Chemical Bonding, IMFs, Kinetics, Thermodynamics, Equilibrium, Acids & Bases & Electrochemistry (Units 1–9)',
+    gradeLevels: ['10th', '11th', '12th'],
     notes: AP_CHEMISTRY_NOTES
   },
   'ap-biology': {
@@ -88,10 +103,11 @@ export const AP_NOTES_REGISTRY: Record<string, APSubjectNoteEntry> = {
     shortCode: 'BIO',
     category: 'Sciences',
     icon: '🧬',
-    accentColor: '#10B981',
-    gradient: 'from-emerald-600 via-teal-600 to-emerald-800',
+    accentColor: '#059669',
+    gradient: 'from-emerald-600 via-teal-700 to-emerald-900',
     badge: 'Popular',
     description: 'Chemistry of Life, Cell Structure, Energetics, Cell Cycle, Heredity, Gene Expression, Natural Selection & Ecology (Units 1–8)',
+    gradeLevels: ['9th', '10th', '11th', '12th'],
     notes: AP_BIOLOGY_NOTES
   },
   'ap-human-geography': {
@@ -100,10 +116,11 @@ export const AP_NOTES_REGISTRY: Record<string, APSubjectNoteEntry> = {
     shortCode: 'APHG',
     category: 'Humanities & Social Sciences',
     icon: '🗺️',
-    accentColor: '#0284C7',
-    gradient: 'from-sky-600 via-teal-600 to-emerald-700',
+    accentColor: '#C2410C',
+    gradient: 'from-orange-700 via-amber-800 to-stone-900',
     badge: '👑 #1 Grade 9 AP',
     description: 'Thinking Geographically, DTM, Cultural Diffusion, Political Borders, Von Thünen Agriculture, Urban Models & Economic Development (Units 1–7)',
+    gradeLevels: ['9th', '10th', '11th', '12th'],
     notes: AP_HUMAN_GEOGRAPHY_NOTES
   },
   'ap-environmental-science': {
@@ -112,10 +129,11 @@ export const AP_NOTES_REGISTRY: Record<string, APSubjectNoteEntry> = {
     shortCode: 'APES',
     category: 'Sciences',
     icon: '🌿',
-    accentColor: '#16A34A',
-    gradient: 'from-green-600 via-emerald-600 to-teal-800',
+    accentColor: '#15803D',
+    gradient: 'from-green-700 via-emerald-800 to-teal-950',
     badge: '🌱 Popular 9th Lab',
     description: 'Ecosystems, Biodiversity, Populations, Earth Systems, Land/Water Use, Energy, Atmospheric/Aquatic Pollution & Global Change (Units 1–9)',
+    gradeLevels: ['9th', '10th', '11th', '12th'],
     notes: AP_ENVIRONMENTAL_SCIENCE_NOTES
   },
   'ap-computer-science-principles': {
@@ -124,10 +142,11 @@ export const AP_NOTES_REGISTRY: Record<string, APSubjectNoteEntry> = {
     shortCode: 'CSP',
     category: 'English & Tech',
     icon: '🌐',
-    accentColor: '#0EA5E9',
-    gradient: 'from-cyan-600 via-blue-600 to-indigo-700',
+    accentColor: '#0891B2',
+    gradient: 'from-cyan-600 via-teal-600 to-sky-900',
     badge: '💻 9th Tech Entry',
     description: 'Creative Development, Data Representation, Algorithms, Pseudocode, Internet Protocols & Cybersecurity (Units 1–5)',
+    gradeLevels: ['9th', '10th', '11th', '12th'],
     notes: AP_CSP_NOTES
   },
   'ap-us-history': {
@@ -136,11 +155,77 @@ export const AP_NOTES_REGISTRY: Record<string, APSubjectNoteEntry> = {
     shortCode: 'APUSH',
     category: 'Humanities & Social Sciences',
     icon: '🏛️',
-    accentColor: '#EF4444',
-    gradient: 'from-red-600 via-rose-600 to-red-800',
+    accentColor: '#B91C1C',
+    gradient: 'from-red-700 via-rose-800 to-stone-900',
     badge: 'Top Pick',
     description: 'Periods 1–9: From Pre-Columbian Societies and the American Revolution to the Cold War and Modern Era (Periods 1–9)',
+    gradeLevels: ['10th', '11th', '12th'],
     notes: AP_USH_NOTES
+  },
+  'ap-english-lang': {
+    subjectId: 'ap-english-lang',
+    subjectName: 'AP English Language & Comp',
+    shortCode: 'AP LANG',
+    category: 'English & Tech',
+    icon: '✍️',
+    accentColor: '#0284C7',
+    gradient: 'from-sky-700 via-teal-800 to-slate-900',
+    badge: 'Essential',
+    description: 'Rhetorical Situation, Claims, Evidence, Synthesis of Sources, Argumentative Structure, Diction & Syntax (Units 1–6)',
+    gradeLevels: ['11th', '12th'],
+    notes: AP_ENGLISH_LANG_NOTES
+  },
+  'ap-psychology': {
+    subjectId: 'ap-psychology',
+    subjectName: 'AP Psychology',
+    shortCode: 'PSYCH',
+    category: 'Humanities & Social Sciences',
+    icon: '🧠',
+    accentColor: '#DB2777',
+    gradient: 'from-pink-700 via-rose-800 to-purple-950',
+    badge: 'Popular',
+    description: 'Biological Bases of Behavior, Cognition & Memory, Development & Learning, Social Psychology & Mental Health (Units 1–5)',
+    gradeLevels: ['9th', '10th', '11th', '12th'],
+    notes: AP_PSYCHOLOGY_NOTES
+  },
+  'ap-computer-science': {
+    subjectId: 'ap-computer-science',
+    subjectName: 'AP Computer Science A',
+    shortCode: 'CSA',
+    category: 'English & Tech',
+    icon: '💻',
+    accentColor: '#4F46E5',
+    gradient: 'from-indigo-700 via-blue-800 to-slate-950',
+    badge: 'Tech Lead',
+    description: 'Java Programming: Primitive Types, Using Objects, Booleans, Loops, Writing Classes, 1D/2D Arrays, ArrayList, Inheritance & Recursion (Units 1–10)',
+    gradeLevels: ['10th', '11th', '12th'],
+    notes: AP_CSA_NOTES
+  },
+  'ap-economics': {
+    subjectId: 'ap-economics',
+    subjectName: 'AP Micro & Macroeconomics',
+    shortCode: 'ECON',
+    category: 'Humanities & Social Sciences',
+    icon: '📈',
+    accentColor: '#0D9488',
+    gradient: 'from-teal-700 via-emerald-800 to-slate-950',
+    badge: 'High Yield',
+    description: 'Supply & Demand, Production Costs, Imperfect Competition, GDP & Inflation, AD-AS Fiscal Policy & Financial Monetary Banking (Units 1–6)',
+    gradeLevels: ['11th', '12th'],
+    notes: AP_ECONOMICS_NOTES
+  },
+  'ap-world-history': {
+    subjectId: 'ap-world-history',
+    subjectName: 'AP World History: Modern',
+    shortCode: 'WHAP',
+    category: 'Humanities & Social Sciences',
+    icon: '🌍',
+    accentColor: '#D97706',
+    gradient: 'from-amber-700 via-orange-800 to-stone-950',
+    badge: 'Global',
+    description: '1200 CE to Present: The Global Tapestry, Networks of Exchange, Land-Based Empires, Revolutions, Industrialization & Globalization (Units 1–9)',
+    gradeLevels: ['10th', '11th', '12th'],
+    notes: AP_WORLD_HISTORY_NOTES
   }
 };
 

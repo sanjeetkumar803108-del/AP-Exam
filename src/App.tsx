@@ -18,20 +18,35 @@ import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 import { Network } from '@capacitor/network';
 import { Purchases } from '@revenuecat/purchases-capacitor';
-import { safeGetItem, safeSetItem, safeClearAll } from './utils/storage';
+import { safeGetItem, safeSetItem, safeClearAll, safeRemoveItem } from './utils/storage';
 import { refillDailyCoins } from './utils/coins';
 import { showToast } from './utils/toast';
 import { setupDailyLocalNotifications } from './utils/notifications';
 import confetti from 'canvas-confetti';
 
-function retryImport<T>(fn: () => Promise<T>, retriesLeft = 3, interval = 1000): Promise<T> {
+function retryImport<T>(fn: () => Promise<T>, retriesLeft = 2, interval = 800): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     fn()
       .then(resolve)
       .catch((error) => {
         if (retriesLeft === 0) {
-          console.warn("Chunk load failed after retries, force reloading to get fresh assets:", error);
-          window.location.reload();
+          console.warn("Chunk load failed after retries:", error);
+          try {
+            const lastReloadStr = sessionStorage.getItem('chunk_reload_lock_ts');
+            const lastReload = lastReloadStr ? parseInt(lastReloadStr, 10) : 0;
+            const now = Date.now();
+            
+            // Only attempt a single reload if we haven't reloaded recently (within 30s)
+            if (now - lastReload > 30000) {
+              sessionStorage.setItem('chunk_reload_lock_ts', String(now));
+              console.warn("Attempting one-time fresh asset reload...");
+              window.location.reload();
+            } else {
+              console.error("Chunk load retry exhausted. Suppressing auto-reload to protect session stability.");
+            }
+          } catch (_) {
+            console.error("Storage unavailable; skipping auto-reload.");
+          }
           return reject(error);
         }
         setTimeout(() => {
@@ -74,6 +89,10 @@ const PaywallModal = lazyWithRetry(() => import('./components/PaywallModal'));
 // Cleaned up fake sandbox modal import
 // const IAPModal = lazyWithRetry(() => import('./components/IAPModal'));
 const Onboarding = lazyWithRetry(() => import('./components/Onboarding'));
+const APNotes = lazyWithRetry(() => import('./components/APNotes'));
+const APSamplePapers = lazyWithRetry(() => import('./components/APSamplePapers'));
+const APTrapRadar = lazyWithRetry(() => import('./components/APTrapRadar'));
+const DeveloperDashboard = lazyWithRetry(() => import('./components/DeveloperPortal/DeveloperDashboard'));
 import SplashScreen from './components/SplashScreen';
 import AuthGuard from './components/AuthGuard';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -109,6 +128,17 @@ export default function App() {
   const [activeTool, setActiveTool] = useState<string | null>(null);
   
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isDeveloperMode, setIsDeveloperMode] = useState<boolean>(() => {
+    return safeGetItem('is_developer_authenticated') === 'true';
+  });
+
+  useEffect(() => {
+    const handleDevAuth = () => {
+      setIsDeveloperMode(safeGetItem('is_developer_authenticated') === 'true');
+    };
+    window.addEventListener('developer-auth-changed', handleDevAuth);
+    return () => window.removeEventListener('developer-auth-changed', handleDevAuth);
+  }, []);
 
   const [networkStatus, setNetworkStatus] = useState<{
     connected: boolean;
@@ -831,6 +861,25 @@ export default function App() {
     }
   }, []);
 
+  if (isDeveloperMode) {
+    return (
+      <div className={`w-full flex flex-col h-[100dvh] max-w-md mx-auto ${isDarkMode ? 'dark bg-zinc-950 text-zinc-100 sm:border-zinc-800' : 'bg-zinc-950 text-zinc-100 sm:border-zinc-800'} font-sans overflow-y-auto shadow-[0_0_50px_rgba(0,0,0,0.15)] sm:rounded-[2rem] sm:h-[90vh] sm:mt-[5vh] sm:border relative`}>
+        <ToastProvider />
+        <Suspense fallback={<FullPageSkeleton />}>
+          <DeveloperDashboard
+            onLogout={() => {
+              safeRemoveItem('is_developer_authenticated');
+              safeRemoveItem('dev_auth_email');
+              setIsDeveloperMode(false);
+              window.dispatchEvent(new CustomEvent('developer-auth-changed', { detail: { authenticated: false } }));
+              showToast('Logged out of Developer Account', 'info');
+            }}
+          />
+        </Suspense>
+      </div>
+    );
+  }
+
   return (
     <>
       <ToastProvider />
@@ -950,6 +999,18 @@ export default function App() {
           </div>
           {/* Active Tool Rendering */}
           <Suspense fallback={<FullPageSkeleton />}>
+            {activeTool === 'apnotes' && (
+              <ErrorBoundary>
+                <APNotes 
+                  onBack={() => setActiveTool(null)} 
+                  onNavigateToTab={(tab) => {
+                    setActiveTool(null);
+                    setActiveTab(tab);
+                  }}
+                  isVip={isVip}
+                />
+              </ErrorBoundary>
+            )}
             {activeTool === 'essaygrader' && (
               <ErrorBoundary>
                 <LockedFeature cost={1} featureName="AI Essay Grader" onBack={() => setActiveTool(null)} onEarnCoins={() => setActiveTool('coinpage')}>
@@ -967,6 +1028,22 @@ export default function App() {
                     setActiveTool(null);
                     setActiveTab(tab);
                   }}
+                />
+              </ErrorBoundary>
+            )}
+            {activeTool === 'apsamplepapers' && (
+              <ErrorBoundary>
+                <APSamplePapers 
+                  onBack={() => setActiveTool(null)} 
+                  isVip={isVip}
+                />
+              </ErrorBoundary>
+            )}
+            {activeTool === 'trapradar' && (
+              <ErrorBoundary>
+                <APTrapRadar 
+                  onBack={() => setActiveTool(null)} 
+                  isVip={isVip}
                 />
               </ErrorBoundary>
             )}
@@ -1189,8 +1266,12 @@ export default function App() {
             <Suspense fallback={<FullPageSkeleton />}>
               <Login 
                 onClose={() => setShowLoginModal(false)} 
-                onLoginSuccess={() => {
+                onLoginSuccess={(target) => {
                   setShowLoginModal(false);
+                  if (target === 'developer') {
+                    setIsDeveloperMode(true);
+                    return;
+                  }
                   if (auth.currentUser) {
                     const setupCompleted = safeGetItem(`academic_setup_completed_${auth.currentUser.uid}`) === 'true';
                     if (!setupCompleted) {

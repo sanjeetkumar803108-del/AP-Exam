@@ -66,8 +66,10 @@ export function getDownloadedUnitIdsSync(): string[] {
         const ids: string[] = [];
         parsed.forEach(item => {
           if (item.id) ids.push(item.id);
-          if (item.unitId) ids.push(item.unitId);
-          if (item.subjectId && item.unitId) ids.push(`${item.subjectId}_${item.unitId}`);
+          if (item.subjectId && item.unitId) {
+            ids.push(`${item.subjectId}_${item.unitId}`);
+            ids.push(`${item.subjectId.replace(/-/g, '_')}_${item.unitId}`);
+          }
         });
         return ids;
       }

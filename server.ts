@@ -11,6 +11,7 @@ import crypto from "crypto";
 import { YoutubeTranscript } from 'youtube-transcript';
 import rateLimit from "express-rate-limit";
 import xss from "xss";
+import { getGranularSubjectArchetypes } from "./src/utils/apArchetypes";
 
 
 process.on("unhandledRejection", (reason, promise) => {
@@ -80,8 +81,77 @@ app.use((req, res, next) => {
 const summaryCache = new Map<string, any>();
 
 /**
+ * Repairs unescaped LaTeX backslashes, unescaped newlines/tabs inside quotes,
+ * and trailing commas so JSON.parse never crashes on AI-generated math/science strings.
+ */
+function repairJsonString(raw: string): string {
+  if (!raw) return '';
+  let str = raw.trim();
+
+  // Strip markdown code fences
+  str = str.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+
+  let inString = false;
+  let escaped = false;
+  const fixedChars: string[] = [];
+
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+
+    if (inString) {
+      if (escaped) {
+        const nextChar = str[i + 1] || '';
+        const isFollowedByLetter = /[a-zA-Z]/.test(nextChar);
+
+        if (/[\\"\/]/.test(ch)) {
+          fixedChars.push(ch);
+        } else if (/[bfnrt]/.test(ch) && !isFollowedByLetter) {
+          fixedChars.push(ch);
+        } else if (ch === 'u') {
+          const hex = str.slice(i + 1, i + 5);
+          if (/^[0-9a-fA-F]{4}$/.test(hex)) {
+            fixedChars.push(ch);
+          } else {
+            fixedChars[fixedChars.length - 1] = '\\\\';
+            fixedChars.push(ch);
+          }
+        } else {
+          // Unescaped LaTeX command like \Delta, \frac, \vec, \alpha, etc.
+          fixedChars[fixedChars.length - 1] = '\\\\';
+          fixedChars.push(ch);
+        }
+        escaped = false;
+      } else if (ch === '\\') {
+        escaped = true;
+        fixedChars.push(ch);
+      } else if (ch === '"') {
+        inString = false;
+        fixedChars.push(ch);
+      } else if (ch === '\n') {
+        fixedChars.push('\\n');
+      } else if (ch === '\r') {
+        fixedChars.push('\\r');
+      } else if (ch === '\t') {
+        fixedChars.push('\\t');
+      } else {
+        fixedChars.push(ch);
+      }
+    } else {
+      if (ch === '"') {
+        inString = true;
+      }
+      fixedChars.push(ch);
+    }
+  }
+
+  let result = fixedChars.join('');
+  result = result.replace(/,\s*([}\]])/g, '$1');
+  return result;
+}
+
+/**
  * Robust JSON extraction and parsing utility.
- * Handles cases where models output markdown blocks or conversational text.
+ * Handles cases where models output markdown blocks, unescaped LaTeX backslashes, or control characters.
  */
 function safeParseJSON(text: string, forceType: 'object' | 'array' | 'none' = 'none'): any {
   if (!text) return forceType === 'array' ? [] : (forceType === 'object' ? {} : null);
@@ -114,7 +184,12 @@ function safeParseJSON(text: string, forceType: 'object' | 'array' | 'none' = 'n
     if (result) return result;
   }
 
-  // 3. Extract using structural patterns (find first { or [ and last } or ])
+  // 3. Try LaTeX and control character repair on cleaned text
+  const repaired = repairJsonString(extracted);
+  result = parse(repaired);
+  if (result) return result;
+
+  // 4. Extract using structural patterns (find first { or [ and last } or ])
   const objStart = extracted.indexOf('{');
   const objEnd = extracted.lastIndexOf('}');
   const arrStart = extracted.indexOf('[');
@@ -124,14 +199,34 @@ function safeParseJSON(text: string, forceType: 'object' | 'array' | 'none' = 'n
   const hasArr = arrStart !== -1 && arrEnd !== -1 && arrEnd > arrStart;
 
   if (hasObj && (!hasArr || objStart < arrStart)) {
-    result = parse(extracted.slice(objStart, objEnd + 1));
+    const slice = extracted.slice(objStart, objEnd + 1);
+    result = parse(slice) || parse(repairJsonString(slice));
     if (result) return result;
   }
 
   if (hasArr) {
-    result = parse(extracted.slice(arrStart, arrEnd + 1));
+    const slice = extracted.slice(arrStart, arrEnd + 1);
+    result = parse(slice) || parse(repairJsonString(slice));
     if (result) return result;
   }
+
+  // 5. If JSON was truncated or cut off, attempt bracket closure repair
+  try {
+    let closed = repairJsonString(extracted);
+    const openBraces = (closed.match(/\{/g) || []).length;
+    const closeBraces = (closed.match(/\}/g) || []).length;
+    const openBrackets = (closed.match(/\[/g) || []).length;
+    const closeBrackets = (closed.match(/\]/g) || []).length;
+
+    if (openBraces > closeBraces) {
+      closed += '}'.repeat(openBraces - closeBraces);
+    }
+    if (openBrackets > closeBrackets) {
+      closed += ']'.repeat(openBrackets - closeBrackets);
+    }
+    result = parse(closed);
+    if (result) return result;
+  } catch (_) {}
 
   // Final fallback: if we need an array/object but everything failed
   if (forceType === 'array') return [];
@@ -468,11 +563,6 @@ MANDATORY ADAPTATION RULES:
         ...parts.slice(1)
       ];
     }
-    // ⚡ SPEED OPTIMIZATION: Disable internal "thinking" mode on Gemini flash models.
-    // thinkingBudget=0 skips the extended reasoning phase which adds 5-15s of latency.
-    if (!clonedParams.config.thinkingConfig) {
-      clonedParams.config.thinkingConfig = { thinkingBudget: 0 };
-    }
   }
 
   const query = extractUserQuery(clonedParams);
@@ -492,20 +582,18 @@ MANDATORY ADAPTATION RULES:
     params.model.includes("clip")
   ));
 
-  let requestedModel = isAudioModel ? (params.model || "gemini-2.5-flash") : params.model;
+  let requestedModel = isAudioModel ? (params.model || "gemini-3.5-flash-lite") : (params.model || "gemini-3.5-flash-lite");
+  if (requestedModel && (requestedModel.includes("2.5") || requestedModel.includes("2.0") || requestedModel.includes("1.5"))) {
+    requestedModel = "gemini-3.5-flash-lite";
+  }
   let modelsToTry = isAudioModel 
-    ? [requestedModel, "gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-exp"].filter(Boolean)
+    ? [requestedModel, "gemini-3.5-flash-lite", "gemini-3.6-flash"].filter(Boolean)
     : isSpecialtyModel 
       ? [requestedModel] 
       : [
-          requestedModel || "gemini-2.5-flash",
-          "gemini-2.5-flash",
-          "gemini-2.0-flash",
-          "gemini-1.5-flash",
-          "gemini-2.0-flash-lite",
-          "gemini-2.5-pro",
-          "gemini-1.5-pro",
-          "gemini-3.1-flash-lite"
+          requestedModel,
+          "gemini-3.5-flash-lite",
+          "gemini-3.6-flash"
         ].filter((value, index, self) => self.indexOf(value) === index);
 
   if (!isSpecialtyModel) {
@@ -614,14 +702,16 @@ MANDATORY ADAPTATION RULES:
             errorStr.includes("404") ||
             (errorStr.includes("429") && !errorStr.includes("overloaded"));
 
-          if (isHardQuotaLimit) {
-            console.warn(`[ai-client] Model ${model} is unavailable, overloaded, or hit quota. Skipping retries for this model and instantly routing to fallback...`);
+          const isModelNotFound = errorStr.includes("not_found") || errorStr.includes("404");
+
+          if (isModelNotFound) {
+            console.warn(`[ai-client] Model ${model} is deprecated or not found (404). Skipping retries...`);
             break;
           }
 
           if (attempt < retries) {
-            const waitTime = delay * Math.pow(2, attempt - 1);
-            console.warn(`[ai-client] Model ${model} overloaded or rate-limited. Retrying in ${waitTime}ms...`);
+            const waitTime = Math.max(delay * Math.pow(2, attempt - 1), 1200);
+            console.warn(`[ai-client] Model ${model} hit transient constraint (${errorStr.slice(0, 60)}). Retrying attempt ${attempt + 1}/${retries} in ${waitTime}ms...`);
             await new Promise((resolve) => setTimeout(resolve, waitTime));
             continue;
           } else {
@@ -2798,29 +2888,33 @@ Use this exact JSON structure:
 {
   "questions": [
     {
-      "question": "Part A: State Le Chatelier's Principle regarding dynamic chemical equilibrium.\\n\\nPart B: Predict the directional shift when temperature is increased in an exothermic synthesis reaction.",
-      "expectedAnswer": "Part A: Le Chatelier's Principle states that when a system at chemical equilibrium is disturbed by a change in temperature, pressure, or concentration, the system shifts in a direction that opposes the disturbance to re-establish equilibrium.\\n\\nPart B: In an exothermic reaction ($\\\\Delta H < 0$), heat is released as a product. Raising temperature adds heat, causing the equilibrium to shift in the reverse (endothermic) direction toward reactants, decreasing product yield.",
+      "question": "Part A: Detail the foundational theoretical principles governing the target topic.\\n\\nPart B: Predict and mathematically/conceptually justify the outcome when conditions or key parameters are altered.",
+      "expectedAnswer": "Part A: Exemplary comprehensive explanation with precise terminology and formulas in LaTeX ($...$).\\n\\nPart B: Rigorous multi-step justification explaining mechanisms and causal relationships.",
       "keyRubricPoints": [
-        "Accurate statement of Le Chatelier's Principle",
-        "Heat treated as product in exothermic reaction ($\\\\Delta H < 0$)",
-        "Shift towards reverse / reactant direction",
-        "Decrease in product concentration and equilibrium constant $K_{eq}$"
+        "Accurate identification and definition of core mechanisms",
+        "Correct mathematical/scientific equations or proof steps",
+        "Clear causal reasoning addressing boundary conditions"
       ]
     }
   ]
 }`;
+
+    const avoidList = Array.isArray(req.body.avoidPrompts) ? req.body.avoidPrompts.filter(Boolean).slice(0, 10) : [];
+    const avoidDirective = avoidList.length > 0
+      ? `\nSTRICT ANTI-REPETITION: Do NOT generate questions similar to these previously answered prompts:\n${avoidList.map((p: string, i: number) => `  [${i+1}] ${p.slice(0, 100)}`).join('\n')}`
+      : '';
 
     let generatedText = "";
     try {
       const response = await safeGenerateContent({
         gradeLevel,
         model: "gemini-3.5-flash-lite",
-        contents: { parts: [{ text: `Topic: ${topicText}. Grade Level: ${gradeLevel || '11th Grade (Junior)'}. Academic Stream: ${stream || 'STEM / Engineering'}. Count: Generate exactly ${requestedCount} questions with expected answers and rubrics now.` }] },
+        contents: { parts: [{ text: `Topic: ${topicText}. Grade Level: ${gradeLevel || '11th Grade (Junior)'}. Academic Stream: ${stream || 'STEM / Engineering'}. Count: Generate exactly ${requestedCount} unique questions with expected answers and rubrics now.${avoidDirective}` }] },
         config: {
           systemInstruction: { parts: [{ text: systemInstruction }] },
           responseMimeType: "application/json",
           maxOutputTokens: 8192,
-          temperature: 0.2
+          temperature: 0.75
         }
       });
       generatedText = response.text || "";
@@ -2962,14 +3056,17 @@ function getCollegeBoardSubjectGuidelines(subject: string, questionType: 'object
   if (s.includes('biology')) {
     if (questionType === 'objective') {
       return `AP BIOLOGY EXAM SPECIFICATIONS (College Board CED):
-- Stimulus-Based Design: Base questions on realistic biological experiments, data tables, gel electrophoresis diagrams, pedigrees, cladograms, or enzyme kinetics graphs.
+- Stimulus-Based Design: Base questions on authentic biological investigations (e.g. cellular respiration respirometers, gel electrophoresis band patterns, spectrophotometric enzyme curves, water potential potato cylinders, pedigree tracking, or Hardy-Weinberg population data).
+- Visual Diagrams & Curves (MANDATORY): For Cellular Energetics (Unit 3), Cell Structure (Unit 2), Genetics (Unit 5), or Ecology (Unit 8), generate the complete SVG diagram in "diagramSvg" (viewBox="0 0 400 220") and specify "diagramType".
+- Diverse Organisms & Real Biological Systems: NEVER use generic placeholders like 'Enzyme X' or repeat identical experimental scenarios. Vary the organism (e.g. yeast, spinach, bovine liver catalase, E. coli, marine phytoplankton, Drosophila, Arabidopsis thaliana) and real enzymes (catalase, pepsin, salivary amylase, RuBisCO, ATP synthase, cytochrome c oxidase).
 - Core Themes: Chemistry of life, cell structure & energetics (photosynthesis/respiration), cell communication & cell cycle, heredity & genetics, gene expression & regulation, natural selection, ecology.
-- Question Style: Questions must require students to analyze data, make scientific claims, identify controls, or predict the biological consequence of a mutation or inhibitor. Avoid simple rote memorization.`;
+- Question Style: Questions must require students to analyze experimental data, make scientific claims, identify controls, or predict the biological consequence of an inhibitor or mutation.`;
     } else {
       return `AP BIOLOGY FREE RESPONSE STANDARDS (College Board CED):
 - Formats:
   1. Long FRQ (8-10 points): Interpreting & Evaluating Experimental Results. Includes experimental design, specifying independent/dependent variables, graphing with standard error bars (±2 SEM), calculating means, and Null Hypothesis / Chi-Square testing.
   2. Short FRQ (4 points): Scientific Investigation (identifying negative/positive controls), Conceptual Analysis (predicting effects of disruption/mutation), or Model Analysis (analyzing cell signaling cascades).
+- Visual Diagrams & Curves (MANDATORY): For Cellular Energetics, Genetics (pedigrees), or Ecology, generate the complete SVG graph in "diagramSvg" (viewBox="0 0 400 220") with labeled axes, data points, and appropriate "diagramType". NEVER use generic 'Enzyme X' - use real biological enzymes and realistic experimental parameters.
 - Rubric: Precise point allocation (+1 pt for identifying control, +1 pt for calculating rate, +1 pt for biological justification).`;
     }
   }
@@ -3102,9 +3199,14 @@ function getCollegeBoardSubjectGuidelines(subject: string, questionType: 'object
   return `College Board AP Course and Exam Description standards for ${subject}. High rigor, analytical thinking, stimulus-based.`;
 }
 
+function getDynamicTopicVariation(subject: string, unitOrTopic: string, count: number): string {
+  const archetypes = getGranularSubjectArchetypes(subject, unitOrTopic, count);
+  return archetypes.map((arch, idx) => `  - Question ${idx + 1} Target Archetype: ${arch}`).join('\n');
+}
+
 app.post("/api/generate-ap-questions", async (req, res) => {
   try {
-    const { subject, unit, topic, questionType, count, gradeLevel } = req.body;
+    const { subject, unit, topic, questionType, count, gradeLevel, avoidPrompts, randomSeed } = req.body;
     if (!subject) {
       return res.status(400).json({ error: "Missing AP Subject" });
     }
@@ -3116,6 +3218,36 @@ app.post("/api/generate-ap-questions", async (req, res) => {
 
     const s = (subject || '').toLowerCase();
     const g = (gradeLevel || '').toLowerCase();
+
+    const dynamicArchetypePlan = getDynamicTopicVariation(subject, targetTopic, requestedCount);
+
+    let antiRepetitionDirective = `
+CRITICAL QUESTION DIVERSITY & NO-REPEAT DIRECTIVE:
+- EVERY QUESTION MUST BE COMPLETELY UNIQUE, NOVEL, AND ORIGINAL.
+- DO NOT repeat classic stock textbook examples (e.g. do NOT use standard functions like (x^2-4)/(x-2), (sin(3x)tan(2x))/x^2, or standard textbook table values).
+- Invent fresh scenarios, diverse function types (rational, radical, trigonometric, exponential, piecewise, logarithmic), distinct variables, and varied real-world/experimental contexts.
+- Each of the ${requestedCount} questions must target a DIFFERENT sub-topic or analytical skill from the AP Course and Exam Description (CED).
+
+MANDATORY QUESTION VARIATION BLUEPRINT FOR THIS SESSION:
+${dynamicArchetypePlan}
+Ensure every question adheres to its designated archetype and uses distinct functions, numbers, and contexts.`;
+
+    if (Array.isArray(avoidPrompts) && avoidPrompts.length > 0) {
+      const cleanAvoid = avoidPrompts
+        .filter((p: any) => typeof p === 'string' && p.trim())
+        .slice(0, 12)
+        .map((p: string, idx: number) => `  [PREVIOUS ${idx + 1}]: "${p.replace(/\n+/g, ' ').slice(0, 140)}"`)
+        .join('\n');
+
+      if (cleanAvoid) {
+        antiRepetitionDirective += `
+
+STRICT PREVIOUS QUESTIONS AVOIDANCE (CRITICAL):
+The student was previously tested on the following problems. You MUST NOT repeat, closely adapt, or generate questions similar to them:
+${cleanAvoid}
+Ensure your questions test different concepts, different functions, different numbers, and different problem archetypes.`;
+      }
+    }
 
     let gradeCalibrationInstruction = '';
 
@@ -3165,13 +3297,41 @@ CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
    - Before outputting options, you MUST solve the question step-by-step to arrive at the definite, mathematically and scientifically verified answer.
    - EXACTLY ONE OF THE 4 OPTIONS (A, B, C, or D) MUST BE 100% CORRECT. Under no circumstances should all 4 options be wrong, and under no circumstances should the true answer be missing from the options list!
    - "correctAnswer" MUST BE VERBATIM IDENTICAL: The "correctAnswer" property MUST be an exact character-for-character match to the corresponding option in the "options" array.
-3. AUTHENTIC 4 OPTIONS: Exactly 4 options labeled "A) ...", "B) ...", "C) ...", "D) ...". Distractors must represent plausible, authentic student misconceptions, calculation slips, or conceptual confusions (not random nonsense).
-4. STIMULUS-BASED WHEN APPLICABLE: Provide real AP-style contextual stimulus (e.g. data tables, experimental setups, code segments, or historical/rhetorical excerpts) if appropriate for the subject.
-5. DETAILED AP EXPLANATION: Explain WHY the correct option is right with step-by-step logic, and explicitly break down why each distractor is incorrect. Use LaTeX ($...$ or $$...$$) for mathematical expressions or chemical reactions.
+4. STIMULUS-BASED WHEN APPLICABLE: Provide real AP-style contextual stimulus (e.g. data tables, experimental setups, code segments, or historical/rhetorical excerpts).
+5. DETAILED AP EXPLANATION: Explain WHY the correct option is right with step-by-step logic, and explicitly break down why each distractor is incorrect.
 6. AP EXAM SKILL/UNIT TAG: Label the relevant AP Unit or Skill practiced.
+7. MANDATORY COLLEGE BOARD SVG DIAGRAMS & GRAPHS (CRITICAL):
+   For all visual or graphical subjects and units:
+   - AP Calculus (Limits & Continuity, piecewise curves with open/closed circle holes, derivative graphs of f'(x), tangent lines, Riemann sums, slope fields).
+   - AP Physics (kinematics v-t/x-t graphs, Free-Body Force Diagrams with labeled arrows, projectile paths, circuit schematics).
+   - AP Chemistry (reaction coordinate energy profiles with Delta H & Ea, acid-base titration curves, PES spectra).
+   - AP Biology (pedigree charts, enzyme kinetics curves, cell signaling feedback loops).
+   - AP Economics (supply and demand equilibrium shifts, PPC, Phillips curves).
+   
+   CRITICAL REQUIREMENT:
+   For these subjects and units, you MUST formulate questions based on visual graph analysis, and you MUST provide the complete, standalone SVG diagram in "diagramSvg" (viewBox='0 0 400 220') and specify "diagramType".
+   The question prompt MUST refer to the visual diagram naturally using varied lead-ins (e.g. "In the investigation depicted in the accompanying figure...", "Based on the experimental data plotted in the graph above...", "A student analyzes the model shown in the figure...", "According to the diagram above..."). NEVER begin every question with the exact same repetitive formulaic words.
+   
+   SVG TECHNICAL REQUIREMENTS:
+   - Root tag: <svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>...</svg>
+   - Dark contrast container: <rect width='400' height='220' fill='#09090b' rx='12' stroke='#27272a' stroke-width='1'/>
+   - Coordinate Axes: stroke='#94a3b8' stroke-width='2' with arrows and labels (e.g. 'x', 'y = f(x)').
+   - Grid lines: stroke='#1e293b' stroke-dasharray='2,2'.
+   - Calculus Discontinuities / Holes: Use hollow circles for removable holes (<circle cx='...' cy='...' r='4.5' fill='#09090b' stroke='#38bdf8' stroke-width='2.5'/>) and solid dots for defined points (<circle cx='...' cy='...' r='4.5' fill='#38bdf8'/>).
+   - Curves / Shapes: High-contrast stroke='#38bdf8' or stroke='#818cf8' stroke-width='2.5' fill='none'.
+   - Text labels: fill='#f8fafc' font-size='12' font-family='sans-serif' font-weight='bold'.
+   - Only set diagramSvg to "" if the subject is purely literary/historical (e.g. AP English Lit, AP History).
 
 ${subjectGuidelines}
 ${gradeCalibrationInstruction}
+${antiRepetitionDirective}
+
+CRITICAL MATH & LATEX FORMATTING:
+- Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for block.
+- For piecewise functions, ALWAYS use clean LaTeX:
+  $f(x) = \\begin{cases} g(x) & \\text{for } x < c \\\\ h(x) & \\text{for } x \\ge c \\end{cases}$
+  NEVER write raw unescaped pseudo-code like 'f(x) = { ... }' or '<=' or '->' which breaks math parsers!
+- Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\to, \\\\infty, \\\\begin{cases}, \\\\end{cases}.
 
 STRICT JSON OUTPUT:
 Return ONLY a valid JSON array of objects with this exact structure:
@@ -3180,6 +3340,8 @@ Return ONLY a valid JSON array of objects with this exact structure:
     "id": 1,
     "question": "Question text with clear formatting...",
     "stimulus": "Optional contextual text, data table, or scenario if applicable (or empty string)",
+    "diagramSvg": "<svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg'>...</svg>",
+    "diagramType": "piecewise_graph",
     "options": [
       "A) Option 1",
       "B) Option 2",
@@ -3194,15 +3356,19 @@ Return ONLY a valid JSON array of objects with this exact structure:
 
       let generatedText = "";
       try {
+        const variationSeed = randomSeed || `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
         const response = await safeGenerateContent({
           gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-          model: "gemini-2.5-flash",
-          contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Generate exactly ${requestedCount} authentic College Board AP Exam Multiple Choice Questions (MCQs) now adhering to official CED specifications.` }] },
+          model: "gemini-3.5-flash-lite",
+          contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Session Variation Seed: ${variationSeed}.
+Generate exactly ${requestedCount} authentic College Board AP Exam Multiple Choice Questions (MCQs).
+IMPORTANT: Ensure 100% diversity and fresh non-repetitive problems with unique functions, numbers, and scenarios. Do not repeat standard textbook clichés!
+If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or AP Statistics, generate authentic graph/diagram-based questions and provide the complete College Board standard SVG in "diagramSvg" with coordinate axes, curves, and labeled points so the student analyzes the visual graphic!` }] },
           config: {
             systemInstruction: { parts: [{ text: systemInstruction }] },
             responseMimeType: "application/json",
-            temperature: 0.2,
-            thinkingConfig: { thinkingBudget: 0 }
+            maxOutputTokens: 8192,
+            temperature: 0.75
           }
         });
         generatedText = response.text || "";
@@ -3211,7 +3377,7 @@ Return ONLY a valid JSON array of objects with this exact structure:
         throw apiError;
       }
 
-      const parsed = safeParseJSON(generatedText, 'none');
+      const parsed = safeParseJSON(generatedText, 'array');
       let questionsList: any[] = [];
       if (Array.isArray(parsed)) {
         questionsList = parsed;
@@ -3223,6 +3389,24 @@ Return ONLY a valid JSON array of objects with this exact structure:
       }
 
       if (questionsList.length > 0) {
+        questionsList = questionsList.map((q: any, idx: number) => {
+          if (typeof q === 'string') {
+            return {
+              id: idx + 1,
+              title: `Question ${idx + 1}`,
+              prompt: q,
+              options: ["A) Option A", "B) Option B", "C) Option C", "D) Option D"],
+              correctAnswer: "A",
+              explanation: ""
+            };
+          }
+          return {
+            ...q,
+            id: q.id || idx + 1,
+            title: q.title || `Question ${idx + 1}`,
+            prompt: q.prompt || q.question || q.text || q.scenario || ""
+          };
+        });
         return res.json({ questions: questionsList, questionType: 'objective', subject, count: questionsList.length });
       }
       throw new Error("Failed to generate a valid AP objective questions structure.");
@@ -3238,9 +3422,37 @@ CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
 3. OFFICIAL SCORING GUIDELINES & POINT BREAKDOWN: Provide a precise, point-by-point College Board Reader rubric in an array 'scoringRubric'. Each item should state what earns the point (e.g., '+1 pt for applying product rule', '+1 pt for correctly stating units', '+1 pt for citing historical document').
 4. HIGH-SCORING MODEL ANSWER: Provide a complete, maximum-points exemplary student response in 'modelAnswer' addressing each part (a), (b), (c) with clear steps and LaTeX formatting.
 5. TOTAL POINTS: Total point value for this problem (e.g. 9 points for Calculus/CSA, 10 points for Chem, 7 points for DBQ, 4 points for Short FRQ).
+6. MANDATORY COLLEGE BOARD SVG DIAGRAMS & GRAPHS (CRITICAL):
+   For all graphical, experimental, and visual subjects/units:
+   - AP Calculus (Limits & Continuity, piecewise functions with holes/discontinuities, derivatives, tangent lines, graphs of f'(x), Riemann sum areas, slope fields).
+   - AP Physics (kinematics v-t/x-t graphs, Free-Body Force Diagrams with labeled force vectors, projectile trajectories, electric circuit schematics).
+   - AP Chemistry (reaction coordinate energy profiles with Delta H & Ea, acid-base titration curves with equivalence point, PES spectra).
+   - AP Biology (pedigree charts, enzyme kinetics curves, cell signaling feedback loops).
+   - AP Micro/Macroeconomics (supply & demand equilibrium shifts, PPC, Phillips curves).
+   - AP Statistics (box plots with 5-number summary & outliers, normal distribution bell curves).
+
+   The question prompt MUST refer to the visual diagram naturally using varied lead-ins (e.g. "In the experiment depicted in the accompanying figure...", "Based on the plotted data in the graph above...", "A researcher examines the model shown in the figure...", "According to the diagram provided..."). NEVER begin every question with the exact same repetitive formulaic words.
+   
+   SVG TECHNICAL REQUIREMENTS:
+   - Root tag: <svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>...</svg>
+   - Dark contrast container: <rect width='400' height='220' fill='#09090b' rx='12' stroke='#27272a' stroke-width='1'/>
+   - Coordinate Axes: stroke='#94a3b8' stroke-width='2' with arrowheads and axis labels (e.g. 'x', 'y = f(x)').
+   - Grid lines: stroke='#1e293b' stroke-dasharray='2,2'.
+   - Calculus Discontinuities / Holes: Use hollow circles for removable holes (<circle cx='...' cy='...' r='4.5' fill='#09090b' stroke='#38bdf8' stroke-width='2.5'/>) and solid dots for defined points (<circle cx='...' cy='...' r='4.5' fill='#38bdf8'/>).
+   - Curves / Shapes: High-contrast stroke='#38bdf8' or stroke='#818cf8' stroke-width='2.5' fill='none'.
+   - Text labels: fill='#f8fafc' font-size='12' font-family='sans-serif' font-weight='bold'.
+   - Only set diagramSvg to "" if the subject is purely literary/historical (e.g. AP English Lit, AP History).
 
 ${subjectGuidelines}
 ${gradeCalibrationInstruction}
+${antiRepetitionDirective}
+
+CRITICAL MATH & LATEX FORMATTING:
+- Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for block.
+- For piecewise functions, ALWAYS use clean LaTeX:
+  $f(x) = \\begin{cases} g(x) & \\text{for } x < c \\\\ h(x) & \\text{for } x \\ge c \\end{cases}$
+  NEVER write raw unescaped pseudo-code like 'f(x) = { ... }' or '<=' or '->' which breaks math parsers!
+- Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\to, \\\\infty, \\\\begin{cases}, \\\\end{cases}.
 
 STRICT JSON OUTPUT:
 Return ONLY a valid JSON object with key "questions" containing an array of objects:
@@ -3249,7 +3461,9 @@ Return ONLY a valid JSON object with key "questions" containing an array of obje
     {
       "id": 1,
       "title": "FRQ 1: Multi-Part Analytical Problem",
-      "prompt": "Scenario/stimulus followed by:\\n\\n(a) Sub-part A prompt...\\n\\n(b) Sub-part B prompt...\\n\\n(c) Sub-part C prompt...",
+      "prompt": "Scenario/stimulus referencing the diagram above followed by:\\n\\n(a) Sub-part A prompt...\\n\\n(b) Sub-part B prompt...\\n\\n(c) Sub-part C prompt...",
+      "diagramSvg": "<svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg'>...</svg>",
+      "diagramType": "piecewise_graph",
       "totalPoints": 9,
       "modelAnswer": "(a) Full exemplary solution for part a...\\n\\n(b) Full exemplary solution for part b...\\n\\n(c) Full exemplary solution for part c...",
       "scoringRubric": [
@@ -3265,16 +3479,19 @@ NEVER include multiple-choice options A/B/C/D in subjective output.`;
 
       let generatedText = "";
       try {
+        const variationSeed = randomSeed || `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
         const response = await safeGenerateContent({
           gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-          model: "gemini-2.5-flash",
-          contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Generate exactly ${requestedCount} authentic College Board AP Exam Free Response / Subjective Questions with official scoring rubrics and model answers now.` }] },
+          model: "gemini-3.5-flash-lite",
+          contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Session Variation Seed: ${variationSeed}.
+Generate exactly ${requestedCount} authentic College Board AP Exam Free Response / Subjective Questions.
+IMPORTANT: Ensure 100% diversity and fresh non-repetitive problems with unique functions, numbers, and scenarios. Do not repeat standard textbook clichés!
+If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or AP Statistics, formulate authentic graph/diagram-based questions and provide the complete College Board standard SVG in "diagramSvg" with coordinate axes, curves, and labeled points so the student analyzes the visual graphic!` }] },
           config: {
             systemInstruction: { parts: [{ text: systemInstruction }] },
             responseMimeType: "application/json",
             maxOutputTokens: 8192,
-            temperature: 0.2,
-            thinkingConfig: { thinkingBudget: 0 }
+            temperature: 0.75
           }
         });
         generatedText = response.text || "";
@@ -3283,7 +3500,7 @@ NEVER include multiple-choice options A/B/C/D in subjective output.`;
         throw apiError;
       }
 
-      const parsed = safeParseJSON(generatedText, 'none');
+      const parsed = safeParseJSON(generatedText, 'object');
       let questionsList: any[] = [];
       if (parsed && Array.isArray(parsed.questions)) {
         questionsList = parsed.questions;
@@ -3295,6 +3512,25 @@ NEVER include multiple-choice options A/B/C/D in subjective output.`;
       }
 
       if (questionsList.length > 0) {
+        questionsList = questionsList.map((q: any, idx: number) => {
+          if (typeof q === 'string') {
+            return {
+              id: idx + 1,
+              title: `FRQ ${idx + 1}: Multi-Part Analytical Problem`,
+              prompt: q,
+              diagramSvg: "",
+              diagramType: "none",
+              modelAnswer: "",
+              scoringRubric: []
+            };
+          }
+          return {
+            ...q,
+            id: q.id || idx + 1,
+            title: q.title || `FRQ ${idx + 1}: Multi-Part Analytical Problem`,
+            prompt: q.prompt || q.question || q.text || q.scenario || ""
+          };
+        });
         return res.json({ questions: questionsList, questionType: 'subjective', subject, count: questionsList.length });
       }
       throw new Error("Failed to generate a valid AP subjective questions structure.");
@@ -3308,6 +3544,213 @@ NEVER include multiple-choice options A/B/C/D in subjective output.`;
     }
     console.error("AP Question generation endpoint error:", error);
     res.status(500).json({ error: error.message || "Failed to generate AP questions" });
+  }
+});
+
+app.post("/api/ap-trap-radar", async (req, res) => {
+  try {
+    const { action = 'generate_challenge', subject, unit, topic, count, gradeLevel, customQuestion, images } = req.body;
+
+    if (action === 'analyze_custom') {
+      if (!customQuestion && (!images || images.length === 0)) {
+        return res.status(400).json({ error: "Please provide question text or an image to analyze." });
+      }
+
+      const systemInstruction = `You are a Senior College Board AP Exam Psychometrician, Chief Reader, and Master Distractor Architect.
+Your mission is to perform an exhaustive "TRAP RADAR AUTOPSY" on the provided AP Exam multiple-choice question.
+
+College Board MCQs are famous for engineering 6 distinct Distractor Archetypes:
+1. 🪤 The Reverse Logic / Sign Flip Trap (Correct calculation but flipped sign, reciprocal, or reversed direction).
+2. 🪤 The Half-Truth Scope Creep Trap (A statement that is factually true in real life, BUT does not answer the stimulus prompt or exceeds CED scope).
+3. 🪤 The Chronological / Evolutionary Anachronism Trap (Correct event or process, but placed in the wrong century, epoch, or phase).
+4. 🪤 The Absolute Qualifier / Extreme Word Trap (Includes 'always', 'never', 'solely', 'invariably' which invalidates an otherwise plausible claim).
+5. 🪤 The Pseudo-Vocabulary Jargon Trap (Strings together authentic unit buzzwords into a scientifically or historically nonsensical mechanism to bait superficial guessers).
+6. 🪤 The Intermediate Step / Premature Stop Trap (Calculates an intermediate value correctly, but fails to execute the final step required by the prompt).
+
+ANALYZE THE QUESTION THOROUGHLY:
+1. Identify the AP Subject and Core Unit/Skill.
+2. Determine which option is the true, verified correct answer.
+3. For EVERY option (A, B, C, D), deconstruct its purpose:
+   - If correct: Mark as 🎯 Target, explain the College Board rationale.
+   - If incorrect: Identify the exact Trap Archetype, why test-makers engineered it, what common misconception it targets, and what % of AP students typically fall for it.
+4. Provide the "5-Second Disarm Secret": A bulletproof heuristic or mental model to immediately spot and eliminate the distractor on the real exam.
+
+STRICT JSON OUTPUT FORMAT:
+{
+  "detectedSubject": "AP Subject Name",
+  "skill": "Relevant CED Unit & Learning Objective",
+  "question": "The cleaned-up question text",
+  "stimulus": "Any excerpt, table, or context (if applicable)",
+  "correctAnswer": "A) ...",
+  "overallTrapDifficulty": "Moderate | High | Brutal (Level 5 Distractor)",
+  "traps": [
+    {
+      "option": "A",
+      "text": "Full option text",
+      "isCorrect": true,
+      "trapType": "🎯 Official College Board Target",
+      "trapDescription": "Clear explanation of why this is the only answer supported by the CED.",
+      "collegeBoardMindset": "Evaluates mastery of CED concept...",
+      "vulnerabilityRate": "N/A"
+    },
+    {
+      "option": "B",
+      "text": "Full option text",
+      "isCorrect": false,
+      "trapType": "🪤 The Reverse Logic / Sign Flip Trap",
+      "trapDescription": "Explains why students fall for this...",
+      "collegeBoardMindset": "Test-makers set this trap for students who...",
+      "vulnerabilityRate": "38% of AP students fall for this"
+    }
+  ],
+  "disarmStrategy": "⚡ 5-Second Disarm Secret: Quick rule to eliminate the trap instantly."
+}`;
+
+      const contentParts: any[] = [];
+      if (images && Array.isArray(images) && images.length > 0) {
+        for (const img of images) {
+          if (!img) continue;
+          const parts = img.split(',');
+          const base64Data = parts[1] || img;
+          const mimeType = parts[0]?.split(';')[0]?.split(':')[1] || 'image/jpeg';
+          contentParts.push({
+            inlineData: { mimeType, data: base64Data }
+          });
+        }
+      }
+      contentParts.push({ text: customQuestion || "Analyze this AP multiple-choice question and expose every trap option." });
+
+      const response = await safeGenerateContent({
+        gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
+        model: "gemini-2.5-flash",
+        contents: { parts: contentParts },
+        config: {
+          systemInstruction: { parts: [{ text: systemInstruction }] },
+          responseMimeType: "application/json",
+          temperature: 0.2
+        }
+      });
+
+      const parsed = safeParseJSON(response.text || "{}", 'object');
+      return res.json({ success: true, analysis: parsed });
+    }
+
+    // Default action: generate_challenge
+    if (!subject) {
+      return res.status(400).json({ error: "Missing AP Subject" });
+    }
+
+    const requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 10);
+    const targetTopic = [topic, unit, subject].filter(Boolean).join(" - ");
+
+    const systemInstruction = `You are a Senior College Board AP Exam Psychometrician and Master Distractor Architect.
+The student is training with the "AP TRAP RADAR™" to achieve a Score 5 in AP ${subject}.
+Your mission: Generate exactly ${requestedCount} high-caliber, authentic AP Exam Multiple Choice Questions for "${targetTopic}" with DECEPTIVELY ENGINEERED DISTRACTOR TRAPS.
+
+Every question MUST feature 4 options (A, B, C, D) with authentic College Board Trap Archetypes:
+- Exactly 1 option must be 100% scientifically/historically/mathematically correct.
+- The other 3 options MUST be engineered using authentic College Board Distractor Archetypes:
+  1. The Reverse Logic / Arithmetic Slip Trap (sign flipped, reciprocal, inverted cause-and-effect).
+  2. The Half-Truth / Scope Creep Trap (factually true in the real world, but doesn't answer the prompt).
+  3. The Chronological / Unit Confusion Trap (timeline mismatch or conflated unit/term).
+  4. The Absolute Qualifier Trap ('always', 'never', 'solely' making a claim too extreme).
+  5. The Pseudo-Vocabulary Jargon Trap (impressive unit keywords combined into a fake mechanism).
+  6. The Intermediate Calculation Stop Trap (stops at step 2 of a 3-step proof or calculation).
+
+CRITICAL ACCURACY RULES:
+- Before outputting, verify that EXACTLY ONE OPTION is correct.
+- 'correctAnswer' must match the exact string of the correct option in 'options'.
+- Use LaTeX ($...$ or $$...$$) for formulas, chemical reactions, or calculus equations.
+
+STRICT JSON OUTPUT FORMAT:
+Return ONLY a valid JSON array of question objects:
+[
+  {
+    "id": 1,
+    "prompt": "Clear, stimulus-based AP question stem...",
+    "stimulus": "Optional source excerpt, data table, code snippet, or historical quote (or empty string)",
+    "options": [
+      "A) ...",
+      "B) ...",
+      "C) ...",
+      "D) ..."
+    ],
+    "correctAnswer": "A) ...",
+    "overallTrapDifficulty": "High (Level 4 Trap)",
+    "traps": [
+      {
+        "option": "A",
+        "isCorrect": true,
+        "trapType": "🎯 Official College Board Target",
+        "trapDescription": "Why this option is the sole CED-compliant answer.",
+        "collegeBoardMindset": "Evaluates foundational CED objective...",
+        "vulnerabilityRate": "N/A"
+      },
+      {
+        "option": "B",
+        "isCorrect": false,
+        "trapType": "🪤 The Reverse Logic / Sign Flip Trap",
+        "trapDescription": "Why students fall for this...",
+        "collegeBoardMindset": "Designed for students who missed the negative sign...",
+        "vulnerabilityRate": "42% of students choose this"
+      },
+      {
+        "option": "C",
+        "isCorrect": false,
+        "trapType": "🪤 The Half-Truth / Scope Creep Trap",
+        "trapDescription": "Why students fall for this...",
+        "collegeBoardMindset": "Exploits superficial reading of the passage...",
+        "vulnerabilityRate": "27% of students choose this"
+      },
+      {
+        "option": "D",
+        "isCorrect": false,
+        "trapType": "🪤 The Absolute Qualifier Trap",
+        "trapDescription": "Why students fall for this...",
+        "collegeBoardMindset": "Baits students with extreme language...",
+        "vulnerabilityRate": "19% of students choose this"
+      }
+    ],
+    "disarmStrategy": "⚡ 5-Second Disarm Secret: The exact heuristic to eliminate distractors instantly on exam day.",
+    "skill": "Relevant AP Skill / CED Unit"
+  }
+]`;
+
+    const response = await safeGenerateContent({
+      gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
+      model: "gemini-2.5-flash",
+      contents: { parts: [{ text: `Generate ${requestedCount} authentic AP ${subject} Trap Radar questions for ${targetTopic}.` }] },
+      config: {
+        systemInstruction: { parts: [{ text: systemInstruction }] },
+        responseMimeType: "application/json",
+        temperature: 0.2
+      }
+    });
+
+    const parsed = safeParseJSON(response.text || "[]", 'array');
+    let questionsList: any[] = [];
+    if (Array.isArray(parsed)) {
+      questionsList = parsed;
+    } else if (parsed && Array.isArray(parsed.questions)) {
+      questionsList = parsed.questions;
+    } else if (parsed && typeof parsed === 'object') {
+      const found = Object.values(parsed).find(v => Array.isArray(v));
+      if (found) questionsList = found as any[];
+    }
+
+    if (questionsList.length > 0) {
+      return res.json({ success: true, questions: questionsList, subject, unit: targetTopic, count: questionsList.length });
+    }
+    throw new Error("Failed to generate valid Trap Radar questions structure.");
+  } catch (error: any) {
+    if (error.message === "GEMINI_QUOTA_EXHAUSTED") {
+      return res.status(429).json({
+        error: "QUOTA_EXCEEDED",
+        text: "⚠️ AP Trap Radar Notice: Gemini API rate limit reached. Please try again in 60 seconds."
+      });
+    }
+    console.error("AP Trap Radar endpoint error:", error);
+    res.status(500).json({ error: error.message || "Failed to run AP Trap Radar analysis" });
   }
 });
 
@@ -3419,11 +3862,10 @@ ${image ? 'IMPORTANT: The student has provided an attached photo containing thei
 
     const response = await safeGenerateContent({
       gradeLevel: userGrade,
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash-lite",
       contents: { parts },
       config: {
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        thinkingConfig: { thinkingBudget: 0 }
+        systemInstruction: { parts: [{ text: systemInstruction }] }
       }
     });
 
@@ -3479,12 +3921,11 @@ CRITICAL SOCRATIC AP TUTORING PRINCIPLES:
 
     const response = await safeGenerateContent({
       gradeLevel: "AP High School (Advanced Placement)",
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash-lite",
       contents: { parts: [{ text: userPrompt }] },
       config: {
         systemInstruction: { parts: [{ text: systemInstruction }] },
-        temperature: 0.3,
-        thinkingConfig: { thinkingBudget: 0 }
+        temperature: 0.3
       }
     });
 
@@ -3517,22 +3958,28 @@ CRITICAL RULES:
 Use this exact JSON structure:
 [
   {
-    "question": "What is the primary function of the mitochondria in a eukaryotic cell?",
-    "options": ["A) Protein synthesis", "B) DNA replication", "C) ATP production", "D) Lipid breakdown"],
-    "correctAnswer": "C) ATP production",
-    "explanation": "Mitochondria generate most of the cell's supply of adenosine triphosphate (ATP), used as a source of chemical energy."
+    "question": "Which of the following best characterizes the key mechanism of [Concept]?",
+    "options": ["A) Statement 1", "B) Statement 2", "C) Statement 3", "D) Statement 4"],
+    "correctAnswer": "A) Statement 1",
+    "explanation": "Clear educational breakdown justifying why the correct option is true and why the distractors are incorrect."
   }
 ]`;
+
+    const avoidList = Array.isArray(req.body.avoidPrompts) ? req.body.avoidPrompts.filter(Boolean).slice(0, 10) : [];
+    const avoidDirective = avoidList.length > 0
+      ? `\nSTRICT ANTI-REPETITION: Do NOT repeat or generate questions similar to these previously tested prompts:\n${avoidList.map((p: string, i: number) => `  [${i+1}] ${p.slice(0, 100)}`).join('\n')}`
+      : '';
 
     let quizText = "";
     try {
       const response = await safeGenerateContent({
         gradeLevel,
         model: "gemini-3.5-flash-lite",
-        contents: { parts: [{ text: `Topic: ${topic}. Generate the ${requestedCount}-question JSON quiz now.` }] },
+        contents: { parts: [{ text: `Topic: ${topic}. Generate the ${requestedCount}-question JSON quiz now.${avoidDirective}` }] },
         config: {
           systemInstruction: { parts: [{ text: systemInstruction }] },
-          responseMimeType: "application/json"
+          responseMimeType: "application/json",
+          temperature: 0.75
         }
       });
       quizText = response.text || "";
@@ -4545,17 +4992,28 @@ app.get("/api/time", (req, res) => {
 async function startServer() {
   const distPath = path.join(process.cwd(), "dist");
   const hasDist = fs.existsSync(path.join(distPath, "index.html"));
-  const isProd = (process.env.NODE_ENV || "").toLowerCase() === "production" || hasDist;
+  const isDevExplicit = (process.env.NODE_ENV || "").toLowerCase() === "development";
 
-  if (isProd && hasDist) {
-    console.log("[Server] Serving static frontend from:", distPath);
-    app.use(express.static(distPath));
+  if (hasDist && !isDevExplicit) {
+    console.log("[Server] Serving production static frontend from:", distPath);
+    app.use("/assets", express.static(path.join(distPath, "assets"), {
+      maxAge: "1y",
+      immutable: true
+    }));
+    app.use(express.static(distPath, {
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith("index.html")) {
+          res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        }
+      }
+    }));
 
     app.get("*", (req, res) => {
       const ext = path.extname(req.path);
       if (ext || req.path.startsWith('/src') || req.path.startsWith('/api')) {
         return res.status(404).send('Not Found');
       }
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
       res.sendFile(path.join(distPath, "index.html"));
     });
   } else {

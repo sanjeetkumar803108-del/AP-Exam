@@ -77,12 +77,6 @@ export default class ErrorBoundary extends Component<Props, State> {
       return this.props.children;
     }
 
-    // If crashed 3+ times, force full reload to clear memory
-    if (this.state.errorCount >= 3) {
-      window.location.reload();
-      return null;
-    }
-
     const isRepeatedCrash = this.state.errorCount >= 2;
 
     return (

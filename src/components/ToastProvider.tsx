@@ -54,6 +54,10 @@ export default function ToastProvider() {
       const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
       setToasts(prev => {
+        // Prevent duplicate toasts if an identical message is already currently visible
+        if (prev.some(t => t.message === message)) {
+          return prev;
+        }
         // Max 3 toasts at a time — drop oldest if exceeded
         const next = [...prev, { id, message, type, duration }];
         return next.length > 3 ? next.slice(next.length - 3) : next;

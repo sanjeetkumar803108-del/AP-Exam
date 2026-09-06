@@ -43,6 +43,454 @@ var import_crypto = __toESM(require("crypto"), 1);
 var import_youtube_transcript = require("youtube-transcript");
 var import_express_rate_limit = __toESM(require("express-rate-limit"), 1);
 var import_xss = __toESM(require("xss"), 1);
+
+// src/utils/apArchetypes.ts
+var AP_SUBJECT_ARCHETYPES = {
+  biology: {
+    general: [
+      "Experimental design: Independent vs dependent variables, positive/negative controls, and sample size validity",
+      "Quantitative data analysis: Mean, standard deviation, and graphing with standard error of the mean (\xB12 SEM) bars",
+      "Statistical hypothesis testing: Chi-Square goodness-of-fit test comparing observed vs expected phenotypes",
+      "Biological disruption: Predicting physiological consequences of chemical inhibitors, uncouplers, or targeted mutations",
+      "Structure-function relationship: How molecular conformation determines transport, catalysis, or ligand binding",
+      "Evolutionary conservation: Shared metabolic pathways, ribosomal machinery, and genetic code across domains"
+    ],
+    units: {
+      "1": [
+        "Transpiration stream and cohesion-tension theory in xylem driven by water hydrogen bonding",
+        "Thermal buffering: High specific heat capacity of water stabilizing marine and cellular environments",
+        "Dehydration condensation synthesis vs hydrolysis of peptide bonds forming primary polypeptide chains",
+        "Nucleic acid 5'-to-3' directional polarity and antiparallel complementary base pairing rules",
+        "Protein folding hierarchy: Tertiary conformation stabilization via hydrophobic interactions and disulfide bridges",
+        "Protein thermal and pH denaturation: Disruption of secondary alpha-helices/beta-sheets and loss of active site fit",
+        "Phospholipid bilayer fluidity: Fatty acid chain saturation and cholesterol modulation in poikilothermic organisms",
+        "Structural vs storage carbohydrates: Alpha-1,4/1,6 glycosidic bonds in starch/glycogen vs beta-1,4 bonds in cellulose",
+        "Limiting nutrient stoichiometry: Nitrogen and phosphorus availability restricting plant primary productivity"
+      ],
+      "2": [
+        "Surface area-to-volume ratio (SA:V): Metabolic exchange efficiency in spherical vs flattened/microvilli cell geometries",
+        "Endosymbiotic theory: Double membranes, autonomous circular chromosomes, and 70S ribosomes in chloroplasts and mitochondria",
+        "Organellar compartmentalization: Lysosomal acid hydrolases operating at pH 4.5-5.0 isolated from neutral cytosol",
+        "Plasma membrane selective permeability: Passive diffusion of small nonpolar gases (O2, CO2) vs facilitated diffusion via GLUT/aquaporins",
+        "Water potential equation (Psi = Psi_s + Psi_p): Solute potential calculation (Psi_s = -iCRT) and turgor pressure equilibrium in plant roots",
+        "Tonicity impacts on animal vs plant cells: Erythrocyte hemolysis vs crenation, and plant turgid vs flaccid/plasmolyzed states",
+        "Electrochemical gradient maintenance: Primary active transport via Na+/K+ ATPase and secondary sodium-glucose symport",
+        "Vesicular protein sorting pathway: Rough ER signal peptide recognition, Golgi cis-to-trans cisternal maturation, and exocytosis"
+      ],
+      "3": [
+        "Enzyme kinetics: Substrate saturation curves comparing Vmax and Km in the presence of competitive vs noncompetitive inhibitors",
+        "Allosteric enzyme regulation: Phosphofructokinase inhibition by high cellular ATP/citrate and activation by AMP/ADP",
+        "Comparative enzymatic pH/temperature profiles: Pepsin (gastric pH 2) vs salivary amylase (pH 7) vs pancreatic trypsin (pH 8)",
+        "Light-dependent reactions: Photolysis of water at Photosystem II (P680), cytochrome b6f proton pumping, and photophosphorylation",
+        "Non-cyclic vs cyclic electron flow: ATP generation without NADPH production to balance chloroplast metabolic demands",
+        "Calvin-Benson cycle: RuBisCO carbon fixation, 3-PGA reduction to G3P consuming ATP and NADPH, and RuBP regeneration",
+        "C3 vs C4 vs CAM photosynthetic adaptations: Spatial bundle-sheath isolation vs nocturnal temporal CO2 capture minimizing photorespiration",
+        "Glycolysis and substrate-level phosphorylation: Hexokinase activation and net ATP/NADH yield under aerobic vs hypoxic conditions",
+        "Citric acid cycle (Krebs): Decarboxylation of pyruvate to Acetyl-CoA, succinate dehydrogenase oxidation, and CO2 release",
+        "Oxidative phosphorylation disruption: DNP chemical uncouplers dissipating inner mitochondrial proton gradient as metabolic heat",
+        "Anaerobic fermentation: Lactic acid fermentation in mammalian myocytes vs ethanol fermentation in yeast restoring NAD+ pools",
+        "Thermoregulation & metabolic rate: Uncoupling protein 1 (UCP1 / thermogenin) in brown adipose tissue of hibernating mammals"
+      ],
+      "4": [
+        "G-Protein Coupled Receptor (GPCR) cascade: Epinephrine binding, G-alpha GTP exchange, adenylyl cyclase activation, and cAMP generation",
+        "Receptor Tyrosine Kinase (RTK) dimerization: Growth factor binding, autophosphorylation, and downstream Ras-Raf-MEK-ERK signaling",
+        "Intracellular steroid hormone signaling: Hydrophobic ligand (estrogen/cortisol) crossing membrane to act as nuclear transcription factors",
+        "Second messenger amplification: Phospholipase C cleaving PIP2 into IP3 and DAG, opening ER calcium channels in muscle contraction",
+        "Homeostatic negative feedback: Blood glucose counter-regulation via pancreatic beta-cell insulin and alpha-cell glucagon",
+        "Positive feedback amplification loops: Oxytocin release accelerating uterine contractions during human parturition",
+        "Cell cycle checkpoint regulation: G1/S restriction point control by p53 tumor suppressor and Retinoblastoma (Rb) phosphorylation",
+        "Cyclin and CDK complexes: Maturation-Promoting Factor (MPF) activity governing G2/M phase entry and subsequent cyclin destruction",
+        "Apoptosis programmed cell death: Intrinsic mitochondrial cytochrome c leakage activating executioner caspase proteases"
+      ],
+      "5": [
+        "Meiotic generation of genetic diversity: Crossing over at chiasmata in Prophase I and independent assortment in Metaphase I",
+        "Mendelian monohybrid/dihybrid testcrosses: Expected phenotypic ratios (3:1, 9:3:3:1) and Chi-Square statistical validation",
+        "Sex-linked recessive inheritance: Hemophilia or red-green colorblindness transmission across 3 generations of human pedigrees",
+        "Gene linkage & recombination mapping: Calculating recombinant frequencies and mapping distance in centimorgans / map units",
+        "Non-Mendelian codominance & multiple alleles: ABO blood group glycoprotein inheritance and universal donor/recipient logic",
+        "Incomplete dominance: Intermediate heterozygous phenotypes (e.g. pink floral coloration in snapdragons) vs parental homozygotes",
+        "Maternal non-nuclear inheritance: Mitochondrial DNA and chloroplast DNA transmission strictly through the ovum",
+        "Phenotypic plasticity: Environmental temperature regulating reptile sex determination or soil pH altering hydrangea pigmentation"
+      ],
+      "6": [
+        "DNA replication fork mechanics: Helicase, topoisomerase, single-stranded binding proteins, and Okazaki fragment ligation on lagging strand",
+        "End-replication telomere shortening: Telomerase reverse transcriptase activity in human embryonic stem cells vs somatic senescence",
+        "Transcription initiation and elongation: Promoter TATA box recognition, RNA Polymerase II, and transcription factor assembly",
+        "Eukaryotic pre-mRNA processing: 5' 7-methylguanosine cap, 3' poly-A tail, and spliceosomal alternative exon splicing",
+        "Translation fidelity: Aminoacyl-tRNA synthetase specificity, ribosomal A/P/E site codon-anticodon recognition, and release factors",
+        "Prokaryotic operon gene regulation: Inducible lac operon (repressor inactivation by allolactose) vs repressible trp operon",
+        "Epigenetic chromatin modification: Histone acetylation promoting transcription vs DNA cytosine methylation causing gene silencing",
+        "Mutational impacts on protein function: Silent vs missense vs nonsense mutations, and frameshift indels altering downstream reading frames",
+        "Biotechnology applications: Restriction enzyme RFLP mapping, PCR amplification cycles, and agarose gel electrophoresis band migration"
+      ],
+      "7": [
+        "Mechanisms of natural selection: Heritable variation, differential reproductive fitness, and fluctuating selective pressures",
+        "Hardy-Weinberg equilibrium calculations: Determining allele frequencies (p, q) and genotype frequencies (p^2, 2pq, q^2) in populations",
+        "Modes of phenotypic selection: Directional selection vs stabilizing selection vs disruptive/diversifying selection curves",
+        "Genetic drift: Population bottlenecks in cheetahs and founder effects in isolated insular populations reducing heterozygosity",
+        "Speciation barriers: Allopatric geographic isolation vs sympatric polyploidy; prezygotic vs postzygotic reproductive isolation",
+        "Phylogenetic tree interpretation: Synapomorphies, shared ancestral traits, parsimony analysis, and outgroup character polarity",
+        "Molecular clocks: Amino acid substitution rates in cytochrome c or hemoglobin measuring divergent evolutionary time",
+        "Adaptive radiation: Rapid ecological niche diversification following mass extinction events recorded in the fossil record"
+      ],
+      "8": [
+        "Trophic cascades and keystone species: Top predator removal (e.g. sea otters or wolves) triggering trophic collapse and biodiversity loss",
+        "Energy flow and thermodynamic 10% rule: Net primary productivity (NPP = GPP - R) and biomass loss across trophic levels",
+        "Population growth dynamics: Exponential growth (dN/dt = rN) vs logistic carrying capacity model (dN/dt = rN((K-N)/K))",
+        "Community interactions: Gause competitive exclusion principle, resource partitioning, mutualism, and parasite-host coevolution",
+        "Ecological succession: Primary pioneer lichen colonization on volcanic lava vs secondary succession following forest wildfires",
+        "Biogeochemical nutrient cycling: Rhizobium nitrogen fixation, nitrification, and agricultural phosphorus runoff causing eutrophication",
+        "Island biogeography theory: MacArthur-Wilson equilibrium model predicting species richness from island area and mainland distance",
+        "Anthropogenic environmental disruptions: Acid precipitation, chlorofluorocarbon ozone depletion, and invasive species proliferation"
+      ]
+    }
+  },
+  calculus: {
+    general: [
+      "Limits and Continuity: Analytical, graphical, and tabular approaches to evaluating finite and infinite limits",
+      "Derivatives: Chain, product, quotient rules, implicit differentiation, and related rates of change",
+      "Applications of Derivatives: Mean Value Theorem, First/Second Derivative Tests, concavity, and optimization",
+      "Integrals and Accumulation: Fundamental Theorem of Calculus, u-substitution, Riemann sums, and net change",
+      "Differential Equations: Slope fields, exponential/logistic modeling, and separation of variables"
+    ],
+    units: {
+      "1": [
+        "Trigonometric Squeeze / Sandwich Theorem limits involving bounding functions (e.g. g(x) <= f(x) <= h(x))",
+        "Piecewise function continuity with two unknown constants A and B requiring a system of linear equations",
+        "Radical conjugate algebraic rationalization limits as x approaches a finite value (e.g. (sqrt(ax+b) - c)/(x-d))",
+        "Horizontal and vertical asymptotes of rational/radical expressions evaluating one-sided limits and limits at infinity",
+        "Absolute value quotient expressions of the form |ax - b| / (cx - d) and one-sided limit discrepancy",
+        "Intermediate Value Theorem (IVT) applied to continuous functions on closed intervals proving root existence",
+        "Graphical discontinuity classification: Removable hole vs jump discontinuity vs infinite vertical asymptote",
+        "Tabular estimation of one-sided limits and difference quotients from discrete data points"
+      ],
+      "2": [
+        "Limit definition of the derivative: Expressing f'(a) as limit as h->0 of (f(a+h) - f(a))/h or as x->a of (f(x) - f(a))/(x-a)",
+        "Differentiability implying continuity: Analyzing functions with corners, cusps, vertical tangents, or jump discontinuities",
+        "Product and quotient rule differentiation with nested trigonometric, exponential, or logarithmic functions",
+        "Chain rule composition: Differentiating f(g(h(x))) with tabular data for functions and their derivatives",
+        "Implicit differentiation: Finding dy/dx and d^2y/dx^2 for non-function algebraic curves (e.g. ellipses, folium of Descartes)",
+        "Derivative of inverse functions: Applying (f^-1)'(a) = 1 / f'(f^-1(a)) using given function coordinates"
+      ],
+      "3": [
+        "Related rates: Geometric systems (expanding spheres, conical water tanks, receding shadows, sliding ladders)",
+        "Related rates: Pythagorean distance and angle of elevation rates of change using trigonometric relations",
+        "Local linear approximation and tangent line equations: Estimating function values and determining under/overestimates via f''(x)",
+        "L'Hopital's Rule: Evaluating indeterminate limits of forms 0/0 and infinity/infinity with rigorous precondition checks"
+      ],
+      "4": [
+        "Mean Value Theorem (MVT) and Rolle's Theorem: Verifying continuity and differentiability hypotheses to find c in (a, b)",
+        "First Derivative Test for relative extrema: Analyzing sign changes of f'(x) from critical points",
+        "Second Derivative Test and concavity: Finding inflection points and testing f''(c) at critical values",
+        "Extreme Value Theorem (EVT): Finding absolute global maximum and minimum on closed intervals checking critical points and endpoints",
+        "Graph analysis of f'(x): Connecting the features of derivative graph f' to intervals of increase/decrease and concavity of f(x)",
+        "Applied optimization: Minimizing packaging surface area, maximizing inscribed rectangular area, or economic profit functions"
+      ],
+      "5": [
+        "Particle kinematics in 1D: Position s(t), velocity v(t), acceleration a(t), and determining when speed is increasing vs decreasing",
+        "Total distance traveled vs net displacement: Computing integral of |v(t)| dt vs integral of v(t) dt",
+        "Riemann sums: Left, Right, Midpoint, and Trapezoidal approximations from irregularly spaced tabular data",
+        "Fundamental Theorem of Calculus (FTC Part 1): Differentiating accumulation functions d/dx integral from a to g(x) of f(t) dt",
+        "Fundamental Theorem of Calculus (FTC Part 2): Evaluating definite integrals via antiderivatives and net change theorem",
+        "U-substitution integration: Definite integrals requiring conversion of upper and lower integration limits"
+      ],
+      "6": [
+        "Separation of variables: Solving first-order differential equations dy/dx = f(x)g(y) with specific initial conditions",
+        "Slope fields: Sketching solution curves through given points and matching differential equations to slope patterns",
+        "Exponential growth and decay differential equations: dy/dt = ky modeling radioactive decay or Newton's law of cooling",
+        "Area between intersecting curves: Integrating with respect to x or y to find enclosed planar region area",
+        "Volume of solids of revolution: Disk and washer methods rotated around coordinate axes or horizontal/vertical lines y=k, x=k",
+        "Volume of solids with known cross sections: Perpendicular cross sections of squares, semicircles, equilateral triangles, or rectangles"
+      ],
+      "7": [
+        "BC Exclusive: Integration by parts integral u dv = uv - integral v du using tabular integration or cyclic recursion",
+        "BC Exclusive: Partial fraction decomposition for integrating rational expressions with distinct linear factors",
+        "BC Exclusive: Improper integrals with infinite limits of integration or interior infinite discontinuities",
+        "BC Exclusive: Logistic differential equation dP/dt = kP(1 - P/M): Carrying capacity M, maximum growth rate at M/2, and inflection point",
+        "BC Exclusive: Euler's method: Step-by-step numerical approximation of differential equation solutions with delta x step sizes"
+      ],
+      "8": [
+        "BC Exclusive: Parametric motion: Velocity vector (x'(t), y'(t)), speed sqrt((x')^2 + (y')^2), and total distance / arc length integral",
+        "BC Exclusive: Polar coordinates: Converting between Cartesian and polar, finding dy/dx on polar curves r = f(theta)",
+        "BC Exclusive: Polar area: Computing area bounded by one or two polar curves using integral (1/2) r^2 d(theta)",
+        "BC Exclusive: Infinite series convergence tests: Geometric, p-series, Integral test, Comparison tests, Alternating series test, Ratio test",
+        "BC Exclusive: Power series: Determining radius and interval of convergence using Ratio Test and testing interval endpoints",
+        "BC Exclusive: Taylor and Maclaurin polynomial approximations: Constructing nth-degree polynomials for e^x, sin(x), cos(x), 1/(1-x)",
+        "BC Exclusive: Taylor series error bounds: Alternating Series Error Bound and Lagrange Error Bound (Taylor's Remainder Theorem)"
+      ]
+    }
+  },
+  chemistry: {
+    general: [
+      "Atomic structure, electron configurations, and periodic trends (electronegativity, ionization energy, atomic radius)",
+      "Chemical bonding, Lewis structures, resonance, VSEPR molecular geometry, and bond angles",
+      "Intermolecular forces (LDF, dipole-dipole, hydrogen bonding) and physical state properties",
+      "Chemical reactions, net ionic equations, stoichiometry, and limiting reactant calculations",
+      "Chemical kinetics: Rate laws, reaction mechanisms, activation energy, and Arrhenius equation",
+      "Thermodynamics: Enthalpy (Delta H), entropy (Delta S), Gibbs free energy (Delta G), and spontaneity",
+      "Equilibrium: Equilibrium constants (Kc, Kp), ICE tables, and Le Chatelier's principle shifts",
+      "Acids and bases: pH calculations, weak acid/base equilibria, buffers, and titration curves",
+      "Electrochemistry: Galvanic/electrolytic cells, cell potential (E_cell), and Faraday's law"
+    ],
+    units: {
+      "1": [
+        "Photoelectron Spectroscopy (PES): Multi-peak binding energy analysis identifying subshell electron configurations",
+        "Mass spectrometry: Isotopic abundance peaks, average atomic mass calculations, and elemental identity",
+        "Periodic trends in first ionization energy: Deviations between groups 2/13 and groups 15/16 due to subshell shielding",
+        "Atomic and ionic radii trends: Effective nuclear charge (Z_eff) and electron-electron repulsion across isoelectronic series",
+        "Coulomb's Law: Lattice energy comparison in ionic compounds based on ion charge magnitudes and internuclear separation"
+      ],
+      "2": [
+        "Lewis dot structures and resonance contributors: Calculating formal charges to determine the most stable molecular structure",
+        "VSEPR molecular geometries: Predicting electron-domain vs molecular geometry for expanded octets (e.g. SF4, XeF4, BrF5)",
+        "Bond polarity and molecular dipole moments: Vector cancellation of polar bonds in symmetric vs asymmetric geometries",
+        "Hybridization models: sp, sp2, sp3 orbital hybridization and identifying sigma vs pi bonds in double and triple bonds"
+      ],
+      "3": [
+        "Intermolecular forces: Comparing boiling points and vapor pressures based on hydrogen bonding, dipole moments, and polarizability",
+        "Liquid properties: Surface tension, viscosity, and capillary action related to cohesive vs adhesive forces",
+        "Ideal gas law calculations: PV = nRT, Dalton's law of partial pressures, and gas collection over water with vapor pressure",
+        "Non-ideal gas behavior: Deviations from ideality at high pressure and low temperature (van der Waals particle volume and attractions)",
+        "Beer-Lambert Law: Spectrophotometric absorbance A = epsilon * b * c and calibration curve determination of unknown concentration"
+      ],
+      "4": [
+        "Net ionic equations: Translating molecular precipitation, acid-base neutralization, and redox reactions into net ionic form",
+        "Stoichiometry with limiting reactants: Calculating theoretical yield, percent yield, and excess reactant remaining",
+        "Redox titrations: Determining equivalence point and analyte oxidation states using oxidizing titrants (e.g. KMnO4)",
+        "Gravimetric analysis: Determining compound formula or mass percent purity via precipitate filtering, drying, and weighing"
+      ],
+      "5": [
+        "Differential rate laws: Determining reaction order (0th, 1st, 2nd) with respect to reactants from initial rate data tables",
+        "Integrated rate laws: Identifying reaction order from linear plots (time vs [A], ln[A], or 1/[A]) and computing half-life",
+        "Elementary reaction steps & mechanisms: Identifying reaction intermediates, catalysts, and matching rate laws to rate-determining step",
+        "Arrhenius equation & reaction coordinate: Activation energy Ea calculation and Maxwell-Boltzmann kinetic energy distribution shift"
+      ],
+      "6": [
+        "Calorimetry: Calculating enthalpy change Delta H using q = mc Delta T and bomb/coffee-cup calorimetry assumptions",
+        "Bond enthalpies: Estimating reaction enthalpy from sum of bonds broken minus sum of bonds formed",
+        "Hess's Law: Combining intermediate thermochemical equations to determine net reaction enthalpy Delta H_rxn",
+        "Standard enthalpies of formation: Calculating Delta H_rxn from standard enthalpies of formation Delta H_f"
+      ],
+      "7": [
+        "Equilibrium constant expressions: Formulating Kc and Kp expressions excluding pure solids and liquids",
+        "Reaction quotient Q vs equilibrium constant K: Predicting direction of net reaction shift to establish equilibrium",
+        "ICE table calculations: Determining equilibrium concentrations and partial pressures for homogeneous and heterogeneous systems",
+        "Le Chatelier's principle: Predicting system response to changes in temperature, pressure/volume, and reactant/product concentration",
+        "Solubility product constant Ksp: Calculating molar solubility and predicting precipitate formation using Q_sp vs K_sp"
+      ],
+      "8": [
+        "pH and pOH calculations: Strong acid/base complete dissociation and water autoionization constant Kw at 25\xB0C vs elevated temps",
+        "Weak acid/base equilibria: Calculating pH, percent ionization, Ka, and Kb using ICE tables and conjugate pairs",
+        "Buffer solutions: Henderson-Hasselbalch equation (pH = pKa + log([A-]/[HA])) and calculating buffer capacity",
+        "Titration curve analysis: Strong acid-strong base vs weak acid-strong base titrations; identifying half-equivalence point (pH = pKa)",
+        "Acid-base indicators: Selecting appropriate indicators based on transition range pKa and titration equivalence point pH"
+      ],
+      "9": [
+        "Entropy changes Delta S: Predicting sign of Delta S based on physical phase changes, gas mole variations, and particle dispersion",
+        "Gibbs free energy Delta G: Evaluating thermodynamic favorability via Delta G = Delta H - T Delta S and calculating crossover temperature",
+        "Thermodynamic and kinetic control: Distinguishing between thermodynamically favored products vs kinetically favored pathways",
+        "Coupled reactions: Driving thermodynamically unfavorable non-spontaneous processes using favorable ATP hydrolysis",
+        "Galvanic vs electrolytic cells: Anode oxidation, cathode reduction, electron flow, salt bridge ion migration, and standard cell potential E\xB0",
+        "Nernst equation qualitative predictions: Explaining cell potential shifts when ion concentrations deviate from 1.0 M standard state",
+        "Faraday's law of electrolysis: Calculating mass of metal plated or gas volume produced from electric current (I) and time (t)"
+      ]
+    }
+  },
+  physics: {
+    general: [
+      "1D and 2D Kinematics: Position, velocity, acceleration vectors, and projectile motion trajectories",
+      "Newton's Laws of Motion: Free-body diagrams, friction, inclined planes, and coupled multi-mass systems",
+      "Work, Energy, and Power: Work-energy theorem, conservative vs non-conservative forces, and potential energy curves",
+      "Linear Momentum & Collisions: Conservation of momentum, impulse-momentum theorem, and elastic vs inelastic collisions",
+      "Rotational Dynamics: Torque, moment of inertia, rotational kinematics, and rolling without slipping",
+      "Simple Harmonic Motion: Mass-spring systems, simple pendulums, restorative forces, and energy conservation",
+      "Universal Gravitation: Newton's law of gravitation, planetary orbital speed, Kepler's laws, and gravitational potential energy"
+    ],
+    units: {
+      "1": [
+        "Kinematic graphs: Deducing acceleration from velocity-time slope and displacement from velocity-time integral area",
+        "Projectile motion: Separating horizontal constant-velocity motion from vertical constant-acceleration gravitational free-fall",
+        "Relative velocity in two dimensions: Vector addition of swimmer in river current or airplane in crosswind"
+      ],
+      "2": [
+        "Free-body diagrams: Resolving gravitational and normal forces on angled inclined planes with static vs kinetic friction",
+        "Atwood machine systems: Calculating system acceleration and string tension for coupled masses over a pulley",
+        "Centripetal acceleration and circular dynamics: Banked curves without friction vs horizontal circular turning with friction"
+      ],
+      "3": [
+        "Work-Energy Theorem: Calculating work done by variable forces via F(x) position graph area",
+        "Conservation of mechanical energy: Systems exchanging gravitational potential energy, spring elastic potential energy, and kinetic energy",
+        "Power calculations: Instantaneous mechanical power P = F * v * cos(theta) and average power over time intervals"
+      ],
+      "4": [
+        "Impulse-momentum theorem: Determining change in momentum and average impact force from Force vs Time graph area",
+        "1D and 2D inelastic collisions: Calculating kinetic energy loss dissipated as thermal/acoustic energy during deformation",
+        "Center of mass motion: Verifying that center of mass velocity remains constant in closed systems during internal explosions"
+      ],
+      "5": [
+        "Torque equilibrium: Sum of torques equal to zero for static beams, tilted ladders, and hanging signposts",
+        "Rotational inertia (moment of inertia): Comparing angular acceleration of solid cylinder vs hollow ring down an incline",
+        "Conservation of angular momentum: Figure skater spinning model with changing radius and rotational kinetic energy increase"
+      ],
+      "6": [
+        "Simple harmonic motion of mass-spring system: Period T = 2*pi*sqrt(m/k), velocity-position phase, and kinetic-potential oscillation",
+        "Simple pendulum kinematics: Period T = 2*pi*sqrt(L/g) in small-angle approximation and effects of changing length vs mass"
+      ],
+      "7": [
+        "Newton's Law of Universal Gravitation: Calculating orbital speed v = sqrt(GM/r) for satellites in circular orbits",
+        "Gravitational potential energy U = -GMm/r and escape velocity derivation v_esc = sqrt(2GM/R) from planet surface"
+      ]
+    }
+  },
+  history: {
+    general: [
+      "Historical Causation: Distinguishing immediate proximate triggers from long-term structural causes",
+      "Continuity and Change Over Time (CCOT): Identifying enduring institutions vs transformational ideological shifts",
+      "Comparative Analysis: Contrasting political, economic, or social outcomes between different regions or movements",
+      "Historical Contextualization: Situate historical developments within broader regional, transatlantic, or global processes",
+      "Document Sourcing (HIPP): Evaluating Historical Situation, Intended Audience, Author's Purpose, and Author's Point of View"
+    ],
+    units: {
+      "1": [
+        "Pre-Columbian indigenous societies: Agricultural adaptation (maize cultivation, Pueblo irrigation, Mississippian mound building)",
+        "Columbian Exchange: Transatlantic transfer of pathogens, crops (sugar, tobacco, maize, potatoes), livestock, and demographic collapse"
+      ],
+      "2": [
+        "Colonial settlement patterns: Spanish encomienda, French fur trade alliances, vs English settler-colonialism",
+        "Transatlantic slave trade & Middle Passage: Cash-crop plantation economies, race-based chattel slavery, and African cultural resistance"
+      ],
+      "3": [
+        "Enlightenment ideology and American Revolution: Locke social contract, Common Sense, Declaration of Independence, and republicanism",
+        "Articles of Confederation vs US Constitution: Shays' Rebellion, Great Compromise, Three-Fifths Compromise, and Federalist Papers"
+      ],
+      "4": [
+        "Market Revolution: Canals, steamboats, cotton gin, textile factories, Lowell mill girls, and emerging middle-class separate spheres",
+        "Jacksonian Democracy: Expansion of white male suffrage, Nullification Crisis, Bank War, and Indian Removal Act / Trail of Tears"
+      ],
+      "5": [
+        "Manifest Destiny & Sectional Crisis: Mexican-American War, Compromise of 1850, Kansas-Nebraska Act, and Dred Scott decision",
+        "Civil War and Reconstruction: Emancipation Proclamation, 13th/14th/15th Amendments, Radical Reconstruction, and Jim Crow retrenchment"
+      ],
+      "6": [
+        "Gilded Age industrialization: Monopolies, Social Darwinism, transcontinental railroads, labor strikes, and urbanization",
+        "Populist Movement: Grange, Farmers' Alliance, Omaha Platform, silver bimetallism, and agrarian resistance to railroad rates"
+      ],
+      "7": [
+        "Progressive Era reforms: Muckrakers, settlement houses, trust busting, 17th/19th Amendments, and conservation",
+        "World War I & Great Depression: League of Nations debate, New Deal relief/recovery/reform, and Roosevelt's First 100 Days",
+        "World War II mobilization: Double V campaign, Japanese American internment, atomic bomb development, and emergence as global superpower"
+      ],
+      "8": [
+        "Cold War containment: Truman Doctrine, Marshall Plan, Korean War, Cuban Missile Crisis, and Vietnam War military quagmire",
+        "Civil Rights Movement: Brown v. Board, Montgomery Bus Boycott, Civil Rights Act of 1964, Voting Rights Act of 1965, and Black Power"
+      ],
+      "9": [
+        "Reagan Revolution: Supply-side economics (Reaganomics), deregulation, military defense spending, and end of the Cold War",
+        "Post-Cold War globalization: NAFTA, digital internet revolution, War on Terror post-9/11, and demographic shifts"
+      ]
+    }
+  },
+  psychology: {
+    general: [
+      "Empirical research methodology: Experimental design, random assignment vs random selection, independent/dependent variables",
+      "Statistical reasoning: Normal distribution, z-scores, correlation coefficients (-1.0 to +1.0), and statistical significance (p < 0.05)",
+      "APA ethical guidelines: Informed consent, protection from harm, confidentiality, and post-experimental debriefing",
+      "Biological bases of behavior: Neurotransmitter mechanics, neural impulse action potential, and brain lateralization"
+    ],
+    units: {
+      "1": [
+        "Neural communication: Resting potential (-70 mV), depolarization, all-or-none threshold, action potential, and refractory period",
+        "Neurotransmitters: Agonists vs antagonists for dopamine, serotonin, acetylcholine, GABA (inhibitory), and glutamate (excitatory)",
+        "Brain structure localization: Hippocampus (memory), amygdala (fear/emotion), prefrontal cortex (executive function), cerebellum (motor balance)"
+      ],
+      "2": [
+        "Sensation vs perception: Absolute threshold, difference threshold (Weber's Law), sensory adaptation, and signal detection theory",
+        "Visual processing: Trichromatic theory vs opponent-process theory of color, rods vs cones, and feature detectors in visual cortex",
+        "Auditory transduction: Place theory vs frequency theory of pitch perception, and conductive vs sensorineural hearing loss"
+      ],
+      "3": [
+        "Classical conditioning: Unconditioned stimulus (UCS), unconditioned response (UCR), conditioned stimulus (CS), extinction, and spontaneous recovery",
+        "Operant conditioning: Positive vs negative reinforcement, positive vs negative punishment, and intermittent reinforcement schedules (FR, VR, FI, VI)",
+        "Social-cognitive learning: Bandura Bobo doll observational modeling, vicarious reinforcement, and mirror neuron function"
+      ],
+      "4": [
+        "Memory storage stages: Atkinson-Shiffrin model (sensory, short-term/working, long-term), chunking, and serial position effect",
+        "Forgetting & retrieval failures: Proactive interference vs retroactive interference, retrograde vs anterograde amnesia (H.M. case study)",
+        "Cognitive biases & problem solving: Availability heuristic, representativeness heuristic, confirmation bias, and functional fixedness"
+      ],
+      "5": [
+        "Developmental psychology: Piaget stages of cognitive development (sensorimotor, preoperational, concrete, formal operational)",
+        "Attachment theory: Ainsworth Strange Situation (secure, anxious-ambivalent, avoidant attachment) and Harlow rhesus monkey contact comfort",
+        "Social psychology: Fundamental attribution error, cognitive dissonance (Festinger), Milgram obedience, and bystander effect / diffusion of responsibility"
+      ]
+    }
+  },
+  economics: {
+    general: [
+      "Marginal analysis: Marginal benefit vs marginal cost optimization and rational decision making",
+      "Supply and demand dynamics: Shifts in curves vs movements along curves, and market clearing equilibrium price/quantity",
+      "Elasticity measures: Price elasticity of demand/supply, cross-price elasticity, income elasticity, and total revenue test",
+      "Government interventions: Price ceilings (shortages), price floors (surpluses), excise taxes, and deadweight loss calculation",
+      "Macroeconomic indicators: Real vs nominal GDP, CPI inflation rates, unemployment categories (frictional, structural, cyclical)",
+      "Aggregate Demand / Aggregate Supply (AD-AS): Short-run vs long-run macroeconomic equilibrium, recessionary vs inflationary gaps",
+      "Fiscal and monetary policy: Government spending/tax multipliers, Federal Reserve tools (reserve requirements, discount rate, open market operations)"
+    ],
+    units: {
+      "1": [
+        "Production Possibilities Curve (PPC): Constant vs increasing opportunity costs, economic growth shifts, and productive vs allocative efficiency",
+        "Comparative advantage and terms of trade: Output vs input method calculations and mutually beneficial trade exchange ratios"
+      ],
+      "2": [
+        "Consumer and producer surplus: Calculating deadweight loss from per-unit excise taxes and tariff trade restrictions",
+        "Cross-price elasticity (substitutes > 0 vs complements < 0) and income elasticity (normal goods > 0 vs inferior goods < 0)"
+      ],
+      "3": [
+        "Short-run production and cost curves: Law of diminishing marginal returns, marginal product curve, MC, ATC, AVC, and AFC curves",
+        "Perfect competition market structure: Price taker P = MR = D = AR, profit maximization MR = MC, shut-down rule (P < AVC), and zero economic profit in long run"
+      ],
+      "4": [
+        "Monopoly market structure: Downward-sloping demand, MR < P, profit maximization, deadweight loss, and natural monopoly regulation",
+        "Monopolistic competition & Oligopoly: Product differentiation, excess capacity, game theory payoff matrices, dominant strategy, and Nash equilibrium"
+      ],
+      "5": [
+        "Macro AD-AS modeling: Shifts in Aggregate Demand and Short-Run Aggregate Supply, stagflation, and long-run self-correction",
+        "Money market and Loanable funds market: Federal funds interest rate determination, open market operations, and crowding-out effect"
+      ]
+    }
+  }
+};
+function getGranularSubjectArchetypes(subject, unitOrTopic, count) {
+  const s = (subject || "").toLowerCase();
+  const u = (unitOrTopic || "").toLowerCase();
+  let bundle = AP_SUBJECT_ARCHETYPES.calculus;
+  if (s.includes("biology")) bundle = AP_SUBJECT_ARCHETYPES.biology;
+  else if (s.includes("chemistry")) bundle = AP_SUBJECT_ARCHETYPES.chemistry;
+  else if (s.includes("physics")) bundle = AP_SUBJECT_ARCHETYPES.physics;
+  else if (s.includes("history") || s.includes("apush")) bundle = AP_SUBJECT_ARCHETYPES.history;
+  else if (s.includes("psych")) bundle = AP_SUBJECT_ARCHETYPES.psychology;
+  else if (s.includes("econ")) bundle = AP_SUBJECT_ARCHETYPES.economics;
+  else if (s.includes("calculus")) bundle = AP_SUBJECT_ARCHETYPES.calculus;
+  const unitMatch = u.match(/(?:unit|period|chapter|u|p)\s*([0-9]+)/i);
+  const detectedUnit = unitMatch ? unitMatch[1] : null;
+  let candidatePool = [];
+  if (detectedUnit && bundle.units[detectedUnit] && bundle.units[detectedUnit].length > 0) {
+    candidatePool = [...bundle.units[detectedUnit]];
+    if (candidatePool.length < count) {
+      candidatePool.push(...bundle.general);
+    }
+  } else {
+    const allUnitItems = Object.values(bundle.units).flat();
+    candidatePool = [...allUnitItems, ...bundle.general];
+  }
+  const shuffled = [...candidatePool];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, count);
+}
+
+// server.ts
 import_dotenv.default.config();
 process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
@@ -95,6 +543,62 @@ app.use((req, res, next) => {
   next();
 });
 var summaryCache = /* @__PURE__ */ new Map();
+function repairJsonString(raw) {
+  if (!raw) return "";
+  let str = raw.trim();
+  str = str.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+  let inString = false;
+  let escaped = false;
+  const fixedChars = [];
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    if (inString) {
+      if (escaped) {
+        const nextChar = str[i + 1] || "";
+        const isFollowedByLetter = /[a-zA-Z]/.test(nextChar);
+        if (/[\\"\/]/.test(ch)) {
+          fixedChars.push(ch);
+        } else if (/[bfnrt]/.test(ch) && !isFollowedByLetter) {
+          fixedChars.push(ch);
+        } else if (ch === "u") {
+          const hex = str.slice(i + 1, i + 5);
+          if (/^[0-9a-fA-F]{4}$/.test(hex)) {
+            fixedChars.push(ch);
+          } else {
+            fixedChars[fixedChars.length - 1] = "\\\\";
+            fixedChars.push(ch);
+          }
+        } else {
+          fixedChars[fixedChars.length - 1] = "\\\\";
+          fixedChars.push(ch);
+        }
+        escaped = false;
+      } else if (ch === "\\") {
+        escaped = true;
+        fixedChars.push(ch);
+      } else if (ch === '"') {
+        inString = false;
+        fixedChars.push(ch);
+      } else if (ch === "\n") {
+        fixedChars.push("\\n");
+      } else if (ch === "\r") {
+        fixedChars.push("\\r");
+      } else if (ch === "	") {
+        fixedChars.push("\\t");
+      } else {
+        fixedChars.push(ch);
+      }
+    } else {
+      if (ch === '"') {
+        inString = true;
+      }
+      fixedChars.push(ch);
+    }
+  }
+  let result = fixedChars.join("");
+  result = result.replace(/,\s*([}\]])/g, "$1");
+  return result;
+}
 function safeParseJSON(text, forceType = "none") {
   if (!text) return forceType === "array" ? [] : forceType === "object" ? {} : null;
   const cleaned = text.trim();
@@ -120,6 +624,9 @@ function safeParseJSON(text, forceType = "none") {
     result = parse(extracted);
     if (result) return result;
   }
+  const repaired = repairJsonString(extracted);
+  result = parse(repaired);
+  if (result) return result;
   const objStart = extracted.indexOf("{");
   const objEnd = extracted.lastIndexOf("}");
   const arrStart = extracted.indexOf("[");
@@ -127,12 +634,30 @@ function safeParseJSON(text, forceType = "none") {
   const hasObj = objStart !== -1 && objEnd !== -1 && objEnd > objStart;
   const hasArr = arrStart !== -1 && arrEnd !== -1 && arrEnd > arrStart;
   if (hasObj && (!hasArr || objStart < arrStart)) {
-    result = parse(extracted.slice(objStart, objEnd + 1));
+    const slice = extracted.slice(objStart, objEnd + 1);
+    result = parse(slice) || parse(repairJsonString(slice));
     if (result) return result;
   }
   if (hasArr) {
-    result = parse(extracted.slice(arrStart, arrEnd + 1));
+    const slice = extracted.slice(arrStart, arrEnd + 1);
+    result = parse(slice) || parse(repairJsonString(slice));
     if (result) return result;
+  }
+  try {
+    let closed = repairJsonString(extracted);
+    const openBraces = (closed.match(/\{/g) || []).length;
+    const closeBraces = (closed.match(/\}/g) || []).length;
+    const openBrackets = (closed.match(/\[/g) || []).length;
+    const closeBrackets = (closed.match(/\]/g) || []).length;
+    if (openBraces > closeBraces) {
+      closed += "}".repeat(openBraces - closeBraces);
+    }
+    if (openBrackets > closeBrackets) {
+      closed += "]".repeat(openBrackets - closeBrackets);
+    }
+    result = parse(closed);
+    if (result) return result;
+  } catch (_) {
   }
   if (forceType === "array") return [];
   if (forceType === "object") return {};
@@ -417,25 +942,20 @@ ${text}`.trim() },
         ...parts.slice(1)
       ];
     }
-    if (!clonedParams.config.thinkingConfig) {
-      clonedParams.config.thinkingConfig = { thinkingBudget: 0 };
-    }
   }
   const query = extractUserQuery(clonedParams);
   const sysInstr = clonedParams?.config?.systemInstruction?.parts?.[0]?.text || "";
   const respMime = clonedParams?.config?.responseMimeType || "";
   const isAudioModel = isTtsModel || !!clonedParams.config?.speechConfig || !!clonedParams.config?.responseModalities?.includes(import_genai.Modality.AUDIO);
   const isSpecialtyModel = isAudioModel || params.model && (params.model.includes("image") || params.model.includes("video") || params.model.includes("veo") || params.model.includes("lyria") || params.model.includes("clip"));
-  let requestedModel = isAudioModel ? params.model || "gemini-2.5-flash" : params.model;
-  let modelsToTry = isAudioModel ? [requestedModel, "gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-exp"].filter(Boolean) : isSpecialtyModel ? [requestedModel] : [
-    requestedModel || "gemini-2.5-flash",
-    "gemini-2.5-flash",
-    "gemini-2.0-flash",
-    "gemini-1.5-flash",
-    "gemini-2.0-flash-lite",
-    "gemini-2.5-pro",
-    "gemini-1.5-pro",
-    "gemini-3.1-flash-lite"
+  let requestedModel = isAudioModel ? params.model || "gemini-3.5-flash-lite" : params.model || "gemini-3.5-flash-lite";
+  if (requestedModel && (requestedModel.includes("2.5") || requestedModel.includes("2.0") || requestedModel.includes("1.5"))) {
+    requestedModel = "gemini-3.5-flash-lite";
+  }
+  let modelsToTry = isAudioModel ? [requestedModel, "gemini-3.5-flash-lite", "gemini-3.6-flash"].filter(Boolean) : isSpecialtyModel ? [requestedModel] : [
+    requestedModel,
+    "gemini-3.5-flash-lite",
+    "gemini-3.6-flash"
   ].filter((value, index, self) => self.indexOf(value) === index);
   if (!isSpecialtyModel) {
     const now = Date.now();
@@ -507,13 +1027,14 @@ ${text}`.trim() },
             continue;
           }
           const isHardQuotaLimit = errorStr.includes("quota") || errorStr.includes("resource_exhausted") || errorStr.includes("503") || errorStr.includes("unavailable") || errorStr.includes("overloaded") || errorStr.includes("demand") || errorStr.includes("timeout") || errorStr.includes("not_found") || errorStr.includes("404") || errorStr.includes("429") && !errorStr.includes("overloaded");
-          if (isHardQuotaLimit) {
-            console.warn(`[ai-client] Model ${model} is unavailable, overloaded, or hit quota. Skipping retries for this model and instantly routing to fallback...`);
+          const isModelNotFound = errorStr.includes("not_found") || errorStr.includes("404");
+          if (isModelNotFound) {
+            console.warn(`[ai-client] Model ${model} is deprecated or not found (404). Skipping retries...`);
             break;
           }
           if (attempt < retries) {
-            const waitTime = delay * Math.pow(2, attempt - 1);
-            console.warn(`[ai-client] Model ${model} overloaded or rate-limited. Retrying in ${waitTime}ms...`);
+            const waitTime = Math.max(delay * Math.pow(2, attempt - 1), 1200);
+            console.warn(`[ai-client] Model ${model} hit transient constraint (${errorStr.slice(0, 60)}). Retrying attempt ${attempt + 1}/${retries} in ${waitTime}ms...`);
             await new Promise((resolve) => setTimeout(resolve, waitTime));
             continue;
           } else {
@@ -2459,28 +2980,31 @@ Use this exact JSON structure:
 {
   "questions": [
     {
-      "question": "Part A: State Le Chatelier's Principle regarding dynamic chemical equilibrium.\\n\\nPart B: Predict the directional shift when temperature is increased in an exothermic synthesis reaction.",
-      "expectedAnswer": "Part A: Le Chatelier's Principle states that when a system at chemical equilibrium is disturbed by a change in temperature, pressure, or concentration, the system shifts in a direction that opposes the disturbance to re-establish equilibrium.\\n\\nPart B: In an exothermic reaction ($\\\\Delta H < 0$), heat is released as a product. Raising temperature adds heat, causing the equilibrium to shift in the reverse (endothermic) direction toward reactants, decreasing product yield.",
+      "question": "Part A: Detail the foundational theoretical principles governing the target topic.\\n\\nPart B: Predict and mathematically/conceptually justify the outcome when conditions or key parameters are altered.",
+      "expectedAnswer": "Part A: Exemplary comprehensive explanation with precise terminology and formulas in LaTeX ($...$).\\n\\nPart B: Rigorous multi-step justification explaining mechanisms and causal relationships.",
       "keyRubricPoints": [
-        "Accurate statement of Le Chatelier's Principle",
-        "Heat treated as product in exothermic reaction ($\\\\Delta H < 0$)",
-        "Shift towards reverse / reactant direction",
-        "Decrease in product concentration and equilibrium constant $K_{eq}$"
+        "Accurate identification and definition of core mechanisms",
+        "Correct mathematical/scientific equations or proof steps",
+        "Clear causal reasoning addressing boundary conditions"
       ]
     }
   ]
 }`;
+    const avoidList = Array.isArray(req.body.avoidPrompts) ? req.body.avoidPrompts.filter(Boolean).slice(0, 10) : [];
+    const avoidDirective = avoidList.length > 0 ? `
+STRICT ANTI-REPETITION: Do NOT generate questions similar to these previously answered prompts:
+${avoidList.map((p, i) => `  [${i + 1}] ${p.slice(0, 100)}`).join("\n")}` : "";
     let generatedText = "";
     try {
       const response = await safeGenerateContent({
         gradeLevel,
         model: "gemini-3.5-flash-lite",
-        contents: { parts: [{ text: `Topic: ${topicText}. Grade Level: ${gradeLevel || "11th Grade (Junior)"}. Academic Stream: ${stream || "STEM / Engineering"}. Count: Generate exactly ${requestedCount} questions with expected answers and rubrics now.` }] },
+        contents: { parts: [{ text: `Topic: ${topicText}. Grade Level: ${gradeLevel || "11th Grade (Junior)"}. Academic Stream: ${stream || "STEM / Engineering"}. Count: Generate exactly ${requestedCount} unique questions with expected answers and rubrics now.${avoidDirective}` }] },
         config: {
           systemInstruction: { parts: [{ text: systemInstruction }] },
           responseMimeType: "application/json",
           maxOutputTokens: 8192,
-          temperature: 0.2
+          temperature: 0.75
         }
       });
       generatedText = response.text || "";
@@ -2614,14 +3138,17 @@ function getCollegeBoardSubjectGuidelines(subject, questionType) {
   if (s.includes("biology")) {
     if (questionType === "objective") {
       return `AP BIOLOGY EXAM SPECIFICATIONS (College Board CED):
-- Stimulus-Based Design: Base questions on realistic biological experiments, data tables, gel electrophoresis diagrams, pedigrees, cladograms, or enzyme kinetics graphs.
+- Stimulus-Based Design: Base questions on authentic biological investigations (e.g. cellular respiration respirometers, gel electrophoresis band patterns, spectrophotometric enzyme curves, water potential potato cylinders, pedigree tracking, or Hardy-Weinberg population data).
+- Visual Diagrams & Curves (MANDATORY): For Cellular Energetics (Unit 3), Cell Structure (Unit 2), Genetics (Unit 5), or Ecology (Unit 8), generate the complete SVG diagram in "diagramSvg" (viewBox="0 0 400 220") and specify "diagramType".
+- Diverse Organisms & Real Biological Systems: NEVER use generic placeholders like 'Enzyme X' or repeat identical experimental scenarios. Vary the organism (e.g. yeast, spinach, bovine liver catalase, E. coli, marine phytoplankton, Drosophila, Arabidopsis thaliana) and real enzymes (catalase, pepsin, salivary amylase, RuBisCO, ATP synthase, cytochrome c oxidase).
 - Core Themes: Chemistry of life, cell structure & energetics (photosynthesis/respiration), cell communication & cell cycle, heredity & genetics, gene expression & regulation, natural selection, ecology.
-- Question Style: Questions must require students to analyze data, make scientific claims, identify controls, or predict the biological consequence of a mutation or inhibitor. Avoid simple rote memorization.`;
+- Question Style: Questions must require students to analyze experimental data, make scientific claims, identify controls, or predict the biological consequence of an inhibitor or mutation.`;
     } else {
       return `AP BIOLOGY FREE RESPONSE STANDARDS (College Board CED):
 - Formats:
   1. Long FRQ (8-10 points): Interpreting & Evaluating Experimental Results. Includes experimental design, specifying independent/dependent variables, graphing with standard error bars (\xB12 SEM), calculating means, and Null Hypothesis / Chi-Square testing.
   2. Short FRQ (4 points): Scientific Investigation (identifying negative/positive controls), Conceptual Analysis (predicting effects of disruption/mutation), or Model Analysis (analyzing cell signaling cascades).
+- Visual Diagrams & Curves (MANDATORY): For Cellular Energetics, Genetics (pedigrees), or Ecology, generate the complete SVG graph in "diagramSvg" (viewBox="0 0 400 220") with labeled axes, data points, and appropriate "diagramType". NEVER use generic 'Enzyme X' - use real biological enzymes and realistic experimental parameters.
 - Rubric: Precise point allocation (+1 pt for identifying control, +1 pt for calculating rate, +1 pt for biological justification).`;
     }
   }
@@ -2743,9 +3270,13 @@ function getCollegeBoardSubjectGuidelines(subject, questionType) {
   }
   return `College Board AP Course and Exam Description standards for ${subject}. High rigor, analytical thinking, stimulus-based.`;
 }
+function getDynamicTopicVariation(subject, unitOrTopic, count) {
+  const archetypes = getGranularSubjectArchetypes(subject, unitOrTopic, count);
+  return archetypes.map((arch, idx) => `  - Question ${idx + 1} Target Archetype: ${arch}`).join("\n");
+}
 app.post("/api/generate-ap-questions", async (req, res) => {
   try {
-    const { subject, unit, topic, questionType, count, gradeLevel } = req.body;
+    const { subject, unit, topic, questionType, count, gradeLevel, avoidPrompts, randomSeed } = req.body;
     if (!subject) {
       return res.status(400).json({ error: "Missing AP Subject" });
     }
@@ -2755,6 +3286,28 @@ app.post("/api/generate-ap-questions", async (req, res) => {
     const subjectGuidelines = getCollegeBoardSubjectGuidelines(subject, type);
     const s = (subject || "").toLowerCase();
     const g = (gradeLevel || "").toLowerCase();
+    const dynamicArchetypePlan = getDynamicTopicVariation(subject, targetTopic, requestedCount);
+    let antiRepetitionDirective = `
+CRITICAL QUESTION DIVERSITY & NO-REPEAT DIRECTIVE:
+- EVERY QUESTION MUST BE COMPLETELY UNIQUE, NOVEL, AND ORIGINAL.
+- DO NOT repeat classic stock textbook examples (e.g. do NOT use standard functions like (x^2-4)/(x-2), (sin(3x)tan(2x))/x^2, or standard textbook table values).
+- Invent fresh scenarios, diverse function types (rational, radical, trigonometric, exponential, piecewise, logarithmic), distinct variables, and varied real-world/experimental contexts.
+- Each of the ${requestedCount} questions must target a DIFFERENT sub-topic or analytical skill from the AP Course and Exam Description (CED).
+
+MANDATORY QUESTION VARIATION BLUEPRINT FOR THIS SESSION:
+${dynamicArchetypePlan}
+Ensure every question adheres to its designated archetype and uses distinct functions, numbers, and contexts.`;
+    if (Array.isArray(avoidPrompts) && avoidPrompts.length > 0) {
+      const cleanAvoid = avoidPrompts.filter((p) => typeof p === "string" && p.trim()).slice(0, 12).map((p, idx) => `  [PREVIOUS ${idx + 1}]: "${p.replace(/\n+/g, " ").slice(0, 140)}"`).join("\n");
+      if (cleanAvoid) {
+        antiRepetitionDirective += `
+
+STRICT PREVIOUS QUESTIONS AVOIDANCE (CRITICAL):
+The student was previously tested on the following problems. You MUST NOT repeat, closely adapt, or generate questions similar to them:
+${cleanAvoid}
+Ensure your questions test different concepts, different functions, different numbers, and different problem archetypes.`;
+      }
+    }
     let gradeCalibrationInstruction = "";
     if (g.includes("9th") || g.includes("freshman") || s.includes("human geography") || s.includes("aphg") || s.includes("principles") || s.includes("csp")) {
       gradeCalibrationInstruction = `
@@ -2801,13 +3354,41 @@ CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
    - Before outputting options, you MUST solve the question step-by-step to arrive at the definite, mathematically and scientifically verified answer.
    - EXACTLY ONE OF THE 4 OPTIONS (A, B, C, or D) MUST BE 100% CORRECT. Under no circumstances should all 4 options be wrong, and under no circumstances should the true answer be missing from the options list!
    - "correctAnswer" MUST BE VERBATIM IDENTICAL: The "correctAnswer" property MUST be an exact character-for-character match to the corresponding option in the "options" array.
-3. AUTHENTIC 4 OPTIONS: Exactly 4 options labeled "A) ...", "B) ...", "C) ...", "D) ...". Distractors must represent plausible, authentic student misconceptions, calculation slips, or conceptual confusions (not random nonsense).
-4. STIMULUS-BASED WHEN APPLICABLE: Provide real AP-style contextual stimulus (e.g. data tables, experimental setups, code segments, or historical/rhetorical excerpts) if appropriate for the subject.
-5. DETAILED AP EXPLANATION: Explain WHY the correct option is right with step-by-step logic, and explicitly break down why each distractor is incorrect. Use LaTeX ($...$ or $$...$$) for mathematical expressions or chemical reactions.
+4. STIMULUS-BASED WHEN APPLICABLE: Provide real AP-style contextual stimulus (e.g. data tables, experimental setups, code segments, or historical/rhetorical excerpts).
+5. DETAILED AP EXPLANATION: Explain WHY the correct option is right with step-by-step logic, and explicitly break down why each distractor is incorrect.
 6. AP EXAM SKILL/UNIT TAG: Label the relevant AP Unit or Skill practiced.
+7. MANDATORY COLLEGE BOARD SVG DIAGRAMS & GRAPHS (CRITICAL):
+   For all visual or graphical subjects and units:
+   - AP Calculus (Limits & Continuity, piecewise curves with open/closed circle holes, derivative graphs of f'(x), tangent lines, Riemann sums, slope fields).
+   - AP Physics (kinematics v-t/x-t graphs, Free-Body Force Diagrams with labeled arrows, projectile paths, circuit schematics).
+   - AP Chemistry (reaction coordinate energy profiles with Delta H & Ea, acid-base titration curves, PES spectra).
+   - AP Biology (pedigree charts, enzyme kinetics curves, cell signaling feedback loops).
+   - AP Economics (supply and demand equilibrium shifts, PPC, Phillips curves).
+   
+   CRITICAL REQUIREMENT:
+   For these subjects and units, you MUST formulate questions based on visual graph analysis, and you MUST provide the complete, standalone SVG diagram in "diagramSvg" (viewBox='0 0 400 220') and specify "diagramType".
+   The question prompt MUST refer to the visual diagram naturally using varied lead-ins (e.g. "In the investigation depicted in the accompanying figure...", "Based on the experimental data plotted in the graph above...", "A student analyzes the model shown in the figure...", "According to the diagram above..."). NEVER begin every question with the exact same repetitive formulaic words.
+   
+   SVG TECHNICAL REQUIREMENTS:
+   - Root tag: <svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>...</svg>
+   - Dark contrast container: <rect width='400' height='220' fill='#09090b' rx='12' stroke='#27272a' stroke-width='1'/>
+   - Coordinate Axes: stroke='#94a3b8' stroke-width='2' with arrows and labels (e.g. 'x', 'y = f(x)').
+   - Grid lines: stroke='#1e293b' stroke-dasharray='2,2'.
+   - Calculus Discontinuities / Holes: Use hollow circles for removable holes (<circle cx='...' cy='...' r='4.5' fill='#09090b' stroke='#38bdf8' stroke-width='2.5'/>) and solid dots for defined points (<circle cx='...' cy='...' r='4.5' fill='#38bdf8'/>).
+   - Curves / Shapes: High-contrast stroke='#38bdf8' or stroke='#818cf8' stroke-width='2.5' fill='none'.
+   - Text labels: fill='#f8fafc' font-size='12' font-family='sans-serif' font-weight='bold'.
+   - Only set diagramSvg to "" if the subject is purely literary/historical (e.g. AP English Lit, AP History).
 
 ${subjectGuidelines}
 ${gradeCalibrationInstruction}
+${antiRepetitionDirective}
+
+CRITICAL MATH & LATEX FORMATTING:
+- Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for block.
+- For piecewise functions, ALWAYS use clean LaTeX:
+  $f(x) = \\begin{cases} g(x) & \\text{for } x < c \\\\ h(x) & \\text{for } x \\ge c \\end{cases}$
+  NEVER write raw unescaped pseudo-code like 'f(x) = { ... }' or '<=' or '->' which breaks math parsers!
+- Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\to, \\\\infty, \\\\begin{cases}, \\\\end{cases}.
 
 STRICT JSON OUTPUT:
 Return ONLY a valid JSON array of objects with this exact structure:
@@ -2816,6 +3397,8 @@ Return ONLY a valid JSON array of objects with this exact structure:
     "id": 1,
     "question": "Question text with clear formatting...",
     "stimulus": "Optional contextual text, data table, or scenario if applicable (or empty string)",
+    "diagramSvg": "<svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg'>...</svg>",
+    "diagramType": "piecewise_graph",
     "options": [
       "A) Option 1",
       "B) Option 2",
@@ -2829,15 +3412,19 @@ Return ONLY a valid JSON array of objects with this exact structure:
 ]`;
       let generatedText = "";
       try {
+        const variationSeed = randomSeed || `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
         const response = await safeGenerateContent({
           gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-          model: "gemini-2.5-flash",
-          contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Generate exactly ${requestedCount} authentic College Board AP Exam Multiple Choice Questions (MCQs) now adhering to official CED specifications.` }] },
+          model: "gemini-3.5-flash-lite",
+          contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Session Variation Seed: ${variationSeed}.
+Generate exactly ${requestedCount} authentic College Board AP Exam Multiple Choice Questions (MCQs).
+IMPORTANT: Ensure 100% diversity and fresh non-repetitive problems with unique functions, numbers, and scenarios. Do not repeat standard textbook clich\xE9s!
+If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or AP Statistics, generate authentic graph/diagram-based questions and provide the complete College Board standard SVG in "diagramSvg" with coordinate axes, curves, and labeled points so the student analyzes the visual graphic!` }] },
           config: {
             systemInstruction: { parts: [{ text: systemInstruction }] },
             responseMimeType: "application/json",
-            temperature: 0.2,
-            thinkingConfig: { thinkingBudget: 0 }
+            maxOutputTokens: 8192,
+            temperature: 0.75
           }
         });
         generatedText = response.text || "";
@@ -2845,7 +3432,7 @@ Return ONLY a valid JSON array of objects with this exact structure:
         console.warn("API Error during AP objective questions generation:", apiError);
         throw apiError;
       }
-      const parsed = safeParseJSON(generatedText, "none");
+      const parsed = safeParseJSON(generatedText, "array");
       let questionsList = [];
       if (Array.isArray(parsed)) {
         questionsList = parsed;
@@ -2856,6 +3443,24 @@ Return ONLY a valid JSON array of objects with this exact structure:
         if (found) questionsList = found;
       }
       if (questionsList.length > 0) {
+        questionsList = questionsList.map((q, idx) => {
+          if (typeof q === "string") {
+            return {
+              id: idx + 1,
+              title: `Question ${idx + 1}`,
+              prompt: q,
+              options: ["A) Option A", "B) Option B", "C) Option C", "D) Option D"],
+              correctAnswer: "A",
+              explanation: ""
+            };
+          }
+          return {
+            ...q,
+            id: q.id || idx + 1,
+            title: q.title || `Question ${idx + 1}`,
+            prompt: q.prompt || q.question || q.text || q.scenario || ""
+          };
+        });
         return res.json({ questions: questionsList, questionType: "objective", subject, count: questionsList.length });
       }
       throw new Error("Failed to generate a valid AP objective questions structure.");
@@ -2870,9 +3475,37 @@ CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
 3. OFFICIAL SCORING GUIDELINES & POINT BREAKDOWN: Provide a precise, point-by-point College Board Reader rubric in an array 'scoringRubric'. Each item should state what earns the point (e.g., '+1 pt for applying product rule', '+1 pt for correctly stating units', '+1 pt for citing historical document').
 4. HIGH-SCORING MODEL ANSWER: Provide a complete, maximum-points exemplary student response in 'modelAnswer' addressing each part (a), (b), (c) with clear steps and LaTeX formatting.
 5. TOTAL POINTS: Total point value for this problem (e.g. 9 points for Calculus/CSA, 10 points for Chem, 7 points for DBQ, 4 points for Short FRQ).
+6. MANDATORY COLLEGE BOARD SVG DIAGRAMS & GRAPHS (CRITICAL):
+   For all graphical, experimental, and visual subjects/units:
+   - AP Calculus (Limits & Continuity, piecewise functions with holes/discontinuities, derivatives, tangent lines, graphs of f'(x), Riemann sum areas, slope fields).
+   - AP Physics (kinematics v-t/x-t graphs, Free-Body Force Diagrams with labeled force vectors, projectile trajectories, electric circuit schematics).
+   - AP Chemistry (reaction coordinate energy profiles with Delta H & Ea, acid-base titration curves with equivalence point, PES spectra).
+   - AP Biology (pedigree charts, enzyme kinetics curves, cell signaling feedback loops).
+   - AP Micro/Macroeconomics (supply & demand equilibrium shifts, PPC, Phillips curves).
+   - AP Statistics (box plots with 5-number summary & outliers, normal distribution bell curves).
+
+   The question prompt MUST refer to the visual diagram naturally using varied lead-ins (e.g. "In the experiment depicted in the accompanying figure...", "Based on the plotted data in the graph above...", "A researcher examines the model shown in the figure...", "According to the diagram provided..."). NEVER begin every question with the exact same repetitive formulaic words.
+   
+   SVG TECHNICAL REQUIREMENTS:
+   - Root tag: <svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>...</svg>
+   - Dark contrast container: <rect width='400' height='220' fill='#09090b' rx='12' stroke='#27272a' stroke-width='1'/>
+   - Coordinate Axes: stroke='#94a3b8' stroke-width='2' with arrowheads and axis labels (e.g. 'x', 'y = f(x)').
+   - Grid lines: stroke='#1e293b' stroke-dasharray='2,2'.
+   - Calculus Discontinuities / Holes: Use hollow circles for removable holes (<circle cx='...' cy='...' r='4.5' fill='#09090b' stroke='#38bdf8' stroke-width='2.5'/>) and solid dots for defined points (<circle cx='...' cy='...' r='4.5' fill='#38bdf8'/>).
+   - Curves / Shapes: High-contrast stroke='#38bdf8' or stroke='#818cf8' stroke-width='2.5' fill='none'.
+   - Text labels: fill='#f8fafc' font-size='12' font-family='sans-serif' font-weight='bold'.
+   - Only set diagramSvg to "" if the subject is purely literary/historical (e.g. AP English Lit, AP History).
 
 ${subjectGuidelines}
 ${gradeCalibrationInstruction}
+${antiRepetitionDirective}
+
+CRITICAL MATH & LATEX FORMATTING:
+- Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for block.
+- For piecewise functions, ALWAYS use clean LaTeX:
+  $f(x) = \\begin{cases} g(x) & \\text{for } x < c \\\\ h(x) & \\text{for } x \\ge c \\end{cases}$
+  NEVER write raw unescaped pseudo-code like 'f(x) = { ... }' or '<=' or '->' which breaks math parsers!
+- Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\to, \\\\infty, \\\\begin{cases}, \\\\end{cases}.
 
 STRICT JSON OUTPUT:
 Return ONLY a valid JSON object with key "questions" containing an array of objects:
@@ -2881,7 +3514,9 @@ Return ONLY a valid JSON object with key "questions" containing an array of obje
     {
       "id": 1,
       "title": "FRQ 1: Multi-Part Analytical Problem",
-      "prompt": "Scenario/stimulus followed by:\\n\\n(a) Sub-part A prompt...\\n\\n(b) Sub-part B prompt...\\n\\n(c) Sub-part C prompt...",
+      "prompt": "Scenario/stimulus referencing the diagram above followed by:\\n\\n(a) Sub-part A prompt...\\n\\n(b) Sub-part B prompt...\\n\\n(c) Sub-part C prompt...",
+      "diagramSvg": "<svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg'>...</svg>",
+      "diagramType": "piecewise_graph",
       "totalPoints": 9,
       "modelAnswer": "(a) Full exemplary solution for part a...\\n\\n(b) Full exemplary solution for part b...\\n\\n(c) Full exemplary solution for part c...",
       "scoringRubric": [
@@ -2896,16 +3531,19 @@ Return ONLY a valid JSON object with key "questions" containing an array of obje
 NEVER include multiple-choice options A/B/C/D in subjective output.`;
       let generatedText = "";
       try {
+        const variationSeed = randomSeed || `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
         const response = await safeGenerateContent({
           gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-          model: "gemini-2.5-flash",
-          contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Generate exactly ${requestedCount} authentic College Board AP Exam Free Response / Subjective Questions with official scoring rubrics and model answers now.` }] },
+          model: "gemini-3.5-flash-lite",
+          contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Session Variation Seed: ${variationSeed}.
+Generate exactly ${requestedCount} authentic College Board AP Exam Free Response / Subjective Questions.
+IMPORTANT: Ensure 100% diversity and fresh non-repetitive problems with unique functions, numbers, and scenarios. Do not repeat standard textbook clich\xE9s!
+If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or AP Statistics, formulate authentic graph/diagram-based questions and provide the complete College Board standard SVG in "diagramSvg" with coordinate axes, curves, and labeled points so the student analyzes the visual graphic!` }] },
           config: {
             systemInstruction: { parts: [{ text: systemInstruction }] },
             responseMimeType: "application/json",
             maxOutputTokens: 8192,
-            temperature: 0.2,
-            thinkingConfig: { thinkingBudget: 0 }
+            temperature: 0.75
           }
         });
         generatedText = response.text || "";
@@ -2913,7 +3551,7 @@ NEVER include multiple-choice options A/B/C/D in subjective output.`;
         console.warn("API Error during AP subjective questions generation:", apiError);
         throw apiError;
       }
-      const parsed = safeParseJSON(generatedText, "none");
+      const parsed = safeParseJSON(generatedText, "object");
       let questionsList = [];
       if (parsed && Array.isArray(parsed.questions)) {
         questionsList = parsed.questions;
@@ -2924,6 +3562,25 @@ NEVER include multiple-choice options A/B/C/D in subjective output.`;
         if (found) questionsList = found;
       }
       if (questionsList.length > 0) {
+        questionsList = questionsList.map((q, idx) => {
+          if (typeof q === "string") {
+            return {
+              id: idx + 1,
+              title: `FRQ ${idx + 1}: Multi-Part Analytical Problem`,
+              prompt: q,
+              diagramSvg: "",
+              diagramType: "none",
+              modelAnswer: "",
+              scoringRubric: []
+            };
+          }
+          return {
+            ...q,
+            id: q.id || idx + 1,
+            title: q.title || `FRQ ${idx + 1}: Multi-Part Analytical Problem`,
+            prompt: q.prompt || q.question || q.text || q.scenario || ""
+          };
+        });
         return res.json({ questions: questionsList, questionType: "subjective", subject, count: questionsList.length });
       }
       throw new Error("Failed to generate a valid AP subjective questions structure.");
@@ -2939,6 +3596,200 @@ The Gemini API is currently experiencing rate limits. Please try again in 60 sec
     }
     console.error("AP Question generation endpoint error:", error);
     res.status(500).json({ error: error.message || "Failed to generate AP questions" });
+  }
+});
+app.post("/api/ap-trap-radar", async (req, res) => {
+  try {
+    const { action = "generate_challenge", subject, unit, topic, count, gradeLevel, customQuestion, images } = req.body;
+    if (action === "analyze_custom") {
+      if (!customQuestion && (!images || images.length === 0)) {
+        return res.status(400).json({ error: "Please provide question text or an image to analyze." });
+      }
+      const systemInstruction2 = `You are a Senior College Board AP Exam Psychometrician, Chief Reader, and Master Distractor Architect.
+Your mission is to perform an exhaustive "TRAP RADAR AUTOPSY" on the provided AP Exam multiple-choice question.
+
+College Board MCQs are famous for engineering 6 distinct Distractor Archetypes:
+1. \u{1FAA4} The Reverse Logic / Sign Flip Trap (Correct calculation but flipped sign, reciprocal, or reversed direction).
+2. \u{1FAA4} The Half-Truth Scope Creep Trap (A statement that is factually true in real life, BUT does not answer the stimulus prompt or exceeds CED scope).
+3. \u{1FAA4} The Chronological / Evolutionary Anachronism Trap (Correct event or process, but placed in the wrong century, epoch, or phase).
+4. \u{1FAA4} The Absolute Qualifier / Extreme Word Trap (Includes 'always', 'never', 'solely', 'invariably' which invalidates an otherwise plausible claim).
+5. \u{1FAA4} The Pseudo-Vocabulary Jargon Trap (Strings together authentic unit buzzwords into a scientifically or historically nonsensical mechanism to bait superficial guessers).
+6. \u{1FAA4} The Intermediate Step / Premature Stop Trap (Calculates an intermediate value correctly, but fails to execute the final step required by the prompt).
+
+ANALYZE THE QUESTION THOROUGHLY:
+1. Identify the AP Subject and Core Unit/Skill.
+2. Determine which option is the true, verified correct answer.
+3. For EVERY option (A, B, C, D), deconstruct its purpose:
+   - If correct: Mark as \u{1F3AF} Target, explain the College Board rationale.
+   - If incorrect: Identify the exact Trap Archetype, why test-makers engineered it, what common misconception it targets, and what % of AP students typically fall for it.
+4. Provide the "5-Second Disarm Secret": A bulletproof heuristic or mental model to immediately spot and eliminate the distractor on the real exam.
+
+STRICT JSON OUTPUT FORMAT:
+{
+  "detectedSubject": "AP Subject Name",
+  "skill": "Relevant CED Unit & Learning Objective",
+  "question": "The cleaned-up question text",
+  "stimulus": "Any excerpt, table, or context (if applicable)",
+  "correctAnswer": "A) ...",
+  "overallTrapDifficulty": "Moderate | High | Brutal (Level 5 Distractor)",
+  "traps": [
+    {
+      "option": "A",
+      "text": "Full option text",
+      "isCorrect": true,
+      "trapType": "\u{1F3AF} Official College Board Target",
+      "trapDescription": "Clear explanation of why this is the only answer supported by the CED.",
+      "collegeBoardMindset": "Evaluates mastery of CED concept...",
+      "vulnerabilityRate": "N/A"
+    },
+    {
+      "option": "B",
+      "text": "Full option text",
+      "isCorrect": false,
+      "trapType": "\u{1FAA4} The Reverse Logic / Sign Flip Trap",
+      "trapDescription": "Explains why students fall for this...",
+      "collegeBoardMindset": "Test-makers set this trap for students who...",
+      "vulnerabilityRate": "38% of AP students fall for this"
+    }
+  ],
+  "disarmStrategy": "\u26A1 5-Second Disarm Secret: Quick rule to eliminate the trap instantly."
+}`;
+      const contentParts = [];
+      if (images && Array.isArray(images) && images.length > 0) {
+        for (const img of images) {
+          if (!img) continue;
+          const parts = img.split(",");
+          const base64Data = parts[1] || img;
+          const mimeType = parts[0]?.split(";")[0]?.split(":")[1] || "image/jpeg";
+          contentParts.push({
+            inlineData: { mimeType, data: base64Data }
+          });
+        }
+      }
+      contentParts.push({ text: customQuestion || "Analyze this AP multiple-choice question and expose every trap option." });
+      const response2 = await safeGenerateContent({
+        gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
+        model: "gemini-2.5-flash",
+        contents: { parts: contentParts },
+        config: {
+          systemInstruction: { parts: [{ text: systemInstruction2 }] },
+          responseMimeType: "application/json",
+          temperature: 0.2
+        }
+      });
+      const parsed2 = safeParseJSON(response2.text || "{}", "object");
+      return res.json({ success: true, analysis: parsed2 });
+    }
+    if (!subject) {
+      return res.status(400).json({ error: "Missing AP Subject" });
+    }
+    const requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 10);
+    const targetTopic = [topic, unit, subject].filter(Boolean).join(" - ");
+    const systemInstruction = `You are a Senior College Board AP Exam Psychometrician and Master Distractor Architect.
+The student is training with the "AP TRAP RADAR\u2122" to achieve a Score 5 in AP ${subject}.
+Your mission: Generate exactly ${requestedCount} high-caliber, authentic AP Exam Multiple Choice Questions for "${targetTopic}" with DECEPTIVELY ENGINEERED DISTRACTOR TRAPS.
+
+Every question MUST feature 4 options (A, B, C, D) with authentic College Board Trap Archetypes:
+- Exactly 1 option must be 100% scientifically/historically/mathematically correct.
+- The other 3 options MUST be engineered using authentic College Board Distractor Archetypes:
+  1. The Reverse Logic / Arithmetic Slip Trap (sign flipped, reciprocal, inverted cause-and-effect).
+  2. The Half-Truth / Scope Creep Trap (factually true in the real world, but doesn't answer the prompt).
+  3. The Chronological / Unit Confusion Trap (timeline mismatch or conflated unit/term).
+  4. The Absolute Qualifier Trap ('always', 'never', 'solely' making a claim too extreme).
+  5. The Pseudo-Vocabulary Jargon Trap (impressive unit keywords combined into a fake mechanism).
+  6. The Intermediate Calculation Stop Trap (stops at step 2 of a 3-step proof or calculation).
+
+CRITICAL ACCURACY RULES:
+- Before outputting, verify that EXACTLY ONE OPTION is correct.
+- 'correctAnswer' must match the exact string of the correct option in 'options'.
+- Use LaTeX ($...$ or $$...$$) for formulas, chemical reactions, or calculus equations.
+
+STRICT JSON OUTPUT FORMAT:
+Return ONLY a valid JSON array of question objects:
+[
+  {
+    "id": 1,
+    "prompt": "Clear, stimulus-based AP question stem...",
+    "stimulus": "Optional source excerpt, data table, code snippet, or historical quote (or empty string)",
+    "options": [
+      "A) ...",
+      "B) ...",
+      "C) ...",
+      "D) ..."
+    ],
+    "correctAnswer": "A) ...",
+    "overallTrapDifficulty": "High (Level 4 Trap)",
+    "traps": [
+      {
+        "option": "A",
+        "isCorrect": true,
+        "trapType": "\u{1F3AF} Official College Board Target",
+        "trapDescription": "Why this option is the sole CED-compliant answer.",
+        "collegeBoardMindset": "Evaluates foundational CED objective...",
+        "vulnerabilityRate": "N/A"
+      },
+      {
+        "option": "B",
+        "isCorrect": false,
+        "trapType": "\u{1FAA4} The Reverse Logic / Sign Flip Trap",
+        "trapDescription": "Why students fall for this...",
+        "collegeBoardMindset": "Designed for students who missed the negative sign...",
+        "vulnerabilityRate": "42% of students choose this"
+      },
+      {
+        "option": "C",
+        "isCorrect": false,
+        "trapType": "\u{1FAA4} The Half-Truth / Scope Creep Trap",
+        "trapDescription": "Why students fall for this...",
+        "collegeBoardMindset": "Exploits superficial reading of the passage...",
+        "vulnerabilityRate": "27% of students choose this"
+      },
+      {
+        "option": "D",
+        "isCorrect": false,
+        "trapType": "\u{1FAA4} The Absolute Qualifier Trap",
+        "trapDescription": "Why students fall for this...",
+        "collegeBoardMindset": "Baits students with extreme language...",
+        "vulnerabilityRate": "19% of students choose this"
+      }
+    ],
+    "disarmStrategy": "\u26A1 5-Second Disarm Secret: The exact heuristic to eliminate distractors instantly on exam day.",
+    "skill": "Relevant AP Skill / CED Unit"
+  }
+]`;
+    const response = await safeGenerateContent({
+      gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
+      model: "gemini-2.5-flash",
+      contents: { parts: [{ text: `Generate ${requestedCount} authentic AP ${subject} Trap Radar questions for ${targetTopic}.` }] },
+      config: {
+        systemInstruction: { parts: [{ text: systemInstruction }] },
+        responseMimeType: "application/json",
+        temperature: 0.2
+      }
+    });
+    const parsed = safeParseJSON(response.text || "[]", "array");
+    let questionsList = [];
+    if (Array.isArray(parsed)) {
+      questionsList = parsed;
+    } else if (parsed && Array.isArray(parsed.questions)) {
+      questionsList = parsed.questions;
+    } else if (parsed && typeof parsed === "object") {
+      const found = Object.values(parsed).find((v) => Array.isArray(v));
+      if (found) questionsList = found;
+    }
+    if (questionsList.length > 0) {
+      return res.json({ success: true, questions: questionsList, subject, unit: targetTopic, count: questionsList.length });
+    }
+    throw new Error("Failed to generate valid Trap Radar questions structure.");
+  } catch (error) {
+    if (error.message === "GEMINI_QUOTA_EXHAUSTED") {
+      return res.status(429).json({
+        error: "QUOTA_EXCEEDED",
+        text: "\u26A0\uFE0F AP Trap Radar Notice: Gemini API rate limit reached. Please try again in 60 seconds."
+      });
+    }
+    console.error("AP Trap Radar endpoint error:", error);
+    res.status(500).json({ error: error.message || "Failed to run AP Trap Radar analysis" });
   }
 });
 app.post("/api/evaluate-answer", async (req, res) => {
@@ -3041,11 +3892,10 @@ ${image ? "IMPORTANT: The student has provided an attached photo containing thei
     });
     const response = await safeGenerateContent({
       gradeLevel: userGrade,
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash-lite",
       contents: { parts },
       config: {
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        thinkingConfig: { thinkingBudget: 0 }
+        systemInstruction: { parts: [{ text: systemInstruction }] }
       }
     });
     const text = response.text || "Failed to evaluate response.";
@@ -3110,12 +3960,11 @@ ${options.join("\n")}
 Please thoroughly explain this question to me, decode what College Board is asking, explain the core AP concept and formulas, and give me strategic hints to solve it without spoiling the answer!`;
     const response = await safeGenerateContent({
       gradeLevel: "AP High School (Advanced Placement)",
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash-lite",
       contents: { parts: [{ text: userPrompt }] },
       config: {
         systemInstruction: { parts: [{ text: systemInstruction }] },
-        temperature: 0.3,
-        thinkingConfig: { thinkingBudget: 0 }
+        temperature: 0.3
       }
     });
     return res.json({ explanation: response.text || "Here is a breakdown to help you understand and solve this AP question." });
@@ -3144,21 +3993,26 @@ CRITICAL RULES:
 Use this exact JSON structure:
 [
   {
-    "question": "What is the primary function of the mitochondria in a eukaryotic cell?",
-    "options": ["A) Protein synthesis", "B) DNA replication", "C) ATP production", "D) Lipid breakdown"],
-    "correctAnswer": "C) ATP production",
-    "explanation": "Mitochondria generate most of the cell's supply of adenosine triphosphate (ATP), used as a source of chemical energy."
+    "question": "Which of the following best characterizes the key mechanism of [Concept]?",
+    "options": ["A) Statement 1", "B) Statement 2", "C) Statement 3", "D) Statement 4"],
+    "correctAnswer": "A) Statement 1",
+    "explanation": "Clear educational breakdown justifying why the correct option is true and why the distractors are incorrect."
   }
 ]`;
+    const avoidList = Array.isArray(req.body.avoidPrompts) ? req.body.avoidPrompts.filter(Boolean).slice(0, 10) : [];
+    const avoidDirective = avoidList.length > 0 ? `
+STRICT ANTI-REPETITION: Do NOT repeat or generate questions similar to these previously tested prompts:
+${avoidList.map((p, i) => `  [${i + 1}] ${p.slice(0, 100)}`).join("\n")}` : "";
     let quizText = "";
     try {
       const response = await safeGenerateContent({
         gradeLevel,
         model: "gemini-3.5-flash-lite",
-        contents: { parts: [{ text: `Topic: ${topic}. Generate the ${requestedCount}-question JSON quiz now.` }] },
+        contents: { parts: [{ text: `Topic: ${topic}. Generate the ${requestedCount}-question JSON quiz now.${avoidDirective}` }] },
         config: {
           systemInstruction: { parts: [{ text: systemInstruction }] },
-          responseMimeType: "application/json"
+          responseMimeType: "application/json",
+          temperature: 0.75
         }
       });
       quizText = response.text || "";
@@ -4071,15 +4925,26 @@ app.get("/api/time", (req, res) => {
 async function startServer() {
   const distPath = import_path.default.join(process.cwd(), "dist");
   const hasDist = import_fs.default.existsSync(import_path.default.join(distPath, "index.html"));
-  const isProd = (process.env.NODE_ENV || "").toLowerCase() === "production" || hasDist;
-  if (isProd && hasDist) {
-    console.log("[Server] Serving static frontend from:", distPath);
-    app.use(import_express.default.static(distPath));
+  const isDevExplicit = (process.env.NODE_ENV || "").toLowerCase() === "development";
+  if (hasDist && !isDevExplicit) {
+    console.log("[Server] Serving production static frontend from:", distPath);
+    app.use("/assets", import_express.default.static(import_path.default.join(distPath, "assets"), {
+      maxAge: "1y",
+      immutable: true
+    }));
+    app.use(import_express.default.static(distPath, {
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith("index.html")) {
+          res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        }
+      }
+    }));
     app.get("*", (req, res) => {
       const ext = import_path.default.extname(req.path);
       if (ext || req.path.startsWith("/src") || req.path.startsWith("/api")) {
         return res.status(404).send("Not Found");
       }
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
       res.sendFile(import_path.default.join(distPath, "index.html"));
     });
   } else {

@@ -4,7 +4,7 @@ import { savePdfToHistory } from './pdfHistory';
 import { addStudyXP, trackQuestProgress } from './gamification';
 import { triggerVibration } from './vibrate';
 import { safeGetItem, safeSetItem } from './storage';
-import { sanitizePdfText } from './pdfSanitizer';
+import { sanitizePdfText, formatLatexToAscii } from './pdfSanitizer';
 
 export interface FormulaItem {
   name: string;
@@ -20,35 +20,11 @@ export interface FormulaCategoryItem {
 }
 
 /**
- * Converts common LaTeX strings to crisp, highly readable mathematical typography for clean PDF rendering
+ * Converts LaTeX strings to crisp, highly readable mathematical typography for clean PDF rendering
  */
 function cleanLatexForPdf(latex: string): string {
   if (!latex) return '';
-  return latex
-    .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1) / ($2)')
-    .replace(/\\sqrt\{([^}]+)\}/g, 'sqrt($1)')
-    .replace(/\\pm/g, '+/-')
-    .replace(/\\cdot/g, ' * ')
-    .replace(/\\times/g, ' * ')
-    .replace(/\\int_\{([^}]+)\}\^\{([^}]+)\}/g, 'integral[$1 to $2]')
-    .replace(/\\int/g, 'integral ')
-    .replace(/\\sum_\{([^}]+)\}\^\{([^}]+)\}/g, 'sum[$1 to $2]')
-    .replace(/\\sum/g, 'sum ')
-    .replace(/\\lim_\{([^}]+)\}/g, 'lim($1) ')
-    .replace(/\\to/g, ' -> ')
-    .replace(/\\infty/g, 'infinity')
-    .replace(/\\theta/g, 'theta')
-    .replace(/\\pi/g, 'pi')
-    .replace(/\\alpha/g, 'alpha')
-    .replace(/\\beta/g, 'beta')
-    .replace(/\\Delta/g, 'Delta')
-    .replace(/\\lambda/g, 'lambda')
-    .replace(/\\binom\{([^}]+)\}\{([^}]+)\}/g, 'C($1, $2)')
-    .replace(/\\left|\\right/g, '')
-    .replace(/\\/g, '')
-    .replace(/\{|\}/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return sanitizePdfText(formatLatexToAscii(latex));
 }
 
 /**

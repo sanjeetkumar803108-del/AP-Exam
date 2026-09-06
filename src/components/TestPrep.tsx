@@ -18,7 +18,10 @@ import GlobalMarkdown from './GlobalMarkdown';
 import AdvancedLoader from './AdvancedLoader';
 import jsPDF from 'jspdf';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
+import { savePdfToHistory } from '../utils/pdfHistory';
+import { showToast } from '../utils/toast';
 import { sanitizePdfText } from '../utils/pdfSanitizer';
+import { sanitizeSvg, rasterizeSvgToDataUrl, getDiagramTypeLabel } from '../utils/svgHelper';
 import SafePdfViewer from './SafePdfViewer';
 import { safeGetItem, safeSetItem, safeJsonParse } from '../utils/storage';
 
@@ -53,6 +56,8 @@ export interface APObjectiveQuestion {
   correctAnswer: string;
   explanation: string;
   skill?: string;
+  diagramSvg?: string;
+  diagramType?: string;
 }
 
 export interface APSubjectiveQuestion {
@@ -63,6 +68,8 @@ export interface APSubjectiveQuestion {
   modelAnswer: string;
   scoringRubric: string[];
   skill?: string;
+  diagramSvg?: string;
+  diagramType?: string;
 }
 
 export interface AttachedAnswerImage {
@@ -77,8 +84,8 @@ export const AP_EXAM_TIMING: Record<string, { objectiveSeconds: number; subjecti
   'ap-human-geography': { objectiveSeconds: 60, subjectiveSeconds: 1500, label: '1m 00s / MCQ • 25m / FRQ' },
   // AP Environmental Science: 80 MCQs in 90 min (68s/q = 1m08s) | 3 FRQs in 70 min (1400s/q = 23m 20s)
   'ap-environmental-science': { objectiveSeconds: 68, subjectiveSeconds: 1400, label: '1m 08s / MCQ • 23m 20s / FRQ' },
-  // AP Computer Science Principles: 70 MCQs in 120 min (85s/q = 1m25s) | Written Response in 60 min (1800s/q = 30m)
-  'ap-computer-science-principles': { objectiveSeconds: 85, subjectiveSeconds: 1800, label: '1m 25s / MCQ • 30m / Written Response' },
+  // AP Computer Science Principles: 70 MCQs in 120 min (85s/q = 1m25s) | Create Performance Task in 60 min (1800s/q = 30m)
+  'ap-computer-science-principles': { objectiveSeconds: 85, subjectiveSeconds: 1800, label: '1m 25s / MCQ • 30m / Create Task' },
   // AP Calculus AB: 45 MCQs in 105 min (140s/q = 2m20s) | 6 FRQs in 90 min (900s/q = 15m)
   'ap-calculus-ab': { objectiveSeconds: 140, subjectiveSeconds: 900, label: '2m 20s / MCQ • 15m / FRQ' },
   // AP Calculus BC: 45 MCQs in 105 min (140s/q = 2m20s) | 6 FRQs in 90 min (900s/q = 15m)
@@ -101,6 +108,23 @@ export const AP_EXAM_TIMING: Record<string, { objectiveSeconds: number; subjecti
   'ap-psychology': { objectiveSeconds: 72, subjectiveSeconds: 2100, label: '1m 12s / MCQ • 35m / FRQ' },
   // AP Micro & Macroeconomics: 60 MCQs in 70 min (70s/q = 1m10s) | 3 FRQs in 60 min (1200s/q = 20m)
   'ap-economics': { objectiveSeconds: 70, subjectiveSeconds: 1200, label: '1m 10s / MCQ • 20m / FRQ' }
+};
+
+export const isComputerSubject = (subj?: APSubject | { name?: string; shortCode?: string; id?: string } | null): boolean => {
+  if (!subj) return false;
+  const id = (subj.id || '').toLowerCase();
+  const code = (subj.shortCode || '').toUpperCase();
+  const name = (subj.name || '').toLowerCase();
+
+  // AP Computer Science A (CSA) has standard Java Free Response Questions (FRQ)!
+  if (code === 'CSA' || id === 'ap-computer-science' || name.includes('science a')) {
+    return false;
+  }
+
+  // Only AP Computer Science Principles (CSP) has the Create Performance Task!
+  return id === 'ap-computer-science-principles' || 
+         code === 'CSP' || 
+         (name.includes('principles') && name.includes('computer'));
 };
 
 export function getApExamDurationSeconds(subjectId: string, qType: 'objective' | 'subjective', count: number): number {
@@ -217,6 +241,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
   const [previewPdfUri, setPreviewPdfUri] = useState<string | null>(null);
   const [previewPdfName, setPreviewPdfName] = useState<string>('AP_Practice_Set.pdf');
+  const [fullscreenSvg, setFullscreenSvg] = useState<{ svg: string; title: string } | null>(null);
 
   // AI Magic Tutor States
   const [showTutorModal, setShowTutorModal] = useState<boolean>(false);
@@ -231,6 +256,9 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   const [tutorExplanation, setTutorExplanation] = useState<string>('');
   const [tutorFollowUp, setTutorFollowUp] = useState<string>('');
   const [tutorChatHistory, setTutorChatHistory] = useState<Array<{ role: 'user' | 'tutor'; text: string }>>([]);
+
+  // Session-wide anti-repetition memory cache (subjectId -> array of prompts)
+  const sessionAvoidPromptsRef = useRef<Record<string, string[]>>({});
 
   // Ask AI 2-Suggestion Choice Modal State
   const [askAiModalData, setAskAiModalData] = useState<{
@@ -251,6 +279,25 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
 
   // Subjective (FRQ) Scoring State
   const [subjectiveScores, setSubjectiveScores] = useState<Record<number, { earned: number; total: number; feedback?: string }>>({});
+
+  // Premium In-App Confirmation Modal State (replaces native window.confirm)
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    confirmText: string;
+    cancelText?: string;
+    confirmColor?: string;
+    icon?: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    description: '',
+    confirmText: 'Confirm',
+    cancelText: 'Cancel',
+    onConfirm: () => {},
+  });
 
   // Reference Sheet Data for Active Subject
   const referenceData = useMemo(() => {
@@ -613,12 +660,22 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   const handleBack = () => {
     triggerVibration(10);
     if (step === 'practice') {
-      if (window.confirm("Do you want to exit your active AP practice session?")) {
-        setIsTimerActive(false);
-        stopAlarmSound();
-        setStep('configure');
-        setIsExamCompleted(false);
-      }
+      setConfirmModal({
+        isOpen: true,
+        title: 'Exit Practice Session?',
+        description: 'Do you want to exit your active AP practice session? Your current test progress will be discarded and you will return directly to the Test Prep Home.',
+        confirmText: 'Exit to Home',
+        cancelText: 'Keep Practicing',
+        confirmColor: 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20',
+        icon: '⚠️',
+        onConfirm: () => {
+          setIsTimerActive(false);
+          stopAlarmSound();
+          setIsExamCompleted(false);
+          setStep('select-subject');
+          showToast("Returned to Test Prep Home", "info");
+        }
+      });
     } else if (step === 'configure') {
       setIsTimerActive(false);
       stopAlarmSound();
@@ -630,6 +687,46 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     }
   };
 
+  // Hardware Android Back Button Listener
+  useEffect(() => {
+    const handleHardwareBack = (e: Event) => {
+      if (confirmModal.isOpen) {
+        e.preventDefault();
+        triggerVibration(10);
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      } else if (showFormulaModal) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowFormulaModal(false);
+      } else if (askAiModalData) {
+        e.preventDefault();
+        triggerVibration(10);
+        setAskAiModalData(null);
+      } else if (tutorActiveQuestion) {
+        e.preventDefault();
+        triggerVibration(10);
+        setTutorActiveQuestion(null);
+      } else if (showHistoryModal) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowHistoryModal(false);
+      } else if (showTimesUpModal) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowTimesUpModal(false);
+      } else if (step === 'practice') {
+        e.preventDefault();
+        handleBack();
+      } else if (step === 'configure') {
+        e.preventDefault();
+        triggerVibration(10);
+        setStep('select-subject');
+      }
+    };
+    window.addEventListener('appBackButton', handleHardwareBack);
+    return () => window.removeEventListener('appBackButton', handleHardwareBack);
+  }, [confirmModal.isOpen, showFormulaModal, askAiModalData, tutorActiveQuestion, showHistoryModal, showTimesUpModal, step]);
+
   // API Call to Generate Questions
   const handleGenerateQuestions = async () => {
     triggerVibration(20);
@@ -638,11 +735,30 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     setLoadingMsg(
       questionType === 'objective'
         ? `Crafting authentic AP ${selectedSubject.shortCode} Multiple Choice Questions...`
-        : `Developing College Board AP ${selectedSubject.shortCode} Free Response Questions & Rubrics...`
+        : `Developing College Board AP ${selectedSubject.shortCode} ${isComputerSubject(selectedSubject) ? 'Create Performance Task Prompts' : 'Free Response Questions'} & Rubrics...`
     );
 
     const unitTitle = selectedUnit ? selectedUnit.title : 'All Curriculum Units (Comprehensive AP Review)';
     const promptTopic = customTopic.trim() ? `${unitTitle} - ${customTopic.trim()}` : unitTitle;
+
+    // Multi-tier Anti-Repetition: Combine in-memory session cache, historyList, and cross-session cache
+    const sessionAvoid = sessionAvoidPromptsRef.current[selectedSubject.id] || [];
+    
+    // Also pull history items for this subject across all units to avoid topic repetition
+    const historyAvoid = historyList
+      .filter(item => item.subjectId === selectedSubject.id || item.subjectName === selectedSubject.name)
+      .flatMap(item => {
+        if (item.questionType === 'objective' && item.objectiveQuestions) {
+          return item.objectiveQuestions.map(q => (q.question || '').slice(0, 140));
+        } else if (item.subjectiveQuestions) {
+          return item.subjectiveQuestions.map(q => (q.prompt || q.title || '').slice(0, 140));
+        }
+        return [];
+      });
+
+    const recentPromptsToAvoid = Array.from(new Set([...sessionAvoid, ...historyAvoid]))
+      .filter(p => typeof p === 'string' && p.trim().length > 10)
+      .slice(0, 30);
 
     try {
       const response = await fetch(getApiUrl('/api/generate-ap-questions'), {
@@ -656,7 +772,9 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
           topic: promptTopic,
           questionType,
           count: questionCount,
-          gradeLevel: userGrade || 'Advanced Placement (AP High School)'
+          gradeLevel: userGrade || 'Advanced Placement (AP High School)',
+          avoidPrompts: recentPromptsToAvoid,
+          randomSeed: `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
         })
       });
 
@@ -676,6 +794,13 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         setSelectedAnswers({});
         setShowExplanation({});
         setIsExamCompleted(false);
+
+        // Immediate session memory registration to prevent duplicates on subsequent clicks
+        const newPrompts = questionsList.map(q => (q.question || '').slice(0, 140)).filter(Boolean);
+        sessionAvoidPromptsRef.current[selectedSubject.id] = [
+          ...(sessionAvoidPromptsRef.current[selectedSubject.id] || []),
+          ...newPrompts
+        ].slice(-50);
 
         // Calculate authentic AP Exam time for this subject and question count (User can start timer manually)
         const allocatedTime = getApExamDurationSeconds(selectedSubject.id, 'objective', questionsList.length);
@@ -715,6 +840,13 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         setEvaluations({});
         setAttachedImages({});
         setShowPlusMenuIndex(null);
+
+        // Immediate session memory registration to prevent duplicates on subsequent clicks
+        const newPrompts = questionsList.map(q => (q.prompt || q.title || '').slice(0, 140)).filter(Boolean);
+        sessionAvoidPromptsRef.current[selectedSubject.id] = [
+          ...(sessionAvoidPromptsRef.current[selectedSubject.id] || []),
+          ...newPrompts
+        ].slice(-50);
 
         // Calculate authentic AP Exam time for this subject and question count (User can start timer manually)
         const allocatedTime = getApExamDurationSeconds(selectedSubject.id, 'subjective', questionsList.length);
@@ -850,7 +982,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     const img = attachedImages[index];
 
     if (!ans && !img) {
-      alert("Please write your answer or attach a photo/sketch of your handwritten work first!");
+      showToast("Please write your answer or attach a photo/sketch first!", "warning");
       return;
     }
 
@@ -1037,8 +1169,8 @@ Instructions for AI Magic Tutor:
   // Transition seamlessly to full AI Magic Tutor Tab
   const handleSendToFullAITutor = () => {
     if (!tutorActiveQuestion) return;
-    triggerVibration(15);
-    const promptText = `[AP Exam Prep - ${selectedSubject.name}]\nPlease explain this AP ${tutorActiveQuestion.type === 'objective' ? 'Multiple Choice' : 'Free Response'} question to me. Break down what it is asking, explain the core concepts, and provide strategic hints so I can solve it myself without giving away the direct answer!\n\nQuestion:\n${tutorActiveQuestion.text}${tutorActiveQuestion.stimulus ? `\n\nContext:\n${tutorActiveQuestion.stimulus}` : ''}${tutorActiveQuestion.options ? `\n\nOptions:\n${tutorActiveQuestion.options.join('\n')}` : ''}`;
+    const subjectiveName = isComputerSubject(selectedSubject) ? 'Create Performance Task' : 'Free Response';
+    const promptText = `[AP Exam Prep - ${selectedSubject.name}]\nPlease explain this AP ${tutorActiveQuestion.type === 'objective' ? 'Multiple Choice' : subjectiveName} question to me. Break down what it is asking, explain the core concepts, and provide strategic hints so I can solve it myself without giving away the direct answer!\n\nQuestion:\n${tutorActiveQuestion.text}${tutorActiveQuestion.stimulus ? `\n\nContext:\n${tutorActiveQuestion.stimulus}` : ''}${tutorActiveQuestion.options ? `\n\nOptions:\n${tutorActiveQuestion.options.join('\n')}` : ''}`;
 
     const event = new CustomEvent('study-scanner-send-to-tutor', {
       detail: {
@@ -1102,11 +1234,11 @@ Instructions for AI Magic Tutor:
       const subQs = customQuestions && customQuestions.type === 'subjective' ? customQuestions.items : subjectiveQuestions;
 
       if (qType === 'objective' && (!objQs || objQs.length === 0)) {
-        alert("No objective questions available to export.");
+        showToast("No objective questions available to export.", "warning");
         return;
       }
       if (qType === 'subjective' && (!subQs || subQs.length === 0)) {
-        alert("No free response questions available to export.");
+        showToast(isComputerSubject(subj) ? "No performance tasks available to export." : "No free response questions available to export.", "warning");
         return;
       }
 
@@ -1146,8 +1278,12 @@ Instructions for AI Magic Tutor:
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(9);
           doc.setTextColor(226, 232, 240);
+          const isComp = isComputerSubject(subj);
+          const formatSection = qType === 'objective' 
+            ? 'Section I (Multiple Choice)' 
+            : (isComp ? 'Section II (Create Performance Task)' : 'Section II (Free Response)');
           const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-          doc.text(`Format: ${qType === 'objective' ? 'Section I (Multiple Choice)' : 'Section II (Free Response)'}   |   Unit: ${sanitizePdfText(uTitle)}   |   ${dateStr}`, margin, 62);
+          doc.text(`Format: ${formatSection}   |   Unit: ${sanitizePdfText(uTitle)}   |   ${dateStr}`, margin, 62);
 
           currentY = 96;
         } else {
@@ -1156,10 +1292,14 @@ Instructions for AI Magic Tutor:
           doc.setDrawColor(226, 232, 240);
           doc.line(0, 28, pageWidth, 28);
 
+          const isComp = isComputerSubject(subj);
+          const subTitle = qType === 'objective' 
+            ? 'Multiple Choice' 
+            : (isComp ? 'Create Performance Task' : 'Free Response');
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(8);
           doc.setTextColor(100, 116, 139);
-          doc.text(`AP® ${sanitizePdfText(subj.shortCode)} - ${qType === 'objective' ? 'Multiple Choice' : 'Free Response'}`, margin, 18);
+          doc.text(`AP® ${sanitizePdfText(subj.shortCode)} - ${subTitle}`, margin, 18);
           doc.text('HelpYou AI Practice Engine', pageWidth - margin, 18, { align: 'right' });
 
           currentY = 46;
@@ -1188,12 +1328,37 @@ Instructions for AI Magic Tutor:
           currentPage++;
           drawHeader(false);
           drawFooter(currentPage);
+          // Restore default high-contrast body typography so leaked footer styling never infects questions
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9.5);
+          doc.setTextColor(15, 23, 42);
+          return true;
         }
+        return false;
       };
 
       if (qType === 'objective') {
-        objQs.forEach((q, idx) => {
-          checkPageBreak(75);
+        for (let idx = 0; idx < objQs.length; idx++) {
+          const q = objQs[idx];
+          const cleanQ = sanitizePdfText(q.question);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10.5);
+          const qLines = doc.splitTextToSize(cleanQ, contentWidth);
+          const qPromptH = (qLines.length * 13) + 8;
+
+          let stimBoxH = 0;
+          let stimLines: string[] = [];
+          if (q.stimulus && q.stimulus.trim()) {
+            const cleanStim = sanitizePdfText(q.stimulus.trim());
+            stimLines = doc.splitTextToSize(cleanStim, contentWidth - 20);
+            stimBoxH = (stimLines.length * 11) + 24;
+          }
+
+          // Pre-measure at least the badge (28) + stimulus (if any) + prompt + diagram (if any) + first option (25)
+          const diagEstimateH = q.diagramSvg ? 150 : 0;
+          const blockH = 28 + stimBoxH + qPromptH + diagEstimateH + 25;
+          const maxUsablePageH = pageHeight - 40 - 46;
+          checkPageBreak(Math.min(blockH, maxUsablePageH));
 
           // Question badge & skill
           doc.setFillColor(241, 245, 249);
@@ -1214,50 +1379,59 @@ Instructions for AI Magic Tutor:
           currentY += 28;
 
           // Stimulus (if exists)
-          if (q.stimulus && q.stimulus.trim()) {
-            const cleanStim = sanitizePdfText(q.stimulus.trim());
-            const stimLines = doc.splitTextToSize(cleanStim, contentWidth - 20);
-            const stimBoxH = (stimLines.length * 11) + 14;
-
-            checkPageBreak(stimBoxH + 30);
-
+          if (stimBoxH > 0 && stimLines.length > 0) {
+            checkPageBreak(stimBoxH + 15);
             doc.setFillColor(248, 250, 252);
             doc.setDrawColor(203, 213, 225);
-            doc.roundedRect(margin, currentY, contentWidth, stimBoxH, 4, 4, 'FD');
+            doc.roundedRect(margin, currentY, contentWidth, stimBoxH - 10, 4, 4, 'FD');
 
             doc.setFont('times', 'italic');
             doc.setFontSize(9);
             doc.setTextColor(51, 65, 85);
             doc.text(stimLines, margin + 10, currentY + 13);
-            currentY += stimBoxH + 10;
+            currentY += stimBoxH;
           }
 
-          // Question prompt
-          const cleanQ = sanitizePdfText(q.question);
+          // Question prompt - always set font, size, and bold color right before rendering!
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(10.5);
           doc.setTextColor(15, 23, 42);
-          const qLines = doc.splitTextToSize(cleanQ, contentWidth);
-          checkPageBreak(qLines.length * 13 + 30);
           doc.text(qLines, margin, currentY);
-          currentY += (qLines.length * 13) + 8;
+          currentY += qPromptH;
+
+          // High-DPI Diagram / Coordinate Graph (if provided)
+          if (q.diagramSvg) {
+            try {
+              const diagramImg = await rasterizeSvgToDataUrl(q.diagramSvg, 800, 440);
+              if (diagramImg) {
+                const diagH = 140;
+                const diagW = Math.min(contentWidth, diagH * (400 / 220));
+                const diagX = margin + (contentWidth - diagW) / 2;
+                checkPageBreak(diagH + 15);
+                doc.addImage(diagramImg, 'PNG', diagX, currentY, diagW, diagH);
+                currentY += diagH + 10;
+              }
+            } catch (err) {
+              console.warn('Could not rasterize SVG diagram for PDF:', err);
+            }
+          }
 
           // Options
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(9.5);
-          doc.setTextColor(30, 41, 59);
-
           q.options.forEach(opt => {
             const cleanOpt = sanitizePdfText(opt);
             const optLines = doc.splitTextToSize(cleanOpt, contentWidth - 24);
             const optH = optLines.length * 12 + 6;
 
-            checkPageBreak(optH + 15);
+            checkPageBreak(optH + 10);
 
             // Option bullet indicator
             doc.setFillColor(241, 245, 249);
             doc.circle(margin + 6, currentY + 4, 3, 'F');
 
+            // Set typography directly
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9.5);
+            doc.setTextColor(30, 41, 59);
             doc.text(optLines, margin + 16, currentY + 6);
             currentY += optH;
           });
@@ -1270,7 +1444,7 @@ Instructions for AI Magic Tutor:
             doc.line(margin, currentY, pageWidth - margin, currentY);
             currentY += 16;
           }
-        });
+        }
 
         // ================= CONSOLIDATED ANSWER KEY ON LAST PAGE =================
         doc.addPage();
@@ -1316,17 +1490,34 @@ Instructions for AI Magic Tutor:
         });
       } else {
         // Subjective (FRQ) - 1. Print all FRQ prompts first
-        subQs.forEach((q, idx) => {
-          checkPageBreak(85);
+        for (let idx = 0; idx < subQs.length; idx++) {
+          const q = subQs[idx];
+          const cleanPrompt = sanitizePdfText(q.prompt);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10.5);
+          const promptLines = doc.splitTextToSize(cleanPrompt, contentWidth);
+          const promptH = (promptLines.length * 13) + 16;
+          const bannerH = 22;
+          const bannerSpacing = 8;
+          const diagEstimateH = q.diagramSvg ? 155 : 0;
+          const totalHeaderAndPrompt = bannerH + bannerSpacing + promptH + diagEstimateH + 16;
+          const maxUsablePageH = pageHeight - 40 - 46;
 
-          // FRQ Banner
+          // Crucial fix: Check page break BEFORE drawing the banner so that banner and prompt are NEVER split across pages!
+          checkPageBreak(Math.min(totalHeaderAndPrompt, maxUsablePageH));
+
+          // Question / Task Banner
+          const isComp = isComputerSubject(subj);
           doc.setFillColor(243, 232, 255); // Purple-100
-          doc.roundedRect(margin, currentY, contentWidth, 22, 3, 3, 'F');
+          doc.roundedRect(margin, currentY, contentWidth, bannerH, 3, 3, 'F');
 
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(10);
           doc.setTextColor(107, 33, 168); // Purple-800
-          doc.text(`FREE RESPONSE QUESTION ${idx + 1}  [${q.totalPoints || 6} POINTS]`, margin + 8, currentY + 15);
+          const bannerText = isComp 
+            ? `CREATE PERFORMANCE TASK PROMPT ${idx + 1}  [${q.totalPoints || 6} POINTS]`
+            : `FREE RESPONSE QUESTION ${idx + 1}  [${q.totalPoints || 6} POINTS]`;
+          doc.text(bannerText, margin + 8, currentY + 15);
 
           if (q.skill) {
             doc.setFont('helvetica', 'italic');
@@ -1335,16 +1526,31 @@ Instructions for AI Magic Tutor:
             doc.text(sanitizePdfText(q.skill), pageWidth - margin - 8, currentY + 15, { align: 'right' });
           }
 
-          currentY += 30;
+          currentY += bannerH + bannerSpacing;
 
-          // Prompt
+          // Prompt - Always apply bold, high-contrast styling right before rendering text!
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(10.5);
           doc.setTextColor(15, 23, 42);
-          const promptLines = doc.splitTextToSize(sanitizePdfText(q.prompt), contentWidth);
-          checkPageBreak(promptLines.length * 13 + 30);
           doc.text(promptLines, margin, currentY);
-          currentY += (promptLines.length * 13) + 16;
+          currentY += promptH;
+
+          // High-DPI Diagram / Coordinate Graph (if provided)
+          if (q.diagramSvg) {
+            try {
+              const diagramImg = await rasterizeSvgToDataUrl(q.diagramSvg, 800, 440);
+              if (diagramImg) {
+                const diagH = 145;
+                const diagW = Math.min(contentWidth, diagH * (400 / 220));
+                const diagX = margin + (contentWidth - diagW) / 2;
+                checkPageBreak(diagH + 15);
+                doc.addImage(diagramImg, 'PNG', diagX, currentY, diagW, diagH);
+                currentY += diagH + 10;
+              }
+            } catch (err) {
+              console.warn('Could not rasterize SVG diagram for PDF:', err);
+            }
+          }
 
           // Workspace line for student
           if (idx < subQs.length - 1) {
@@ -1352,7 +1558,7 @@ Instructions for AI Magic Tutor:
             doc.line(margin, currentY, pageWidth - margin, currentY);
             currentY += 16;
           }
-        });
+        }
 
         // ================= CONSOLIDATED SCORING RUBRIC & SOLUTIONS ON LAST PAGE =================
         doc.addPage();
@@ -1367,26 +1573,34 @@ Instructions for AI Magic Tutor:
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(10.5);
         doc.setTextColor(67, 56, 202);
-        doc.text('OFFICIAL COLLEGE BOARD SCORING GUIDELINES & MODEL SOLUTIONS', margin + 10, currentY + 16);
+        const rubricMainTitle = isComputerSubject(subj)
+          ? 'OFFICIAL CREATE PERFORMANCE TASK SCORING GUIDELINES & MODEL RESPONSES'
+          : 'OFFICIAL COLLEGE BOARD SCORING GUIDELINES & MODEL SOLUTIONS';
+        doc.text(rubricMainTitle, margin + 10, currentY + 16);
         currentY += 34;
 
         subQs.forEach((q, idx) => {
-          checkPageBreak(85);
-
-          // FRQ Sub-header
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10);
-          doc.setTextColor(88, 28, 135);
-          doc.text(`QUESTION ${idx + 1} SCORING RUBRIC & EXEMPLARY SOLUTION`, margin, currentY);
-          currentY += 14;
-
-          // Model Answer Box
+          // Pre-measure model answer box
           const cleanModel = sanitizePdfText(q.modelAnswer);
           const modelLines = doc.splitTextToSize(cleanModel, contentWidth - 20);
           const modelBoxH = 20 + (modelLines.length * 11) + 10;
+          const maxUsablePageH = pageHeight - 40 - 46;
 
-          checkPageBreak(modelBoxH + 30);
+          // Sub-header + Model Answer Box must stay together!
+          checkPageBreak(Math.min(14 + modelBoxH + 20, maxUsablePageH));
 
+          // Task / Question Sub-header
+          const isCompSub = isComputerSubject(subj);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
+          doc.setTextColor(88, 28, 135);
+          const subHeaderTitle = isCompSub
+            ? `TASK PROMPT ${idx + 1} SCORING RUBRIC & EXEMPLARY SOLUTION`
+            : `QUESTION ${idx + 1} SCORING RUBRIC & EXEMPLARY SOLUTION`;
+          doc.text(subHeaderTitle, margin, currentY);
+          currentY += 14;
+
+          // Model Answer Box
           doc.setFillColor(248, 250, 252);
           doc.setDrawColor(203, 213, 225);
           doc.roundedRect(margin, currentY, contentWidth, modelBoxH, 4, 4, 'FD');
@@ -1404,20 +1618,20 @@ Instructions for AI Magic Tutor:
           currentY += modelBoxH + 12;
 
           // Scoring Guidelines
+          checkPageBreak(50);
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(9);
           doc.setTextColor(5, 150, 105); // Emerald-600
           doc.text('Official Reader Scoring Guidelines & Criteria:', margin, currentY);
           currentY += 12;
 
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(8.5);
-          doc.setTextColor(51, 65, 85);
-
           q.scoringRubric.forEach(rubricItem => {
             const cleanRubric = sanitizePdfText(`• ${rubricItem}`);
             const rLines = doc.splitTextToSize(cleanRubric, contentWidth - 12);
             checkPageBreak(rLines.length * 11 + 6);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8.5);
+            doc.setTextColor(51, 65, 85);
             doc.text(rLines, margin + 6, currentY);
             currentY += (rLines.length * 11) + 4;
           });
@@ -1431,7 +1645,9 @@ Instructions for AI Magic Tutor:
         });
       }
 
-      const filename = `AP_${subj.shortCode.replace(/\s+/g, '_')}_${qType.toUpperCase()}_Practice.pdf`;
+      const isCompPdf = isComputerSubject(subj);
+      const pdfTypeTag = qType === 'objective' ? 'MCQ' : (isCompPdf ? 'CREATE_PT' : 'FRQ');
+      const filename = `AP_${subj.shortCode.replace(/\s+/g, '_')}_${pdfTypeTag}_Practice.pdf`;
       const pdfBlob = doc.output('blob');
       const blobUrl = URL.createObjectURL(pdfBlob);
 
@@ -1440,7 +1656,7 @@ Instructions for AI Magic Tutor:
       setPreviewPdfName(filename);
     } catch (err: any) {
       console.error("PDF Export Error:", err);
-      alert("Failed to create PDF preview: " + err.message);
+      showToast("Failed to create PDF preview: " + (err.message || err), "error");
     }
   };
 
@@ -1518,10 +1734,20 @@ Instructions for AI Magic Tutor:
   // Clear All History
   const handleClearAllHistory = () => {
     triggerVibration(15);
-    if (window.confirm("Are you sure you want to clear all AP practice history?")) {
-      setHistoryList([]);
-      safeSetItem('ap_test_prep_history', JSON.stringify([]));
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Clear All History?',
+      description: 'Are you sure you want to clear all your saved AP practice sessions and test records? This action cannot be undone.',
+      confirmText: 'Clear All History',
+      cancelText: 'Cancel',
+      confirmColor: 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20',
+      icon: '🗑️',
+      onConfirm: () => {
+        setHistoryList([]);
+        safeSetItem('ap_test_prep_history', JSON.stringify([]));
+        showToast("Practice history cleared successfully", "success");
+      }
+    });
   };
 
   return (
@@ -1553,20 +1779,15 @@ Instructions for AI Magic Tutor:
         <div className="flex items-center gap-2">
           {step === 'practice' && (
             <>
-              {/* Only show Calculator button and policy badge for necessary STEM/Economics subjects where calculator is actually permitted! */}
+              {/* Only show Calculator button for subjects where calculator is permitted */}
               {calculatorPolicy.allowed && (
-                <>
-                  <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full border hidden sm:inline-flex items-center gap-1 ${calculatorPolicy.color}`}>
-                    🧮 {calculatorPolicy.label}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      triggerVibration(10);
-                      setShowCalculator(prev => !prev);
-                    }}
-                    className={`h-8 px-2.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerVibration(10);
+                    setShowCalculator(prev => !prev);
+                  }}
+                  className={`h-8 px-2.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${
                       showCalculator 
                         ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs ring-2 ring-indigo-300' 
                         : 'bg-white hover:bg-zinc-100 text-zinc-700 border-zinc-250 shadow-xs'
@@ -1576,7 +1797,6 @@ Instructions for AI Magic Tutor:
                     <Calculator className={`w-3.5 h-3.5 ${showCalculator ? 'text-white' : 'text-indigo-600'}`} />
                     <span className="hidden xs:inline">Calc</span>
                   </button>
-                </>
               )}
 
               {/* Official AP Reference Sheet & Periodic Table Button */}
@@ -1616,8 +1836,8 @@ Instructions for AI Magic Tutor:
             </>
           )}
 
-          {/* Timer Setup & Active Countdown Button (Shown only during Configure & Practice, NEVER on select-subject) */}
-          {step !== 'select-subject' && (
+          {/* Timer Setup & Active Countdown Button (Shown only during active Practice, NEVER on configure or while generating questions) */}
+          {!loading && step === 'practice' && (
             <button
               type="button"
               onClick={() => {
@@ -1643,19 +1863,21 @@ Instructions for AI Magic Tutor:
             </button>
           )}
 
-          {/* History Button (Icon only, no text, no numbers) */}
-          <button
-            type="button"
-            onClick={() => {
-              triggerVibration(10);
-              setShowHistoryModal(true);
-            }}
-            className="w-8 h-8 rounded-xl border flex items-center justify-center transition-all cursor-pointer bg-white hover:bg-zinc-100 text-zinc-700 border-zinc-250 shadow-xs shrink-0"
-            title="Practice History"
-            aria-label="Practice History"
-          >
-            <Clock className="w-4 h-4 text-indigo-600" />
-          </button>
+          {/* History Button (Shown only on select-subject landing page, NEVER on configure or while generating questions) */}
+          {!loading && step === 'select-subject' && (
+            <button
+              type="button"
+              onClick={() => {
+                triggerVibration(10);
+                setShowHistoryModal(true);
+              }}
+              className="w-8 h-8 rounded-xl border flex items-center justify-center transition-all cursor-pointer bg-white hover:bg-zinc-100 text-zinc-700 border-zinc-250 shadow-xs shrink-0"
+              title="Practice History"
+              aria-label="Practice History"
+            >
+              <Clock className="w-4 h-4 text-indigo-600" />
+            </button>
+          )}
         </div>
 
       </header>
@@ -1955,7 +2177,7 @@ Instructions for AI Magic Tutor:
                       <div>
                         <div className="flex items-center gap-2">
                           <h4 className="font-black text-zinc-900 text-sm tracking-tight">
-                            Subjective (Free Response)
+                            {isComputerSubject(selectedSubject) ? 'Create Performance Task (Written Response)' : 'Subjective (Free Response)'}
                           </h4>
                           <span className="text-[10px] font-extrabold bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200">
                             Section II
@@ -2090,6 +2312,32 @@ Instructions for AI Magic Tutor:
                       <div className="text-sm md:text-base font-bold text-zinc-900 leading-relaxed">
                         <GlobalMarkdown>{q.question}</GlobalMarkdown>
                       </div>
+
+                      {/* Visual SVG Diagram / Coordinate Graph if provided */}
+                      {q.diagramSvg && (
+                        <div className="my-2 p-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-100 shadow-sm flex flex-col gap-2">
+                          <div className="flex items-center justify-between pb-1 border-b border-zinc-800/80">
+                            <span className="text-[11px] font-black uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                              <Layers className="w-3.5 h-3.5 text-indigo-400" />
+                              {getDiagramTypeLabel(q.diagramType)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setFullscreenSvg({ svg: q.diagramSvg!, title: getDiagramTypeLabel(q.diagramType) })}
+                              className="text-[11px] font-bold text-zinc-300 hover:text-white flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700/80 transition-all cursor-pointer hover:bg-zinc-800"
+                            >
+                              <Maximize2 className="w-3 h-3 text-indigo-400" />
+                              <span>Inspect Graph</span>
+                            </button>
+                          </div>
+                          <div 
+                            className="w-full max-w-lg mx-auto flex justify-center items-center py-1 cursor-pointer transition-transform hover:scale-[1.01]"
+                            onClick={() => setFullscreenSvg({ svg: q.diagramSvg!, title: getDiagramTypeLabel(q.diagramType) })}
+                            title="Click to inspect high-resolution graph"
+                            dangerouslySetInnerHTML={{ __html: sanitizeSvg(q.diagramSvg) }}
+                          />
+                        </div>
+                      )}
 
                       {/* 4 Options */}
                       <div className="flex flex-col gap-2.5 pt-2">
@@ -2303,9 +2551,9 @@ Instructions for AI Magic Tutor:
           <div className="flex flex-col gap-5">
             {!isExamCompleted ? (
               <>
-                {/* Header FRQ Counter */}
+                {/* Header Counter */}
                 <div className="flex items-center justify-between text-xs font-bold text-zinc-500">
-                  <span>Free Response Question {currentSubIndex + 1} of {subjectiveQuestions.length}</span>
+                  <span>{isComputerSubject(selectedSubject) ? 'Create Performance Task Prompt' : 'Free Response Question'} {currentSubIndex + 1} of {subjectiveQuestions.length}</span>
                   <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-black text-[10px]">
                     {subjectiveQuestions[currentSubIndex]?.totalPoints || 6} Points Max
                   </span>
@@ -2324,7 +2572,7 @@ Instructions for AI Magic Tutor:
                       <div className="p-5 rounded-3xl bg-white border border-zinc-200/80 shadow-sm flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-[11px] font-extrabold uppercase tracking-wide text-purple-700 bg-purple-50 px-2.5 py-1 rounded-lg">
-                            {q.skill || `${selectedSubject.name} FRQ`}
+                            {q.skill || (isComputerSubject(selectedSubject) ? `${selectedSubject.name} Create Task` : `${selectedSubject.name} FRQ`)}
                           </span>
                           <div className="flex items-center gap-2">
                             <button
@@ -2336,15 +2584,38 @@ Instructions for AI Magic Tutor:
                               <Sparkles className="w-3.5 h-3.5 text-purple-600" />
                               <span>Ask AI</span>
                             </button>
-                            <span className="text-xs font-bold text-zinc-400">
-                              Section II
-                            </span>
                           </div>
                         </div>
 
                         <div className="text-sm font-semibold text-zinc-900 leading-relaxed">
                           <GlobalMarkdown>{q.prompt}</GlobalMarkdown>
                         </div>
+
+                        {/* Visual SVG Diagram / Coordinate Graph if provided */}
+                        {q.diagramSvg && (
+                          <div className="mt-3 p-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-100 shadow-sm flex flex-col gap-2">
+                            <div className="flex items-center justify-between pb-1 border-b border-zinc-800/80">
+                              <span className="text-[11px] font-black uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+                                <Layers className="w-3.5 h-3.5 text-purple-400" />
+                                {getDiagramTypeLabel(q.diagramType)}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setFullscreenSvg({ svg: q.diagramSvg!, title: getDiagramTypeLabel(q.diagramType) })}
+                                className="text-[11px] font-bold text-zinc-300 hover:text-white flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700/80 transition-all cursor-pointer hover:bg-zinc-800"
+                              >
+                                <Maximize2 className="w-3 h-3 text-purple-400" />
+                                <span>Inspect Graph</span>
+                              </button>
+                            </div>
+                            <div 
+                              className="w-full max-w-lg mx-auto flex justify-center items-center py-1 cursor-pointer transition-transform hover:scale-[1.01]"
+                              onClick={() => setFullscreenSvg({ svg: q.diagramSvg!, title: getDiagramTypeLabel(q.diagramType) })}
+                              title="Click to inspect high-resolution graph"
+                              dangerouslySetInnerHTML={{ __html: sanitizeSvg(q.diagramSvg) }}
+                            />
+                          </div>
+                        )}
                       </div>
 
                       {/* Student Response Pad */}
@@ -2529,25 +2800,14 @@ Instructions for AI Magic Tutor:
                               type="button"
                               disabled={(!studentAnswer.trim() && !attachedImages[currentSubIndex]) || evaluation?.loading}
                               onClick={() => handleEvaluateAnswer(currentSubIndex)}
-                              className="px-3 h-8.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white flex items-center gap-1.5 shadow-md shadow-indigo-500/20 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer hover:scale-105 active:scale-95 transition-all text-xs font-bold shrink-0"
-                              title="Submit your written solution to AP Chief Reader AI for grading and score"
+                              className="w-8.5 h-8.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer hover:scale-105 active:scale-95 transition-all shrink-0"
+                              title="Submit for AI Grading"
                               aria-label="Submit for AI Grading"
                             >
                               {evaluation?.loading ? (
-                                <>
-                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                  <span>Grading...</span>
-                                </>
-                              ) : scoreInfo ? (
-                                <>
-                                  <RefreshCw className="w-3.5 h-3.5" />
-                                  <span>Re-Grade ({scoreInfo.earned}/{scoreInfo.total} pts)</span>
-                                </>
+                                <Loader2 className="w-4 h-4 animate-spin" />
                               ) : (
-                                <>
-                                  <Send className="w-3.5 h-3.5" />
-                                  <span>Grade with AI</span>
-                                </>
+                                <Send className="w-4 h-4" />
                               )}
                             </button>
                           </div>
@@ -2585,52 +2845,6 @@ Instructions for AI Magic Tutor:
                         )}
                       </div>
 
-                      {/* Toggle Scoring Rubric & Model Answer */}
-                      <div className="rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-sm">
-                        <button
-                          onClick={() => {
-                            triggerVibration(10);
-                            setShowRubric(prev => ({ ...prev, [currentSubIndex]: !prev[currentSubIndex] }));
-                          }}
-                          className="w-full p-4 flex items-center justify-between text-left font-bold text-xs text-zinc-800 hover:bg-zinc-50 transition-colors"
-                        >
-                          <span className="flex items-center gap-2">
-                            <Sparkles className="w-4 h-4 text-emerald-600" />
-                            Official Scoring Guidelines & Model Solution
-                          </span>
-                          {isRubricShown ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                        </button>
-
-                        {isRubricShown && (
-                          <div className="p-4 border-t border-zinc-100 bg-zinc-50/60 flex flex-col gap-4 text-xs">
-                            {/* Scoring Rubric Points */}
-                            <div>
-                              <span className="font-black text-emerald-800 block mb-2 uppercase tracking-wide text-[10px]">
-                                Scoring Criteria & Points Breakdown
-                              </span>
-                              <ul className="flex flex-col gap-1.5">
-                                {q.scoringRubric.map((item, idx) => (
-                                  <li key={idx} className="flex items-start gap-2 text-zinc-700">
-                                    <span className="text-emerald-600 font-bold">✓</span>
-                                    <GlobalMarkdown>{item}</GlobalMarkdown>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-
-                            {/* Model Solution */}
-                            <div className="pt-2 border-t border-zinc-200/60">
-                              <span className="font-black text-indigo-900 block mb-2 uppercase tracking-wide text-[10px]">
-                                High-Scoring Exemplary Model Solution
-                              </span>
-                              <div className="p-3 rounded-xl bg-white border border-zinc-200 text-zinc-800">
-                                <GlobalMarkdown>{q.modelAnswer}</GlobalMarkdown>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
                       {/* Navigation Bar */}
                       <div className="flex items-center justify-between gap-3 pt-2">
                         <button
@@ -2641,7 +2855,7 @@ Instructions for AI Magic Tutor:
                           }}
                           className="px-4 py-3 rounded-xl border border-zinc-200 bg-white font-bold text-xs text-zinc-700 disabled:opacity-30 cursor-pointer"
                         >
-                          Previous FRQ
+                          {isComputerSubject(selectedSubject) ? 'Previous Task' : 'Previous FRQ'}
                         </button>
 
                         {currentSubIndex < subjectiveQuestions.length - 1 ? (
@@ -2652,7 +2866,7 @@ Instructions for AI Magic Tutor:
                             }}
                             className="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer"
                           >
-                            <span>Next FRQ</span>
+                            <span>{isComputerSubject(selectedSubject) ? 'Next Task' : 'Next FRQ'}</span>
                             <ArrowRight className="w-3.5 h-3.5" />
                           </button>
                         ) : (
@@ -2706,9 +2920,11 @@ Instructions for AI Magic Tutor:
                 {/* Score Card */}
                 <div className="p-6 rounded-3xl bg-white border border-zinc-200 shadow-sm flex flex-col items-center">
                   <span className="text-4xl select-none mb-2">🏆</span>
-                  <h3 className="text-xl font-black text-zinc-900">AP Free Response Simulation Finished!</h3>
+                  <h3 className="text-xl font-black text-zinc-900">
+                    {isComputerSubject(selectedSubject) ? 'AP Create Performance Task Simulation Finished!' : 'AP Free Response Simulation Finished!'}
+                  </h3>
                   <p className="text-xs text-zinc-500 font-semibold mt-1">
-                    {selectedSubject.name} • {subjectiveQuestions.length} Free Response Questions
+                    {selectedSubject.name} • {subjectiveQuestions.length} {isComputerSubject(selectedSubject) ? 'Create Performance Tasks' : 'Free Response Questions'}
                   </p>
 
                   <div className="my-5 p-4 rounded-2xl w-full border text-left flex items-center justify-between bg-zinc-50 border-zinc-200">
@@ -2753,10 +2969,10 @@ Instructions for AI Magic Tutor:
                     </div>
                   </div>
 
-                  {/* Breakdown per FRQ */}
+                  {/* Breakdown per Question / Task */}
                   <div className="w-full mt-5 text-left flex flex-col gap-2.5">
                     <h4 className="text-xs font-black uppercase tracking-wider text-zinc-500">
-                      Free Response Question Breakdown
+                      {isComputerSubject(selectedSubject) ? 'Create Performance Task Breakdown' : 'Free Response Question Breakdown'}
                     </h4>
                     {subjectiveQuestions.map((q, idx) => {
                       const sc = subjectiveScores[idx];
@@ -2765,7 +2981,7 @@ Instructions for AI Magic Tutor:
                         <div key={idx} className="p-3.5 rounded-xl border border-zinc-200 bg-zinc-50/50 flex flex-col gap-2">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-black text-zinc-800">
-                              FRQ {idx + 1}: {q.skill || 'Free Response Question'}
+                              {isComputerSubject(selectedSubject) ? `Task ${idx + 1}: ` : `FRQ ${idx + 1}: `}{q.skill || (isComputerSubject(selectedSubject) ? 'Create Performance Task' : 'Free Response Question')}
                             </span>
                             {sc ? (
                               <span className="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-bold text-xs">
@@ -2894,7 +3110,7 @@ Instructions for AI Magic Tutor:
                   </div>
                   <div>
                     <h4 className="text-xs font-black tracking-tight text-zinc-100">AP® Exam Calculator</h4>
-                    <p className="text-[10px] text-zinc-400 font-medium">{calculatorPolicy.label}</p>
+                    <p className="text-[10px] text-zinc-400 font-medium">Scientific Calculator</p>
                   </div>
                 </div>
                 <button
@@ -3218,7 +3434,7 @@ Instructions for AI Magic Tutor:
                                   ? 'bg-blue-50 text-blue-700'
                                   : 'bg-purple-50 text-purple-700'
                               }`}>
-                                {item.questionType === 'objective' ? 'MCQ' : 'FRQ'} ({item.count} Qs)
+                                {item.questionType === 'objective' ? 'MCQ' : ((item.subjectId === 'ap-computer-science-principles' || item.shortCode === 'CSP' || item.subjectName?.toLowerCase().includes('principles')) ? 'Create Task' : 'FRQ')} ({item.count} Qs)
                               </span>
                             </div>
                             <p className="text-[11px] text-zinc-600 font-medium truncate mt-0.5">
@@ -3304,14 +3520,18 @@ Instructions for AI Magic Tutor:
             <div className="bg-zinc-950 p-4 border-t border-zinc-900 flex shrink-0 z-10 gap-3">
               <button
                 onClick={async () => {
-                  triggerVibration(15);
+                  triggerVibration(20);
                   try {
                     const res = await fetch(previewPdfUri);
                     const blob = await res.blob();
-                    await savePDFMobile(blob, previewPdfName);
+                    await savePDFMobile(blob, previewPdfName, {
+                      openImmediately: false,
+                      customToast: '✅ PDF Saved',
+                      featureTag: 'AP Practice Exam'
+                    });
                   } catch (e: any) {
                     console.error("PDF download error:", e);
-                    alert("Download failed: " + e.message);
+                    showToast("Download failed: " + (e.message || e), "error");
                   }
                 }}
                 className="flex-1 bg-white hover:bg-zinc-100 text-zinc-900 font-black text-xs py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-all shadow-md"
@@ -3328,7 +3548,7 @@ Instructions for AI Magic Tutor:
                     await sharePDFMobile(blob, previewPdfName);
                   } catch (e: any) {
                     console.error("PDF share error:", e);
-                    alert("Share failed: " + e.message);
+                    showToast("Share failed: " + (e.message || e), "error");
                   }
                 }}
                 className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-all shadow-md"
@@ -3393,7 +3613,7 @@ Instructions for AI Magic Tutor:
                   <div className="p-3 rounded-2xl bg-zinc-50 border border-zinc-200/80 text-xs text-zinc-700">
                     <div className="flex items-center justify-between font-bold text-[10px] uppercase tracking-wide text-zinc-400 mb-1">
                       <span>Question Context</span>
-                      <span>{tutorActiveQuestion.type === 'objective' ? 'Section I (MCQ)' : 'Section II (FRQ)'}</span>
+                      <span>{tutorActiveQuestion.type === 'objective' ? 'Section I (MCQ)' : (isComputerSubject(selectedSubject) ? 'Section II (Create Task)' : 'Section II (FRQ)')}</span>
                     </div>
                     <div className="line-clamp-2 font-medium">
                       <GlobalMarkdown>{tutorActiveQuestion.text}</GlobalMarkdown>
@@ -4119,6 +4339,145 @@ Instructions for AI Magic Tutor:
                     className="px-4 py-1.5 rounded-xl bg-zinc-900 text-white font-bold text-xs hover:bg-zinc-800 cursor-pointer"
                   >
                     Close Sheet
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* ================= PREMIUM IN-APP CONFIRMATION MODAL ================= */}
+        <AnimatePresence>
+          {confirmModal.isOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              />
+
+              {/* Modal Card */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                className="relative bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-zinc-100 flex flex-col items-center text-center z-10"
+              >
+                {/* Icon Badge */}
+                <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-2xl shadow-inner mb-3.5">
+                  <span>{confirmModal.icon || '⚠️'}</span>
+                </div>
+
+                {/* Title */}
+                <h3 className="text-lg font-black text-zinc-900 tracking-tight">
+                  {confirmModal.title}
+                </h3>
+
+                {/* Description */}
+                <p className="text-xs text-zinc-500 font-medium leading-relaxed mt-2 px-1">
+                  {confirmModal.description}
+                </p>
+
+                {/* Actions */}
+                <div className="flex flex-col gap-2.5 w-full mt-6">
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => {
+                      triggerVibration(15);
+                      const action = confirmModal.onConfirm;
+                      setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                      action();
+                    }}
+                    className={`w-full py-3.5 rounded-2xl font-black text-xs shadow-md transition-all cursor-pointer ${
+                      confirmModal.confirmColor || 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20'
+                    }`}
+                  >
+                    {confirmModal.confirmText}
+                  </motion.button>
+
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => {
+                      triggerVibration(10);
+                      setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                    }}
+                    className="w-full py-3 rounded-2xl font-bold text-xs text-zinc-600 hover:bg-zinc-100 transition-colors cursor-pointer"
+                  >
+                    {confirmModal.cancelText || 'Cancel'}
+                  </motion.button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* ================= FULLSCREEN SVG GRAPH & DIAGRAM INSPECTION MODAL ================= */}
+        <AnimatePresence>
+          {fullscreenSvg && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setFullscreenSvg(null)}
+                className="absolute inset-0 bg-black/85 backdrop-blur-md cursor-pointer"
+              />
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.92, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.92, y: 15 }}
+                transition={{ type: 'spring', damping: 26, stiffness: 340 }}
+                className="relative bg-zinc-950 rounded-3xl p-4 sm:p-6 max-w-2xl w-full shadow-2xl border border-zinc-800 flex flex-col gap-3.5 z-10 max-h-[92vh] overflow-y-auto"
+              >
+                {/* Modal Header */}
+                <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+                      <Layers className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black text-white tracking-tight">
+                        {fullscreenSvg.title}
+                      </h3>
+                      <p className="text-[11px] text-zinc-400 font-medium">
+                        College Board Official Exam Visual Standard
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setFullscreenSvg(null)}
+                    className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-colors cursor-pointer"
+                    title="Close Graph Inspector"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Diagram Viewport */}
+                <div 
+                  className="w-full flex justify-center items-center py-2 sm:py-4 bg-zinc-900/60 rounded-2xl border border-zinc-850 p-2 overflow-hidden shadow-inner"
+                  dangerouslySetInnerHTML={{ __html: sanitizeSvg(fullscreenSvg.svg) }}
+                />
+
+                {/* Modal Footer */}
+                <div className="flex items-center justify-between pt-2 border-t border-zinc-850 text-xs text-zinc-400">
+                  <span className="text-[11px] text-zinc-500 italic">
+                    Coordinates, curve points, and asymptotes rendered to scale
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setFullscreenSvg(null)}
+                    className="px-4 py-2 rounded-xl bg-white text-zinc-950 font-bold text-xs hover:bg-zinc-100 transition-all cursor-pointer shadow-sm"
+                  >
+                    Done Inspecting
                   </button>
                 </div>
               </motion.div>

@@ -83,7 +83,10 @@ export default function AuthGuard({
             <Login 
               onClose={() => {}} 
               onLoginSuccess={(target) => {
-                if (target === 'main') {
+                if (target === 'developer') {
+                  window.dispatchEvent(new CustomEvent('developer-auth-changed', { detail: { authenticated: true } }));
+                  return;
+                } else if (target === 'main') {
                   setShowOnboarding(false);
                   setShowAcademicSetup(false);
                 } else if (target === 'setup') {

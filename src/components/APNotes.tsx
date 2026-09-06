@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ArrowLeft, ArrowRight, BookOpen, Download, Share2, Sparkles, CheckCircle2, 
+  ArrowLeft, ArrowRight, BookOpen, Share2, Sparkles, CheckCircle2, 
   ChevronDown, ChevronRight, AlertTriangle, Lightbulb, Zap, Bookmark, Layers, Search, Loader2,
-  HelpCircle, Check, Eye, Maximize2, X, ChevronLeft, FileText, Trash2, HardDrive, FolderDown
+  HelpCircle, Check, Eye, Maximize2, X, ChevronLeft, FileText, HardDrive
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { triggerVibration } from '../utils/vibrate';
@@ -18,222 +18,29 @@ import {
 import GlobalMarkdown from './GlobalMarkdown';
 import jsPDF from 'jspdf';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
-import { sanitizePdfText } from '../utils/pdfSanitizer';
+import { sanitizePdfText, formatLatexToAscii } from '../utils/pdfSanitizer';
 import SafePdfViewer from './SafePdfViewer';
-import { 
-  saveOfflineNote, 
-  getOfflineNotesManifest, 
-  getDownloadedUnitIdsSync, 
-  deleteOfflineNote, 
-  OfflineNoteMeta 
-} from '../utils/offlineNotesStorage';
+import { saveOfflineNote } from '../utils/offlineNotesStorage';
+import APCalculusABStitchNotes from './APCalculusABStitchNotes';
+import APSubjectStitchNotes from './APSubjectStitchNotes';
+import { safeGetItem } from '../utils/storage';
+import { GRADE_9_RECOMMENDED_IDS } from '../utils/apCurriculum';
 
 interface APNotesProps {
   onBack: () => void;
+  onNavigateToTab?: (tab: string) => void;
+  isVip?: boolean;
 }
 
 type Step = 'select-subject' | 'reading';
 
 /**
- * Converts LaTeX math expressions into clean, legible Unicode text for PDF printing.
- * Handles nested fractions, positive/negative powers, one-sided limits, and multi-line aligned formulas.
+ * Converts LaTeX math expressions into clean, legible ASCII text for PDF printing.
+ * Powered by universal formatLatexToAscii converter.
  */
 function formatMathForPdf(latex: string): string {
   if (!latex) return '';
-  let str = String(latex);
-
-  // 1. Remove LaTeX environment wrappers
-  str = str.replace(/\\begin\{(aligned|matrix|cases|array|split)\}/g, '');
-  str = str.replace(/\\end\{(aligned|matrix|cases|array|split)\}/g, '');
-
-  // 2. Clean \left and \right delimiters FIRST to prevent \le and \rightarrow conflicts
-  str = str.replace(/\\left\s*\\\{/g, '{');
-  str = str.replace(/\\right\s*\\\}/g, '}');
-  str = str.replace(/\\left\s*([(\[{|])/g, '$1');
-  str = str.replace(/\\right\s*([)\]}|])/g, '$1');
-  str = str.replace(/\\left\./g, '');
-  str = str.replace(/\\right\./g, '');
-
-  // 3. Clean aligned alignment tokens & linebreaks
-  str = str.replace(/&=/g, ' = ');
-  str = str.replace(/&/g, '   |   ');
-  str = str.replace(/\\\\/g, '\n');
-
-  // 4. Radicals & Roots (n-th roots and square roots)
-  str = str.replace(/\\sqrt\[([^\]]+)\]\{([^{}]+)\}/g, '$1√($2)');
-  str = str.replace(/\\sqrt\[([^\]]+)\]/g, '$1√');
-  str = str.replace(/\\sqrt\{([^{}]+)\}/g, '√($1)');
-  str = str.replace(/\\sqrt/g, '√');
-  str = str.replace(/sqrt\(([^)]+)\)/g, '√($1)');
-
-  // 5. AP Calculus Limits with one-sided notation (e.g. lim_{x -> c^-}, lim_{x \to 0})
-  str = str.replace(/\\?lim_\{x\s*(?:\\to|\\rightarrow|->)\s*([^}^+^-]+)\^-\}/g, 'lim(x → $1⁻)');
-  str = str.replace(/\\?lim_\{x\s*(?:\\to|\\rightarrow|->)\s*([^}^+^-]+)\^\+\}/g, 'lim(x → $1⁺)');
-  str = str.replace(/\\?lim_\{x\s*(?:\\to|\\rightarrow|->)\s*([^}]+)\}/g, 'lim(x → $1)');
-  str = str.replace(/\\?lim_\{h\s*(?:\\to|\\rightarrow|->)\s*([^}]+)\}/g, 'lim(h → $1)');
-  str = str.replace(/\\?lim_\{([^}]+)\}/g, 'lim($1)');
-  str = str.replace(/\\?lim/g, 'lim');
-  str = str.replace(/lim\(x\s*->\s*([^)]+)\^-\)/g, 'lim(x → $1⁻)');
-  str = str.replace(/lim\(x\s*->\s*([^)]+)\^\+\)/g, 'lim(x → $1⁺)');
-  str = str.replace(/lim\(x\s*->\s*([^)]+)\)/g, 'lim(x → $1)');
-
-  // 6. Integrals, Derivatives & Summations
-  str = str.replace(/\\int_\{([^{}]+)\}\^\{([^{}]+)\}/g, '∫[$1 to $2]');
-  str = str.replace(/\\int_([a-zA-Z0-9]+)\^([a-zA-Z0-9]+)/g, '∫[$1 to $2]');
-  str = str.replace(/\\int_\{([^{}]+)\}/g, '∫[$1]');
-  str = str.replace(/\\int/g, '∫');
-  str = str.replace(/\\sum_\{([^{}]+)\}\^\{([^{}]+)\}/g, '∑[$1 to $2]');
-  str = str.replace(/\\sum/g, '∑');
-  str = str.replace(/\\frac\{d\}\{dx\}/g, 'd/dx');
-  str = str.replace(/\\frac\{dy\}\{dt\}/g, 'dy/dt');
-  str = str.replace(/\\frac\{dy\}\{dx\}/g, 'dy/dx');
-  str = str.replace(/\\frac\{ds\}\{dt\}/g, 'ds/dt');
-  str = str.replace(/\\frac\{dv\}\{dt\}/g, 'dv/dt');
-  str = str.replace(/\\frac\{d\^2y\}\{dx\^2\}/g, 'd²y/dx²');
-
-  // 7. Robust recursive fraction parsing (handles nested powers & expressions)
-  function parseFractions(input: string): string {
-    let output = input;
-    const fracPrefix = '\\frac{';
-    let idx = output.indexOf(fracPrefix);
-    while (idx !== -1) {
-      const numStart = idx + fracPrefix.length;
-      let depth = 1;
-      let numEnd = -1;
-      for (let i = numStart; i < output.length; i++) {
-        if (output[i] === '{') depth++;
-        else if (output[i] === '}') {
-          depth--;
-          if (depth === 0) { numEnd = i; break; }
-        }
-      }
-      if (numEnd !== -1 && output[numEnd + 1] === '{') {
-        const denStart = numEnd + 2;
-        depth = 1;
-        let denEnd = -1;
-        for (let j = denStart; j < output.length; j++) {
-          if (output[j] === '{') depth++;
-          else if (output[j] === '}') {
-            depth--;
-            if (depth === 0) { denEnd = j; break; }
-          }
-        }
-        if (denEnd !== -1) {
-          const num = output.substring(numStart, numEnd);
-          const den = output.substring(denStart, denEnd);
-          const rep = `(${num})/(${den})`;
-          output = output.substring(0, idx) + rep + output.substring(denEnd + 1);
-          idx = output.indexOf(fracPrefix);
-          continue;
-        }
-      }
-      break;
-    }
-    return output;
-  }
-  str = parseFractions(str);
-
-  // 8. Comprehensive Unicode Superscripts Map (Positive, Negative, Fractions, Variables)
-  const superMap: Record<string, string> = {
-    '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
-    '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
-    '+': '⁺', '-': '⁻', '=': '⁼', '(': '⁽', ')': '⁾',
-    'n': 'ⁿ', 'x': 'ˣ', 'k': 'ᵏ', 't': 'ᵗ', 'm': 'ᵐ', 'a': 'ᵃ', 'b': 'ᵇ'
-  };
-
-  // Convert ^{...} to unicode superscripts
-  str = str.replace(/\^\{([^{}]+)\}/g, (_match, p1) => {
-    let converted = '';
-    for (const ch of p1) {
-      if (ch === '/') converted += 'ᐟ';
-      else if (superMap[ch]) converted += superMap[ch];
-      else { converted = `^(${p1})`; break; }
-    }
-    return converted;
-  });
-
-  // Convert raw ^-1, ^-2, ^-3, ^-n, ^2, ^3, ^4, etc.
-  str = str.replace(/\^-([0-9nxkta])/g, (_m, p1) => '⁻' + (superMap[p1] || p1));
-  str = str.replace(/\^([0-9nxtk])(?![0-9a-zA-Z])/g, (_m, p1) => superMap[p1] || p1);
-  str = str.replace(/\^-/g, '⁻');
-  str = str.replace(/\^\+/g, '⁺');
-
-  // Subscripts
-  const subMap: Record<string, string> = {
-    '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄',
-    '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉',
-    '+': '₊', '-': '₋', 'n': 'ₙ', 'i': 'ᵢ'
-  };
-  str = str.replace(/\_\{([^{}]+)\}/g, (_m, p1) => {
-    let converted = '';
-    for (const ch of p1) {
-      if (subMap[ch]) converted += subMap[ch];
-      else { converted = `_${p1}`; break; }
-    }
-    return converted;
-  });
-  str = str.replace(/\_([0-9])(?![0-9])/g, (_m, p1) => subMap[p1] || p1);
-
-  // 9. Standard function names
-  str = str.replace(/\\arcsin/g, 'arcsin');
-  str = str.replace(/\\arccos/g, 'arccos');
-  str = str.replace(/\\arctan/g, 'arctan');
-  str = str.replace(/\\sin/g, 'sin');
-  str = str.replace(/\\cos/g, 'cos');
-  str = str.replace(/\\tan/g, 'tan');
-  str = str.replace(/\\sec/g, 'sec');
-  str = str.replace(/\\csc/g, 'csc');
-  str = str.replace(/\\cot/g, 'cot');
-  str = str.replace(/\\ln/g, 'ln');
-  str = str.replace(/\\log/g, 'log');
-
-  // 10. AP Calculus Mathematical Symbols & Dots
-  str = str.replace(/\\dots|\\cdots|\\ldots/g, '…');
-  str = str.replace(/\\pm|\+\/-/g, '±');
-  str = str.replace(/\\mp/g, '∓');
-  str = str.replace(/\\cdot/g, ' · ');
-  str = str.replace(/\\times/g, ' × ');
-  str = str.replace(/\\div/g, ' ÷ ');
-  str = str.replace(/\\infty/g, '∞');
-  str = str.replace(/\\to|\\rightarrow/g, ' → ');
-  str = str.replace(/->/g, ' → ');
-  str = str.replace(/\\leftarrow/g, ' ← ');
-  str = str.replace(/\\implies/g, ' ⟹ ');
-  str = str.replace(/==>/g, ' ⟹ ');
-  str = str.replace(/\\iff/g, ' ⟺ ');
-  str = str.replace(/\\leq|\\le(?![a-zA-Z])/g, ' ≤ ');
-  str = str.replace(/<=/g, ' ≤ ');
-  str = str.replace(/\\geq|\\ge(?![a-zA-Z])/g, ' ≥ ');
-  str = str.replace(/>=/g, ' ≥ ');
-  str = str.replace(/\\neq/g, ' ≠ ');
-  str = str.replace(/!=/g, ' ≠ ');
-  str = str.replace(/\\approx/g, ' ≈ ');
-  str = str.replace(/\\in(?![a-zA-Z])/g, ' ∈ ');
-  str = str.replace(/\\notin/g, ' ∉ ');
-  str = str.replace(/\\pi/g, 'π');
-  str = str.replace(/\\theta/g, 'θ');
-  str = str.replace(/\\Delta/g, 'Δ');
-  str = str.replace(/\\alpha/g, 'α');
-  str = str.replace(/\\beta/g, 'β');
-  str = str.replace(/\\partial/g, '∂');
-
-  // Spacing
-  str = str.replace(/\\qquad/g, '    |    ');
-  str = str.replace(/\\quad/g, '   •   ');
-
-  str = str.replace(/\\text\{([^{}]+)\}/g, '$1');
-  str = str.replace(/\\mathbf\{([^{}]+)\}/g, '$1');
-  str = str.replace(/\\mathit\{([^{}]+)\}/g, '$1');
-
-  // 11. Clean remaining LaTeX markers, loose curly braces, and markdown $
-  str = str.replace(/\\[a-zA-Z]+/g, '');
-  str = str.replace(/[{}]/g, '');
-  str = str.replace(/\$\$/g, '');
-  str = str.replace(/\$/g, '');
-
-  // Clean extra spaces on each line while preserving clean newlines
-  const lines = str.split('\n');
-  return lines.map(l => l.replace(/[ \t]+/g, ' ').trim()).join('\n').trim();
+  return formatLatexToAscii(latex);
 }
 
 /**
@@ -661,146 +468,17 @@ function DiagramFullPageModal({
   );
 }
 
-/**
- * Modal to view and manage all in-app downloaded PDF notes for offline study
- */
-function OfflineNotesModal({
-  isOpen,
-  onClose,
-  notes,
-  onOpenNote,
-  onDeleteNote,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  notes: OfflineNoteMeta[];
-  onOpenNote: (note: OfflineNoteMeta) => void;
-  onDeleteNote: (note: OfflineNoteMeta) => void;
-}) {
-  if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 bg-[#FAF9F6] flex flex-col animate-fade-in">
-      {/* Top Mobile Header */}
-      <header className="px-4 py-3.5 border-b border-zinc-200/80 bg-white sticky top-0 z-10 flex items-center justify-between shrink-0 shadow-2xs">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              triggerVibration(10);
-              onClose();
-            }}
-            className="w-9 h-9 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 hover:text-zinc-950 flex items-center justify-center transition-all cursor-pointer active:scale-95"
-            title="Back to Course Notes"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-black text-zinc-900 text-sm tracking-tight">Saved Offline Notes</h3>
-              <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
-                {notes.length} Ready
-              </span>
-            </div>
-            <p className="text-[11px] text-zinc-500 font-medium">
-              Downloaded in app • Study anytime offline
-            </p>
-          </div>
-        </div>
-
-        <button
-          onClick={() => {
-            triggerVibration(10);
-            onClose();
-          }}
-          className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-zinc-900 flex items-center justify-center transition-all cursor-pointer"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </header>
-
-      {/* Content List */}
-      <div className="flex-1 overflow-y-auto p-4 max-w-2xl mx-auto w-full space-y-3">
-        {notes.length === 0 ? (
-          <div className="py-20 px-4 text-center flex flex-col items-center">
-            <div className="w-16 h-16 rounded-3xl bg-white border border-zinc-200 text-3xl flex items-center justify-center mb-3 shadow-xs">
-              📥
-            </div>
-            <h4 className="font-bold text-zinc-900 text-sm">No Offline Notes Saved Yet</h4>
-            <p className="text-xs text-zinc-500 mt-1.5 max-w-xs leading-relaxed">
-              Tap the download icon on any unit in AP Notes to save it inside the app for instant study anytime without internet.
-            </p>
-          </div>
-        ) : (
-          notes.map((note) => (
-            <div
-              key={note.id}
-              className="p-4 rounded-2xl bg-white border border-zinc-200 hover:border-emerald-500/50 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
-            >
-              <div className="min-w-0 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200/70 font-black text-xs flex items-center justify-center shrink-0">
-                  U{note.unitNumber}
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <h5 className="font-bold text-xs text-zinc-900 truncate">
-                      Unit {note.unitNumber}: {note.title}
-                    </h5>
-                    {note.subjectTitle && (
-                      <span className="text-[9px] font-extrabold text-indigo-700 bg-indigo-50 border border-indigo-200/70 px-1.5 py-0.5 rounded shrink-0">
-                        {note.subjectTitle}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    <span className="text-[10px] text-zinc-500 font-medium">
-                      {note.examWeight}
-                    </span>
-                    <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded font-mono font-bold">
-                      {note.fileSize}
-                    </span>
-                    <span className="text-[10px] text-zinc-400 font-mono">
-                      {note.pageCount} Pages
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                <button
-                  onClick={() => onOpenNote(note)}
-                  className="h-8 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-xs"
-                >
-                  <BookOpen className="w-3.5 h-3.5" />
-                  <span>Read PDF</span>
-                </button>
-
-                <button
-                  onClick={() => onDeleteNote(note)}
-                  className="w-8 h-8 rounded-xl bg-zinc-100 hover:bg-red-50 text-zinc-500 hover:text-red-600 border border-zinc-200 flex items-center justify-center transition-all cursor-pointer"
-                  title="Delete from in-app storage"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Mobile Footer */}
-      <footer className="p-3 border-t border-zinc-200/80 bg-white text-center shrink-0">
-        <p className="text-[10px] text-zinc-500 font-medium">
-          Saved securely in local app storage (IndexedDB) • Reads 100% offline
-        </p>
-      </footer>
-    </div>
-  );
-}
 
 export default function APNotes({ onBack }: APNotesProps) {
   const [step, setStep] = useState<Step>('select-subject');
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('ap-calculus-ab');
-  const [expandedSubjectIds, setExpandedSubjectIds] = useState<Set<string>>(() => new Set(['ap-calculus-ab', 'ap-physics', 'ap-chemistry', 'ap-biology']));
+  const userGrade = safeGetItem('academic_grade') || '11th Grade (Junior)';
+  const isGrade9Student = userGrade.toLowerCase().includes('9th') || userGrade.toLowerCase().includes('freshman');
+
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>(() => {
+    return isGrade9Student ? 'ap-human-geography' : 'ap-calculus-ab';
+  });
+  const [expandedSubjectIds, setExpandedSubjectIds] = useState<Set<string>>(() => new Set());
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedUnitId, setSelectedUnitId] = useState<string>('u1');
@@ -808,34 +486,10 @@ export default function APNotes({ onBack }: APNotesProps) {
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [isSharing, setIsSharing] = useState<boolean>(false);
   const [selectedDiagram, setSelectedDiagram] = useState<APNoteDiagram | null>(null);
-  const [viewMode, setViewMode] = useState<'pdf' | 'interactive'>('pdf');
+  const [fullScreenPdfData, setFullScreenPdfData] = useState<{ uri: string; title: string; unitNumber: number } | null>(null);
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
 
-  // In-App Offline Notes State
-  const [downloadedUnitIds, setDownloadedUnitIds] = useState<Set<string>>(() => new Set(getDownloadedUnitIdsSync()));
-  const [offlineNotes, setOfflineNotes] = useState<OfflineNoteMeta[]>([]);
-  const [showOfflineDrawer, setShowOfflineDrawer] = useState<boolean>(false);
-  const [downloadToast, setDownloadToast] = useState<{ show: boolean; message: string } | null>(null);
-
-  // Load offline notes manifest on mount and listen for real-time updates
-  useEffect(() => {
-    const refreshManifest = async () => {
-      const items = await getOfflineNotesManifest();
-      setOfflineNotes(items);
-      const ids = new Set<string>();
-      items.forEach(i => {
-        if (i.id) ids.add(i.id);
-        if (i.unitId) ids.add(i.unitId);
-        if (i.subjectId && i.unitId) ids.add(`${i.subjectId}_${i.unitId}`);
-      });
-      setDownloadedUnitIds(ids);
-    };
-
-    refreshManifest();
-    window.addEventListener('offline-notes-updated', refreshManifest);
-    return () => window.removeEventListener('offline-notes-updated', refreshManifest);
-  }, []);
 
   const allSupportedSubjects = getAllSupportedNoteSubjects();
   const currentSubjectEntry: APSubjectNoteEntry = AP_NOTES_REGISTRY[selectedSubjectId] || AP_NOTES_REGISTRY['ap-calculus-ab'];
@@ -875,13 +529,18 @@ export default function APNotes({ onBack }: APNotesProps) {
 
     const drawHeader = (isFirstPage: boolean) => {
       if (isFirstPage) {
-        doc.setFillColor(30, 27, 75); // Deep Indigo (#1e1b4b)
+        const isCalcAb = subject.subjectId === 'ap-calculus-ab';
+        const bannerBg = isCalcAb ? [9, 76, 178] : [30, 27, 75]; // Stitch Royal Blue (#094cb2)
+        const stripBg = isCalcAb ? [249, 227, 122] : [99, 102, 241]; // Gold Amber (#f9e37a)
+        const badgeColor = isCalcAb ? [249, 227, 122] : [251, 191, 36];
+
+        doc.setFillColor(bannerBg[0], bannerBg[1], bannerBg[2]);
         doc.rect(0, 0, pageWidth, 74, 'F');
 
-        doc.setFillColor(99, 102, 241); // Indigo-500 strip
+        doc.setFillColor(stripBg[0], stripBg[1], stripBg[2]);
         doc.rect(0, 74, pageWidth, 3, 'F');
 
-        doc.setTextColor(251, 191, 36); // Gold Amber
+        doc.setTextColor(badgeColor[0], badgeColor[1], badgeColor[2]);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8.5);
         doc.text(`HELPYOU AI  |  ${subject.subjectName.toUpperCase()} OFFICIAL STUDY GUIDE`, margin, 24);
@@ -931,7 +590,13 @@ export default function APNotes({ onBack }: APNotesProps) {
         currentPage++;
         drawHeader(false);
         drawFooter(currentPage);
+        // Reset default typography after footer so 8pt slate color never leaks into content
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+        doc.setTextColor(30, 41, 59);
+        return true;
       }
+      return false;
     };
 
     drawHeader(true);
@@ -948,25 +613,26 @@ export default function APNotes({ onBack }: APNotesProps) {
     // ─── Section: Big Idea ────────────────────────────────────────────────────
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
-    const ideaLines = doc.splitTextToSize(sanitizePdfText(unit.bigIdea), contentWidth - 28);
+    const ideaLines = doc.splitTextToSize(sanitizePdfText(formatMathForPdf(unit.bigIdea)), contentWidth - 28);
     const ideaBoxH  = 18 + ideaLines.length * LH + 8;
-    doc.setFillColor(245, 243, 255);
-    doc.setDrawColor(196, 181, 253);
+    const isCalcAb = subject.subjectId === 'ap-calculus-ab';
+    doc.setFillColor(isCalcAb ? 245 : 245, isCalcAb ? 243 : 243, isCalcAb ? 244 : 255);
+    doc.setDrawColor(isCalcAb ? 195 : 196, isCalcAb ? 198 : 181, isCalcAb ? 213 : 253);
     doc.setLineWidth(0.75);
     doc.roundedRect(margin, currentY, contentWidth, ideaBoxH, 4, 4, 'FD');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
-    doc.setTextColor(109, 40, 217);
-    doc.text('CORE CED BIG IDEA', margin + 10, currentY + 11);
+    doc.setTextColor(isCalcAb ? 9 : 109, isCalcAb ? 76 : 40, isCalcAb ? 178 : 217);
+    doc.text(isCalcAb ? 'CORE CED BIG IDEA' : 'COLLEGE BOARD BIG IDEA', margin + 10, currentY + 11);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
-    doc.setTextColor(55, 48, 163);
+    doc.setTextColor(isCalcAb ? 27 : 55, isCalcAb ? 28 : 48, isCalcAb ? 29 : 163);
     doc.text(ideaLines, margin + 10, currentY + 22);
     currentY += ideaBoxH + SEC_GAP;
 
     // ─── Section 1: Key Theorems ──────────────────────────────────────────────
     if (unit.keyTheorems.length > 0) {
-      checkPageBreak(45);
+      checkPageBreak(65);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11);
       doc.setTextColor(15, 23, 42);
@@ -977,27 +643,32 @@ export default function APNotes({ onBack }: APNotesProps) {
         // Pre-measure all text blocks with exact fonts
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8.5);
-        const condLines  = doc.splitTextToSize(sanitizePdfText(thm.conditions), contentWidth - 76);
+        const condLines  = doc.splitTextToSize(sanitizePdfText(formatMathForPdf(thm.conditions)), contentWidth - 76);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8.5);
         const conclLines = doc.splitTextToSize(sanitizePdfText(formatMathForPdf(thm.conclusion)), contentWidth - 76);
         doc.setFont('helvetica', 'italic');
         doc.setFontSize(7.5);
-        const tipLines   = doc.splitTextToSize(`AP Tip: ${sanitizePdfText(thm.apTip)}`, contentWidth - INDENT - 16);
+        const tipLines   = doc.splitTextToSize(`AP Tip: ${sanitizePdfText(formatMathForPdf(thm.apTip))}`, contentWidth - INDENT - 16);
         const tipBoxH    = tipLines.length * LH_SM + 12;
         const thmBoxH    = 24 + (condLines.length * LH + 6) + (conclLines.length * LH + 8) + tipBoxH + 16;
         checkPageBreak(thmBoxH + ITEM_GAP);
 
         // Header banner (clean height + accent bar)
-        doc.setFillColor(220, 252, 231);
-        doc.setDrawColor(134, 239, 172);
+        const thmBg = isCalcAb ? [239, 244, 255] : [220, 252, 231];
+        const thmBorder = isCalcAb ? [195, 218, 254] : [134, 239, 172];
+        const thmAccent = isCalcAb ? [9, 76, 178] : [34, 197, 94];
+        const thmText = isCalcAb ? [9, 76, 178] : [21, 128, 61];
+
+        doc.setFillColor(thmBg[0], thmBg[1], thmBg[2]);
+        doc.setDrawColor(thmBorder[0], thmBorder[1], thmBorder[2]);
         doc.setLineWidth(0.6);
         doc.roundedRect(margin, currentY, contentWidth, 20, 2.5, 2.5, 'FD');
-        doc.setFillColor(34, 197, 94);
+        doc.setFillColor(thmAccent[0], thmAccent[1], thmAccent[2]);
         doc.roundedRect(margin, currentY, 4, 20, 2, 2, 'F');
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(9);
-        doc.setTextColor(21, 128, 61);
+        doc.setTextColor(thmText[0], thmText[1], thmText[2]);
         doc.text(sanitizePdfText(thm.name), margin + INDENT + 4, currentY + 13.5);
         // Generous vertical clearance so conditions text NEVER touches the banner!
         currentY += 28;
@@ -1041,7 +712,7 @@ export default function APNotes({ onBack }: APNotesProps) {
     }
 
     // ─── Section 2: Essential Formulas ───────────────────────────────────────
-    checkPageBreak(45);
+    checkPageBreak(65);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
     doc.setTextColor(15, 23, 42);
@@ -1064,7 +735,9 @@ export default function APNotes({ onBack }: APNotesProps) {
       doc.setFontSize(7.5);
       const explLines = doc.splitTextToSize(sanitizePdfText(f.explanation), contentWidth - 32);
       
-      const mathBoxH = mathLines.length * (LH + 1) + 12;
+      // FORMULAS: generous line spacing (14.5pt) and generous inner clearance!
+      const LH_FORMULA = 14.5;
+      const mathBoxH = mathLines.length * LH_FORMULA + 16;
       const fBoxH = 18 + mathBoxH + (explLines.length * LH_SM) + 16;
       checkPageBreak(fBoxH + ITEM_GAP);
 
@@ -1074,7 +747,8 @@ export default function APNotes({ onBack }: APNotesProps) {
       doc.setLineWidth(0.6);
       doc.roundedRect(margin, currentY, contentWidth, fBoxH, 3, 3, 'FD');
       // Accent left border
-      doc.setFillColor(99, 102, 241);
+      const fAccent = isCalcAb ? [9, 76, 178] : [99, 102, 241];
+      doc.setFillColor(fAccent[0], fAccent[1], fAccent[2]);
       doc.rect(margin, currentY, 4, fBoxH, 'F');
 
       // Formula name
@@ -1085,15 +759,17 @@ export default function APNotes({ onBack }: APNotesProps) {
 
       // Math expression inside prominent tinted pill container
       const mathBoxY = currentY + 20;
-      doc.setFillColor(238, 242, 255);
-      doc.setDrawColor(199, 210, 254);
+      doc.setFillColor(isCalcAb ? 239 : 238, isCalcAb ? 244 : 242, isCalcAb ? 255 : 255);
+      doc.setDrawColor(isCalcAb ? 195 : 199, isCalcAb ? 218 : 210, isCalcAb ? 254 : 254);
       doc.setLineWidth(0.5);
       doc.roundedRect(margin + 10, mathBoxY, contentWidth - 20, mathBoxH, 2, 2, 'FD');
 
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8.5);
-      doc.setTextColor(30, 58, 138); // Crisp deep blue/indigo math font
-      doc.text(mathLines, margin + 16, mathBoxY + 12);
+      doc.setFontSize(9);
+      doc.setTextColor(isCalcAb ? 9 : 30, isCalcAb ? 76 : 58, isCalcAb ? 178 : 138); // Crisp deep blue/indigo math font
+      mathLines.forEach((mLine, mIdx) => {
+        doc.text(mLine, margin + 16, mathBoxY + 13 + mIdx * LH_FORMULA);
+      });
 
       // Explanation note
       const explStartY = mathBoxY + mathBoxH + 6;
@@ -1258,6 +934,34 @@ export default function APNotes({ onBack }: APNotesProps) {
         const t = ln.trim();
         if (!t) { currentY += 5; continue; } // blank line = small gap
 
+        // Check for standalone display math formula line ($$...$$)
+        const isStandaloneMath = /^\$\$[^\$]+\$\$$/.test(t.trim());
+        if (isStandaloneMath) {
+          const formulaRaw = t.trim().replace(/^\$\$/, '').replace(/\$\$$/, '').trim();
+          const mathClean = sanitizePdfText(formatMathForPdf(formulaRaw));
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8.5);
+          const fLines = doc.splitTextToSize(mathClean, contentWidth - INDENT * 2 - 18);
+          const LH_F = 14.5;
+          const fBoxH = fLines.length * LH_F + 12;
+          checkPageBreak(fBoxH + 4);
+
+          // Formula container with generous line height and margin
+          doc.setFillColor(isCalcAb ? 239 : 241, isCalcAb ? 244 : 245, isCalcAb ? 255 : 249);
+          doc.setDrawColor(isCalcAb ? 195 : 203, isCalcAb ? 218 : 213, isCalcAb ? 254 : 225);
+          doc.setLineWidth(0.5);
+          doc.roundedRect(margin + INDENT, currentY, contentWidth - INDENT, fBoxH, 2, 2, 'FD');
+          doc.setFillColor(isCalcAb ? 9 : 99, isCalcAb ? 76 : 102, isCalcAb ? 178 : 241);
+          doc.rect(margin + INDENT, currentY, 3, fBoxH, 'F');
+
+          doc.setTextColor(isCalcAb ? 9 : 30, isCalcAb ? 76 : 58, isCalcAb ? 178 : 138);
+          fLines.forEach((fl, fi) => {
+            doc.text(fl, margin + INDENT + 10, currentY + 11 + fi * LH_F);
+          });
+          currentY += fBoxH + 6;
+          continue;
+        }
+
         // Detect bullet / numbered list
         const isBullet   = /^[-*•]\s+/.test(t);
         const isNumbered = /^\d+\.\s+/.test(t);
@@ -1278,6 +982,10 @@ export default function APNotes({ onBack }: APNotesProps) {
 
         // Detect heading line inside content (starts with **...** originally)
         const wasHeading = /^\*\*[^*]+\*\*$/.test(t.trim());
+        const wrappedLines = doc.splitTextToSize(clean, wrapW);
+        const blockH = wrappedLines.length * LH;
+        checkPageBreak(blockH + 6);
+
         if (wasHeading) {
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(8.5);
@@ -1287,10 +995,6 @@ export default function APNotes({ onBack }: APNotesProps) {
           doc.setFontSize(8);
           doc.setTextColor(51, 65, 85);
         }
-
-        const wrappedLines = doc.splitTextToSize(clean, wrapW);
-        const blockH = wrappedLines.length * LH;
-        checkPageBreak(blockH + 6);
 
         // Bullet marker
         if (isBullet) {
@@ -1315,7 +1019,7 @@ export default function APNotes({ onBack }: APNotesProps) {
 
     // ─── Section 3: Topic Concepts & Procedures ───────────────────────────────
     if (unit.sections && unit.sections.length > 0) {
-      checkPageBreak(40);
+      checkPageBreak(65);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11);
       doc.setTextColor(15, 23, 42);
@@ -1323,7 +1027,7 @@ export default function APNotes({ onBack }: APNotesProps) {
       currentY += 14;
 
       unit.sections.forEach((sec, sIdx) => {
-        checkPageBreak(30);
+        checkPageBreak(65);
         // Section heading pill
         doc.setFillColor(241, 245, 249);
         doc.setDrawColor(203, 213, 225);
@@ -1785,7 +1489,7 @@ export default function APNotes({ onBack }: APNotesProps) {
 
     // ─── Section 5: Worked Examples ───────────────────────────────────────────
     if (unit.workedExamples && unit.workedExamples.length > 0) {
-      checkPageBreak(45);
+      checkPageBreak(65);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11);
       doc.setTextColor(30, 58, 138);
@@ -1793,7 +1497,10 @@ export default function APNotes({ onBack }: APNotesProps) {
       currentY += 16;
 
       unit.workedExamples.forEach((ex, idx) => {
-        checkPageBreak(65);
+        const qLines = doc.splitTextToSize(sanitizePdfText(formatMathForPdf(ex.question)), contentWidth - INDENT - 28);
+        const qBlockH = qLines.length * LH + 10;
+        // Keep header bar + question block together on the same page!
+        checkPageBreak(28 + qBlockH + 10);
 
         // Example header bar
         doc.setFillColor(238, 242, 255);
@@ -1810,7 +1517,6 @@ export default function APNotes({ onBack }: APNotesProps) {
         currentY += 28;
 
         // Question block
-        checkPageBreak(35);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8.5);
         doc.setTextColor(30, 41, 59);
@@ -1818,9 +1524,8 @@ export default function APNotes({ onBack }: APNotesProps) {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8.5);
         doc.setTextColor(51, 65, 85);
-        const qLines = doc.splitTextToSize(sanitizePdfText(formatMathForPdf(ex.question)), contentWidth - INDENT - 28);
         doc.text(qLines, margin + INDENT + 18, currentY + 9);
-        currentY += qLines.length * LH + 10;
+        currentY += qBlockH;
 
         // Solution steps with clear step badges and breathing room
         ex.solutionSteps.forEach((st, si) => {
@@ -1885,59 +1590,61 @@ export default function APNotes({ onBack }: APNotesProps) {
     }
 
     // ─── Section 6: Common AP Reader Traps ───────────────────────────────────
-    checkPageBreak(40);
+    checkPageBreak(65);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
-    doc.setTextColor(153, 27, 27);
-    doc.text('6. Common AP Exam Reader Traps', margin, currentY);
+    doc.setTextColor(isCalcAb ? 186 : 153, isCalcAb ? 26 : 27, isCalcAb ? 26 : 27);
+    doc.text(isCalcAb ? '6. Exam Traps & Reader Warnings (High-Yield)' : '6. Common AP Exam Reader Traps', margin, currentY);
     currentY += 14;
 
     unit.commonTraps.forEach(trap => {
-      const trapText = sanitizePdfText(trap);
+      const trapText = sanitizePdfText(formatMathForPdf(trap));
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
-      const trapLines = doc.splitTextToSize(trapText, contentWidth - 20);
-      const trapBoxH = LH + trapLines.length * LH + 12;
+      const trapLines = doc.splitTextToSize(trapText, contentWidth - 22);
+      const trapBoxH = LH + trapLines.length * LH + 14;
       checkPageBreak(trapBoxH + ITEM_GAP);
 
       // Card
-      doc.setFillColor(255, 241, 242);
-      doc.setDrawColor(252, 165, 165);
-      doc.setLineWidth(0.5);
+      doc.setFillColor(isCalcAb ? 255 : 255, isCalcAb ? 248 : 241, isCalcAb ? 247 : 242);
+      doc.setDrawColor(isCalcAb ? 244 : 252, isCalcAb ? 184 : 165, isCalcAb ? 184 : 165);
+      doc.setLineWidth(0.6);
       doc.roundedRect(margin, currentY, contentWidth, trapBoxH, 3, 3, 'FD');
       // Red accent bar
-      doc.setFillColor(239, 68, 68);
-      doc.rect(margin, currentY, 4, trapBoxH, 'F');
+      doc.setFillColor(isCalcAb ? 186 : 239, isCalcAb ? 26 : 68, isCalcAb ? 26 : 68);
+      doc.rect(margin, currentY, isCalcAb ? 5 : 4, trapBoxH, 'F');
 
       // Label
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(7.5);
-      doc.setTextColor(185, 28, 28);
-      doc.text('TRAP', margin + 10, currentY + 11);
+      doc.setTextColor(isCalcAb ? 186 : 185, isCalcAb ? 26 : 28, isCalcAb ? 26 : 28);
+      doc.text(isCalcAb ? 'CRITICAL AP MISTAKE / TRAP' : 'TRAP', margin + 12, currentY + 11);
 
       // Trap text
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
-      doc.setTextColor(127, 29, 29);
-      doc.text(trapLines, margin + 10, currentY + LH + 8);
+      doc.setTextColor(isCalcAb ? 27 : 127, isCalcAb ? 28 : 29, isCalcAb ? 29 : 29);
+      doc.text(trapLines, margin + 12, currentY + LH + 8);
       currentY += trapBoxH + ITEM_GAP;
     });
     currentY += SEC_GAP - ITEM_GAP;
 
     // ─── Section 7: 5-Minute Cram Sheet ──────────────────────────────────────
-    checkPageBreak(40);
+    checkPageBreak(65);
     // Cram header with colored background
-    doc.setFillColor(30, 27, 75);
-    doc.setDrawColor(30, 27, 75);
+    const cramBg = isCalcAb ? [9, 76, 178] : [30, 27, 75]; // Stitch Royal Blue (#094cb2) or Indigo
+    const cramTitleColor = isCalcAb ? [249, 227, 122] : [251, 191, 36]; // Amber Gold
+    doc.setFillColor(cramBg[0], cramBg[1], cramBg[2]);
+    doc.setDrawColor(cramBg[0], cramBg[1], cramBg[2]);
     doc.roundedRect(margin, currentY, contentWidth, 22, 3, 3, 'F');
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(251, 191, 36);
+    doc.setFontSize(10.5);
+    doc.setTextColor(cramTitleColor[0], cramTitleColor[1], cramTitleColor[2]);
     doc.text('7. 5-Minute Exam Day Cram Sheet', margin + INDENT, currentY + 15);
     currentY += 28;
 
     unit.cramSheet.forEach((pt, pi) => {
-      const ptClean = sanitizePdfText(pt);
+      const ptClean = sanitizePdfText(formatMathForPdf(pt));
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8.5);
       const ptLines = doc.splitTextToSize(ptClean, contentWidth - INDENT - 18);
@@ -1946,17 +1653,17 @@ export default function APNotes({ onBack }: APNotesProps) {
 
       // Alternating row
       if (pi % 2 === 0) {
-        doc.setFillColor(245, 243, 255);
+        doc.setFillColor(isCalcAb ? 239 : 245, isCalcAb ? 244 : 243, isCalcAb ? 255 : 255);
         doc.rect(margin, currentY, contentWidth, ptH, 'F');
       }
 
       // Bullet
-      doc.setFillColor(251, 191, 36);
+      doc.setFillColor(isCalcAb ? 9 : 251, isCalcAb ? 76 : 191, isCalcAb ? 178 : 36);
       doc.rect(margin + 4, currentY + ptH / 2 - 2, 4, 4, 'F');
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8.5);
-      doc.setTextColor(30, 27, 75);
+      doc.setTextColor(isCalcAb ? 27 : 30, isCalcAb ? 28 : 27, isCalcAb ? 29 : 75);
       doc.text(ptLines, margin + INDENT + 8, currentY + LH);
       currentY += ptH + 4;
     });
@@ -1992,23 +1699,18 @@ export default function APNotes({ onBack }: APNotesProps) {
         pageCount,
       });
 
-      // 2. Also save to physical device storage (Downloads / Files app)
-      await savePDFMobile(pdfBlob, fileName);
-
-      // 3. Update local UI state and trigger celebratory feedback
-      const compositeId = `${subjectToExport.subjectId}_${unitToExport.unitId}`;
-      setDownloadedUnitIds(prev => new Set(prev).add(unitToExport.unitId).add(compositeId));
-      setDownloadToast({
-        show: true,
-        message: `${subjectToExport.shortCode} Unit ${unitToExport.unitNumber}: ${unitToExport.title} is now saved offline in the app!`
+      // 2. Open immediately in Mobile Full Screen viewer!
+      setFullScreenPdfData({
+        uri: pdfDataUri,
+        title: unitToExport.title,
+        unitNumber: unitToExport.unitNumber,
       });
 
-      setTimeout(() => {
-        setDownloadToast(null);
-      }, 4500);
+      // 3. Also save to physical device storage (Downloads / Files app)
+      await savePDFMobile(pdfBlob, fileName);
     } catch (err) {
-      console.error("PDF Export & Offline Save error:", err);
-      alert("Could not save PDF notes offline. Please try again.");
+      console.error("PDF Export error:", err);
+      alert("Could not export PDF notes. Please try again.");
     } finally {
       setIsExporting(false);
     }
@@ -2053,32 +1755,6 @@ export default function APNotes({ onBack }: APNotesProps) {
     }
   };
 
-  // Open a saved offline note directly into the PDF document reader
-  const handleOpenOfflineNote = (note: OfflineNoteMeta) => {
-    triggerVibration(10);
-    if (note.subjectId && AP_NOTES_REGISTRY[note.subjectId]) {
-      setSelectedSubjectId(note.subjectId);
-    }
-    setSelectedUnitId(note.unitId);
-    setViewMode('pdf');
-    setStep('reading');
-    setShowOfflineDrawer(false);
-  };
-
-  // Delete a downloaded note from in-app persistent offline storage
-  const handleDeleteOfflineNote = async (note: OfflineNoteMeta) => {
-    triggerVibration(10);
-    await deleteOfflineNote(note.unitId);
-    setDownloadedUnitIds(prev => {
-      const next = new Set(prev);
-      next.delete(note.unitId);
-      if (note.subjectId) {
-        next.delete(`${note.subjectId}_${note.unitId}`);
-      }
-      return next;
-    });
-    setOfflineNotes(prev => prev.filter(n => n.unitId !== note.unitId));
-  };
 
   // Automatically compile and cache the Unit PDF Document whenever the user chooses or switches units
   useEffect(() => {
@@ -2144,21 +1820,6 @@ export default function APNotes({ onBack }: APNotesProps) {
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  triggerVibration(10);
-                  setShowOfflineDrawer(true);
-                }}
-                className="relative w-9 h-9 rounded-full flex items-center justify-center bg-zinc-100 hover:bg-emerald-50 border border-zinc-200 text-zinc-700 hover:text-emerald-700 active:scale-95 transition-all cursor-pointer shadow-2xs"
-                title="Saved Offline Notes"
-              >
-                <FolderDown className="w-4 h-4 text-emerald-600" />
-                {offlineNotes.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-600 text-white text-[9px] font-black flex items-center justify-center shadow-2xs">
-                    {offlineNotes.length}
-                  </span>
-                )}
-              </button>
               <div className="hidden xs:flex items-center gap-1.5 text-xs text-purple-700 font-bold bg-purple-50 border border-purple-200/80 px-2.5 py-1 rounded-full">
                 <span>📚</span>
                 <span>CED Aligned</span>
@@ -2228,7 +1889,11 @@ export default function APNotes({ onBack }: APNotesProps) {
             {/* Dynamic Subjects List */}
             {(() => {
               const q = searchQuery.toLowerCase().trim();
-              const filteredSubjects = allSupportedSubjects.filter(subj => {
+              let baseList = allSupportedSubjects;
+              if (isGrade9Student) {
+                baseList = baseList.filter(subj => subj.gradeLevels?.includes('9th') || GRADE_9_RECOMMENDED_IDS.includes(subj.subjectId));
+              }
+              const filteredSubjects = baseList.filter(subj => {
                 const matchesCategory = selectedCategory === 'All' || subj.category === selectedCategory;
                 if (!matchesCategory) return false;
                 if (!q) return true;
@@ -2247,7 +1912,7 @@ export default function APNotes({ onBack }: APNotesProps) {
                 <>
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-black uppercase tracking-wider text-zinc-500">
-                      Official AP Courses ({filteredSubjects.length}) • {totalUnits} Units
+                      {isGrade9Student ? 'Grade 9 Curated Courses' : 'Official AP Courses'} ({filteredSubjects.length}) • {totalUnits} Units
                     </h3>
                   </div>
 
@@ -2270,19 +1935,6 @@ export default function APNotes({ onBack }: APNotesProps) {
                                 {subj.icon}
                               </div>
                               <div className="min-w-0">
-                                <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                                  <span className="font-extrabold text-[10px] text-zinc-600 uppercase tracking-wider bg-zinc-100 px-2 py-0.5 rounded-md">
-                                    {subj.shortCode}
-                                  </span>
-                                  <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.2 rounded">
-                                    {subj.category}
-                                  </span>
-                                  {subj.badge && (
-                                    <span className="text-[9px] font-black text-amber-700 bg-amber-50 border border-amber-200/60 px-1.5 py-0.2 rounded">
-                                      {subj.badge}
-                                    </span>
-                                  )}
-                                </div>
                                 <h4 className="font-black text-sm text-zinc-900 truncate">
                                   {subj.subjectName}
                                 </h4>
@@ -2311,19 +1963,17 @@ export default function APNotes({ onBack }: APNotesProps) {
                                 className="border-t border-zinc-100 bg-zinc-50/40 p-3 flex flex-col gap-2 overflow-hidden"
                               >
                                 {subj.notes.map(unit => {
-                                  const isDownloaded = downloadedUnitIds.has(unit.unitId) || downloadedUnitIds.has(`${subj.subjectId}_${unit.unitId}`);
                                   return (
                                     <div
                                       key={unit.unitId}
                                       className="w-full bg-white border border-zinc-200/80 hover:bg-zinc-50 hover:border-indigo-300 py-2.5 px-3.5 rounded-2xl flex items-center justify-between transition-all group/unit shadow-xs"
                                     >
-                                      {/* Main Unit Click Target to Open Direct PDF Viewer */}
+                                      {/* Main Unit Click Target to Open Direct Notes */}
                                       <button
                                         onClick={() => {
                                           triggerVibration(15);
                                           setSelectedSubjectId(subj.subjectId);
                                           setSelectedUnitId(unit.unitId);
-                                          setViewMode('pdf');
                                           setActiveTab('all');
                                           setStep('reading');
                                         }}
@@ -2342,37 +1992,12 @@ export default function APNotes({ onBack }: APNotesProps) {
                                             <span className="text-[10px] text-zinc-500 font-medium truncate">
                                               {unit.examWeight}
                                             </span>
-                                            {isDownloaded && (
-                                              <span className="text-[9px] text-emerald-700 bg-emerald-100/90 border border-emerald-300/80 px-1.5 py-0.5 rounded font-bold flex items-center gap-1">
-                                                <Check className="w-2.5 h-2.5 text-emerald-600" /> Saved Offline
-                                              </span>
-                                            )}
                                           </div>
                                         </div>
                                       </button>
 
-                                      {/* Direct Actions: Download Offline + Share + Open */}
+                                      {/* Direct Actions: Share + Open */}
                                       <div className="flex items-center gap-1 shrink-0">
-                                        {/* In-App Offline Download Button */}
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleExportUnitPDF(unit, subj);
-                                          }}
-                                          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors cursor-pointer active:scale-95 ${
-                                            isDownloaded
-                                              ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-300/60'
-                                              : 'bg-zinc-100 hover:bg-emerald-100 hover:text-emerald-700 text-zinc-600'
-                                          }`}
-                                          title={isDownloaded ? `${subj.shortCode} Unit ${unit.unitNumber} is saved offline in app (tap to re-download)` : `Download Unit ${unit.unitNumber} to app for offline study`}
-                                        >
-                                          {isDownloaded ? (
-                                            <Check className="w-3.5 h-3.5 text-emerald-700" />
-                                          ) : (
-                                            <Download className="w-3.5 h-3.5" />
-                                          )}
-                                        </button>
-
                                         {/* Share Button */}
                                         <button
                                           onClick={(e) => {
@@ -2391,7 +2016,6 @@ export default function APNotes({ onBack }: APNotesProps) {
                                             triggerVibration(15);
                                             setSelectedSubjectId(subj.subjectId);
                                             setSelectedUnitId(unit.unitId);
-                                            setViewMode('pdf');
                                             setActiveTab('all');
                                             setStep('reading');
                                           }}
@@ -2437,55 +2061,45 @@ export default function APNotes({ onBack }: APNotesProps) {
                 <ArrowLeft className="w-4 h-4" />
               </button>
               <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
+                <span 
+                  className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg flex items-center gap-1 shrink-0 border"
+                  style={{
+                    backgroundColor: `${currentSubjectEntry.accentColor}18`,
+                    borderColor: `${currentSubjectEntry.accentColor}40`,
+                    color: currentSubjectEntry.accentColor
+                  }}
+                >
                   <span>{currentSubjectEntry.icon}</span>
                   <span>{currentSubjectEntry.shortCode}</span>
                 </span>
-                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/30 px-1.5 py-0.5 rounded shrink-0">
+                <span 
+                  className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg shrink-0 border"
+                  style={{
+                    backgroundColor: `${currentSubjectEntry.accentColor}15`,
+                    borderColor: `${currentSubjectEntry.accentColor}35`,
+                    color: currentSubjectEntry.accentColor
+                  }}
+                >
                   Unit {currentUnit.unitNumber}
-                </span>
-                <span className="text-[9px] text-zinc-400 font-bold hidden sm:inline truncate">
-                  {currentUnit.examWeight}
                 </span>
               </div>
             </div>
 
-            {/* Actions: View Toggle + Share + Download */}
+            {/* Actions: Export PDF (Emoji Only) + Share PDF */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              {/* Segmented View Mode Toggle: Direct PDF Pages (Default) vs Interactive */}
-              <div className="flex items-center bg-zinc-800 p-0.5 rounded-xl border border-zinc-700/80">
-                <button
-                  onClick={() => {
-                    triggerVibration(10);
-                    setViewMode('pdf');
-                  }}
-                  className={`px-2 sm:px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
-                    viewMode === 'pdf'
-                      ? 'bg-purple-600 text-white shadow-xs'
-                      : 'text-zinc-400 hover:text-zinc-200'
-                  }`}
-                  title="Direct PDF Pages View (Default)"
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  <span>PDF</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    triggerVibration(10);
-                    setViewMode('interactive');
-                  }}
-                  className={`px-2 sm:px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
-                    viewMode === 'interactive'
-                      ? 'bg-purple-600 text-white shadow-xs'
-                      : 'text-zinc-400 hover:text-zinc-200'
-                  }`}
-                  title="Interactive Study Cards View"
-                >
-                  <Layers className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Interactive</span>
-                </button>
-              </div>
+              {/* Export to PDF Button (Emoji Only, No Text) */}
+              <button
+                onClick={() => handleExportUnitPDF(currentUnit, currentSubjectEntry)}
+                disabled={isExporting || isSharing}
+                className="w-8 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 flex items-center justify-center transition-all cursor-pointer disabled:opacity-50 active:scale-95"
+                title="Export & View Full-Screen PDF"
+              >
+                {isExporting ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" />
+                ) : (
+                  <span className="text-base select-none leading-none" role="img" aria-label="PDF">📄</span>
+                )}
+              </button>
 
               {/* Share PDF Button */}
               <button
@@ -2500,335 +2114,32 @@ export default function APNotes({ onBack }: APNotesProps) {
                   <Share2 className="w-3.5 h-3.5 text-zinc-300" />
                 )}
               </button>
-
-              {/* Download PDF Button */}
-              <button
-                onClick={() => handleExportUnitPDF(currentUnit)}
-                disabled={isExporting || isSharing}
-                className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all cursor-pointer disabled:opacity-50 active:scale-95 shadow-2xs ${
-                  downloadedUnitIds.has(currentUnit.unitId)
-                    ? 'bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border-emerald-500/40'
-                    : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'
-                }`}
-                title={downloadedUnitIds.has(currentUnit.unitId) ? "Unit is saved offline in app (tap to re-download)" : "Download & save offline in app"}
-              >
-                {isExporting ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" />
-                ) : downloadedUnitIds.has(currentUnit.unitId) ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                ) : (
-                  <Download className="w-3.5 h-3.5" />
-                )}
-              </button>
             </div>
           </header>
 
-          {/* MAIN BODY AREA: EITHER DIRECT FULL-MOBILE PDF OR INTERACTIVE CARDS */}
-          {viewMode === 'pdf' ? (
-            /* DIRECT FULL-MOBILE PDF DOCUMENT VIEWER (DEFAULT) */
-            <div className="flex-1 overflow-hidden relative flex flex-col bg-zinc-950">
-              {isGeneratingPdf || !pdfBlobUrl ? (
-                <div className="flex flex-col items-center justify-center my-auto py-24 text-white gap-3.5">
-                  <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-                  <div className="text-center">
-                    <p className="text-sm font-black text-white tracking-wider uppercase">Loading Unit {currentUnit.unitNumber} PDF</p>
-                    <p className="text-[11px] text-zinc-400 mt-1">Rendering official pages in full mobile size...</p>
-                  </div>
-                </div>
-              ) : (
-                <SafePdfViewer pdfUrlOrBase64={pdfBlobUrl} />
-              )}
+          {/* MAIN BODY AREA: STITCH STUDY EXPERIENCE FOR ALL AP SUBJECTS */}
+          {currentSubjectEntry.subjectId === 'ap-calculus-ab' && currentUnit.unitNumber === 1 ? (
+            /* DEDICATED STITCH AP CALCULUS AB UNIT 1 HIGH-FIDELITY EXPERIENCE */
+            <div className="flex-1 overflow-y-auto w-full bg-[#faf9fa]">
+              <APCalculusABStitchNotes 
+                unitNumber={currentUnit.unitNumber} 
+                onBack={() => setStep('select-subject')}
+                onExportPdf={() => handleExportUnitPDF(currentUnit, currentSubjectEntry)}
+                isExporting={isExporting}
+              />
             </div>
           ) : (
-            /* INTERACTIVE STUDY GUIDE CARDS (OPTIONAL MODE) */
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 space-y-5 max-w-4xl mx-auto w-full bg-[#FAF9F6]">
-            {/* Unit Hero Card */}
-            <div className="p-5 rounded-3xl bg-white border border-zinc-200/90 shadow-sm space-y-2.5">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200">
-                  Unit {currentUnit.unitNumber} • {currentUnit.examWeight}
-                </span>
-                <span className="text-xs font-bold text-zinc-400">
-                  AP Calculus AB
-                </span>
-              </div>
-              <h2 className="text-xl md:text-2xl font-black text-zinc-900 tracking-tight">
-                {currentUnit.title}
-              </h2>
-              <p className="text-xs text-zinc-600 leading-relaxed font-medium">
-                {currentUnit.bigIdea}
-              </p>
+            /* UNIVERSAL STITCH STUDY EXPERIENCE FOR ALL AP SUBJECTS & UNITS */
+            <div className="flex-1 overflow-y-auto w-full bg-[#faf9fa]">
+              <APSubjectStitchNotes 
+                unit={currentUnit} 
+                subject={currentSubjectEntry}
+                onBack={() => setStep('select-subject')}
+                onExportPdf={() => handleExportUnitPDF(currentUnit, currentSubjectEntry)}
+                isExporting={isExporting}
+              />
             </div>
-
-            {/* Filter Tabs Pills (With Worked Examples & Graphs) */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-              {[
-                { id: 'all', label: 'All Notes', icon: '📖' },
-                { id: 'theorems', label: 'Theorems', icon: '📌' },
-                { id: 'formulas', label: 'Formulas', icon: '📐' },
-                { id: 'examples', label: 'Worked Examples', icon: '✏️' },
-                { id: 'diagrams', label: 'Visual Graphs', icon: '📊' },
-                { id: 'traps', label: 'Common Traps', icon: '⚠️' },
-                { id: 'cram', label: '5-Min Cram', icon: '⚡' }
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    triggerVibration(10);
-                    setActiveTab(tab.id as any);
-                  }}
-                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
-                    activeTab === tab.id
-                      ? 'bg-purple-600 text-white shadow-sm'
-                      : 'bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50'
-                  }`}
-                >
-                  <span>{tab.icon}</span>
-                  <span>{tab.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Content Sections */}
-            <div className="space-y-5">
-              {/* 1. Key Theorems */}
-              {(activeTab === 'all' || activeTab === 'theorems') && currentUnit.keyTheorems.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">📌</span>
-                    <h3 className="text-xs font-black uppercase tracking-wider text-zinc-700">
-                      Official College Board Theorems ({currentUnit.keyTheorems.length})
-                    </h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-3">
-                    {currentUnit.keyTheorems.map((thm, idx) => (
-                      <div 
-                        key={idx}
-                        className="p-5 rounded-2xl bg-white border border-emerald-200/90 shadow-xs space-y-3"
-                      >
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-black text-sm text-emerald-950">
-                            {thm.name}
-                          </h4>
-                          <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
-                            Theorem
-                          </span>
-                        </div>
-
-                        <div className="text-xs text-zinc-700 space-y-2">
-                          <div className="bg-zinc-50 p-3 rounded-xl border border-zinc-200/60">
-                            <strong className="text-zinc-900 block mb-0.5 text-[11px] uppercase tracking-wider">Conditions:</strong>
-                            <div className="text-xs text-zinc-800 leading-relaxed"><GlobalMarkdown>{thm.conditions}</GlobalMarkdown></div>
-                          </div>
-                          <div className="bg-emerald-50/50 p-3 rounded-xl border border-emerald-200/60">
-                            <strong className="text-emerald-950 block mb-0.5 text-[11px] uppercase tracking-wider">Conclusion:</strong>
-                            <div className="text-xs font-semibold text-emerald-950 leading-relaxed"><GlobalMarkdown>{thm.conclusion}</GlobalMarkdown></div>
-                          </div>
-                        </div>
-
-                        <div className="p-3 rounded-xl bg-amber-50/90 border border-amber-200/70 text-xs text-amber-900 font-medium">
-                          💡 <strong>AP Exam Tip:</strong> {thm.apTip}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* 2. Essential Formulas */}
-              {(activeTab === 'all' || activeTab === 'formulas') && currentUnit.formulas.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">📐</span>
-                    <h3 className="text-xs font-black uppercase tracking-wider text-zinc-700">
-                      Essential Formulas & Limit Rules ({currentUnit.formulas.length})
-                    </h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-3">
-                    {currentUnit.formulas.map((f, idx) => (
-                      <div 
-                        key={idx}
-                        className="p-5 rounded-2xl bg-white border border-indigo-100/90 shadow-xs space-y-3"
-                      >
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-black text-xs sm:text-sm text-zinc-900">
-                            {f.name}
-                          </h4>
-                          <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200/60">
-                            Formula
-                          </span>
-                        </div>
-
-                        <div className="py-3 px-4 rounded-xl bg-zinc-50/90 border border-indigo-100/80 overflow-x-auto text-indigo-950 text-sm">
-                          <GlobalMarkdown>{`$$${f.latex}$$`}</GlobalMarkdown>
-                        </div>
-
-                        <p className="text-xs text-zinc-600 font-medium leading-relaxed">
-                          {f.explanation}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* 3. Visual Graphs & Figures (Vertically arranged 1-by-1 with Full-Page Tap) */}
-              {(activeTab === 'all' || activeTab === 'diagrams') && currentUnit.diagrams && currentUnit.diagrams.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">📊</span>
-                    <h3 className="text-xs font-black uppercase tracking-wider text-indigo-800">
-                      Visual Graphs & Discontinuity Figures ({currentUnit.diagrams.length})
-                    </h3>
-                  </div>
-
-                  <div className="flex flex-col space-y-6">
-                    {currentUnit.diagrams.map(diag => (
-                      <MathDiagramView 
-                        key={diag.id} 
-                        diagram={diag} 
-                        onExpand={() => setSelectedDiagram(diag)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* 4. Core Conceptual Sections (All 16 CED Topics with Markdown Tables) */}
-              {(activeTab === 'all') && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">📖</span>
-                    <h3 className="text-xs font-black uppercase tracking-wider text-zinc-700">
-                      Comprehensive CED Topics & Comparison Tables (1.1–1.16)
-                    </h3>
-                  </div>
-
-                  <div className="space-y-3">
-                    {currentUnit.sections.map((sec, idx) => (
-                      <div 
-                        key={idx}
-                        className="p-4 rounded-2xl bg-white border border-zinc-200/90 shadow-xs space-y-2"
-                      >
-                        <h4 className="font-black text-sm text-zinc-900">
-                          {sec.heading}
-                        </h4>
-                        <div className="text-xs text-zinc-700 leading-relaxed prose prose-sm max-w-none">
-                          <GlobalMarkdown>{sec.content}</GlobalMarkdown>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* 5. Worked Examples (Solved AP Problems) */}
-              {(activeTab === 'all' || activeTab === 'examples') && currentUnit.workedExamples && currentUnit.workedExamples.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">✏️</span>
-                    <h3 className="text-xs font-black uppercase tracking-wider text-blue-800">
-                      Step-by-Step Solved AP Examples ({currentUnit.workedExamples.length})
-                    </h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4">
-                    {currentUnit.workedExamples.map((ex, idx) => (
-                      <div 
-                        key={idx}
-                        className="p-4 rounded-2xl bg-white border border-blue-200/90 shadow-xs space-y-3"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                            {ex.topicRef} • Worked Example {idx + 1}
-                          </span>
-                        </div>
-
-                        <h4 className="font-black text-sm text-zinc-900">
-                          {ex.title}
-                        </h4>
-
-                        <div className="p-3 rounded-xl bg-blue-50/60 border border-blue-100 text-xs text-blue-950 font-medium">
-                          <strong className="text-blue-900">Problem: </strong>
-                          <GlobalMarkdown>{ex.question}</GlobalMarkdown>
-                        </div>
-
-                        <div className="space-y-2 text-xs text-zinc-700">
-                          <div className="font-bold text-[11px] uppercase tracking-wider text-zinc-500">
-                            Full Solution Steps:
-                          </div>
-                          {ex.solutionSteps.map((st, sIdx) => (
-                            <div key={sIdx} className="flex items-start gap-2.5 bg-zinc-50 p-3 rounded-xl border border-zinc-200/60">
-                              <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
-                                {sIdx + 1}
-                              </span>
-                              <p className="leading-relaxed font-sans text-xs text-zinc-800 font-medium flex-1">
-                                {formatMathForPdf(st)}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center gap-2 text-xs font-bold text-emerald-950">
-                          <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                          <span>Final Answer: {ex.finalAnswer}</span>
-                        </div>
-
-                        <div className="p-2.5 rounded-xl bg-amber-50/90 border border-amber-200 text-[11px] text-amber-900 font-medium">
-                          💡 <strong>AP Exam Scoring Key:</strong> {ex.apScoringTip}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* 6. Common AP Reader Traps */}
-              {(activeTab === 'all' || activeTab === 'traps') && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">⚠️</span>
-                    <h3 className="text-xs font-black uppercase tracking-wider text-red-700">
-                      Common AP Exam Reader Traps ({currentUnit.commonTraps.length})
-                    </h3>
-                  </div>
-
-                  <div className="p-4 rounded-2xl bg-red-50/70 border border-red-200 space-y-2.5">
-                    {currentUnit.commonTraps.map((trap, idx) => (
-                      <div key={idx} className="flex items-start gap-2 text-xs text-red-900">
-                        <span className="font-black text-red-600 shrink-0">✕</span>
-                        <p className="font-medium leading-relaxed">{trap}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* 7. 5-Minute Exam Day Cram Sheet */}
-              {(activeTab === 'all' || activeTab === 'cram') && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">⚡</span>
-                    <h3 className="text-xs font-black uppercase tracking-wider text-blue-700">
-                      5-Minute Exam Day Cram Points ({currentUnit.cramSheet.length})
-                    </h3>
-                  </div>
-
-                  <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 space-y-2">
-                    {currentUnit.cramSheet.map((pt, idx) => (
-                      <div key={idx} className="flex items-start gap-2 text-xs text-blue-950">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
-                        <p className="font-medium leading-relaxed">{pt}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+          )}
 
           {/* Bottom Navigation Bar */}
           <footer className="shrink-0 p-3 bg-zinc-900/95 backdrop-blur-md border-t border-zinc-800 z-40">
@@ -2856,7 +2167,7 @@ export default function APNotes({ onBack }: APNotesProps) {
                 }}
                 className="h-10 px-4 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-200 font-black text-xs hover:bg-zinc-700 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
               >
-                <Layers className="w-3.5 h-3.5 text-purple-400" />
+                <Layers className="w-3.5 h-3.5" style={{ color: currentSubjectEntry.accentColor }} />
                 <span>Unit {currentUnit.unitNumber} of {currentSubjectUnits.length}</span>
               </button>
 
@@ -2869,7 +2180,10 @@ export default function APNotes({ onBack }: APNotesProps) {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }
                 }}
-                className="h-10 px-3.5 rounded-xl bg-purple-600 text-white font-bold text-xs flex items-center gap-1.5 disabled:opacity-30 disabled:pointer-events-none hover:bg-purple-700 active:scale-95 transition-all cursor-pointer shadow-sm"
+                className="h-10 px-3.5 rounded-xl text-white font-bold text-xs flex items-center gap-1.5 disabled:opacity-30 disabled:pointer-events-none hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm"
+                style={{
+                  backgroundColor: currentSubjectEntry.accentColor || '#6366f1'
+                }}
               >
                 <span className="hidden sm:inline">Next Unit</span>
                 <span className="sm:hidden">Next</span>
@@ -2890,43 +2204,60 @@ export default function APNotes({ onBack }: APNotesProps) {
         />
       )}
 
-      {/* In-App Saved Offline Notes Modal */}
-      <OfflineNotesModal
-        isOpen={showOfflineDrawer}
-        onClose={() => setShowOfflineDrawer(false)}
-        notes={offlineNotes}
-        onOpenNote={handleOpenOfflineNote}
-        onDeleteNote={handleDeleteOfflineNote}
-      />
 
-      {/* Floating In-App Download Success Feedback Toast */}
-      <AnimatePresence>
-        {downloadToast && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-20 left-4 right-4 max-w-md mx-auto z-50 p-3.5 rounded-2xl bg-zinc-900/95 border border-emerald-500/40 text-white shadow-2xl flex items-center gap-3 backdrop-blur-lg"
-          >
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h5 className="font-bold text-xs text-white">Downloaded to App</h5>
-              <p className="text-[11px] text-zinc-300 truncate">{downloadToast.message}</p>
-            </div>
+      {/* Full-Screen Mobile PDF Viewer Modal */}
+      {fullScreenPdfData && (
+        <div className="fixed inset-0 z-[100] bg-zinc-950 flex flex-col animate-in fade-in duration-200">
+          {/* Top Mobile Action Bar */}
+          <div className="h-14 px-3 sm:px-5 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between shrink-0 text-white">
             <button
               onClick={() => {
-                setDownloadToast(null);
-                setShowOfflineDrawer(true);
+                triggerVibration(10);
+                setFullScreenPdfData(null);
               }}
-              className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] shrink-0 cursor-pointer active:scale-95 transition-all shadow-xs"
+              className="flex items-center gap-1.5 text-zinc-300 hover:text-white text-xs font-bold py-1.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 transition-all cursor-pointer active:scale-95"
             >
-              View Offline
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back</span>
             </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+            <div className="text-center truncate px-2 max-w-[170px] sm:max-w-md">
+              <span className="text-[10px] uppercase tracking-widest text-amber-400 font-bold block">
+                Official PDF Document
+              </span>
+              <span className="text-xs font-bold text-white truncate block">
+                Unit {fullScreenPdfData.unitNumber}: {fullScreenPdfData.title}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => handleShareUnitPDF(currentUnit)}
+                disabled={isSharing}
+                className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-all cursor-pointer active:scale-95"
+                title="Share PDF"
+              >
+                <Share2 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => {
+                  triggerVibration(10);
+                  setFullScreenPdfData(null);
+                }}
+                className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-all cursor-pointer active:scale-95"
+                title="Close Full Screen"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Full-Screen PDF Canvas Viewer */}
+          <div className="flex-1 overflow-hidden relative">
+            <SafePdfViewer pdfUrlOrBase64={fullScreenPdfData.uri} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

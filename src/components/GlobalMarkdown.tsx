@@ -1,4 +1,4 @@
-import React, { useMemo, memo } from 'react';
+git mainimport React, { useMemo, memo } from 'react';
 import Markdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
@@ -40,7 +40,15 @@ export function cleanMarkdownMath(content: string): string {
   text = text.replace(/(^|[\s$(=_])ext\{/g, '$1\\text{');
   text = text.replace(/(^|[\s$(=_])heta([\s$_^0-9A-Za-z])/g, '$1\\theta$2');
 
-  // 3. Fix unclosed/unmatched $$ on single line
+  // 3. Prevent rehypeRaw from misinterpreting mathematical inequalities (< 2, <= x, > 0, >= 3) as HTML tags
+  text = text.replace(/<(?=[\s\d=xXyYzZ\(\-])/g, '&lt;');
+  text = text.replace(/>(?=[\s\d=xXyYzZ\(\-])/g, '&gt;');
+
+  // 4. Heal pseudo-code limits like lim(x -> infinity)
+  text = text.replace(/\\?lim\s*\(\s*x\s*(?:->|\\to)\s*(?:infinity|\\infty)\s*\)/gi, '\\lim_{x \\to \\infty}');
+  text = text.replace(/\\left\\\{([^$\n]*?)(?=(\$|\n|$))/g, (m) => m.includes('\\right') ? m : m + '\\right.');
+
+  // 5. Fix unclosed/unmatched $$ on single line
   const lines = text.split('\n');
   const fixedLines = lines.map(line => {
     const trimmed = line.trim();

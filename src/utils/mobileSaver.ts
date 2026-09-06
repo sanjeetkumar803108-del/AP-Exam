@@ -4,6 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { FileOpener } from '@capacitor-community/file-opener';
 import { Share } from '@capacitor/share';
+import { savePdfToHistory } from './pdfHistory';
 
 // Helper: Convert anything to Base64
 async function getBase64(data: Blob | ArrayBuffer | string): Promise<string> {
@@ -49,22 +50,57 @@ async function getBlob(data: Blob | ArrayBuffer | string): Promise<Blob> {
   return new Blob([bytes], { type: 'application/pdf' });
 }
 
+export interface SavePdfOptions {
+  openImmediately?: boolean;
+  customToast?: string | null;
+  featureTag?: string;
+  silent?: boolean;
+}
+
+// Helper to notify user with in-app message or silence
+function notifySaveSuccess(options?: SavePdfOptions) {
+  triggerVibration(40);
+  if (options?.silent || options?.customToast === null) {
+    return;
+  }
+  const msg = options?.customToast !== undefined ? options.customToast : '✅ Saved offline in app';
+  if (msg) {
+    showInAppToast(msg);
+  }
+}
+
 /**
  * Utility to save PDFs in mobile app environments without standard browser download/<a> tags.
  * Supports Capacitor, Cordova, React Native WebViews, and native Web File System Access API.
  */
-export async function savePDFMobile(pdfData: Blob | ArrayBuffer | string, filename: string): Promise<boolean> {
+export async function savePDFMobile(
+  pdfData: Blob | ArrayBuffer | string, 
+  filename: string,
+  options?: SavePdfOptions
+): Promise<boolean> {
   // 1. Ensure filename ends with .pdf and sanitize characters
   let cleanFilename = filename.trim().replace(/[\\/:"*?<>|]/g, '_');
   if (!cleanFilename.toLowerCase().endsWith('.pdf')) {
     cleanFilename += '.pdf';
   }
 
+  const b64Data = await getBase64(pdfData);
+
+  // Automatically save to in-app offline history so it is always accessible offline inside the app!
+  try {
+    const dataUri = `data:application/pdf;base64,${b64Data}`;
+    savePdfToHistory({
+      title: cleanFilename,
+      fileUri: dataUri,
+      featureTag: options?.featureTag || 'Practice PDF',
+    });
+  } catch (histErr) {
+    console.warn('[MobileSaver] Error saving to in-app history:', histErr);
+  }
+
   if (Capacitor.isNativePlatform()) {
     try {
       console.log(`[MobileSaver] Native saving starting for: ${cleanFilename}`);
-
-      const b64Data = await getBase64(pdfData);
 
       // Write file to native Cache directory (safe from Scoped Storage EACCES restrictions on Android 10+)
       const savedFile = await Filesystem.writeFile({
@@ -76,28 +112,29 @@ export async function savePDFMobile(pdfData: Blob | ArrayBuffer | string, filena
 
       console.log('[MobileSaver] File successfully written to:', savedFile.uri);
 
-      // Open saved PDF immediately with FileOpener for previewing/printing, with fallback to Share
-      try {
-        await FileOpener.open({
-          filePath: savedFile.uri,
-          contentType: 'application/pdf',
-        });
-      } catch (openErr) {
-        console.warn('[MobileSaver] FileOpener failed, falling back to Share sheet:', openErr);
-        await Share.share({
-          title: cleanFilename,
-          text: `Access your saved PDF: ${cleanFilename}`,
-          url: savedFile.uri,
-          dialogTitle: 'Save or View PDF Document',
-        });
+      // Only open externally if openImmediately is explicitly true
+      if (options?.openImmediately) {
+        try {
+          await FileOpener.open({
+            filePath: savedFile.uri,
+            contentType: 'application/pdf',
+          });
+        } catch (openErr) {
+          console.warn('[MobileSaver] FileOpener failed, falling back to Share sheet:', openErr);
+          await Share.share({
+            title: cleanFilename,
+            text: `Access your saved PDF: ${cleanFilename}`,
+            url: savedFile.uri,
+            dialogTitle: 'Save or View PDF Document',
+          });
+        }
       }
 
-      triggerVibration(40);
-      showInAppToast('✅ PDF Saved & Opened successfully!');
+      notifySaveSuccess(options);
       return true;
     } catch (e: any) {
       console.error('[MobileSaver] Error saving or opening native PDF:', e);
-      showInAppToast(`❌ Failed to save/open PDF: ${e.message || e}`);
+      showInAppToast(`❌ Failed to save PDF: ${e.message || e}`);
       return false;
     }
   }
@@ -143,8 +180,7 @@ export async function savePDFMobile(pdfData: Blob | ArrayBuffer | string, filena
         encoding: 'base64'
       });
       
-      triggerVibration(40);
-      showInAppToast('✅ PDF Saved successfully to your File Manager!');
+      notifySaveSuccess(options);
       return true;
     }
 
@@ -169,8 +205,7 @@ export async function savePDFMobile(pdfData: Blob | ArrayBuffer | string, filena
           }, reject);
         });
 
-        triggerVibration(40);
-        showInAppToast('✅ PDF Saved successfully to your File Manager!');
+        notifySaveSuccess(options);
         return true;
       }
     }
@@ -184,8 +219,7 @@ export async function savePDFMobile(pdfData: Blob | ArrayBuffer | string, filena
         base64: base64Str
       }));
       
-      triggerVibration(40);
-      showInAppToast('✅ PDF Saved successfully to your File Manager!');
+      notifySaveSuccess(options);
       return true;
     }
 
@@ -205,8 +239,7 @@ export async function savePDFMobile(pdfData: Blob | ArrayBuffer | string, filena
         await writable.write(blob);
         await writable.close();
         
-        triggerVibration(40);
-        showInAppToast('✅ PDF Saved successfully to your File Manager!');
+        notifySaveSuccess(options);
         return true;
       } catch (err: any) {
         // User cancelling the picker is not a hard error, but handle other errors
@@ -223,11 +256,13 @@ export async function savePDFMobile(pdfData: Blob | ArrayBuffer | string, filena
     const blob = await getBlob(pdfData);
     const objectUrl = URL.createObjectURL(blob);
     
-    // Auto-open PDF in a new tab/window for immediate preview/viewing
-    try {
-      window.open(objectUrl, '_blank');
-    } catch (e) {
-      console.warn('[MobileSaver] Blocked from opening PDF in new window/tab:', e);
+    // Auto-open PDF in a new tab/window for immediate preview/viewing only if openImmediately is true
+    if (options?.openImmediately) {
+      try {
+        window.open(objectUrl, '_blank');
+      } catch (e) {
+        console.warn('[MobileSaver] Blocked from opening PDF in new window/tab:', e);
+      }
     }
 
     const link = document.createElement('a');
@@ -238,12 +273,11 @@ export async function savePDFMobile(pdfData: Blob | ArrayBuffer | string, filena
     document.body.removeChild(link);
     setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
 
-    triggerVibration(40);
-    showInAppToast('✅ PDF Saved & Opened successfully!');
+    notifySaveSuccess(options);
     return true;
   } catch (err) {
     console.error('[MobileSaver] Error saving PDF programmatically:', err);
-    showInAppToast('❌ Failed to save PDF to File Manager.');
+    showInAppToast('❌ Failed to save PDF offline.');
     return false;
   }
 }
