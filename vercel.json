@@ -3,10 +3,10 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/index.ts"
+      "destination": "/api"
     },
     {
-      "source": "/((?!assets/|favicon|logo|api/).*)",
+      "source": "/((?!assets/|favicon|logo|api).*)",
       "destination": "/index.html"
     }
   ]
