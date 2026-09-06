@@ -1,4 +1,4 @@
-git mainimport React, { useMemo, memo } from 'react';
+import React, { useMemo, memo } from 'react';
 import Markdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
