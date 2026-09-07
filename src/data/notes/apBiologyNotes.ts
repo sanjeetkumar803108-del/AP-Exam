@@ -305,6 +305,19 @@ export const AP_BIOLOGY_NOTES: APUnitNote[] = [
 3. **M Checkpoint (Spindle Assembly Checkpoint)**:
    - Evaluates: All sister chromatid kinetochores are securely attached to spindle microtubules from opposite poles during metaphase.
    - Prevents nondisjunction and aneuploid daughter cells.`
+      },
+      {
+        heading: '2. Cell Signaling Receptors & Checkpoint Control Matrix',
+        content: `Master comparison of cellular receptors, second messenger pathways, and cell cycle checkpoints:
+
+| Pathway / Component | Ligand Property | Primary Mechanism & Second Messengers | Cellular Outcome | AP Exam Application & Pathology |
+| :--- | :--- | :--- | :--- | :--- |
+| **G-Protein Coupled Receptor (GPCR)** | Hydrophilic (peptide/protein, e.g. Epinephrine) | G-protein binds GTP $\\rightarrow$ Adenylyl Cyclase $\\rightarrow$ **cAMP** $\\rightarrow$ Protein Kinase A | Phosphorylation cascade, enzyme activation | Cholera toxin locks G-protein in active GTP state, causing fatal diarrhea |
+| **Receptor Tyrosine Kinase (RTK)** | Hydrophilic (Growth factors, Insulin) | Dimerization upon binding $\\rightarrow$ Auto-phosphorylation of tyrosine residues | Cell growth, division, and survival | Hyperactive RTK/ras mutations lead to uncontrolled tumor cell proliferation |
+| **Ligand-Gated Ion Channel** | Hydrophilic (Neurotransmitters, e.g. Acetylcholine) | Allosteric channel opening $\\rightarrow$ Rapid influx of ions ($\\text{Na}^+, \\text{Ca}^{2+}, \\text{Cl}^-$) | Membrane depolarization, action potentials | Target of neurotoxins (tetrodotoxin) and local anesthetics |
+| **Intracellular Steroid Receptor** | **Hydrophobic / Nonpolar** (Steroid hormones: Testosterone, Estrogen) | Diffuses across membrane $\\rightarrow$ Binds cytoplasm/nucleus $\\rightarrow$ Hormone-receptor complex | **Direct transcription factor** turning genes ON/OFF | Slower response than GPCRs, but long-lasting physiological changes |
+| **$G_1$ Restriction Checkpoint** | Internal & External | Cyclin D/E + CDK4/6; DNA damage activates **p53** | Commits to S-phase DNA synthesis or arrests to $G_0$ | Over 50% of human cancers harbor loss-of-function $p53$ mutations |
+| **M Spindle Checkpoint** | Internal kinetochore tension | APC/C (Anaphase-Promoting Complex) activates separase | Cleaves cohesin proteins, allowing anaphase separation | Prevents nondisjunction leading to Down syndrome (Trisomy 21) |`
       }
     ],
     workedExamples: [
@@ -482,6 +495,21 @@ export const AP_BIOLOGY_NOTES: APUnitNote[] = [
    - **Introns** (non-coding intervening sequences) are excised and degraded.
    - **Exons** (expressed coding sequences) are spliced together.
    - **Alternative RNA Splicing**: Different combinations of exons are joined from a single pre-mRNA, allowing one single gene to produce multiple distinct protein isoforms!`
+      },
+      {
+        heading: '2. DNA Replication Enzymes & Operon Gene Regulation Matrix',
+        content: `Comprehensive reference for molecular genetics enzymes and prokaryotic gene regulation:
+
+| Enzyme / Mechanism | Synthesis Direction | Specific Biochemical Function | Key AP College Board Note |
+| :--- | :--- | :--- | :--- |
+| **Helicase** | Moves toward replication fork | Unwinds and separates parental double-stranded DNA | Breaks hydrogen bonds between complementary bases |
+| **Topoisomerase (Gyrase)** | Ahead of replication fork | Relieves supercoiling tension caused by unwinding | Prevents DNA replication fork stalling and DNA breakage |
+| **RNA Primase** | $5' \\rightarrow 3'$ | Synthesizes short complementary RNA primers ($10\\text{ nt}$) | DNA Polymerase cannot initiate synthesis *de novo*; requires $3'-\\text{OH}$ |
+| **DNA Polymerase III** | Strictly $5' \\rightarrow 3'$ | Synthesizes main continuous leading and discontinuous lagging strands | Possesses $3' \\rightarrow 5'$ proofreading exonuclease activity |
+| **DNA Polymerase I** | Strictly $5' \\rightarrow 3'$ | Removes RNA primers and replaces them with DNA nucleotides | Leaves a nick in the sugar-phosphate backbone |
+| **DNA Ligase** | Catalyzes phosphodiester bond | Seals nicks between Okazaki fragments on lagging strand | Requires ATP/NAD to form covalent phosphodiester bond |
+| **lac Operon (Catabolic)** | Inducible (Normally **OFF**) | Inducer (**allolactose**) binds repressor, releasing operator | Metabolizes lactose only when glucose is absent (CAP-cAMP high) |
+| **trp Operon (Anabolic)** | Repressible (Normally **ON**) | Corepressor (**tryptophan**) binds repressor, docking to operator | Halts tryptophan synthesis when cellular tryptophan is abundant |`
       }
     ],
     workedExamples: [
@@ -573,6 +601,19 @@ export const AP_BIOLOGY_NOTES: APUnitNote[] = [
 - **Reproductive Isolating Mechanisms**:
   - *Prezygotic*: Temporal (mating seasons), Behavioral (courtship rituals), Mechanical (anatomical incompatibility), Gametic (sperm cannot fertilize egg).
   - *Postzygotic*: Hybrid inviability (embryo dies), Hybrid sterility (mule is sterile).`
+      },
+      {
+        heading: '2. Modes of Natural Selection & Hardy-Weinberg Violations Matrix',
+        content: `Comparison of evolutionary forces, phenotypic curve shifts, and Hardy-Weinberg conditions:
+
+| Evolutionary Mechanism | Phenotypic Distribution Shift | Impact on Genetic Variation | Condition of H-W Violated | Benchmark AP Biology Example |
+| :--- | :--- | :--- | :--- | :--- |
+| **Directional Selection** | Shifts curve toward **ONE extreme** phenotype | Decreases overall phenotypic variation | Natural selection occurring | Industrial melanism in peppered moths; Antibiotic resistance in MRSA |
+| **Stabilizing Selection** | Favors **INTERMEDIATE mean**, selects against both extremes | Narrowing curve; decreases variation | Natural selection occurring | Human infant birth weights (low birth weight = hypothermia; high = birth trauma) |
+| **Disruptive Selection** | Favors **BOTH extremes**, selects against intermediate | Increases variation; can initiate sympatric speciation | Natural selection occurring | Black-bellied seedcracker finches (small beaks crack soft seeds; large crack hard seeds) |
+| **Genetic Drift (Bottleneck)** | Random allele shifts due to drastic population crash | **Dramatically decreases** genetic diversity | Extremely large population violated | Cheetah population bottleneck after Ice Age; Northern elephant seals |
+| **Genetic Drift (Founder Effect)** | Small subset establishes geographically isolated colony | Randomly altered frequencies; high inbreeding | Extremely large population violated | High frequency of Ellis-van Creveld dwarfism in Lancaster Amish |
+| **Gene Flow (Migration)** | Movement of fertile individuals/gametes between populations | Reduces differences between populations | No migration / gene flow violated | Wind-blown pollen transferring alleles between separated pine forests |`
       }
     ],
     workedExamples: [

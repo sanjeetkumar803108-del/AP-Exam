@@ -250,6 +250,19 @@ export const AP_CHEMISTRY_NOTES: APUnitNote[] = [
    - Unusually strong dipole-dipole attraction occurring when hydrogen is covalently bonded to small, highly electronegative atoms: **N, O, or F**.
 4. **Ion-Dipole Interactions**:
    - Occur when ionic salts dissolve in polar solvents (e.g. $\\text{Na}^+$ surrounded by negative oxygen ends of $\\text{H}_2\\text{O}$).`
+      },
+      {
+        heading: '2. Intermolecular Forces Hierarchy & Property Correlation Matrix',
+        content: `Direct relationship between IMF strength and macroscopic physical properties:
+
+| Intermolecular Force | Typical Energy | Participating Species | Boiling / Melting Point | Vapor Pressure | Viscosity & Surface Tension | Characteristic Example |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **London Dispersion (LDF)** | $0.1 - 10\\text{ kJ/mol}$ | All atoms & molecules | Lowest (unless very large electron cloud) | **Highest** | Lowest | $\\text{CH}_4, \\text{Ne}, \\text{I}_2$ (solid due to high polarizability!) |
+| **Dipole-Dipole** | $3 - 20\\text{ kJ/mol}$ | Polar molecules | Intermediate | Intermediate | Intermediate | $\\text{HCl}, \\text{SO}_2, \\text{CH}_3\\text{Cl}$ |
+| **Hydrogen Bonding** | $10 - 40\\text{ kJ/mol}$ | H bonded directly to **N, O, or F** | **Very High** | Low | High | $\\text{H}_2\\text{O}, \\text{NH}_3, \\text{HF}, \\text{CH}_3\\text{OH}$ |
+| **Ion-Dipole** | $40 - 100+\\text{ kJ/mol}$ | Ionic salt dissolved in polar liquid | Extremely High (hydration) | Very Low | High | $\\text{Na}^+(aq) + \\text{Cl}^-(aq)$ in $\\text{H}_2\\text{O}$ |
+
+*Key AP Correlation*: Stronger IMFs $\\implies$ Higher Boiling Point, Higher Heat of Vaporization ($\\Delta H_{\\text{vap}}$), Higher Surface Tension, Higher Viscosity, but **LOWER Vapor Pressure**!`
       }
     ],
     workedExamples: [
@@ -339,6 +352,18 @@ export const AP_CHEMISTRY_NOTES: APUnitNote[] = [
 $$\\text{AgNO}_3(aq) + \\text{NaCl}(aq) \\rightarrow \\text{AgCl}(s) + \\text{NaNO}_3(aq)$$
 $$\\text{Net Ionic}: \\text{Ag}^+(aq) + \\text{Cl}^-(aq) \\rightarrow \\text{AgCl}(s)$$
 *Spectators*: $\\text{Na}^+$ and $\\text{NO}_3^-$ are omitted.`
+      },
+      {
+        heading: '2. Aqueous Precipitation & Net Ionic Decision Matrix',
+        content: `College Board rules for writing net ionic precipitation equations:
+
+| Salt / Ion Class | Solubility in Water | Precipitate Exceptions (Insoluble) | Net Ionic Equation Template | AP Grader Tip |
+| :--- | :--- | :--- | :--- | :--- |
+| **$\\text{Na}^+, \\text{K}^+, \\text{NH}_4^+$** | **Always Soluble** ($100\\%$) | **NONE** | Remain aqueous spectator ions | Always cancel from both sides |
+| **Nitrate ($\\text{NO}_3^-$)** | **Always Soluble** ($100\\%$) | **NONE** | Remain aqueous spectator ions | Always cancel from both sides |
+| **Halides ($\\text{Cl}^-, \\text{Br}^-, \\text{I}^-$)** | Mostly Soluble | $\\text{Ag}^+, \\text{Pb}^{2+}, \\text{Hg}_2^{2+}$ | $\\text{Ag}^+(aq) + \\text{Cl}^-(aq) \\rightarrow \\text{AgCl}(s)$ | $\\text{AgCl}$ forms a white precipitate |
+| **Sulfate ($\\text{SO}_4^{2-}$)** | Mostly Soluble | $\\text{Ba}^{2+}, \\text{Pb}^{2+}, \\text{Ca}^{2+}, \\text{Sr}^{2+}$ | $\\text{Ba}^{2+}(aq) + \\text{SO}_4^{2-}(aq) \\rightarrow \\text{BaSO}_4(s)$ | Common gravimetric analysis precipitate |
+| **Hydroxides & Carbonates** | Mostly Insoluble | Group 1 cations, $\\text{NH}_4^+$, heavy Group 2 | $\\text{Cu}^{2+}(aq) + 2\\text{OH}^-(aq) \\rightarrow \\text{Cu(OH)}_2(s)$ | Keep insoluble product together as solid $(s)$ |`
       }
     ],
     workedExamples: [
@@ -534,6 +559,19 @@ $$q_{\\text{reaction}} = -q_{\\text{solution}} = -(m_{\\text{solution}} \\cdot c
   2. Solution density is identical to pure water ($1.00\\text{ g/mL}$).
   3. Solution specific heat capacity is identical to pure water ($4.184\\text{ J}/(\\text{g}\\cdot^\\circ\\text{C})$).
 - If heat escapes to surroundings, measured $\\Delta T$ is falsely low, so calculated $\\Delta H_{\\text{rxn}}$ magnitude is artificially low.`
+      },
+      {
+        heading: '2. Endothermic vs. Exothermic Thermodynamic Matrix',
+        content: `Comprehensive comparison of thermodynamic parameters across reaction types:
+
+| Parameter | Exothermic Process ($\\Delta H < 0$) | Endothermic Process ($\\Delta H > 0$) | AP Exam Notes & Traps |
+| :--- | :--- | :--- | :--- |
+| **Enthalpy Sign** | $\\Delta H < 0$ (Negative) | $\\Delta H > 0$ (Positive) | Exothermic releases heat; Endothermic absorbs heat |
+| **Bond Energy Balance** | $\\sum \\text{BE}_{\\text{formed}} > \\sum \\text{BE}_{\\text{broken}}$ | $\\sum \\text{BE}_{\\text{broken}} > \\sum \\text{BE}_{\\text{formed}}$ | Stronger bonds formed than broken $\\implies$ Exothermic! |
+| **Calorimeter Temp ($\\Delta T_{\\text{water}}$)** | Solution temperature **rises** ($\\Delta T > 0$) | Solution temperature **drops** ($\\Delta T < 0$) | $q_{\\text{rxn}} = -q_{\\text{water}} = -mc\\Delta T$ |
+| **Potential Energy Profile** | Products lower than Reactants | Products higher than Reactants | Activation energy $E_a$ is measured from reactants to transition state |
+| **Shift with Temperature Increase** | Shifts **LEFT** ($\\leftarrow$); $K_{\\text{eq}}$ **decreases** | Shifts **RIGHT** ($\\rightarrow$); $K_{\\text{eq}}$ **increases** | Heat acts as a product (exo) or reactant (endo) |
+| **Everyday Chemical Examples** | Combustion, acid-base neutralization, freezing | Dissolution of $\\text{NH}_4\\text{NO}_3$, boiling, photosynthesis | Freezing and condensing release heat (exothermic)! |`
       }
     ],
     workedExamples: [
@@ -726,6 +764,20 @@ $$q_{\\text{reaction}} = -q_{\\text{solution}} = -(m_{\\text{solution}} \\cdot c
 6. $\\text{H}_2\\text{SO}_4$ — Sulfuric acid (1st proton is strong: $\\text{H}_2\\text{SO}_4 \\rightarrow \\text{H}^+ + \\text{HSO}_4^-$)
 
 *Strong Bases*: Group 1 hydroxides ($\\text{LiOH, NaOH, KOH}$) and heavy Group 2 hydroxides ($\\text{Ca(OH)}_2, \\text{Sr(OH)}_2, \\text{Ba(OH)}_2$).`
+      },
+      {
+        heading: '2. Acid-Base Titration Curve Regions & Buffer Matrix',
+        content: `Anatomy of a weak acid ($\\text{HA}$) vs. strong base ($\\text{NaOH}$) titration curve:
+
+| Titration Curve Region | Dominant Chemical Species | Mathematical Governing Formula | Characteristic pH Range | Suitable Indicator |
+| :--- | :--- | :--- | :--- | :--- |
+| **1. Initial Point ($V = 0$)** | Pure weak acid $\\text{HA}$ in $\\text{H}_2\\text{O}$ | $[\\text{H}^+] \\approx \\sqrt{K_a [\\text{HA}]_0}$ | Acidic ($\\text{pH} \\approx 2 - 4$) | N/A |
+| **2. Buffer Region** | Conjugate pair mixture: $\\text{HA} + \\text{A}^-$ | $\\text{pH} = \\text{p}K_a + \\log\\frac{[\\text{A}^-]}{[\\text{HA}]}$ | Flat, resists pH changes | N/A |
+| **3. Half-Equivalence Point** | $[\\text{HA}] = [\\text{A}^-]$ (exactly equal) | $\\mathbf{\\text{pH} = \\text{p}K_a}$ | Flat inflection midpoint | Midpoint determines $\\text{p}K_a$ |
+| **4. Equivalence Point** | Pure conjugate base $\\text{A}^-$ (stoichiometric) | $[\\text{OH}^-] \\approx \\sqrt{K_b [\\text{A}^-]}$ | **Basic ($\\text{pH} > 7$, typically $8.5 - 9.5$)** | **Phenolphthalein** (transitions at $\\text{pH} \\approx 8.2 - 10$) |
+| **5. Post-Equivalence** | Excess unreacted $\\text{OH}^-$ titrant | $[\\text{OH}^-] = \\frac{\\text{moles excess } \\text{OH}^-}{V_{\\text{total}}}$ | Strongly basic ($\\text{pH} > 12$) | N/A |
+
+*College Board Rule*: Equivalence point is NOT always pH 7! Weak acid + strong base yields basic salt at equivalence ($\\text{pH} > 7$). Weak base + strong acid yields acidic salt at equivalence ($\\text{pH} < 7$).`
       }
     ],
     workedExamples: [

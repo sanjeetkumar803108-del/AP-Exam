@@ -497,5 +497,254 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
       'Writing questions test grammar, transitions, thesis strength, and sentence placement.',
       'For transitions: Identify the relationship first (contrast, causality, addition) before looking at the choices.'
     ]
+  },
+
+  // ==========================================
+  // UNIT 7: RHETORICAL ANALYSIS (FRQ 2 MASTERY)
+  // ==========================================
+  {
+    unitId: 'u7',
+    unitNumber: 7,
+    title: 'Rhetorical Analysis & Analytical Verbs (FRQ 2)',
+    examWeight: '14%–18% of AP Exam',
+    bigIdea: 'High-scoring rhetorical analysis moves chronologically through the text, analyzing what the author DOES rather than merely what the author SAYS, deploying precise rhetorical action verbs.',
+    keyTheorems: [
+      {
+        name: 'Functional Analysis vs. Device Hunting',
+        conditions: 'Deconstructing an author’s craft in the Rhetorical Analysis Essay (Q2).',
+        conclusion: 'Scorers penalize "device hunting" (merely pointing out metaphors, polysyndeton, or rhetorical questions). High-scoring essays explain how the author’s choices function chronologically to shift audience mindset, overcome resistance, and fulfill the exigence.',
+        apTip: 'Never organize paragraphs by device (e.g. Paragraph 1: Diction, Paragraph 2: Repetition). Organize chronologically: Paragraph 1: How the author establishes early rapport; Paragraph 2: How the author intensifies moral urgency; Paragraph 3: How the author rallies the audience to action.'
+      },
+      {
+        name: 'The Rhetorical Power Verbs Hierarchy',
+        conditions: 'Formulating analytical claims about authorial strategy.',
+        conclusion: 'Replace generic verbs like "uses," "shows," "mentions," and "says" with active rhetorical verbs: juxtaposes, excoriates, validates, lampoons, implores, delineates, subverts, galvanizes, lionizes.',
+        apTip: 'Formula: [Author] [Active Verb] [Concept A] with [Concept B] in order to [Audience Reaction].'
+      }
+    ],
+    formulas: [
+      {
+        name: 'Rhetorical Action Statement Formula',
+        latex: '\\text{[Speaker]} + \\text{[Rhetorical Action Verb]} + \\text{[Strategic Textual Move]} + \\text{to [Alter Audience Belief]}',
+        explanation: 'Example: "Kelley deliberately juxtaposes adolescent nocturnal toil with adult luxury to evoke moral culpability in enfranchised voters."'
+      }
+    ],
+    sections: [
+      {
+        heading: '1. Rhetorical Choices vs. Analytical Verbs vs. Audience Effect Matrix',
+        content: `Master taxonomy of rhetorical moves and precise vocabulary:
+
+| Authorial Move | Active Rhetorical Verb | Textual Mechanism | Intended Audience Effect |
+| :--- | :--- | :--- | :--- |
+| **Contrasting Ideas** | *Juxtaposes, contrasts, bifurcates* | Places two opposing concepts side-by-side | Highlights stark moral hypocrisy, inequality, or urgency |
+| **Severe Critique** | *Excoriates, reproaches, censures, castigates* | Harsh, unapologetic moral condemnation | Shatters complacency and forces immediate self-reckoning |
+| **Urgent Request** | *Implores, entreats, beseeches, petitions* | Emotive supplication grounded in vulnerability | Evokes deep empathy, humanitarian duty, and moral obligation |
+| **Mockery / Satire** | *Lampoons, satirizes, ridicules, derides* | Uses irony, hyperbole, or caricature | Exposes absurdity, discredits opponents, and provokes critical thought |
+| **Clarifying Structure** | *Delineates, elucidates, demarcates* | Step-by-step analytical exposition | Reassures skeptics through crystalline, incontrovertible logic (Logos) |
+| **Challenging Norms** | *Subverts, destabilizes, dismantles* | Inverts conventional wisdom or expectations | Unsettles traditional dogma and opens minds to radical alternatives |
+| **Inspiring Action** | *Galvanizes, rallies, mobilizes* | Resonant calls to collective identity | Translates emotional conviction into tangible political or social action |`
+      }
+    ],
+    workedExamples: [
+      {
+        title: 'Drafting a Chronological FRQ 2 Body Paragraph',
+        topicRef: 'CED 7.1 Chronological Functional Movement',
+        question: 'Analyze how an author shifts from establishing initial common ground to delivering an uncompromising moral indictment.',
+        solutionSteps: [
+          'Step 1: Frame topic sentence around chronological movement: "After establishing shared patriotic reverence in the opening lines, the speaker pivots abruptly to excoriate the audience’s complicity in systemic injustice."',
+          'Step 2: Embed text evidence smoothly: Citing the speaker’s shift from \\"fellow countrymen\\" to \\"your hypocritical celebrations.\\"',
+          'Step 3: Analyze the rhetorical function: By initially disarming the audience’s defensive biases with flattery, the speaker lowers their guard, making the subsequent moral indictment hit with amplified psychological force.',
+          'Step 4: Connect to ultimate purpose: This calculated pivot ensures the audience cannot deflect guilt, compelling them to re-examine their hollow declarations of freedom.'
+        ],
+        finalAnswer: 'A high-scoring paragraph analyzing the functional progression and audience psychology rather than isolated static figures of speech.',
+        apScoringTip: 'Tracing shifts (tone shifts, perspective shifts, structural shifts) is the hallmark of upper-tier Row B (3–4 points) and Row C Sophistication.'
+      }
+    ],
+    diagrams: [
+      {
+        id: 'rhetorical_analysis_flow',
+        title: 'FRQ 2 Chronological Functional Progression',
+        subtitle: 'Beginning (Exigence & Rapport) $\\rightarrow$ Middle (Pivots & Contrast) $\\rightarrow$ End (Climax & Action)',
+        type: 'rhetorical_analysis_flow',
+        description: 'Flow diagram showing how an author moves from establishing initial credibility and context to intensifying emotional and logical appeals, concluding with a climactic call to action.',
+        takeaway: 'Great writers structure texts like musical compositions; analyze the functional movement from movement to movement.'
+      }
+    ],
+    commonTraps: [
+      'Writing "The author uses diction." Diction is just words! Always describe the nature of the diction: "sacred, biblical diction" or "clinical, bureaucratic diction."',
+      'Writing a summary of the passage line by line without analyzing why the author made those specific choices.',
+      'Forgetting the audience: Every rhetorical choice must connect back to how it alters the thoughts, feelings, or actions of the specific target listeners.'
+    ],
+    cramSheet: [
+      'Organize FRQ 2 chronologically (Beginning ➔ Middle ➔ End) or by major functional shifts.',
+      'Replace "uses" with active verbs: juxtaposes, excoriates, implores, delineates, subverts, galvanizes.',
+      'Always answer the "So What?": Choice ➔ Function ➔ Audience Reaction ➔ Author’s Ultimate Purpose.',
+      'Earn Row A (Thesis) by specifying choices and linking them directly to the author’s message.'
+    ]
+  },
+
+  // ==========================================
+  // UNIT 8: ARGUMENTATIVE ESSAY (FRQ 3 MASTERY)
+  // ==========================================
+  {
+    unitId: 'u8',
+    unitNumber: 8,
+    title: 'Argumentative Writing & Evidence (FRQ 3)',
+    examWeight: '14%–18% of AP Exam',
+    bigIdea: 'The Argument Essay (Q3) tests your ability to take a defensible stance on an abstract claim, substantiating it with varied, specific evidence from history, literature, science, and current events.',
+    keyTheorems: [
+      {
+        name: 'The CHELPS / REHUGO Evidence Architecture',
+        conditions: 'Brainstorming diverse, specific evidence for Question 3.',
+        conclusion: 'Top-scoring essays draw evidence from multiple distinct societal domains rather than relying solely on personal high school anecdotes: (C) Current Events, (H) History, (E) Experience, (L) Literature / Philosophy, (P) Politics / Pop Culture, (S) Science / Technology.',
+        apTip: 'Historical and philosophical evidence carries the highest rhetorical weight. Grounding an abstract prompt in the American Civil Rights movement or the Industrial Revolution immediately signals academic maturity.'
+      },
+      {
+        name: 'The Defend, Challenge, Qualify Strategic Spectrum',
+        conditions: 'Selecting your stance on the prompt’s central assertion.',
+        conclusion: 'While you can purely Defend (100% agree) or purely Challenge (100% disagree), Qualifying (agreeing under specific conditions while disputing others) provides the most natural path to nuanced analysis and the Row C Sophistication point.',
+        apTip: 'Qualified Thesis Formula: "Although [Assertion] holds true regarding [Context A], it fundamentally fails in [Context B] because [Underlying Reason]."'
+      }
+    ],
+    formulas: [
+      {
+        name: 'High-Yield Qualified Thesis Formula',
+        latex: '\\text{Although } [\\text{Admit Counter-Reality}], \\text{ nevertheless } [\\text{Defend/Challenge Stance}] \\text{ because } [\\text{Core Line of Reasoning}]',
+        explanation: 'Avoids absolutist binary thinking and sets up a robust line of reasoning with built-in concession.'
+      }
+    ],
+    sections: [
+      {
+        heading: '1. CHELPS Evidence Taxonomy & Deployment Matrix',
+        content: `How to select and deploy persuasive evidence domains on FRQ 3:
+
+| Domain | Source Code | Best Used For | Exemplar Evidence Cases |
+| :--- | :--- | :--- | :--- |
+| **Current Events** | **C** | Demonstrating modern real-world urgency and relevance | Artificial intelligence regulation, climate policy summits, social media data privacy |
+| **History** | **H** | Providing macro-scale precedent with documented long-term outcomes | Fall of Roman Republic, Civil Rights Act of 1964, Gilded Age labor movements |
+| **Experience** | **E** | Humanizing arguments with vivid authenticity (use sparingly as sole proof) | Experiencing linguistic barriers in an immigrant family, working minimum-wage retail |
+| **Literature** | **L** | Illustrating psychological, ethical, or archetypal truths | Orwell’s *1984* (surveillance), Miller’s *The Crucible* (mass hysteria), Fitzgerald’s *Gatsby* (materialism) |
+| **Politics / Philosophy** | **P** | Grounding arguments in constitutional law and governance theories | Locke’s social contract, Machiavelli’s political pragmatism, Citizens United ruling |
+| **Science / Technology** | **S** | Establishing empirical consensus and technological disruption | CRISPR gene editing ethics, neurobiology of screen addiction, renewable energy grids |`
+      }
+    ],
+    workedExamples: [
+      {
+        title: 'Crafting a Sophisticated Qualified Argument (Q3)',
+        topicRef: 'CED 8.2 Defend, Challenge, Qualify Mastery',
+        question: 'Write a thesis and supporting outline responding to the prompt: "Is safety more valuable than freedom?"',
+        solutionSteps: [
+          'Step 1: Avoid simplistic binary: Saying safety is ALWAYS better or freedom is ALWAYS better is naive and historically false.',
+          'Step 2: Establish qualified stance: Civil society requires a baseline of safety to exercise meaningful freedom, but surrendering fundamental liberties for total security inevitably breeds authoritarian tyranny.',
+          'Step 3: Deploy Historical Evidence (Body 1): The post-9/11 USA PATRIOT Act—illustrating how fear justified indefinite detention and warrantless surveillance, eroding 4th Amendment rights without guaranteeing safety.',
+          'Step 4: Deploy Philosophical / Political Evidence (Body 2): John Locke’s Social Contract—citizens surrender the unfettered liberty of the state of nature specifically to establish a government that protects property and bodily security; thus, safety is a prerequisite for liberty.',
+          'Step 5: Concession & Rebuttal: Concede that emergency wartime measures may temporarily prioritize physical preservation (e.g. Abraham Lincoln suspending habeas corpus), but rebut that such measures must remain temporary exceptions rather than permanent precedents.'
+        ],
+        finalAnswer: 'A high-scoring, nuanced argument balancing philosophical governance theory with specific historical legal precedent.',
+        apScoringTip: 'Specific details matter! Writing "after 9/11 people were scared" scores low. Writing "the passage of the 2001 USA PATRIOT Act expanded Title II electronic surveillance" scores high.'
+      }
+    ],
+    diagrams: [
+      {
+        id: 'argument_evidence_pyramid',
+        title: 'The CHELPS Evidence Architecture and Stance Continuum',
+        subtitle: 'Balancing Defend, Qualify, and Challenge across Multiple Real-World Domains',
+        type: 'argument_evidence_pyramid',
+        description: 'Pyramid diagram displaying evidence tiers from Current Events and History down to Literature and Science, anchored by the Defend-Qualify-Challenge stance spectrum.',
+        takeaway: 'Specific, multi-disciplinary evidence paired with a qualified stance creates an unassailable argument.'
+      }
+    ],
+    commonTraps: [
+      'Using hypothetical or fabricated evidence (e.g. "Imagine a guy named Bob..."). Real historical, literary, or current events are required.',
+      'Writing an essay based entirely on generic personal anecdotes without demonstrating broad knowledge of the world.',
+      'Drifting off topic: Always connect your evidence directly back to the key terms of the prompt in your commentary.'
+    ],
+    cramSheet: [
+      'Use CHELPS (Current events, History, Experience, Literature, Politics, Science) to brainstorm.',
+      'Qualifying your argument ("true in context X, but dangerous in context Y") is the most defensible approach.',
+      'Provide specific details: Names, dates, legislation, and book titles over vague generalities.',
+      'Spend at least 2 sentences of commentary for every sentence of evidence.'
+    ]
+  },
+
+  // ==========================================
+  // UNIT 9: CRAFTING NUANCED ARGUMENTS (ROW C SOPHISTICATION)
+  // ==========================================
+  {
+    unitId: 'u9',
+    unitNumber: 9,
+    title: 'Nuance, Voice & The Sophistication Rubric',
+    examWeight: '10%–14% of AP Exam',
+    bigIdea: 'The coveted Row C Sophistication Point (1 point) is earned not by fancy vocabulary, but by demonstrating complex understanding, situating claims in broader contexts, and maintaining a compelling authorial voice.',
+    keyTheorems: [
+      {
+        name: 'The Official College Board Row C Criteria',
+        conditions: 'Earning the final point on the 6-point analytic scoring rubric for all three FRQ essays.',
+        conclusion: 'A response may earn the sophistication point in one of three ways: (1) Crafting a nuanced argument by consistently identifying and exploring complexities or tensions; (2) Articulating the broader context or significance of the argument or rhetorical choices; (3) Employing a style that is consistently vivid, persuasive, and rhetorically compelling.',
+        apTip: 'Sophistication is NOT a "check the box" award! It cannot be earned with a single clever sentence in your conclusion. Scorers must see depth of thought sustained throughout the entire essay.'
+      },
+      {
+        name: 'The Mechanics of Genuine Qualification',
+        conditions: 'Developing complexity in argumentative reasoning.',
+        conclusion: 'Genuine qualification does not mean being wishy-washy. It means identifying the precise boundary conditions where your argument holds and where competing values legitimately prevail, resolving the tension with superior analysis.',
+        apTip: 'Use concession transition frames: "Admittedly, proponents of [X] rightly observe [Y]; nevertheless, this logic falters when applied to [Z] because..."'
+      }
+    ],
+    formulas: [
+      {
+        name: 'Sophistication Synthesis Equation',
+        latex: '\\text{Specific Claim} + \\text{Broader Historical/Philosophical Context} + \\text{Unresolved Tension/Concession} \\implies \\text{Row C Earned}',
+        explanation: 'Ground your specific topic in enduring human, cultural, or ethical dilemmas.'
+      }
+    ],
+    sections: [
+      {
+        heading: '1. Row C Scoring Criteria & Decision Rules Matrix',
+        content: `What College Board readers look for when awarding the Sophistication Point:
+
+| Pathway | What EARNS the Point | What FAILS to Earn the Point |
+| :--- | :--- | :--- |
+| **Pathway 1: Broader Context** | Connecting the prompt to enduring philosophical, systemic, or historical debates (e.g. framing a local censorship issue within the tradition of Milton’s *Areopagitica*) | Dropping a random historical reference in the final sentence without weaving it into the essay’s line of reasoning |
+| **Pathway 2: Exploring Tensions & Complexities** | Acknowledging legitimate counter-arguments, analyzing trade-offs, and explaining why competing values clash under specific real-world conditions | Simply inserting a standard "Some people disagree, but they are wrong" concession paragraph |
+| **Pathway 3: Vivid & Persuasive Prose** | Sustained, mature sentence variety, precise and evocative diction, fresh metaphors, and effortless syntactic transitions | "Thesaurus abuse"—cramming arcane SAT words into awkward, run-on sentences that obscure meaning |`
+      }
+    ],
+    workedExamples: [
+      {
+        title: 'Elevating an Adequate Argument to a Sophisticated Argument',
+        topicRef: 'CED 9.1 Achieving Rubric Sophistication',
+        question: 'Compare an adequate body paragraph with a sophisticated revision on the topic of technological surveillance.',
+        solutionSteps: [
+          'Step 1: Analyze adequate draft: "Surveillance by tech companies is bad because it takes away privacy. For example, apps track our location and sell it to advertisers. This makes people feel watched, which is a violation of human rights."',
+          'Step 2: Diagnose weakness: Simplistic assertion, generic evidence, lacks line of reasoning, ignores why users willingly accept tracking.',
+          'Step 3: Infuse complexity and tension: Why do consumers surrender privacy? For digital convenience, free services, and personalized efficiency.',
+          'Step 4: Draft sophisticated revision: "The crisis of modern digital surveillance is not merely predatory corporate overreach, but a voluntary Faustian bargain struck by the consumer. In exchange for the algorithmic convenience of instant navigation and curated content, modern citizens willingly surrender biometric and locational autonomy. As philosopher Shoshana Zuboff delineates in her critique of surveillance capitalism, this dynamic privatizes human experience as raw behavioral data, subverting democratic self-determination not through authoritarian force, but through comfortable habituation."'
+        ],
+        finalAnswer: 'The revision contextualizes the problem historically, acknowledges user complicity, cites specialized scholarship, and features sophisticated syntactic flow.',
+        apScoringTip: 'Show that you understand the underlying motives of both sides. When you explain WHY an opponent thinks the way they do, your essay instantly achieves academic sophistication.'
+      }
+    ],
+    diagrams: [
+      {
+        id: 'sophistication_rubric',
+        title: 'The Three Pathways to the Row C Sophistication Point',
+        subtitle: 'Broader Context • Multi-Faceted Tensions • Sustained Stylistic Voice',
+        type: 'sophistication_rubric',
+        description: 'Comparative breakdown of the three College Board approved routes to earning the final point on the 6-point rubric across all AP Lang FRQ essays.',
+        takeaway: 'Sophistication is sustained intellectual depth and rhetorical craftsmanship, not superficial vocabulary ornament.'
+      }
+    ],
+    commonTraps: [
+      'The "Thesaurus Trap": Using overly grand words incorrectly. Clarity and precision always trump decorative vocabulary.',
+      'Tacking on a generic philosophical quote at the very end of your conclusion hoping to trick the reader into giving Row C.',
+      'Contradicting yourself instead of qualifying: Make sure your concession does not disprove your own central thesis!'
+    ],
+    cramSheet: [
+      'Row C is earned through: (1) Broader context, (2) Exploring tensions/complexities, or (3) Exceptional rhetorical style.',
+      'Sophistication must be sustained throughout the essay, not a single one-off phrase.',
+      'Explain the trade-offs: Almost no complex issue in modern society has an easy, black-and-white solution.',
+      'Write with a confident, distinct authorial voice.'
+    ]
   }
 ];
+

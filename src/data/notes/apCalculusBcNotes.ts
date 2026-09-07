@@ -34,6 +34,38 @@ const bcUnits1to8: APUnitNote[] = AP_CALCULUS_AB_NOTES.map(unit => {
           name: 'Partial Fraction Decomposition (Linear Factors)',
           latex: '\\frac{1}{(x-a)(x-b)} = \\frac{A}{x-a} + \\frac{B}{x-b}',
           explanation: 'Decomposes rational functions into easily integrable logarithmic terms.'
+        },
+        {
+          name: 'Improper Integral with Infinite Bound',
+          latex: '\\int_a^\\infty f(x)\\,dx = \\lim_{b \\to \\infty} \\int_a^b f(x)\\,dx',
+          explanation: 'Converges if the limit exists and is finite; otherwise diverges.'
+        }
+      ],
+      sections: [
+        ...unit.sections,
+        {
+          heading: '5. Tabular Integration by Parts (Tic-Tac-Toe Method)',
+          content: `When integrating products of polynomials $P(x)$ with functions that can be repeatedly integrated ($e^{ax}$, $\\sin(ax)$, $\\cos(ax)$):
+
+| Row | Sign Column | Derivative Column $D(x)$ (Differentiate to 0) | Integral Column $I(x)$ (Anti-differentiate) | Product Term |
+| :---: | :---: | :--- | :--- | :--- |
+| 1 | $+$ | $x^2$ | $e^{2x}$ | Start |
+| 2 | $-$ | $2x$ | $\\frac{1}{2}e^{2x}$ | $+ x^2 \\left(\\frac{1}{2}e^{2x}\\right)$ |
+| 3 | $+$ | $2$ | $\\frac{1}{4}e^{2x}$ | $- 2x \\left(\\frac{1}{4}e^{2x}\\right)$ |
+| 4 | $-$ | $0$ (Stop) | $\\frac{1}{8}e^{2x}$ | $+ 2 \\left(\\frac{1}{8}e^{2x}\\right)$ |
+
+**Result:** $\\int x^2 e^{2x} \\, dx = \\frac{1}{2}x^2 e^{2x} - \\frac{1}{2}x e^{2x} + \\frac{1}{4}e^{2x} + C$.`
+        },
+        {
+          heading: '6. Improper Integrals & p-Integral Benchmark Table',
+          content: `Improper integrals involve infinite bounds (Type 1) or interior infinite discontinuities (Type 2):
+
+| Improper Type | Integral Form | Test / Condition | Convergence Rule | AP Exam Example |
+| :--- | :--- | :--- | :--- | :--- |
+| **Type 1 (Infinite Upper Bound)** | $\\int_1^\\infty \\frac{1}{x^p} \\, dx$ | $p$-integral test at $\\infty$ | **Converges if $p > 1$**; Diverges if $p \\le 1$ | $\\int_1^\\infty \\frac{1}{x^2}\\,dx = 1$ (Converges) |
+| **Type 1 (Both Bounds Infinite)** | $\\int_{-\\infty}^\\infty f(x) \\, dx$ | Split at $c=0$: $\\int_{-\\infty}^0 + \\int_0^\\infty$ | BOTH parts must converge independently | $\\int_{-\\infty}^\\infty \\frac{1}{1+x^2}\\,dx = \\pi$ |
+| **Type 2 (Asymptote at Bound)** | $\\int_0^1 \\frac{1}{x^p} \\, dx$ | $p$-integral test near 0 | **Converges if $p < 1$**; Diverges if $p \\ge 1$ | $\\int_0^1 \\frac{1}{\\sqrt{x}}\\,dx = 2$ ($p=1/2 < 1$) |
+| **Type 2 (Interior Asymptote)** | $\\int_{-1}^2 \\frac{1}{x^2} \\, dx$ | Split at vertical asymptote $x = 0$ | If either piece diverges, the integral diverges | Diverges to $\\infty$ (DO NOT blindly apply FTC!) |`
         }
       ]
     };
@@ -71,6 +103,36 @@ const bcUnits1to8: APUnitNote[] = AP_CALCULUS_AB_NOTES.map(unit => {
           latex: '\\frac{dP}{dt} = kP\\left(1 - \\frac{P}{L}\\right) = \\frac{k}{L} P(L - P)',
           explanation: 'Carrying capacity is $L$; maximum growth rate occurs at $P = L/2$.'
         }
+      ],
+      sections: [
+        ...unit.sections,
+        {
+          heading: '3. Euler’s Method Numerical Calculation Table',
+          content: `To approximate $y(x_{\\text{target}})$ starting from $(x_0, y_0)$ with step size $\\Delta x$:
+
+| Step $n$ | Current $(x_n, y_n)$ | Slope $\\left.\\frac{dy}{dx}\\right|_{(x_n, y_n)}$ | Step $\\Delta x$ | Jump $\\Delta y = \\text{Slope} \\cdot \\Delta x$ | Next Point $(x_{n+1}, y_{n+1})$ |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| 0 | $(x_0, y_0)$ | $f(x_0, y_0)$ | $\\Delta x$ | $f(x_0, y_0) \\cdot \\Delta x$ | $(x_0 + \\Delta x, \\, y_0 + \\Delta y)$ |
+| 1 | $(x_1, y_1)$ | $f(x_1, y_1)$ | $\\Delta x$ | $f(x_1, y_1) \\cdot \\Delta x$ | $(x_1 + \\Delta x, \\, y_1 + \\Delta y)$ |
+| 2 | $(x_2, y_2)$ | $f(x_2, y_2)$ | $\\Delta x$ | $f(x_2, y_2) \\cdot \\Delta x$ | Final approximation reached |
+
+**Over/Under Estimation Rule:**
+- If $y'' > 0$ (Concave Up) $\implies$ Tangent lines lie **below** curve $\implies$ Euler's method **underestimates**.
+- If $y'' < 0$ (Concave Down) $\implies$ Tangent lines lie **above** curve $\implies$ Euler's method **overestimates**.`
+        },
+        {
+          heading: '4. Logistic Differential Equation Master Analysis',
+          content: `The logistic equation models population growth with environmental constraints:
+
+| Metric / Question | Value / Condition | Key AP Exam Concept |
+| :--- | :--- | :--- |
+| **Standard Form** | $\\frac{dP}{dt} = kP\\left(1 - \\frac{P}{L}\\right)$ | $L$ is carrying capacity; $k$ is intrinsic growth rate constant |
+| **Factored Alternative** | $\\frac{dP}{dt} = \\frac{k}{L} P(L - P)$ | Note the coefficient in front: $\\frac{k}{L}$ |
+| **Carrying Capacity** | $\\lim_{t \\to \\infty} P(t) = L$ | Horizontal asymptote of the population solution curve |
+| **Maximum Growth Rate** | $P = \\frac{L}{2}$ | Growth rate $\\frac{dP}{dt}$ is maximized at **half** the carrying capacity |
+| **Maximum Rate Value** | $\\left(\\frac{dP}{dt}\\right)_{\\max} = \\frac{kL}{4}$ | Substitute $P = L/2$ into the differential equation |
+| **Point of Inflection** | $P = \\frac{L}{2}$ | $P''(t) = 0$ here; curve switches from concave up to concave down |`
+        }
       ]
     };
   }
@@ -86,6 +148,24 @@ const bcUnits1to8: APUnitNote[] = AP_CALCULUS_AB_NOTES.map(unit => {
           name: 'Arc Length of Rectangular Function',
           latex: 'L = \\int_a^b \\sqrt{1 + \\left[f\'(x)\\right]^2} \\, dx',
           explanation: 'Calculates the length of smooth curve $y = f(x)$ between $x=a$ and $x=b$.'
+        },
+        {
+          name: 'Arc Length with Respect to y',
+          latex: 'L = \\int_c^d \\sqrt{1 + \\left[g\'(y)\\right]^2} \\, dy',
+          explanation: 'Arc length for curves defined as $x = g(y)$.'
+        }
+      ],
+      sections: [
+        ...unit.sections,
+        {
+          heading: '4. Arc Length Summary Matrix',
+          content: `Calculating length of smooth curve segments:
+
+| Curve Representation | Given Equation | Differential Arc Element $ds$ | Arc Length Integral $L$ |
+| :--- | :--- | :--- | :--- |
+| **Rectangular $y = f(x)$** | $y = f(x)$ on $[a, b]$ | $ds = \\sqrt{1 + [f\'(x)]^2}\\,dx$ | $L = \\int_a^b \\sqrt{1 + [f\'(x)]^2}\\,dx$ |
+| **Rectangular $x = g(y)$** | $x = g(y)$ on $[c, d]$ | $ds = \\sqrt{1 + [g\'(y)]^2}\\,dy$ | $L = \\int_c^d \\sqrt{1 + [g\'(y)]^2}\\,dy$ |
+| **Parametric Curve** | $x=x(t), y=y(t)$ | $ds = \\sqrt{(x\')^2 + (y\')^2}\\,dt$ | $L = \\int_{t_1}^{t_2} \\sqrt{[x\'(t)]^2 + [y\'(t)]^2}\\,dt$ |`
         }
       ]
     };
@@ -137,6 +217,11 @@ const bcUnit9: APUnitNote = {
       explanation: 'Standard Cartesian to Polar conversion formulas.'
     },
     {
+      name: 'Polar Slope Formula',
+      latex: '\\frac{dy}{dx} = \\frac{\\frac{dy}{d\\theta}}{\\frac{dx}{d\\theta}} = \\frac{r\'\\sin\\theta + r\\cos\\theta}{r\'\\cos\\theta - r\\sin\\theta}',
+      explanation: 'Slope of tangent line to polar curve $r = f(\\theta)$.'
+    },
+    {
       name: 'Polar Area Integral',
       latex: 'A = \\frac{1}{2} \\int_\\alpha^\\beta r^2 \\, d\\theta',
       explanation: 'Sector area formula for polar curves.'
@@ -154,6 +239,18 @@ const bcUnit9: APUnitNote = {
 | **Speed** | $|v(t)|$ | $\\sqrt{(x\')^2 + (y\')^2}$ | $\\|\\vec{v}(t)\\| = \\sqrt{[x\'(t)]^2 + [y\'(t)]^2}$ |
 | **Distance Traveled**| $\\int |v(t)|\\,dt$ | $\\int_{t_1}^{t_2} \\sqrt{(x\')^2 + (y\')^2} \\, dt$ | $\\int_{t_1}^{t_2} \\|\\vec{v}(t)\\| \\, dt$ |
 | **Slope of Tangent** | $f\'(x)$ | $\\frac{dy/dt}{dx/dt}$ | $\\frac{y\'(t)}{x\'(t)}$ |`
+    },
+    {
+      heading: '2. Polar Slopes, Tangents & Area Between Curves',
+      content: `Essential calculus concepts for polar functions $r = f(\\theta)$:
+
+| Feature | Analytical Formula | Condition / Meaning | Key AP Exam Strategy |
+| :--- | :--- | :--- | :--- |
+| **Slope of Tangent $\\frac{dy}{dx}$** | $\\frac{dy/d\\theta}{dx/d\\theta} = \\frac{r\'\\sin\\theta + r\\cos\\theta}{r\'\\cos\\theta - r\\sin\\theta}$ | Tangent line in $xy$-plane | Use product rule on $x=r\\cos\\theta$ and $y=r\\sin\\theta$ |
+| **Horizontal Tangent** | $\\frac{dy}{d\\theta} = 0$ | Provided $\\frac{dx}{d\\theta} \\neq 0$ | Numerator of slope equals zero |
+| **Vertical Tangent** | $\\frac{dx}{d\\theta} = 0$ | Provided $\\frac{dy}{d\\theta} \\neq 0$ | Denominator of slope equals zero |
+| **Area of Single Curve** | $A = \\frac{1}{2}\\int_\\alpha^\\beta [r(\\theta)]^2 \\, d\\theta$ | Swept out radially from origin | Remember the $1/2$ multiplier! |
+| **Area Between 2 Curves**| $A = \\frac{1}{2}\\int_\\alpha^\\beta (R_{\\text{outer}}^2 - r_{\\text{inner}}^2) \\, d\\theta$ | Region between outer & inner | Find radial limits by setting $R = r$ |`
     }
   ],
   workedExamples: [
@@ -246,7 +343,7 @@ const bcUnit10: APUnitNote = {
     {
       name: 'Essential Maclaurin Series to Memorize',
       latex: 'e^x = \\sum_{n=0}^\\infty \\frac{x^n}{n!}, \\quad \\sin x = \\sum_{n=0}^\\infty (-1)^n \\frac{x^{2n+1}}{(2n+1)!}, \\quad \\cos x = \\sum_{n=0}^\\infty (-1)^n \\frac{x^{2n}}{(2n)!}, \\quad \\frac{1}{1-x} = \\sum_{n=0}^\\infty x^n',
-      explanation: 'The 4 fundamental series that College Board expects you to know by heart.'
+      explanation: 'The fundamental series that College Board expects you to know by heart.'
     }
   ],
   sections: [
@@ -263,6 +360,30 @@ const bcUnit10: APUnitNote = {
 | **Comparison (Direct/Limit)**| $\\sum a_n$ | Limit Comp: $\\lim \\frac{a_n}{b_n} = L > 0$ | Same behavior as comparison series $b_n$ | Algebraic rational terms (ignore lower powers) |
 | **Alternating Series** | $\\sum (-1)^n b_n$ | $b_{n+1} \\le b_n$ and $\\lim b_n = 0$ | $\\lim a_n \\neq 0$ ($n$th term) | Alternating signs ($(-1)^n$) |
 | **Ratio Test** | $\\sum a_n$ | $\\lim |\\frac{a_{n+1}}{a_n}| < 1$ | $\\lim |\\frac{a_{n+1}}{a_n}| > 1$ | **Factorials ($n!$) and exponentials ($c^n$)** |`
+    },
+    {
+      heading: '2. The 6 Essential Maclaurin Series Reference Table',
+      content: `College Board expects instant recall of these 6 Maclaurin series on the free response section:
+
+| Function $f(x)$ | Summation Notation $\\sum$ | Expanded Form (First 4 Non-Zero Terms) | Radius $R$ | Interval of Convergence |
+| :--- | :--- | :--- | :---: | :---: |
+| $\\frac{1}{1 - x}$ | $\\sum_{n=0}^\\infty x^n$ | $1 + x + x^2 + x^3 + \\dots$ | $R = 1$ | $(-1, 1)$ |
+| $\\frac{1}{1 + x}$ | $\\sum_{n=0}^\\infty (-1)^n x^n$ | $1 - x + x^2 - x^3 + \\dots$ | $R = 1$ | $(-1, 1)$ |
+| $e^x$ | $\\sum_{n=0}^\\infty \\frac{x^n}{n!}$ | $1 + x + \\frac{x^2}{2!} + \\frac{x^3}{3!} + \\dots$ | $R = \\infty$ | $(-\\infty, \\infty)$ |
+| $\\sin(x)$ | $\\sum_{n=0}^\\infty (-1)^n \\frac{x^{2n+1}}{(2n+1)!}$ | $x - \\frac{x^3}{3!} + \\frac{x^5}{5!} - \\frac{x^7}{7!} + \\dots$ | $R = \\infty$ | $(-\\infty, \\infty)$ |
+| $\\cos(x)$ | $\\sum_{n=0}^\\infty (-1)^n \\frac{x^{2n}}{(2n)!}$ | $1 - \\frac{x^2}{2!} + \\frac{x^4}{4!} - \\frac{x^6}{6!} + \\dots$ | $R = \\infty$ | $(-\\infty, \\infty)$ |
+| $\\ln(1 + x)$ | $\\sum_{n=1}^\\infty (-1)^{n+1} \\frac{x^n}{n}$ | $x - \\frac{x^2}{2} + \\frac{x^3}{3} - \\frac{x^4}{4} + \\dots$ | $R = 1$ | $(-1, 1]$ |`
+    },
+    {
+      heading: '3. Alternating Series Error Bound vs Lagrange Error Bound Matrix',
+      content: `Comparing the two error bounding techniques required on AP Calculus BC:
+
+| Feature | Alternating Series Error Bound (AST) | Lagrange Error Bound (Taylor's Remainder) |
+| :--- | :--- | :--- |
+| **Formula** | $|\\text{Error}| = |S - S_N| \\le b_{N+1}$ | $|R_n(x)| = |f(x) - P_n(x)| \\le \\frac{M}{(n+1)!} |x - c|^{n+1}$ |
+| **Bound Value** | Absolute value of the **very next omitted term** | $M = \\max |f^{(n+1)}(z)|$ between center $c$ and evaluation point $x$ |
+| **Conditions** | Series must alternate, terms decrease $|b_{n+1}| \\le |b_n|$, and $\\lim b_n = 0$ | $f(x)$ must be $n+1$ times differentiable on interval containing $c$ and $x$ |
+| **AP Exam Frequency** | Appears on nearly 80% of BC FRQ 6 problems | Tested when finding max error or proving an approximation is within $\\epsilon$ |`
     }
   ],
   workedExamples: [

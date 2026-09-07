@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { 
   Check, XCircle, ChevronDown, ChevronUp, Zap, FileText, 
-  Maximize2, Loader2, Sparkles, AlertTriangle
+  Maximize2, Loader2, Sparkles, AlertTriangle,
+  BookOpen, Brain, Terminal, Lightbulb, Calculator, CheckCircle2, Timer
 } from 'lucide-react';
 import { APUnitNote, APNoteDiagram } from '../data/notes/types';
 import { APSubjectNoteEntry } from '../data/notes';
 import { triggerVibration } from '../utils/vibrate';
 import GlobalMarkdown from './GlobalMarkdown';
+import { renderCalculusDiagramSvg } from './CalculusDiagramSvg';
 
 interface APSubjectStitchNotesProps {
   unit: APUnitNote;
@@ -380,7 +382,7 @@ export default function APSubjectStitchNotes({
   isExporting = false,
 }: APSubjectStitchNotesProps) {
   const [activeSubTab, setActiveSubTab] = useState<'theorems' | 'methods' | 'examples' | 'exam-traps' | 'cram-sheet'>('theorems');
-  const [expandAllSteps, setExpandAllSteps] = useState<boolean>(true);
+
   const [speedDrillComplete, setSpeedDrillComplete] = useState<boolean>(false);
   const [theoremsDrillAnswer, setTheoremsDrillAnswer] = useState<boolean | null>(null);
   const [methodsQuizAnswer, setMethodsQuizAnswer] = useState<boolean | null>(null);
@@ -410,7 +412,7 @@ export default function APSubjectStitchNotes({
             backgroundColor: activeSubTab === 'theorems' ? `${theme.primaryBg}80` : 'transparent'
           }}
         >
-          <span className="material-symbols-outlined text-[20px]">menu_book</span>
+          <BookOpen className="w-5 h-5" />
           <span className="text-[10px] tracking-tight uppercase mt-0.5">Theorems</span>
         </button>
 
@@ -426,7 +428,7 @@ export default function APSubjectStitchNotes({
             backgroundColor: activeSubTab === 'methods' ? `${theme.primaryBg}80` : 'transparent'
           }}
         >
-          <span className="material-symbols-outlined text-[20px]">psychology</span>
+          <Brain className="w-5 h-5" />
           <span className="text-[10px] tracking-tight uppercase mt-0.5">Methods</span>
         </button>
 
@@ -442,7 +444,7 @@ export default function APSubjectStitchNotes({
             backgroundColor: activeSubTab === 'examples' ? `${theme.primaryBg}80` : 'transparent'
           }}
         >
-          <span className="material-symbols-outlined text-[20px]">terminal</span>
+          <Terminal className="w-5 h-5" />
           <span className="text-[10px] tracking-tight uppercase mt-0.5">Examples</span>
         </button>
 
@@ -454,7 +456,7 @@ export default function APSubjectStitchNotes({
               : 'text-[#434653] hover:text-[#1b1c1d] font-semibold'
           }`}
         >
-          <span className="material-symbols-outlined text-[20px]">warning</span>
+          <AlertTriangle className="w-5 h-5" />
           <span className="text-[10px] tracking-tight uppercase mt-0.5">Traps</span>
         </button>
 
@@ -466,7 +468,7 @@ export default function APSubjectStitchNotes({
               : 'text-[#434653] hover:text-[#1b1c1d] font-semibold'
           }`}
         >
-          <span className="material-symbols-outlined text-[20px]">bolt</span>
+          <Zap className="w-5 h-5" />
           <span className="text-[10px] tracking-tight uppercase mt-0.5">Cram</span>
         </button>
       </div>
@@ -536,16 +538,14 @@ export default function APSubjectStitchNotes({
 
                   {/* College Board AP Tip Callout */}
                   <div className="p-3.5 rounded-xl flex items-start gap-2.5 border" style={{ backgroundColor: `${theme.accentAmber}30`, borderColor: `${theme.accentAmber}80` }}>
-                    <span className="material-symbols-outlined text-[18px] shrink-0 mt-0.5" style={{ color: theme.accentAmberText }}>
-                      lightbulb
-                    </span>
-                    <div>
+                    <Lightbulb className="w-4 h-4 shrink-0 mt-0.5" style={{ color: theme.accentAmberText }} />
+                    <div className="flex-1 min-w-0">
                       <span className="text-[10px] font-bold uppercase tracking-wider block mb-0.5" style={{ color: theme.accentAmberText }}>
                         College Board Scoring Tip
                       </span>
-                      <p className="text-xs text-[#1b1c1d] leading-relaxed">
-                        {thm.apTip}
-                      </p>
+                      <div className="text-xs text-[#1b1c1d] leading-relaxed font-sans">
+                        <GlobalMarkdown>{thm.apTip}</GlobalMarkdown>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -642,7 +642,7 @@ export default function APSubjectStitchNotes({
             {unit.formulas && unit.formulas.length > 0 && (
               <div className="space-y-4">
                 <h4 className="font-serif font-bold text-sm text-[#1b1c1d] flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]" style={{ color: theme.primary }}>calculate</span>
+                  <Calculator className="w-4 h-4" style={{ color: theme.primary }} />
                   Core Mathematical Formulas & Definitions
                 </h4>
                 <div className="grid grid-cols-1 gap-3">
@@ -657,9 +657,9 @@ export default function APSubjectStitchNotes({
                       <div className="p-3 rounded-xl border font-mono text-xs overflow-x-auto" style={{ backgroundColor: `${theme.primaryBg}30`, borderColor: `${theme.primary}30`, color: theme.primary }}>
                         <GlobalMarkdown>{`$$${f.latex}$$`}</GlobalMarkdown>
                       </div>
-                      <p className="text-xs text-[#434653] leading-relaxed">
-                        {f.explanation}
-                      </p>
+                      <div className="text-xs text-[#434653] leading-relaxed font-sans">
+                        <GlobalMarkdown>{f.explanation}</GlobalMarkdown>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -683,39 +683,67 @@ export default function APSubjectStitchNotes({
               </div>
             ))}
 
-            {/* Specialized SVG Vector Discontinuity Graphs for Calculus AB Unit 1 */}
-            {isCalcAbU1 && (
-              <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-[#c3c6d5]/30 space-y-4">
-                <div className="border-b border-[#c3c6d5]/30 pb-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider font-mono text-[#094cb2]">VISUAL CLASSIFICATION</span>
-                  <h4 className="font-serif font-bold text-base text-[#1b1c1d]">The 4 Types of Discontinuities</h4>
+            {/* Visual Geometric Blueprints & Concept Diagrams */}
+            {unit.diagrams && unit.diagrams.length > 0 && (
+              <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-[#c3c6d5]/30 space-y-5">
+                <div className="border-b border-[#c3c6d5]/30 pb-3 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider font-mono text-[#094cb2] block">
+                      VISUAL GEOMETRIC BLUEPRINTS
+                    </span>
+                    <h4 className="font-serif font-bold text-base text-[#1b1c1d] mt-0.5">
+                      Essential Graphical Concepts & Curve Analysis
+                    </h4>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-1 rounded-full bg-[#f5f3f4] text-[#737785] border border-zinc-200">
+                    {unit.diagrams.length} {unit.diagrams.length === 1 ? 'Figure' : 'Figures'}
+                  </span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Hole */}
-                  <div className="p-3 rounded-xl bg-[#faf9fa] border border-[#c3c6d5]/40 space-y-2">
-                    <span className="text-[11px] font-bold text-[#094cb2] block">1. Removable Discontinuity (Hole)</span>
-                    <svg viewBox="0 0 200 100" className="w-full h-28 bg-white rounded-lg border border-zinc-200">
-                      <line x1="20" y1="80" x2="180" y2="80" stroke="#cbd5e1" strokeWidth="1" />
-                      <line x1="100" y1="20" x2="100" y2="85" stroke="#cbd5e1" strokeWidth="1" />
-                      <line x1="30" y1="70" x2="94" y2="38" stroke="#094cb2" strokeWidth="2.5" />
-                      <line x1="106" y1="32" x2="170" y2="20" stroke="#094cb2" strokeWidth="2.5" />
-                      <circle cx="100" cy="35" r="4.5" fill="white" stroke="#094cb2" strokeWidth="2" />
-                    </svg>
-                    <p className="text-[11px] text-[#434653]">Two-sided limit exists ($= L$), but $f(c)$ is undefined or separated.</p>
-                  </div>
-                  {/* Jump */}
-                  <div className="p-3 rounded-xl bg-[#faf9fa] border border-[#c3c6d5]/40 space-y-2">
-                    <span className="text-[11px] font-bold text-[#ba1a1a] block">2. Non-Removable Jump</span>
-                    <svg viewBox="0 0 200 100" className="w-full h-28 bg-white rounded-lg border border-zinc-200">
-                      <line x1="20" y1="80" x2="180" y2="80" stroke="#cbd5e1" strokeWidth="1" />
-                      <line x1="100" y1="20" x2="100" y2="85" stroke="#cbd5e1" strokeWidth="1" />
-                      <line x1="30" y1="65" x2="95" y2="65" stroke="#ba1a1a" strokeWidth="2.5" />
-                      <line x1="100" y1="30" x2="170" y2="30" stroke="#ba1a1a" strokeWidth="2.5" />
-                      <circle cx="100" cy="65" r="4.5" fill="white" stroke="#ba1a1a" strokeWidth="2" />
-                      <circle cx="100" cy="30" r="4.5" fill="#ba1a1a" />
-                    </svg>
-                    <p className="text-[11px] text-[#434653]">Left limit $\neq$ Right limit $\implies$ Two-sided limit is DNE.</p>
-                  </div>
+
+                <div className="flex flex-col gap-6 w-full">
+                  {unit.diagrams.map((diag, di) => (
+                    <div key={di} className="w-full p-5 sm:p-6 rounded-2xl bg-[#faf9fa] border border-[#c3c6d5]/50 space-y-4 shadow-2xs">
+                      <div className="border-b border-[#c3c6d5]/30 pb-3">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-md bg-[#094cb2]/10 text-[#094cb2]">
+                            Figure {di + 1}
+                          </span>
+                          <span className="text-[10px] font-semibold text-[#737785] uppercase tracking-wide">
+                            College Board CED Standard
+                          </span>
+                        </div>
+                        <h5 className="font-bold text-sm sm:text-base text-[#1b1c1d]">
+                          {diag.title}
+                        </h5>
+                        {diag.subtitle && (
+                          <p className="text-xs text-[#737785] font-medium mt-0.5">
+                            {diag.subtitle}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Vector SVG Graphic — Full width, vertically stacked, completely visible */}
+                      <div className="w-full rounded-2xl bg-white border border-[#c3c6d5]/40 p-4 sm:p-6 flex items-center justify-center overflow-hidden shadow-xs [&>svg]:!w-full [&>svg]:!h-auto [&>svg]:!max-h-[380px] sm:[&>svg]:!max-h-[440px] [&>svg]:!border-none [&>svg]:!shadow-none [&>svg]:!rounded-none">
+                        {renderCalculusDiagramSvg(diag.type) || renderCalculusDiagramSvg(diag.id)}
+                      </div>
+
+                      {/* Description */}
+                      <div className="text-xs sm:text-sm text-[#434653] leading-relaxed font-normal bg-white/70 p-3.5 rounded-xl border border-[#c3c6d5]/30">
+                        <GlobalMarkdown>{diag.description}</GlobalMarkdown>
+                      </div>
+
+                      {/* Key AP Takeaway */}
+                      {diag.takeaway && (
+                        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200/80 text-xs sm:text-sm text-emerald-950 font-medium">
+                          <strong className="text-emerald-800 flex items-center gap-1.5 mb-1 text-xs uppercase tracking-wider font-bold">
+                            <span>💡</span>
+                            <span>AP Exam Takeaway & Scoring Trap:</span>
+                          </strong>
+                          <GlobalMarkdown className="inline leading-relaxed">{diag.takeaway}</GlobalMarkdown>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -740,15 +768,6 @@ export default function APSubjectStitchNotes({
                   Official College Board Style Solutions
                 </h3>
               </div>
-              <button
-                onClick={() => {
-                  triggerVibration(10);
-                  setExpandAllSteps(!expandAllSteps);
-                }}
-                className="px-3 py-1.5 rounded-xl bg-white border border-[#c3c6d5]/60 text-[#1b1c1d] text-xs font-bold shadow-2xs hover:bg-zinc-50 active:scale-95 transition-all self-start sm:self-auto cursor-pointer"
-              >
-                {expandAllSteps ? 'Collapse All Steps' : 'Expand All Steps'}
-              </button>
             </div>
 
             {/* Worked Examples List */}
@@ -779,48 +798,72 @@ export default function APSubjectStitchNotes({
                     </div>
                   </div>
 
-                  {/* Step-by-Step Solution */}
-                  <div className="space-y-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#737785] block font-mono">
-                      Step-by-Step Mathematical Derivation
-                    </span>
-                    <div className="space-y-2">
-                      {ex.solutionSteps.map((step, si) => (
-                        <div key={si} className="p-3.5 rounded-xl bg-[#faf9fa] border border-[#c3c6d5]/30 flex items-start gap-3">
-                          <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5 font-mono" style={{ backgroundColor: theme.primary }}>
-                            {si + 1}
-                          </span>
-                          <div className="text-xs text-[#1b1c1d] leading-relaxed font-sans flex-1">
-                            <GlobalMarkdown>{step}</GlobalMarkdown>
-                          </div>
+                  {/* Solution / Analysis */}
+                  {(() => {
+                    const isTheorySubject = [
+                      'ap-us-history',
+                      'ap-world-history',
+                      'ap-english-lang',
+                      'ap-psychology',
+                      'ap-human-geography'
+                    ].includes(subject.subjectId);
+
+                    const textToCheck = `${ex.title || ''} ${ex.question || ''} ${(ex.solutionSteps || []).join(' ')}`;
+                    const hasMathCalc = /\\(?:frac|int|lim|sum|sqrt|cdot|times|partial|approx|le|ge)|[$=][^$\n]*\d+|\d+\s*[\+\-\*\/=]\s*\d+|f'\(x\)|dy\/dx/i.test(textToCheck);
+                    const isCalculation = !isTheorySubject && (hasMathCalc || ['ap-calculus-ab', 'ap-calculus-bc', 'ap-physics'].includes(subject.subjectId));
+
+                    return (
+                      <div className="space-y-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#737785] block font-mono">
+                          {isCalculation ? 'Step-by-Step Mathematical Derivation' : 'Comprehensive Analysis & Scoring Evidence'}
+                        </span>
+                        <div className="space-y-2.5">
+                          {ex.solutionSteps.map((step, si) => {
+                            const displayContent = !isCalculation
+                              ? step.replace(/^Step\s*\d+\s*(?:\([^)]+\))?[:\-\.]?\s*/i, '').trim()
+                              : step;
+
+                            return (
+                              <div key={si} className="p-3.5 rounded-xl bg-[#faf9fa] border border-[#c3c6d5]/30 flex items-start gap-3">
+                                {isCalculation ? (
+                                  <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5 font-mono" style={{ backgroundColor: theme.primary }}>
+                                    {si + 1}
+                                  </span>
+                                ) : (
+                                  <div className="w-2.5 h-2.5 rounded-full shrink-0 mt-1.5 ring-4 ring-blue-50" style={{ backgroundColor: theme.primary }} />
+                                )}
+                                <div className="text-xs text-[#1b1c1d] leading-relaxed font-sans flex-1">
+                                  <GlobalMarkdown>{displayContent}</GlobalMarkdown>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Final Answer Banner */}
                   <div className="p-3.5 rounded-xl border flex items-center justify-between gap-3" style={{ backgroundColor: `${theme.primaryBg}30`, borderColor: `${theme.primary}40` }}>
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[18px]" style={{ color: theme.primary }}>check_circle</span>
+                      <CheckCircle2 className="w-4 h-4" style={{ color: theme.primary }} />
                       <span className="text-xs font-bold" style={{ color: theme.primary }}>Final College Board Answer:</span>
                     </div>
-                    <span className="font-mono font-bold text-xs" style={{ color: theme.primaryText }}>
-                      {ex.finalAnswer}
-                    </span>
+                    <div className="font-mono font-bold text-xs" style={{ color: theme.primaryText }}>
+                      <GlobalMarkdown>{ex.finalAnswer}</GlobalMarkdown>
+                    </div>
                   </div>
 
                   {/* Scoring Rubric Tip */}
                   <div className="p-3 rounded-xl flex items-start gap-2.5 border" style={{ backgroundColor: `${theme.accentAmber}30`, borderColor: `${theme.accentAmber}80` }}>
-                    <span className="material-symbols-outlined text-[18px] shrink-0 mt-0.5" style={{ color: theme.accentAmberText }}>
-                      verified
-                    </span>
-                    <div>
+                    <Sparkles className="w-4 h-4 shrink-0 mt-0.5" style={{ color: theme.accentAmberText }} />
+                    <div className="flex-1 min-w-0">
                       <span className="text-[10px] font-bold uppercase tracking-wider block mb-0.5" style={{ color: theme.accentAmberText }}>
                         AP Reader Scoring Tip
                       </span>
-                      <p className="text-xs text-[#1b1c1d] leading-relaxed">
-                        {ex.apScoringTip}
-                      </p>
+                      <div className="text-xs text-[#1b1c1d] leading-relaxed font-sans">
+                        <GlobalMarkdown>{ex.apScoringTip}</GlobalMarkdown>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -920,7 +963,7 @@ export default function APSubjectStitchNotes({
             <div className="rounded-2xl bg-[#e9e8e9] p-4 flex items-center justify-between gap-3 border border-[#c3c6d5]/30">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-full text-white flex items-center justify-center shrink-0" style={{ backgroundColor: theme.primary }}>
-                  <span className="material-symbols-outlined text-[20px]">timer</span>
+                  <Timer className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: theme.primary }}>Speed Drill</p>

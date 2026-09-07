@@ -4,7 +4,7 @@ import {
   XCircle, Clock, BookOpen, Download, Share2, RefreshCw, 
   HelpCircle, ChevronRight, ChevronDown, ChevronUp, Check, AlertCircle, FileText, Send, Lock,
   Plus, Camera, Image as ImageIcon, X, Maximize2, Calculator, PenTool, Eraser, RotateCcw, Grid, Trash2, BellOff,
-  Lightbulb, Timer, Play, Pause, Search, Loader2
+  Lightbulb, Timer, Play, Pause, Search, Loader2, ZoomIn, ZoomOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { triggerVibration } from '../utils/vibrate';
@@ -20,7 +20,7 @@ import jsPDF from 'jspdf';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
 import { savePdfToHistory } from '../utils/pdfHistory';
 import { showToast } from '../utils/toast';
-import { sanitizePdfText } from '../utils/pdfSanitizer';
+import { sanitizePdfText, parseSolutionStepsForPdf } from '../utils/pdfSanitizer';
 import { sanitizeSvg, rasterizeSvgToDataUrl, getDiagramTypeLabel } from '../utils/svgHelper';
 import SafePdfViewer from './SafePdfViewer';
 import { safeGetItem, safeSetItem, safeJsonParse } from '../utils/storage';
@@ -242,6 +242,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   const [previewPdfUri, setPreviewPdfUri] = useState<string | null>(null);
   const [previewPdfName, setPreviewPdfName] = useState<string>('AP_Practice_Set.pdf');
   const [fullscreenSvg, setFullscreenSvg] = useState<{ svg: string; title: string } | null>(null);
+  const [svgZoom, setSvgZoom] = useState<number>(1);
 
   // AI Magic Tutor States
   const [showTutorModal, setShowTutorModal] = useState<boolean>(false);
@@ -706,6 +707,11 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         e.preventDefault();
         triggerVibration(10);
         setTutorActiveQuestion(null);
+      } else if (fullscreenSvg) {
+        e.preventDefault();
+        triggerVibration(10);
+        setFullscreenSvg(null);
+        setSvgZoom(1);
       } else if (showHistoryModal) {
         e.preventDefault();
         triggerVibration(10);
@@ -725,7 +731,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     };
     window.addEventListener('appBackButton', handleHardwareBack);
     return () => window.removeEventListener('appBackButton', handleHardwareBack);
-  }, [confirmModal.isOpen, showFormulaModal, askAiModalData, tutorActiveQuestion, showHistoryModal, showTimesUpModal, step]);
+  }, [confirmModal.isOpen, showFormulaModal, askAiModalData, tutorActiveQuestion, fullscreenSvg, showHistoryModal, showTimesUpModal, step]);
 
   // API Call to Generate Questions
   const handleGenerateQuestions = async () => {
@@ -734,8 +740,12 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     setError(null);
     setLoadingMsg(
       questionType === 'objective'
-        ? `Crafting authentic AP ${selectedSubject.shortCode} Multiple Choice Questions...`
-        : `Developing College Board AP ${selectedSubject.shortCode} ${isComputerSubject(selectedSubject) ? 'Create Performance Task Prompts' : 'Free Response Questions'} & Rubrics...`
+        ? (questionCount > 5
+            ? `Synthesizing ${questionCount} authentic AP ${selectedSubject.shortCode} MCQs across parallel College Board modules...`
+            : `Crafting authentic AP ${selectedSubject.shortCode} Multiple Choice Questions...`)
+        : (questionCount > 5
+            ? `Developing ${questionCount} College Board AP ${selectedSubject.shortCode} FRQs across parallel modules...`
+            : `Developing College Board AP ${selectedSubject.shortCode} ${isComputerSubject(selectedSubject) ? 'Create Performance Task Prompts' : 'Free Response Questions'} & Rubrics...`)
     );
 
     const unitTitle = selectedUnit ? selectedUnit.title : 'All Curriculum Units (Comprehensive AP Review)';
@@ -1402,9 +1412,9 @@ Instructions for AI Magic Tutor:
           // High-DPI Diagram / Coordinate Graph (if provided)
           if (q.diagramSvg) {
             try {
-              const diagramImg = await rasterizeSvgToDataUrl(q.diagramSvg, 800, 440);
+              const diagramImg = await rasterizeSvgToDataUrl(q.diagramSvg, 1000, 550);
               if (diagramImg) {
-                const diagH = 140;
+                const diagH = 185;
                 const diagW = Math.min(contentWidth, diagH * (400 / 220));
                 const diagX = margin + (contentWidth - diagW) / 2;
                 checkPageBreak(diagH + 15);
@@ -1464,27 +1474,73 @@ Instructions for AI Magic Tutor:
 
         objQs.forEach((q, idx) => {
           const cleanAns = sanitizePdfText(q.correctAnswer);
-          const cleanExp = sanitizePdfText(q.explanation);
-          const expLines = doc.splitTextToSize(`Explanation: ${cleanExp}`, contentWidth - 20);
-          const ansBoxH = 20 + (expLines.length * 11) + 12;
+          const expSteps = parseSolutionStepsForPdf(q.explanation);
 
-          checkPageBreak(ansBoxH + 18);
+          // Measure all explanation steps
+          let expContentH = 0;
+          const formattedSteps = expSteps.map(st => {
+            const hasLabel = Boolean(st.label && st.label.trim());
+            const textWrapW = contentWidth - 24;
+            const lines = doc.splitTextToSize(st.content, textWrapW);
+            const stepH = (hasLabel ? 13 : 0) + (lines.length * 11.5) + 4;
+            expContentH += stepH;
+            return { label: st.label, lines, stepH, hasLabel };
+          });
 
+          // Fallback if explanation was empty
+          if (formattedSteps.length === 0) {
+            formattedSteps.push({
+              label: '',
+              lines: doc.splitTextToSize('No additional explanation provided.', contentWidth - 24),
+              stepH: 14,
+              hasLabel: false
+            });
+            expContentH += 14;
+          }
+
+          const ansBoxH = 26 + expContentH + 10;
+
+          // Sub-box page break check
+          checkPageBreak(Math.min(ansBoxH + 14, pageHeight - 40 - 46));
+
+          // Card Background
           doc.setFillColor(248, 250, 252);
           doc.setDrawColor(226, 232, 240);
           doc.roundedRect(margin, currentY, contentWidth, ansBoxH, 4, 4, 'FD');
 
-          // Correct Answer label
+          // Left Emerald Accent Bar
+          doc.setFillColor(16, 185, 129); // Emerald-500
+          doc.roundedRect(margin, currentY, 3.5, ansBoxH, 1, 1, 'F');
+
+          // Correct Answer Banner Header
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(9.5);
-          doc.setTextColor(21, 128, 61);
-          doc.text(`QUESTION ${idx + 1} • [✓ Correct Answer]:  ${cleanAns}`, margin + 10, currentY + 14);
+          doc.setTextColor(21, 128, 61); // Emerald-700
+          doc.text(`QUESTION ${idx + 1} • [✓ Correct Answer]:  ${cleanAns}`, margin + 12, currentY + 16);
 
-          // Explanation
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(8.5);
-          doc.setTextColor(55, 65, 81);
-          doc.text(expLines, margin + 10, currentY + 28);
+          let expCursorY = currentY + 30;
+
+          formattedSteps.forEach((st, sIdx) => {
+            if (st.hasLabel) {
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(8.5);
+              doc.setTextColor(79, 70, 229); // Indigo-600
+              doc.text(st.label, margin + 12, expCursorY);
+              expCursorY += 12;
+            } else if (sIdx === 0 && formattedSteps.length === 1) {
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(8.5);
+              doc.setTextColor(100, 116, 139); // Slate-500
+              doc.text('Official Explanation:', margin + 12, expCursorY);
+              expCursorY += 12;
+            }
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8.5);
+            doc.setTextColor(51, 65, 85); // Slate-700
+            doc.text(st.lines, margin + 12, expCursorY);
+            expCursorY += (st.lines.length * 11.5) + 6;
+          });
 
           currentY += ansBoxH + 12;
         });
@@ -1538,9 +1594,9 @@ Instructions for AI Magic Tutor:
           // High-DPI Diagram / Coordinate Graph (if provided)
           if (q.diagramSvg) {
             try {
-              const diagramImg = await rasterizeSvgToDataUrl(q.diagramSvg, 800, 440);
+              const diagramImg = await rasterizeSvgToDataUrl(q.diagramSvg, 1000, 550);
               if (diagramImg) {
-                const diagH = 145;
+                const diagH = 185;
                 const diagW = Math.min(contentWidth, diagH * (400 / 220));
                 const diagX = margin + (contentWidth - diagW) / 2;
                 checkPageBreak(diagH + 15);
@@ -1580,42 +1636,90 @@ Instructions for AI Magic Tutor:
         currentY += 34;
 
         subQs.forEach((q, idx) => {
-          // Pre-measure model answer box
-          const cleanModel = sanitizePdfText(q.modelAnswer);
-          const modelLines = doc.splitTextToSize(cleanModel, contentWidth - 20);
-          const modelBoxH = 20 + (modelLines.length * 11) + 10;
-          const maxUsablePageH = pageHeight - 40 - 46;
-
-          // Sub-header + Model Answer Box must stay together!
-          checkPageBreak(Math.min(14 + modelBoxH + 20, maxUsablePageH));
-
-          // Task / Question Sub-header
           const isCompSub = isComputerSubject(subj);
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10);
-          doc.setTextColor(88, 28, 135);
           const subHeaderTitle = isCompSub
             ? `TASK PROMPT ${idx + 1} SCORING RUBRIC & EXEMPLARY SOLUTION`
             : `QUESTION ${idx + 1} SCORING RUBRIC & EXEMPLARY SOLUTION`;
+
+          // Parse model answer into discrete steps/parts
+          const steps = parseSolutionStepsForPdf(q.modelAnswer);
+
+          // Measure all steps to format with individual cards and page break safety
+          const formattedSteps = steps.map(st => {
+            const hasLabel = Boolean(st.label && st.label.trim());
+            const textWrapW = contentWidth - 24;
+            const lines = doc.splitTextToSize(st.content, textWrapW);
+            const labelH = hasLabel ? 13 : 0;
+            const bodyH = lines.length * 11.5;
+            const cardH = labelH + bodyH + 14;
+            return { label: st.label, lines, cardH, hasLabel };
+          });
+
+          // Fallback if modelAnswer was empty
+          if (formattedSteps.length === 0) {
+            formattedSteps.push({
+              label: '',
+              lines: doc.splitTextToSize('No model answer provided.', contentWidth - 24),
+              cardH: 26,
+              hasLabel: false
+            });
+          }
+
+          // Initial break check for task header + solution title banner
+          checkPageBreak(50);
+
+          // Task / Question Sub-header
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
+          doc.setTextColor(88, 28, 135); // Purple-900
           doc.text(subHeaderTitle, margin, currentY);
           currentY += 14;
 
-          // Model Answer Box
-          doc.setFillColor(248, 250, 252);
-          doc.setDrawColor(203, 213, 225);
-          doc.roundedRect(margin, currentY, contentWidth, modelBoxH, 4, 4, 'FD');
-
+          // Model Solution Section Banner
+          doc.setFillColor(238, 242, 255); // Indigo-50
+          doc.setDrawColor(199, 210, 254); // Indigo-200
+          doc.roundedRect(margin, currentY, contentWidth, 20, 3, 3, 'FD');
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(9);
           doc.setTextColor(67, 56, 202); // Indigo-700
-          doc.text('Exemplary Model Solution (Maximum Score):', margin + 10, currentY + 14);
+          doc.text('Exemplary Model Solution (Maximum Score):', margin + 10, currentY + 13.5);
+          currentY += 26;
 
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(8.5);
-          doc.setTextColor(30, 41, 59);
-          doc.text(modelLines, margin + 10, currentY + 28);
+          // Render each step/part as its own pristine step card
+          formattedSteps.forEach(st => {
+            // Check page break for this specific step card so cards are never split awkwardly across pages
+            checkPageBreak(st.cardH + 8);
 
-          currentY += modelBoxH + 12;
+            // Card background & border
+            doc.setFillColor(248, 250, 252); // Slate-50
+            doc.setDrawColor(226, 232, 240); // Slate-200
+            doc.roundedRect(margin, currentY, contentWidth, st.cardH, 3, 3, 'FD');
+
+            // Left Indigo accent strip
+            doc.setFillColor(99, 102, 241); // Indigo-500
+            doc.roundedRect(margin, currentY, 3.5, st.cardH, 1, 1, 'F');
+
+            let cardContentY = currentY + 11;
+
+            // Step/Part label
+            if (st.hasLabel) {
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(9);
+              doc.setTextColor(67, 56, 202); // Indigo-700
+              doc.text(st.label, margin + 12, cardContentY);
+              cardContentY += 13;
+            }
+
+            // Step body text
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8.5);
+            doc.setTextColor(30, 41, 59); // Slate-800
+            doc.text(st.lines, margin + 12, cardContentY);
+
+            currentY += st.cardH + 6; // Clean breathing space between parts
+          });
+
+          currentY += 4;
 
           // Scoring Guidelines
           checkPageBreak(50);
@@ -4215,17 +4319,23 @@ Instructions for AI Magic Tutor:
                               {sec.filteredFormulas.map((f, fIdx) => (
                                 <div
                                   key={fIdx}
-                                  className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 hover:border-emerald-300 transition-colors flex flex-col gap-1.5"
+                                  className="p-4 rounded-2xl bg-white border border-zinc-200/90 shadow-2xs hover:border-emerald-400/80 hover:shadow-sm transition-all flex flex-col justify-between gap-2.5 group"
                                 >
-                                  <div className="text-xs font-bold text-zinc-800">{f.name}</div>
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-xs font-bold text-zinc-900 tracking-tight leading-snug">{f.name}</span>
+                                    <span className="text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold border border-emerald-200/60 shrink-0">
+                                      Equation
+                                    </span>
+                                  </div>
                                   {f.formula && (
-                                    <div className="p-2 rounded-xl bg-white border border-zinc-200/80 font-mono text-xs font-bold text-emerald-950 overflow-x-auto select-text">
-                                      {f.formula}
+                                    <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-50/40 via-teal-50/20 to-zinc-50/60 border border-emerald-100/90 text-zinc-900 text-xs sm:text-sm font-medium overflow-x-auto select-text shadow-2xs">
+                                      <GlobalMarkdown>{`$$${f.formula}$$`}</GlobalMarkdown>
                                     </div>
                                   )}
                                   {f.notes && (
-                                    <div className="text-[11px] text-zinc-500 italic mt-0.5 select-text">
-                                      {f.notes}
+                                    <div className="text-[11px] text-zinc-600 leading-relaxed select-text flex items-start gap-1.5 pt-0.5">
+                                      <span className="text-emerald-500 font-bold shrink-0">•</span>
+                                      <span className="flex-1">{f.notes}</span>
                                     </div>
                                   )}
                                 </div>
@@ -4416,72 +4526,159 @@ Instructions for AI Magic Tutor:
           )}
         </AnimatePresence>
 
-        {/* ================= FULLSCREEN SVG GRAPH & DIAGRAM INSPECTION MODAL ================= */}
+        {/* ================= FULLSCREEN SVG GRAPH & DIAGRAM INSPECTION STUDIO ================= */}
         <AnimatePresence>
           {fullscreenSvg && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setFullscreenSvg(null)}
-                className="absolute inset-0 bg-black/85 backdrop-blur-md cursor-pointer"
-              />
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 w-screen h-screen bg-zinc-950 flex flex-col overflow-hidden select-none"
+            >
+              {/* Top Header Navigation & Toolbars */}
+              <div className="h-16 px-4 sm:px-6 bg-zinc-900/90 border-b border-zinc-800 flex items-center justify-between shrink-0 z-20 backdrop-blur-md">
+                <div className="flex items-center gap-3 min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      triggerVibration(10);
+                      setFullscreenSvg(null);
+                      setSvgZoom(1);
+                    }}
+                    className="p-2 rounded-xl bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700/80 transition-all cursor-pointer shrink-0"
+                    title="Close Fullscreen"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
 
-              <motion.div
-                initial={{ opacity: 0, scale: 0.92, y: 15 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.92, y: 15 }}
-                transition={{ type: 'spring', damping: 26, stiffness: 340 }}
-                className="relative bg-zinc-950 rounded-3xl p-4 sm:p-6 max-w-2xl w-full shadow-2xl border border-zinc-800 flex flex-col gap-3.5 z-10 max-h-[92vh] overflow-y-auto"
-              >
-                {/* Modal Header */}
-                <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-                      <Layers className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-black text-white tracking-tight">
-                        {fullscreenSvg.title}
-                      </h3>
-                      <p className="text-[11px] text-zinc-400 font-medium">
-                        College Board Official Exam Visual Standard
-                      </p>
-                    </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-base font-black text-white tracking-tight truncate">
+                      {fullscreenSvg.title}
+                    </h3>
+                    <p className="text-[11px] text-purple-400 font-medium truncate">
+                      College Board Official AP® Exam Graph Inspection
+                    </p>
+                  </div>
+                </div>
+
+                {/* Zoom & Inspection Controls */}
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="flex items-center bg-zinc-800/80 rounded-xl border border-zinc-700/80 p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        triggerVibration(5);
+                        setSvgZoom(prev => Math.max(0.75, Number((prev - 0.25).toFixed(2))));
+                      }}
+                      disabled={svgZoom <= 0.75}
+                      className="p-1.5 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-700/70 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                      title="Zoom Out"
+                    >
+                      <ZoomOut className="w-4 h-4" />
+                    </button>
+
+                    <span className="text-xs font-black text-white px-2 min-w-[50px] text-center font-mono">
+                      {Math.round(svgZoom * 100)}%
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        triggerVibration(5);
+                        setSvgZoom(prev => Math.min(3.0, Number((prev + 0.25).toFixed(2))));
+                      }}
+                      disabled={svgZoom >= 3.0}
+                      className="p-1.5 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-700/70 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                      title="Zoom In"
+                    >
+                      <ZoomIn className="w-4 h-4" />
+                    </button>
                   </div>
 
                   <button
                     type="button"
-                    onClick={() => setFullscreenSvg(null)}
-                    className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-colors cursor-pointer"
-                    title="Close Graph Inspector"
+                    onClick={() => {
+                      triggerVibration(10);
+                      setSvgZoom(1);
+                    }}
+                    className="p-2 rounded-xl bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700/80 transition-all cursor-pointer text-xs font-bold hidden sm:flex items-center gap-1"
+                    title="Reset to 100%"
                   >
-                    <X className="w-4 h-4" />
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reset</span>
                   </button>
-                </div>
 
-                {/* Diagram Viewport */}
-                <div 
-                  className="w-full flex justify-center items-center py-2 sm:py-4 bg-zinc-900/60 rounded-2xl border border-zinc-850 p-2 overflow-hidden shadow-inner"
-                  dangerouslySetInnerHTML={{ __html: sanitizeSvg(fullscreenSvg.svg) }}
-                />
-
-                {/* Modal Footer */}
-                <div className="flex items-center justify-between pt-2 border-t border-zinc-850 text-xs text-zinc-400">
-                  <span className="text-[11px] text-zinc-500 italic">
-                    Coordinates, curve points, and asymptotes rendered to scale
-                  </span>
                   <button
                     type="button"
-                    onClick={() => setFullscreenSvg(null)}
-                    className="px-4 py-2 rounded-xl bg-white text-zinc-950 font-bold text-xs hover:bg-zinc-100 transition-all cursor-pointer shadow-sm"
+                    onClick={() => {
+                      triggerVibration(10);
+                      setFullscreenSvg(null);
+                      setSvgZoom(1);
+                    }}
+                    className="p-2 rounded-xl bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700/80 transition-all cursor-pointer"
+                    title="Close"
                   >
-                    Done Inspecting
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
-              </motion.div>
-            </div>
+              </div>
+
+              {/* Main Diagram Canvas Viewport - Maximized and Zoomable */}
+              <div className="flex-1 w-full h-full overflow-auto flex items-center justify-center p-4 sm:p-8 bg-zinc-950/90 relative cursor-grab active:cursor-grabbing">
+                <div 
+                  className="w-full max-w-5xl flex items-center justify-center transition-transform duration-200 ease-out origin-center"
+                  style={{
+                    transform: `scale(${svgZoom})`,
+                    minWidth: svgZoom > 1 ? `${Math.round(svgZoom * 100)}%` : '100%'
+                  }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeSvg(fullscreenSvg.svg) }}
+                />
+              </div>
+
+              {/* Bottom Action / Zoom Presets Bar */}
+              <div className="px-4 py-3 bg-zinc-900/90 border-t border-zinc-800 flex items-center justify-between shrink-0 z-20 backdrop-blur-md">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 mr-1 hidden sm:inline">
+                    Quick Zoom:
+                  </span>
+                  {[
+                    { label: 'Fit (1x)', val: 1.0 },
+                    { label: '1.5x', val: 1.5 },
+                    { label: '2.0x', val: 2.0 },
+                    { label: '2.5x', val: 2.5 }
+                  ].map(preset => (
+                    <button
+                      key={preset.val}
+                      type="button"
+                      onClick={() => {
+                        triggerVibration(10);
+                        setSvgZoom(preset.val);
+                      }}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        svgZoom === preset.val
+                          ? 'bg-purple-600 text-white shadow-xs'
+                          : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerVibration(15);
+                    setFullscreenSvg(null);
+                    setSvgZoom(1);
+                  }}
+                  className="px-5 py-2 rounded-xl bg-white hover:bg-zinc-100 text-zinc-950 font-black text-xs transition-all shadow-md active:scale-95 cursor-pointer"
+                >
+                  Done Inspecting
+                </button>
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
       </main>

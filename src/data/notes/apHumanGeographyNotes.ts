@@ -293,6 +293,22 @@ export const AP_HUMAN_GEOGRAPHY_NOTES: APUnitNote[] = [
 - **Packing**: Cramming as many opposing party voters as possible into a single district. This concedes one seat to the opposition but dilutes their voting power across all surrounding districts.
 - **Cracking**: Splitting opposing party voters across multiple districts so they remain a permanent minority in every district, denying them any representation.
 - **Consequences**: Uncompetitive safe districts, hyper-partisanship, and disconnected non-compact district shapes.`
+      },
+      {
+        heading: '2. Boundary Typologies & State Morphology Matrix',
+        content: `College Board classifications of political boundaries and territorial state shapes:
+
+| Boundary / Shape Type | Defining Geographic Feature | Strategic Advantage or Devolutionary Risk | Benchmark AP Exam Exemplar |
+| :--- | :--- | :--- | :--- |
+| **Antecedent Boundary** | Drawn **before** significant human settlement or cultural landscape developed | Natural demarcation; low initial cultural dispute | 49th Parallel US-Canada border (established in 1846) |
+| **Subsequent Boundary** | Drawn **after** cultural landscape evolved; accommodates cultural/ethnic lines | Reflects linguistic, religious, or ethnic divisions | Border between Northern Ireland (Protestant/UK) and Republic of Ireland (Catholic) |
+| **Superimposed Boundary** | Forcibly imposed by outside colonial or imperial powers ignoring local ethnicities | High centrifugal conflict, civil wars, and ethnic strife | **1884 Berlin Conference** dividing Africa into arbitrary colonies |
+| **Relic Boundary** | No longer functions as a formal border, but leaves visible imprint on cultural landscape | Historical tourism, economic development disparities | **The Berlin Wall** dividing East and West Germany; Great Wall of China |
+| **Compact State** | Round/geometric; distance from center to border is roughly equal | Efficient governance, rapid communication, easy defense | **Poland**, Kenya, Uruguay |
+| **Elongated State** | Long, narrow ribbon shape ($> 6\\times$ longer than wide) | Extreme isolation of peripheral regions; poor transportation | **Chile**, Vietnam, Norway |
+| **Prorupted State** | Compact state with protruding territorial extension or corridor | Access to strategic raw materials/water, but corridor easily severed | **Namibia** (Caprivi Strip), Thailand |
+| **Fragmented State** | Composed of discontinuous territorial pieces (islands or enclaves) | Enormous communication and national cohesion hurdles | **Indonesia** (17,000+ islands), Philippines, USA (Alaska/Hawaii) |
+| **Perforated State** | Completely surrounds and encloses another independent state | Enclosed enclave state is 100% dependent on surrounding host | **South Africa** (surrounds Lesotho), Italy (surrounds Vatican City & San Marino) |`
       }
     ],
     workedExamples: [
@@ -463,6 +479,19 @@ export const AP_HUMAN_GEOGRAPHY_NOTES: APUnitNote[] = [
 - **New Urbanism / Smart Growth**:
   - Walkable mixed-use developments blending commercial retail and residential housing.
   - Accessible public mass transit, greenbelts, and preservation of open green space to curb suburban sprawl.`
+      },
+      {
+        heading: '2. Classic & Developing World Urban Models Comparative Matrix',
+        content: `Master reference for the six urban spatial models tested on AP Human Geography:
+
+| Urban Model | Theorist & Year | Spatial Geometric Layout | Primary Transportation Driver | High-Yield AP Diagnostic Feature |
+| :--- | :--- | :--- | :--- | :--- |
+| **Concentric Zone Model** | Ernest Burgess (1925) | Concentric circular rings expanding from central CBD | Walking and horse-drawn carriages | **Zone of Transition** immediately outside CBD has lowest income & highest density |
+| **Sector Model** | Homer Hoyt (1939) | Directional **pie-shaped wedges** radiating outward | Electric streetcars and rail corridors | High-income residential sector expands along fastest transit/environmental corridor |
+| **Multiple Nuclei Model** | Harris & Ullman (1945) | Decentralized layout with multiple specialized centers | Automobiles and truck freight | Incompatible land uses (e.g. heavy industry vs. high-class housing) repel each other |
+| **Galactic / Peripheral Model** | Chauncy Harris (1960s) | Urban core encircled by beltway highway with edge cities | Interstate highway system | **Edge cities** and office parks located at highway interchanges |
+| **Latin American City Model** | Griffin & Ford (1980) | Commercial spine extending from CBD flanked by elite housing | Radial transit corridors | **Disamenity zones** and squatter settlements (*favelas*) on peripheral hillsides |
+| **Southeast Asian City Model** | Terry McGee (1967) | No central CBD; revolves around colonial port zone | Maritime ocean shipping | Port zone flanked by Western commercial zone and Alien commercial zone (Chinese) |`
       }
     ],
     workedExamples: [

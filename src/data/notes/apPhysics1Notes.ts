@@ -192,6 +192,18 @@ export const AP_PHYSICS_1_NOTES: APUnitNote[] = [
   - Acceleration: $a = \\frac{(m_2 - m_1)g}{m_1 + m_2}$.
 - **Tension Calculation (isolate $m_1$)**:
   - $T - m_1 g = m_1 a \\implies T = m_1 (g + a) = \\frac{2 m_1 m_2 g}{m_1 + m_2}$.`
+      },
+      {
+        heading: '3. Friction Types & Incline Normal Force Matrix',
+        content: `Understanding how static and kinetic friction behave under varying load conditions:
+
+| Regime | Governing Formula | Motion Condition | Direction of Force | Typical AP Question Context |
+| :--- | :--- | :--- | :--- | :--- |
+| **Static Friction ($F_{fs}$)** | $F_{fs} \\le \\mu_s F_N$ | No relative sliding ($v_{\\text{rel}} = 0$) | Opposes intended or impending slippage | Object resting on incline until critical angle $\\tan\\theta = \\mu_s$ |
+| **Max Static Friction ($F_{fs,\\max}$)** | $F_{fs,\\max} = \\mu_s F_N$ | On the verge of slipping | Opposes threshold shear | Minimum coefficient $\\mu_s$ required to prevent sliding |
+| **Kinetic Friction ($F_{fk}$)** | $F_{fk} = \\mu_k F_N$ | Active sliding ($v_{\\text{rel}} \\ne 0$) | Exactly opposite relative velocity vector | Sled sliding across rough patch, $W_f = -F_{fk}d$ |
+| **Incline Normal ($F_N$)** | $F_N = mg\\cos\\theta$ | Incline angle $\\theta$ | Perpendicular away from surface | As incline angle $\\theta$ increases, $F_N$ decreases! |
+| **Elevator Apparent Weight** | $F_N = m(g \\pm a)$ | Accelerating elevator | Perpendicular upward from scale | Accelerating upward: $F_N = m(g+a)$; Accelerating downward: $F_N = m(g-a)$ |`
       }
     ],
     workedExamples: [
@@ -302,6 +314,18 @@ $$W = \\int_{x_i}^{x_f} F(x) \\, dx$$
 - **Center "O"**: System boundary declaration. Any force crossing this circle does external work $W_{\\text{ext}}$ on the system.
 - **Right "L"**: Final mechanical energy distribution ($K_f, U_{g,f}, U_{s,f}$).
 - **Master Equation**: $E_i + W_{\\text{ext}} = E_f$.`
+      },
+      {
+        heading: '3. Conservative vs. Non-Conservative Energy Matrix',
+        content: `Classification of forces and their impact on mechanical energy conservation:
+
+| Force Type | Work Formula | Path Dependent? | Mechanical Energy Conserved? | Potential Energy Associated |
+| :--- | :--- | :--- | :--- | :--- |
+| **Gravity ($F_g$)** | $W_g = -\\Delta U_g = -mg\\Delta y$ | **No** (Conservative) | **Yes** (within Earth-object system) | $U_g = mgh$ or $U_g = -G\\frac{m_1 m_2}{r}$ |
+| **Spring ($F_s$)** | $W_s = -\\Delta U_s = -\\frac{1}{2}k\\Delta x^2$ | **No** (Conservative) | **Yes** (within spring-mass system) | $U_s = \\frac{1}{2}k(\\Delta x)^2$ |
+| **Kinetic Friction ($F_k$)** | $W_f = -F_k \\cdot d$ | **Yes** (Path dependent) | **No** (Dissipates to thermal internal energy $\\Delta E_{\\text{int}}$) | None (Dissipative) |
+| **Air Resistance / Drag** | $W_{\\text{drag}} = -\\int F_d \\, dx$ | **Yes** (Path dependent) | **No** (Dissipates to thermal internal energy) | None |
+| **Applied External Tension / Push** | $W_{\\text{ext}} = F d\\cos\\theta$ | **Yes** | **No** (Transfers energy in or out: $\\Delta E_{\\text{sys}} = W_{\\text{ext}}$) | None |`
       }
     ],
     workedExamples: [
@@ -596,6 +620,20 @@ $$v = \\sqrt{\\frac{2gh}{1 + \\beta}}$$
 - **Hollow Ring / Hoop** ($\\beta = 1$): $v = \\sqrt{\\frac{2gh}{2.0}} = 1.00\\sqrt{gh}$ $\\rightarrow$ **3rd Place (SLOWEST)**
 
 *Conclusion*: Shape factor $\\beta$ alone determines race outcome—mass $M$ and radius $R$ completely cancel out!`
+      },
+      {
+        heading: '2. Standard Rotational Inertias & Incline Race Finish Order',
+        content: `Comparison of standard rotational inertias ($I = \\beta M R^2$) tested on the AP exam:
+
+| Rigid Body Object | Central Axis Formula ($I$) | Geometric Shape Factor ($\\beta$) | Acceleration Down Incline $a = \\frac{g\\sin\\theta}{1+\\beta}$ | Rolling Race Rank |
+| :--- | :--- | :--- | :--- | :--- |
+| **Frictionless Block** | N/A (Sliding only) | $\\beta = 0$ | $a = g\\sin\\theta$ | **0 (Fastest - Slides)** |
+| **Solid Sphere** | $I = \\frac{2}{5}MR^2$ | $\\beta = 0.40$ | $a = \\frac{5}{7}g\\sin\\theta \\approx 0.71 g\\sin\\theta$ | **1st Place (Winner)** |
+| **Solid Cylinder / Disk** | $I = \\frac{1}{2}MR^2$ | $\\beta = 0.50$ | $a = \\frac{2}{3}g\\sin\\theta \\approx 0.67 g\\sin\\theta$ | **2nd Place** |
+| **Hollow Spherical Shell** | $I = \\frac{2}{3}MR^2$ | $\\beta = 0.67$ | $a = \\frac{3}{5}g\\sin\\theta = 0.60 g\\sin\\theta$ | **3rd Place** |
+| **Thin Cylindrical Ring / Hoop** | $I = MR^2$ | $\\beta = 1.00$ | $a = \\frac{1}{2}g\\sin\\theta = 0.50 g\\sin\\theta$ | **4th Place (Last)** |
+
+*Key AP Insight*: The more mass concentrated near the rotation axis, the smaller $\\beta$, the less energy sequestered into rotation, and the faster it accelerates down the incline.`
       }
     ],
     workedExamples: [
@@ -786,6 +824,18 @@ $$\\frac{V_{\\text{submerged}}}{V_{\\text{total}}} = \\frac{\\rho_{\\text{object
 - **Example**: Ice ($\\rho = 900\\text{ kg/m}^3$) in water ($\\rho = 1000\\text{ kg/m}^3$):
   $$\\frac{V_{\\text{sub}}}{V_{\\text{total}}} = \\frac{900}{1000} = 0.90 = 90\\%$$
   $90\\%$ of the iceberg is submerged below the waterline; only $10\\%$ is visible above!`
+      },
+      {
+        heading: '2. Fluids Statics & Dynamics Master Decision Matrix',
+        content: `Master reference for fluid equations tested on the AP Physics 1 exam:
+
+| Law / Principle | Governing Equation | Primary AP Application | Key Conceptual Trap |
+| :--- | :--- | :--- | :--- |
+| **Hydrostatic Pressure** | $P = P_0 + \\rho g h$ | Pressure at depth $h$ in static fluid column | Gauge pressure is $\\rho gh$; absolute pressure includes $P_0 = 101.3\\text{ kPa}$ |
+| **Archimedes\' Principle** | $F_b = \\rho_{\\text{fluid}} V_{\\text{disp}} g$ | Buoyant force on floating/submerged objects | $F_b$ depends on **FLUID density**, NOT object density or depth! |
+| **Continuity Equation** | $A_1 v_1 = A_2 v_2$ | Incompressible streamline fluid flow in pipes | Narrowing diameter by factor of 2 reduces area by 4, multiplying speed by 4! |
+| **Bernoulli\'s Equation** | $P_1 + \\frac{1}{2}\\rho v_1^2 + \\rho g y_1 = \\text{const}$ | Energy conservation in fluid streamlines | Where velocity increases in constriction, static pressure **DECREASES**! |
+| **Torricelli\'s Law** | $v = \\sqrt{2gh}$ | Efflux speed draining from small hole at depth $h$ | Valid only when open tank surface area is vastly larger than hole area |`
       }
     ],
     workedExamples: [

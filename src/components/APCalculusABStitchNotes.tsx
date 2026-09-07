@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   BookOpen, Brain, Calculator, AlertTriangle, Zap, CheckCircle2, 
   HelpCircle, XCircle, ChevronDown, ChevronUp, Lightbulb, 
-  School, Check, Bookmark, Donut, User, Sparkles
+  School, Check, Bookmark, Donut, User, Sparkles, Scale, ArrowLeftRight, Clock
 } from 'lucide-react';
 import { triggerVibration } from '../utils/vibrate';
 
@@ -20,7 +20,7 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
   const [theoremsDrillAnswer, setTheoremsDrillAnswer] = useState<boolean | null>(null);
   const [methodsQuizAnswer, setMethodsQuizAnswer] = useState<boolean | null>(null);
   const [examplesQuizAnswer, setExamplesQuizAnswer] = useState<boolean | null>(null);
-  const [expandAllSteps, setExpandAllSteps] = useState<boolean>(true);
+
   const [speedDrillComplete, setSpeedDrillComplete] = useState<boolean>(false);
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
 
@@ -41,7 +41,7 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
               : 'text-[#434653] hover:text-[#1b1c1d] font-semibold'
           }`}
         >
-          <span className="material-symbols-outlined text-[20px]">menu_book</span>
+          <BookOpen className="w-5 h-5" />
           <span className="text-[10px] tracking-tight uppercase mt-0.5">Theorems</span>
         </button>
 
@@ -53,7 +53,7 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
               : 'text-[#434653] hover:text-[#1b1c1d] font-semibold'
           }`}
         >
-          <span className="material-symbols-outlined text-[20px]">psychology</span>
+          <Brain className="w-5 h-5" />
           <span className="text-[10px] tracking-tight uppercase mt-0.5">Methods</span>
         </button>
 
@@ -65,7 +65,7 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
               : 'text-[#434653] hover:text-[#1b1c1d] font-semibold'
           }`}
         >
-          <span className="material-symbols-outlined text-[20px]">calculate</span>
+          <Calculator className="w-5 h-5" />
           <span className="text-[10px] tracking-tight uppercase mt-0.5">Examples</span>
         </button>
 
@@ -77,7 +77,7 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
               : 'text-[#434653] hover:text-[#1b1c1d] font-semibold'
           }`}
         >
-          <span className="material-symbols-outlined text-[20px]">warning</span>
+          <AlertTriangle className="w-5 h-5" />
           <span className="text-[10px] tracking-tight uppercase mt-0.5">Exam Traps</span>
         </button>
 
@@ -89,7 +89,7 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
               : 'text-[#434653] hover:text-[#1b1c1d] font-semibold'
           }`}
         >
-          <span className="material-symbols-outlined text-[20px]">bolt</span>
+          <Zap className="w-5 h-5" />
           <span className="text-[10px] tracking-tight uppercase mt-0.5">Cram Sheet</span>
         </button>
       </div>
@@ -288,7 +288,7 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
                 <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3 border border-[#c3c6d5]/30">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#094cb2] uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[16px]">functions</span>
+                      <Sparkles className="w-4 h-4" />
                       Fundamental Trig Limits
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded bg-[#efedee] text-[#434653] font-medium border border-[#c3c6d5]/30">Radians Required</span>
@@ -321,7 +321,7 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
                 {/* Asymptotes Card */}
                 <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3 border border-[#c3c6d5]/30">
                   <span className="text-xs font-bold text-[#1b1c1d] uppercase tracking-wider flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[16px] text-[#6d5e00]">swap_horiz</span>
+                    <ArrowLeftRight className="w-4 h-4 text-[#6d5e00]" />
                     Asymptotic Behavior Definitions
                   </span>
 
@@ -358,7 +358,7 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
             <div className="bg-gradient-to-br from-white via-[#efedee] to-[#f5f3f4] rounded-2xl p-4.5 shadow-sm space-y-3 border border-[#c3c6d5]/40">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#094cb2] text-[20px]">quiz</span>
+                  <HelpCircle className="w-5 h-5 text-[#094cb2]" />
                   <span className="text-xs font-bold uppercase tracking-wider text-[#1b1c1d]">Instant Recall Challenge</span>
                 </div>
                 <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-[#f9e37a] text-[#524600] font-bold">10-Sec Drill</span>
@@ -779,7 +779,7 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
         {activeSubTab === 'examples' && (
           <div className="space-y-6">
             {/* Header Banner */}
-            <div className="bg-[#f5f3f4] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-[#c3c6d5]/30">
+            <div className="bg-[#f5f3f4] rounded-2xl p-4 border border-[#c3c6d5]/30">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-mono font-bold tracking-wide bg-[#d9e2ff] text-[#001946]">
@@ -789,15 +789,6 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
                 </div>
                 <p className="font-serif text-base font-bold text-[#1b1c1d]">Step-by-Step Exemplars & Scoring Rubrics</p>
                 <p className="text-xs text-[#434653]">Annotated AP reader grading criteria, algebraic derivations, and explicit notation traps.</p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => setExpandAllSteps(!expandAllSteps)}
-                  className="px-3 py-1.5 rounded-xl bg-[#094cb2] text-white text-xs font-bold hover:bg-[#3366cc] transition-colors flex items-center gap-1 cursor-pointer active:scale-95"
-                >
-                  <span className="material-symbols-outlined text-[15px]">{expandAllSteps ? 'unfold_less' : 'unfold_more'}</span>
-                  <span>{expandAllSteps ? 'Collapse All' : 'Expand All'}</span>
-                </button>
               </div>
             </div>
 
@@ -822,16 +813,15 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
                   </div>
                   <div className="p-3 rounded-xl bg-white border border-[#c3c6d5]/30 shadow-xs">
                     <div className="text-xs text-[#434653] mb-1">Evaluate the limit:</div>
-                    <div className="flex items-center justify-center gap-3 py-2 text-[#094cb2] font-serif text-base font-bold">
-                      <span>lim<sub className="text-xs italic">x → 4</sub></span>
-                      <span className="text-lg">[ (√x − 2) / (x − 4) ]</span>
+                    <div className="flex flex-wrap items-center justify-center gap-2 py-2 text-[#094cb2] font-serif font-bold text-center">
+                      <span className="whitespace-nowrap text-base sm:text-lg">lim<sub className="text-xs italic ml-0.5">x → 4</sub></span>
+                      <span className="whitespace-nowrap text-base sm:text-lg">[ (√x − 2) / (x − 4) ]</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {expandAllSteps && (
-                <div className="space-y-2.5">
+              <div className="space-y-2.5">
                   <div className="bg-[#efedee] rounded-xl p-3.5 flex gap-3 items-start">
                     <span className="shrink-0 w-7 h-7 rounded-lg bg-[#d9e2ff] text-[#001946] font-bold text-xs flex items-center justify-center shadow-xs">S1</span>
                     <div className="space-y-1.5 min-w-0 flex-1">
@@ -884,7 +874,6 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
                     </div>
                   </div>
                 </div>
-              )}
 
               <div className="space-y-2 pt-1">
                 <div className="bg-[#e9e8e9] rounded-xl p-3 flex items-center justify-between">
@@ -930,8 +919,7 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
                 </div>
               </div>
 
-              {expandAllSteps && (
-                <div className="space-y-2.5">
+              <div className="space-y-2.5">
                   <div className="bg-[#efedee] rounded-xl p-3.5 flex gap-3 items-start">
                     <span className="shrink-0 w-7 h-7 rounded-lg bg-[#d9e2ff] text-[#001946] font-bold text-xs flex items-center justify-center shadow-xs">S1</span>
                     <div className="space-y-1.5 min-w-0 flex-1">
@@ -962,7 +950,6 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
                     </div>
                   </div>
                 </div>
-              )}
 
               <div className="space-y-2 pt-1">
                 <div className="bg-[#e9e8e9] rounded-xl p-3 flex items-center justify-between">
@@ -1030,8 +1017,7 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
                 </div>
               </div>
 
-              {expandAllSteps && (
-                <div className="space-y-2.5">
+              <div className="space-y-2.5">
                   <div className="bg-[#efedee] rounded-xl p-3.5 flex gap-3 items-start">
                     <span className="shrink-0 w-7 h-7 rounded-lg bg-[#d9e2ff] text-[#001946] font-bold text-xs flex items-center justify-center shadow-xs">S1</span>
                     <div className="space-y-1.5 min-w-0 flex-1">
@@ -1082,7 +1068,6 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
                     </div>
                   </div>
                 </div>
-              )}
 
               <div className="space-y-2 pt-1">
                 <div className="bg-[#e9e8e9] rounded-xl p-3 flex items-center justify-between">
@@ -1161,7 +1146,7 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
             <section className="relative overflow-hidden rounded-2xl bg-[#ffdad6]/70 p-4 border border-[#ba1a1a]/30">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#ba1a1a] text-white flex items-center justify-center shrink-0 shadow-sm">
-                  <span className="material-symbols-outlined text-[20px]">gavel</span>
+                  <Scale className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
@@ -1388,7 +1373,7 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
             <div className="rounded-2xl bg-[#e9e8e9] p-4 flex items-center justify-between gap-3 border border-[#c3c6d5]/30">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-full bg-[#094cb2] text-white flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-[20px]">timer</span>
+                  <Clock className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-[11px] font-bold uppercase text-[#094cb2] tracking-wider">Speed Drill</p>

@@ -996,8 +996,9 @@ ${text}`.trim() },
       try {
         const aiClient = getAI();
         const generatePromise = aiClient.models.generateContent(currentParams);
+        const timeoutMs = params.timeoutMs && typeof params.timeoutMs === "number" ? params.timeoutMs : 9e4;
         const timeoutPromise = new Promise(
-          (_, reject) => setTimeout(() => reject(new Error(`Timeout: Model ${model} took longer than 60000ms`)), 6e4)
+          (_, reject) => setTimeout(() => reject(new Error(`Timeout: Model ${model} took longer than ${timeoutMs}ms`)), timeoutMs)
         );
         const response = await Promise.race([generatePromise, timeoutPromise]);
         return response;
@@ -3343,10 +3344,23 @@ OFFICIAL GRADE-LEVEL PEDAGOGICAL CALIBRATION: ADVANCED PLACEMENT (HIGH SCHOOL TO
 - Rigor: Standard College Board AP Course and Exam Description (CED) college-level rigor.
 - Explanations: Clear, authoritative step-by-step breakdown according to official College Board scoring rubrics.`;
     }
+    const batchSizes = [];
+    let remaining = requestedCount;
+    while (remaining > 0) {
+      const take = Math.min(remaining, 5);
+      batchSizes.push(take);
+      remaining -= take;
+    }
+    const allArchetypes = getGranularSubjectArchetypes(subject, targetTopic, requestedCount);
     if (type === "objective") {
-      const systemInstruction = `You are a Senior College Board AP Exam Chief Examiner and Master Test Developer.
+      const batchPromises = batchSizes.map(async (batchCount, bIdx) => {
+        const batchOffset = batchSizes.slice(0, bIdx).reduce((a, b) => a + b, 0);
+        const batchArchetypes = allArchetypes.slice(batchOffset, batchOffset + batchCount);
+        const batchArchetypePlan = batchArchetypes.map((arch, idx) => `  - Question ${batchOffset + idx + 1} Target Archetype: ${arch}`).join("\n");
+        const batchSeed = `${randomSeed || Date.now()}_b${bIdx + 1}_${Math.random().toString(36).substring(2, 6)}`;
+        const systemInstruction = `You are a Senior College Board AP Exam Chief Examiner and Master Test Developer.
 The student is preparing for the AP ${subject} Exam.
-Your task is to generate exactly ${requestedCount} authentic, high-caliber AP Exam MULTIPLE CHOICE QUESTIONS (MCQs) for: "${targetTopic}".
+Your task is to generate exactly ${batchCount} authentic, high-caliber AP Exam MULTIPLE CHOICE QUESTIONS (MCQs) for: "${targetTopic}".
 
 CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
 1. RIGOR & DEPTH: Every question must test deep conceptual understanding, analytical thinking, or multi-step problem solving as defined in the official College Board AP Course and Exam Description (CED). Avoid trivial recall or surface-level trivia.
@@ -3354,8 +3368,12 @@ CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
    - Before outputting options, you MUST solve the question step-by-step to arrive at the definite, mathematically and scientifically verified answer.
    - EXACTLY ONE OF THE 4 OPTIONS (A, B, C, or D) MUST BE 100% CORRECT. Under no circumstances should all 4 options be wrong, and under no circumstances should the true answer be missing from the options list!
    - "correctAnswer" MUST BE VERBATIM IDENTICAL: The "correctAnswer" property MUST be an exact character-for-character match to the corresponding option in the "options" array.
-4. STIMULUS-BASED WHEN APPLICABLE: Provide real AP-style contextual stimulus (e.g. data tables, experimental setups, code segments, or historical/rhetorical excerpts).
-5. DETAILED AP EXPLANATION: Explain WHY the correct option is right with step-by-step logic, and explicitly break down why each distractor is incorrect.
+5. STEP-BY-STEP AP EXPLANATION & DISTRACTOR BREAKDOWN:
+   Explain WHY the correct option is right with structured step-by-step logic using double newlines ('\\n\\n'):
+   - Step 1: Core formula, theorem, or contextual definition.
+   - Step 2: Clear calculation or deductive justification proving the correct answer.
+   - Distractor Analysis: Explicitly break down why each of the 3 incorrect options is wrong.
+   - NEVER glue sentences together without spaces.
 6. AP EXAM SKILL/UNIT TAG: Label the relevant AP Unit or Skill practiced.
 7. MANDATORY COLLEGE BOARD SVG DIAGRAMS & GRAPHS (CRITICAL):
    For all visual or graphical subjects and units:
@@ -3369,9 +3387,12 @@ CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
    For these subjects and units, you MUST formulate questions based on visual graph analysis, and you MUST provide the complete, standalone SVG diagram in "diagramSvg" (viewBox='0 0 400 220') and specify "diagramType".
    The question prompt MUST refer to the visual diagram naturally using varied lead-ins (e.g. "In the investigation depicted in the accompanying figure...", "Based on the experimental data plotted in the graph above...", "A student analyzes the model shown in the figure...", "According to the diagram above..."). NEVER begin every question with the exact same repetitive formulaic words.
    
-   SVG TECHNICAL REQUIREMENTS:
+   SVG TECHNICAL REQUIREMENTS (MANDATORY SAFE BOUNDS - ZERO CLIPPING):
    - Root tag: <svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>...</svg>
    - Dark contrast container: <rect width='400' height='220' fill='#09090b' rx='12' stroke='#27272a' stroke-width='1'/>
+   - STRICT SAFE DRAWING ZONE (CRITICAL):
+     * Keep ALL curves, plotted points, coordinate axes, and labels strictly within the inner bounding box: x between 25 and 375, and y between 25 and 195.
+     * NEVER draw any curve peak, inflection point, asymptote, or circle where y < 20 or y > 200, so curves NEVER touch or get cut off by the border!
    - Coordinate Axes: stroke='#94a3b8' stroke-width='2' with arrows and labels (e.g. 'x', 'y = f(x)').
    - Grid lines: stroke='#1e293b' stroke-dasharray='2,2'.
    - Calculus Discontinuities / Holes: Use hollow circles for removable holes (<circle cx='...' cy='...' r='4.5' fill='#09090b' stroke='#38bdf8' stroke-width='2.5'/>) and solid dots for defined points (<circle cx='...' cy='...' r='4.5' fill='#38bdf8'/>).
@@ -3383,12 +3404,18 @@ ${subjectGuidelines}
 ${gradeCalibrationInstruction}
 ${antiRepetitionDirective}
 
+BATCH TARGET ARCHETYPES:
+${batchArchetypePlan}
+
 CRITICAL MATH & LATEX FORMATTING:
 - Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for block.
-- For piecewise functions, ALWAYS use clean LaTeX:
-  $f(x) = \\begin{cases} g(x) & \\text{for } x < c \\\\ h(x) & \\text{for } x \\ge c \\end{cases}$
+- For data tables and matrices, ALWAYS wrap in $$ block delimiters:
+  $$\\begin{array}{c|ccccc} x & -1 & 0 & 2 & 3 & 4 \\\\ \\hline g(x) & -5 & 3 & -2 & 7 & 10 \\end{array}$$
+  NEVER output bare \\begin{array} without $$...$$ delimiters!
+- For piecewise functions, ALWAYS use clean LaTeX with $$:
+  $$f(x) = \\begin{cases} g(x) & \\text{for } x < c \\\\ h(x) & \\text{for } x \\ge c \\end{cases}$$
   NEVER write raw unescaped pseudo-code like 'f(x) = { ... }' or '<=' or '->' which breaks math parsers!
-- Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\to, \\\\infty, \\\\begin{cases}, \\\\end{cases}.
+- Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\to, \\\\infty, \\\\begin{cases}, \\\\end{cases}, \\\\begin{array}, \\\\end{array}.
 
 STRICT JSON OUTPUT:
 Return ONLY a valid JSON array of objects with this exact structure:
@@ -3410,40 +3437,47 @@ Return ONLY a valid JSON array of objects with this exact structure:
     "skill": "Relevant AP Unit / Skill Tag"
   }
 ]`;
-      let generatedText = "";
-      try {
-        const variationSeed = randomSeed || `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
         const response = await safeGenerateContent({
           gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
           model: "gemini-3.5-flash-lite",
-          contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Session Variation Seed: ${variationSeed}.
-Generate exactly ${requestedCount} authentic College Board AP Exam Multiple Choice Questions (MCQs).
+          timeoutMs: 9e4,
+          contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Batch Seed: ${batchSeed}.
+Generate exactly ${batchCount} authentic College Board AP Exam Multiple Choice Questions (MCQs) for this batch.
+Target Archetypes for this batch:
+${batchArchetypePlan}
 IMPORTANT: Ensure 100% diversity and fresh non-repetitive problems with unique functions, numbers, and scenarios. Do not repeat standard textbook clich\xE9s!
 If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or AP Statistics, generate authentic graph/diagram-based questions and provide the complete College Board standard SVG in "diagramSvg" with coordinate axes, curves, and labeled points so the student analyzes the visual graphic!` }] },
           config: {
             systemInstruction: { parts: [{ text: systemInstruction }] },
             responseMimeType: "application/json",
-            maxOutputTokens: 8192,
+            maxOutputTokens: 16384,
             temperature: 0.75
           }
         });
-        generatedText = response.text || "";
-      } catch (apiError) {
-        console.warn("API Error during AP objective questions generation:", apiError);
-        throw apiError;
+        const generatedText = response.text || "";
+        const parsed = safeParseJSON(generatedText, "array");
+        let questionsList = [];
+        if (Array.isArray(parsed)) {
+          questionsList = parsed;
+        } else if (parsed && Array.isArray(parsed.questions)) {
+          questionsList = parsed.questions;
+        } else if (parsed && typeof parsed === "object") {
+          const found = Object.values(parsed).find((v) => Array.isArray(v));
+          if (found) questionsList = found;
+        }
+        return questionsList;
+      });
+      const batchResults = await Promise.allSettled(batchPromises);
+      let combinedQuestions = [];
+      for (const res2 of batchResults) {
+        if (res2.status === "fulfilled" && Array.isArray(res2.value)) {
+          combinedQuestions.push(...res2.value);
+        } else if (res2.status === "rejected") {
+          console.warn("[generate-ap-questions] Objective batch error:", res2.reason);
+        }
       }
-      const parsed = safeParseJSON(generatedText, "array");
-      let questionsList = [];
-      if (Array.isArray(parsed)) {
-        questionsList = parsed;
-      } else if (parsed && Array.isArray(parsed.questions)) {
-        questionsList = parsed.questions;
-      } else if (parsed && typeof parsed === "object") {
-        const found = Object.values(parsed).find((v) => Array.isArray(v));
-        if (found) questionsList = found;
-      }
-      if (questionsList.length > 0) {
-        questionsList = questionsList.map((q, idx) => {
+      if (combinedQuestions.length > 0) {
+        const questionsList = combinedQuestions.slice(0, requestedCount).map((q, idx) => {
           if (typeof q === "string") {
             return {
               id: idx + 1,
@@ -3456,7 +3490,7 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
           }
           return {
             ...q,
-            id: q.id || idx + 1,
+            id: idx + 1,
             title: q.title || `Question ${idx + 1}`,
             prompt: q.prompt || q.question || q.text || q.scenario || ""
           };
@@ -3465,15 +3499,24 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
       }
       throw new Error("Failed to generate a valid AP objective questions structure.");
     } else {
-      const systemInstruction = `You are an AP Exam Chief Reader and Author of official College Board Scoring Guidelines.
+      const batchPromises = batchSizes.map(async (batchCount, bIdx) => {
+        const batchOffset = batchSizes.slice(0, bIdx).reduce((a, b) => a + b, 0);
+        const batchArchetypes = allArchetypes.slice(batchOffset, batchOffset + batchCount);
+        const batchArchetypePlan = batchArchetypes.map((arch, idx) => `  - Question ${batchOffset + idx + 1} Target Archetype: ${arch}`).join("\n");
+        const batchSeed = `${randomSeed || Date.now()}_b${bIdx + 1}_${Math.random().toString(36).substring(2, 6)}`;
+        const systemInstruction = `You are an AP Exam Chief Reader and Author of official College Board Scoring Guidelines.
 The student is preparing for the AP ${subject} Exam.
-Your task is to generate exactly ${requestedCount} authentic, high-yield AP Exam FREE RESPONSE / SUBJECTIVE QUESTIONS for: "${targetTopic}".
+Your task is to generate exactly ${batchCount} authentic, high-yield AP Exam FREE RESPONSE / SUBJECTIVE QUESTIONS for: "${targetTopic}".
 
 CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
 1. AUTHENTIC MULTI-PART STRUCTURE: AP Free Response Questions always consist of clearly delineated sub-parts: (a), (b), (c) (and optionally (d)). Each sub-part must clearly test specific College Board cognitive skills (e.g., Identify, Calculate, Justify, Explain, Describe, Graph, Show).
 2. CLEAR LINE BREAKS: Separate each part with a double newline '\\n\\n' so each part starts clearly on a new line.
 3. OFFICIAL SCORING GUIDELINES & POINT BREAKDOWN: Provide a precise, point-by-point College Board Reader rubric in an array 'scoringRubric'. Each item should state what earns the point (e.g., '+1 pt for applying product rule', '+1 pt for correctly stating units', '+1 pt for citing historical document').
-4. HIGH-SCORING MODEL ANSWER: Provide a complete, maximum-points exemplary student response in 'modelAnswer' addressing each part (a), (b), (c) with clear steps and LaTeX formatting.
+4. STEP-BY-STEP EXEMPLARY MODEL ANSWER (CRITICAL):
+   Provide a complete, maximum-points exemplary student response in 'modelAnswer'.
+   - ALWAYS format each sub-part with a clear label and double newlines ('\\n\\n'):
+     Part (a): [Step-by-step mathematical/conceptual setup, formula substitution, and complete concluding sentence.]\\n\\nPart (b): [Step-by-step reasoning, calculations, and final value with units.]\\n\\nPart (c): [Thorough analytical justification and conclusion.]
+   - NEVER glue parts or sentences together (NEVER output things like 'holds.(b)' or 'x=2.(c)'). ALWAYS leave clean double newlines and spaces between words, sentences, and sub-parts!
 5. TOTAL POINTS: Total point value for this problem (e.g. 9 points for Calculus/CSA, 10 points for Chem, 7 points for DBQ, 4 points for Short FRQ).
 6. MANDATORY COLLEGE BOARD SVG DIAGRAMS & GRAPHS (CRITICAL):
    For all graphical, experimental, and visual subjects/units:
@@ -3486,9 +3529,12 @@ CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
 
    The question prompt MUST refer to the visual diagram naturally using varied lead-ins (e.g. "In the experiment depicted in the accompanying figure...", "Based on the plotted data in the graph above...", "A researcher examines the model shown in the figure...", "According to the diagram provided..."). NEVER begin every question with the exact same repetitive formulaic words.
    
-   SVG TECHNICAL REQUIREMENTS:
+   SVG TECHNICAL REQUIREMENTS (MANDATORY SAFE BOUNDS - ZERO CLIPPING):
    - Root tag: <svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>...</svg>
    - Dark contrast container: <rect width='400' height='220' fill='#09090b' rx='12' stroke='#27272a' stroke-width='1'/>
+   - STRICT SAFE DRAWING ZONE (CRITICAL):
+     * Keep ALL curves, plotted points, coordinate axes, and labels strictly within the inner bounding box: x between 25 and 375, and y between 25 and 195.
+     * NEVER draw any curve peak, inflection point, asymptote, or circle where y < 20 or y > 200, so curves NEVER touch or get cut off by the border!
    - Coordinate Axes: stroke='#94a3b8' stroke-width='2' with arrowheads and axis labels (e.g. 'x', 'y = f(x)').
    - Grid lines: stroke='#1e293b' stroke-dasharray='2,2'.
    - Calculus Discontinuities / Holes: Use hollow circles for removable holes (<circle cx='...' cy='...' r='4.5' fill='#09090b' stroke='#38bdf8' stroke-width='2.5'/>) and solid dots for defined points (<circle cx='...' cy='...' r='4.5' fill='#38bdf8'/>).
@@ -3500,12 +3546,18 @@ ${subjectGuidelines}
 ${gradeCalibrationInstruction}
 ${antiRepetitionDirective}
 
+BATCH TARGET ARCHETYPES:
+${batchArchetypePlan}
+
 CRITICAL MATH & LATEX FORMATTING:
 - Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for block.
-- For piecewise functions, ALWAYS use clean LaTeX:
-  $f(x) = \\begin{cases} g(x) & \\text{for } x < c \\\\ h(x) & \\text{for } x \\ge c \\end{cases}$
+- For data tables and matrices, ALWAYS wrap in $$ block delimiters:
+  $$\\begin{array}{c|ccccc} x & -1 & 0 & 2 & 3 & 4 \\\\ \\hline g(x) & -5 & 3 & -2 & 7 & 10 \\end{array}$$
+  NEVER output bare \\begin{array} without $$...$$ delimiters!
+- For piecewise functions, ALWAYS use clean LaTeX with $$:
+  $$f(x) = \\begin{cases} g(x) & \\text{for } x < c \\\\ h(x) & \\text{for } x \\ge c \\end{cases}$$
   NEVER write raw unescaped pseudo-code like 'f(x) = { ... }' or '<=' or '->' which breaks math parsers!
-- Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\to, \\\\infty, \\\\begin{cases}, \\\\end{cases}.
+- Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\to, \\\\infty, \\\\begin{cases}, \\\\end{cases}, \\\\begin{array}, \\\\end{array}.
 
 STRICT JSON OUTPUT:
 Return ONLY a valid JSON object with key "questions" containing an array of objects:
@@ -3529,40 +3581,47 @@ Return ONLY a valid JSON object with key "questions" containing an array of obje
   ]
 }
 NEVER include multiple-choice options A/B/C/D in subjective output.`;
-      let generatedText = "";
-      try {
-        const variationSeed = randomSeed || `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
         const response = await safeGenerateContent({
           gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
           model: "gemini-3.5-flash-lite",
-          contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Session Variation Seed: ${variationSeed}.
-Generate exactly ${requestedCount} authentic College Board AP Exam Free Response / Subjective Questions.
+          timeoutMs: 9e4,
+          contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Batch Seed: ${batchSeed}.
+Generate exactly ${batchCount} authentic College Board AP Exam Free Response / Subjective Questions for this batch.
+Target Archetypes for this batch:
+${batchArchetypePlan}
 IMPORTANT: Ensure 100% diversity and fresh non-repetitive problems with unique functions, numbers, and scenarios. Do not repeat standard textbook clich\xE9s!
 If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or AP Statistics, formulate authentic graph/diagram-based questions and provide the complete College Board standard SVG in "diagramSvg" with coordinate axes, curves, and labeled points so the student analyzes the visual graphic!` }] },
           config: {
             systemInstruction: { parts: [{ text: systemInstruction }] },
             responseMimeType: "application/json",
-            maxOutputTokens: 8192,
+            maxOutputTokens: 16384,
             temperature: 0.75
           }
         });
-        generatedText = response.text || "";
-      } catch (apiError) {
-        console.warn("API Error during AP subjective questions generation:", apiError);
-        throw apiError;
+        const generatedText = response.text || "";
+        const parsed = safeParseJSON(generatedText, "object");
+        let questionsList = [];
+        if (parsed && Array.isArray(parsed.questions)) {
+          questionsList = parsed.questions;
+        } else if (Array.isArray(parsed)) {
+          questionsList = parsed;
+        } else if (parsed && typeof parsed === "object") {
+          const found = Object.values(parsed).find((v) => Array.isArray(v));
+          if (found) questionsList = found;
+        }
+        return questionsList;
+      });
+      const batchResults = await Promise.allSettled(batchPromises);
+      let combinedQuestions = [];
+      for (const res2 of batchResults) {
+        if (res2.status === "fulfilled" && Array.isArray(res2.value)) {
+          combinedQuestions.push(...res2.value);
+        } else if (res2.status === "rejected") {
+          console.warn("[generate-ap-questions] Subjective batch error:", res2.reason);
+        }
       }
-      const parsed = safeParseJSON(generatedText, "object");
-      let questionsList = [];
-      if (parsed && Array.isArray(parsed.questions)) {
-        questionsList = parsed.questions;
-      } else if (Array.isArray(parsed)) {
-        questionsList = parsed;
-      } else if (parsed && typeof parsed === "object") {
-        const found = Object.values(parsed).find((v) => Array.isArray(v));
-        if (found) questionsList = found;
-      }
-      if (questionsList.length > 0) {
-        questionsList = questionsList.map((q, idx) => {
+      if (combinedQuestions.length > 0) {
+        const questionsList = combinedQuestions.slice(0, requestedCount).map((q, idx) => {
           if (typeof q === "string") {
             return {
               id: idx + 1,
@@ -3576,7 +3635,7 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
           }
           return {
             ...q,
-            id: q.id || idx + 1,
+            id: idx + 1,
             title: q.title || `FRQ ${idx + 1}: Multi-Part Analytical Problem`,
             prompt: q.prompt || q.question || q.text || q.scenario || ""
           };
@@ -3606,8 +3665,24 @@ app.post("/api/ap-trap-radar", async (req, res) => {
         return res.status(400).json({ error: "Please provide question text or an image to analyze." });
       }
       const systemInstruction2 = `You are a Senior College Board AP Exam Psychometrician, Chief Reader, and Master Distractor Architect.
-Your mission is to perform an exhaustive "TRAP RADAR AUTOPSY" on the provided AP Exam multiple-choice question.
+Your mission is to perform an exhaustive "TRAP RADAR AUTOPSY" on the provided AP Exam multiple-choice question or stimulus image.
 
+PHASE 1: RIGOROUS INPUT VALIDATION (MANDATORY FIRST STEP):
+Before analyzing, inspect the user's input text and attached images:
+1. DOES THE INPUT CONTAIN AN ACTUAL ACADEMIC / AP EXAM QUESTION, PROBLEM STEM, DATA SCENARIO, OR MULTIPLE-CHOICE OPTIONS?
+2. IF THE INPUT IS:
+   - A greeting, conversational chit-chat, or pleasantry (e.g. "hi", "hello", "hey", "good morning", "how are you", "yo")
+   - Single random words, numbers, or keyboard gibberish (e.g. "asdf", "test", "123", "ok", "cool")
+   - Non-academic sentences with NO question, problem, or multiple-choice choices to analyze
+   THEN YOU MUST NOT INVENT, FABRICATE, OR HALLUCINATE A QUESTION OR OPTIONS.
+   INSTEAD, YOU MUST RETURN STRICTLY THIS JSON:
+   {
+     "isInvalidQuestion": true,
+     "errorMessage": "Input is not a valid AP question. Please enter an actual AP exam question prompt, stimulus, and options (A, B, C, D) or snap a photo of your AP worksheet/test so the Trap Radar can dissect the distractors."
+   }
+
+PHASE 2: TRAP RADAR AUTOPSY (ONLY FOR VALID AP QUESTIONS):
+If the input is a genuine AP or academic multiple-choice problem:
 College Board MCQs are famous for engineering 6 distinct Distractor Archetypes:
 1. \u{1FAA4} The Reverse Logic / Sign Flip Trap (Correct calculation but flipped sign, reciprocal, or reversed direction).
 2. \u{1FAA4} The Half-Truth Scope Creep Trap (A statement that is factually true in real life, BUT does not answer the stimulus prompt or exceeds CED scope).
@@ -3624,8 +3699,13 @@ ANALYZE THE QUESTION THOROUGHLY:
    - If incorrect: Identify the exact Trap Archetype, why test-makers engineered it, what common misconception it targets, and what % of AP students typically fall for it.
 4. Provide the "5-Second Disarm Secret": A bulletproof heuristic or mental model to immediately spot and eliminate the distractor on the real exam.
 
-STRICT JSON OUTPUT FORMAT:
+CRITICAL LATEX & FORMULA FORMATTING RULES:
+- Format ALL mathematical, physics, and chemical equations, variables, and formulas using standard LaTeX syntax ($...$ for inline or $$...$$ for display formulas).
+- Keep each inline LaTeX equation on a single unbroken line without internal line breaks or raw HTML entities.
+
+STRICT JSON OUTPUT FORMAT (WHEN VALID):
 {
+  "isInvalidQuestion": false,
   "detectedSubject": "AP Subject Name",
   "skill": "Relevant CED Unit & Learning Objective",
   "question": "The cleaned-up question text",
@@ -3685,24 +3765,33 @@ STRICT JSON OUTPUT FORMAT:
     }
     const requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 10);
     const targetTopic = [topic, unit, subject].filter(Boolean).join(" - ");
-    const systemInstruction = `You are a Senior College Board AP Exam Psychometrician and Master Distractor Architect.
+    const systemInstruction = `You are a Senior College Board AP Exam Chief Psychometrician, Lead Item Writer, and Master Distractor Architect.
 The student is training with the "AP TRAP RADAR\u2122" to achieve a Score 5 in AP ${subject}.
-Your mission: Generate exactly ${requestedCount} high-caliber, authentic AP Exam Multiple Choice Questions for "${targetTopic}" with DECEPTIVELY ENGINEERED DISTRACTOR TRAPS.
+Your mission: Generate exactly ${requestedCount} ultra-authentic, high-caliber College Board AP Exam Multiple Choice Questions for "${targetTopic}" with DECEPTIVELY ENGINEERED PSYCHOMETRIC DISTRACTOR TRAPS.
 
-Every question MUST feature 4 options (A, B, C, D) with authentic College Board Trap Archetypes:
-- Exactly 1 option must be 100% scientifically/historically/mathematically correct.
-- The other 3 options MUST be engineered using authentic College Board Distractor Archetypes:
-  1. The Reverse Logic / Arithmetic Slip Trap (sign flipped, reciprocal, inverted cause-and-effect).
-  2. The Half-Truth / Scope Creep Trap (factually true in the real world, but doesn't answer the prompt).
-  3. The Chronological / Unit Confusion Trap (timeline mismatch or conflated unit/term).
-  4. The Absolute Qualifier Trap ('always', 'never', 'solely' making a claim too extreme).
-  5. The Pseudo-Vocabulary Jargon Trap (impressive unit keywords combined into a fake mechanism).
-  6. The Intermediate Calculation Stop Trap (stops at step 2 of a 3-step proof or calculation).
+AUTHENTIC COLLEGE BOARD AP EXAM STANDARDS (STRICT REQUIREMENT):
+1. REAL AP STIMULUS-BASED FORMAT:
+   - AP History / Social Sciences (APUSH, World History, Euro, Gov, Human Geography): Every question MUST feature an authentic historical primary/secondary source excerpt (with author attribution, document title, and date e.g. "Source: John Locke, Two Treatises of Government, 1689"), historical treaty, political speech, map interpretation, or economic data table.
+   - AP STEM Sciences (Biology, Chemistry, Physics, Environmental Science): Every question MUST feature a realistic laboratory experiment scenario, biological feedback pathway, reaction coordinate, data observation table, or physical system with formal variables.
+   - AP Mathematics (Calculus AB/BC, Statistics): Questions MUST use rigorous College Board mathematical notation ($f(x)$, derivatives, Riemann sums, differential equations, sampling distributions) testing conceptual theorems (MVT, IVT, EVT) or rate-of-change tables.
+   - AP Computer Science (CSA, CSP): Questions MUST contain authentic AP Java Subset code snippets (e.g. 2D arrays, ArrayList, object references, off-by-one loop boundaries, boolean logic) requiring precise execution tracing.
+   - AP Economics (Macroeconomics, Microeconomics): Questions MUST test multi-step fiscal/monetary chain reactions, curve shifts, elasticity calculations, or market equilibrium models.
 
-CRITICAL ACCURACY RULES:
-- Before outputting, verify that EXACTLY ONE OPTION is correct.
-- 'correctAnswer' must match the exact string of the correct option in 'options'.
-- Use LaTeX ($...$ or $$...$$) for formulas, chemical reactions, or calculus equations.
+2. AUTHENTIC COLLEGE BOARD DISTRACTOR TRAPS (NO OBVIOUS / SILLY WRONG ANSWERS):
+   Every question MUST feature 4 options (A, B, C, D):
+   - EXACTLY 1 OPTION: The 100% verified, mathematically/historically sound College Board Target.
+   - THE OTHER 3 OPTIONS: Must be genuine statistical traps designed to exploit standard high-school misconceptions that 40%-60% of AP test-takers pick:
+     \u{1FAA4} The Reverse Logic / Arithmetic Slip Trap (inverted derivative/integral sign, reciprocal, flipped cause-and-effect).
+     \u{1FAA4} The Half-Truth / Scope Creep Trap (factually true in real life, BUT does not answer the stimulus excerpt or exceeds CED scope).
+     \u{1FAA4} The Chronological / Evolutionary Anachronism Trap (correct historical event or biological mechanism, but out of historical order or incorrect phase).
+     \u{1FAA4} The Absolute Qualifier Trap ('always', 'solely', 'invariably' turning a plausible assertion into an invalid claim).
+     \u{1FAA4} The Pseudo-Vocabulary Jargon Salad Trap (strings together legitimate unit keywords into a mechanism that makes no logical sense).
+     \u{1FAA4} The Intermediate Calculation Stop Trap (stops after finding an intermediate variable $x$ or moles $n$, rather than the final requested quantity).
+
+3. SCORING & DISARMING SECRETS:
+   - Provide the "5-Second Disarm Secret": A sharp, pragmatic mental heuristic used by AP 5-scorers to neutralize and cross out the distractors in seconds.
+   - Format ALL math and chemistry formulas with clean LaTeX ($...$ or $$...$$) without breaks inside delimiters.
+   - Ensure EXACTLY ONE OPTION is correct and 'correctAnswer' matches the exact string in 'options'.
 
 STRICT JSON OUTPUT FORMAT:
 Return ONLY a valid JSON array of question objects:

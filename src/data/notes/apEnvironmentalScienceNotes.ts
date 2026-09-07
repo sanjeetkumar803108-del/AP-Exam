@@ -214,6 +214,21 @@ export const AP_ENVIRONMENTAL_SCIENCE_NOTES: APUnitNote[] = [
 - **Stage 3 (Industrial)**: Plunging CBR, Low CDR $\\implies$ Growth slows. Pyramid sides become steeper (e.g. India, Mexico). Driven by urbanization, female education, and access to family planning.
 - **Stage 4 (Post-Industrial)**: Low CBR, Low CDR $\\implies$ Zero Population Growth (ZPG). Column-shaped pyramid (e.g. USA, Canada).
 - **Stage 5 (Declining)**: Very Low CBR below CDR $\\implies$ Negative growth, aging population. Inverted pyramid (e.g. Japan, Germany).`
+      },
+      {
+        heading: '2. r-Selected vs. K-Selected Reproductive Strategies Matrix',
+        content: `Evolutionary trade-offs in life history strategies tested on APES:
+
+| Characteristic / Parameter | r-Selected Species | K-Selected Species | AP Exam Notes & Traps |
+| :--- | :--- | :--- | :--- |
+| **Body Size & Lifespan** | Small body size; short lifespan | Large body size; long lifespan | Whales, elephants, humans vs. bacteria, mice |
+| **Offspring Quantity** | Many small offspring produced per clutch | Few, single offspring produced per pregnancy | r-selected invest zero energy per offspring |
+| **Parental Care** | **Little to none** | **Extensive, prolonged** parental care | K-selected juveniles require heavy maternal investment |
+| **Time to Reproductive Maturity** | Very fast (early maturity) | Slow (late sexual maturity) | r-selected can double populations in hours/days |
+| **Carrying Capacity ($K$) Dynamic** | Boom-and-bust overshoot and crash cycles | Stable near carrying capacity ($K$) | S-shaped logistic curve vs. exponential J-curve |
+| **Environmental Adaptation** | Highly adaptable ecological **generalists** | Specialized ecological **specialists** | Invasive species are almost always r-selected generalists! |
+| **Survivorship Curve Type** | **Type III** (High infant mortality) | **Type I** (High adult survival) | Type II (songbirds/reptiles) falls intermediate |
+| **Vulnerability to Extinction** | Low (recovers quickly from disturbances) | **HIGH** (slow recovery, easily overhunted) | Habitat fragmentation imperils K-selected species most |`
       }
     ],
     workedExamples: [
@@ -296,6 +311,20 @@ export const AP_ENVIRONMENTAL_SCIENCE_NOTES: APUnitNote[] = [
 *Soil Particle Size Order*:
 $$\\text{Clay } (< 0.002\\text{ mm}) < \\text{Silt } (0.002\\text{–}0.05\\text{ mm}) < \\text{Sand } (0.05\\text{–}2.0\\text{ mm})$$
 - **Loam** ($40\\%\\text{ Sand}, 40\\%\\text{ Silt}, 20\\%\\text{ Clay}$) is the ideal agricultural soil balancing water retention and aeration.`
+      },
+      {
+        heading: '2. Soil Horizons & Atmospheric Convection Cells Matrix',
+        content: `Physical characteristics of Earth systems and resource stratification:
+
+| System / Component | Defining Physical Layer / Zone | Hydraulic / Climatic Characteristics | Key AP Exam Diagnostic Feature |
+| :--- | :--- | :--- | :--- |
+| **O Horizon** | Surface Organic Layer | High organic matter, freshly decomposing leaf litter | Dark, rich in humus; missing in desert soils |
+| **A Horizon (Topsoil)** | Mineral soil mixed with organic humus | High biological activity, earthworms, root absorption | Erodes quickly under conventional industrial tilling |
+| **B Horizon (Subsoil)** | Zone of Illuviation / Mineral accumulation | Accumulation of leached iron, aluminum, and fine clays | Low organic content; dense clay pan layer |
+| **Clay Particles** | $< 0.002\\text{ mm}$ (Smallest) | **Highest porosity**, but microscopic pores $\\implies$ **Lowest permeability** | Holds water tightly; prone to waterlogging crops |
+| **Sand Particles** | $0.05 - 2.0\\text{ mm}$ (Largest) | Lowest porosity, but large interconnected pores $\\implies$ **Highest permeability** | Drains rapidly; prone to nutrient leaching |
+| **Hadley Cell ($0^\\circ - 30^\\circ$)** | Tropical Convection Cell | Air rises at $0^\\circ$ (wet rainforest); sinks at $30^\\circ$ (arid desert) | Powers Trade Winds and Intertropical Convergence Zone (ITCZ) |
+| **Ferrel Cell ($30^\\circ - 60^\\circ$)** | Mid-Latitude Convection Cell | Driven by interactions between Hadley and Polar cells | Produces prevailing Westerlies and temperate variable weather |`
       }
     ],
     workedExamples: [
@@ -547,6 +576,19 @@ $$\\text{Clay } (< 0.002\\text{ mm}) < \\text{Silt } (0.002\\text{–}0.05\\text
   - **Carbon Monoxide (CO)**: Odorless gas from malfunctioning furnaces; binds hemoglobin causing asphyxiation.
   - **Asbestos**: Fibrous mineral formerly used in insulation; causes mesothelioma lung disease.
   - **Lead**: Found in old paint and pipes; causes neurological impairment in children.`
+      },
+      {
+        heading: '2. Criteria Air Pollutants & Mitigation Technologies Matrix',
+        content: `Clean Air Act Criteria Pollutants and emission control engineering:
+
+| Criteria Air Pollutant | Primary or Secondary? | Primary Anthropogenic Source | Human / Ecological Damage | Engineering Mitigation Technology |
+| :--- | :--- | :--- | :--- | :--- |
+| **Sulfur Dioxide ($\\text{SO}_2$)** | **Primary** | Coal combustion in power plants | Respiratory irritant, precursor to **Acid Rain** ($\\text{H}_2\\text{SO}_4$) | **Wet Scrubbers** (calcium carbonate spray), low-sulfur coal |
+| **Nitrogen Oxides ($\\text{NO}_x$)** | **Primary** | Motor vehicle exhaust, fossil fuel combustion | Lung inflammation, precursor to **Photochemical Smog** & Acid Rain | **Catalytic Converters** (reduces $\\text{NO}_x$ to $\\text{N}_2$ and $\\text{O}_2$) |
+| **Carbon Monoxide ($\\text{CO}$)** | **Primary** | Incomplete combustion of fossil fuels | Binds hemoglobin, asphyxiation (deadly odorless gas) | Catalytic converters, proper home furnace ventilation |
+| **Particulate Matter ($\\text{PM}_{2.5}$)** | **Primary** & Secondary | Diesel soot, construction, road dust, coal smoke | Deep alveolar lung tissue penetration, asthma, haze | **Electrostatic Precipitators**, Baghouse fabric filters |
+| **Tropospheric Ozone ($\\text{O}_3$)** | **Secondary** | $\\text{NO}_x + \\text{VOCs} + \\text{Sunlight}$ (Peaks in PM) | Plant stomatal damage, necrosis, human respiratory pain | Limit commuter vehicle miles traveled, vapor recovery nozzles |
+| **Lead ($\\text{Pb}$)** | **Primary** | Historical leaded gasoline, smelters, waste incineration | Neurotoxin causing cognitive deficit and brain damage | Phase-out of leaded gasoline and leaded aviation fuel |`
       }
     ],
     workedExamples: [
@@ -632,6 +674,20 @@ $$\\text{Clay } (< 0.002\\text{ mm}) < \\text{Silt } (0.002\\text{–}0.05\\text
 3. **Tertiary Treatment (Chemical / Advanced)**:
    - Removes excess nitrates and phosphates to prevent cultural eutrophication in receiving rivers.
    - Disinfection: Effluent treated with chlorine, ozone, or UV radiation to kill pathogenic bacteria (e.g. E. coli) before environmental discharge.`
+      },
+      {
+        heading: '2. Oxygen Sag Curve Zones & Wastewater Purification Matrix',
+        content: `Anatomy of aquatic pollution degradation and municipal sewage processing:
+
+| Stream Zone / Stage | Dissolved Oxygen (DO) Level | Biological Oxygen Demand (BOD) | Characteristic Organisms Present | Key Water Quality Process |
+| :--- | :--- | :--- | :--- | :--- |
+| **1. Clean Zone (Upstream)** | **High** ($> 8\\text{ ppm}$) | **Low** ($< 2\\text{ ppm}$) | Trout, bass, mayfly larvae, stonefly nymphs | Pristine oxygen-rich stream ecosystem |
+| **2. Decomposition Zone** | Dropping rapidly | **Skyrocketing** | Carp, gar, leeches, blackfly larvae | High organic influx; aerobic bacteria consume DO |
+| **3. Septic Zone** | **Extremely Low / Zero** ($< 2\\text{ ppm}$) | Declining slowly | Anaerobic bacteria, sludge worms, red midge larvae | **Hypoxic Dead Zone**: Fish suffocate and float dead |
+| **4. Recovery Zone** | Rising back to normal | Returning to baseline | Rough fish, tolerant insects re-emerging | Natural re-aeration across stream riffles |
+| **Primary Wastewater** | Physical mechanical | Removes suspended solids as sludge | Bar screens, grit chambers, settling clarifier tanks | Filters $60\\%$ of suspended solids mechanically |
+| **Secondary Wastewater** | **Biological aerobic** | Slashes BOD by $90\\%$ | Aeration basins injected with activated sludge bacteria | Aerobic digestion of dissolved organic wastes |
+| **Disinfection Step** | Chemical / Radiation | Destroys pathogens | Treated with **Chlorine, Ozone, or UV Light** | Neutralizes coliform bacteria prior to river release |`
       }
     ],
     workedExamples: [
@@ -719,6 +775,20 @@ $$\\text{Clay } (< 0.002\\text{ mm}) < \\text{Silt } (0.002\\text{–}0.05\\text
 - **Invasive Species Characteristics (H.I.P.C.O.)**:
   - Habitat destruction, Invasive species, Population growth, Pollution, Climate change, Overexploitation.
   - Invasive species are r-selected ecological generalists that outcompete native specialists lacking natural predators.`
+      },
+      {
+        heading: '2. Greenhouse Gases, Ozone Depletion & Treaties Matrix',
+        content: `Master comparison of anthropogenic atmospheric drivers and global environmental treaties:
+
+| Atmospheric Gas / Treaty | Atmospheric Residence Time | Global Warming Potential (GWP) | Anthropogenic Emission Source | Specific Environmental Hazard |
+| :--- | :--- | :--- | :--- | :--- |
+| **Carbon Dioxide ($\\text{CO}_2$)** | $100 - 1000\\text{ years}$ | **$1$ (Baseline)** | Fossil fuel combustion, deforestation, cement | Traps infrared heat $\\rightarrow$ Sea level rise, ocean acidification |
+| **Methane ($\\text{CH}_4$)** | $12\\text{ years}$ | **$\\approx 25 - 30\\times$** | Livestock digestion, landfills, natural gas leaks, rice paddies | Potent short-term greenhouse gas warming |
+| **Nitrous Oxide ($\\text{N}_2\\text{O}$)** | $114\\text{ years}$ | **$\\approx 300\\times$** | Synthetic fertilizer over-application, manure | Traps heat and participates in ozone layer reactions |
+| **CFCs / Halocarbons** | $50 - 100+\\text{ years}$ | **$5,000 - 10,000+\\times$** | Refrigerants, aerosols, air conditioners | **Destroys stratospheric ozone layer** (Chlorine radical catalytic cycle) |
+| **Water Vapor ($\\text{H}_2\\text{O}$)** | $9\\text{ days}$ | Variable | Natural evaporation (amplified by global warming) | Most abundant natural greenhouse gas; positive feedback loop |
+| **Montreal Protocol (1987)** | International Treaty | Solved CFC phase-out | Regulates ozone-depleting substances | **Healed the stratospheric ozone hole** (NOT climate change!) |
+| **Kyoto Protocol & Paris Accord** | International Treaties | Legally binding & voluntary targets | Target greenhouse gas emission reductions | Keep global warming below $1.5^\\circ\\text{C}$ pre-industrial levels |`
       }
     ],
     workedExamples: [

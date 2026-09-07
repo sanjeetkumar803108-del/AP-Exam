@@ -22,9 +22,25 @@ export function formatLatexToAscii(latex: string): string {
   if (!latex) return '';
   let str = String(latex);
 
-  // 1. Remove LaTeX environment wrappers
-  str = str.replace(/\\begin\{(?:aligned|matrix|pmatrix|bmatrix|cases|array|split|gather|equation)\*?\}/g, '');
+  // 0. Unescape HTML entities so math & text render cleanly in PDF without raw entity strings
+  str = str
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&le;/g, '<=')
+    .replace(/&ge;/g, '>=')
+    .replace(/&ne;/g, '!=')
+    .replace(/&plusmn;/g, '+/-')
+    .replace(/&times;/g, '*')
+    .replace(/&divide;/g, '/')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ');
+
+  // 1. Remove LaTeX environment wrappers and column alignment specs (e.g. {c|ccccc})
+  str = str.replace(/\\begin\{(?:aligned|matrix|pmatrix|bmatrix|cases|array|split|gather|equation)\*?\}(?:\{[^{}]*\})?/g, '');
   str = str.replace(/\\end\{(?:aligned|matrix|pmatrix|bmatrix|cases|array|split|gather|equation)\*?\}/g, '');
+  str = str.replace(/\\hline/g, '\n----------------------------------------\n');
 
   // 2. Clean \left and \right delimiters (strictly prevent eating \rightarrow, \rightleftharpoons, etc.)
   str = str.replace(/\\left\s*\\\{/g, '{');
@@ -39,6 +55,7 @@ export function formatLatexToAscii(latex: string): string {
   str = str.replace(/&=/g, ' = ');
   str = str.replace(/&/g, ' | ');
   str = str.replace(/\\\\/g, '\n');
+  str = str.replace(/([^\n])\\\s*\n/g, '$1\n');
 
   // 4. Unwrap formatting tags: \text{...}, \mathrm{...}, \mathbf{...}, \mathit{...}, \textbf{...}, \textit{...}, \ce{...}, \pu{...}
   for (let loop = 0; loop < 5; loop++) {
@@ -421,4 +438,140 @@ export function sanitizePdfText(text: string): string {
     .replace(/[ \t]+/g, ' ')
     .replace(/\n\s*\n\s*\n+/g, '\n\n')
     .trim();
+}
+
+export interface PdfSolutionStep {
+  label: string;
+  content: string;
+}
+
+/**
+ * Detects whether an answer or problem statement contains mathematical derivations or calculations.
+ */
+export function isCalculationText(text: string): boolean {
+  if (!text) return false;
+  const calcPatterns = [
+    /\\(?:frac|int|lim|sum|sqrt|cdot|times|partial|approx|le|ge)\b/,
+    /[$=][^$\n]*\d+/,
+    /\d+\s*[\+\-\*\/=]\s*\d+/,
+    /\b(calculate|computed?|derivat\w*|integral\w*|solve for|evaluate)\b/i,
+    /\b(dy\/dx|f'\(x\)|f''\(x\)|lim_\{|\\int_)\b/,
+    /\b(m\/s\^?2?|kg|mol|Joules?|Watts?|Volts?|Ohms?|Hz)\b/,
+    /\b(for\s*\(|while\s*\(|int\s+[a-zA-Z]|System\.out)\b/
+  ];
+  return calcPatterns.some(p => p.test(text));
+}
+
+/**
+ * Normalizes glued words, punctuation, and part delimiters (e.g. "holds.(b)" -> "holds.\n\n(b)")
+ * and parses multi-part solutions/explanations into clean blocks.
+ * IMPORTANT: For theory-based questions, suppresses robotic "Step 1:", "Step 2:" labels
+ * so that narrative analysis flows as cohesive, dignified paragraphs.
+ * For calculation-based questions, preserves sequential mathematical steps.
+ */
+export function parseSolutionStepsForPdf(rawText: string, forceCalculation?: boolean): PdfSolutionStep[] {
+  if (!rawText || !rawText.trim()) return [];
+
+  // 1. Sanitize text first
+  let text = sanitizePdfText(rawText);
+
+  // 2. Fix glued periods between words (e.g. "continuity.Next" -> "continuity. Next")
+  text = text.replace(/([a-z]{2,})\.([A-Z])/g, '$1. $2');
+
+  // 3. Fix missing spaces after commas, colons, semicolons, and parentheses
+  text = text.replace(/([,;:])([A-Za-z])/g, '$1 $2');
+  text = text.replace(/(\))([A-Za-z]{2,})/g, '$1 $2');
+  text = text.replace(/([A-Za-z]{2,})(\()/g, '$1 $2');
+  text = text.replace(/(\*\*[^*]+\*\*)([A-Za-z])/g, '$1 $2');
+  text = text.replace(/([A-Za-z])(\*\*[^*]+\*\*)/g, '$1 $2');
+
+  // 4. Fix glued subparts:
+  text = text.replace(/([^\n\r])\s*(\([a-eA-E]\)|Part\s*\(?[A-Ea-e1-9]\)?:?|Step\s*\d+:?)(?=\s+[A-Za-z0-9]|\s*$)/g, '$1\n\n$2 ');
+
+  // 5. Fix glued MCQ options and choices
+  text = text.replace(/([^\n\r])\s*(Choice\s*\(?[A-D]\)?|Option\s*\(?[A-D]\)?|Distractor\s*\(?[A-D]\)?)/gi, '$1\n\n$2');
+
+  // Detect whether this explanation is calculation-based or theory-based
+  const isCalc = forceCalculation ?? isCalculationText(text);
+
+  // 6. Split into blocks
+  const rawBlocks = text
+    .split(/\n\s*\n|\n/)
+    .map(b => b.trim())
+    .filter(b => b.length > 0);
+
+  if (rawBlocks.length === 0) return [];
+
+  const steps: PdfSolutionStep[] = [];
+
+  for (let i = 0; i < rawBlocks.length; i++) {
+    const block = rawBlocks[i];
+
+    // Check patterns
+    const parenPartMatch = block.match(/^\s*\(?([a-eA-E])\)?[:\-\.]?\s*(.*)$/s);
+    const namedPartMatch = block.match(/^\s*Part\s*\(?([a-eA-E1-9])\)?[:\-\.]?\s*(.*)$/is);
+    const stepMatch = block.match(/^\s*Step\s*(\d+)[:\-\.]?\s*(.*)$/is);
+    const choiceMatch = block.match(/^\s*(Choice\s*\(?[A-D]\)?|Option\s*\(?[A-D]\)?|Distractor\s*\(?[A-D]\)?)[:\-\.]?\s*(.*)$/is);
+    const numberedMatch = block.match(/^\s*(\d+)[\.\)]\s+(.*)$/s);
+
+    if (parenPartMatch && parenPartMatch[1]) {
+      const partLetter = parenPartMatch[1].toLowerCase();
+      steps.push({
+        label: `Part (${partLetter}):`,
+        content: parenPartMatch[2].trim()
+      });
+    } else if (namedPartMatch && namedPartMatch[1]) {
+      steps.push({
+        label: `Part (${namedPartMatch[1].toLowerCase()}):`,
+        content: namedPartMatch[2].trim()
+      });
+    } else if (stepMatch && stepMatch[1]) {
+      if (isCalc) {
+        steps.push({
+          label: `Step ${stepMatch[1]}:`,
+          content: stepMatch[2].trim()
+        });
+      } else {
+        // Theory question: DO NOT write "Step 1:". Present content as cohesive analysis.
+        steps.push({
+          label: '',
+          content: stepMatch[2].trim()
+        });
+      }
+    } else if (choiceMatch && choiceMatch[1]) {
+      steps.push({
+        label: `${choiceMatch[1].trim()}:`,
+        content: choiceMatch[2].trim()
+      });
+    } else if (numberedMatch && numberedMatch[1] && rawBlocks.length > 1) {
+      if (isCalc) {
+        steps.push({
+          label: `Step ${numberedMatch[1]}:`,
+          content: numberedMatch[2].trim()
+        });
+      } else {
+        steps.push({
+          label: '',
+          content: numberedMatch[2].trim()
+        });
+      }
+    } else {
+      // If block 0 has no label, but block 1 has Part (b):, block 0 is Part (a):
+      if (i === 0 && rawBlocks.length > 1 && rawBlocks[1].match(/^\s*\(?[bB]\)?/)) {
+        steps.push({
+          label: 'Part (a):',
+          content: block
+        });
+      } else {
+        // Only assign "Step X:" if this is a calculation problem; for theory, keep label empty
+        const shouldAddStepLabel = isCalc && rawBlocks.length > 1 && !block.startsWith('•') && !block.startsWith('-');
+        steps.push({
+          label: shouldAddStepLabel ? `Step ${i + 1}:` : '',
+          content: block
+        });
+      }
+    }
+  }
+
+  return steps;
 }

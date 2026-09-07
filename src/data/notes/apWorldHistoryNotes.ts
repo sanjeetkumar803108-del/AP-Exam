@@ -148,6 +148,14 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
         type: 'monsoon_map',
         description: 'Map of Indian Ocean showing wind arrows reversing directions every six months, dictating sailing schedules and creating merchant settlements in Calicut and Malacca.',
         takeaway: 'Pre-modern trade was fundamentally dictated by environmental cycles; human communities adapted through seasonal residency.'
+      },
+      {
+        id: 'whap_silk_roads_routes',
+        title: 'The Three Major Afro-Eurasian Trade Networks (1200–1450)',
+        subtitle: 'Silk Roads (Overland) vs. Indian Ocean (Maritime) vs. Trans-Saharan (Desert)',
+        type: 'trade_networks_comparison',
+        description: 'Comprehensive side-by-side comparison of routes, luxury vs. bulk commodities, navigational innovations, and cultural diffusion across Eurasia.',
+        takeaway: 'Overland networks prioritized high-value luxury goods due to transport costs, whereas maritime shipping carried bulk staples facilitated by monsoon rhythms.'
       }
     ],
     commonTraps: [
@@ -474,6 +482,14 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
         type: 'modernization_flow',
         description: 'Flowchart showing Japan abolishing samurai feudalism, sending envoys abroad (Iwakura Mission), building railroads and modern navy, defeating Russia in 1905.',
         takeaway: 'Japan demonstrated that adopting Western technology and industrialization could beat Western imperial powers at their own game.'
+      },
+      {
+        id: 'scramble_for_africa_map',
+        title: 'The Scramble for Africa & Colonial Partition (1884–1885)',
+        subtitle: 'Berlin Conference "Effective Occupation" vs. African Anti-Colonial Resistance',
+        type: 'scramble_for_africa_map',
+        description: 'Visual map analyzing the Berlin Conference partition, King Leopold II’s Congo Free State, and Emperor Menelik II’s historic victory at the Battle of Adwa (1896) preserving Ethiopian independence.',
+        takeaway: 'European powers carved up 90% of Africa by 1914 using artificial boundaries, while Ethiopia successfully defended its sovereignty through modernization and modern military firepower.'
       }
     ],
     commonTraps: [

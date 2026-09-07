@@ -622,9 +622,6 @@ function ToolsDashboard({
                 <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
                   AP Trap Radar™
                 </h2>
-                <span className="text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-500 to-rose-500 text-white px-2 py-0.5 rounded-full shadow-xs">
-                  NEW • EXCLUSIVE 🔥
-                </span>
               </div>
               <p className="text-xs font-semibold text-amber-600 mt-0.5">
                 Master College Board Trick Options & Distractor Traps

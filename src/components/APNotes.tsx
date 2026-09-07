@@ -15,10 +15,13 @@ import {
   APNoteWorkedExample, 
   APNoteDiagram 
 } from '../data/notes';
+import { renderToStaticMarkup } from 'react-dom/server';
 import GlobalMarkdown from './GlobalMarkdown';
+import { renderCalculusDiagramSvg } from './CalculusDiagramSvg';
 import jsPDF from 'jspdf';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
 import { sanitizePdfText, formatLatexToAscii } from '../utils/pdfSanitizer';
+import { rasterizeSvgToDataUrl } from '../utils/svgHelper';
 import SafePdfViewer from './SafePdfViewer';
 import { saveOfflineNote } from '../utils/offlineNotesStorage';
 import APCalculusABStitchNotes from './APCalculusABStitchNotes';
@@ -404,10 +407,12 @@ function DiagramFullPageModal({
         <div className="p-5 sm:p-6 overflow-y-auto space-y-5">
           {/* High-Resolution Vector Graphic Canvas */}
           <div className="bg-gradient-to-b from-zinc-50 to-indigo-50/25 rounded-2xl p-6 sm:p-8 border border-zinc-200/80 flex flex-col items-center justify-center">
-            <div className="w-full flex justify-center">
-              <svg viewBox="0 0 300 160" className="w-full max-w-xl sm:max-w-2xl h-64 sm:h-80">
-                {renderDiagramSvgContent(diagram.type)}
-              </svg>
+            <div className="w-full flex justify-center [&>svg]:!w-full [&>svg]:!max-w-xl sm:[&>svg]:!max-w-2xl [&>svg]:!h-64 sm:[&>svg]:!h-80 [&>svg]:!border-none [&>svg]:!shadow-none [&>svg]:!rounded-none">
+              {renderCalculusDiagramSvg(diagram.type) || renderCalculusDiagramSvg(diagram.id) || (
+                <svg viewBox="0 0 300 160" className="w-full max-w-xl sm:max-w-2xl h-64 sm:h-80">
+                  {renderDiagramSvgContent(diagram.type)}
+                </svg>
+              )}
             </div>
             <div className="text-[11px] text-zinc-500 font-semibold text-center mt-3">
               High-Precision Vector Coordinate Graphic (College Board CED Standard)
@@ -512,7 +517,7 @@ export default function APNotes({ onBack }: APNotesProps) {
   };
 
   // Reusable PDF Generator Document Builder with Crystal-Clear Math Formatting & Dynamic Subject Branding
-  const buildUnitPdfDocument = (unit: APUnitNote, subject: APSubjectNoteEntry = currentSubjectEntry): jsPDF => {
+  const buildUnitPdfDocument = async (unit: APUnitNote, subject: APSubjectNoteEntry = currentSubjectEntry): Promise<jsPDF> => {
     const doc = new jsPDF({
       unit: 'pt',
       format: 'a4',
@@ -1058,13 +1063,19 @@ export default function APNotes({ onBack }: APNotesProps) {
       currentY += SEC_GAP - ITEM_GAP;
     }
 
-    // Helper: Draw Direct High-Resolution Coordinate Vector Graphs in PDF
-    const drawPdfVectorGraph = (diagram: APNoteDiagram) => {
-      checkPageBreak(110);
-
+    // Helper: Async SVG-rasterized diagram renderer — works for ALL subjects (Calc, Bio, Chem, Physics, etc.)
+    const drawPdfVectorGraph = async (diagram: APNoteDiagram) => {
       const graphBoxW = contentWidth;
-      const graphBoxH = 106;
-      const labelX = margin + 200; // right-side label column X
+      const titleHeight = diagram.subtitle ? 28 : 20;
+      const imgH = 220; // Expanded height for all diagram graphs (was squished at 98pt)
+      
+      const takeLines = diagram.takeaway
+        ? doc.splitTextToSize(sanitizePdfText(diagram.takeaway), graphBoxW - 85)
+        : [];
+      const takeBannerH = diagram.takeaway ? Math.max(26, takeLines.length * 10.5 + 8) : 0;
+      const graphBoxH = titleHeight + imgH + (diagram.takeaway ? takeBannerH + 16 : 14);
+
+      checkPageBreak(graphBoxH + 12);
 
       // Background card with subtle shadow effect (double rect trick)
       doc.setFillColor(248, 250, 252);
@@ -1074,22 +1085,8 @@ export default function APNotes({ onBack }: APNotesProps) {
       doc.setLineWidth(0.75);
       doc.roundedRect(margin, currentY, graphBoxW, graphBoxH, 4, 4, 'FD');
 
-      // Color accent bar on left edge
-      const accentColors: Record<string, number[]> = {
-        hole_discontinuity:        [99, 102, 241],
-        jump_discontinuity:        [37, 99, 235],
-        vertical_asymptote:        [220, 38, 38],
-        corner_not_differentiable: [5, 150, 105],
-        ivt_guarantee:             [79, 70, 229],
-        tangent_secant_line:       [14, 165, 233],
-        derivative_graphs_f_fprime:[139, 92, 246],
-        concavity_inflection:      [236, 72, 153],
-        riemann_sum_rectangles:    [16, 185, 129],
-        slope_field_solution:      [245, 158, 11],
-        area_between_curves_disc:  [99, 102, 241],
-      };
-      const ac = accentColors[diagram.type] || [100, 116, 139];
-      doc.setFillColor(ac[0], ac[1], ac[2]);
+      // Indigo accent bar on left edge (universal for all subjects)
+      doc.setFillColor(99, 102, 241);
       doc.roundedRect(margin, currentY, 4, graphBoxH, 2, 2, 'F');
 
       // Title
@@ -1099,392 +1096,95 @@ export default function APNotes({ onBack }: APNotesProps) {
       doc.text(`FIG: ${sanitizePdfText(diagram.title)}`, margin + 10, currentY + 13);
 
       // Subtitle
-      doc.setFont('helvetica', 'italic');
-      doc.setFontSize(7);
-      doc.setTextColor(100, 116, 139);
-      doc.text(sanitizePdfText(diagram.subtitle), margin + 10, currentY + 22);
-
-      // Coordinate Graph Area
-      const gx = margin + 10;
-      const gy = currentY + 28;
-      const gw = 184;
-      const gh = 50;
-
-      // Grid background
-      doc.setFillColor(250, 250, 255);
-      doc.rect(gx, gy, gw, gh, 'F');
-
-      // Axis lines
-      doc.setDrawColor(180, 192, 210);
-      doc.setLineWidth(1.2);
-      doc.line(gx, gy + gh - 10, gx + gw, gy + gh - 10); // x-axis
-      doc.line(gx + 22, gy, gx + 22, gy + gh);            // y-axis
-
-      // Axis arrowheads
-      doc.setFillColor(180, 192, 210);
-      doc.triangle(gx + gw, gy + gh - 10, gx + gw - 4, gy + gh - 13, gx + gw - 4, gy + gh - 7, 'F');
-      doc.triangle(gx + 22, gy, gx + 19, gy + 5, gx + 25, gy + 5, 'F');
-
-      // Axis labels
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(6.5);
-      doc.setTextColor(148, 163, 184);
-      doc.text('x', gx + gw - 2, gy + gh - 2);
-      doc.text('y', gx + 24, gy + 4);
-
-      if (diagram.type === 'hole_discontinuity') {
-        doc.setDrawColor(99, 102, 241);
-        doc.setLineWidth(2);
-        doc.line(gx + 26, gy + 34, gx + 88, gy + 18);
-        doc.line(gx + 93, gy + 16, gx + 166, gy + 7);
-        // Open circle (hole at limit value)
-        doc.setDrawColor(99, 102, 241);
-        doc.setFillColor(255, 255, 255);
-        doc.circle(gx + 90, gy + 17, 3, 'FD');
-        // Defined point at different y-value
-        doc.setFillColor(220, 38, 38);
-        doc.circle(gx + 90, gy + 32, 2.5, 'F');
-        // Labels on graph
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(6.5);
-        doc.setTextColor(99, 102, 241);
-        doc.text('L', gx + 2, gy + 19);
-        doc.setTextColor(220, 38, 38);
-        doc.text('f(c)', gx + 2, gy + 34);
+      if (diagram.subtitle) {
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(7);
         doc.setTextColor(100, 116, 139);
-        doc.text('c', gx + 88, gy + gh - 1);
-        // Right-side legend
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7);
-        doc.setTextColor(99, 102, 241);
-        doc.text('lim f(x) = L  (Exists)', labelX, currentY + 36);
-        doc.setTextColor(220, 38, 38);
-        doc.text('f(c) != L  (Removable Hole)', labelX, currentY + 46);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(6.5);
-        doc.setTextColor(71, 85, 105);
-        const tw1 = doc.splitTextToSize('Takeaway: ' + sanitizePdfText(diagram.takeaway), contentWidth - (labelX - margin) - 6);
-        doc.text(tw1, labelX, currentY + 58);
+        doc.text(sanitizePdfText(diagram.subtitle), margin + 10, currentY + 22);
+      }
 
-      } else if (diagram.type === 'jump_discontinuity') {
-        doc.setDrawColor(37, 99, 235);
-        doc.setLineWidth(2);
-        doc.line(gx + 26, gy + 34, gx + 90, gy + 28);
-        doc.setFillColor(37, 99, 235);
-        doc.circle(gx + 90, gy + 28, 2.5, 'F');
-        doc.line(gx + 90, gy + 14, gx + 166, gy + 7);
-        doc.setFillColor(255, 255, 255);
-        doc.setDrawColor(37, 99, 235);
-        doc.circle(gx + 90, gy + 14, 3, 'FD');
-        // Labels
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(6.5);
-        doc.setTextColor(37, 99, 235);
-        doc.text('L1', gx + 2, gy + 30);
-        doc.text('L2', gx + 2, gy + 16);
-        doc.setTextColor(100, 116, 139);
-        doc.text('c', gx + 88, gy + gh - 1);
-        // Right-side legend
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7);
-        doc.setTextColor(220, 38, 38);
-        doc.text('lim(x->c-) = L1 != L2 = lim(x->c+)', labelX, currentY + 36);
-        doc.text('Two-Sided Limit: DNE (Jump)', labelX, currentY + 46);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(6.5);
-        doc.setTextColor(71, 85, 105);
-        const tw2 = doc.splitTextToSize('Takeaway: ' + sanitizePdfText(diagram.takeaway), contentWidth - (labelX - margin) - 6);
-        doc.text(tw2, labelX, currentY + 58);
+      // ── Rasterize the SVG from CalculusDiagramSvg (works for ALL subjects) ──
+      const imgY = currentY + titleHeight + 4;
+      try {
+        const svgNode = renderCalculusDiagramSvg(diagram.type) || renderCalculusDiagramSvg(diagram.id);
+        if (svgNode) {
+          const svgString = renderToStaticMarkup(svgNode as React.ReactElement);
+          
+          // Determine native aspect ratio from SVG viewBox if present
+          let svgAspect = 300 / 160; // default 1.875
+          const vbMatch = svgString.match(/viewBox=['"]\s*([-\d.]+)[,\s]+([-\d.]+)[,\s]+([-\d.]+)[,\s]+([-\d.]+)\s*['"]/i);
+          if (vbMatch) {
+            const vbW = parseFloat(vbMatch[3]);
+            const vbH = parseFloat(vbMatch[4]);
+            if (vbW > 0 && vbH > 0) {
+              svgAspect = vbW / vbH;
+            }
+          }
 
-      } else if (diagram.type === 'vertical_asymptote') {
-        // Dashed VA line at x = gx+90
-        doc.setDrawColor(220, 38, 38);
-        doc.setLineWidth(0.8);
-        for (let dy = gy + 2; dy < gy + gh - 2; dy += 5) {
-          doc.line(gx + 90, dy, gx + 90, dy + 2.5);
-        }
-        // Curve left branch shooting to -inf
-        doc.setDrawColor(124, 58, 237);
-        doc.setLineWidth(2);
-        doc.line(gx + 26, gy + 26, gx + 86, gy + gh - 6);
-        // Curve right branch shooting to +inf
-        doc.line(gx + 94, gy + 5, gx + 166, gy + 28);
-        // VA label
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(6.5);
-        doc.setTextColor(220, 38, 38);
-        doc.text('x=c', gx + 92, gy + gh - 2);
-        // Right-side legend
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7);
-        doc.setTextColor(220, 38, 38);
-        doc.text('VA: x = c  (Vertical Asymptote)', labelX, currentY + 36);
-        doc.setTextColor(124, 58, 237);
-        doc.text('lim f(x) = +/- infinity  (DNE)', labelX, currentY + 46);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(6.5);
-        doc.setTextColor(71, 85, 105);
-        const tw3 = doc.splitTextToSize('Takeaway: ' + sanitizePdfText(diagram.takeaway), contentWidth - (labelX - margin) - 6);
-        doc.text(tw3, labelX, currentY + 58);
+          const maxImgW = graphBoxW - 20;
+          let renderImgW = Math.round(imgH * svgAspect);
+          let renderImgH = imgH;
+          if (renderImgW > maxImgW) {
+            renderImgW = maxImgW;
+            renderImgH = Math.round(renderImgW / svgAspect);
+          }
+          const imgX = margin + (graphBoxW - renderImgW) / 2;
 
-      } else if (diagram.type === 'corner_not_differentiable') {
-        doc.setDrawColor(5, 150, 105);
-        doc.setLineWidth(2);
-        doc.line(gx + 30, gy + 12, gx + 90, gy + 38);
-        doc.line(gx + 90, gy + 38, gx + 158, gy + 12);
-        doc.setFillColor(5, 150, 105);
-        doc.circle(gx + 90, gy + 38, 3, 'F');
-        // Slope labels
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(6.5);
-        doc.setTextColor(5, 150, 105);
-        doc.text('m=-1', gx + 32, gy + 30);
-        doc.text('m=+1', gx + 120, gy + 30);
-        doc.setTextColor(100, 116, 139);
-        doc.text('corner', gx + 82, gy + gh - 2);
-        // Right-side legend
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7);
-        doc.setTextColor(5, 150, 105);
-        doc.text('f(x) is Continuous at corner', labelX, currentY + 36);
-        doc.setTextColor(220, 38, 38);
-        doc.text("f'(0) DNE  (Left slope != Right slope)", labelX, currentY + 46);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(6.5);
-        doc.setTextColor(71, 85, 105);
-        const tw4 = doc.splitTextToSize('Takeaway: ' + sanitizePdfText(diagram.takeaway), contentWidth - (labelX - margin) - 6);
-        doc.text(tw4, labelX, currentY + 58);
+          // High-DPI rasterization matching diagram dimensions
+          const rasterW = Math.max(960, Math.round(renderImgW * 2.5));
+          const rasterH = Math.max(520, Math.round(renderImgH * 2.5));
+          const imgData = await rasterizeSvgToDataUrl(svgString, rasterW, rasterH, '#ffffff', false);
 
-      } else if (diagram.type === 'ivt_guarantee') {
-        // IVT Guarantee
-        // Continuous curve from (a, f(a)) to (b, f(b))
-        doc.setDrawColor(79, 70, 229);
-        doc.setLineWidth(2);
-        doc.line(gx + 28, gy + 38, gx + 80, gy + 22);
-        doc.line(gx + 80, gy + 22, gx + 140, gy + 8);
-        // Points a and b
-        doc.setFillColor(79, 70, 229);
-        doc.circle(gx + 28, gy + 38, 2.5, 'F');
-        doc.circle(gx + 140, gy + 8, 2.5, 'F');
-        // Horizontal dashed line y = d
-        doc.setDrawColor(245, 158, 11);
-        doc.setLineWidth(0.8);
-        for (let dx = gx + 4; dx < gx + gw - 4; dx += 5) {
-          doc.line(dx, gy + 22, dx + 2.5, gy + 22);
-        }
-        // c point where f(c) = d
-        doc.setFillColor(22, 163, 74);
-        doc.circle(gx + 80, gy + 22, 3, 'F');
-        // Dashed vertical drop from c
-        doc.setDrawColor(22, 163, 74);
-        doc.setLineWidth(0.6);
-        for (let dy = gy + 25; dy < gy + gh - 10; dy += 4) {
-          doc.line(gx + 80, dy, gx + 80, dy + 2);
-        }
-        // Labels
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(6.5);
-        doc.setTextColor(79, 70, 229);
-        doc.text('f(a)', gx + 2, gy + 40);
-        doc.text('f(b)', gx + 2, gy + 10);
-        doc.setTextColor(245, 158, 11);
-        doc.text('d', gx + 2, gy + 24);
-        doc.setTextColor(22, 163, 74);
-        doc.text('f(c)=d', gx + 82, gy + 20);
-        doc.setTextColor(100, 116, 139);
-        doc.text('a', gx + 25, gy + gh - 2);
-        doc.text('c', gx + 78, gy + gh - 2);
-        doc.text('b', gx + 138, gy + gh - 2);
-        // Right-side legend
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7);
-        doc.setTextColor(79, 70, 229);
-        doc.text('IVT: f continuous on [a, b]', labelX, currentY + 36);
-        doc.setTextColor(22, 163, 74);
-        doc.text('Exists c in (a,b) s.t. f(c) = d', labelX, currentY + 46);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(6.5);
-        doc.setTextColor(71, 85, 105);
-        const tw5 = doc.splitTextToSize('Takeaway: ' + sanitizePdfText(diagram.takeaway), contentWidth - (labelX - margin) - 6);
-        doc.text(tw5, labelX, currentY + 58);
-
-      } else if (diagram.type === 'tangent_secant_line') {
-        doc.setDrawColor(37, 99, 235);
-        doc.setLineWidth(2);
-        doc.line(gx + 30, gy + 42, gx + 90, gy + 32);
-        doc.line(gx + 90, gy + 32, gx + 160, gy + 10);
-        doc.setDrawColor(245, 158, 11);
-        doc.setLineWidth(1);
-        for (let dx = gx + 40; dx < gx + 155; dx += 6) {
-          doc.line(dx, gy + 38 - (dx - (gx + 40)) * 0.25, dx + 3, gy + 38 - (dx - (gx + 40)) * 0.25);
-        }
-        doc.setDrawColor(124, 58, 237);
-        doc.setLineWidth(1.8);
-        doc.line(gx + 50, gy + 42, gx + 130, gy + 22);
-        doc.setFillColor(124, 58, 237);
-        doc.circle(gx + 90, gy + 32, 3, 'F');
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7);
-        doc.setTextColor(124, 58, 237);
-        doc.text('Tangent Slope: f\'(x) = lim(h->0) [Δy/h]', labelX, currentY + 36);
-        doc.setTextColor(245, 158, 11);
-        doc.text('Secant Slope: [f(x+h) - f(x)] / h', labelX, currentY + 46);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(6.5);
-        doc.setTextColor(71, 85, 105);
-        const twT = doc.splitTextToSize('Takeaway: ' + sanitizePdfText(diagram.takeaway), contentWidth - (labelX - margin) - 6);
-        doc.text(twT, labelX, currentY + 58);
-
-      } else if (diagram.type === 'derivative_graphs_f_fprime') {
-        doc.setDrawColor(37, 99, 235);
-        doc.setLineWidth(2);
-        doc.line(gx + 30, gy + 35, gx + 70, gy + 12);
-        doc.line(gx + 70, gy + 12, gx + 115, gy + 38);
-        doc.line(gx + 115, gy + 38, gx + 160, gy + 16);
-        doc.setDrawColor(220, 38, 38);
-        doc.setLineWidth(1.5);
-        for (let dx = gx + 35; dx < gx + 155; dx += 5) {
-          doc.line(dx, gy + 25 - (dx - (gx + 92)) * 0.3, dx + 2.5, gy + 25 - (dx - (gx + 92)) * 0.3);
-        }
-        doc.setFillColor(220, 38, 38);
-        doc.circle(gx + 70, gy + 40, 2.5, 'F');
-        doc.circle(gx + 115, gy + 40, 2.5, 'F');
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7);
-        doc.setTextColor(37, 99, 235);
-        doc.text('f(x) Extrema: Peaks & Valleys', labelX, currentY + 36);
-        doc.setTextColor(220, 38, 38);
-        doc.text('f\'(x) = 0 and changes sign', labelX, currentY + 46);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(6.5);
-        doc.setTextColor(71, 85, 105);
-        const twD = doc.splitTextToSize('Takeaway: ' + sanitizePdfText(diagram.takeaway), contentWidth - (labelX - margin) - 6);
-        doc.text(twD, labelX, currentY + 58);
-
-      } else if (diagram.type === 'concavity_inflection') {
-        doc.setDrawColor(219, 39, 119);
-        doc.setLineWidth(2);
-        doc.line(gx + 30, gy + 40, gx + 95, gy + 25);
-        doc.line(gx + 95, gy + 25, gx + 160, gy + 10);
-        doc.setFillColor(124, 58, 237);
-        doc.circle(gx + 95, gy + 25, 3.5, 'F');
-        doc.setDrawColor(124, 58, 237);
-        doc.setLineWidth(1);
-        doc.line(gx + 60, gy + 33, gx + 130, gy + 17);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7);
-        doc.setTextColor(219, 39, 119);
-        doc.text('Inflection Point: f\'\'(x) changes sign', labelX, currentY + 36);
-        doc.setTextColor(124, 58, 237);
-        doc.text('Tangent crosses THROUGH curve', labelX, currentY + 46);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(6.5);
-        doc.setTextColor(71, 85, 105);
-        const twC = doc.splitTextToSize('Takeaway: ' + sanitizePdfText(diagram.takeaway), contentWidth - (labelX - margin) - 6);
-        doc.text(twC, labelX, currentY + 58);
-
-      } else if (diagram.type === 'riemann_sum_rectangles') {
-        doc.setFillColor(220, 252, 231);
-        doc.setDrawColor(22, 163, 74);
-        doc.setLineWidth(0.8);
-        doc.rect(gx + 40, gy + 28, 25, 12, 'FD');
-        doc.rect(gx + 65, gy + 22, 25, 18, 'FD');
-        doc.rect(gx + 90, gy + 15, 25, 25, 'FD');
-        doc.rect(gx + 115, gy + 8, 25, 32, 'FD');
-        doc.setDrawColor(37, 99, 235);
-        doc.setLineWidth(2);
-        doc.line(gx + 35, gy + 32, gx + 145, gy + 6);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7);
-        doc.setTextColor(22, 163, 74);
-        doc.text('Riemann Sum: Area ≈ Σ f(xᵢ) · Δx', labelX, currentY + 36);
-        doc.setTextColor(37, 99, 235);
-        doc.text('Definite Integral: Exact = ∫ f(x) dx', labelX, currentY + 46);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(6.5);
-        doc.setTextColor(71, 85, 105);
-        const twR = doc.splitTextToSize('Takeaway: ' + sanitizePdfText(diagram.takeaway), contentWidth - (labelX - margin) - 6);
-        doc.text(twR, labelX, currentY + 58);
-
-      } else if (diagram.type === 'slope_field_solution') {
-        doc.setDrawColor(148, 163, 184);
-        doc.setLineWidth(1);
-        for (let ix = gx + 35; ix <= gx + 150; ix += 20) {
-          for (let iy = gy + 8; iy <= gy + 38; iy += 10) {
-            const slope = (ix - (gx + 80)) * 0.05;
-            doc.line(ix - 5, iy + 5 * slope, ix + 5, iy - 5 * slope);
+          if (imgData) {
+            doc.addImage(imgData, 'PNG', imgX, imgY, renderImgW, renderImgH);
           }
         }
-        doc.setDrawColor(79, 70, 229);
-        doc.setLineWidth(2);
-        doc.line(gx + 35, gy + 38, gx + 85, gy + 22);
-        doc.line(gx + 85, gy + 22, gx + 145, gy + 8);
-        doc.setFillColor(220, 38, 38);
-        doc.circle(gx + 85, gy + 22, 3, 'F');
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7);
-        doc.setTextColor(79, 70, 229);
-        doc.text('Particular Solution Curve', labelX, currentY + 36);
-        doc.setTextColor(220, 38, 38);
-        doc.text('Passes through initial point (x₀, y₀)', labelX, currentY + 46);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(6.5);
-        doc.setTextColor(71, 85, 105);
-        const twS = doc.splitTextToSize('Takeaway: ' + sanitizePdfText(diagram.takeaway), contentWidth - (labelX - margin) - 6);
-        doc.text(twS, labelX, currentY + 58);
-
-      } else if (diagram.type === 'area_between_curves_disc') {
-        doc.setDrawColor(79, 70, 229);
-        doc.setLineWidth(2);
-        doc.line(gx + 35, gy + 38, gx + 145, gy + 12);
-        doc.setDrawColor(5, 150, 105);
-        doc.setLineWidth(1.8);
-        doc.line(gx + 35, gy + 38, gx + 145, gy + 32);
-        doc.setFillColor(254, 215, 170);
-        doc.setDrawColor(245, 158, 11);
-        doc.setLineWidth(1);
-        doc.rect(gx + 90, gy + 21, 10, 11, 'FD');
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7);
-        doc.setTextColor(79, 70, 229);
-        doc.text('Area = ∫ [f(x) - g(x)] dx', labelX, currentY + 36);
-        doc.setTextColor(245, 158, 11);
-        doc.text('Disk Volume = π ∫ [R(x)]² dx', labelX, currentY + 46);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(6.5);
-        doc.setTextColor(71, 85, 105);
-        const twA = doc.splitTextToSize('Takeaway: ' + sanitizePdfText(diagram.takeaway), contentWidth - (labelX - margin) - 6);
-        doc.text(twA, labelX, currentY + 58);
+      } catch (err) {
+        console.warn('PDF diagram rasterization failed for type:', diagram.type, err);
+        // Graceful fallback: draw a placeholder box
+        doc.setFillColor(245, 245, 250);
+        doc.setDrawColor(203, 213, 225);
+        doc.rect(margin + 8, imgY, graphBoxW - 16, imgH, 'FD');
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.text('[Diagram unavailable in this export]', margin + graphBoxW / 2, imgY + imgH / 2, { align: 'center' });
       }
 
       // Takeaway banner at bottom of card
-      const takeBannerY = currentY + graphBoxH - 18;
-      doc.setFillColor(245, 243, 255);
-      doc.rect(margin + 1, takeBannerY, graphBoxW - 2, 17, 'F');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7);
-      doc.setTextColor(109, 40, 217);
-      doc.text('AP Takeaway: ', margin + 8, takeBannerY + 11);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(67, 20, 180);
-      const takeLines = doc.splitTextToSize(sanitizePdfText(diagram.takeaway), contentWidth - 80);
-      doc.text(takeLines[0] || '', margin + 68, takeBannerY + 11);
+      if (diagram.takeaway && takeBannerH > 0) {
+        const takeBannerY = currentY + graphBoxH - takeBannerH - 6;
+        doc.setFillColor(245, 243, 255);
+        doc.roundedRect(margin + 2, takeBannerY, graphBoxW - 4, takeBannerH, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.setTextColor(109, 40, 217);
+        doc.text('AP Takeaway: ', margin + 8, takeBannerY + 11);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(67, 20, 180);
+        if (takeLines.length > 0) {
+          doc.text(takeLines[0] || '', margin + 70, takeBannerY + 11);
+          for (let ti = 1; ti < takeLines.length; ti++) {
+            doc.text(takeLines[ti], margin + 8, takeBannerY + 11 + (ti * 9.5));
+          }
+        }
+      }
 
-      currentY += graphBoxH + 10;
+      currentY += graphBoxH + 12;
     };
 
-    // Section 4: Visual Graphs & Coordinate Figures (In PDF!)
+    // Section 4: Visual Graphs & Coordinate Figures (In PDF!) — async SVG rasterization
     if (unit.diagrams && unit.diagrams.length > 0) {
       checkPageBreak(40);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11);
       doc.setTextColor(67, 56, 202); // Indigo-700
-      doc.text('4. Visual Graphs & Discontinuity Coordinate Figures', margin, currentY);
+      doc.text('4. Visual Graphs & Coordinate Figures', margin, currentY);
       currentY += 16;
 
-      unit.diagrams.forEach(diag => {
-        drawPdfVectorGraph(diag);
-      });
+      for (const diag of unit.diagrams) {
+        await drawPdfVectorGraph(diag);
+      }
     }
 
     // ─── Section 5: Worked Examples ───────────────────────────────────────────
@@ -1677,7 +1377,7 @@ export default function APNotes({ onBack }: APNotesProps) {
     setIsExporting(true);
 
     try {
-      const doc = buildUnitPdfDocument(unitToExport, subjectToExport);
+      const doc = await buildUnitPdfDocument(unitToExport, subjectToExport);
       const safeSubj = subjectToExport.shortCode.replace(/\s+/g, '_');
       const safeTitle = sanitizePdfText(unitToExport.title).replace(/[^a-zA-Z0-9]/g, '_');
       const fileName = `${safeSubj}_Unit_${unitToExport.unitNumber}_${safeTitle}_HelpYou_AI.pdf`;
@@ -1722,7 +1422,7 @@ export default function APNotes({ onBack }: APNotesProps) {
     setIsSharing(true);
 
     try {
-      const doc = buildUnitPdfDocument(unitToShare, subjectToShare);
+      const doc = await buildUnitPdfDocument(unitToShare, subjectToShare);
       const safeSubj = subjectToShare.shortCode.replace(/\s+/g, '_');
       const fileName = `${safeSubj}_Unit_${unitToShare.unitNumber}_Notes.pdf`;
       const pdfBlob = doc.output('blob');
@@ -1763,20 +1463,23 @@ export default function APNotes({ onBack }: APNotesProps) {
 
     if (step === 'reading' && currentUnit) {
       setIsGeneratingPdf(true);
-      try {
-        const doc = buildUnitPdfDocument(currentUnit, currentSubjectEntry);
-        const blob = doc.output('blob');
-        if (!isCancelled) {
-          url = URL.createObjectURL(blob);
-          setPdfBlobUrl(url);
-          setIsGeneratingPdf(false);
+      const run = async () => {
+        try {
+          const doc = await buildUnitPdfDocument(currentUnit, currentSubjectEntry);
+          const blob = doc.output('blob');
+          if (!isCancelled) {
+            url = URL.createObjectURL(blob);
+            setPdfBlobUrl(url);
+            setIsGeneratingPdf(false);
+          }
+        } catch (err) {
+          console.error("Failed to compile unit PDF document:", err);
+          if (!isCancelled) {
+            setIsGeneratingPdf(false);
+          }
         }
-      } catch (err) {
-        console.error("Failed to compile unit PDF document:", err);
-        if (!isCancelled) {
-          setIsGeneratingPdf(false);
-        }
-      }
+      };
+      run();
     }
 
     return () => {

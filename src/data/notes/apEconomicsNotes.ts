@@ -2,13 +2,99 @@ import { APUnitNote } from './types';
 
 export const AP_ECONOMICS_NOTES: APUnitNote[] = [
   // ==========================================
-  // UNIT 1: MICRO 1: SUPPLY, DEMAND & ELASTICITY
+  // UNIT 1: BASIC ECONOMIC CONCEPTS, PPC & TRADE
   // ==========================================
   {
     unitId: 'u1',
     unitNumber: 1,
-    title: 'Micro 1: Supply, Demand & Elasticity',
-    examWeight: '15%–20% of AP Exam',
+    title: 'Basic Economic Concepts, PPC & Comparative Advantage',
+    examWeight: '8%–12% of AP Exam (Micro & Macro Foundations)',
+    bigIdea: 'Economics is the study of scarcity and choice. Society faces trade-offs modeled by the Production Possibilities Curve (PPC), and gains from trade are maximized through comparative advantage.',
+    keyTheorems: [
+      {
+        name: 'The Law of Increasing Opportunity Cost and Concave PPC',
+        conditions: 'Resources are not perfectly adaptable to the production of both goods.',
+        conclusion: 'As the production of one good increases, the opportunity cost of producing additional units rises. Geometrically, this gives the Production Possibilities Curve a bowed-out (concave to origin) shape.',
+        apTip: 'If resources are perfectly adaptable (e.g. producing pizza vs. calzones), the PPC is a STRAIGHT LINE with constant opportunity costs!'
+      },
+      {
+        name: 'Comparative Advantage and the Gains from Trade',
+        conditions: 'Two nations or producers producing two distinct goods.',
+        conclusion: 'A producer has an Absolute Advantage if they can produce more output with the same resources. A producer has a Comparative Advantage if they can produce a good at a LOWER opportunity cost. Mutually beneficial trade occurs when the terms of trade fall between the two producers’ opportunity costs.',
+        apTip: 'Mnemonic for calculating opportunity cost: For OUTPUT problems ("OOO" = Output: Other goes Over). For INPUT/Time problems ("IOU" = Input: Other goes Under).'
+      }
+    ],
+    formulas: [
+      {
+        name: 'Opportunity Cost Ratio (Output Method)',
+        latex: '\\text{Opportunity Cost of Good A} = \\frac{\\text{Quantity of Good B forgone}}{\\text{Quantity of Good A produced}} \\quad (\\text{"Other Over"})',
+        explanation: 'If Nation 1 produces 20 Cars or 60 Planes, 1 Car costs $60/20 = 3$ Planes.'
+      },
+      {
+        name: 'Terms of Trade Range',
+        latex: '\\text{Seller\'s Opportunity Cost} < \\text{Terms of Trade} < \\text{Buyer\'s Opportunity Cost}',
+        explanation: 'Both parties benefit only when the exchange price lies strictly between their domestic opportunity costs.'
+      }
+    ],
+    sections: [
+      {
+        heading: '1. Output vs. Input Methods and Comparative Advantage Matrix',
+        content: `Decision matrix for solving trade questions on AP Micro & Macro exams:
+
+| Metric / Method | Definition & Data Given | Opportunity Cost Formula | Mnemonic | How to Identify Advantage |
+| :--- | :--- | :--- | :--- | :--- |
+| **Output Method** | Data is in **amount of goods produced** (e.g. tons of wheat, cars built per day) | $\\text{Cost of A} = \\frac{\\text{Output B}}{\\text{Output A}}$ | **OOO** (Output: Other goes Over) | **Higher number** = Absolute Advantage; **Lower Cost** = Comparative Advantage |
+| **Input Method** | Data is in **resources/time required** (e.g. hours to make 1 chair, acres of land) | $\\text{Cost of A} = \\frac{\\text{Input A}}{\\text{Input B}}$ | **IOU** (Input: Other goes Under) | **Lower number** = Absolute Advantage (faster/fewer resources); **Lower Cost** = Comparative Advantage |
+| **Terms of Trade** | The mutually agreed exchange rate between two goods | Must be strictly between the two domestic opportunity costs | Between Cost A & Cost B | Both nations consume **beyond** their domestic PPC! |`
+      }
+    ],
+    workedExamples: [
+      {
+        title: 'Determining Comparative Advantage from Output Data',
+        topicRef: 'CED Micro 1.3 / Macro 1.3 Comparative Advantage and Trade',
+        question: 'In one day, Country X can produce either 40 bushels of Corn or 20 yards of Cloth. Country Y can produce either 30 bushels of Corn or 30 yards of Cloth. (a) Which country has the comparative advantage in Cloth? (b) Suggest a mutually beneficial term of trade for 1 yard of Cloth.',
+        solutionSteps: [
+          'Step 1: Identify problem type: Output problem (number of goods produced per day) $\\implies$ Use OOO (Other goes Over).',
+          'Step 2: Calculate Country X opportunity costs: 1 Cloth costs $\\frac{40}{20} = 2$ Corn. 1 Corn costs $\\frac{20}{40} = 0.5$ Cloth.',
+          'Step 3: Calculate Country Y opportunity costs: 1 Cloth costs $\\frac{30}{30} = 1$ Corn. 1 Corn costs $\\frac{30}{30} = 1$ Cloth.',
+          'Step 4: Compare costs for Cloth: Country Y gives up 1 Corn; Country X gives up 2 Corn. Country Y has a lower opportunity cost ($1 < 2$) $\\implies$ **Country Y has comparative advantage in Cloth**.',
+          'Step 5: Determine Terms of Trade: Mutually beneficial trade for 1 yard of Cloth must lie between 1 Corn and 2 Corn (e.g. 1.5 bushels of Corn).'
+        ],
+        finalAnswer: '(a) Country Y has the comparative advantage in Cloth. (b) 1 yard of Cloth for 1.5 bushels of Corn.',
+        apScoringTip: 'Always show the fraction calculations for opportunity costs! College Board requires comparative advantage justifications to reference specific opportunity cost numbers.'
+      }
+    ],
+    diagrams: [
+      {
+        id: 'econ_ppc_frontier',
+        title: 'Production Possibilities Curve: Scarcity & Economic Growth',
+        subtitle: 'Bowed-Out Concave Frontier Illustrating Increasing Opportunity Costs',
+        type: 'ppc_frontier_graph',
+        description: 'Bowed-out curve showing efficient points on the curve (A), inefficient points inside (B), and unattainable points outside (C), with an outward shift demonstrating economic growth.',
+        takeaway: 'Concave PPC reflects increasing opportunity costs; technological progress or capital accumulation shifts the PPC outward.'
+      }
+    ],
+    commonTraps: [
+      'Assuming the country with absolute advantage in both goods should produce both. Comparative advantage (lower opportunity cost) dictates specialization, not absolute output!',
+      'Confusing input problems with output problems. If the table gives "Hours required to make 1 unit," it is an INPUT problem—lower numbers are better!',
+      'Believing points outside the PPC can be reached without trade. Points outside the curve can be consumed ONLY through international specialization and trade.'
+    ],
+    cramSheet: [
+      'Bowed-out PPC = Increasing opportunity costs; Straight-line PPC = Constant opportunity costs.',
+      'Output method: OOO (Other Over); Input method: IOU (Other Under).',
+      'Comparative advantage = Lowest opportunity cost. Always specialize in your comparative advantage!',
+      'Terms of Trade must fall between the two countries’ domestic opportunity costs.'
+    ]
+  },
+
+  // ==========================================
+  // UNIT 2: MICRO: SUPPLY, DEMAND, ELASTICITIES & EFFICIENCY
+  // ==========================================
+  {
+    unitId: 'u2',
+    unitNumber: 2,
+    title: 'Micro 2: Supply, Demand, Elasticity & Market Efficiency',
+    examWeight: '15%–20% of Micro AP Exam',
     bigIdea: 'Competitive markets allocate scarce resources through the price mechanism, governed by the laws of supply and demand, consumer/producer surplus, and price elasticities.',
     keyTheorems: [
       {
@@ -44,11 +130,12 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
 | Elasticity Metric | Formula Concept | Coefficient Interpretation | Economic Classification |
 | :--- | :--- | :--- | :--- |
 | **Price Elasticity of Demand ($E_d$)** | $\%\\Delta Q_d / \\%\\Delta P$ | $E_d > 1$ $\\implies$ Elastic | Luxury goods, many substitutes |
-| | | $E_d < 1$ $\\implies$ Inelastic | Necessities, few substitutes |
+| **Price Elasticity of Demand ($E_d$)** | $\%\\Delta Q_d / \\%\\Delta P$ | $E_d < 1$ $\\implies$ Inelastic | Necessities, few substitutes |
+| **Price Elasticity of Demand ($E_d$)** | $\%\\Delta Q_d / \\%\\Delta P$ | $E_d = 1$ $\\implies$ Unit Elastic | Total revenue maximized |
 | **Cross-Price Elasticity ($E_{xy}$)** | $\%\\Delta Q_{d,x} / \\%\\Delta P_y$ | $E_{xy} > 0$ (Positive) | **Substitutes** (e.g. Coke & Pepsi) |
-| | | $E_{xy} < 0$ (Negative) | **Complements** (e.g. Coffee & Creamer) |
+| **Cross-Price Elasticity ($E_{xy}$)** | $\%\\Delta Q_{d,x} / \\%\\Delta P_y$ | $E_{xy} < 0$ (Negative) | **Complements** (e.g. Coffee & Creamer) |
 | **Income Elasticity ($E_i$)** | $\%\\Delta Q_d / \\%\\Delta \\text{Income}$ | $E_i > 0$ (Positive) | **Normal Good** (demand rises with income) |
-| | | $E_i < 0$ (Negative) | **Inferior Good** (e.g. ramen noodles, used cars) |`
+| **Income Elasticity ($E_i$)** | $\%\\Delta Q_d / \\%\\Delta \\text{Income}$ | $E_i < 0$ (Negative) | **Inferior Good** (e.g. ramen noodles, used cars) |`
       }
     ],
     workedExamples: [
@@ -91,13 +178,13 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
   },
 
   // ==========================================
-  // UNIT 2: MICRO 2: PRODUCTION COSTS & PERFECT COMPETITION
+  // UNIT 3: MICRO: PRODUCTION, COSTS & PERFECT COMPETITION
   // ==========================================
   {
-    unitId: 'u2',
-    unitNumber: 2,
-    title: 'Micro 2: Production Costs & Perfect Competition',
-    examWeight: '12%–15% of AP Exam',
+    unitId: 'u3',
+    unitNumber: 3,
+    title: 'Micro 3: Production Costs & Perfect Competition',
+    examWeight: '12%–15% of Micro AP Exam',
     bigIdea: 'Firms minimize costs across short-run and long-run horizons, maximizing profit where $MR = MC$, with perfect competition driving economic profits to zero in the long run.',
     keyTheorems: [
       {
@@ -121,7 +208,7 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
       },
       {
         name: 'Perfect Competition Price Taker Condition',
-        latex: 'P = MR = AR = D \\quad \\text{("Mr. Darp")}',
+        latex: 'P = MR = AR = D \\quad \\text{("Mr. DARP")}',
         explanation: 'In perfect competition, firm faces perfectly horizontal demand curve at market price.'
       }
     ],
@@ -181,13 +268,13 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
   },
 
   // ==========================================
-  // UNIT 3: MICRO 3: IMPERFECT COMPETITION & GAME THEORY
+  // UNIT 4: MICRO: IMPERFECT COMPETITION & GAME THEORY
   // ==========================================
   {
-    unitId: 'u3',
-    unitNumber: 3,
-    title: 'Micro 3: Imperfect Competition & Game Theory',
-    examWeight: '12%–15% of AP Exam',
+    unitId: 'u4',
+    unitNumber: 4,
+    title: 'Micro 4: Imperfect Competition & Game Theory',
+    examWeight: '12%–15% of Micro AP Exam',
     bigIdea: 'Imperfect markets (monopolies, oligopolies, monopolistic competition) restrict output, generate deadweight loss, and engage in strategic game-theoretic interdependence.',
     keyTheorems: [
       {
@@ -271,13 +358,190 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
   },
 
   // ==========================================
-  // UNIT 4: MACRO 1: ECONOMIC INDICATORS (GDP & INFLATION)
+  // UNIT 5: MICRO: FACTOR MARKETS & MONOPSONY
   // ==========================================
   {
-    unitId: 'u4',
-    unitNumber: 4,
-    title: 'Macro 1: Economic Indicators (GDP & Inflation)',
-    examWeight: '12%–16% of AP Exam',
+    unitId: 'u5',
+    unitNumber: 5,
+    title: 'Micro 5: Factor Markets & Monopsony',
+    examWeight: '10%–13% of Micro AP Exam',
+    bigIdea: 'Factor markets determine input prices and employment levels. The demand for labor is a derived demand based on marginal revenue product, and monopsonies exert wage-setting power.',
+    keyTheorems: [
+      {
+        name: 'The Profit-Maximizing Resource Hiring Rule ($MRP = MFC$)',
+        conditions: 'Firms hiring variable resources (labor) in competitive or non-competitive factor markets.',
+        conclusion: 'A firm maximizes profit by employing labor up to the quantity where Marginal Revenue Product equals Marginal Factor Cost ($MRP = MFC$). If $MRP > MFC$, the additional worker adds more to revenue than to cost, so hire them!',
+        apTip: 'In a competitive labor market, $MFC$ equals the market wage ($MFC = Wage$). In a monopsony (single employer), $MFC > Wage$ because paying a higher wage to attract another worker raises wages for all existing workers!'
+      },
+      {
+        name: 'The Least-Cost Rule of Resource Combination',
+        conditions: 'Firms combining multiple inputs (Labor $L$ and Capital $K$) to produce output.',
+        conclusion: 'A firm minimizes total production cost when the marginal product per dollar spent is equalized across all inputs: $\\frac{MP_L}{P_L} = \\frac{MP_K}{P_K}$.',
+        apTip: 'If $\\frac{MP_L}{P_L} > \\frac{MP_K}{P_K}$, the firm gets more output per dollar from labor $\\implies$ Hire MORE labor and LESS capital!'
+      }
+    ],
+    formulas: [
+      {
+        name: 'Marginal Revenue Product (MRP)',
+        latex: 'MRP = MP \\times P = \\frac{\\Delta TR}{\\Delta L}',
+        explanation: 'Where $MP$ is marginal product of labor and $P$ is product price in a competitive output market.'
+      },
+      {
+        name: 'Least-Cost Input Optimization Rule',
+        latex: '\\frac{MP_L}{W} = \\frac{MP_K}{r}',
+        explanation: 'Equalizing the ratio of marginal product to input price for labor (wage $W$) and capital (rental rate $r$).'
+      }
+    ],
+    sections: [
+      {
+        heading: '1. Factor Market Structures: Competitive Labor vs. Monopsony Matrix',
+        content: `Comparing hiring behavior and wage determination across labor market structures:
+
+| Feature | Competitive Labor Market | Monopsony (Single Employer) |
+| :--- | :--- | :--- |
+| **Labor Supply Curve ($S_L$)** | Perfectly elastic horizontal line at market wage ($S_L = MFC = W$) | Upward sloping; firm must raise wages to attract more workers |
+| **Marginal Factor Cost ($MFC$)** | Equal to the wage ($MFC = W$) | **Lies ABOVE the Supply of Labor curve** ($MFC > W$) |
+| **Hiring Quantity Rule** | Hire where $MRP = W$ | Hire where $MRP = MFC$ (yields $Q_m$) |
+| **Wage Paid to Workers** | Set by competitive market ($W_c = MRP$) | Read down from $Q_m$ to the **Supply Curve** ($W_m < MRP$) |
+| **Economic Outcome** | Efficient allocation of labor ($W = MRP$) | **Wage exploitation**: Monopsony under-hires and under-pays workers |`
+      }
+    ],
+    workedExamples: [
+      {
+        title: 'Calculating Optimal Labor Hiring Quantity from Production Data',
+        topicRef: 'CED Micro 5.1 Derived Demand & Marginal Revenue Product',
+        question: 'A competitive firm sells chairs for $10 each in a competitive product market. The market wage is $50 per day. Number of workers and total chairs produced: 0 workers = 0 chairs; 1 = 8; 2 = 15; 3 = 20; 4 = 23; 5 = 24. How many workers should the firm hire to maximize profit?',
+        solutionSteps: [
+          'Step 1: Calculate Marginal Product (MP) for each worker: $MP_1 = 8$, $MP_2 = 7$, $MP_3 = 5$, $MP_4 = 3$, $MP_5 = 1$.',
+          'Step 2: Calculate Marginal Revenue Product ($MRP = MP \\times P = MP \\times \\$10$): Worker 1: $8 \\times 10 = \\$80$; Worker 2: $7 \\times 10 = \\$70$; Worker 3: $5 \\times 10 = \\$50$; Worker 4: $3 \\times 10 = \\$30$; Worker 5: $1 \\times 10 = \\$10$.',
+          'Step 3: Compare $MRP$ to market wage ($W = \\$50$): Worker 1: $\\$80 > \\$50$ (Hire); Worker 2: $\\$70 > \\$50$ (Hire); Worker 3: $\\$50 = \\$50$ (Hire); Worker 4: $\\$30 < \\$50$ (Do NOT hire).',
+          'Step 4: Conclude: Firm should hire exactly **3 workers**.'
+        ],
+        finalAnswer: 'The firm should hire 3 workers, where $MRP = MFC = \\$50$.',
+        apScoringTip: 'Always compare $MRP$ directly to $MFC$ (wage). Never stop at Marginal Product alone!'
+      }
+    ],
+    diagrams: [
+      {
+        id: 'factor_market_graph',
+        title: 'Labor Factor Market: Competitive vs. Monopsony Hiring',
+        subtitle: 'Marginal Revenue Product (MRP) vs. Marginal Factor Cost (MFC)',
+        type: 'factor_market_graph',
+        description: 'Two-panel graph comparing horizontal supply of labor in perfect competition against upward-sloping labor supply with steeper MFC in monopsony, showing wage suppression.',
+        takeaway: 'Competitive firms pay $W = MRP$; Monopsonies restrict hiring to where $MRP = MFC$ and pay lower wage $W_m$ off the supply curve.'
+      }
+    ],
+    commonTraps: [
+      'Confusing product markets with factor markets: In factor markets, INDIVIDUALS supply labor, and FIRMS demand labor!',
+      'Reading monopsony wage off the $MRP$ curve. The monopsonist determines hiring quantity where $MRP = MFC$, but pays the wage off the SUPPLY curve ($S_L$)!',
+      'Thinking derived demand depends on worker happiness. Derived demand depends entirely on consumer demand for the FINAL PRODUCT the worker produces.'
+    ],
+    cramSheet: [
+      'Derived Demand: Demand for labor comes from demand for the final good.',
+      '$MRP = MP \\times P$; Hire where $MRP = MFC$.',
+      'Least-cost rule: $\\frac{MP_L}{P_L} = \\frac{MP_K}{P_K}$.',
+      'Monopsony: $MFC$ is steeper and above $S_L$. Wage $W_m$ is read off the $S_L$ curve, resulting in $W_m < MRP$.'
+    ]
+  },
+
+  // ==========================================
+  // UNIT 6: MICRO: MARKET FAILURES & ROLE OF GOVERNMENT
+  // ==========================================
+  {
+    unitId: 'u6',
+    unitNumber: 6,
+    title: 'Micro 6: Market Failures, Externalities & Public Goods',
+    examWeight: '12%–15% of Micro AP Exam',
+    bigIdea: 'Free markets fail when private costs/benefits diverge from social costs/benefits (externalities) or when goods are non-excludable and non-rivalrous (public goods).',
+    keyTheorems: [
+      {
+        name: 'Negative Externalities and Overproduction',
+        conditions: 'Production generates uncompensated spillover costs on third parties (e.g. factory toxic smoke).',
+        conclusion: 'Marginal Social Cost exceeds Marginal Private Cost ($MSC > MPC$). The unregulated market overproduces ($Q_{mkt} > Q_{opt}$), charging too low a price and creating deadweight loss. Government remedies: Levying a per-unit **Pigouvian Tax** equal to the marginal external cost shifts $MPC$ up to $MSC$.',
+        apTip: 'The deadweight loss triangle always points TOWARD the socially optimal quantity ($Q_{opt}$), resembling an arrowhead indicating where the market should move!'
+      },
+      {
+        name: 'Public Goods and the Free-Rider Problem',
+        conditions: 'Goods characterized by Non-Excludability (cannot prevent non-payers) and Non-Rivalry (one person\'s consumption does not diminish another\'s).',
+        conclusion: 'Because individuals can enjoy public goods without paying (the Free-Rider problem), private markets fail to supply them profitably. Government must finance public goods via taxation up to where $\\text{Marginal Social Benefit} = \\text{Marginal Social Cost}$.',
+        apTip: 'Examples: National defense, lighthouses, mosquito abatement, public streetlights.'
+      }
+    ],
+    formulas: [
+      {
+        name: 'Marginal Social Cost and Benefit Equations',
+        latex: 'MSC = MPC + \\text{MEC}, \\quad MSB = MPB + \\text{MEB}',
+        explanation: 'Where $MEC$ is marginal external cost (negative externality) and $MEB$ is marginal external benefit (positive externality).'
+      },
+      {
+        name: 'Socially Optimal Output Condition',
+        latex: 'MSB = MSC \\implies \\text{Allocative Efficiency (Zero DWL)}',
+        explanation: 'The free market achieves efficiency only when external costs and benefits are zero.'
+      }
+    ],
+    sections: [
+      {
+        heading: '1. Taxonomy of Goods and Market Failures Matrix',
+        content: `Classification of economic goods and corrective public policies:
+
+| Good Type | Excludable? | Rival in Consumption? | Classic Examples | Market Failure / Policy Remedy |
+| :--- | :--- | :--- | :--- | :--- |
+| **Private Goods** | **YES** | **YES** | Pizza, automobiles, clothing | Efficient market allocation; no government failure |
+| **Public Goods** | **NO** | **NO** | National defense, lighthouses, streetlights | **Free-Rider problem** $\\implies$ Government tax funding |
+| **Common Resources** | **NO** | **YES** | Ocean fisheries, grazing pastures, clean air | **Tragedy of the Commons** $\\implies$ Quotas, property rights |
+| **Club / Toll Goods** | **YES** | **NO** | Cable TV, toll bridges, movie cinemas | Natural monopoly $\\implies$ Regulated user fees |
+| **Negative Externality** | Spillovers | $MSC > MPC$ | Industrial pollution, second-hand smoke | **Overproduction** $\\implies$ Levy Pigouvian tax |
+| **Positive Externality** | Spillovers | $MSB > MPB$ | Vaccinations, education, research | **Underproduction** $\\implies$ Provide per-unit subsidy |`
+      }
+    ],
+    workedExamples: [
+      {
+        title: 'Determining the Optimal Pigouvian Tax for Negative Externalities',
+        topicRef: 'CED Micro 6.2 Externalities & Pigouvian Taxation',
+        question: 'A paper mill creates pollution with a marginal external cost of $4 per ream. Market demand is $P = 20 - 0.1Q$ and private marginal cost is $MPC = 4 + 0.1Q$. (a) Find free market equilibrium quantity $Q_{mkt}$. (b) Find socially optimal quantity $Q_{opt}$. (c) State the exact per-unit tax needed to internalize the externality.',
+        solutionSteps: [
+          'Step 1: Find free market quantity where $MPB = MPC$: $20 - 0.1Q = 4 + 0.1Q \\implies 16 = 0.2Q \\implies Q_{mkt} = 80$.',
+          'Step 2: Find Marginal Social Cost: $MSC = MPC + \\text{MEC} = (4 + 0.1Q) + 4 = 8 + 0.1Q$.',
+          'Step 3: Find socially optimal quantity where $MSB = MSC$: $20 - 0.1Q = 8 + 0.1Q \\implies 12 = 0.2Q \\implies Q_{opt} = 60$.',
+          'Step 4: Notice that the unregulated market overproduces: $80 > 60$.',
+          'Step 5: Determine required tax: The government must levy a per-unit Pigouvian Tax equal to the marginal external cost: **$4 per unit**.'
+        ],
+        finalAnswer: '(a) Qmkt = 80. (b) Qopt = 60. (c) Per-unit tax = $4.',
+        apScoringTip: 'The Pigouvian tax MUST equal the vertical distance between MSC and MPC at the socially optimal quantity!'
+      }
+    ],
+    diagrams: [
+      {
+        id: 'externality_graph',
+        title: 'Negative Externality: Marginal Social Cost vs. Private Cost',
+        subtitle: 'Overproduction in Free Markets and Pigouvian Tax Solution',
+        type: 'externality_graph',
+        description: 'Graph showing MSC curve above MPC, MSB curve, free market output Qmkt, socially optimal output Qopt, and the deadweight loss triangle pointing toward Qopt.',
+        takeaway: 'Unregulated markets overproduce goods with negative externalities; a per-unit tax equal to marginal external cost restores allocative efficiency.'
+      }
+    ],
+    commonTraps: [
+      'Confusing the deadweight loss direction: The DWL triangle ALWAYS points at the socially optimal output ($Q_{opt}$).',
+      'Calling public schooling a "pure public good." Education is partially excludable; it is a private good with massive POSITIVE EXTERNALITIES.',
+      'Assuming positive externalities don\'t have deadweight loss. Positive externalities cause under-production, which ALSO creates deadweight loss!'
+    ],
+    cramSheet: [
+      'Negative externality: $MSC > MPC$. Free market OVERPRODUCES. Fix with Pigouvian Tax.',
+      'Positive externality: $MSB > MPB$. Free market UNDERPRODUCES. Fix with Per-Unit Subsidy.',
+      'Public goods: Non-rival and Non-excludable (Free-Rider problem).',
+      'Common resources: Non-excludable and Rival (Tragedy of the Commons).',
+      'DWL triangle points like an arrowhead toward the socially optimal quantity ($Q_{opt}$).'
+    ]
+  },
+
+  // ==========================================
+  // UNIT 7: MACRO: ECONOMIC INDICATORS, GDP & INFLATION
+  // ==========================================
+  {
+    unitId: 'u7',
+    unitNumber: 7,
+    title: 'Macro 1: Economic Indicators (GDP, Unemployment & Inflation)',
+    examWeight: '12%–16% of Macro AP Exam',
     bigIdea: 'National economic performance is quantified using Gross Domestic Product (GDP), unemployment metrics, and price level indices (CPI/GDP Deflator).',
     keyTheorems: [
       {
@@ -362,13 +626,13 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
   },
 
   // ==========================================
-  // UNIT 5: MACRO 2: AD-AS MODEL & FISCAL POLICY
+  // UNIT 8: MACRO: AD-AS MODEL & FISCAL POLICY
   // ==========================================
   {
-    unitId: 'u5',
-    unitNumber: 5,
+    unitId: 'u8',
+    unitNumber: 8,
     title: 'Macro 2: AD-AS Model & Fiscal Policy',
-    examWeight: '12%–16% of AP Exam',
+    examWeight: '12%–16% of Macro AP Exam',
     bigIdea: 'The Aggregate Demand–Aggregate Supply (AD-AS) model illustrates macroeconomic equilibrium, recessionary/inflationary gaps, and fiscal policy multipliers.',
     keyTheorems: [
       {
@@ -449,13 +713,13 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
   },
 
   // ==========================================
-  // UNIT 6: MACRO 3: FINANCIAL SECTOR & MONETARY POLICY
+  // UNIT 9: MACRO: FINANCIAL SECTOR & MONETARY POLICY
   // ==========================================
   {
-    unitId: 'u6',
-    unitNumber: 6,
-    title: 'Macro 3: Financial Sector & Monetary Policy',
-    examWeight: '15%–20% of AP Exam',
+    unitId: 'u9',
+    unitNumber: 9,
+    title: 'Macro 3: Financial Sector, Money Market & Monetary Policy',
+    examWeight: '15%–20% of Macro AP Exam',
     bigIdea: 'Central banks control the money supply and interest rates through monetary tools, impacting investment, aggregate demand, and the money market.',
     keyTheorems: [
       {
@@ -468,7 +732,7 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
         name: 'The Transmission Mechanism of Monetary Policy',
         conditions: 'Central Bank adjusting policy tools (e.g. Open Market Operations, Administered Rates).',
         conclusion: 'Expansionary Policy: Fed buys bonds $\\implies$ Bank reserves $\\uparrow$ $\\implies$ Nominal Interest Rates $\\downarrow$ $\\implies$ Investment & Interest-sensitive Consumption $\\uparrow$ $\\implies$ Aggregate Demand shifts RIGHT ($AD \\uparrow$) $\\implies$ Real GDP ($Y$) and Price Level ($PL$) increase.',
-        apTip: 'Remember the acronym: **B**uy **B**ig = Buy bonds, bigger money supply. **S**ell **S**mall = Sell bonds, smaller money supply.'
+        apTip: 'Remember the acronym: Buy Big = Buy bonds, bigger money supply. Sell Small = Sell bonds, smaller money supply.'
       }
     ],
     formulas: [
@@ -503,12 +767,12 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
         question: 'First National Bank has $100,000 in demand deposits, $10,000 in required reserves, and $15,000 in excess reserves. The reserve requirement is 10%. (a) If Jane deposits $5,000 cash into her checking account, how much does the bank’s required reserves increase? (b) What is the maximum amount the bank can initially lend from Jane’s deposit? (c) What is the maximum possible expansion of the money supply throughout the entire banking system from this initial $5,000 deposit?',
         solutionSteps: [
           'Step 1: Required reserves on new deposit: $5,000 \\times 10\\% = \\$500$.',
-          'Step 2: Initial lending by First National: The remainder is excess reserves: $\\$5,000 - \\$500 = \\$4,500$. First National can lend up to **$4,500**.',
+          'Step 2: Initial lending by First National: The remainder is excess reserves: $\\$5,000 - \\$500 = \\$4,500$. First National can lend up to $4,500.',
           'Step 3: Calculate money multiplier: $M = \\frac{1}{rr} = \\frac{1}{0.10} = 10$.',
           'Step 4: System-wide expansion: Maximum money creation $= \\text{New Excess Reserves} \\times M = \\$4,500 \\times 10 = \\$45,000$.'
         ],
         finalAnswer: '(a) Required reserves increase by $500. (b) Bank can initially lend $4,500. (c) Maximum system-wide money creation = $45,000.',
-        apScoringTip: 'Be careful! The cash deposit of $5,000 was already part of M1. The *new money created* is strictly the loans generated ($45,000).'
+        apScoringTip: 'Be careful! The cash deposit of $5,000 was already part of M1. The new money created is strictly the loans generated ($45,000).'
       }
     ],
     diagrams: [
@@ -527,11 +791,183 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
       'Thinking a deposit increases the total money supply by the deposit amount. Currency in circulation drops by the exact same amount!'
     ],
     cramSheet: [
-      'Money multiplier: $1 / rr$. Maximum creation = $\\text{Excess Reserves} \\times (1 / rr)$.',
+      'Money multiplier: $1 / rr$. Maximum creation = Excess Reserves $\\times (1 / rr)$.',
       'Fed buys bonds $\\implies$ Bank reserves $\\uparrow$ $\\implies$ Interest rate $\\downarrow$ $\\implies$ $AD \\uparrow$.',
       'Bond prices and interest rates move in OPPOSITE directions.',
       'Money market: Nominal interest rate on vertical axis, vertical $M_s$.',
       'Loanable funds market: Real interest rate on vertical axis, upward-sloping supply of savings.'
+    ]
+  },
+
+  // ==========================================
+  // UNIT 10: MACRO: LONG-RUN STABILIZATION, PHILLIPS CURVE & LOANABLE FUNDS
+  // ==========================================
+  {
+    unitId: 'u10',
+    unitNumber: 10,
+    title: 'Macro 4: Long-Run Consequences, Phillips Curve & Crowding Out',
+    examWeight: '12%–15% of Macro AP Exam',
+    bigIdea: 'Stabilization policies create long-run consequences. Deficit-financed fiscal policy triggers crowding out in loanable funds, while the Phillips Curve models the short-run vs. long-run inflation-unemployment trade-off.',
+    keyTheorems: [
+      {
+        name: 'The Phillips Curve Relationship (SRPC vs. LRPC)',
+        conditions: 'Macroeconomic equilibrium and aggregate demand/supply shocks.',
+        conclusion: 'The Short-Run Phillips Curve (SRPC) illustrates an inverse relationship between inflation and unemployment. A shift in $AD$ causes a MOVEMENT ALONG the $SRPC$. A shift in $SRAS$ (e.g. supply shock) SHIFTS the entire $SRPC$ in the opposite direction. In the long run, expected inflation equals actual inflation, making the Long-Run Phillips Curve (LRPC) vertical at the Natural Rate of Unemployment (NRU).',
+        apTip: 'If AD increases: Real GDP $\\uparrow$, Unemployment $\\downarrow$, Price Level $\\uparrow \\implies$ MOVEMENT UP AND LEFT along the existing SRPC!'
+      },
+      {
+        name: 'The Crowding-Out Effect in the Loanable Funds Market',
+        conditions: 'Government runs a budget deficit financed by borrowing.',
+        conclusion: 'When the government borrows to fund deficit spending, demand for loanable funds shifts right ($D_{LF} \\rightarrow$). This drives up the REAL interest rate ($r \\uparrow$). Higher real interest rates crowd out private business capital investment ($I \\downarrow$) and interest-sensitive consumption ($C \\downarrow$), weakening long-run economic growth.',
+        apTip: 'Loanable Funds Graph: Vertical axis is the REAL Interest Rate (not nominal!); horizontal axis is Quantity of Loanable Funds.'
+      }
+    ],
+    formulas: [
+      {
+        name: 'Quantity Theory of Money Equation',
+        latex: 'M \\times V = P \\times Y',
+        explanation: 'Where $M$ is money supply, $V$ is velocity of money, $P$ is price level, and $Y$ is real GDP. In the long run with constant $V$ and $Y$, $\%\\Delta M = \\%\\Delta P$ (Inflation).'
+      },
+      {
+        name: 'Real Interest Rate in Loanable Funds Equilibrium',
+        latex: 'S_{\\text{private}} + (T - G) + (M - X) = I',
+        explanation: 'National savings equals national investment in closed economy.'
+      }
+    ],
+    sections: [
+      {
+        heading: '1. Phillips Curve Movements vs. Shifts & Crowding Out Matrix',
+        content: `Diagnostic matrix for Phillips Curve and Loanable Funds FRQ questions:
+
+| Economic Event | AD / AS Impact | Movement or Shift on SRPC? | Loanable Funds Impact | Long-Run Capital Stock & Growth |
+| :--- | :--- | :--- | :--- | :--- |
+| **Expansionary Fiscal Policy ($G \\uparrow$)** | $AD$ shifts Right | **Movement UP and LEFT** along SRPC (Higher $\\pi$, Lower $u$) | $D_{LF}$ shifts Right $\\implies$ **Real $r \\uparrow$** | **Crowding Out**: Lower investment slows capital formation |
+| **Contractionary Monetary Policy** | $AD$ shifts Left | **Movement DOWN and RIGHT** along SRPC (Lower $\\pi$, Higher $u$) | Supply of LF shifts Left $\\implies$ Real $r \\uparrow$ | Slows short-run investment; restores price stability |
+| **Negative Supply Shock (Oil Spike)** | $SRAS$ shifts Left (Stagflation) | **ENTIRE SRPC SHIFTS RIGHT / OUTWARD** (Higher $\\pi$ AND Higher $u$) | Ambiguous | Negative supply shock lowers output and capital utilization |
+| **Positive Productivity Shock (Tech)** | $SRAS$ & $LRAS$ shift Right | **ENTIRE SRPC SHIFTS LEFT / INWARD** (Lower $\\pi$ AND Lower $u$) | Increases savings $\\implies$ Real $r \\downarrow$ | **Outward shift in LRAS** and sustained economic growth |`
+      }
+    ],
+    workedExamples: [
+      {
+        title: 'Tracing Government Deficits to Loanable Funds and Economic Growth',
+        topicRef: 'CED Macro 5.4 Crowding Out & Long-Run Economic Growth',
+        question: 'The government increases spending on infrastructure without raising taxes, running a deficit. Explain the effect on: (a) Real interest rate in the loanable funds market, (b) Private business investment in physical capital, and (c) Long-run economic growth.',
+        solutionSteps: [
+          'Step 1: Loanable funds effect: To finance the deficit, the government issues Treasury bonds, increasing borrowing. Demand for loanable funds shifts RIGHT $\\implies$ **Real interest rate increases** ($r \\uparrow$).',
+          'Step 2: Private investment effect: Higher borrowing costs make capital investments less profitable. Private business spending on machinery, tools, and factories decreases ($I \\downarrow$) $\\implies$ **Crowding Out occurs**.',
+          'Step 3: Long-run economic growth effect: Slower accumulation of capital stock reduces future worker productivity $\\implies$ **Long-run economic growth rate slows** (LRAS shifts right at a slower rate).'
+        ],
+        finalAnswer: '(a) Real interest rate rises. (b) Private business investment falls (crowding out). (c) Long-run economic growth slows.',
+        apScoringTip: 'Connect the chain of logic completely: Deficit $\\rightarrow$ Demand for Loanable Funds up $\\rightarrow$ Real interest rate up $\\rightarrow$ Investment down $\\rightarrow$ Capital stock growth slows.'
+      }
+    ],
+    diagrams: [
+      {
+        id: 'phillips_curve_graph',
+        title: 'The Phillips Curve: Short-Run Trade-off vs. Long-Run NRU',
+        subtitle: 'SRPC Downward Slope vs. Vertical LRPC at Natural Rate of Unemployment',
+        type: 'phillips_curve_graph',
+        description: 'Graph showing downward-sloping SRPC curve intersecting vertical LRPC at the natural rate of unemployment, with stagflation shifting SRPC upward.',
+        takeaway: 'AD changes move along SRPC; SRAS supply shocks shift the entire SRPC; LRPC is vertical in the long run.'
+      }
+    ],
+    commonTraps: [
+      'Confusing the Money Market (nominal interest rate) with the Loanable Funds Market (real interest rate).',
+      'Shifting the LRPC when AD changes. Shifts in AD only move ALONG the SRPC; LRPC moves ONLY if the Natural Rate of Unemployment changes!',
+      'Thinking inflation and unemployment always move in opposite directions. During Stagflation (supply shock), both rise together because SRPC shifts outward.'
+    ],
+    cramSheet: [
+      'AD shift $\\implies$ Movement along SRPC. SRAS shift $\\implies$ Shift of the entire SRPC.',
+      'LRPC is vertical at the Natural Rate of Unemployment (NRU).',
+      'Government deficit $\\implies$ $D_{LF}$ shifts right $\\implies$ Real interest rate rises $\\implies$ Private investment is crowded out.',
+      'Quantity Theory of Money: $M \\times V = P \\times Y$. High money growth causes high inflation.'
+    ]
+  },
+
+  // ==========================================
+  // UNIT 11: MACRO: OPEN ECONOMY, BALANCE OF PAYMENTS & FOREX
+  // ==========================================
+  {
+    unitId: 'u11',
+    unitNumber: 11,
+    title: 'Macro 5: Open Economy, Balance of Payments & FOREX Market',
+    examWeight: '10%–13% of Macro AP Exam',
+    bigIdea: 'International trade and capital flows link nations through the Balance of Payments and the Foreign Exchange (FOREX) market, where currency values fluctuate based on relative interest rates, price levels, and incomes.',
+    keyTheorems: [
+      {
+        name: 'The Balance of Payments Identity',
+        conditions: 'Accounting for all international financial and trade transactions.',
+        conclusion: '$\\text{Current Account (CA)} + \\text{Financial Account (FA)} = 0$. The Current Account tracks trade in goods/services, net investment income, and net unilateral transfers. The Financial/Capital Account tracks purchases and sales of financial assets (stocks, bonds, real estate). A deficit in one must be balanced by a surplus in the other.',
+        apTip: 'If foreigners buy more US Treasury bonds, the US Financial Account goes into SURPLUS, which pushes the US Current Account (trade balance) into DEFICIT!'
+      },
+      {
+        name: 'FOREX Currency Appreciation vs. Depreciation and Net Exports',
+        conditions: 'Floating exchange rate markets determined by international currency supply and demand.',
+        conclusion: 'When a currency **Appreciates** (gains value), domestic exports become relatively more expensive for foreigners, and foreign imports become cheaper for locals $\\implies$ Net Exports decrease ($X_n \\downarrow$), shifting Aggregate Demand LEFT ($AD \\downarrow$). When a currency **Depreciates** (loses value), exports become cheaper $\\implies$ Net Exports increase ($X_n \\uparrow$), shifting $AD$ RIGHT.',
+        apTip: 'Higher domestic real interest rates attract foreign financial investors seeking higher returns. Foreigners demand domestic currency to buy domestic bonds $\\implies$ Domestic currency APPRECIATES!'
+      }
+    ],
+    formulas: [
+      {
+        name: 'Balance of Payments Identity',
+        latex: '\\text{Current Account} + \\text{Financial Account} = 0',
+        explanation: 'Trade balance and net financial capital flows must mirror each other.'
+      },
+      {
+        name: 'Exchange Rate and Net Exports Linkage',
+        latex: '\\text{Currency Appreciates} \\implies \\text{Exports } \\downarrow, \\; \\text{Imports } \\uparrow \\implies X_n \\downarrow \\implies AD \\downarrow',
+        explanation: 'Appreciation makes domestic goods expensive abroad, dampening net exports.'
+      }
+    ],
+    sections: [
+      {
+        heading: '1. FOREX Determinants of Currency Appreciation vs. Depreciation Matrix',
+        content: `What drives exchange rates and their domestic macroeconomic impact:
+
+| Economic Driver | Shift in FOREX Market for US Dollar ($) | Impact on Value of Dollar | Impact on US Net Exports ($X_n$) | Impact on US Real GDP ($AD$) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Higher US Real Interest Rates** | Demand for USD shifts Right ($D_{\\$} \\rightarrow$) as foreigners seek higher bond yields | **Appreciates** ($e \\uparrow$) | **Decreases** ($X_n \\downarrow$) (US goods become expensive) | $AD$ shifts Left ($AD \\downarrow$) |
+| **Lower US Price Level (Lower Inflation)** | Foreigners buy more US goods $\\implies D_{\\$} \\rightarrow$; Americans buy fewer imports $\\implies S_{\\$} \\leftarrow$ | **Appreciates** ($e \\uparrow$) | **Increases** ($X_n \\uparrow$) | $AD$ shifts Right ($AD \\uparrow$) |
+| **Rapid Foreign Economic Growth (Europe)** | Europeans have more disposable income to purchase US exports $\\implies D_{\\$} \\rightarrow$ | **Appreciates** ($e \\uparrow$) | **Increases** ($X_n \\uparrow$) | $AD$ shifts Right ($AD \\uparrow$) |
+| **Higher US National Income** | Americans spend more on European imports $\\implies S_{\\$} \\rightarrow$ | **Depreciates** ($e \\downarrow$) | **Decreases** ($X_n \\downarrow$) | $AD$ dampens |
+| **Foreign Tastes Shift Toward US Products** | Demand for US exports rises $\\implies D_{\\$} \\rightarrow$ | **Appreciates** ($e \\uparrow$) | **Increases** ($X_n \\uparrow$) | $AD$ shifts Right ($AD \\uparrow$) |`
+      }
+    ],
+    workedExamples: [
+      {
+        title: 'Analyzing Interest Rate Shocks on the FOREX Market and Net Exports',
+        topicRef: 'CED Macro 6.3 Exchange Rates and International Trade',
+        question: 'Suppose real interest rates in the United States rise relative to those in the European Union. (a) Explain how this affects the demand for US dollars in the foreign exchange market. (b) What happens to the value of the US dollar relative to the Euro? (c) How will this change in exchange rate impact US Net Exports ($X_n$)?',
+        solutionSteps: [
+          'Step 1: Capital flow motivation: European investors seek higher returns on US financial assets (bonds).',
+          'Step 2: FOREX demand: To purchase US bonds, Europeans must first buy US dollars. Therefore, the **Demand for US Dollars shifts RIGHT** ($D_{\\$} \\rightarrow$).',
+          'Step 3: Currency valuation: Increased demand raises the exchange rate $\\implies$ The **US dollar appreciates** against the Euro.',
+          'Step 4: Net exports effect: An appreciated dollar makes American exports more expensive for Europeans and European imports cheaper for Americans. US exports decrease, imports increase $\\implies$ **US Net Exports decrease** ($X_n \\downarrow$).'
+        ],
+        finalAnswer: '(a) Demand for US dollars increases (shifts right). (b) The US dollar appreciates. (c) US Net Exports decrease.',
+        apScoringTip: 'Remember the inverse currency rule: If the US dollar APPRECIATES relative to the Euro, then the Euro simultaneously DEPRECIATES relative to the dollar!'
+      }
+    ],
+    diagrams: [
+      {
+        id: 'forex_market_graph',
+        title: 'Foreign Exchange (FOREX) Market: Currency Appreciation',
+        subtitle: 'Capital Inflows Shift Currency Demand Right, Raising Exchange Rate',
+        type: 'forex_market_graph',
+        description: 'FOREX graph with exchange rate on vertical axis, showing Demand for USD shifting right due to capital inflows, establishing a higher equilibrium exchange rate.',
+        takeaway: 'Higher real interest rates attract foreign capital, appreciating the domestic currency and reducing net exports.'
+      }
+    ],
+    commonTraps: [
+      'Assuming an appreciating currency is always good for an economy. A strong currency hurts exporters and reduces aggregate demand!',
+      'Thinking both currencies can appreciate at the same time. If Currency A appreciates, Currency B MUST depreciate relative to A.',
+      'Confusing the Current Account with the Financial Account: Buying physical goods is Current Account; buying financial assets (stocks/bonds) is Financial Account.'
+    ],
+    cramSheet: [
+      'Balance of Payments: Current Account + Financial Account = 0.',
+      'Higher real interest rates $\\implies$ Capital inflows $\\implies$ Currency Appreciates.',
+      'Currency Appreciates $\\implies$ Exports fall, Imports rise $\\implies$ Net Exports ($X_n$) decrease $\\implies$ $AD$ falls.',
+      'Currency Depreciates $\\implies$ Exports rise, Imports fall $\\implies$ Net Exports ($X_n$) increase $\\implies$ $AD$ rises.'
     ]
   }
 ];

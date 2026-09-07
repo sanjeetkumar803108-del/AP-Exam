@@ -24,25 +24,24 @@ function loadPdfJs(): Promise<any> {
   }
 
   pdfjsLoadPromise = new Promise((resolve, reject) => {
-    // 1. Try Primary CDN (jsDelivr - fast, modern, excellent uptime)
+    // 1. Try Local Asset First (100% offline, zero network dependence, instant rendering)
     const script = document.createElement('script');
-    script.id = 'pdfjs-cdn-script';
-    script.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/build/pdf.min.js';
+    script.id = 'pdfjs-script';
+    script.src = '/vendor/pdfjs/pdf.min.js';
     
     script.onload = () => {
       const lib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
       if (lib) {
         window.pdfjsLib = lib;
-        // Automatically inject worker script setting
-        lib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/build/pdf.worker.min.js';
+        lib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js';
         resolve(lib);
       } else {
-        tryCdnjsFallback(resolve, reject);
+        tryJsDelivrFallback(resolve, reject);
       }
     };
 
     script.onerror = () => {
-      tryCdnjsFallback(resolve, reject);
+      tryJsDelivrFallback(resolve, reject);
     };
 
     document.head.appendChild(script);
@@ -51,15 +50,38 @@ function loadPdfJs(): Promise<any> {
   return pdfjsLoadPromise;
 }
 
-function tryCdnjsFallback(resolve: (value: any) => void, reject: (reason: any) => void) {
-  console.warn('[PDFViewer] jsDelivr failed, attempting cdnjs fallback...');
-  
-  // Remove failed script if present
-  const existing = document.getElementById('pdfjs-cdn-script');
+function tryJsDelivrFallback(resolve: (value: any) => void, reject: (reason: any) => void) {
+  const existing = document.getElementById('pdfjs-script');
   if (existing) existing.remove();
 
   const script = document.createElement('script');
-  script.id = 'pdfjs-cdn-script';
+  script.id = 'pdfjs-script';
+  script.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/build/pdf.min.js';
+
+  script.onload = () => {
+    const lib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+    if (lib) {
+      window.pdfjsLib = lib;
+      lib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/build/pdf.worker.min.js';
+      resolve(lib);
+    } else {
+      tryCdnjsFallback(resolve, reject);
+    }
+  };
+
+  script.onerror = () => {
+    tryCdnjsFallback(resolve, reject);
+  };
+
+  document.head.appendChild(script);
+}
+
+function tryCdnjsFallback(resolve: (value: any) => void, reject: (reason: any) => void) {
+  const existing = document.getElementById('pdfjs-script');
+  if (existing) existing.remove();
+
+  const script = document.createElement('script');
+  script.id = 'pdfjs-script';
   script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js';
 
   script.onload = () => {

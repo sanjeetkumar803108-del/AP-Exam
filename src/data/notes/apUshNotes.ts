@@ -277,15 +277,15 @@ export const AP_USH_NOTES: APUnitNote[] = [
     sections: [
       {
         heading: '1. Antebellum Social Reform Movements from the 2nd Great Awakening',
-        content: `How religious revivalism inspired major 19th-century moral crusades:
+        content: `The Second Great Awakening fostered religious revivalism, inspiring widespread moral crusades aimed at perfecting American society:
 
-- **Abolitionism**: Demanded immediate emancipation of enslaved people without compensation.
-  - *William Lloyd Garrison*: Published *The Liberator*, founded American Anti-Slavery Society.
-  - *Frederick Douglass*: Escaped slavery, published *The North Star*, delivered powerful oratorical condemnations of American hypocrisy.
-- **Women’s Rights & Suffrage**:
-  - **Seneca Falls Convention (1848)**: Elizabeth Cady Stanton and Lucretia Mott authored the *Declaration of Sentiments*, echoing the Declaration of Independence: "All men AND WOMEN are created equal." Demanded female voting rights.
-- **Temperance**: Movement to ban alcohol to reduce domestic violence and worker unreliability.
-- **Asylum & Prison Reform**: Dorothea Dix documented horrific abuse of the mentally ill, lobbying for state mental hospitals.`
+| Reform Movement | Key Leaders & Texts | Core Goals & Philosophy | Methods & Historical Impact |
+| :--- | :--- | :--- | :--- |
+| **Abolitionism** | William Lloyd Garrison (*The Liberator*), Frederick Douglass (*The North Star*), Harriet Tubman | Immediate emancipation of enslaved persons without compensation; moral condemnation of chattel slavery | Founded American Anti-Slavery Society; Underground Railroad; sparked southern defense of slavery as a "positive good" |
+| **Women’s Rights & Suffrage** | Elizabeth Cady Stanton, Lucretia Mott, Susan B. Anthony | Political equality, property rights, legal independence, and female suffrage | **Seneca Falls Convention (1848)**; authored *Declaration of Sentiments* ("all men and women are created equal"); launched feminist movement |
+| **Temperance** | American Temperance Society, Lyman Beecher, Frances Willard | Ban or restrict consumption of alcoholic beverages to safeguard family welfare | Pledged total abstinence ("teetotalism"); reduced domestic violence; led to Maine Law (1851) banning alcohol sales statewide |
+| **Asylum & Prison Reform** | Dorothea Dix | Humane treatment for the mentally ill, separating them from violent criminals | Documented horrific conditions in state legislatures; established state-funded mental hospitals and rehabilitation facilities |
+| **Utopian Communities** | Robert Owen (New Harmony), Oneida Community, Brook Farm | Create ideal cooperative societies transcending competitive industrial capitalism | Experimented with communal property, shared labor, and perfectionism; short-lived but challenged capitalist norms |`
       }
     ],
     workedExamples: [
@@ -359,13 +359,16 @@ export const AP_USH_NOTES: APUnitNote[] = [
     ],
     sections: [
       {
-        heading: '1. The Escalating Road to Disunion (1850–1861)',
-        content: `Key events fracturing the Union leading to secession:
+        heading: '1. Sectional Compromises and the Road to Disunion (1820–1861)',
+        content: `How legislative attempts to balance slavery expansion continuously unraveled into civil war:
 
-1. **Kansas-Nebraska Act (1854)**: Stephen Douglas introduced popular sovereignty to Kansas and Nebraska, repealing the 1820 Missouri Compromise. Sparked "Bleeding Kansas" and birthed the anti-slavery **Republican Party**.
-2. **Dred Scott v. Sandford (1857)**: Chief Justice Roger Taney ruled: (1) African Americans are not citizens and have "no rights which the white man was bound to respect," and (2) The federal government has no constitutional power to prohibit slavery in ANY territory, declaring the Missouri Compromise unconstitutional.
-3. **John Brown’s Raid on Harpers Ferry (1859)**: Radical abolitionist attempted to arm enslaved people. Brown was executed, viewed as a martyr in the North and proof of Northern terrorist plots in the South.
-4. **Election of Abraham Lincoln (1860)**: Lincoln won without a single Southern electoral vote on a platform opposing the *expansion* of slavery. South Carolina seceded within weeks, followed by the Deep South.`
+| Compromise / Act / Ruling | Year | Core Provisions & Legal Terms | Sectional Consequence & Backlash |
+| :--- | :--- | :--- | :--- |
+| **Missouri Compromise** | 1820 | Missouri enters as slave, Maine as free; bans slavery north of $36^\\circ 30'$ line in Louisiana Purchase | Maintained Senate balance (12-12); temporarily defused sectional crisis; warned by Jefferson as "fire bell in the night" |
+| **Compromise of 1850** | 1850 | California free state; NM/UT popular sovereignty; DC slave trade banned; harsh new **Fugitive Slave Act** | Fugitive Slave Act radicalized Northerners, stimulated Underground Railroad and Stowe’s *Uncle Tom’s Cabin* (1852) |
+| **Kansas-Nebraska Act** | 1854 | Popular sovereignty for Kansas and Nebraska territories, officially repealing the 1820 $36^\\circ 30'$ line | Sparked violent guerrilla warfare ("Bleeding Kansas"); destroyed Whig Party and birthed the anti-slavery **Republican Party** |
+| **Dred Scott v. Sandford** | 1857 | Chief Justice Taney ruled Black people were not citizens; Congress has NO constitutional power to ban territorial slavery | Invalidated Republican platform; outraged Northern public opinion; Southern Democrats emboldened to demand federal protection |
+| **Crittenden Compromise** | 1860 | Last-ditch proposal to extend $36^\\circ 30'$ line to California to prevent southern secession | Rejected by Lincoln and Republicans because it allowed territorial slavery expansion; Deep South seceded |`
       }
     ],
     workedExamples: [
@@ -440,12 +443,16 @@ export const AP_USH_NOTES: APUnitNote[] = [
     ],
     sections: [
       {
-        heading: '1. Gilded Age Labor Unions & Violent Strikes',
-        content: `How industrial workers organized against corporate exploitation:
+        heading: '1. Gilded Age Labor Unions, Monopolies & Industrial Conflicts',
+        content: `How industrial workers organized against corporate exploitation and faced federal intervention:
 
-- **Knights of Labor (1869)**: Open to ALL workers (skilled, unskilled, women, African Americans). Collapsed after the **Haymarket Square Riot (1886)** in Chicago, which unfairly linked unions with violent anarchism.
-- **American Federation of Labor (AFL, 1886)**: Led by Samuel Gompers. Organized ONLY **skilled craft workers**, focusing on pragmatic "bread-and-butter" issues: Higher wages, shorter 8-hour workdays, and safer working conditions.
-- **Great Railroad Strike of 1877 & Pullman Strike (1894)**: Federal troops intervened on the side of corporate management, demonstrating that the Gilded Age federal government consistently allied with capital against organized labor.`
+| Labor Union / Conflict | Year & Leadership | Membership Base & Philosophy | Key Event & Historical Impact |
+| :--- | :--- | :--- | :--- |
+| **Knights of Labor** | 1869 (Terence Powderly) | Open to **ALL** workers: Skilled, unskilled, women, and African Americans | Campaigned for 8-hour workday, cooperative worker ownership; collapsed after being falsely blamed for the violent **Haymarket Riot (1886)** |
+| **American Federation of Labor (AFL)** | 1886 (Samuel Gompers) | Exclusively **skilled craft workers** segregated into specific trades | Focused on pragmatic "bread-and-butter" unionism (higher wages, 8-hour day, workplace safety); used collective bargaining and strikes |
+| **Great Railroad Strike** | 1877 | B&O Railroad workers across multiple states striking against 10% wage cuts | Paralyzed 60% of nation's rail lines; President Hayes deployed **federal troops** to violently crush strike, setting precedent for capital backing |
+| **Homestead Strike** | 1892 (Amalgamated Assoc. vs. Frick) | Carnegie Steel union workers fighting wage cuts and lockouts | Henry Clay Frick hired Pinkerton armed guards; bloody shootout ended with PA state militia crushing the union |
+| **Pullman Strike** | 1894 (Eugene V. Debs & ARU) | American Railway Union striking against Pullman company town wage cuts | Rail traffic halted across Midwest; President Cleveland sent federal troops citing mail disruption; Debs jailed under Sherman Act |`
       }
     ],
     workedExamples: [
@@ -519,13 +526,17 @@ export const AP_USH_NOTES: APUnitNote[] = [
     ],
     sections: [
       {
-        heading: '1. World War I & II Homefront Transformations',
-        content: `How global conflicts restructured American society and civil liberties:
+        heading: '1. The Progressive Era Amendments & New Deal Alphabet Agencies',
+        content: `How 20th-century reform fundamentally expanded the federal government’s regulatory and welfare powers:
 
-- **The Great Migration**: Hundreds of thousands of African Americans fled the violent Jim Crow South to fill industrial manufacturing factory jobs in Northern and Midwestern cities (Chicago, Detroit, NYC), sparking the **Harlem Renaissance**.
-- **WWI Civil Liberties Repression**: Espionage and Sedition Acts jailed anti-war dissenters. In *Schenck v. United States* (1919), the Supreme Court ruled free speech can be restricted if it presents a "clear and present danger."
-- **WWII Executive Order 9066 & Japanese Internment**: Over 120,000 Japanese Americans (mostly US citizens) forcibly relocated to inland detention camps without due process. Upheld in *Korematsu v. United States* (1944).
-- **Women in the Workforce**: "Rosie the Riveter" symbolized millions of women taking high-paying industrial defense jobs, setting the stage for post-war feminist movements.`
+| Program / Amendment | Year / Era | Constitutional or Regulatory Mechanism | Long-Term Transformation & Significance |
+| :--- | :--- | :--- | :--- |
+| **16th & 17th Amendments** | 1913 | 16th: Graduated federal income tax; 17th: Direct popular election of US Senators | Replaced tariff reliance with federal tax revenue; stripped state party bosses and corporate machines of Senate appointments |
+| **18th & 19th Amendments** | 1919 / 1920 | 18th: National prohibition of alcohol manufacture/sale; 19th: Granted women voting rights nationwide | Prohibition led to bootlegging and organized crime (repealed by 21st); 19th climaxed 70-year suffrage fight (Seneca Falls to NAWSA) |
+| **Civilian Conservation Corps (CCC)** | 1933 (Relief) | Put 3 million young men to work planting 3 billion trees, building trails, and developing state/national parks | Provided immediate income to impoverished families during Depression and preserved public lands |
+| **Agricultural Adjustment Act (AAA)** | 1933 (Recovery) | Paid federal subsidies to farmers to cut crop and livestock production to raise farm prices | Artificially inflated commodity prices to restore agricultural purchasing power; hurt tenant farmers/sharecroppers |
+| **Federal Deposit Insurance Corp (FDIC)** | 1933 (Reform) | Insured bank deposits up to $2,500 (now $250,000) under the Glass-Steagall Banking Act | Ended panic runs on commercial banks; restored national public confidence in the banking system |
+| **Social Security Act** | 1935 (Reform) | Established federal old-age pensions, unemployment compensation, and aid to dependent children/disabled | Created the cornerstone of the modern American welfare state, guaranteeing federal financial safety net |`
       }
     ],
     workedExamples: [
@@ -681,12 +692,16 @@ export const AP_USH_NOTES: APUnitNote[] = [
     ],
     sections: [
       {
-        heading: '1. Demographic and Technological Shifts in Modern America',
-        content: `Major socioeconomic transformations defining late 20th and 21st century America:
+        heading: '1. Modern Era Transformations: Conservatism, Foreign Interventions & Demographics',
+        content: `Major political, geopolitical, and demographic transformations shaping modern America:
 
-- **The Rise of the Sun Belt**: Population, jobs, and political power shifted from the declining industrial "Rust Belt" (Northeast/Midwest) to the South and Southwest (Sun Belt: Florida, Texas, Arizona, California), driven by defense spending, air conditioning, lower taxes, and non-union labor.
-- **The Immigration Act of 1965 Impact**: Abolished the 1920s national origins quotas, sparking massive new immigration predominantly from **Latin America and Asia**, fundamentally transforming American cultural and demographic diversity.
-- **The Digital Revolution**: Personal computers, the Internet, mobile smartphones, and social media revolutionized global communications, e-commerce, labor productivity, and media consumption.`
+| Theme / Policy | Era & Key Figures | Core Strategy & Mechanism | Long-Term National & Global Impact |
+| :--- | :--- | :--- | :--- |
+| **Reagan Revolution & Supply-Side Economics** | 1981–1989 (Ronald Reagan) | Lowered top income taxes (ERTA 1981), slashed business regulations, doubled military defense spending | Stimulated 1980s economic boom, but tripled federal national debt; spurred permanent conservative tax-cut orthodoxy |
+| **End of Cold War & Globalization** | 1989–1994 (Bush Sr. & Clinton) | Fall of Berlin Wall (1989), collapse of USSR (1991); passage of **NAFTA (1993)** free-trade agreement | Established US as sole superpower; accelerated international supply chains and outsourcing of manufacturing jobs |
+| **War on Terror & Domestic Security** | 2001–Present (George W. Bush) | Post-9/11 military interventions in Afghanistan (2001) and Iraq (2003); passed **USA PATRIOT Act** (2001) | Massive expansion of federal executive power and warrantless electronic surveillance; fierce civil liberties debates |
+| **Demographic Shift: Sun Belt Boom** | 1970s–Present | Mass migration from northern industrial "Rust Belt" to southern and western "Sun Belt" (TX, FL, AZ, GA) | Shifted congressional seats and electoral college votes South/West; spurred by air conditioning, lower taxes, and aerospace/tech |
+| **Immigration Act of 1965 Transformation** | 1965–Present | Replaced discriminatory 1920s national origin quotas with family reunification and skilled employment preferences | Sparked demographic diversification with majority of immigrants arriving from **Latin America and Asia** |`
       }
     ],
     workedExamples: [

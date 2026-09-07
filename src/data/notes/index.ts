@@ -210,7 +210,7 @@ export const AP_NOTES_REGISTRY: Record<string, APSubjectNoteEntry> = {
     accentColor: '#0D9488',
     gradient: 'from-teal-700 via-emerald-800 to-slate-950',
     badge: 'High Yield',
-    description: 'Supply & Demand, Production Costs, Imperfect Competition, GDP & Inflation, AD-AS Fiscal Policy & Financial Monetary Banking (Units 1–6)',
+    description: 'PPC & Trade, Supply & Demand, Production Costs, Imperfect Competition, Factor Markets, Externalities, GDP & Inflation, AD-AS Fiscal Policy, Monetary Banking, Phillips Curve & FOREX (Units 1–11)',
     gradeLevels: ['11th', '12th'],
     notes: AP_ECONOMICS_NOTES
   },

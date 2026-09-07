@@ -788,6 +788,16 @@ export const AP_CSA_NOTES: APUnitNote[] = [
 | **Selection Sort** | Iterative nested loops | Any array | $O(N^2)$ | $O(N^2)$ (always finds minimum) |
 | **Insertion Sort** | Iterative nested loops | Any array | $O(N)$ (already sorted) | $O(N^2)$ (reverse sorted) |
 | **Merge Sort** | Recursive Divide & Conquer | Any array | $O(N \\log N)$ | $O(N \\log N)$ (splits and merges) |`
+      },
+      {
+        heading: '2. Sorting Algorithms Execution & Tracing Matrix',
+        content: `Step-by-step execution mechanics and comparison of tested sorting algorithms:
+
+| Algorithm | Pass-by-Pass Mechanism | Number of Comparisons | Number of Swaps | Memory Overhead | AP CSA Exam Trap |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Selection Sort** | Scans remaining unsorted portion for the **absolute minimum**, then executes a single swap with the first unsorted index. | Always $\\frac{N(N-1)}{2} \\approx O(N^2)$ (even if already sorted!) | At most $N-1$ swaps (exact count is $O(N)$) | $O(1)$ in-place | Does NOT terminate early if array is already sorted; runs all passes regardless. |
+| **Insertion Sort** | Takes next element and shifts all larger sorted elements to the right until the correct insertion slot is found. | Best: $N-1 = O(N)$ (sorted); Worst: $\\frac{N(N-1)}{2} = O(N^2)$ (reverse sorted) | Shifts elements right (assignments, not multi-step swaps) | $O(1)$ in-place | Best for small or nearly-sorted datasets; worst case requires shifting every element on every pass. |
+| **Merge Sort** | Recursively divides array into halves until base case of size 1, then invokes \`merge()\` to combine sorted sub-arrays. | Always $O(N \\log_2 N)$ comparisons across all input distributions | Merges into auxiliary array, then copies back into original array | **$O(N)$ auxiliary array** (requires temporary memory!) | Does NOT sort in-place; requires additional memory allocation equal to the input array size. |`
       }
     ],
     workedExamples: [

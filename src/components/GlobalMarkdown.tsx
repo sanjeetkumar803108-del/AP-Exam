@@ -40,18 +40,43 @@ export function cleanMarkdownMath(content: string): string {
   text = text.replace(/(^|[\s$(=_])ext\{/g, '$1\\text{');
   text = text.replace(/(^|[\s$(=_])heta([\s$_^0-9A-Za-z])/g, '$1\\theta$2');
 
-  // 3. Prevent rehypeRaw from misinterpreting mathematical inequalities (< 2, <= x, > 0, >= 3) as HTML tags
-  text = text.replace(/<(?=[\s\d=xXyYzZ\(\-])/g, '&lt;');
-  text = text.replace(/>(?=[\s\d=xXyYzZ\(\-])/g, '&gt;');
-
-  // 4. Heal pseudo-code limits like lim(x -> infinity)
+  // 3. Heal pseudo-code limits like lim(x -> infinity)
   text = text.replace(/\\?lim\s*\(\s*x\s*(?:->|\\to)\s*(?:infinity|\\infty)\s*\)/gi, '\\lim_{x \\to \\infty}');
   text = text.replace(/\\left\\\{([^$\n]*?)(?=(\$|\n|$))/g, (m) => m.includes('\\right') ? m : m + '\\right.');
 
-  // 5. Fix unclosed/unmatched $$ on single line
+  // 4. Convert standard LaTeX display and inline math delimiters:
+  // \[ ... \] -> $$ ... $$
+  text = text.replace(/\\\[([\s\S]*?)\\\]/g, '$$\n$1\n$$');
+  // \( ... \) -> $ ... $
+  text = text.replace(/\\\(([\s\S]*?)\\\)/g, '$$$1$$');
+
+  // 5. Repair single-backslash row breaks before \hline or at end of table rows:
+  // e.g. "4 \ \hline" -> "4 \\ \hline"
+  text = text.replace(/([^\\])\\\s*\\hline/g, '$1\\\\ \\hline');
+  text = text.replace(/([0-9a-zA-Z\)\}\]])\s*\\\s*(\n|$)/g, '$1 \\\\\n');
+
+  // 5.5. Heal multiline inline math ($ ... \n ... $) where LaTeX formulas were split across line breaks:
+  // e.g. "$a = \frac{T - mg\n\sin\theta}{m}$" -> "$a = \frac{T - mg \sin\theta}{m}$"
+  text = text.replace(/(?<!\$)\$([^\$\n]+?(?:\\[a-zA-Z]+|[=+\-*/^_])[^\$]*?\n[^\$]+?)\$(?!\$)/g, (match, body) => {
+    if (!body.includes('\n\n')) {
+      return `$${body.replace(/\s*\n\s*/g, ' ').trim()}$`;
+    }
+    return match;
+  });
+
+  // 6. Wrap bare LaTeX environments (\begin{array}, \begin{matrix}, \begin{cases}, \begin{aligned}, etc.)
+  // that are NOT already enclosed in $$ or $
+  const envNames = 'array|matrix|pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix|cases|aligned|align\\*?|gather\\*?|equation\\*?';
+  const envRegex = new RegExp(`(?<!\\$|\\$\\$)\\s*(\\\\begin\\{(?:${envNames})\\}[\\s\\S]*?\\\\end\\{(?:${envNames})\\})\\s*(?!\\$|\\$\\$)`, 'g');
+  text = text.replace(envRegex, (match, envBody) => {
+    return `\n\n$$\n${envBody.trim()}\n$$\n\n`;
+  });
+
+  // 7. Fix unclosed/unmatched $$ on a single line (only if line has text + a single $$)
   const lines = text.split('\n');
   const fixedLines = lines.map(line => {
     const trimmed = line.trim();
+    if (trimmed === '$$') return line; // Standalone delimiter line is already valid!
     const count = (trimmed.match(/\$\$/g) || []).length;
     if (count === 1) {
       if (trimmed.endsWith('$$')) {
@@ -64,11 +89,48 @@ export function cleanMarkdownMath(content: string): string {
   });
   text = fixedLines.join('\n');
 
+  // 8. Clean and sanitize math blocks while strictly protecting LaTeX syntax
+  // Unescape any HTML entities inside LaTeX math expressions so KaTeX never receives invalid '&lt;', '&gt;', etc.
+  const mathTokenRegex = /(\$\$[\s\S]*?\$\$|\$(?:\\.|[^\$\n\\])+\$)/g;
+  text = text.replace(mathTokenRegex, (match) => {
+    let math = match
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&le;/g, '\\le ')
+      .replace(/&ge;/g, '\\ge ')
+      .replace(/&ne;/g, '\\ne ')
+      .replace(/&plusmn;/g, '\\pm ')
+      .replace(/&times;/g, '\\times ')
+      .replace(/&divide;/g, '\\div ')
+      .replace(/&quot;/g, '"')
+      .replace(/&nbsp;/g, ' ');
+
+    // If inside a tabular/matrix environment, restore &amp; to & (column separator), otherwise \&
+    if (math.includes('\\begin{')) {
+      math = math.replace(/&amp;/g, ' & ');
+    } else {
+      math = math.replace(/&amp;/g, '\\&');
+    }
+    
+    // Repair single-backslash row breaks inside math blocks
+    math = math.replace(/([^\\])\\\s*\\hline/g, '$1\\\\ \\hline');
+
+    // Heal unescaped % inside math expressions so KaTeX does not treat % as a comment and blank out the formula
+    math = math.replace(/(?<!\\)%/g, '\\%');
+
+    return math;
+  });
+
+  // 9. Unescape HTML entities inside inline code spans and backticks:
+  text = text.replace(/`([^`\n]+)`/g, (match, code) => {
+    return '`' + code.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&') + '`';
+  });
+
   return text;
 }
 
 const remarkPluginsList = [remarkMath, remarkGfm];
-const rehypePluginsList: any[] = [rehypeRaw, [rehypeKatex, { strict: false, throwOnError: false }]];
+const rehypePluginsList: any[] = [[rehypeKatex, { strict: false, throwOnError: false }], rehypeRaw];
 
 const defaultComponents = {
   h1: ({ node, ...props }: any) => (
