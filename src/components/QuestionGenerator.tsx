@@ -767,7 +767,7 @@ export default function QuestionGenerator({ onBack, onNavigateToTab }: QuestionG
       doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
       
       doc.text(`Page ${pageNum}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
-      doc.text('HelpYou AI • Subjective Practice & Answer Key', pageWidth - margin, pageHeight - 10, { align: 'right' });
+      doc.text('HelpYou AI - Subjective Practice & Answer Key', pageWidth - margin, pageHeight - 10, { align: 'right' });
     };
 
     // Header Decorative Bar

@@ -1278,12 +1278,12 @@ Instructions for AI Magic Tutor:
           doc.setTextColor(251, 191, 36); // Gold Amber
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(8.5);
-          doc.text('HELPYOU AI  |  ADVANCED PLACEMENT® EXAM PREPARATION', margin, 24);
+          doc.text('HELPYOU AI  |  ADVANCED PLACEMENT EXAM PREPARATION', margin, 24);
 
           doc.setTextColor(255, 255, 255);
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(15);
-          doc.text(`AP® ${sanitizePdfText(subj.name)} Practice Set`, margin, 45);
+          doc.text(`AP ${sanitizePdfText(subj.name)} Practice Set`, margin, 45);
 
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(9);
@@ -1309,7 +1309,7 @@ Instructions for AI Magic Tutor:
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(8);
           doc.setTextColor(100, 116, 139);
-          doc.text(`AP® ${sanitizePdfText(subj.shortCode)} - ${subTitle}`, margin, 18);
+          doc.text(`AP ${sanitizePdfText(subj.shortCode)} - ${subTitle}`, margin, 18);
           doc.text('HelpYou AI Practice Engine', pageWidth - margin, 18, { align: 'right' });
 
           currentY = 46;
@@ -1325,7 +1325,7 @@ Instructions for AI Magic Tutor:
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
         doc.setTextColor(148, 163, 184);
-        doc.text('Confidential & Educational • Prepared with HelpYou AI Mobile Tutor', margin, pageHeight - 12);
+        doc.text('Confidential & Educational - Prepared with HelpYou AI Mobile Tutor', margin, pageHeight - 12);
         doc.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 12, { align: 'right' });
       };
 
@@ -1469,7 +1469,7 @@ Instructions for AI Magic Tutor:
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(10.5);
         doc.setTextColor(21, 128, 61);
-        doc.text('OFFICIAL AP® EXAM ANSWER KEY & DETAILED EXPLANATIONS', margin + 10, currentY + 16);
+        doc.text('OFFICIAL AP EXAM ANSWER KEY & DETAILED EXPLANATIONS', margin + 10, currentY + 16);
         currentY += 34;
 
         objQs.forEach((q, idx) => {
@@ -1516,7 +1516,7 @@ Instructions for AI Magic Tutor:
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(9.5);
           doc.setTextColor(21, 128, 61); // Emerald-700
-          doc.text(`QUESTION ${idx + 1} • [✓ Correct Answer]:  ${cleanAns}`, margin + 12, currentY + 16);
+          doc.text(`QUESTION ${idx + 1} - [Correct Answer]:  ${cleanAns}`, margin + 12, currentY + 16);
 
           let expCursorY = currentY + 30;
 

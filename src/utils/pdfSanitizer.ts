@@ -11,7 +11,7 @@
  * Standard fonts in jsPDF (like Helvetica) DO NOT support multi-byte Unicode.
  * Passing ANY character > 127 causes jsPDF to switch to UTF-16BE encoding,
  * which outputs null bytes (\x00) between every single letter, resulting in
- * wide, broken "A  l i m i t  l i m ( x ..." spacing.
+ * wide, broken "A  l i m i t  l i m ( x ...)" spacing.
  * This sanitizer completely eradicates that bug across all subject PDFs.
  */
 
@@ -37,7 +37,14 @@ export function formatLatexToAscii(latex: string): string {
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, ' ');
 
-  // 1. Remove LaTeX environment wrappers and column alignment specs (e.g. {c|ccccc})
+  // 1a. Piecewise functions (\begin{cases} ... \end{cases}) BEFORE general environment removal
+  str = str.replace(/\\begin\{cases\}([\s\S]*?)\\end\{cases\}/g, (_, body) => {
+    const lines = body.split(/\\{2,}|\n/).map((l: string) => l.trim()).filter(Boolean);
+    const cleanedLines = lines.map((l: string) => l.replace(/&/g, ' for ')).join('; ');
+    return `{ ${cleanedLines} }`;
+  });
+
+  // 1b. Remove LaTeX environment wrappers and column alignment specs (e.g. {c|ccccc})
   str = str.replace(/\\begin\{(?:aligned|matrix|pmatrix|bmatrix|cases|array|split|gather|equation)\*?\}(?:\{[^{}]*\})?/g, '');
   str = str.replace(/\\end\{(?:aligned|matrix|pmatrix|bmatrix|cases|array|split|gather|equation)\*?\}/g, '');
   str = str.replace(/\\hline/g, '\n----------------------------------------\n');
@@ -45,17 +52,17 @@ export function formatLatexToAscii(latex: string): string {
   // 2. Clean \left and \right delimiters (strictly prevent eating \rightarrow, \rightleftharpoons, etc.)
   str = str.replace(/\\left\s*\\\{/g, '{');
   str = str.replace(/\\right\s*\\\}/g, '}');
-  str = str.replace(/\\left\s*([(\[{|])/g, '$1');
+  str = str.replace(/\\left\s*([([\{|])/g, '$1');
   str = str.replace(/\\right\s*([)\]}|])/g, '$1');
   str = str.replace(/\\left\./g, '');
   str = str.replace(/\\right\./g, '');
   str = str.replace(/\\(?:left|right)(?![a-zA-Z])/g, '');
 
-  // 3. Clean alignment tokens and line breaks
+  // 3. Clean alignment tokens and double-backslash line breaks (NEVER replace single backslash!)
   str = str.replace(/&=/g, ' = ');
   str = str.replace(/&/g, ' | ');
-  str = str.replace(/\\\\/g, '\n');
-  str = str.replace(/([^\n])\\\s*\n/g, '$1\n');
+  str = str.replace(/\\{2,}/g, '\n');
+  str = str.replace(/([^\n])\s*\n/g, '$1\n');
 
   // 4. Unwrap formatting tags: \text{...}, \mathrm{...}, \mathbf{...}, \mathit{...}, \textbf{...}, \textit{...}, \ce{...}, \pu{...}
   for (let loop = 0; loop < 5; loop++) {
@@ -64,7 +71,16 @@ export function formatLatexToAscii(latex: string): string {
     if (str === before) break;
   }
 
+  // 4b. Separation between trig functions and following greek/variable (\sin\theta -> \sin \theta)
+  str = str.replace(/\\(sin|cos|tan|sec|csc|cot|arcsin|arccos|arctan|sinh|cosh|tanh|ln|log|exp)\s*\\([a-zA-Z]+)/g, '$1 $2');
+  str = str.replace(/\\(sin|cos|tan|sec|csc|cot|ln|log)\s+([a-zA-Z0-9])/g, '$1 $2');
+
+  // 4c. Letter touching Greek letter (e.g. T\Delta S -> T Delta S)
+  str = str.replace(/([a-zA-Z0-9])\\(Delta|Gamma|Theta|Lambda|Xi|Pi|Sigma|Upsilon|Phi|Psi|Omega|alpha|beta|gamma|delta|epsilon|varepsilon|zeta|eta|theta|vartheta|iota|kappa|lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega)\b/g, '$1 $2');
+
   // 5. Common Calculus Derivatives before general fractions
+  str = str.replace(/\\(?:d|t)?frac\{d([a-zA-Z])\}\{d([a-zA-Z])\}/g, 'd$1/d$2');
+  str = str.replace(/\\(?:d|t)?frac\{d\^2([a-zA-Z])\}\{d([a-zA-Z])\^2\}/g, 'd^2$1/d$2^2');
   str = str
     .replace(/\\frac\{d\^2y\}\{dx\^2\}/g, 'd^2y/dx^2')
     .replace(/\\frac\{d\^2s\}\{dt\^2\}/g, 'd^2s/dt^2')
@@ -78,7 +94,56 @@ export function formatLatexToAscii(latex: string): string {
     .replace(/\\frac\{\\partial y\}\{\\partial x\}/g, 'dy/dx')
     .replace(/\\frac\{\\partial\}\{\\partial x\}/g, 'd/dx');
 
-  // 6. Robust recursive fraction parsing (\frac, \dfrac, \tfrac)
+  // 5b. Pre-clean standard functions so \max, \min, \rm become clean identifiers before subscripts
+  str = str.replace(/\\(max|min|sin|cos|tan|sec|csc|cot|arcsin|arccos|arctan|sinh|cosh|tanh|ln|log|exp|det|gcd|dim|rm)\b/g, '$1');
+
+  // 5c. Primes and Derivatives
+  str = str
+    .replace(/\^\{\\prime\\prime\}/g, "''")
+    .replace(/\^\{\\prime\}/g, "'")
+    .replace(/\\prime\\prime/g, "''")
+    .replace(/\\prime/g, "'")
+    .replace(/\u2032/g, "'")
+    .replace(/\u2033/g, "''")
+    .replace(/\u2034/g, "'''");
+
+  // 6. Robust recursive fraction parsing (\frac, \dfrac, \tfrac) with textbook typographical intelligence
+  function formatFraction(num: string, den: string): string {
+    num = num.trim();
+    den = den.trim();
+
+    // Helper to determine if an expression is a "simple term" that doesn't need outer parens in numerator
+    const isSimpleTerm = (s: string) => {
+      // Single number or simple variable (e.g. 1, 0.693, x, y, h, N, dt, dx, pi, v^2, x^n, e^x, sin x, [H^+])
+      if (/^[a-zA-Z0-9_]+(\^[a-zA-Z0-9_\-]+)?$/.test(s)) return true;
+      if (/^[0-9]+(\.[0-9]+)?$/.test(s)) return true;
+      if (/^[a-zA-Z]+[0-9_]*\([a-zA-Z0-9_,\s]+\)$/.test(s)) return true; // f(x), g(x), f'(x)
+      if (/^\[[^\[\]]+\](\^[0-9]+)?$/.test(s)) return true; // [HA], [g(x)]^2
+      if (/^\[[^\[\]]+\]\s*\[[^\[\]]+\]$/.test(s)) return true; // [H^+][A^-]
+      if (/^[a-zA-Z]+[0-9_]*$/.test(s)) return true; // MP_L, MP_K
+      if (/^(?:sin|cos|tan|sec|csc|cot|ln|log|sqrt)\b[^\+\-]*$/.test(s)) return true; // sin x, ln x
+      // If it's already wrapped in parens (e.g. (o - e)^2 or (x + h))
+      if (/^\([^()]+\)(\^[0-9a-zA-Z_]+)?$/.test(s)) return true;
+      return false;
+    };
+
+    // Helper to determine if denominator needs parentheses
+    const isSimpleDen = (s: string) => {
+      if (/^[a-zA-Z0-9_]+(\^[a-zA-Z0-9_\-]+)?$/.test(s)) return true; // x, h, r, k, W, e, 2, 4, 8, dt, dx
+      if (/^[0-9]+(\.[0-9]+)?$/.test(s)) return true;
+      if (/^[a-zA-Z]+[0-9_]*\([a-zA-Z0-9_,\s]+\)$/.test(s)) return true; // g(x), f(x)
+      if (/^\[[^\[\]]+\](\^[0-9]+)?$/.test(s)) return true; // [HA], [Weak Acid], [g(x)]^2
+      if (/^[a-zA-Z]+[0-9_]*$/.test(s)) return true; // MP_L
+      if (/^\([^()]+\)(\^[0-9a-zA-Z_]+)?$/.test(s)) return true; // (g(x))^2
+      return false;
+    };
+
+    const cleanNum = isSimpleTerm(num) ? num : `(${num})`;
+    const cleanDen = isSimpleDen(den) ? den : `(${den})`;
+
+    return `${cleanNum} / ${cleanDen}`;
+  }
+
   function parseFractions(input: string): string {
     let output = input;
     const fracRegex = /\\(?:d|t)?frac\s*\{/;
@@ -118,7 +183,7 @@ export function formatLatexToAscii(latex: string): string {
             const rawDen = output.substring(denStart, denEnd);
             const num = parseFractions(rawNum).trim();
             const den = parseFractions(rawDen).trim();
-            const rep = `(${num}) / (${den})`;
+            const rep = formatFraction(num, den);
             output = output.substring(0, idx) + rep + output.substring(denEnd + 1);
             match = fracRegex.exec(output);
             continue;
@@ -135,21 +200,25 @@ export function formatLatexToAscii(latex: string): string {
   // 7. Binomials: \binom{n}{k} -> C(n, k)
   str = str.replace(/\\binom\{([^{}]+)\}\{([^{}]+)\}/g, 'C($1, $2)');
 
-  // 8. Radicals & Roots
-  str = str.replace(/\\sqrt\[([^\]]+)\]\{([^{}]+)\}/g, '$1-sqrt($2)');
+  // 8. Radicals & Roots (handle up to 3 nesting levels)
+  for (let i = 0; i < 3; i++) {
+    str = str.replace(/\\sqrt\[([^\]]+)\]\{([^{}]+)\}/g, '$1-sqrt($2)');
+    str = str.replace(/\\sqrt\{([^{}]+)\}/g, 'sqrt($1)');
+  }
   str = str.replace(/\\sqrt\[([^\]]+)\]/g, '$1-sqrt');
-  str = str.replace(/\\sqrt\{([^{}]+)\}/g, 'sqrt($1)');
   str = str.replace(/\\sqrt/g, 'sqrt');
 
-  // 9. Calculus Limits
-  str = str.replace(/\\?lim_\{([a-zA-Z])\s*(?:\\to|\\rightarrow|->)\s*([^}^+^-]+)\^-\}/g, 'lim($1 -> $2^-)');
-  str = str.replace(/\\?lim_\{([a-zA-Z])\s*(?:\\to|\\rightarrow|->)\s*([^}^+^-]+)\^\+\}/g, 'lim($1 -> $2^+)');
+  // 9. Calculus Limits — handle one-sided limits (x -> c^-) and (x -> c^+) first
+  str = str.replace(/\\?lim_\{([a-zA-Z])\s*(?:\\to|\\rightarrow|->)\s*([^}^+^\-]+)\^\s*-\s*\}/g, 'lim($1 -> $2^-)');
+  str = str.replace(/\\?lim_\{([a-zA-Z])\s*(?:\\to|\\rightarrow|->)\s*([^}^+^\-]+)\^\s*\+\s*\}/g, 'lim($1 -> $2^+)');
   str = str.replace(/\\?lim_\{([a-zA-Z])\s*(?:\\to|\\rightarrow|->)\s*([^}]+)\}/g, 'lim($1 -> $2)');
   str = str.replace(/\\?lim_\{([^}]+)\}/g, 'lim($1)');
   str = str.replace(/\\?lim(?![a-zA-Z])/g, 'lim');
 
   // 10. Integrals, Summations, Products
   str = str.replace(/\\int_\{([^{}]+)\}\^\{([^{}]+)\}/g, 'int[$1 to $2]');
+  str = str.replace(/\\int_([a-zA-Z0-9]+)\^\{([^{}]+)\}/g, 'int[$1 to $2]');
+  str = str.replace(/\\int_\{([^{}]+)\}\^([a-zA-Z0-9]+)/g, 'int[$1 to $2]');
   str = str.replace(/\\int_([a-zA-Z0-9]+)\^([a-zA-Z0-9]+)/g, 'int[$1 to $2]');
   str = str.replace(/\\int_\{([^{}]+)\}/g, 'int[$1]');
   str = str.replace(/\\(?:iint|iiint|oint|int)(?![a-zA-Z])/g, 'int ');
@@ -165,13 +234,17 @@ export function formatLatexToAscii(latex: string): string {
   str = str.replace(/\^\{([\+\-][0-9]*)\}/g, '^$1');
   str = str.replace(/\^\{([a-zA-Z0-9]+)\}/g, '^$1');
   str = str.replace(/\^\{([^{}]+)\}/g, '^($1)');
-  str = str.replace(/_\{([a-zA-Z0-9]+)\}/g, '_$1');
+  // Clean subscripts without redundant parentheses: _{max} -> _max, _{cell} -> _cell, _{s,beaker} -> _s,beaker
+  str = str.replace(/_\{([a-zA-Z0-9_,\s]+)\}/g, (_m, inner) => {
+    const cleanInner = inner.replace(/\s+/g, ' ').trim();
+    return `_${cleanInner}`;
+  });
   str = str.replace(/_\{([^{}]+)\}/g, '_($1)');
 
-  // 12. Greek Letters (Capital & Lowercase)
+  // 12. Greek Letters (Capital & Lowercase — complete set)
   const greekMap: Record<string, string> = {
     '\\Delta': 'Delta', '\\Gamma': 'Gamma', '\\Theta': 'Theta', '\\Lambda': 'Lambda',
-    '\\Xi': 'Xi', '\\Pi': 'Pi', '\\Sigma': 'Sum', '\\Upsilon': 'Upsilon',
+    '\\Xi': 'Xi', '\\Pi': 'Pi', '\\Sigma': 'Sigma', '\\Upsilon': 'Upsilon',
     '\\Phi': 'Phi', '\\Psi': 'Psi', '\\Omega': 'Omega',
     '\\alpha': 'alpha', '\\beta': 'beta', '\\gamma': 'gamma', '\\delta': 'delta',
     '\\epsilon': 'epsilon', '\\varepsilon': 'epsilon', '\\zeta': 'zeta', '\\eta': 'eta',
@@ -194,7 +267,8 @@ export function formatLatexToAscii(latex: string): string {
     .replace(/\\xrightarrow/g, ' -> ')
     .replace(/\\(?:leftarrow|longleftarrow|Leftarrow)/g, ' <- ')
     .replace(/\\uparrow/g, ' ^ ')
-    .replace(/\\downarrow/g, ' v ');
+    .replace(/\\downarrow/g, ' v ')
+    .replace(/\\leftrightarrow/g, ' <-> ');
 
   // 14. Operators, Comparisons, & Mathematical Constants
   str = str
@@ -241,12 +315,6 @@ export function formatLatexToAscii(latex: string): string {
     .replace(/\\[,;:!]/g, ' ')
     .replace(/\\(?:displaystyle|textstyle|scriptstyle|scriptscriptstyle|limits|nolimits)/g, '');
 
-  // 17b. Piecewise functions (\begin{cases} ... \end{cases})
-  str = str.replace(/\\begin\{cases\}([\s\S]*?)\\end\{cases\}/g, (_, body) => {
-    const lines = body.split(/\\\\|\n/).map((l: string) => l.trim()).filter(Boolean);
-    const cleanedLines = lines.map((l: string) => l.replace(/&/g, '  for  ')).join('; ');
-    return `{ ${cleanedLines} }`;
-  });
 
   // 18. Strip math delimiters: $$, $, \[, \], \(, \)
   str = str
@@ -262,13 +330,15 @@ export function formatLatexToAscii(latex: string): string {
   str = str.replace(/\\right[.\}]/g, ' }');
   str = str.replace(/\\left/g, '');
   str = str.replace(/\\right/g, '');
+  // Remove any remaining \command patterns (keep content if in braces)
+  str = str.replace(/\\[a-zA-Z]+\{([^{}]*)\}/g, '$1');
   str = str.replace(/\\[a-zA-Z]+/g, '');
   str = str.replace(/\\/g, '');
   // Flatten exponent/subscript braces but preserve top-level piecewise/set braces { ... }
   str = str.replace(/([_\^])\{([^}]+)\}/g, '$1$2');
   str = str.replace(/\{\s*\}/g, '');
 
-  // 20. Clean operator spacing cleanly without breaking compound tokens (<=>, =>, <=, >=, !=, ==, ->)
+  // 20. Clean operator spacing cleanly without breaking compound tokens (<=>, =>, <-, ->, <=, >=, !=, ==)
   str = str.replace(/\s*<=>\s*/g, ' <=> ');
   str = str.replace(/\s*<->\s*/g, ' <-> ');
   str = str.replace(/(?<!<)\s*=>\s*/g, ' => ');
@@ -276,9 +346,36 @@ export function formatLatexToAscii(latex: string): string {
   str = str.replace(/(?<!<)\s*<=\s*(?!>)/g, ' <= ');
   str = str.replace(/(?<![<=])\s*>=\s*(?!>)/g, ' >= ');
   str = str.replace(/\s*!=\s*/g, ' != ');
-  str = str.replace(/(?<![<!=>])\s*=\s*(?![=>])/g, ' = ');
+  str = str.replace(/(?<![<!==>])\s*=\s*(?![=>])/g, ' = ');
+
+  // Post-clean subscripts: flatten any leftover _(max) -> _max, _(s) -> _s, etc.
+  str = str.replace(/_\(([a-zA-Z0-9_,\s]+)\)/g, (_m, inStr) => `_${inStr.trim()}`);
+  str = str.replace(/t_\(1\/2\)|t_\{1\/2\}/g, 't_1/2');
+  str = str.replace(/\|_\(\(([^)]+)\)\)/g, '| ($1)');
+  
+  // Clean up nested parentheses and brackets: ((...)) -> (...), ([...]) -> [...]
+  for (let i = 0; i < 3; i++) {
+    str = str.replace(/\(\(([^\(\)]+)\)\)/g, '($1)');
+    str = str.replace(/\(\[([^\[\]]+)\]\)/g, '[$1]');
+    str = str.replace(/\[\s*\(([^()]+)\)\s*\]/g, '[$1]');
+  }
+
+  // Clean up fractions wrapped in redundant parens:
+  str = str.replace(/\(\s*([a-zA-Z0-9_]+)\s*\)\s*\/\s*\(\s*([a-zA-Z0-9_]+)\s*\)/g, '$1 / $2');
+  str = str.replace(/\/\s*\(\s*([a-zA-Z0-9_]+)\s*\)(?![a-zA-Z0-9_\^])/g, '/ $1');
+  str = str.replace(/(?<![a-zA-Z0-9_\^])\(\s*([a-zA-Z0-9_]+)\s*\)\s*\//g, '$1 /');
+  str = str.replace(/\(\s*([0-9]+(?:\.[0-9]+)?)\s*\)\s*\/\s*([a-zA-Z0-9_]+)/g, '$1 / $2');
+  str = str.replace(/\(\s*1\s*\)\s*\/\s*\[([^\[\]]+)\]/g, '1 / [$1]');
+  str = str.replace(/\(\s*([a-zA-Z0-9\s]+)\s*\)\s*\/\s*\(\s*([0-9]+)\s*\)/g, '($1) / $2');
+
+  // Multi-line alignment spacer cleanup
+  str = str.replace(/\s*\|\s*/g, '   |   ');
 
   return str.replace(/[ \t]+/g, ' ').trim();
+}
+
+export function formatMathForPdf(text: string): string {
+  return sanitizePdfText(text);
 }
 
 /**
@@ -348,12 +445,22 @@ export function sanitizePdfText(text: string): string {
     .replace(/σ/g, 'sigma')
     .replace(/ω/g, 'omega')
     .replace(/Ω/g, 'Omega')
-    .replace(/Σ/g, 'Sum')
+    .replace(/Σ/g, 'Sigma')
+    .replace(/φ/g, 'phi')
+    .replace(/ψ/g, 'psi')
+    .replace(/χ/g, 'chi')
+    .replace(/ξ/g, 'xi')
+    .replace(/ε/g, 'epsilon')
+    .replace(/η/g, 'eta')
+    .replace(/ν/g, 'nu')
+    .replace(/ρ/g, 'rho')
+    .replace(/τ/g, 'tau')
     .replace(/∞/g, 'infinity')
     .replace(/≈/g, '~=')
     .replace(/≠/g, '!=')
     .replace(/≤/g, '<=')
     .replace(/≥/g, '>=')
+    .replace(/≡/g, '==')
     .replace(/±/g, '+/-')
     .replace(/∓/g, '-+')
     .replace(/×/g, '*')
@@ -368,7 +475,8 @@ export function sanitizePdfText(text: string): string {
     .replace(/⟹/g, ' => ')
     .replace(/↔/g, ' <-> ')
     .replace(/→/g, ' -> ')
-    .replace(/←/g, ' <- ');
+    .replace(/←/g, ' <- ')
+    .replace(/⇌/g, ' <=> ');
 
   // 4. Normalize Unicode Superscripts & Subscripts to clean ASCII
   const superMap: Record<string, string> = {
@@ -427,8 +535,8 @@ export function sanitizePdfText(text: string): string {
       else if (ch === '•' || ch === '·') asciiSafe += '-';
       else if (ch === '…') asciiSafe += '...';
       else if (ch === '–' || ch === '—') asciiSafe += '-';
-      else if (ch === '’' || ch === '‘') asciiSafe += "'";
-      else if (ch === '”' || ch === '“') asciiSafe += '"';
+      else if (ch === '\u2018' || ch === '\u2019') asciiSafe += "'";
+      else if (ch === '\u201C' || ch === '\u201D') asciiSafe += '"';
       else asciiSafe += ' ';
     }
   }

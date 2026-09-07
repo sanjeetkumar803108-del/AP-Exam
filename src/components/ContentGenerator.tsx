@@ -57,7 +57,7 @@ export function generateContentPDFBlob(
     doc.setLineWidth(0.2);
     doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
     doc.text(`Page ${pageNum}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
-    doc.text('HelpYou AI • Academic & Creative Suite', pageWidth - margin, pageHeight - 10, { align: 'right' });
+    doc.text('HelpYou AI - Academic & Creative Suite', pageWidth - margin, pageHeight - 10, { align: 'right' });
   };
 
   // Header Decorative Top Bar

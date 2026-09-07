@@ -66,7 +66,7 @@ export async function exportFormulaSheetPDF(
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(8);
     doc.setTextColor(110, 110, 120);
-    doc.text('HELPYOU AI • FORMULA COMPENDIUM & CHEAT SHEET', margin, 8.5);
+    doc.text('HELPYOU AI - FORMULA COMPENDIUM & CHEAT SHEET', margin, 8.5);
     doc.text(`Page ${pageNumber}`, pageWidth - margin, 8.5, { align: 'right' });
   };
 
@@ -78,7 +78,7 @@ export async function exportFormulaSheetPDF(
     doc.setLineWidth(0.2);
     doc.line(margin, pageHeight - 12, pageWidth - margin, pageHeight - 12);
     
-    doc.text('HelpYou AI — Smart Calculator & Homework Helper', margin, pageHeight - 7);
+    doc.text('HelpYou AI - Smart Calculator & Homework Helper', margin, pageHeight - 7);
     doc.text(`www.helpyou.ai`, pageWidth - margin, pageHeight - 7, { align: 'right' });
   };
 
@@ -96,7 +96,7 @@ export async function exportFormulaSheetPDF(
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(113, 113, 122);
-  doc.text('Standardized Academic Curriculum • Formulas & Key Identities', margin, currentY);
+  doc.text('Standardized Academic Curriculum - Formulas & Key Identities', margin, currentY);
   currentY += 9;
 
   for (const category of filteredCategories) {

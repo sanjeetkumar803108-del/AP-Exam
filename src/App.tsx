@@ -92,6 +92,7 @@ const Onboarding = lazyWithRetry(() => import('./components/Onboarding'));
 const APNotes = lazyWithRetry(() => import('./components/APNotes'));
 const APSamplePapers = lazyWithRetry(() => import('./components/APSamplePapers'));
 const APTrapRadar = lazyWithRetry(() => import('./components/APTrapRadar'));
+const APMindMap = lazyWithRetry(() => import('./components/APMindMap'));
 const DeveloperDashboard = lazyWithRetry(() => import('./components/DeveloperPortal/DeveloperDashboard'));
 import SplashScreen from './components/SplashScreen';
 import AuthGuard from './components/AuthGuard';
@@ -1042,6 +1043,14 @@ export default function App() {
             {activeTool === 'trapradar' && (
               <ErrorBoundary>
                 <APTrapRadar 
+                  onBack={() => setActiveTool(null)} 
+                  isVip={isVip}
+                />
+              </ErrorBoundary>
+            )}
+            {activeTool === 'mindmap' && (
+              <ErrorBoundary>
+                <APMindMap 
                   onBack={() => setActiveTool(null)} 
                   isVip={isVip}
                 />

@@ -585,7 +585,7 @@ export default function APNotes({ onBack }: APNotesProps) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
       doc.setTextColor(148, 163, 184);
-      doc.text('Confidential & Educational • Aligned with Official College Board CED Standards', margin, pageHeight - 12);
+      doc.text('Confidential & Educational - Aligned with Official College Board CED Standards', margin, pageHeight - 12);
       doc.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 12, { align: 'right' });
     };
 
@@ -738,7 +738,7 @@ export default function APNotes({ onBack }: APNotesProps) {
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7.5);
-      const explLines = doc.splitTextToSize(sanitizePdfText(f.explanation), contentWidth - 32);
+      const explLines = doc.splitTextToSize(sanitizePdfText(formatMathForPdf(f.explanation)), contentWidth - 32);
       
       // FORMULAS: generous line spacing (14.5pt) and generous inner clearance!
       const LH_FORMULA = 14.5;
@@ -1070,7 +1070,7 @@ export default function APNotes({ onBack }: APNotesProps) {
       const imgH = 220; // Expanded height for all diagram graphs (was squished at 98pt)
       
       const takeLines = diagram.takeaway
-        ? doc.splitTextToSize(sanitizePdfText(diagram.takeaway), graphBoxW - 85)
+        ? doc.splitTextToSize(sanitizePdfText(formatMathForPdf(diagram.takeaway)), graphBoxW - 85)
         : [];
       const takeBannerH = diagram.takeaway ? Math.max(26, takeLines.length * 10.5 + 8) : 0;
       const graphBoxH = titleHeight + imgH + (diagram.takeaway ? takeBannerH + 16 : 14);
@@ -1093,14 +1093,14 @@ export default function APNotes({ onBack }: APNotesProps) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(8.5);
       doc.setTextColor(15, 23, 42);
-      doc.text(`FIG: ${sanitizePdfText(diagram.title)}`, margin + 10, currentY + 13);
+      doc.text(`FIG: ${sanitizePdfText(formatMathForPdf(diagram.title))}`, margin + 10, currentY + 13);
 
       // Subtitle
       if (diagram.subtitle) {
         doc.setFont('helvetica', 'italic');
         doc.setFontSize(7);
         doc.setTextColor(100, 116, 139);
-        doc.text(sanitizePdfText(diagram.subtitle), margin + 10, currentY + 22);
+        doc.text(sanitizePdfText(formatMathForPdf(diagram.subtitle)), margin + 10, currentY + 22);
       }
 
       // ── Rasterize the SVG from CalculusDiagramSvg (works for ALL subjects) ──
