@@ -44,6 +44,26 @@ export const AP_CSA_NOTES: APUnitNote[] = [
 | **\`char\`** | 16 bits (2 bytes) | \`'\\u0000'\` | Single 16-bit Unicode character (e.g. \`'A'\`) |
 | **Reference** | 64-bit address | \`null\` | Points to an object on the heap (e.g. \`String\`, \`Scanner\`) |`
       }
+    ,
+      {
+        heading: '2. Arithmetic Expressions, Modulo Arithmetic & Type Casting (CED 1.3-1.5)',
+        content: `Mastering Java numeric evaluations and casting rules on the AP exam:
+
+* **Integer Division & Truncation**:
+  * Any operation between two integers performs **integer division**, truncating all decimal places towards zero:
+    * '7 / 2' evaluates to '3' (NOT '3.5'!).
+    * '1 / 2' evaluates to '0'.
+* **Casting Semantics**:
+  * '(double) 7 / 2' evaluates to '3.5' (cast has higher precedence than division, converting '7' to '7.0' first).
+  * '(double) (7 / 2)' evaluates to '3.0' (parentheses evaluate first: '7 / 2 = 3', which is then cast to '3.0').
+* **Rounding Idioms for Positive Doubles**:
+  * To round a positive 'double d' to the nearest integer: '(int) (d + 0.5)'.
+* **Modulo Arithmetic (%) Applications**:
+  * Parity check: 'x % 2 == 0' tests whether 'x' is even.
+  * Extract last digit: 'x % 10' yields the units digit (e.g. '284 % 10 = 4').
+  * Remove last digit: 'x / 10' truncates the units digit (e.g. '284 / 10 = 28').
+  * Cyclic index wrapping: '(index + 1) % arrayLength' wraps circular structures.`
+      }
     ],
     workedExamples: [
       {
@@ -58,16 +78,6 @@ export const AP_CSA_NOTES: APUnitNote[] = [
         ],
         finalAnswer: '`8`',
         apScoringTip: 'To round a positive double `x` to the nearest int, use `(int)(x + 0.5)`. For negative numbers, use `(int)(x - 0.5)`.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'csa_type_widening',
-        title: 'Primitive Type Widening vs. Narrowing Conversion',
-        subtitle: 'int $\\rightarrow$ double (Automatic) vs. double $\\rightarrow$ int (Explicit Cast)',
-        type: 'type_hierarchy',
-        description: 'Memory box diagram showing 32-bit int expanding seamlessly into 64-bit double, while double truncates precision when forced into int.',
-        takeaway: 'Widening is automatic and lossless; narrowing requires explicit casting and risks precision loss.'
       }
     ],
     commonTraps: [
@@ -131,6 +141,25 @@ export const AP_CSA_NOTES: APUnitNote[] = [
 | **\`Math.sqrt(x)\`** | \`double\` | Returns the positive square root of \`x\` |
 | **\`Math.random()\`** | \`double\` | Returns random double in range $[0.0, 1.0)$ |`
       }
+    ,
+      {
+        heading: '2. String Methods, Index Traps & The Math Class (CED 2.7-2.9)',
+        content: `Essential Java String manipulation and random number generation:
+
+* **String Methods Quick Reference**:
+  * 's.length()': Returns total number of characters.
+  * 's.substring(start, end)': Returns substring from index 'start' up to **but not including** 'end' (length = 'end - start').
+  * 's.substring(start)': Returns substring from index 'start' to the end of the string.
+  * 's.indexOf(str)': Returns index of first occurrence, or '-1' if not found.
+  * 's1.compareTo(s2)': Returns '0' if equal, negative if 's1 < s2' alphabetically, positive if 's1 > s2'.
+* **String Equality Rule**:
+  * **NEVER use == to compare String contents!**
+  * 's1 == s2' tests whether both references point to the exact same memory address.
+  * 's1.equals(s2)' correctly checks character-by-character content equality!
+* **Generating Random Integers in Range [min, max]**:
+  * Formula: 'int rand = (int) (Math.random() * (max - min + 1)) + min;'
+  * *(Since Math.random() returns in range [0.0, 1.0), multiplying by (max - min + 1) and casting to int spans 0 to max - min inclusive).*`
+      }
     ],
     workedExamples: [
       {
@@ -146,16 +175,6 @@ export const AP_CSA_NOTES: APUnitNote[] = [
         ],
         finalAnswer: '`(int)(Math.random() * 41) + 10`',
         apScoringTip: 'Always multiply by `(max - min + 1)` before casting to int and adding `min`.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'string_index_bounds',
-        title: 'String Substring Indexing Bounds',
-        subtitle: 'Zero-Indexed System with Inclusive Start and Exclusive End',
-        type: 'memory_reference',
-        description: 'Diagram of String "COMPUTER" with indices 0 to 7, demonstrating that str.substring(2, 5) extracts "MPU" of length 5 - 2 = 3.',
-        takeaway: '`substring(from, to)` length is always `to - from`; the character at index `to` is never included.'
       }
     ],
     commonTraps: [
@@ -217,6 +236,25 @@ export const AP_CSA_NOTES: APUnitNote[] = [
 | **\`\\|\\|\`** | Logical OR | AT LEAST ONE operand is true | \`false \\|\\| true\` (true) |
 | **\`!\`** | Logical NOT | Inverts truth value | \`!false\` (true) |`
       }
+    ,
+      {
+        heading: '2. De Morgan\'s Laws, Short-Circuit Logic & Dangling Else (CED 3.5-3.7)',
+        content: `Mastering boolean algebra transformations and conditional branching:
+
+* **De Morgan\'s Laws for Negation**:
+  * '!(A && B)' is logically equivalent to '(!A || !B)'
+  * '!(A || B)' is logically equivalent to '(!A && !B)'
+  * Relational operator inversions:
+    * '!(x < y)' <=> 'x >= y'
+    * '!(x == y)' <=> 'x != y'
+* **Short-Circuit Evaluation**:
+  * In 'A && B': If 'A' is false, Java does NOT evaluate 'B' (result is guaranteed false).
+  * In 'A || B': If 'A' is true, Java does NOT evaluate 'B' (result is guaranteed true).
+  * **Null Guard Idiom**: Prevents runtime NullPointerException:
+    * 'if (str != null && str.length() > 0) { ... }'
+* **The Dangling Else Ambiguity**:
+  * An 'else' clause always matches the **closest preceding un-terminated if** statement unless explicit curly braces '{}' override grouping.`
+      }
     ],
     workedExamples: [
       {
@@ -232,16 +270,6 @@ export const AP_CSA_NOTES: APUnitNote[] = [
         ],
         finalAnswer: '`(score < 80) || (attendance <= 90 && !hasExcusedAbsence)`',
         apScoringTip: 'De Morgan’s Law questions appear on almost every AP CSA exam. Practice flipping `&&` $\\leftrightarrow$ `||` and inverting all comparison operators.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'short_circuit_flow',
-        title: 'Short-Circuit Evaluation Logic Gate',
-        subtitle: 'Bypassing Right-Hand Evaluation in Guard Clauses',
-        type: 'boolean_circuit',
-        description: 'Logic flowchart showing immediate exit on false in AND-chain and immediate exit on true in OR-chain.',
-        takeaway: 'Place null checks and bounds checks on the LEFT of `&&` to guard against runtime errors.'
       }
     ],
     commonTraps: [
@@ -299,6 +327,25 @@ export const AP_CSA_NOTES: APUnitNote[] = [
 | **Enhanced \`for\` (for-each)** | \`for (Type item : collection)\` | Read-only sequential traversal of entire array/collection |
 | **Nested loops** | \`for (int r = 0; ...) { for (int c = 0; ...) }\` | 2D matrices, pairwise comparisons, shape printing |`
       }
+    ,
+      {
+        heading: '2. String & Array Loop Algorithms & Off-by-One Traps (CED 4.2-4.5)',
+        content: `Canonical iteration algorithms required on the AP Computer Science A exam:
+
+* **Counting Occurrences in a String**:
+  * Loop from index '0' to 'str.length() - target.length()':
+    * 'for (int i = 0; i <= str.length() - target.length(); i++)'
+* **The Off-by-One Boundary Rule**:
+  * When checking substrings of length k, loop condition must be 'i <= str.length() - k'.
+  * Using 'i < str.length()' causes StringIndexOutOfBoundsException!
+* **String Reversal Pattern**:
+  * Start at 'str.length() - 1' and decrement down to '0', concatenating 'str.substring(i, i + 1)'.
+* **Loop Invariant Analysis**:
+  * On trace questions, determine how many times the loop body executes:
+    * 'for (int i = 0; i < N; i++)' executes **N times**.
+    * 'for (int i = 1; i <= N; i++)' executes **N times**.
+    * 'for (int i = 0; i <= N; i++)' executes **N + 1 times**.`
+      }
     ],
     workedExamples: [
       {
@@ -314,16 +361,6 @@ export const AP_CSA_NOTES: APUnitNote[] = [
         ],
         finalAnswer: '`"TAC"` (reverses the string).',
         apScoringTip: 'When tracing code on the AP exam, make a clean table listing variable values after each iteration to prevent mental arithmetic errors.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'nested_loop_grid',
-        title: 'Nested Loop Coordinate Matrix Traversal',
-        subtitle: 'Outer Loop Controls Rows ($R$), Inner Loop Controls Columns ($C$)',
-        type: 'nested_grid',
-        description: 'Grid showing row pointer moving downward one step only after the inner column pointer completes its entire left-to-right sweep.',
-        takeaway: 'The inner loop runs to completion for every single tick of the outer loop.'
       }
     ],
     commonTraps: [
@@ -381,6 +418,24 @@ export const AP_CSA_NOTES: APUnitNote[] = [
 | **\`static\`** | Belonging to class, not instances | Single shared class memory | Constants (\`Math.PI\`), utility methods (\`Math.abs\`), counters |
 | **\`this\`** | Current object reference | Heap instance pointer | Disambiguating parameters: \`this.name = name;\` |`
       }
+    ,
+      {
+        heading: '2. Constructors, Information Hiding & Mutator Methods (CED 5.2-5.6)',
+        content: `Core Object-Oriented Programming (OOP) design patterns:
+
+* **Encapsulation & Scope Rules**:
+  * Instance variables must ALWAYS be declared 'private' to protect internal object state from unauthorized external mutation.
+  * Public accessor (getter) methods return state; public mutator (setter) methods validate and update state.
+* **Constructor Overloading & The Default Constructor**:
+  * If a class provides **zero constructors**, the Java compiler automatically supplies a default no-argument constructor initializing primitives to zero/false and object references to null.
+  * If you define **ANY custom constructor**, Java does NOT provide a default constructor!
+* **The 'this' Reference**:
+  * Disambiguates instance fields from constructor/method parameters with identical names:
+    * 'this.name = name;'
+    * 'this.id = id;'
+* **Overriding 'toString()'**:
+  * When an object is passed to 'System.out.println(obj)', Java automatically calls its 'toString()' method. If not overridden, it prints the class name and hexadecimal memory hash code.`
+      }
     ],
     workedExamples: [
       {
@@ -395,16 +450,6 @@ export const AP_CSA_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'A fully encapsulated class meeting College Board FRQ 2 standards.',
         apScoringTip: 'Never declare instance variables as `public`. Always initialize every instance variable inside the constructor.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'csa_encapsulation',
-        title: 'Class Encapsulation Shield',
-        subtitle: 'Public Methods Guarding Private State',
-        type: 'encapsulation_diagram',
-        description: 'Concentric circle diagram where private fields sit in the center, shielded from external access by an outer perimeter of public methods.',
-        takeaway: 'Encapsulation protects object integrity by forcing all interactions through validated public accessors.'
       }
     ],
     commonTraps: [
@@ -462,6 +507,21 @@ export const AP_CSA_NOTES: APUnitNote[] = [
 | **Count Matching Elements** | \`int count = 0; for (String s : arr) if (s.equals(target)) count++;\` | Use \`.equals()\` when searching for object values. |
 | **Linear Search** | \`for (int i = 0; i < arr.length; i++) if (arr[i] == target) return i; return -1;\` | Returns index of first match, or \`-1\` if not found. |`
       }
+    ,
+      {
+        heading: '2. Enhanced For-Loops & 1D Array Algorithms (CED 6.3-6.4)',
+        content: `Array traversal algorithms and enhanced for-loop mechanics:
+
+* **Enhanced For-Loop (for-each) Rules**:
+  * Syntax: 'for (int value : numbers) { ... }'
+  * Provides sequential read-only access to elements without managing an index variable.
+  * **Limitation 1**: Cannot modify primitive elements in the array (the loop variable is a local copy).
+  * **Limitation 2**: Cannot access current index, traverse backwards, or process multiple elements simultaneously.
+* **Finding Minimum / Maximum Value Algorithm**:
+  * Always initialize 'int maxVal = arr[0];' to the first element (never initialize to 0 because array may contain all negative numbers!).
+* **Reversing an Array In-Place**:
+  * Swap 'arr[i]' with 'arr[arr.length - 1 - i]' while 'i < arr.length / 2'.`
+      }
     ],
     workedExamples: [
       {
@@ -476,16 +536,6 @@ export const AP_CSA_NOTES: APUnitNote[] = [
         ],
         finalAnswer: '`int first = arr[0]; for (int i = 0; i < arr.length - 1; i++) arr[i] = arr[i + 1]; arr[arr.length - 1] = first;`',
         apScoringTip: 'When shifting, always save the element that will be overwritten first into a temporary variable!'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'array_left_shift',
-        title: '1D Array Left-Shift Mechanism',
-        subtitle: 'Element Copying and Circular Wrap-Around',
-        type: 'memory_array',
-        description: 'Memory block array showing index 0 preserved in temp, index 1 moving to 0, index 2 to 1, and temp inserted at the tail.',
-        takeaway: 'Array modifications that copy forward or backward require careful loop direction planning to avoid overwriting unread values.'
       }
     ],
     commonTraps: [
@@ -545,6 +595,21 @@ export const AP_CSA_NOTES: APUnitNote[] = [
 | **\`list.set(index, obj)\`** | \`E\` | Replaces element at \`index\` with \`obj\`; returns old element |
 | **\`list.remove(index)\`** | \`E\` | Removes and returns element at \`index\`; shifts elements left |`
       }
+    ,
+      {
+        heading: '2. The Concurrent Modification & Index-Shift Trap (CED 7.3-7.5)',
+        content: `The single most common ArrayList bug on the AP Computer Science A exam:
+
+* **The Problem**:
+  * Calling 'list.remove(i)' removes the element and **shifts all subsequent elements one position to the left**.
+  * If iterating with a standard forward loop ('for (int i = 0; i < list.size(); i++)'), the loop index 'i' increments while the elements shift left, **skipping the immediate next element**!
+* **Two Safe Removal Patterns**:
+  * **Pattern 1: Backward Traversal (Recommended)**:
+    * 'for (int i = list.size() - 1; i >= 0; i--) { if (condition) list.remove(i); }'
+    * *(Shifting only affects elements with indices > i, which have already been inspected!).*
+  * **Pattern 2: While Loop with Conditional Increment**:
+    * Loop 'while (i < list.size())': If removed, do NOT increment 'i'; if kept, increment 'i++'.`
+      }
     ],
     workedExamples: [
       {
@@ -559,16 +624,6 @@ export const AP_CSA_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Backward loop ensures no elements are skipped when `.remove(i)` shifts elements left.',
         apScoringTip: 'Iterating backward to remove items appears frequently on FRQ Question 3 (ArrayList).'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'arraylist_shift_trap',
-        title: 'ArrayList Element Left-Shift Trap',
-        subtitle: 'Consecutive Items Skipped in Forward Loops vs. Safe Backward Loops',
-        type: 'arraylist_shift',
-        description: 'Diagram showing list with ["A", "REMOVE", "REMOVE", "B"]. Removing index 1 causes second "REMOVE" to slip into index 1 while loop pointer moves to index 2.',
-        takeaway: 'Forward deletion skips consecutive targets; always traverse backward when deleting from an ArrayList.'
       }
     ],
     commonTraps: [
@@ -625,6 +680,20 @@ export const AP_CSA_NOTES: APUnitNote[] = [
 | **Column-Major** | \`for (int c = 0; c < mat[0].length; c++)\` | \`for (int r = 0; r < mat.length; r++)\` | \`mat[r][c]\` | Col 0 down, then Col 1 down... |
 | **Enhanced For** | \`for (int[] row : mat)\` | \`for (int val : row)\` | \`val\` | Row-major read-only traversal |`
       }
+    ,
+      {
+        heading: '2. 2D Array Traversals, Dimensions & Grid Algorithms (CED 8.1-8.2)',
+        content: `Matrix representations and dimensional analysis in Java:
+
+* **Row and Column Dimension Rules**:
+  * 'matrix.length': Number of **rows** in the 2D array.
+  * 'matrix[0].length': Number of **columns** in the 2D array (assuming rectangular matrix).
+  * Valid row index range: '0' to 'matrix.length - 1'.
+  * Valid column index range: '0' to 'matrix[0].length - 1'.
+* **Row-Major vs. Column-Major Iteration**:
+  * **Row-Major (Default in Java)**: Outer loop iterates over rows ('for (int r = 0; r < matrix.length; r++)'); inner loop iterates over columns ('for (int c = 0; c < matrix[r].length; c++)').
+  * **Column-Major**: Outer loop iterates over columns ('for (int c = 0; c < matrix[0].length; c++)'); inner loop iterates over rows ('for (int r = 0; r < matrix.length; r++)').`
+      }
     ],
     workedExamples: [
       {
@@ -639,16 +708,6 @@ export const AP_CSA_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'A clean $O(\\text{rows})$ method summing a specific column.',
         apScoringTip: 'Remember: rows = `mat.length`, columns = `mat[0].length`. In column traversal, the row index changes while the column index stays fixed.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'csa_matrix_grid',
-        title: '2D Array Matrix Coordinate System',
-        subtitle: 'grid[row][col] Grid Index Mapping',
-        type: 'matrix_grid',
-        description: 'Matrix diagram with row indices 0 to R-1 on the vertical axis and column indices 0 to C-1 on the horizontal axis.',
-        takeaway: 'First bracket is vertical row; second bracket is horizontal column.'
       }
     ],
     commonTraps: [
@@ -707,6 +766,23 @@ export const AP_CSA_NOTES: APUnitNote[] = [
 | **Return Type** | Must match or be covariant | Can be different |
 | **Binding Time** | Dynamic (Runtime binding) | Static (Compile-time binding) |`
       }
+    ,
+      {
+        heading: '2. The super Keyword, Method Overriding & Dynamic Binding (CED 9.2-9.6)',
+        content: `Polymorphism and class hierarchy rules on the AP exam:
+
+* **The super Constructor Chaining Rule**:
+  * The first statement in any subclass constructor must be a call to 'super(...)'.
+  * If 'super(...)' is not explicitly written, Java **automatically inserts super()** (calling the superclass no-argument constructor).
+  * If the superclass does not have a no-argument constructor, a compile-time error occurs!
+* **Method Overriding vs. Overloading**:
+  * **Overriding**: Subclass defines a method with the exact same name, return type, and parameter list as in the superclass.
+  * **Overloading**: Same method name, but different parameter types/counts within the same class.
+* **Polymorphism Dynamic Method Dispatch**:
+  * 'SuperClass obj = new SubClass(); obj.doWork();'
+  * **Compile-Time Check**: The compiler checks if 'doWork()' exists in 'SuperClass'. If not, it fails to compile!
+  * **Run-Time Execution**: The Java Virtual Machine (JVM) executes the overridden 'doWork()' implementation in 'SubClass' (the actual instantiated object type)!`
+      }
     ],
     workedExamples: [
       {
@@ -721,16 +797,6 @@ export const AP_CSA_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Output:\n`Sound`\n`Bark`',
         apScoringTip: 'Remember: Reference type determines WHAT methods you can call; Actual object type determines WHICH version runs.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'polymorphism_binding',
-        title: 'Polymorphic Dynamic Method Binding Pipeline',
-        subtitle: 'Compile-Time Type Verification vs. Runtime Heap Dispatch',
-        type: 'polymorphic_dispatch',
-        description: 'Two-stage pipeline: Compiler validates against declared superclass contract; JVM dispatches to actual heap instance subclass method.',
-        takeaway: 'Declared type determines legality; actual type determines execution.'
       }
     ],
     commonTraps: [
@@ -816,16 +882,6 @@ export const AP_CSA_NOTES: APUnitNote[] = [
         ],
         finalAnswer: '`10` (calculates the sum of integers from 1 to $N$: $\\frac{4 \\times 5}{2} = 10$).',
         apScoringTip: 'Draw a stack tree on paper during the exam. Write each call going down, and then substitute return values coming back up.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'recursion_call_tree',
-        title: 'Recursive Call Stack Activation and Return Flow',
-        subtitle: 'Stack Growth (Push) $\\rightarrow$ Base Case $\\rightarrow$ Unwinding (Pop)',
-        type: 'stack_diagram',
-        description: 'Stack frame diagram showing activation frames stacking up until base case returns 1, followed by mathematical resolution as frames pop off.',
-        takeaway: 'Recursion utilizes system stack memory; return values bubble upward in reverse order.'
       }
     ],
     commonTraps: [

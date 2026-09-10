@@ -21,11 +21,13 @@ import { renderCalculusDiagramSvg } from './CalculusDiagramSvg';
 import jsPDF from 'jspdf';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
 import { sanitizePdfText, formatLatexToAscii } from '../utils/pdfSanitizer';
+import { drawTextWithElevatedPowers } from '../utils/pdfTableDrawer';
 import { rasterizeSvgToDataUrl } from '../utils/svgHelper';
 import SafePdfViewer from './SafePdfViewer';
 import { saveOfflineNote } from '../utils/offlineNotesStorage';
 import APCalculusABStitchNotes from './APCalculusABStitchNotes';
 import APSubjectStitchNotes from './APSubjectStitchNotes';
+import { renderHtmlNotesToPdfBlob } from '../utils/htmlNotesPdfExporter';
 import { safeGetItem } from '../utils/storage';
 import { GRADE_9_RECOMMENDED_IDS } from '../utils/apCurriculum';
 
@@ -319,9 +321,11 @@ function MathDiagramView({ diagram, onExpand }: { diagram: APNoteDiagram; onExpa
       </div>
 
       <div className="bg-zinc-50 rounded-xl p-4 flex flex-col items-center justify-center border border-zinc-100 group-hover:border-indigo-100 transition-colors">
-        <svg viewBox="0 0 300 160" className="w-full max-w-sm sm:max-w-md h-40 sm:h-48">
-          {renderDiagramSvgContent(diagram.type)}
-        </svg>
+        {renderCalculusDiagramSvg(diagram.type) || renderCalculusDiagramSvg(diagram.id) || (
+          <svg viewBox="0 0 300 160" className="w-full max-w-sm sm:max-w-md h-40 sm:h-48">
+            {renderDiagramSvgContent(diagram.type)}
+          </svg>
+        )}
         <div className="text-[10px] text-zinc-400 font-semibold text-center mt-2 flex items-center justify-center gap-1">
           <span>🔍</span>
           <span>Tap graph anywhere to open high-resolution full page view</span>
@@ -486,6 +490,7 @@ export default function APNotes({ onBack }: APNotesProps) {
   const [expandedSubjectIds, setExpandedSubjectIds] = useState<Set<string>>(() => new Set());
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [showAllGradeCourses, setShowAllGradeCourses] = useState<boolean>(false);
   const [selectedUnitId, setSelectedUnitId] = useState<string>('u1');
   const [activeTab, setActiveTab] = useState<'all' | 'theorems' | 'formulas' | 'examples' | 'diagrams' | 'traps' | 'cram'>('all');
   const [isExporting, setIsExporting] = useState<boolean>(false);
@@ -632,7 +637,9 @@ export default function APNotes({ onBack }: APNotesProps) {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
     doc.setTextColor(isCalcAb ? 27 : 55, isCalcAb ? 28 : 48, isCalcAb ? 29 : 163);
-    doc.text(ideaLines, margin + 10, currentY + 22);
+    ideaLines.forEach((idL: string, idi: number) => {
+      drawTextWithElevatedPowers(doc, idL, margin + 10, currentY + 22 + idi * LH, 8.5);
+    });
     currentY += ideaBoxH + SEC_GAP;
 
     // ─── Section 1: Key Theorems ──────────────────────────────────────────────
@@ -686,7 +693,9 @@ export default function APNotes({ onBack }: APNotesProps) {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8.5);
         doc.setTextColor(30, 41, 59);
-        doc.text(condLines, margin + 70, currentY + 8);
+        condLines.forEach((cl: string, i: number) => {
+          drawTextWithElevatedPowers(doc, cl, margin + 70, currentY + 8 + i * LH, 8.5);
+        });
         currentY += Math.max(1, condLines.length) * LH + 8;
 
         // Conclusion (Bold, Deep Indigo, Perfectly Measured - No Cutoff!)
@@ -697,7 +706,9 @@ export default function APNotes({ onBack }: APNotesProps) {
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8.5);
         doc.setTextColor(49, 46, 129); // Deep Indigo
-        doc.text(conclLines, margin + 70, currentY + 8);
+        conclLines.forEach((cl: string, i: number) => {
+          drawTextWithElevatedPowers(doc, cl, margin + 70, currentY + 8 + i * LH, 8.5);
+        });
         currentY += Math.max(1, conclLines.length) * LH + 10;
 
         // AP Tip Callout Box
@@ -710,7 +721,9 @@ export default function APNotes({ onBack }: APNotesProps) {
         doc.setFont('helvetica', 'italic');
         doc.setFontSize(7.5);
         doc.setTextColor(161, 72, 9);
-        doc.text(tipLines, margin + INDENT + 8, currentY + 9);
+        tipLines.forEach((tl: string, ti: number) => {
+          drawTextWithElevatedPowers(doc, tl, margin + INDENT + 8, currentY + 9 + ti * LH_SM, 7.5);
+        });
         currentY += tipBoxH + ITEM_GAP + 6;
       });
       currentY += SEC_GAP - ITEM_GAP;
@@ -770,10 +783,10 @@ export default function APNotes({ onBack }: APNotesProps) {
       doc.roundedRect(margin + 10, mathBoxY, contentWidth - 20, mathBoxH, 2, 2, 'FD');
 
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9);
+      doc.setFontSize(10.5);
       doc.setTextColor(isCalcAb ? 9 : 30, isCalcAb ? 76 : 58, isCalcAb ? 178 : 138); // Crisp deep blue/indigo math font
       mathLines.forEach((mLine, mIdx) => {
-        doc.text(mLine, margin + 16, mathBoxY + 13 + mIdx * LH_FORMULA);
+        drawTextWithElevatedPowers(doc, mLine, margin + 16, mathBoxY + 14 + mIdx * LH_FORMULA, 10.5);
       });
 
       // Explanation note
@@ -781,7 +794,9 @@ export default function APNotes({ onBack }: APNotesProps) {
       doc.setFont('helvetica', 'italic');
       doc.setFontSize(7.5);
       doc.setTextColor(71, 85, 105);
-      doc.text(explLines, margin + 12, explStartY + 8);
+      explLines.forEach((expL: string, expi: number) => {
+        drawTextWithElevatedPowers(doc, expL, margin + 12, explStartY + 8 + expi * LH, 7.5);
+      });
 
       currentY += fBoxH + ITEM_GAP + 2;
     });
@@ -792,24 +807,20 @@ export default function APNotes({ onBack }: APNotesProps) {
     const TABLE_PAD_V     = 5.5;  // top & bottom cell padding
     const TABLE_PAD_H     = 5;    // left cell padding
 
-    // Helper: clean a raw table cell — strip markdown, LaTeX, bold, italic
+    // Helper: clean a raw table cell — strip markdown bold/code while strictly preserving LaTeX math, subscripts, and superscripts
     const cleanTableCell = (raw: string): string => {
       let s = raw;
       // 1. Protect escaped pipes (\|) used for absolute value notation → temp token
       s = s.replace(/\\\|/g, '__PIPE__');
-      // 2. Strip LaTeX inline math $...$ → convert via formatMathForPdf
+      // 2. Convert LaTeX inline math $...$ or $$...$$ → clean ASCII math
       s = s.replace(/\$\$?([^$]+)\$\$?/g, (_m, inner) => formatMathForPdf(inner));
       // 3. Strip bold **text** → text
       s = s.replace(/\*\*([^*]+)\*\*/g, '$1');
-      // 4. Strip italic *text* or _text_ → text
-      s = s.replace(/\*([^*]+)\*/g, '$1').replace(/_([^_]+)_/g, '$1');
+      // 4. Strip italic *text* → text (never strip single underscore _subscripts)
+      s = s.replace(/\*([^*]+)\*/g, '$1');
       // 5. Strip backtick code `text`
       s = s.replace(/`([^`]+)`/g, '$1');
-      // 6. Strip remaining LaTeX backslash commands
-      s = s.replace(/\\[a-zA-Z]+/g, '');
-      // 7. Strip lone curly braces
-      s = s.replace(/[{}]/g, '');
-      // 8. Restore escaped pipes as readable symbol
+      // 6. Restore escaped pipes as readable symbol
       s = s.replace(/__PIPE__/g, '|');
       return sanitizePdfText(s.replace(/\s+/g, ' ').trim());
     };
@@ -898,7 +909,7 @@ export default function APNotes({ onBack }: APNotesProps) {
           );
           lines.forEach((ln, li) => {
             // baseline = top of row + top-padding + (lineIndex * lineHeight)
-            doc.text(ln, cellX + TABLE_PAD_H, currentY + TABLE_PAD_V + TABLE_CELL_LH * (li + 1) - 2);
+            drawTextWithElevatedPowers(doc, ln, cellX + TABLE_PAD_H, currentY + TABLE_PAD_V + TABLE_CELL_LH * (li + 1) - 2, fs);
           });
         }
         currentY += rowH;
@@ -945,10 +956,10 @@ export default function APNotes({ onBack }: APNotesProps) {
           const formulaRaw = t.trim().replace(/^\$\$/, '').replace(/\$\$$/, '').trim();
           const mathClean = sanitizePdfText(formatMathForPdf(formulaRaw));
           doc.setFont('helvetica', 'bold');
-          doc.setFontSize(8.5);
+          doc.setFontSize(10.5);
           const fLines = doc.splitTextToSize(mathClean, contentWidth - INDENT * 2 - 18);
-          const LH_F = 14.5;
-          const fBoxH = fLines.length * LH_F + 12;
+          const LH_F = 16.5;
+          const fBoxH = fLines.length * LH_F + 14;
           checkPageBreak(fBoxH + 4);
 
           // Formula container with generous line height and margin
@@ -961,7 +972,7 @@ export default function APNotes({ onBack }: APNotesProps) {
 
           doc.setTextColor(isCalcAb ? 9 : 30, isCalcAb ? 76 : 58, isCalcAb ? 178 : 138);
           fLines.forEach((fl, fi) => {
-            doc.text(fl, margin + INDENT + 10, currentY + 11 + fi * LH_F);
+            drawTextWithElevatedPowers(doc, fl, margin + INDENT + 10, currentY + 13 + fi * LH_F, 10.5);
           });
           currentY += fBoxH + 6;
           continue;
@@ -1016,7 +1027,9 @@ export default function APNotes({ onBack }: APNotesProps) {
           doc.setTextColor(51, 65, 85);
         }
 
-        doc.text(wrappedLines, indentX, currentY + LH * 0.85);
+        wrappedLines.forEach((wl: string, wIdx: number) => {
+          drawTextWithElevatedPowers(doc, wl, indentX, currentY + LH * 0.85 + wIdx * LH, wasHeading ? 8.5 : 8);
+        });
         // Generous spacing between bullet items so lists breathe and do not cram
         currentY += blockH + 6;
       }
@@ -1163,9 +1176,9 @@ export default function APNotes({ onBack }: APNotesProps) {
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(67, 20, 180);
         if (takeLines.length > 0) {
-          doc.text(takeLines[0] || '', margin + 70, takeBannerY + 11);
+          drawTextWithElevatedPowers(doc, takeLines[0] || '', margin + 70, takeBannerY + 11, 7.5);
           for (let ti = 1; ti < takeLines.length; ti++) {
-            doc.text(takeLines[ti], margin + 8, takeBannerY + 11 + (ti * 9.5));
+            drawTextWithElevatedPowers(doc, takeLines[ti], margin + 8, takeBannerY + 11 + (ti * 9.5), 7.5);
           }
         }
       }
@@ -1173,18 +1186,32 @@ export default function APNotes({ onBack }: APNotesProps) {
       currentY += graphBoxH + 12;
     };
 
-    // Section 4: Visual Graphs & Coordinate Figures (In PDF!) — async SVG rasterization
+    // Dynamic Sequential Section Numbering (adapts cleanly when diagrams are omitted)
+    let pdfSecNum = 4;
+
+    // Visual Diagrams & Essential Graphs — only rendered when unit contains authentic diagrams
     if (unit.diagrams && unit.diagrams.length > 0) {
       checkPageBreak(40);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11);
       doc.setTextColor(67, 56, 202); // Indigo-700
-      doc.text('4. Visual Graphs & Coordinate Figures', margin, currentY);
+      
+      const sId = (subject.subjectId || '').toLowerCase();
+      const isSci = sId.includes('chemistry') || sId.includes('biology') || sId.includes('environmental');
+      const isSoc = sId.includes('psychology') || sId.includes('geography');
+      const diagHeader = isSci
+        ? `${pdfSecNum}. Key Scientific Diagrams & Molecular Models`
+        : isSoc
+          ? `${pdfSecNum}. Key Conceptual Diagrams & Spatial Models`
+          : `${pdfSecNum}. Visual Graphs & Coordinate Figures`;
+
+      doc.text(diagHeader, margin, currentY);
       currentY += 16;
 
       for (const diag of unit.diagrams) {
         await drawPdfVectorGraph(diag);
       }
+      pdfSecNum++;
     }
 
     // ─── Section 5: Worked Examples ───────────────────────────────────────────
@@ -1193,7 +1220,8 @@ export default function APNotes({ onBack }: APNotesProps) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11);
       doc.setTextColor(30, 58, 138);
-      doc.text('5. Solved AP Exam Worked Examples', margin, currentY);
+      doc.text(`${pdfSecNum}. Solved AP Exam Worked Examples`, margin, currentY);
+      pdfSecNum++;
       currentY += 16;
 
       unit.workedExamples.forEach((ex, idx) => {
@@ -1224,7 +1252,9 @@ export default function APNotes({ onBack }: APNotesProps) {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8.5);
         doc.setTextColor(51, 65, 85);
-        doc.text(qLines, margin + INDENT + 18, currentY + 9);
+        qLines.forEach((ql: string, qi: number) => {
+          drawTextWithElevatedPowers(doc, ql, margin + INDENT + 18, currentY + 9 + qi * LH_SM, 8.5);
+        });
         currentY += qBlockH;
 
         // Solution steps with clear step badges and breathing room
@@ -1252,7 +1282,9 @@ export default function APNotes({ onBack }: APNotesProps) {
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(8);
           doc.setTextColor(51, 65, 85);
-          doc.text(stLines, stepIndent, currentY + 9.5);
+          stLines.forEach((stl: string, sli: number) => {
+            drawTextWithElevatedPowers(doc, stl, stepIndent, currentY + 9.5 + sli * LH_SM, 8);
+          });
 
           currentY += stepH + 4; // Generous breathing room between steps!
         });
@@ -1267,7 +1299,7 @@ export default function APNotes({ onBack }: APNotesProps) {
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8.5);
         doc.setTextColor(21, 128, 61);
-        doc.text(`Final Answer: ${ansClean}`, margin + INDENT + 8, currentY + 13.5);
+        drawTextWithElevatedPowers(doc, `Final Answer: ${ansClean}`, margin + INDENT + 8, currentY + 13.5, 8.5);
         currentY += 26;
 
         // Scoring tip callout box
@@ -1284,7 +1316,9 @@ export default function APNotes({ onBack }: APNotesProps) {
         doc.setFont('helvetica', 'italic');
         doc.setFontSize(7.5);
         doc.setTextColor(161, 72, 9);
-        doc.text(exTipLines, margin + INDENT + 8, currentY + 9);
+        exTipLines.forEach((tl: string, ti: number) => {
+          drawTextWithElevatedPowers(doc, tl, margin + INDENT + 8, currentY + 9 + ti * LH_SM, 7.5);
+        });
         currentY += tipBoxH + SEC_GAP;
       });
     }
@@ -1294,7 +1328,8 @@ export default function APNotes({ onBack }: APNotesProps) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
     doc.setTextColor(isCalcAb ? 186 : 153, isCalcAb ? 26 : 27, isCalcAb ? 26 : 27);
-    doc.text(isCalcAb ? '6. Exam Traps & Reader Warnings (High-Yield)' : '6. Common AP Exam Reader Traps', margin, currentY);
+    doc.text(isCalcAb ? `${pdfSecNum}. Exam Traps & Reader Warnings (High-Yield)` : `${pdfSecNum}. Common AP Exam Reader Traps`, margin, currentY);
+    pdfSecNum++;
     currentY += 14;
 
     unit.commonTraps.forEach(trap => {
@@ -1324,7 +1359,9 @@ export default function APNotes({ onBack }: APNotesProps) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
       doc.setTextColor(isCalcAb ? 27 : 127, isCalcAb ? 28 : 29, isCalcAb ? 29 : 29);
-      doc.text(trapLines, margin + 12, currentY + LH + 8);
+      trapLines.forEach((trL: string, tri: number) => {
+        drawTextWithElevatedPowers(doc, trL, margin + 12, currentY + LH + 8 + tri * LH, 8);
+      });
       currentY += trapBoxH + ITEM_GAP;
     });
     currentY += SEC_GAP - ITEM_GAP;
@@ -1340,7 +1377,8 @@ export default function APNotes({ onBack }: APNotesProps) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10.5);
     doc.setTextColor(cramTitleColor[0], cramTitleColor[1], cramTitleColor[2]);
-    doc.text('7. 5-Minute Exam Day Cram Sheet', margin + INDENT, currentY + 15);
+    doc.text(`${pdfSecNum}. 5-Minute Exam Day Cram Sheet`, margin + INDENT, currentY + 15);
+    pdfSecNum++;
     currentY += 28;
 
     unit.cramSheet.forEach((pt, pi) => {
@@ -1364,7 +1402,9 @@ export default function APNotes({ onBack }: APNotesProps) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8.5);
       doc.setTextColor(isCalcAb ? 27 : 30, isCalcAb ? 28 : 27, isCalcAb ? 29 : 75);
-      doc.text(ptLines, margin + INDENT + 8, currentY + LH);
+      ptLines.forEach((ptL: string, pti: number) => {
+        drawTextWithElevatedPowers(doc, ptL, margin + INDENT + 8, currentY + LH + pti * LH, 8.5);
+      });
       currentY += ptH + 4;
     });
 
@@ -1407,7 +1447,10 @@ export default function APNotes({ onBack }: APNotesProps) {
       });
 
       // 3. Also save to physical device storage (Downloads / Files app)
-      await savePDFMobile(pdfBlob, fileName);
+      await savePDFMobile(pdfBlob, fileName, {
+        featureTag: 'AP Notes',
+        customToast: '✅ Saved offline in app'
+      });
     } catch (err) {
       console.error("PDF Export error:", err);
       alert("Could not export PDF notes. Please try again.");

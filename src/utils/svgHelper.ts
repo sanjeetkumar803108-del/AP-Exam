@@ -7,15 +7,15 @@
 export const sanitizeSvg = (rawSvg?: string, autoPad = true): string => {
   if (!rawSvg || typeof rawSvg !== 'string') return '';
   
-  // Unescape any escaped HTML entities that may wrap or exist inside the SVG
   let cleanInput = rawSvg;
-  if (cleanInput.includes('&lt;') || cleanInput.includes('&gt;')) {
+  // Only unescape if the entire string was HTML-entity-wrapped (e.g. &lt;svg ... &gt;)
+  if (cleanInput.trim().startsWith('&lt;svg') || cleanInput.trim().startsWith('&lt;?xml')) {
     cleanInput = cleanInput
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
-      .replace(/&amp;/g, '&')
       .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'");
+      .replace(/&#39;/g, "'")
+      .replace(/&amp;/g, '&');
   }
 
   // Extract only the <svg>...</svg> block
@@ -35,9 +35,12 @@ export const sanitizeSvg = (rawSvg?: string, autoPad = true): string => {
   svg = svg.replace(/javascript\s*:/gi, '');
   svg = svg.replace(/<foreignObject[\s\S]*?<\/foreignObject>/gi, '');
 
+  // CRITICAL XML FIX: Ensure all raw '&' not part of a valid XML entity are escaped as '&amp;'
+  // Prevents fatal XML parse errors on labels like 'Demand & Supply' or 'A && B'
+  svg = svg.replace(/&(?!(amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)/g, '&amp;');
+
   if (autoPad) {
-    // 1. Robust Auto-healing ViewBox Padding:
-    // Handles comma-separated, space-separated, and mixed formatting
+    // Robust Auto-healing ViewBox Padding
     const vbMatch = svg.match(/viewBox=['"]\s*([-\d.]+)[,\s]+([-\d.]+)[,\s]+([-\d.]+)[,\s]+([-\d.]+)\s*['"]/i);
     if (vbMatch) {
       const minX = parseFloat(vbMatch[1]);
@@ -65,12 +68,11 @@ export const sanitizeSvg = (rawSvg?: string, autoPad = true): string => {
         `<rect x="${newMinX}" y="${newMinY}" width="${newW}" height="${newH}" fill="#09090b" rx="14" stroke="#27272a" stroke-width="1.5"/>`
       );
     } else if (!svg.includes('viewBox=')) {
-      // Only add default viewBox if none exists to avoid fatal XML attribute duplication
       svg = svg.replace(/<svg\b/i, '<svg viewBox="-30 -30 460 280"');
     }
   }
 
-  // 2. Ensure responsive scaling, zero clipping, and aspect-ratio preservation for onscreen UI
+  // Ensure responsive scaling, zero clipping, and aspect-ratio preservation for onscreen UI
   svg = svg.replace(
     /<svg\b([^>]*?)>/i,
     `<svg $1 style="overflow: visible; width: 100%; height: auto; max-height: 100%; display: block;" preserveAspectRatio="xMidYMid meet">`
@@ -128,11 +130,7 @@ function prepareSvgForRasterization(sanitizedSvg: string, targetWidth: number, t
       attrs += ` height="${targetHeight}"`;
     }
 
-    if (!/\bpreserveAspectRatio=['"][^'"]*['"]/i.test(attrs)) {
-      attrs += ` preserveAspectRatio="xMidYMid meet"`;
-    }
-
-    svg = svg.replace(svgTagMatch[0], `<svg ${attrs.trim()}>`);
+    svg = svg.replace(/<svg\b[^>]*>/i, `<svg${attrs}>`);
   }
 
   return svg;
@@ -160,7 +158,7 @@ export const rasterizeSvgToDataUrl = async (
 
       const canvasSvg = prepareSvgForRasterization(sanitized, targetWidth, targetHeight);
 
-      // 1. Build Base64 Data URI (CORS-free, universal mobile support, zero network latency)
+      // Build Base64 Data URI (CORS-free, universal mobile support, zero network latency)
       let dataUrlSrc = '';
       try {
         const base64Data = typeof btoa !== 'undefined'
@@ -174,8 +172,6 @@ export const rasterizeSvgToDataUrl = async (
       }
 
       const img = new Image();
-      // NOTE: Never set crossOrigin on local data: or blob: schemes! Setting crossOrigin
-      // forces CORS preflight checks that fail on local URLs in WebKit/Android WebView.
 
       let blobUrl: string | null = null;
       let hasFinished = false;
@@ -226,19 +222,39 @@ export const rasterizeSvgToDataUrl = async (
       };
 
       img.onerror = () => {
-        // If Data URI failed for any reason, try Blob URL as a secondary fallback
+        // Fallback: Attempt Blob URL if data URI failed
         if (!blobUrl && typeof Blob !== 'undefined' && typeof URL !== 'undefined') {
           try {
             const blob = new Blob([canvasSvg], { type: 'image/svg+xml;charset=utf-8' });
             blobUrl = URL.createObjectURL(blob);
-            img.src = blobUrl;
+            const fallbackImg = new Image();
+            fallbackImg.onload = () => {
+              try {
+                const canvas = document.createElement('canvas');
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                  if (bgColor) {
+                    ctx.fillStyle = bgColor;
+                    ctx.fillRect(0, 0, targetWidth, targetHeight);
+                  }
+                  ctx.drawImage(fallbackImg, 0, 0, targetWidth, targetHeight);
+                  finish(canvas.toDataURL('image/png'));
+                  return;
+                }
+              } catch {}
+              finish(null);
+            };
+            fallbackImg.onerror = () => finish(null);
+            fallbackImg.src = blobUrl;
             return;
           } catch {}
         }
         finish(null);
       };
 
-      img.src = dataUrlSrc || `data:image/svg+xml;charset=utf-8,${encodeURIComponent(canvasSvg)}`;
+      img.src = dataUrlSrc;
     } catch {
       resolve(null);
     }

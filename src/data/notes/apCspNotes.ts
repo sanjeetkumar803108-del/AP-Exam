@@ -40,6 +40,24 @@ export const AP_CSP_NOTES: APUnitNote[] = [
 - **Test Cases**: Designing inputs that test boundary conditions, normal inputs, and invalid edge cases (e.g. empty strings, negative numbers).
 - **Documentation & Comments**: Explaining the *purpose* and *logic* of code segments to facilitate maintenance, debugging, and collaboration.`
       }
+    ,
+      {
+        heading: '2. Collaboration, Pair Programming & Intellectual Property (CED 1.1-1.2)',
+        content: `Software engineering collaboration and digital intellectual property laws:
+
+* **Collaborative Programming Models**:
+  * **Pair Programming**: Two developers work at one workstation:
+    * **Driver**: Writes the code and focuses on implementation details.
+    * **Navigator**: Reviews code in real-time, plans ahead, and spots edge-case errors.
+  * Roles switch frequently to foster shared ownership, reduce bugs, and enhance design quality.
+* **Intellectual Property & Licensing**:
+  * **Copyright**: Automatic legal protection granted to creators of original works, preventing unauthorized copying, distribution, or derivative works.
+  * **Creative Commons (CC)**: Public copyright licenses enabling creators to grant specific permissions to the public:
+    * **BY (Attribution)**: Credit must be given to original creator.
+    * **NC (NonCommercial)**: Work cannot be used for commercial profit.
+    * **SA (ShareAlike)**: Derivative works must inherit the identical license.
+  * **Open Source vs. Proprietary**: Open-source software provides full source code access for inspection and collaborative modification; proprietary software restricts source code access.`
+      }
     ],
     workedExamples: [
       {
@@ -54,16 +72,6 @@ export const AP_CSP_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Logic Error; The divisor should be 5 (or `LENGTH(scores)`) rather than 4.',
         apScoringTip: 'Always use dynamic list length `LENGTH(list)` rather than hardcoding numbers so the code adapts to lists of any size.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'csp_dev_cycle',
-        title: 'Iterative Software Development Cycle',
-        subtitle: 'Investigate $\\rightarrow$ Design $\\rightarrow$ Prototype $\\rightarrow$ Test',
-        type: 'dev_cycle_diagram',
-        description: 'Circular feedback loop showing continuous iteration between requirement gathering, algorithm design, prototype coding, and user testing.',
-        takeaway: 'Software development is not a linear waterfall; it is an iterative cycle of continuous prototyping and refinement.'
       }
     ],
     commonTraps: [
@@ -125,6 +133,21 @@ $$\\text{Decimal Value} = 128 + 32 + 4 + 2 = 166$$
 - **Sampling**: Measuring an analog signal at regular time intervals.
 - **Quantization**: Converting sampled measurements into discrete binary values. Higher sampling rate $\\implies$ higher fidelity digital recreation.`
       }
+    ,
+      {
+        heading: '2. Analog vs. Digital Sampling, Overflow & Compression (CED 2.1-2.2)',
+        content: `Data digitization, numeric limits, and compression mechanics:
+
+* **Analog to Digital Conversion (Sampling)**:
+  * **Analog Data**: Continuous values that change smoothly over time (sound waves, light intensities).
+  * **Digital Data**: Discrete binary approximations created by **sampling** analog signals at fixed time intervals.
+  * **Sampling Rate**: Higher sampling rates and greater bit depths produce higher-fidelity digital representations at the expense of larger file sizes.
+* **Integer Overflow Errors**:
+  * Occurs when an arithmetic calculation produces a number larger than the maximum integer representable with the allocated bits (e.g. an 8-bit unsigned integer maxes out at $2^8 - 1 = 255$; adding $1$ rolls over to $0$!).
+* **Lossless vs. Lossy Data Compression**:
+  * **Lossless Compression**: Reversibly compresses data with ZERO loss of information (e.g. Run-Length Encoding, PNG, ZIP). Required for executable code, legal text, and medical imaging.
+  * **Lossy Compression**: Irreversibly discards imperceptible data (e.g. JPEG, MP3, MP4). Dramatically reduces file size but original uncompressed file cannot be perfectly reconstructed.`
+      }
     ],
     workedExamples: [
       {
@@ -144,16 +167,6 @@ $$\\text{Decimal Value} = 128 + 32 + 4 + 2 = 166$$
         ],
         finalAnswer: '(a) 64 unique users; (b) Binary `110101` = Decimal 53.',
         apScoringTip: 'Remember that $n$ bits can represent numbers from $0$ to $2^n - 1$.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'csp_analog_sampling',
-        title: 'Analog to Digital Audio Sampling',
-        subtitle: 'Continuous Waveform Discretized into Binary Samples',
-        type: 'sampling_graph',
-        description: 'Smooth analog sine wave overlaid with vertical sampling bars converting continuous voltage into discrete digital binary steps.',
-        takeaway: 'Higher sampling rates and bit depths yield higher audio fidelity but increase required digital storage size.'
       }
     ],
     commonTraps: [
@@ -218,6 +231,22 @@ $$\\text{Decimal Value} = 128 + 32 + 4 + 2 = 166$$
 - **Conditionals & Modulo**:
   - \`a MOD b\` returns remainder of integer division (e.g. \`14 MOD 5\` evaluates to 4). If \`n MOD 2 = 0\`, $n$ is even!`
       }
+    ,
+      {
+        heading: '2. Procedural Abstraction, Complexity & Undecidability (CED 3.7-3.9)',
+        content: `Algorithmic design theory, efficiency, and computational limits:
+
+* **Procedural Abstraction**:
+  * Packaging a sequence of instructions into a reusable function/procedure with parameters.
+  * **Benefits**: Code reuse, reduced complexity, easier debugging, and modular program development. The caller only needs to know **WHAT** the procedure does, not **HOW** it achieves it.
+* **Algorithmic Efficiency & Heuristics**:
+  * **Linear Time ($O(N)$)**: Execution time scales directly proportional to input size (e.g. linear search on unsorted list).
+  * **Logarithmic Time ($O(\\log N)$)**: Execution time scales logarithmically by halving remaining search space each step (e.g. binary search on sorted list).
+  * **Heuristics**: Approximate problem-solving strategies used when an optimal exact solution requires unreasonable exponential time ($2^N$ or $N!$, such as the Traveling Salesperson Problem).
+* **Undecidable Problems**:
+  * A computational problem for which no algorithm can EVER be constructed that is guaranteed to provide a correct yes-or-no answer for all possible inputs.
+  * **The Halting Problem (Alan Turing)**: It is mathematically impossible to write a general program that can determine whether any arbitrary program will finish running or loop forever!`
+      }
     ],
     workedExamples: [
       {
@@ -233,16 +262,6 @@ $$\\text{Decimal Value} = 128 + 32 + 4 + 2 = 166$$
         ],
         finalAnswer: 'Final position is (2, 1); Final orientation is facing West.',
         apScoringTip: 'Draw a small 4x4 grid on scratch paper and physically trace the robot with an arrow at each step to avoid rotation orientation errors.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'csp_binary_vs_linear',
-        title: 'Binary Search vs. Linear Search Steps',
-        subtitle: 'Logarithmic Halving vs. Sequential Element Traversal',
-        type: 'search_comparison_graph',
-        description: 'Graph showing linear search growth line ($y = n$) climbing steeply while binary search curve ($y = \\log_2 n$) remains nearly flat as dataset size scales.',
-        takeaway: 'Binary search requires sorted lists but is exponentially faster than linear search for large datasets.'
       }
     ],
     commonTraps: [
@@ -302,6 +321,21 @@ $$\\text{Decimal Value} = 128 + 32 + 4 + 2 = 166$$
 | **UDP** | User Datagram Protocol | Fast, lightweight transmission without packet verification (used in live video streaming and gaming) |
 | **IP** | Internet Protocol | Assigns unique hierarchical numerical addresses to devices and routes packets |`
       }
+    ,
+      {
+        heading: '2. IP Addressing, DNS Hierarchy & Secure Transmission (CED 4.1-4.2)',
+        content: `Core Internet architectures, routing reliability, and protocol standards:
+
+* **IP Addressing Standards**:
+  * **IPv4**: 32-bit addresses formatted as 4 decimal octets (e.g. 192.168.1.1), providing approximately 4.3 billion distinct addresses.
+  * **IPv6**: 128-bit addresses formatted as 8 hexadecimal groups, providing $2^{128}$ addresses (virtually inexhaustible).
+* **Domain Name System (DNS)**:
+  * The decentralized, hierarchical 'phonebook of the Internet' that translates human-readable domain names (e.g. collegeboard.org) into numerical IP addresses.
+* **Secure Protocols**:
+  * **HTTP vs. HTTPS**: HTTP transmits plain text susceptible to eavesdropping; HTTPS uses Transport Layer Security (TLS/SSL) to encrypt all client-server communications.
+* **Net Neutrality**:
+  * The regulatory principle that Internet Service Providers (ISPs) must treat all data packets equally, without throttling, blocking, or charging extra for specific content or services.`
+      }
     ],
     workedExamples: [
       {
@@ -317,16 +351,6 @@ $$\\text{Decimal Value} = 128 + 32 + 4 + 2 = 166$$
         ],
         finalAnswer: 'Minimum 1 failure (the single link between D and E).',
         apScoringTip: 'Trace every path from source to destination. A single point of failure exists wherever all alternate paths converge through a single shared link.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'csp_packet_routing',
-        title: 'Packet-Switched Dynamic Routing Diagram',
-        subtitle: 'Data Split into Packets Traveling Independent Routes',
-        type: 'packet_routing_diagram',
-        description: 'Diagram showing message split into packets #1, #2, #3 traveling along different router paths through the cloud and reassembling in order at the destination.',
-        takeaway: 'Packets travel independently and may arrive out of order; TCP sequences and reassembles them at the receiving endpoint.'
       }
     ],
     commonTraps: [
@@ -385,6 +409,27 @@ $$\\text{Decimal Value} = 128 + 32 + 4 + 2 = 166$$
   2. Something you *have* (phone authenticator app, hardware key).
   3. Something you *are* (biometric fingerprint, facial scan).`
       }
+    ,
+      {
+        heading: '2. Data Privacy, Cybersecurity Exploits & The Digital Divide (CED 5.2-5.5)',
+        content: `Social, ethical, and security dimensions of ubiquitous computing:
+
+* **Personally Identifiable Information (PII) & Privacy**:
+  * Data that can directly identify an individual (Social Security number, biometrics, home address, medical history).
+  * Tracking mechanisms: Cookies, browser fingerprinting, and geolocation tracking create detailed user profiles.
+* **Common Cybersecurity Threats**:
+  * **Phishing**: Deceptive emails or websites mimicking trusted entities to trick users into divulging credentials.
+  * **Keylogging**: Malware recording keyboard strokes to capture passwords and sensitive inputs.
+  * **Distributed Denial-of-Service (DDoS)**: Swarming a server with requests from a botnet of infected computers, overwhelming its bandwidth and crashing service.
+  * **Rogue Access Point**: An unauthorized wireless access point giving attackers access to intercept network traffic.
+* **Multi-Factor Authentication (MFA)**:
+  * Significantly enhances security by requiring verification across two or more categories:
+    1. Something you **know** (password, PIN).
+    2. Something you **have** (smartphone authenticator app, physical security key).
+    3. Something you **are** (fingerprint, facial recognition).
+* **The Digital Divide**:
+  * Unequal socioeconomic and geographic access to high-speed Internet infrastructure, hardware, and digital literacy.`
+      }
     ],
     workedExamples: [
       {
@@ -399,16 +444,6 @@ $$\\text{Decimal Value} = 128 + 32 + 4 + 2 = 166$$
         ],
         finalAnswer: 'Alice encrypts using Bob’s Public Key; Bob decrypts using Bob’s Private Key.',
         apScoringTip: 'Remember: You always encrypt with the RECIPIENT’S public key so only the recipient’s private key can open it.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'csp_public_key',
-        title: 'Public Key (Asymmetric) Cryptography Workflow',
-        subtitle: 'Encrypt with Recipient’s Public Key $\\rightarrow$ Decrypt with Private Key',
-        type: 'cryptography_diagram',
-        description: 'Diagram showing Alice encrypting plain text with Bob’s public key, sending scrambled ciphertext over the open internet, and Bob unlocking it with his secret private key.',
-        takeaway: 'Public key encrypts; corresponding private key decrypts. The private key is never transmitted across the network.'
       }
     ],
     commonTraps: [

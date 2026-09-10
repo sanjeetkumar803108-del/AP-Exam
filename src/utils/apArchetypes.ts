@@ -473,5 +473,13 @@ export function getGranularSubjectArchetypes(subject: string, unitOrTopic: strin
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
 
+  // If candidate pool is smaller than requested count, cycle and pad to guarantee count items
+  if (shuffled.length > 0 && shuffled.length < count) {
+    const base = [...shuffled];
+    while (shuffled.length < count) {
+      shuffled.push(...base);
+    }
+  }
+
   return shuffled.slice(0, count);
 }

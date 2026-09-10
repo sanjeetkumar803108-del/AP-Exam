@@ -21,6 +21,7 @@ import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
 import { savePdfToHistory } from '../utils/pdfHistory';
 import { showToast } from '../utils/toast';
 import { sanitizePdfText, parseSolutionStepsForPdf } from '../utils/pdfSanitizer';
+import { drawRichTextWithTables } from '../utils/pdfTableDrawer';
 import { sanitizeSvg, rasterizeSvgToDataUrl, getDiagramTypeLabel } from '../utils/svgHelper';
 import SafePdfViewer from './SafePdfViewer';
 import { safeGetItem, safeSetItem, safeJsonParse } from '../utils/storage';
@@ -140,6 +141,58 @@ export function getApExamDurationSeconds(subjectId: string, qType: 'objective' |
 
 type QuestionType = 'objective' | 'subjective';
 type Step = 'select-subject' | 'configure' | 'practice';
+
+
+export function isOptionCorrectAnswer(
+  userChoice: string | undefined,
+  correctAnswer: string | undefined,
+  allOptions?: string[]
+): boolean {
+  if (!userChoice || !correctAnswer) return false;
+  const choiceTrimmed = userChoice.trim();
+  const ansTrimmed = correctAnswer.trim();
+
+  // 1. Direct exact match
+  if (choiceTrimmed === ansTrimmed) return true;
+
+  // 2. Case-insensitive exact match
+  if (choiceTrimmed.toLowerCase() === ansTrimmed.toLowerCase()) return true;
+
+  // 3. Extract letter prefixes (e.g. "A) ...", "A. ...", "(A)")
+  const choiceLetterMatch = choiceTrimmed.match(/^([A-Da-d])[\)\.:\s]/);
+  const ansLetterMatch = ansTrimmed.match(/^([A-Da-d])[\)\.:\s]?$/) || ansTrimmed.match(/^Option\s+([A-Da-d])/i) || ansTrimmed.match(/^([A-Da-d])[\)\.:\s]/);
+
+  if (choiceLetterMatch && ansLetterMatch) {
+    if (choiceLetterMatch[1].toUpperCase() === ansLetterMatch[1].toUpperCase()) {
+      return true;
+    }
+  }
+
+  // 4. Single letter answer (e.g. correctAnswer = "A")
+  if (/^[A-Da-d]$/.test(ansTrimmed) && choiceLetterMatch) {
+    if (choiceLetterMatch[1].toUpperCase() === ansTrimmed.toUpperCase()) {
+      return true;
+    }
+  }
+
+  // 5. Compare content stripping letter prefix
+  const choiceContent = choiceTrimmed.replace(/^[A-Da-d][\)\.:\s]+/, '').trim().toLowerCase();
+  const ansContent = ansTrimmed.replace(/^[A-Da-d][\)\.:\s]+/, '').trim().toLowerCase();
+  if (choiceContent && ansContent && choiceContent === ansContent) {
+    return true;
+  }
+
+  // 6. Check if correctAnswer matches index in allOptions
+  if (allOptions && Array.isArray(allOptions)) {
+    const letters = ['a', 'b', 'c', 'd'];
+    const lIdx = letters.indexOf(ansTrimmed.toLowerCase());
+    if (lIdx !== -1 && allOptions[lIdx] === userChoice) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateToTab }: TestPrepProps) {
   // Active User Academic Profile & Grade Detection
@@ -1350,25 +1403,8 @@ Instructions for AI Magic Tutor:
       if (qType === 'objective') {
         for (let idx = 0; idx < objQs.length; idx++) {
           const q = objQs[idx];
-          const cleanQ = sanitizePdfText(q.question);
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10.5);
-          const qLines = doc.splitTextToSize(cleanQ, contentWidth);
-          const qPromptH = (qLines.length * 13) + 8;
 
-          let stimBoxH = 0;
-          let stimLines: string[] = [];
-          if (q.stimulus && q.stimulus.trim()) {
-            const cleanStim = sanitizePdfText(q.stimulus.trim());
-            stimLines = doc.splitTextToSize(cleanStim, contentWidth - 20);
-            stimBoxH = (stimLines.length * 11) + 24;
-          }
-
-          // Pre-measure at least the badge (28) + stimulus (if any) + prompt + diagram (if any) + first option (25)
-          const diagEstimateH = q.diagramSvg ? 150 : 0;
-          const blockH = 28 + stimBoxH + qPromptH + diagEstimateH + 25;
-          const maxUsablePageH = pageHeight - 40 - 46;
-          checkPageBreak(Math.min(blockH, maxUsablePageH));
+          checkPageBreak(80);
 
           // Question badge & skill
           doc.setFillColor(241, 245, 249);
@@ -1389,25 +1425,26 @@ Instructions for AI Magic Tutor:
           currentY += 28;
 
           // Stimulus (if exists)
-          if (stimBoxH > 0 && stimLines.length > 0) {
-            checkPageBreak(stimBoxH + 15);
-            doc.setFillColor(248, 250, 252);
-            doc.setDrawColor(203, 213, 225);
-            doc.roundedRect(margin, currentY, contentWidth, stimBoxH - 10, 4, 4, 'FD');
-
-            doc.setFont('times', 'italic');
-            doc.setFontSize(9);
-            doc.setTextColor(51, 65, 85);
-            doc.text(stimLines, margin + 10, currentY + 13);
-            currentY += stimBoxH;
+          if (q.stimulus && q.stimulus.trim()) {
+            currentY = drawRichTextWithTables(doc, q.stimulus.trim(), margin + 10, currentY, contentWidth - 20, {
+              fontName: 'times',
+              fontStyle: 'italic',
+              fontSize: 9,
+              textColor: [51, 65, 85],
+              checkPageBreak
+            });
+            currentY += 8;
           }
 
-          // Question prompt - always set font, size, and bold color right before rendering!
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10.5);
-          doc.setTextColor(15, 23, 42);
-          doc.text(qLines, margin, currentY);
-          currentY += qPromptH;
+          // Question prompt with rich table rendering
+          currentY = drawRichTextWithTables(doc, q.question, margin, currentY, contentWidth, {
+            fontName: 'helvetica',
+            fontStyle: 'bold',
+            fontSize: 10.5,
+            textColor: [15, 23, 42],
+            checkPageBreak
+          });
+          currentY += 8;
 
           // High-DPI Diagram / Coordinate Graph (if provided)
           if (q.diagramSvg) {
@@ -1428,22 +1465,17 @@ Instructions for AI Magic Tutor:
 
           // Options
           q.options.forEach(opt => {
-            const cleanOpt = sanitizePdfText(opt);
-            const optLines = doc.splitTextToSize(cleanOpt, contentWidth - 24);
-            const optH = optLines.length * 12 + 6;
-
-            checkPageBreak(optH + 10);
-
-            // Option bullet indicator
             doc.setFillColor(241, 245, 249);
             doc.circle(margin + 6, currentY + 4, 3, 'F');
 
-            // Set typography directly
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(9.5);
-            doc.setTextColor(30, 41, 59);
-            doc.text(optLines, margin + 16, currentY + 6);
-            currentY += optH;
+            currentY = drawRichTextWithTables(doc, opt, margin + 16, currentY, contentWidth - 24, {
+              fontName: 'helvetica',
+              fontStyle: 'normal',
+              fontSize: 9.5,
+              textColor: [30, 41, 59],
+              checkPageBreak
+            });
+            currentY += 4;
           });
 
           currentY += 10;
@@ -1476,73 +1508,50 @@ Instructions for AI Magic Tutor:
           const cleanAns = sanitizePdfText(q.correctAnswer);
           const expSteps = parseSolutionStepsForPdf(q.explanation);
 
-          // Measure all explanation steps
-          let expContentH = 0;
-          const formattedSteps = expSteps.map(st => {
-            const hasLabel = Boolean(st.label && st.label.trim());
-            const textWrapW = contentWidth - 24;
-            const lines = doc.splitTextToSize(st.content, textWrapW);
-            const stepH = (hasLabel ? 13 : 0) + (lines.length * 11.5) + 4;
-            expContentH += stepH;
-            return { label: st.label, lines, stepH, hasLabel };
-          });
-
-          // Fallback if explanation was empty
-          if (formattedSteps.length === 0) {
-            formattedSteps.push({
-              label: '',
-              lines: doc.splitTextToSize('No additional explanation provided.', contentWidth - 24),
-              stepH: 14,
-              hasLabel: false
-            });
-            expContentH += 14;
-          }
-
-          const ansBoxH = 26 + expContentH + 10;
-
-          // Sub-box page break check
-          checkPageBreak(Math.min(ansBoxH + 14, pageHeight - 40 - 46));
-
-          // Card Background
-          doc.setFillColor(248, 250, 252);
-          doc.setDrawColor(226, 232, 240);
-          doc.roundedRect(margin, currentY, contentWidth, ansBoxH, 4, 4, 'FD');
-
-          // Left Emerald Accent Bar
-          doc.setFillColor(16, 185, 129); // Emerald-500
-          doc.roundedRect(margin, currentY, 3.5, ansBoxH, 1, 1, 'F');
+          checkPageBreak(60);
 
           // Correct Answer Banner Header
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(9.5);
           doc.setTextColor(21, 128, 61); // Emerald-700
-          doc.text(`QUESTION ${idx + 1} - [Correct Answer]:  ${cleanAns}`, margin + 12, currentY + 16);
+          doc.text(`QUESTION ${idx + 1} - [Correct Answer]:  ${cleanAns}`, margin, currentY);
+          currentY += 16;
 
-          let expCursorY = currentY + 30;
-
-          formattedSteps.forEach((st, sIdx) => {
-            if (st.hasLabel) {
+          expSteps.forEach((st, sIdx) => {
+            if (st.label && st.label.trim()) {
               doc.setFont('helvetica', 'bold');
               doc.setFontSize(8.5);
-              doc.setTextColor(79, 70, 229); // Indigo-600
-              doc.text(st.label, margin + 12, expCursorY);
-              expCursorY += 12;
-            } else if (sIdx === 0 && formattedSteps.length === 1) {
+              if (st.label.toLowerCase().includes('distractor')) {
+                doc.setTextColor(180, 83, 9); // Amber-700
+                currentY += 2;
+              } else if (st.label.toLowerCase().startsWith('option') || st.label.toLowerCase().startsWith('choice')) {
+                doc.setTextColor(126, 34, 206); // Purple-700
+              } else {
+                doc.setTextColor(79, 70, 229); // Indigo-600
+              }
+              doc.text(st.label, margin + 8, currentY);
+              currentY += 12;
+            } else if (sIdx === 0 && expSteps.length === 1) {
               doc.setFont('helvetica', 'bold');
               doc.setFontSize(8.5);
               doc.setTextColor(100, 116, 139); // Slate-500
-              doc.text('Official Explanation:', margin + 12, expCursorY);
-              expCursorY += 12;
+              doc.text('Official Explanation:', margin + 8, currentY);
+              currentY += 12;
             }
 
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(8.5);
-            doc.setTextColor(51, 65, 85); // Slate-700
-            doc.text(st.lines, margin + 12, expCursorY);
-            expCursorY += (st.lines.length * 11.5) + 6;
+            if (st.content && st.content.trim()) {
+              currentY = drawRichTextWithTables(doc, st.content, margin + 8, currentY, contentWidth - 16, {
+                fontName: 'helvetica',
+                fontStyle: 'normal',
+                fontSize: 8.5,
+                textColor: [51, 65, 85],
+                checkPageBreak
+              });
+              currentY += 6;
+            }
           });
 
-          currentY += ansBoxH + 12;
+          currentY += 14;
         });
       } else {
         // Subjective (FRQ) - 1. Print all FRQ prompts first
@@ -1584,12 +1593,15 @@ Instructions for AI Magic Tutor:
 
           currentY += bannerH + bannerSpacing;
 
-          // Prompt - Always apply bold, high-contrast styling right before rendering text!
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10.5);
-          doc.setTextColor(15, 23, 42);
-          doc.text(promptLines, margin, currentY);
-          currentY += promptH;
+          // Prompt with rich table and formatting support
+          currentY = drawRichTextWithTables(doc, q.prompt, margin, currentY, contentWidth, {
+            fontName: 'helvetica',
+            fontStyle: 'bold',
+            fontSize: 10.5,
+            textColor: [15, 23, 42],
+            checkPageBreak
+          });
+          currentY += 12;
 
           // High-DPI Diagram / Coordinate Graph (if provided)
           if (q.diagramSvg) {
@@ -1641,31 +1653,8 @@ Instructions for AI Magic Tutor:
             ? `TASK PROMPT ${idx + 1} SCORING RUBRIC & EXEMPLARY SOLUTION`
             : `QUESTION ${idx + 1} SCORING RUBRIC & EXEMPLARY SOLUTION`;
 
-          // Parse model answer into discrete steps/parts
           const steps = parseSolutionStepsForPdf(q.modelAnswer);
 
-          // Measure all steps to format with individual cards and page break safety
-          const formattedSteps = steps.map(st => {
-            const hasLabel = Boolean(st.label && st.label.trim());
-            const textWrapW = contentWidth - 24;
-            const lines = doc.splitTextToSize(st.content, textWrapW);
-            const labelH = hasLabel ? 13 : 0;
-            const bodyH = lines.length * 11.5;
-            const cardH = labelH + bodyH + 14;
-            return { label: st.label, lines, cardH, hasLabel };
-          });
-
-          // Fallback if modelAnswer was empty
-          if (formattedSteps.length === 0) {
-            formattedSteps.push({
-              label: '',
-              lines: doc.splitTextToSize('No model answer provided.', contentWidth - 24),
-              cardH: 26,
-              hasLabel: false
-            });
-          }
-
-          // Initial break check for task header + solution title banner
           checkPageBreak(50);
 
           // Task / Question Sub-header
@@ -1685,41 +1674,29 @@ Instructions for AI Magic Tutor:
           doc.text('Exemplary Model Solution (Maximum Score):', margin + 10, currentY + 13.5);
           currentY += 26;
 
-          // Render each step/part as its own pristine step card
-          formattedSteps.forEach(st => {
-            // Check page break for this specific step card so cards are never split awkwardly across pages
-            checkPageBreak(st.cardH + 8);
+          // Render each step/part with full support for embedded data tables
+          steps.forEach(st => {
+            checkPageBreak(40);
 
-            // Card background & border
-            doc.setFillColor(248, 250, 252); // Slate-50
-            doc.setDrawColor(226, 232, 240); // Slate-200
-            doc.roundedRect(margin, currentY, contentWidth, st.cardH, 3, 3, 'FD');
-
-            // Left Indigo accent strip
-            doc.setFillColor(99, 102, 241); // Indigo-500
-            doc.roundedRect(margin, currentY, 3.5, st.cardH, 1, 1, 'F');
-
-            let cardContentY = currentY + 11;
-
-            // Step/Part label
-            if (st.hasLabel) {
+            if (st.label && st.label.trim()) {
               doc.setFont('helvetica', 'bold');
               doc.setFontSize(9);
               doc.setTextColor(67, 56, 202); // Indigo-700
-              doc.text(st.label, margin + 12, cardContentY);
-              cardContentY += 13;
+              doc.text(st.label, margin + 8, currentY);
+              currentY += 13;
             }
 
-            // Step body text
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(8.5);
-            doc.setTextColor(30, 41, 59); // Slate-800
-            doc.text(st.lines, margin + 12, cardContentY);
-
-            currentY += st.cardH + 6; // Clean breathing space between parts
+            currentY = drawRichTextWithTables(doc, st.content, margin + 8, currentY, contentWidth - 16, {
+              fontName: 'helvetica',
+              fontStyle: 'normal',
+              fontSize: 8.5,
+              textColor: [30, 41, 59],
+              checkPageBreak
+            });
+            currentY += 8;
           });
 
-          currentY += 4;
+          currentY += 6;
 
           // Scoring Guidelines
           checkPageBreak(50);
@@ -1730,14 +1707,14 @@ Instructions for AI Magic Tutor:
           currentY += 12;
 
           q.scoringRubric.forEach(rubricItem => {
-            const cleanRubric = sanitizePdfText(`• ${rubricItem}`);
-            const rLines = doc.splitTextToSize(cleanRubric, contentWidth - 12);
-            checkPageBreak(rLines.length * 11 + 6);
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(8.5);
-            doc.setTextColor(51, 65, 85);
-            doc.text(rLines, margin + 6, currentY);
-            currentY += (rLines.length * 11) + 4;
+            currentY = drawRichTextWithTables(doc, `• ${rubricItem}`, margin + 6, currentY, contentWidth - 12, {
+              fontName: 'helvetica',
+              fontStyle: 'normal',
+              fontSize: 8.5,
+              textColor: [51, 65, 85],
+              checkPageBreak
+            });
+            currentY += 4;
           });
 
           currentY += 16;
@@ -2447,7 +2424,7 @@ Instructions for AI Magic Tutor:
                       <div className="flex flex-col gap-2.5 pt-2">
                         {q.options.map((opt) => {
                           const isSelected = userChoice === opt;
-                          const isCorrect = opt === q.correctAnswer;
+                          const isCorrect = isOptionCorrectAnswer(opt, q.correctAnswer, q.options);
                           
                           let btnStyle = "bg-zinc-50 border-zinc-200 text-zinc-800 hover:bg-zinc-100";
                           if (isAnswered) {
@@ -3630,7 +3607,7 @@ Instructions for AI Magic Tutor:
                     const blob = await res.blob();
                     await savePDFMobile(blob, previewPdfName, {
                       openImmediately: false,
-                      customToast: '✅ PDF Saved',
+                      customToast: '✅ Saved offline in app',
                       featureTag: 'AP Practice Exam'
                     });
                   } catch (e: any) {

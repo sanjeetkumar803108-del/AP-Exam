@@ -43,6 +43,19 @@ export const AP_HUMAN_GEOGRAPHY_NOTES: APUnitNote[] = [
 | **Robinson** | Compromise projection (visually balanced) | Slight distortion across all 4 properties | Classroom and thematic reference maps. |
 | **Polar (Azimuthal)** | True direction from central pole | Area and shape distorted away from center | Airline flight routes and polar geopolitics. |`
       }
+    ,
+      {
+        heading: '2. Geospatial Technologies, GIS & Spatial Data Analysis (CED 1.2-1.4)',
+        content: `Spatial data acquisition technologies and analytical methodologies:
+
+* **Geospatial Hardware & Software Systems**:
+  * **Remote Sensing**: Satellite and aircraft sensors capturing electromagnetic radiation reflected from Earth's surface (monitors deforestation, glacier melt, agricultural crop health, urban sprawl).
+  * **Geographic Information Systems (GIS)**: Sophisticated computer hardware/software that captures, stores, analyzes, and overlays **layered thematic spatial datasets** (e.g. combining flood zones, census demographics, and parcel boundaries for emergency planning).
+  * **Global Positioning System (GPS)**: Network of satellites transmitting radio signals to receivers on Earth to calculate precise mathematical **absolute location** (latitude/longitude coordinates).
+* **Quantitative vs. Qualitative Spatial Data**:
+  * **Quantitative Data**: Numerical, statistically measurable data (decennial census counts, infant mortality rates, demographic surveys).
+  * **Qualitative Data**: Descriptive, subjective data describing human experiences and cultural landscapes (field interviews, photographic records, oral histories, travel narratives).`
+      }
     ],
     workedExamples: [
       {
@@ -135,6 +148,23 @@ export const AP_HUMAN_GEOGRAPHY_NOTES: APUnitNote[] = [
 | **Stationary (Box / Column)** | Vertical rectangular sides | **Stage 4** | Zero population growth (ZPG) | USA, France, UK |
 | **Constrictive (Inverted)** | Narrow base, bulging top | **Stage 5** | Aging population, negative growth | Japan, Germany, Italy |`
       }
+    ,
+      {
+        heading: '2. Malthusian Population Theory & Global Migration Typologies (CED 2.6-2.11)',
+        content: `Demographic growth limits, state policies, and migration mechanics:
+
+* **Thomas Malthus Population Hypothesis**:
+  * Premise: Population grows exponentially ($1, 2, 4, 8, 16$), while food production grows arithmetically ($1, 2, 3, 4, 5$).
+  * Predicted inevitable catastrophic 'Malthusian checks' (famine, plague, war).
+  * **Neo-Malthusians**: Warn that modern population growth exhausts not just food, but clean fresh water, arable land, and energy reserves.
+  * **Ester Boserup Counter-Thesis**: 'Necessity is the mother of invention'; population pressure stimulates agricultural technological innovation and intensification.
+* **National Population Policies**:
+  * **Pro-Natalist Policies**: Government programs encouraging childbirth in aging Stage 4/5 nations (subsidized childcare, generous parental leave in France and Japan).
+  * **Anti-Natalist Policies**: Programs restricting family size (China's historic One-Child Policy, female education and contraception access).
+* **Forced vs. Voluntary Migration**:
+  * **Refugee**: A person forced to cross an international border due to well-founded fear of persecution, conflict, or violence.
+  * **Internally Displaced Person (IDP)**: Forced to flee their home for similar reasons but remains within their home country's sovereign borders.`
+      }
     ],
     workedExamples: [
       {
@@ -216,6 +246,20 @@ export const AP_HUMAN_GEOGRAPHY_NOTES: APUnitNote[] = [
 | **Buddhism** | **Universalizing** | Northern India / Nepal | Bodh Gaya; Hierarchical (Emperor Ashoka) along trade routes | Pagodas, stupas containing relics, statues of Buddha |
 | **Hinduism** | **Ethnic** (Largest) | Indus River Valley / India | Ganges River (Varanasi); Clustered in India and Nepal | Temples near water, shrines, cremation sites |
 | **Judaism** | **Ethnic** | SW Asia / Levant | Jerusalem (Western Wall); Diaspora relocated Jewish communities | Synagogues, Star of David, distinct diaspora quarters |`
+      }
+    ,
+      {
+        heading: '2. Language Families, Lingua Franca & Cultural Integration (CED 3.3-3.6)',
+        content: `Linguistic spatial trees, global communication, and cultural fusion:
+
+* **Linguistic Taxonomy**:
+  * **Language Family**: Oldest ancestral grouping with a prehistoric common origin (e.g. **Indo-European** is the largest, spoken by nearly half the world; Sino-Tibetan is second largest).
+  * **Language Branch**: Collection of related languages sharing common historical ancestry within a family (e.g. Germanic, Romance, Slavic).
+  * **Lingua Franca**: A mutually understood bridge language adopted for international commerce, diplomacy, and aviation (e.g. English globally, Swahili in East Africa, Arabic in North Africa/Middle East).
+* **Mechanisms of Cultural Transformation**:
+  * **Acculturation**: An immigrant group adopts certain cultural traits of the dominant host society while still retaining significant distinct elements of their original culture.
+  * **Assimilation**: A minority group loses its distinguishing cultural traits completely, blending indistinguishably into the dominant culture.
+  * **Syncretism**: The creative fusion of two or more distinct cultural traditions into an entirely new hybrid cultural phenomenon (e.g. Sikhism blending Hinduism and Islam; Haitian Vodou blending West African animism and Catholicism).`
       }
     ],
     workedExamples: [
@@ -388,6 +432,19 @@ export const AP_HUMAN_GEOGRAPHY_NOTES: APUnitNote[] = [
 | :--- | :--- | :--- | :--- | :--- |
 | **Intensive Agriculture** | **HIGH** labor or capital | Small parcels of land | **HIGH** | Market gardening, intensive wet-rice subsistence (East/South Asia), mixed crop and livestock, plantation farming |
 | **Extensive Agriculture** | **LOW** labor and capital | Large expansive tracts | **LOW** | Nomadic pastoral herding (Sahel, Central Asia), shifting cultivation (slash-and-burn in rainforests), livestock ranching (US West, Pampas) |`
+      }
+    ,
+      {
+        heading: '2. Agricultural Revolutions & Global Commodity Chains (CED 5.3-5.5)',
+        content: `Evolution of farming practices from domestication to modern agribusiness:
+
+* **The Three Agricultural Revolutions**:
+  * **First (Neolithic) Agricultural Revolution**: Transition from nomadic hunting/gathering to sedentary farming via initial plant and animal domestication (~10,000 BCE in Fertile Crescent, Indus Valley, Mesoamerica).
+  * **Second Agricultural Revolution**: Accompanied the Industrial Revolution in 18th-century Western Europe; enclosure acts, selective breeding, mechanical seed drills, and four-field crop rotation generated urban labor surpluses.
+  * **Third (Green) Agricultural Revolution**: Mid-20th century science-driven boom (Dr. Norman Borlaug); high-yielding hybrid semi-dwarf wheat and miracle rice varieties, synthetic chemical fertilizers, pesticides, and motorized deep-well irrigation.
+* **Modern Agribusiness & Global Commodity Chains**:
+  * Transition from family subsistence farming to corporate-controlled vertical integration (seed patents, feedlots, processing plants, global refrigerated container shipping).
+  * **Environmental Consequences**: Aquifer depletion, soil salinization from excessive irrigation, nitrogen runoff dead zones, loss of biodiversity from monoculture cropping.`
       }
     ],
     workedExamples: [
@@ -580,6 +637,24 @@ export const AP_HUMAN_GEOGRAPHY_NOTES: APUnitNote[] = [
 | **Tertiary** | Providing services to consumers and businesses | Retail, restaurant service, transportation, banking | DTM Stages 4 & 5 (MDCs) |
 | **Quaternary** | Knowledge-based information processing and management | Financial research, software engineering, higher education | DTM Stage 4 & 5 |
 | **Quinary** | High-level executive decision-making and scientific leadership | Government heads, Fortune 500 CEOs, top research scientists | DTM Stage 5 |`
+      }
+    ,
+      {
+        heading: '2. Deindustrialization, Export Processing Zones & Gender Metrics (CED 7.4-7.7)',
+        content: `Post-Fordist spatial reorganization, manufacturing shifts, and gender development:
+
+* **Global Spatial Division of Labor**:
+  * Core nations transition to post-industrial tertiary, quaternary, and quinary service/technology economies.
+  * Manufacturing shifts to semi-periphery and periphery nations with lower labor costs and laxer environmental regulations.
+* **Specialized Economic Enclaves**:
+  * **Export Processing Zones (EPZs)**: Designated industrial areas offering foreign corporations duty-free imports of raw materials and tax holidays for exporting manufactured products.
+  * **Mexican Maquiladoras**: Manufacturing assembly plants sited along the US-Mexico border capitalizing on NAFTA/USMCA tariff-free trade and lower wage rates.
+  * **Special Economic Zones (SEZs)**: Coastal urban districts in China (e.g. Shenzhen) established by Deng Xiaoping to attract multinational foreign direct investment.
+* **Gender Inequality Index (GII)**:
+  * UN composite index measuring female disparities in three critical dimensions:
+    1. **Reproductive Health**: Maternal mortality ratio and adolescent birth rates.
+    2. **Empowerment**: Share of parliamentary seats held by women and higher education attainment.
+    3. **Labor Market**: Female labor force participation rates compared to men.`
       }
     ],
     workedExamples: [

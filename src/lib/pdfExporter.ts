@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import { savePDFMobile } from '../utils/mobileSaver';
-import { sanitizePdfText } from '../utils/pdfSanitizer';
+import { sanitizePdfText, formatMathForPdf } from '../utils/pdfSanitizer';
+import { drawPdfGridTable, drawTextWithElevatedPowers } from '../utils/pdfTableDrawer';
 
 /**
  * Generates the jsPDF document instance and returns it as a Blob.
@@ -87,6 +88,34 @@ export function generateNotesPDFBlob(title: string, markdownContent: string, act
       continue;
     }
 
+    // Check if line is a table line
+    if (rawLine.includes('|') && rawLine.split('|').length >= 3) {
+      const tableLines: string[] = [];
+      while (i < rawLines.length && rawLines[i].trim().includes('|') && rawLines[i].trim().split('|').length >= 3) {
+        tableLines.push(rawLines[i]);
+        i++;
+      }
+      i--; // Adjust index after while loop
+
+      const checkPageBreakForNotes = (neededH: number) => {
+        if (currentY + neededH > pageHeight - 22) {
+          doc.addPage();
+          pageCount++;
+          addFooter(pageCount);
+          currentY = 25;
+          return true;
+        }
+        return false;
+      };
+
+      currentY = drawPdfGridTable(doc, tableLines, margin, currentY, contentWidth, {
+        fontSize: 8.5,
+        checkPageBreak: checkPageBreakForNotes
+      });
+      currentY += 6;
+      continue;
+    }
+
     // Default styles for body text
     let fontSize = 10.5;
     let fontStyle = 'normal';
@@ -131,7 +160,7 @@ export function generateNotesPDFBlob(title: string, markdownContent: string, act
     cleanLine = cleanLine.replace(/__(.*?)__/g, '$1');
     cleanLine = cleanLine.replace(/_(.*?)_/g, '$1');
     cleanLine = cleanLine.replace(/`(.*?)`/g, '$1');
-    cleanLine = sanitizePdfText(cleanLine);
+    cleanLine = sanitizePdfText(formatMathForPdf(cleanLine));
 
     // Setup typography context in jsPDF
     doc.setFont('Helvetica', fontStyle);
@@ -155,7 +184,7 @@ export function generateNotesPDFBlob(title: string, markdownContent: string, act
         doc.setTextColor(textColor[0], textColor[1], textColor[2]);
       }
 
-      doc.text(line, margin + indent, currentY);
+      drawTextWithElevatedPowers(doc, line, margin + indent, currentY, fontSize);
       currentY += (fontSize * 0.45) + 2.5; // Dynamically computed line height
     }
   }

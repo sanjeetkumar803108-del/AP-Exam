@@ -48,6 +48,25 @@ export const AP_ENVIRONMENTAL_SCIENCE_NOTES: APUnitNote[] = [
 | **Phosphorus** | **Sedimentary rock & minerals** (NO atmospheric phase!) | ATP, phospholipid membranes, and nucleic acid backbones | Extremely slow weathering of uplifted phosphate rocks | Synthetic fertilizers and detergents cause aquatic algal blooms |
 | **Hydrologic** | **Oceans** ($97\\%$) & Glaciers ($2\\%$) | Solvent, transpiration, metabolic medium | Evaporation, condensation, transpiration, precipitation, percolation | Aquifer overdraft (Ogallala) and concrete runoff flooding |`
       }
+    ,
+      {
+        heading: '2. Terrestrial Biomes, Aquatic Zones & Primary Productivity (CED 1.2-1.4)',
+        content: `Global biome geographic distributions and ecosystem energetics:
+
+* **Terrestrial Biomes Determinants**:
+  * Biomes are governed strictly by **average annual temperature and precipitation patterns**:
+    * **Taiga (Boreal Forest)**: Coniferous evergreens, acidic nutrient-poor podzol soils, long subarctic winters.
+    * **Tundra**: Treeless permafrost layer, fragile dwarf lichens/shrubs, low annual precipitation (cold desert).
+    * **Tropical Rainforest**: High year-round temperature and rainfall; rapid nutrient cycling yielding nutrient-poor leached soils; highest terrestrial biodiversity.
+    * **Temperate Deciduous Forest**: Distinct four seasons, rich organic humus soils from leaf litter.
+* **Aquatic Ecosystem Stratification**:
+  * **Freshwater Wetlands**: Swamps, bogs, and marshes act as natural biological sponges (flood control, water filtration, groundwater recharge).
+  * **Marine Life Zones**: Coastal estuaries (brackish nursery grounds with extreme NPP), coral reefs (oligotrophic clear waters with immense biodiversity), and open ocean (euphotic zone restricted to upper sunlit 200m).
+* **Primary Productivity**:
+  $$NPP = GPP - R$$
+  * Estuaries, salt marshes, and tropical rainforests boast the highest $NPP$ per square meter.
+  * The open ocean exhibits very low $NPP$ per unit area due to nitrogen/iron nutrient limits, but produces the largest **total global biomass** due to covering $71\\%$ of the planet's surface!`
+      }
     ],
     workedExamples: [
       {
@@ -128,6 +147,24 @@ export const AP_ENVIRONMENTAL_SCIENCE_NOTES: APUnitNote[] = [
 | **Pioneer Species** | Lichens and mosses (secrete mild acids to break rock into soil) | Fast-growing grasses, annual weeds, and wild wildflowers |
 | **Time Scale to Climax** | Extremely slow (hundreds to thousands of years) | Much faster (decades to a century) because soil is pre-existing |
 | **Soil Formation Required?** | **YES** (fundamental limiting rate step) | **NO** (seed bank and nutrient-rich soil already present) |`
+      }
+    ,
+      {
+        heading: '2. Ecosystem Services, Island Biogeography & Ecological Tolerance (CED 2.1-2.4)',
+        content: `Biodiversity values, ecological dynamics, and spatial colonization:
+
+* **The 4 Categories of Ecosystem Services (Millennium Assessment)**:
+  * **Provisioning Services**: Direct material harvest extracted from nature (timber, food crops, clean drinking water, medicinal plants like paclitaxel).
+  * **Regulating Services**: Natural ecological processes moderating environmental conditions (wetland flood absorption, forest carbon sequestration, atmospheric oxygen production).
+  * **Supporting Services**: Fundamental structural processes sustaining all life (pollination of crops by bees, soil formation via decomposition, primary biomass production).
+  * **Cultural Services**: Non-material aesthetic, recreational, and spiritual benefits (ecotourism revenue in national parks).
+* **Theory of Island Biogeography (MacArthur & Wilson)**:
+  * **Island Size**: Larger islands have more diverse microhabitats, greater resource variety, and **lower extinction rates**.
+  * **Distance from Mainland**: Islands closer to the mainland experience **higher immigration and colonization rates**.
+  * Highest species richness is found on **Large, Close islands**; lowest species richness on **Small, Isolated islands**!
+* **Ecological Tolerance & Generalists vs. Specialists**:
+  * **Specialist Species**: Narrow ecological niche, specific diet (e.g. giant panda feeding on bamboo); highly vulnerable to rapid habitat fragmentation.
+  * **Generalist Species**: Broad niche, adaptable diet (e.g. raccoons, coyotes); thrive in human-altered changing environments.`
       }
     ],
     workedExamples: [
@@ -410,6 +447,22 @@ $$\\text{Clay } (< 0.002\\text{ mm}) < \\text{Silt } (0.002\\text{–}0.05\\text
 
 *Soil Salinization*: Repeated irrigation in dry climates deposits tiny traces of dissolved salts. As water evaporates, salt accumulates in the topsoil, eventually stunting crop growth and poisoning roots.`
       }
+    ,
+      {
+        heading: '2. Sustainable Agriculture, Meat Production & Overfishing (CED 5.6-5.12)',
+        content: `Resource exploitation impacts and sustainable management techniques:
+
+* **Tragedy of the Commons (Garrett Hardin)**:
+  * Individuals acting independently and rationally according to self-interest deplete a shared, un-owned open-access resource (overgrazing public pastures, oceanic overfishing, atmospheric greenhouse dumping).
+  * **Solutions**: Private property ownership, government-enforced catch/grazing quotas, user-fee permits.
+* **Meat Production & CAFO Environmental Costs**:
+  * **Concentrated Animal Feeding Operations (CAFOs)**: High-density livestock confinement; produces massive manure lagoons leaking nitrates/pathogens into aquifers, requires antibiotic usage promoting resistant bacteria strains.
+  * **Trophic Energy Inefficiency**: Producing $1\\text{ kg}$ of beef requires $\\approx 20\\text{ kg}$ of grain and $15{,}000\\text{ L}$ of water, consuming far more arable land than direct plant agriculture.
+* **Commercial Overfishing & Bycatch**:
+  * **Bottom Trawling**: Drags heavy weighted nets across seafloor, pulverizing benthic coral reef habitats.
+  * **Bycatch**: Non-target marine organisms (sea turtles, dolphins, juvenile fish) killed in fishing gear.
+  * **Maximum Sustainable Yield (MSY)**: The maximum harvestable catch that can be taken indefinitely without reducing population recruitment (typically at half carrying capacity, $K/2$).`
+      }
     ],
     workedExamples: [
       {
@@ -496,6 +549,23 @@ $$\\text{Clay } (< 0.002\\text{ mm}) < \\text{Silt } (0.002\\text{–}0.05\\text
 | **Hydroelectric** | **Renewable** | Zero emissions; reservoir water storage; recreation | Floods upstream habitat; disrupts fish migration; downstream silt starvation |
 | **Solar Photovoltaic**| **Renewable** | Infinite energy; zero operating emissions; rooftop modularity | Intermittent (requires battery storage); toxic mining for rare metals |
 | **Wind Turbines** | **Renewable** | Zero emissions; small land footprint; low operating cost | Intermittent; bird/bat collisions; aesthetic/noise concerns |`
+      }
+    ,
+      {
+        heading: '2. Nuclear Fission Energy, Half-Life Decay & Grid Efficiency (CED 6.6-6.9)',
+        content: `Nuclear power plant mechanics, nuclear waste, and energy conservation:
+
+* **Nuclear Fission Power Plant Mechanics**:
+  * Uranium-235 pellets undergo controlled nuclear fission in a reactor core:
+    $$^{235}_{92}\\text{U} + ^1_0\\text{n} \\rightarrow ^{141}_{56}\\text{Ba} + ^{92}_{36}\\text{Kr} + 3 \\, ^1_0\\text{n} + \\text{Energy}$$
+  * **Control Rods**: Made of neutron-absorbing materials (cadmium or boron); inserted between fuel rods to regulate or halt the fission chain reaction.
+  * **Clean Operation**: Produces zero direct emissions of greenhouse gases ($CO_2, CH_4$) or criteria air pollutants during electricity generation.
+  * **Thermal Pollution**: Cooling water discharged into natural water bodies reduces dissolved oxygen ($DO$), causing thermal shock to aquatic organisms.
+* **Radioactive Half-Life Calculations**:
+  $$N(t) = N_0 \\left(\\frac{1}{2}\\right)^{t / t_{1/2}}$$
+  * High-level radioactive spent fuel remains hazardous for tens of thousands of years, currently stored on-site in lead-lined steel dry casks.
+* **Cogeneration (Combined Heat and Power - CHP)**:
+  * Harnessing waste thermal energy from industrial electricity generation to heat nearby buildings, elevating overall thermodynamic efficiency from $\\approx 35\\%$ to over $80\\%$!`
       }
     ],
     workedExamples: [

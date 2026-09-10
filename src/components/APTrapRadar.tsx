@@ -39,6 +39,14 @@ import { getApiUrl } from '../utils/api';
 import { TOP_10_AP_SUBJECTS, APSubject } from '../utils/apCurriculum';
 import GlobalMarkdown from './GlobalMarkdown';
 import { safeGetItem, safeSetItem, safeJsonParse } from '../utils/storage';
+import { saveMistakeToVault } from '../utils/mistakes';
+import { jsPDF } from 'jspdf';
+import SafePdfViewer from './SafePdfViewer';
+import { sanitizePdfText, formatMathForPdf } from '../utils/pdfSanitizer';
+import { drawTextWithElevatedPowers, drawRichTextWithTables } from '../utils/pdfTableDrawer';
+import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
+import { savePdfToHistory } from '../utils/pdfHistory';
+import { FileText, Download, Share2, HelpCircle } from 'lucide-react';
 import { takeNativePhoto, pickNativeFiles } from '../utils/mobilePicker';
 import { Capacitor } from '@capacitor/core';
 
@@ -66,16 +74,44 @@ export interface TrapInfo {
   vulnerabilityRate?: string;
 }
 
+export interface FRQTrapItem {
+  trapName: string;
+  howStudentsLosePoints: string;
+  vulnerabilityRate?: string;
+  fullCreditFix: string;
+}
+
+export interface FRQPart {
+  partLabel: string;
+  task: string;
+  points: number;
+  scoringCriteria: string;
+  modelAnswer: string;
+  frqTraps?: FRQTrapItem[];
+}
+
+export interface AIMistakeFix {
+  why_it_happened: string;
+  the_fix: string;
+  pro_memory_trick: string;
+}
+
 export interface TrapQuestion {
   id: number | string;
+  format?: 'objective' | 'subjective';
   prompt: string;
   stimulus?: string;
-  options: string[];
-  correctAnswer: string;
+  totalPoints?: number;
+  options?: string[];
+  correctAnswer?: string;
   overallTrapDifficulty?: string;
-  traps: TrapInfo[];
+  traps?: TrapInfo[];
+  parts?: FRQPart[];
   disarmStrategy: string;
   skill?: string;
+  userSelectedOption?: string;
+  userTrippedTrap?: string;
+  aiFix?: AIMistakeFix | null;
 }
 
 const TRAP_ARCHETYPES = [
@@ -235,10 +271,6 @@ function RealRadarLoadingScreen({ title, subtitle, subjectName, mode }: RealRada
 
       {/* Cockpit Status Header */}
       <div className="relative z-10 text-center mb-5 sm:mb-7 space-y-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 text-[10px] font-mono font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(16,185,129,0.25)]">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          <span>AP RADAR SYSTEM • 360° LIVE SCOPE ACTIVE</span>
-        </div>
         <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-md">
           {title}
         </h2>
@@ -374,6 +406,16 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
   const [isRadarRevealed, setIsRadarRevealed] = useState(false);
   const [isScanningAnimation, setIsScanningAnimation] = useState(false);
 
+  // Format Selection: Objective (MCQ) vs Subjective (FRQ)
+  const [questionFormat, setQuestionFormat] = useState<'objective' | 'subjective'>('objective');
+  const [userFrqDraft, setUserFrqDraft] = useState<Record<string, string>>({});
+  const [frqSelfGrading, setFrqSelfGrading] = useState<Record<string, 'avoided' | 'tripped'>>({});
+  const [vaultFilter, setVaultFilter] = useState<'all' | 'objective' | 'subjective'>('all');
+  const [previewPdfUri, setPreviewPdfUri] = useState<string | null>(null);
+  const [previewPdfName, setPreviewPdfName] = useState<string>('AP_Trap_Radar_Practice.pdf');
+  const [explainingMistakeId, setExplainingMistakeId] = useState<string | number | null>(null);
+  const [activeAiDoctorModal, setActiveAiDoctorModal] = useState<{ question: string; wrongInput: string; fix: AIMistakeFix } | null>(null);
+
   // Custom Scan Mode State
   const [customQuestionText, setCustomQuestionText] = useState('');
   const [attachedImages, setAttachedImages] = useState<string[]>([]);
@@ -437,6 +479,9 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     setShowHistoryModal(false);
     if (item.type === 'challenge' && item.questions && item.questions.length > 0) {
       setQuestions(item.questions);
+      if (item.questions[0]?.format) {
+        setQuestionFormat(item.questions[0].format);
+      }
       setCurrentIndex(0);
       setSelectedOption(null);
       setIsRadarRevealed(false);
@@ -500,7 +545,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    Array.from(files).forEach(file => {
+    Array.from(files).forEach((file: any) => {
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result === 'string') {
@@ -529,7 +574,8 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
           action: 'generate_challenge',
           subject: selectedSubject.name,
           unit: selectedUnit,
-          count: questionCount
+          count: questionCount,
+          format: questionFormat
         })
       });
 
@@ -545,8 +591,8 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
           id: `challenge_${Date.now()}`,
           timestamp: Date.now(),
           type: 'challenge',
-          title: `Trap Challenge: ${selectedSubject.name}`,
-          subtitle: `${selectedUnit} • ${data.questions.length} Questions`,
+          title: `Trap Challenge: ${selectedSubject.name} (${questionFormat === 'subjective' ? 'FRQ' : 'MCQ'})`,
+          subtitle: `${selectedUnit} • ${data.questions.length} ${questionFormat === 'subjective' ? 'FRQ' : 'MCQ'} Questions`,
           subjectName: selectedSubject.name,
           questions: data.questions
         });
@@ -570,7 +616,10 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
   // Activate Radar Sweep & Reveal Traps
   const handleActivateRadar = () => {
-    if (!selectedOption || !activeQuestion) {
+    if (!activeQuestion) return;
+
+    // For Objective (MCQ): Require option selection first
+    if (activeQuestion.format !== 'subjective' && !selectedOption) {
       showToast('Select an option first to test your Trap Radar!', 'warning');
       return;
     }
@@ -578,24 +627,31 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     triggerVibration(30);
     setIsScanningAnimation(true);
 
-    // Play high-tech radar sweep for 1600ms then reveal
+    // Play high-tech radar sweep for 1400ms then reveal
     setTimeout(() => {
       setIsScanningAnimation(false);
       setIsRadarRevealed(true);
 
-      const isCorrect = selectedOption.trim().startsWith(activeQuestion.correctAnswer.charAt(0)) || 
-                        selectedOption === activeQuestion.correctAnswer;
-
-      if (isCorrect) {
-        triggerVibration([20, 50, 20]);
-        setSessionStats(prev => ({ ...prev, trapsAvoided: prev.trapsAvoided + 1 }));
-      } else {
-        triggerVibration(60);
-        setSessionStats(prev => ({ ...prev, trapsFallen: prev.trapsFallen + 1 }));
-        // Automatically offer to bookmark in vault
-        saveToVault(activeQuestion);
+      if (activeQuestion.format === 'subjective') {
+        triggerVibration([20, 40, 20]);
+        return;
       }
-    }, 1600);
+
+      if (selectedOption) {
+        const isCorrect = selectedOption.trim().startsWith(activeQuestion.correctAnswer?.charAt(0) || '') || 
+                          selectedOption === activeQuestion.correctAnswer;
+
+        if (isCorrect) {
+          triggerVibration([20, 50, 20]);
+          setSessionStats(prev => ({ ...prev, trapsAvoided: prev.trapsAvoided + 1 }));
+        } else {
+          triggerVibration(60);
+          setSessionStats(prev => ({ ...prev, trapsFallen: prev.trapsFallen + 1 }));
+          // Automatically offer to bookmark in vault
+          saveToVault(activeQuestion);
+        }
+      }
+    }, 1400);
   };
 
   // Save to Vault
@@ -615,6 +671,347 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       return updated;
     });
     showToast('Removed from Trap Vault', 'info');
+  };
+
+  // Handle Subjective FRQ Self-Grading
+  const handleFrqSelfGrade = (grade: 'avoided' | 'tripped') => {
+    if (!activeQuestion) return;
+    triggerVibration(grade === 'avoided' ? 20 : 40);
+    const qKey = String(activeQuestion.id || currentIndex);
+    setFrqSelfGrading(prev => ({ ...prev, [qKey]: grade }));
+
+    if (grade === 'avoided') {
+      const pts = activeQuestion.totalPoints || activeQuestion.parts?.reduce((sum, p) => sum + (p.points || 1), 0) || 4;
+      setSessionStats(prev => ({ ...prev, trapsAvoided: prev.trapsAvoided + pts }));
+      showToast('Great work! Full credit earned without falling into FRQ traps.', 'success');
+    } else {
+      setSessionStats(prev => ({ ...prev, trapsFallen: prev.trapsFallen + 1 }));
+      const firstTrap = activeQuestion.parts?.[0]?.frqTraps?.[0];
+      const trapName = firstTrap?.trapName || 'Chief Reader Rubric Pitfall';
+
+      saveMistakeToVault(
+        'AP Trap Radar',
+        activeQuestion.prompt,
+        `Tripped on FRQ Pitfall: ${trapName}`,
+        `Scoring Criteria: ${activeQuestion.parts?.[0]?.scoringCriteria || 'Full Credit Rubric'}. Disarm Secret: ${activeQuestion.disarmStrategy}`
+      );
+
+      saveToVault({
+        ...activeQuestion,
+        userTrippedTrap: trapName
+      });
+      showToast('Logged to My Mistake Vault! AI will help you disarm this FRQ trap.', 'info');
+    }
+  };
+
+  // AI Mistake Doctor Explainer
+  const handleExplainMistakeWithAi = async (q: TrapQuestion) => {
+    setExplainingMistakeId(q.id);
+    triggerVibration(15);
+    try {
+      const response = await fetch(getApiUrl('/api/ap-trap-radar'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'explain_mistake',
+          questionPrompt: q.prompt,
+          wrongInput: q.userSelectedOption || q.userTrippedTrap || 'Distractor Trap Selected',
+          correctConcept: q.correctAnswer || (q.parts ? q.parts.map(p => `${p.partLabel}: ${p.scoringCriteria}`).join('; ') : 'CED Requirement'),
+          trapType: q.userTrippedTrap || q.traps?.find(t => !t.isCorrect)?.trapType || 'College Board Distractor Trap'
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch AI explanation');
+      const data = await response.json();
+      if (data.aiFix) {
+        setVault(prev => {
+          const updated = prev.map(item => item.id === q.id ? { ...item, aiFix: data.aiFix } : item);
+          safeSetItem('ap_trap_radar_vault', JSON.stringify(updated));
+          return updated;
+        });
+        setActiveAiDoctorModal({
+          question: q.prompt,
+          wrongInput: q.userSelectedOption || q.userTrippedTrap || 'Distractor Trap',
+          fix: data.aiFix
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching AI mistake fix:', err);
+      showToast('Could not load AI explanation. Please retry.', 'error');
+    } finally {
+      setExplainingMistakeId(null);
+    }
+  };
+
+  // PDF Export for Trap Challenge Sets
+  const handleExportPDF = async (customQuestions?: TrapQuestion[]) => {
+    const listToExport = customQuestions || questions;
+    if (!listToExport || listToExport.length === 0) {
+      showToast('No questions available to export.', 'warning');
+      return;
+    }
+
+    try {
+      triggerVibration(15);
+      showToast('Generating College Board Practice PDF...', 'info');
+
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 15;
+      const contentWidth = pageWidth - margin * 2;
+      let y = margin;
+
+      const checkPageBreak = (neededHeight: number) => {
+        if (y + neededHeight > pageHeight - margin) {
+          doc.addPage();
+          y = margin;
+          return true;
+        }
+        return false;
+      };
+
+      // Header Banner
+      doc.setFillColor(30, 41, 59);
+      doc.rect(margin, y, contentWidth, 22, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(255, 255, 255);
+      const cleanSubj = sanitizePdfText(selectedSubject.name);
+      const displayTitle = cleanSubj.startsWith('AP ') ? `${cleanSubj} - AP TRAP RADAR` : `AP ${cleanSubj} - AP TRAP RADAR`;
+      doc.text(displayTitle, margin + 6, y + 10);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(203, 213, 225);
+      const effFormat = listToExport[0]?.format || questionFormat;
+      const formatLabel = effFormat === 'subjective' ? 'Section II (Free Response Trap Simulation)' : 'Section I (Multiple Choice Distractor Gauntlet)';
+      doc.text(`${sanitizePdfText(selectedUnit)} | ${formatLabel} | ${listToExport.length} Questions`, margin + 6, y + 17);
+      y += 28;
+
+      // Section: Practice Questions
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.text('SECTION: PRACTICE QUESTIONS & STIMULI', margin, y);
+      y += 6;
+      doc.setDrawColor(203, 213, 225);
+      doc.line(margin, y, margin + contentWidth, y);
+      y += 6;
+
+      listToExport.forEach((q, idx) => {
+        checkPageBreak(35);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(180, 83, 9);
+        doc.text(`Question ${idx + 1} ${q.skill ? `[${sanitizePdfText(q.skill)}]` : ''}`, margin, y);
+        y += 5;
+
+        // Stimulus (with rich table and math support)
+        if (q.stimulus && q.stimulus.trim().length > 0) {
+          checkPageBreak(25);
+          if (q.stimulus.includes('|')) {
+            y = drawRichTextWithTables(doc, q.stimulus.trim(), margin + 2, y, contentWidth - 4, {
+              fontName: 'helvetica',
+              fontStyle: 'normal',
+              fontSize: 8.5,
+              textColor: [51, 65, 85],
+              checkPageBreak
+            });
+            y += 4;
+          } else {
+            doc.setFillColor(248, 250, 252);
+            doc.setDrawColor(226, 232, 240);
+            const cleanStim = sanitizePdfText(formatMathForPdf(q.stimulus));
+            const stimLines = doc.splitTextToSize(cleanStim, contentWidth - 8);
+            const boxHeight = stimLines.length * 4.5 + 6;
+            doc.rect(margin, y, contentWidth, boxHeight, 'FD');
+            doc.setFont('helvetica', 'italic');
+            doc.setFontSize(8.5);
+            doc.setTextColor(51, 65, 85);
+            stimLines.forEach((sL: string, si: number) => {
+              drawTextWithElevatedPowers(doc, sL, margin + 4, y + 5 + si * 4.5, 8.5);
+            });
+            y += boxHeight + 4;
+          }
+        }
+
+        // Prompt
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(15, 23, 42);
+        const cleanPrompt = sanitizePdfText(formatMathForPdf(q.prompt));
+        const promptLines = doc.splitTextToSize(cleanPrompt, contentWidth);
+        checkPageBreak(promptLines.length * 5 + 4);
+        promptLines.forEach((pL: string) => {
+          drawTextWithElevatedPowers(doc, pL, margin, y, 9.5);
+          y += 5;
+        });
+        y += 3;
+
+        // Options (for MCQ)
+        if (q.options && q.options.length > 0) {
+          q.options.forEach(opt => {
+            const cleanOpt = sanitizePdfText(formatMathForPdf(opt));
+            const optLines = doc.splitTextToSize(cleanOpt, contentWidth - 6);
+            checkPageBreak(optLines.length * 4.5 + 2);
+            optLines.forEach((oL: string) => {
+              drawTextWithElevatedPowers(doc, oL, margin + 4, y, 8.5);
+              y += 4.5;
+            });
+            y += 2;
+          });
+        }
+
+        // Parts (for FRQ)
+        if (q.parts && q.parts.length > 0) {
+          q.parts.forEach(part => {
+            checkPageBreak(18);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(9);
+            doc.setTextColor(30, 41, 59);
+            doc.text(`Part ${sanitizePdfText(part.partLabel)} (${part.points} Point${part.points > 1 ? 's' : ''}):`, margin + 4, y);
+            y += 4.5;
+            doc.setFont('helvetica', 'normal');
+            const cleanTask = sanitizePdfText(formatMathForPdf(part.task));
+            const taskLines = doc.splitTextToSize(cleanTask, contentWidth - 8);
+            taskLines.forEach((tL: string) => {
+              drawTextWithElevatedPowers(doc, tL, margin + 6, y, 8.5);
+              y += 4.5;
+            });
+            y += 3;
+          });
+        }
+        y += 5;
+      });
+
+      // Answer Key & Distractor Autopsy Section on New Page
+      doc.addPage();
+      y = margin;
+      doc.setFillColor(15, 23, 42);
+      doc.rect(margin, y, contentWidth, 14, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.setTextColor(255, 255, 255);
+      doc.text('EXAMINER DISTRACTOR AUTOPSY & SCORING RUBRICS', margin + 6, y + 9);
+      y += 20;
+
+      listToExport.forEach((q, idx) => {
+        checkPageBreak(45);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(15, 23, 42);
+        doc.text(`Question ${idx + 1} Autopsy & Disarm Guide`, margin, y);
+        y += 5;
+
+        if (q.correctAnswer) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9);
+          doc.setTextColor(16, 185, 129);
+          const cleanAns = sanitizePdfText(formatMathForPdf(q.correctAnswer));
+          drawTextWithElevatedPowers(doc, `Target Answer: ${cleanAns}`, margin, y, 9);
+          y += 5;
+        }
+
+        // MCQ Traps breakdown
+        if (q.traps && q.traps.length > 0) {
+          q.traps.forEach(t => {
+            checkPageBreak(16);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8.5);
+            doc.setTextColor(t.isCorrect ? 16 : 185, t.isCorrect ? 185 : 83, t.isCorrect ? 129 : 9);
+            doc.text(`[Option ${t.option}] ${sanitizePdfText(t.trapType)} ${t.vulnerabilityRate ? `(${t.vulnerabilityRate})` : ''}`, margin + 3, y);
+            y += 4;
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(71, 85, 105);
+            const cleanDesc = sanitizePdfText(formatMathForPdf(t.trapDescription));
+            const descLines = doc.splitTextToSize(cleanDesc, contentWidth - 8);
+            descLines.forEach((dL: string) => {
+              drawTextWithElevatedPowers(doc, dL, margin + 6, y, 8);
+              y += 4;
+            });
+            y += 2;
+          });
+        }
+
+        // FRQ Rubric & Pitfalls
+        if (q.parts && q.parts.length > 0) {
+          q.parts.forEach(part => {
+            checkPageBreak(25);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8.5);
+            doc.setTextColor(30, 41, 59);
+            doc.text(`Part ${sanitizePdfText(part.partLabel)} Model Answer & Scoring:`, margin + 3, y);
+            y += 4;
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(16, 185, 129);
+            const cleanModel = sanitizePdfText(formatMathForPdf(part.modelAnswer));
+            const modelLines = doc.splitTextToSize(`Model Answer:\n${cleanModel}`, contentWidth - 8);
+            checkPageBreak(Math.min(modelLines.length * 4.2 + 4, 60));
+            modelLines.forEach((mL: string) => {
+              checkPageBreak(5);
+              drawTextWithElevatedPowers(doc, mL, margin + 6, y, 8);
+              y += 4;
+            });
+            y += 2;
+
+            if (part.frqTraps && part.frqTraps.length > 0) {
+              part.frqTraps.forEach(ft => {
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(185, 83, 9);
+                doc.text(`Pitfall: ${sanitizePdfText(ft.trapName)} (${sanitizePdfText(ft.vulnerabilityRate || '')})`, margin + 6, y);
+                y += 4;
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(71, 85, 105);
+                const trapDescClean = sanitizePdfText(formatMathForPdf(`Lost Points: ${ft.howStudentsLosePoints} | Fix: ${ft.fullCreditFix}`));
+                const trapDesc = doc.splitTextToSize(trapDescClean, contentWidth - 10);
+                trapDesc.forEach((tdL: string) => {
+                  drawTextWithElevatedPowers(doc, tdL, margin + 8, y, 8);
+                  y += 4;
+                });
+                y += 2;
+              });
+            }
+          });
+        }
+
+        // 5-Second Disarm Secret
+        if (q.disarmStrategy) {
+          checkPageBreak(16);
+          doc.setFillColor(236, 253, 245);
+          doc.setDrawColor(167, 243, 208);
+          const cleanDisarm = sanitizePdfText(formatMathForPdf(q.disarmStrategy));
+          const disarmLines = doc.splitTextToSize(`5-Second Disarm Secret: ${cleanDisarm}`, contentWidth - 8);
+          const dHeight = disarmLines.length * 4 + 6;
+          doc.rect(margin, y, contentWidth, dHeight, 'FD');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.setTextColor(6, 95, 70);
+          disarmLines.forEach((dsL: string, di: number) => {
+            drawTextWithElevatedPowers(doc, dsL, margin + 4, y + 4.5 + di * 4, 8);
+          });
+          y += dHeight + 4;
+        }
+        y += 4;
+      });
+
+      const filename = `AP_${selectedSubject.shortCode || selectedSubject.name.replace(/\s+/g, '_')}_TrapRadar_${effFormat.toUpperCase()}.pdf`;
+      const pdfBlob = doc.output('blob');
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      setPreviewPdfUri(blobUrl);
+      setPreviewPdfName(filename);
+
+      savePdfToHistory({
+        title: `AP ${selectedSubject.name} Trap Radar Practice (${selectedUnit})`,
+        fileUri: blobUrl,
+        featureTag: 'AP Trap Radar',
+        pageCount: doc.getNumberOfPages()
+      });
+
+      showToast('PDF ready for viewing and export!', 'success');
+    } catch (err: any) {
+      console.error('Failed to generate Trap Radar PDF:', err);
+      showToast('PDF creation failed: ' + (err.message || err), 'error');
+    }
   };
 
   // Custom Question Scan
@@ -973,7 +1370,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
               </motion.div>
             )}
 
-            {/* STEP 2: CONFIGURE QUESTION FORMAT & COUNT (TestPrep Style) */}
+            {/* STEP 2: CONFIGURE QUESTION FORMAT & COUNT */}
             {questions.length === 0 && !loading && challengeStep === 'configure' && (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
@@ -1002,71 +1399,169 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                   </button>
                 </div>
 
-                {/* Section 1: Question Format */}
+                {/* Section 1: Question Format Selection (Objective vs Subjective) */}
                 <div className="flex flex-col gap-3">
                   <label className="text-xs font-black uppercase tracking-wider text-zinc-500">
                     1. Select Question Format
                   </label>
 
-                  <div className="p-4 rounded-2xl border transition-all bg-white border-amber-500 ring-2 ring-amber-500/20 shadow-md shadow-amber-100/50 relative">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3.5">
-                        <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 bg-gradient-to-br from-amber-500 to-emerald-600 text-white shadow-sm">
-                          🎯
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-black text-zinc-900 text-sm tracking-tight">
-                              Objective (Multiple Choice Trap Questions)
-                            </h4>
-                            <span className="text-[10px] font-extrabold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-300">
-                              Section I
-                            </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Option A: Objective (MCQ) */}
+                    <div
+                      onClick={() => {
+                        triggerVibration(10);
+                        setQuestionFormat('objective');
+                        setQuestionCount(5);
+                      }}
+                      className={`p-4 rounded-2xl border transition-all cursor-pointer relative ${
+                        questionFormat === 'objective'
+                          ? 'bg-white border-amber-500 ring-2 ring-amber-500/20 shadow-md shadow-amber-100/50'
+                          : 'bg-zinc-50/80 border-zinc-200 hover:bg-white hover:border-zinc-300'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${
+                            questionFormat === 'objective'
+                              ? 'bg-gradient-to-br from-amber-500 to-emerald-600 text-white shadow-sm'
+                              : 'bg-zinc-200 text-zinc-600'
+                          }`}>
+                            🎯
                           </div>
-                          <p className="text-xs text-zinc-500 font-medium mt-0.5">
-                            1 Verified Target + 3 Psychometric Distractor Traps per question
-                          </p>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-black text-zinc-900 text-sm tracking-tight">
+                                Objective (MCQ)
+                              </h4>
+                              <span className="text-[10px] font-extrabold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-300">
+                                Section I
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-zinc-500 font-medium mt-0.5">
+                              1 Target + 3 Psychometric Distractor Traps
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${
+                          questionFormat === 'objective'
+                            ? 'border-amber-600 bg-amber-600 text-white'
+                            : 'border-zinc-300 bg-transparent'
+                        }`}>
+                          {questionFormat === 'objective' && <Check className="w-3 h-3 stroke-[3]" />}
                         </div>
                       </div>
+                    </div>
 
-                      <div className="w-6 h-6 rounded-full border border-amber-600 bg-amber-600 text-white flex items-center justify-center shrink-0">
-                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    {/* Option B: Subjective (FRQ) */}
+                    <div
+                      onClick={() => {
+                        triggerVibration(10);
+                        setQuestionFormat('subjective');
+                        setQuestionCount(2);
+                      }}
+                      className={`p-4 rounded-2xl border transition-all cursor-pointer relative ${
+                        questionFormat === 'subjective'
+                          ? 'bg-white border-emerald-500 ring-2 ring-emerald-500/20 shadow-md shadow-emerald-100/50'
+                          : 'bg-zinc-50/80 border-zinc-200 hover:bg-white hover:border-zinc-300'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${
+                            questionFormat === 'subjective'
+                              ? 'bg-gradient-to-br from-emerald-600 to-teal-600 text-white shadow-sm'
+                              : 'bg-zinc-200 text-zinc-600'
+                          }`}>
+                            ✍️
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-black text-zinc-900 text-sm tracking-tight">
+                                Subjective (FRQ)
+                              </h4>
+                              <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-300">
+                                Section II
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-zinc-500 font-medium mt-0.5">
+                              Multi-Part Prompts, Rubric Traps & Model Answers
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${
+                          questionFormat === 'subjective'
+                            ? 'border-emerald-600 bg-emerald-600 text-white'
+                            : 'border-zinc-300 bg-transparent'
+                        }`}>
+                          {questionFormat === 'subjective' && <Check className="w-3 h-3 stroke-[3]" />}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Section 2: Question Count (ONLY 2 OPTIONS: 5 and 10 questions) */}
+                {/* Section 2: Question Count */}
                 <div className="flex flex-col gap-3">
                   <label className="text-xs font-black uppercase tracking-wider text-zinc-500">
                     2. How Many Questions?
                   </label>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { count: 5, label: '5 Questions', sub: 'Quick Trap Drill (~10m)' },
-                      { count: 10, label: '10 Questions', sub: 'Intensive Trap Gauntlet (~20m)' }
-                    ].map(item => (
-                      <button
-                        key={item.count}
-                        onClick={() => {
-                          triggerVibration(10);
-                          setQuestionCount(item.count);
-                        }}
-                        className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
-                          questionCount === item.count
-                            ? 'bg-zinc-900 border-zinc-900 text-white shadow-md ring-2 ring-zinc-900/20'
-                            : 'bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-50'
-                        }`}
-                      >
-                        <div className="font-black text-sm">{item.label}</div>
-                        <div className={`text-[11px] font-medium mt-1 ${
-                          questionCount === item.count ? 'text-zinc-300' : 'text-zinc-500'
-                        }`}>
-                          {item.sub}
-                        </div>
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {questionFormat === 'objective' ? (
+                      [
+                        { count: 3, label: '3 Questions', sub: '⚡ Lightning Blitz (~3m)' },
+                        { count: 5, label: '5 Questions', sub: 'Standard Trap Drill (~7m)' },
+                        { count: 10, label: '10 Questions', sub: 'Trap Gauntlet (~15m)' }
+                      ].map(item => (
+                        <button
+                          key={item.count}
+                          onClick={() => {
+                            triggerVibration(10);
+                            setQuestionCount(item.count);
+                          }}
+                          className={`p-3.5 sm:p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                            questionCount === item.count
+                              ? 'bg-zinc-900 border-zinc-900 text-white shadow-md ring-2 ring-zinc-900/20'
+                              : 'bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-50'
+                          }`}
+                        >
+                          <div className="font-black text-sm">{item.label}</div>
+                          <div className={`text-[11px] font-medium mt-1 ${
+                            questionCount === item.count ? 'text-zinc-300' : 'text-zinc-500'
+                          }`}>
+                            {item.sub}
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      [
+                        { count: 2, label: '2 FRQs', sub: '⚡ Rapid Drill (~6m)' },
+                        { count: 3, label: '3 FRQs', sub: 'Standard Drill (~12m)' },
+                        { count: 5, label: '5 FRQs', sub: 'Full Section II (~25m)' }
+                      ].map(item => (
+                        <button
+                          key={item.count}
+                          onClick={() => {
+                            triggerVibration(10);
+                            setQuestionCount(item.count);
+                          }}
+                          className={`p-3.5 sm:p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                            questionCount === item.count
+                              ? 'bg-zinc-900 border-zinc-900 text-white shadow-md ring-2 ring-zinc-900/20'
+                              : 'bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-50'
+                          }`}
+                        >
+                          <div className="font-black text-sm">{item.label}</div>
+                          <div className={`text-[11px] font-medium mt-1 ${
+                            questionCount === item.count ? 'text-zinc-300' : 'text-zinc-500'
+                          }`}>
+                            {item.sub}
+                          </div>
+                        </button>
+                      ))
+                    )}
                   </div>
                 </div>
 
@@ -1088,7 +1583,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                     className="w-2/3 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-emerald-600 to-teal-600 hover:opacity-95 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 active:scale-98 transition-all cursor-pointer"
                   >
                     <Radar className="w-4 h-4" />
-                    <span>Start Trap Radar ({questionCount} MCQs)</span>
+                    <span>Start {questionFormat === 'subjective' ? 'FRQ' : 'MCQ'} Trap Radar ({questionCount} Qs)</span>
                   </button>
                 </div>
               </motion.div>
@@ -1099,13 +1594,18 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
               <div className="space-y-4">
                 {/* Progress / Navigation Header */}
                 <div className="flex items-center justify-between bg-white border border-zinc-200 rounded-2xl px-4 py-2.5 shadow-xs">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-black text-amber-700">
-                      Question {currentIndex + 1} of {questions.length}
+                      {activeQuestion.format === 'subjective' ? 'FRQ Question' : 'Question'} {currentIndex + 1} of {questions.length}
                     </span>
                     {activeQuestion.overallTrapDifficulty && (
                       <span className="text-[10px] bg-red-100 text-red-800 border border-red-200 px-2 py-0.5 rounded font-bold">
                         {activeQuestion.overallTrapDifficulty}
+                      </span>
+                    )}
+                    {activeQuestion.format === 'subjective' && (
+                      <span className="text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-bold">
+                        ⭐ {activeQuestion.totalPoints || activeQuestion.parts?.reduce((sum, p) => sum + (p.points || 1), 0) || 4} Pts
                       </span>
                     )}
                   </div>
@@ -1121,6 +1621,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                       }}
                       disabled={currentIndex === 0}
                       className="p-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:text-zinc-900 disabled:opacity-40 cursor-pointer border border-zinc-200"
+                      title="Previous Question"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
@@ -1134,15 +1635,27 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                       }}
                       disabled={currentIndex === questions.length - 1}
                       className="p-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:text-zinc-900 disabled:opacity-40 cursor-pointer border border-zinc-200"
+                      title="Next Question"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => saveToVault(activeQuestion)}
-                      className="p-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:text-amber-600 cursor-pointer ml-1 border border-zinc-200"
+                      onClick={() => {
+                        saveToVault(activeQuestion);
+                        showToast('Bookmarked to My Trap Vault', 'success');
+                      }}
+                      className="p-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:text-amber-600 cursor-pointer border border-zinc-200"
                       title="Bookmark to Trap Vault"
                     >
                       <Bookmark className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleExportPDF()}
+                      className="px-2.5 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-bold flex items-center gap-1.5 hover:bg-zinc-800 cursor-pointer shadow-xs ml-1"
+                      title="Export Practice & Distractor Autopsy to PDF"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-amber-400" />
+                      <span className="hidden sm:inline">Export PDF</span>
                     </button>
                   </div>
                 </div>
@@ -1169,7 +1682,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                     <GlobalMarkdown>{activeQuestion.prompt}</GlobalMarkdown>
                   </div>
 
-                  {/* Radar Scanning Line Animation (When button clicked) */}
+                  {/* Radar Scanning Line Animation */}
                   <AnimatePresence>
                     {isScanningAnimation && (
                       <motion.div
@@ -1187,189 +1700,457 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                     )}
                   </AnimatePresence>
 
-                  {/* Options List */}
-                  <div className="space-y-2.5 pt-2">
-                    {activeQuestion.options.map((optionText, idx) => {
-                      const letter = optionText.trim().charAt(0).toUpperCase();
-                      const isSelected = selectedOption === optionText;
-                      const trapInfo = activeQuestion.traps?.find(t => t.option === letter);
-                      const isCorrect = trapInfo ? trapInfo.isCorrect : optionText === activeQuestion.correctAnswer;
+                  {/* ========================================================================= */}
+                  {/* BRANCH A: SUBJECTIVE (FRQ) FREE RESPONSE QUESTION RUNNER */}
+                  {/* ========================================================================= */}
+                  {activeQuestion.format === 'subjective' ? (
+                    <div className="space-y-4 pt-2">
+                      {/* Parts List */}
+                      {activeQuestion.parts && activeQuestion.parts.length > 0 && (
+                        <div className="space-y-3">
+                          {activeQuestion.parts.map((part, pIdx) => (
+                            <div
+                              key={pIdx}
+                              className="p-4 rounded-2xl border border-zinc-200 bg-zinc-50/70 space-y-2.5"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-black text-emerald-900 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-full">
+                                  Part {part.partLabel} • {part.points} Point{part.points > 1 ? 's' : ''}
+                                </span>
+                              </div>
 
-                      let borderColor = 'border-zinc-200';
-                      let bgColor = 'bg-white hover:bg-zinc-50';
+                              <div className="text-xs sm:text-sm font-semibold text-zinc-900 leading-relaxed">
+                                <GlobalMarkdown>{part.task}</GlobalMarkdown>
+                              </div>
 
-                      if (isSelected && !isRadarRevealed) {
-                        borderColor = 'border-amber-500';
-                        bgColor = 'bg-amber-50/80 shadow-xs';
-                      }
+                              {/* REVEALED CHIEF READER RUBRICS & TRAPS */}
+                              {isRadarRevealed && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: 'auto' }}
+                                  className="pt-3 border-t border-zinc-200 space-y-3 text-xs"
+                                >
+                                  {/* Scoring Criteria */}
+                                  <div className="p-3 rounded-xl bg-emerald-50/90 border border-emerald-200 text-emerald-950">
+                                    <div className="font-bold text-emerald-900 mb-1 flex items-center gap-1.5">
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                                      <span>Official Scoring Standard ({part.points} Pt):</span>
+                                    </div>
+                                    <GlobalMarkdown>{part.scoringCriteria}</GlobalMarkdown>
+                                  </div>
 
-                      if (isRadarRevealed) {
-                        if (isCorrect) {
-                          borderColor = 'border-emerald-500';
-                          bgColor = 'bg-emerald-50/90 shadow-xs';
-                        } else if (isSelected && !isCorrect) {
-                          borderColor = 'border-red-500';
-                          bgColor = 'bg-red-50/90 shadow-xs';
-                        } else {
-                          borderColor = 'border-zinc-200';
-                          bgColor = 'bg-zinc-50/60 opacity-80';
-                        }
-                      }
+                                  {/* Model Answer */}
+                                  <div className="p-3 rounded-xl bg-blue-50/90 border border-blue-200 text-blue-950">
+                                    <div className="font-bold text-blue-900 mb-1 flex items-center gap-1.5">
+                                      <Award className="w-3.5 h-3.5 text-blue-700" />
+                                      <span>Full-Credit Exemplary Model Answer:</span>
+                                    </div>
+                                    <GlobalMarkdown>{part.modelAnswer}</GlobalMarkdown>
+                                  </div>
 
-                      return (
-                        <div
-                          key={idx}
-                          onClick={() => handleSelectOption(optionText)}
-                          className={`p-4 rounded-2xl border ${borderColor} ${bgColor} transition-all cursor-pointer relative overflow-hidden`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <span className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black shrink-0 ${
-                              isRadarRevealed
-                                ? isCorrect
-                                  ? 'bg-emerald-600 text-white'
-                                  : isSelected
-                                    ? 'bg-red-500 text-white'
-                                    : 'bg-zinc-200 text-zinc-600'
-                                : isSelected
-                                  ? 'bg-amber-500 text-white'
-                                  : 'bg-zinc-200 text-zinc-700'
-                            }`}>
-                              {letter}
-                            </span>
-
-                            <div className="flex-1 text-xs sm:text-sm font-semibold text-zinc-900 min-w-0">
-                              <GlobalMarkdown>{optionText}</GlobalMarkdown>
+                                  {/* FRQ Traps Autopsy */}
+                                  {part.frqTraps && part.frqTraps.length > 0 && (
+                                    <div className="space-y-2">
+                                      <div className="text-[11px] font-black text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+                                        <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                                        <span>Chief Reader Traps (Where Students Lose Points):</span>
+                                      </div>
+                                      {part.frqTraps.map((ft, ftIdx) => (
+                                        <div
+                                          key={ftIdx}
+                                          className="p-3 rounded-xl bg-amber-50/90 border border-amber-300 space-y-1.5"
+                                        >
+                                          <div className="flex items-center justify-between">
+                                            <span className="font-bold text-amber-950 text-xs">
+                                              {ft.trapName}
+                                            </span>
+                                            {ft.vulnerabilityRate && (
+                                              <span className="text-[10px] font-black bg-red-100 text-red-800 px-2 py-0.5 rounded-full border border-red-200">
+                                                ⚠️ {ft.vulnerabilityRate}
+                                              </span>
+                                            )}
+                                          </div>
+                                          <p className="text-zinc-700 text-xs">
+                                            <strong>Point Deduction Risk:</strong> {ft.howStudentsLosePoints}
+                                          </p>
+                                          <p className="text-emerald-950 font-semibold text-xs">
+                                            <strong>🎯 Full-Credit Disarm Fix:</strong> {ft.fullCreditFix}
+                                          </p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </motion.div>
+                              )}
                             </div>
+                          ))}
+                        </div>
+                      )}
 
-                            {/* Result Indicator Icon */}
-                            {isRadarRevealed && (
-                              <div className="shrink-0 pt-0.5">
-                                {isCorrect ? (
-                                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                                ) : isSelected ? (
-                                  <XCircle className="w-5 h-5 text-red-500" />
-                                ) : (
-                                  <ShieldAlert className="w-4 h-4 text-amber-600" />
-                                )}
+                      {/* Student Workspace (Notes / Outline) */}
+                      {!isRadarRevealed && (
+                        <div className="space-y-2 pt-1">
+                          <label className="text-[11px] font-bold text-zinc-600 uppercase tracking-wider block">
+                            Student Scratchpad (Draft Outline or Calculations - Optional)
+                          </label>
+                          <textarea
+                            value={userFrqDraft[String(activeQuestion.id || currentIndex)] || ''}
+                            onChange={e => setUserFrqDraft(prev => ({ ...prev, [String(activeQuestion.id || currentIndex)]: e.target.value }))}
+                            placeholder="Jot down your key calculations, theorem names, or outline here before revealing the scoring rubrics..."
+                            rows={3}
+                            className="w-full p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-sans"
+                          />
+                        </div>
+                      )}
+
+                      {/* Actions / Disarm Radar Trigger for FRQ */}
+                      <div className="pt-2">
+                        {!isRadarRevealed ? (
+                          <button
+                            onClick={handleActivateRadar}
+                            disabled={isScanningAnimation}
+                            className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-amber-500 hover:opacity-95 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 active:scale-98 transition-all cursor-pointer"
+                          >
+                            <Radar className="w-4 h-4" />
+                            <span>Scan Chief Reader Rubric & Expose FRQ Traps</span>
+                          </button>
+                        ) : (
+                          <div className="w-full space-y-4">
+                            {/* Chief Reader 5-Second Disarm Secret Banner */}
+                            {activeQuestion.disarmStrategy && (
+                              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs space-y-1.5 shadow-xs">
+                                <div className="flex items-center gap-1.5 font-black text-emerald-800">
+                                  <Zap className="w-4 h-4 text-amber-500" />
+                                  <span>Chief Reader's 5-Second FRQ Scoring Secret:</span>
+                                </div>
+                                <div className="leading-relaxed text-zinc-800">
+                                  <GlobalMarkdown>{activeQuestion.disarmStrategy}</GlobalMarkdown>
+                                </div>
                               </div>
                             )}
-                          </div>
 
-                          {/* REVEALED TRAP AUTOPSY CARD */}
-                          {isRadarRevealed && trapInfo && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              className={`mt-3 pt-3 border-t text-xs space-y-2 ${
-                                isCorrect ? 'border-emerald-200' : 'border-zinc-200'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border ${
-                                  isCorrect
-                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                                    : 'bg-amber-100 text-amber-800 border-amber-300'
-                                }`}>
-                                  {trapInfo.trapType}
-                                </span>
-                                {trapInfo.vulnerabilityRate && trapInfo.vulnerabilityRate !== 'N/A' && (
-                                  <span className="text-[10px] text-zinc-600 font-bold">
-                                    ⚠️ {trapInfo.vulnerabilityRate}
+                            {/* Self-Assessment & Mistake Vault Bar */}
+                            <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-3">
+                              <div className="text-xs font-black text-zinc-900 flex items-center justify-between">
+                                <span>Self-Assessment: Did you avoid the traps in this question?</span>
+                                {frqSelfGrading[String(activeQuestion.id || currentIndex)] && (
+                                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                                    frqSelfGrading[String(activeQuestion.id || currentIndex)] === 'avoided'
+                                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                      : 'bg-red-100 text-red-800 border border-red-300'
+                                  }`}>
+                                    {frqSelfGrading[String(activeQuestion.id || currentIndex)] === 'avoided' ? '✅ Full Credit' : '🪤 Trapped (Saved)'}
                                   </span>
                                 )}
                               </div>
 
-                              <div className="text-zinc-700 text-xs leading-relaxed">
-                                <GlobalMarkdown>{trapInfo.trapDescription}</GlobalMarkdown>
-                              </div>
+                              <div className="grid grid-cols-2 gap-3">
+                                <button
+                                  onClick={() => handleFrqSelfGrade('avoided')}
+                                  className={`py-2.5 px-3 rounded-xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                                    frqSelfGrading[String(activeQuestion.id || currentIndex)] === 'avoided'
+                                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                                      : 'bg-white border-zinc-200 text-zinc-800 hover:bg-emerald-50 hover:border-emerald-300'
+                                  }`}
+                                >
+                                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                  <span>I Avoided The Traps</span>
+                                </button>
 
-                              {trapInfo.collegeBoardMindset && (
-                                <div className="text-[11px] text-zinc-600 italic bg-zinc-50 p-2.5 rounded-xl border border-zinc-200">
-                                  <GlobalMarkdown>{`**College Board Intent:** ${trapInfo.collegeBoardMindset}`}</GlobalMarkdown>
+                                <button
+                                  onClick={() => handleFrqSelfGrade('tripped')}
+                                  className={`py-2.5 px-3 rounded-xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                                    frqSelfGrading[String(activeQuestion.id || currentIndex)] === 'tripped'
+                                      ? 'bg-red-600 text-white border-red-600 shadow-sm'
+                                      : 'bg-white border-zinc-200 text-zinc-800 hover:bg-red-50 hover:border-red-300'
+                                  }`}
+                                >
+                                  <XCircle className="w-4 h-4 text-red-500" />
+                                  <span>I Tripped on a Trap</span>
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Navigation Buttons */}
+                            <div className="flex items-center justify-between gap-3 pt-1">
+                              <button
+                                onClick={() => {
+                                  setIsRadarRevealed(false);
+                                }}
+                                className="px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-zinc-200"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                <span>Retry FRQ</span>
+                              </button>
+
+                              {currentIndex < questions.length - 1 ? (
+                                <button
+                                  onClick={() => {
+                                    setCurrentIndex(prev => prev + 1);
+                                    setIsRadarRevealed(false);
+                                  }}
+                                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
+                                >
+                                  <span>Next FRQ</span>
+                                  <ChevronRight className="w-4 h-4" />
+                                </button>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => {
+                                      triggerVibration(10);
+                                      setQuestions([]);
+                                      setChallengeStep('configure');
+                                    }}
+                                    className="px-3.5 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold cursor-pointer border border-zinc-200"
+                                  >
+                                    <span>Change Format</span>
+                                  </button>
+                                  <button
+                                    onClick={handleStartChallenge}
+                                    className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
+                                  >
+                                    <RotateCcw className="w-4 h-4" />
+                                    <span>New Set</span>
+                                  </button>
                                 </div>
                               )}
-                            </motion.div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Actions / Disarm Radar Trigger */}
-                  <div className="pt-3 flex items-center justify-between gap-3">
-                    {!isRadarRevealed ? (
-                      <button
-                        onClick={handleActivateRadar}
-                        disabled={!selectedOption || isScanningAnimation}
-                        className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-emerald-600 hover:opacity-95 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 active:scale-98 transition-all cursor-pointer disabled:opacity-50"
-                      >
-                        <Radar className="w-4 h-4" />
-                        <span>Activate Trap Radar & Disarm Options</span>
-                      </button>
-                    ) : (
-                      <div className="w-full space-y-3">
-                        {/* 5-Second Disarm Secret Banner */}
-                        {activeQuestion.disarmStrategy && (
-                          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs space-y-1.5 shadow-xs">
-                            <div className="flex items-center gap-1.5 font-black text-emerald-800">
-                              <Zap className="w-4 h-4 text-amber-500" />
-                              <span>Examiner's 5-Second Disarm Secret:</span>
-                            </div>
-                            <div className="leading-relaxed text-zinc-800">
-                              <GlobalMarkdown>{activeQuestion.disarmStrategy}</GlobalMarkdown>
                             </div>
                           </div>
                         )}
+                      </div>
+                    </div>
+                  ) : (
+                    /* ========================================================================= */
+                    /* BRANCH B: OBJECTIVE (MCQ) MULTIPLE CHOICE QUESTION RUNNER */
+                    /* ========================================================================= */
+                    <div className="space-y-2.5 pt-2">
+                      {activeQuestion.options && activeQuestion.options.map((optionText, idx) => {
+                        const letter = optionText.trim().charAt(0).toUpperCase();
+                        const isSelected = selectedOption === optionText;
+                        const trapInfo = activeQuestion.traps?.find(t => t.option === letter);
+                        const isCorrect = trapInfo ? trapInfo.isCorrect : optionText === activeQuestion.correctAnswer;
 
-                        <div className="flex items-center justify-between gap-3">
-                          <button
-                            onClick={() => {
-                              setSelectedOption(null);
-                              setIsRadarRevealed(false);
-                            }}
-                            className="px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-zinc-200"
+                        let borderColor = 'border-zinc-200';
+                        let bgColor = 'bg-white hover:bg-zinc-50';
+
+                        if (isSelected && !isRadarRevealed) {
+                          borderColor = 'border-amber-500';
+                          bgColor = 'bg-amber-50/80 shadow-xs';
+                        }
+
+                        if (isRadarRevealed) {
+                          if (isCorrect) {
+                            borderColor = 'border-emerald-500';
+                            bgColor = 'bg-emerald-50/90 shadow-xs';
+                          } else if (isSelected && !isCorrect) {
+                            borderColor = 'border-red-500';
+                            bgColor = 'bg-red-50/90 shadow-xs';
+                          } else {
+                            borderColor = 'border-zinc-200';
+                            bgColor = 'bg-zinc-50/60 opacity-80';
+                          }
+                        }
+
+                        return (
+                          <div
+                            key={idx}
+                            onClick={() => handleSelectOption(optionText)}
+                            className={`p-4 rounded-2xl border ${borderColor} ${bgColor} transition-all cursor-pointer relative overflow-hidden`}
                           >
-                            <RotateCcw className="w-3.5 h-3.5" />
-                            <span>Retry Question</span>
-                          </button>
+                            <div className="flex items-start gap-3">
+                              <span className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black shrink-0 ${
+                                isRadarRevealed
+                                  ? isCorrect
+                                    ? 'bg-emerald-600 text-white'
+                                    : isSelected
+                                      ? 'bg-red-500 text-white'
+                                      : 'bg-zinc-200 text-zinc-600'
+                                  : isSelected
+                                    ? 'bg-amber-500 text-white'
+                                    : 'bg-zinc-200 text-zinc-700'
+                              }`}>
+                                {letter}
+                              </span>
 
-                          {currentIndex < questions.length - 1 ? (
-                            <button
-                              onClick={() => {
-                                setCurrentIndex(prev => prev + 1);
-                                setSelectedOption(null);
-                                setIsRadarRevealed(false);
-                              }}
-                              className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
-                            >
-                              <span>Next Trap MCQ</span>
-                              <ChevronRight className="w-4 h-4" />
-                            </button>
-                          ) : (
-                            <div className="flex items-center gap-2">
+                              <div className="flex-1 text-xs sm:text-sm font-semibold text-zinc-900 min-w-0">
+                                <GlobalMarkdown>{optionText}</GlobalMarkdown>
+                              </div>
+
+                              {/* Result Indicator Icon */}
+                              {isRadarRevealed && (
+                                <div className="shrink-0 pt-0.5">
+                                  {isCorrect ? (
+                                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                                  ) : isSelected ? (
+                                    <XCircle className="w-5 h-5 text-red-500" />
+                                  ) : (
+                                    <ShieldAlert className="w-4 h-4 text-amber-600" />
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* REVEALED TRAP AUTOPSY CARD */}
+                            {isRadarRevealed && trapInfo && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                className={`mt-3 pt-3 border-t text-xs space-y-2 ${
+                                  isCorrect ? 'border-emerald-200' : 'border-zinc-200'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border ${
+                                    isCorrect
+                                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                      : 'bg-amber-100 text-amber-800 border-amber-300'
+                                  }`}>
+                                    {trapInfo.trapType}
+                                  </span>
+                                  {trapInfo.vulnerabilityRate && trapInfo.vulnerabilityRate !== 'N/A' && (
+                                    <span className="text-[10px] text-zinc-600 font-bold">
+                                      ⚠️ {trapInfo.vulnerabilityRate}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="text-zinc-700 text-xs leading-relaxed">
+                                  <GlobalMarkdown>{trapInfo.trapDescription}</GlobalMarkdown>
+                                </div>
+
+                                {trapInfo.collegeBoardMindset && (
+                                  <div className="text-[11px] text-zinc-600 italic bg-zinc-50 p-2.5 rounded-xl border border-zinc-200">
+                                    <GlobalMarkdown>{`**College Board Intent:** ${trapInfo.collegeBoardMindset}`}</GlobalMarkdown>
+                                  </div>
+                                )}
+                              </motion.div>
+                            )}
+                          </div>
+                        );
+                      })}
+
+                      {/* Actions / Disarm Radar Trigger for MCQ */}
+                      <div className="pt-3 flex items-center justify-between gap-3">
+                        {!isRadarRevealed ? (
+                          <button
+                            onClick={handleActivateRadar}
+                            disabled={!selectedOption || isScanningAnimation}
+                            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-emerald-600 hover:opacity-95 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 active:scale-98 transition-all cursor-pointer disabled:opacity-50"
+                          >
+                            <Radar className="w-4 h-4" />
+                            <span>Activate Trap Radar & Disarm Options</span>
+                          </button>
+                        ) : (
+                          <div className="w-full space-y-3">
+                            {/* DEDICATED AI MISTAKE DIAGNOSIS & FIX CARD */}
+                            {selectedOption && !(selectedOption.trim().startsWith((activeQuestion.correctAnswer || '').charAt(0)) || selectedOption === activeQuestion.correctAnswer) && (
+                              <motion.div
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="p-4 rounded-2xl bg-gradient-to-br from-red-50 to-amber-50 border border-red-200 text-xs space-y-2.5 shadow-sm"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-base">🤖</span>
+                                    <span className="font-black text-red-950">AI Mistake Diagnosis & Fix</span>
+                                  </div>
+                                  <span className="text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full">
+                                    Saved to My Mistake Vault
+                                  </span>
+                                </div>
+
+                                <div className="text-zinc-800 space-y-1.5 leading-relaxed">
+                                  <p>
+                                    <strong>🪤 Trap Triggered:</strong>{' '}
+                                    <span className="text-red-700 font-semibold">
+                                      {activeQuestion.traps?.find(t => t.option === selectedOption.charAt(0))?.trapType || 'Psychometric Distractor'}
+                                    </span>
+                                  </p>
+                                  <p>
+                                    <strong>🎯 Why You Picked This:</strong>{' '}
+                                    {activeQuestion.traps?.find(t => t.option === selectedOption.charAt(0))?.trapDescription || 'Selected an appealing distractor based on standard misconceptions.'}
+                                  </p>
+                                  <p className="text-emerald-950 font-semibold">
+                                    <strong>⚡ Step-by-Step Fix:</strong> {activeQuestion.disarmStrategy}
+                                  </p>
+                                </div>
+
+                                <button
+                                  onClick={() => handleExplainMistakeWithAi(activeQuestion)}
+                                  disabled={explainingMistakeId === activeQuestion.id}
+                                  className="w-full py-2 px-3 rounded-xl bg-white border border-amber-300 hover:bg-amber-50 text-amber-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                                >
+                                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                  <span>{explainingMistakeId === activeQuestion.id ? 'Analyzing Mistake...' : '💬 Ask AI Mistake Doctor to Deeply Explain My Error'}</span>
+                                </button>
+                              </motion.div>
+                            )}
+
+                            {/* 5-Second Disarm Secret Banner */}
+                            {activeQuestion.disarmStrategy && (
+                              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs space-y-1.5 shadow-xs">
+                                <div className="flex items-center gap-1.5 font-black text-emerald-800">
+                                  <Zap className="w-4 h-4 text-amber-500" />
+                                  <span>Examiner's 5-Second Disarm Secret:</span>
+                                </div>
+                                <div className="leading-relaxed text-zinc-800">
+                                  <GlobalMarkdown>{activeQuestion.disarmStrategy}</GlobalMarkdown>
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="flex items-center justify-between gap-3">
                               <button
                                 onClick={() => {
-                                  triggerVibration(10);
-                                  setQuestions([]);
-                                  setChallengeStep('configure');
+                                  setSelectedOption(null);
+                                  setIsRadarRevealed(false);
                                 }}
-                                className="px-3.5 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-zinc-200"
+                                className="px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-zinc-200"
                               >
-                                <span>Change Format</span>
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                <span>Retry Question</span>
                               </button>
-                              <button
-                                onClick={handleStartChallenge}
-                                className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
-                              >
-                                <RotateCcw className="w-4 h-4" />
-                                <span>New Set ({questionCount} MCQs)</span>
-                              </button>
+
+                              {currentIndex < questions.length - 1 ? (
+                                <button
+                                  onClick={() => {
+                                    setCurrentIndex(prev => prev + 1);
+                                    setSelectedOption(null);
+                                    setIsRadarRevealed(false);
+                                  }}
+                                  className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
+                                >
+                                  <span>Next Trap MCQ</span>
+                                  <ChevronRight className="w-4 h-4" />
+                                </button>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => {
+                                      triggerVibration(10);
+                                      setQuestions([]);
+                                      setChallengeStep('configure');
+                                    }}
+                                    className="px-3.5 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold cursor-pointer border border-zinc-200"
+                                  >
+                                    <span>Change Format</span>
+                                  </button>
+                                  <button
+                                    onClick={handleStartChallenge}
+                                    className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
+                                  >
+                                    <RotateCcw className="w-4 h-4" />
+                                    <span>New Set ({questionCount} MCQs)</span>
+                                  </button>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1571,46 +2352,87 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-white border border-zinc-200 rounded-3xl p-5 sm:p-7 shadow-sm space-y-5"
               >
-                <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded">
-                      {scannedResult.detectedSubject || 'AP Exam Standard'}
-                    </span>
-                    <h3 className="text-sm font-black text-zinc-900 mt-1">
-                      Trap Radar Autopsy Report
+                {/* Header with Subject, CED Skill, Difficulty and History Status */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200 pb-4 gap-2">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded">
+                        {scannedResult.detectedSubject || 'AP Exam Standard'}
+                      </span>
+                      {scannedResult.skill && (
+                        <span className="text-[10px] font-bold bg-zinc-100 text-zinc-700 border border-zinc-300 px-2 py-0.5 rounded">
+                          {scannedResult.skill}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-sm sm:text-base font-black text-zinc-900 flex items-center gap-2">
+                      <span>Trap Radar Autopsy Report</span>
+                      <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                        <BookmarkCheck className="w-3 h-3" />
+                        Saved in Vault
+                      </span>
                     </h3>
                   </div>
                   {scannedResult.overallTrapDifficulty && (
-                    <span className="text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-300">
+                    <span className="self-start sm:self-center text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-300">
                       {scannedResult.overallTrapDifficulty}
                     </span>
                   )}
                 </div>
 
-                {/* Stimulus Context Box if returned */}
+                {/* Clean Question Stem Box (especially useful for photo OCR & raw math questions) */}
+                {scannedResult.question && (
+                  <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-1">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400 block">
+                      AP Question Stem:
+                    </span>
+                    <div className="text-xs sm:text-sm font-semibold text-zinc-900 leading-relaxed">
+                      <GlobalMarkdown>{scannedResult.question}</GlobalMarkdown>
+                    </div>
+                  </div>
+                )}
+
+                {/* Stimulus Context Box if returned (Table, Code snippet, Historical quote) */}
                 {scannedResult.stimulus && scannedResult.stimulus.trim().length > 0 && (
-                  <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 font-mono text-xs text-zinc-800 leading-relaxed overflow-x-auto">
+                  <div className="p-4 rounded-2xl bg-zinc-50/80 border border-zinc-200 font-mono text-xs text-zinc-800 leading-relaxed overflow-x-auto">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400 block mb-1 font-sans">
+                      Stimulus / Context:
+                    </span>
                     <GlobalMarkdown>{scannedResult.stimulus}</GlobalMarkdown>
+                  </div>
+                )}
+
+                {/* Question & AP Concept Master Breakdown */}
+                {scannedResult.conceptExplanation && (
+                  <div className="p-4 sm:p-5 rounded-2xl bg-sky-50/80 border border-sky-200 text-xs space-y-2">
+                    <div className="flex items-center gap-2 font-black text-sky-900">
+                      <BookOpen className="w-4 h-4 text-sky-600 shrink-0" />
+                      <span className="text-xs sm:text-sm">Question Breakdown & Core AP Concept:</span>
+                    </div>
+                    <div className="text-zinc-800 leading-relaxed font-medium text-xs sm:text-[13px]">
+                      <GlobalMarkdown>{scannedResult.conceptExplanation}</GlobalMarkdown>
+                    </div>
                   </div>
                 )}
 
                 {/* 5-Second Disarm Secret Banner */}
                 {scannedResult.disarmStrategy && (
                   <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs space-y-1.5 shadow-xs">
-                    <span className="font-black text-emerald-800 flex items-center gap-1.5">
-                      <Zap className="w-4 h-4 text-amber-500" />
-                      Examiner's 5-Second Disarm Secret:
+                    <span className="font-black text-emerald-800 flex items-center gap-1.5 text-xs sm:text-sm">
+                      <Zap className="w-4 h-4 text-amber-500 shrink-0" />
+                      Examiner's 5-Second Disarm Secret (Exam Hall Defense):
                     </span>
-                    <div className="leading-relaxed text-zinc-800 font-medium">
+                    <div className="leading-relaxed text-zinc-800 font-medium text-xs sm:text-[13px]">
                       <GlobalMarkdown>{scannedResult.disarmStrategy}</GlobalMarkdown>
                     </div>
                   </div>
                 )}
 
-                {/* Dissected Options */}
-                <div className="space-y-3">
-                  <h4 className="text-xs font-black uppercase text-zinc-700 tracking-wider">
-                    Option-By-Option Trap Analysis:
+                {/* Dissected Options & Trap Analysis */}
+                <div className="space-y-3 pt-1">
+                  <h4 className="text-xs font-black uppercase text-zinc-700 tracking-wider flex items-center gap-2">
+                    <ShieldAlert className="w-4 h-4 text-amber-500" />
+                    <span>Option-By-Option Trap Analysis:</span>
                   </h4>
                   {scannedResult.traps?.map((trap: any, i: number) => (
                     <div
@@ -1624,7 +2446,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5 flex-1 min-w-0">
                           <span className={`w-7 h-7 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
-                            trap.isCorrect ? 'bg-emerald-600 text-white' : 'bg-zinc-200 text-zinc-700'
+                            trap.isCorrect ? 'bg-emerald-600 text-white shadow-xs' : 'bg-zinc-200 text-zinc-700'
                           }`}>
                             {trap.option}
                           </span>
@@ -1632,14 +2454,30 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                             <GlobalMarkdown>{trap.text || `Option ${trap.option}`}</GlobalMarkdown>
                           </div>
                         </div>
-                        <span className={`shrink-0 text-[10px] font-black uppercase px-2 py-0.5 rounded border ${
-                          trap.isCorrect
-                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                            : 'bg-amber-100 text-amber-800 border-amber-300'
-                        }`}>
-                          {trap.trapType}
-                        </span>
+                        <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                          <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border ${
+                            trap.isCorrect
+                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                              : 'bg-amber-100 text-amber-800 border-amber-300'
+                          }`}>
+                            {trap.trapType}
+                          </span>
+                          {trap.vulnerabilityRate && trap.vulnerabilityRate !== 'N/A' && (
+                            <span className="text-[10px] font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 hidden sm:inline-block">
+                              ⚠️ {trap.vulnerabilityRate}
+                            </span>
+                          )}
+                        </div>
                       </div>
+
+                      {/* Mobile Vulnerability Rate Badge if present */}
+                      {trap.vulnerabilityRate && trap.vulnerabilityRate !== 'N/A' && (
+                        <div className="sm:hidden pl-9">
+                          <span className="text-[10px] font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block">
+                            ⚠️ {trap.vulnerabilityRate}
+                          </span>
+                        </div>
+                      )}
 
                       <div className="text-xs text-zinc-700 leading-relaxed pl-9">
                         <GlobalMarkdown>{trap.trapDescription}</GlobalMarkdown>
@@ -1647,7 +2485,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
                       {trap.collegeBoardMindset && (
                         <div className="text-[11px] text-zinc-600 italic bg-white p-2.5 rounded-xl border border-zinc-200 ml-9">
-                          <GlobalMarkdown>{`**College Board Intent:** ${trap.collegeBoardMindset}`}</GlobalMarkdown>
+                          <GlobalMarkdown>{`**Test-Maker's Psychological Intent:** ${trap.collegeBoardMindset}`}</GlobalMarkdown>
                         </div>
                       )}
                     </div>
@@ -1713,31 +2551,62 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
         )}
 
         {/* ========================================================================= */}
+        {/* ========================================================================= */}
         {/* TAB 4: MY TRAP VAULT */}
         {/* ========================================================================= */}
         {activeTab === 'vault' && (
           <div className="space-y-4">
-            <div className="bg-white border border-zinc-200 rounded-3xl p-5 sm:p-6 flex items-center justify-between shadow-xs">
-              <div>
-                <h2 className="text-lg font-black text-zinc-900 flex items-center gap-2">
-                  <span>My Trap Vault</span>
-                </h2>
-                <p className="text-xs text-zinc-500 mt-0.5">
-                  Saved AP questions with traps you previously reviewed or tripped on.
-                </p>
+            <div className="bg-white border border-zinc-200 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-black text-zinc-900 flex items-center gap-2">
+                    <span>My Trap Vault</span>
+                    <span className="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-300">
+                      {vault.length} Saved
+                    </span>
+                  </h2>
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    Tricky AP questions you previously reviewed or tripped on. Review with AI Mistake Doctor before May exam day!
+                  </p>
+                </div>
+
+                {vault.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setVault([]);
+                        safeSetItem('ap_trap_radar_vault', JSON.stringify([]));
+                        showToast('Cleared Trap Vault', 'info');
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold cursor-pointer border border-zinc-200"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                )}
               </div>
 
+              {/* Filter Tabs */}
               {vault.length > 0 && (
-                <button
-                  onClick={() => {
-                    setVault([]);
-                    safeSetItem('ap_trap_radar_vault', JSON.stringify([]));
-                    showToast('Cleared Trap Vault', 'info');
-                  }}
-                  className="px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold cursor-pointer border border-zinc-200"
-                >
-                  Clear All
-                </button>
+                <div className="flex items-center gap-2 pt-1 border-t border-zinc-100">
+                  {[
+                    { id: 'all', label: `All (${vault.length})` },
+                    { id: 'objective', label: `MCQ Traps (${vault.filter(v => v.format !== 'subjective').length})` },
+                    { id: 'subjective', label: `FRQ Traps (${vault.filter(v => v.format === 'subjective').length})` }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setVaultFilter(tab.id as any)}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        vaultFilter === tab.id
+                          ? 'bg-amber-600 text-white shadow-xs'
+                          : 'text-zinc-600 hover:text-zinc-900 bg-zinc-100 hover:bg-zinc-200'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
 
@@ -1746,41 +2615,133 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                 <div className="text-3xl">🗄️</div>
                 <h4 className="text-sm font-black text-zinc-900">Your Trap Vault is Empty</h4>
                 <p className="text-xs text-zinc-500 max-w-xs mx-auto">
-                  When you take a Trap Challenge or scan a question, bookmark tricky questions here to review before May exam day!
+                  When you take a Trap Challenge or scan a question, any question where you fall into a distractor trap is automatically logged here with AI diagnostics.
                 </p>
               </div>
             ) : (
               <div className="space-y-4">
-                {vault.map((q, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-white border border-zinc-200 rounded-2xl p-5 space-y-3 shadow-xs"
-                  >
-                    <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
-                      <span className="text-xs font-black text-amber-700">
-                        {q.skill || `Saved Question #${idx + 1}`}
-                      </span>
-                      <button
-                        onClick={() => removeFromVault(q.id)}
-                        className="text-zinc-500 hover:text-red-500 text-xs font-bold cursor-pointer flex items-center gap-1"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                        <span>Remove</span>
-                      </button>
-                    </div>
+                {vault
+                  .filter(q => {
+                    if (vaultFilter === 'objective') return q.format !== 'subjective';
+                    if (vaultFilter === 'subjective') return q.format === 'subjective';
+                    return true;
+                  })
+                  .map((q, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-white border border-zinc-200 rounded-2xl p-5 space-y-3.5 shadow-xs"
+                    >
+                      <div className="flex items-center justify-between border-b border-zinc-100 pb-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border ${
+                            q.format === 'subjective'
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                              : 'bg-amber-50 text-amber-800 border-amber-200'
+                          }`}>
+                            {q.format === 'subjective' ? 'Section II FRQ' : 'Section I MCQ'}
+                          </span>
+                          <span className="text-xs font-black text-zinc-800">
+                            {q.skill || `Saved Question #${idx + 1}`}
+                          </span>
+                        </div>
 
-                    <div className="text-xs sm:text-sm font-semibold text-zinc-900">
-                      <GlobalMarkdown>{q.prompt}</GlobalMarkdown>
-                    </div>
-
-                    {/* Disarm Rule */}
-                    {q.disarmStrategy && (
-                      <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950">
-                        <GlobalMarkdown>{`**🛡️ Disarm Rule:** ${q.disarmStrategy}`}</GlobalMarkdown>
+                        <button
+                          onClick={() => removeFromVault(q.id)}
+                          className="text-zinc-400 hover:text-red-500 text-xs font-bold cursor-pointer flex items-center gap-1 transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          <span>Remove</span>
+                        </button>
                       </div>
-                    )}
-                  </div>
-                ))}
+
+                      {/* Stimulus Context Box if present */}
+                      {q.stimulus && q.stimulus.trim().length > 0 && (
+                        <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-mono text-zinc-800 leading-relaxed overflow-x-auto">
+                          <GlobalMarkdown>{q.stimulus}</GlobalMarkdown>
+                        </div>
+                      )}
+
+                      {/* Question Stem */}
+                      <div className="text-xs sm:text-sm font-semibold text-zinc-900 leading-relaxed">
+                        <GlobalMarkdown>{q.prompt}</GlobalMarkdown>
+                      </div>
+
+                      {/* Tripped Choice vs Target Info (For MCQ) */}
+                      {q.format !== 'subjective' && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                          {q.userSelectedOption && (
+                            <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-950 flex items-start gap-2">
+                              <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                              <div>
+                                <span className="font-bold block text-[11px] uppercase tracking-wider text-red-700">You Picked (Trap):</span>
+                                <span>{q.userSelectedOption}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {q.correctAnswer && (
+                            <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 flex items-start gap-2">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                              <div>
+                                <span className="font-bold block text-[11px] uppercase tracking-wider text-emerald-700">Verified Target:</span>
+                                <span>{q.correctAnswer}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Subjective FRQ Parts Summary (For FRQ) */}
+                      {q.format === 'subjective' && q.parts && (
+                        <div className="space-y-2 text-xs">
+                          {q.parts.map((p, pIdx) => (
+                            <div key={pIdx} className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 space-y-1">
+                              <span className="font-bold text-emerald-800">Part {p.partLabel} ({p.points} Pt):</span>
+                              <p className="text-zinc-700">{p.task}</p>
+                              <div className="text-xs bg-emerald-50/80 p-3 rounded-xl border border-emerald-200 text-emerald-950 space-y-1 mt-1">
+                                <div className="font-bold text-emerald-900 flex items-center gap-1.5 text-[11px]">
+                                  <Award className="w-3.5 h-3.5 text-emerald-700" />
+                                  <span>Exemplary Step-by-Step Model Answer:</span>
+                                </div>
+                                <div className="text-[11px] leading-relaxed">
+                                  <GlobalMarkdown>{p.modelAnswer}</GlobalMarkdown>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Disarm Rule */}
+                      {q.disarmStrategy && (
+                        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 leading-relaxed">
+                          <GlobalMarkdown>{`**🛡️ Disarm Rule:** ${q.disarmStrategy}`}</GlobalMarkdown>
+                        </div>
+                      )}
+
+                      {/* AI Mistake Doctor Box or Button */}
+                      {q.aiFix ? (
+                        <div className="p-3.5 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 text-xs space-y-2">
+                          <div className="flex items-center gap-1.5 font-black text-amber-900">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                            <span>AI Mistake Doctor Diagnosis:</span>
+                          </div>
+                          <p className="text-zinc-800"><strong>Why It Happened:</strong> {q.aiFix.why_it_happened}</p>
+                          <p className="text-zinc-800"><strong>The Fix:</strong> {q.aiFix.the_fix}</p>
+                          <p className="text-amber-900 font-semibold"><strong>Pro Memory Trick:</strong> {q.aiFix.pro_memory_trick}</p>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleExplainMistakeWithAi(q)}
+                          disabled={explainingMistakeId === q.id}
+                          className="w-full py-2.5 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                          <span>{explainingMistakeId === q.id ? 'Analyzing Mistake with AI...' : '🤖 AI Explain & Cure My Mistake'}</span>
+                        </button>
+                      )}
+                    </div>
+                  ))}
               </div>
             )}
           </div>
@@ -1943,6 +2904,165 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
           </motion.div>
         )}
       </AnimatePresence>
+      {/* AI Mistake Doctor Modal */}
+      <AnimatePresence>
+        {activeAiDoctorModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+            onClick={() => setActiveAiDoctorModal(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-white rounded-3xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl border border-amber-200 overflow-hidden"
+            >
+              <div className="px-5 py-4 border-b border-zinc-200 flex items-center justify-between bg-amber-50/80">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🤖</span>
+                  <div>
+                    <h3 className="text-sm font-black text-zinc-900">AI Mistake Doctor & Cure</h3>
+                    <p className="text-[11px] text-zinc-500 font-medium">Psychometric Distractor Autopsy</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setActiveAiDoctorModal(null)}
+                  className="w-8 h-8 rounded-xl flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-200 transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4 overflow-y-auto text-xs text-zinc-800 leading-relaxed">
+                <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-1">
+                  <span className="font-bold text-zinc-500 uppercase text-[10px]">Question Prompt:</span>
+                  <div className="font-medium text-zinc-900">
+                    <GlobalMarkdown>{activeAiDoctorModal.question}</GlobalMarkdown>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold text-red-800">
+                    <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+                    <span>Why You Fell For This Trap:</span>
+                  </div>
+                  <div className="text-zinc-800">
+                    <GlobalMarkdown>{activeAiDoctorModal.fix.why_it_happened}</GlobalMarkdown>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold text-emerald-900">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>The Exact CED Fix:</span>
+                  </div>
+                  <div className="text-zinc-800">
+                    <GlobalMarkdown>{activeAiDoctorModal.fix.the_fix}</GlobalMarkdown>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300 space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                    <Zap className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Score-5 Memory Trick:</span>
+                  </div>
+                  <div className="text-amber-950 font-semibold">
+                    <GlobalMarkdown>{activeAiDoctorModal.fix.pro_memory_trick}</GlobalMarkdown>
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-5 py-3 border-t border-zinc-200 bg-zinc-50 flex justify-end">
+                <button
+                  onClick={() => setActiveAiDoctorModal(null)}
+                  className="px-4 py-2 rounded-xl bg-zinc-900 text-white font-bold text-xs hover:bg-zinc-800 cursor-pointer"
+                >
+                  Understood & Saved
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Fullscreen In-App PDF Preview Reader Modal */}
+      {previewPdfUri && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex flex-col items-center justify-center p-2 sm:p-4">
+          <div className="bg-zinc-900 w-full max-w-4xl h-[94vh] rounded-3xl flex flex-col overflow-hidden border border-zinc-700 shadow-2xl">
+            {/* Header bar */}
+            <div className="px-5 py-3.5 border-b border-zinc-800 flex items-center justify-between bg-zinc-950">
+              <div className="flex items-center gap-2.5 truncate">
+                <button
+                  onClick={() => setPreviewPdfUri(null)}
+                  className="p-1.5 rounded-xl hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+                <div className="truncate">
+                  <h3 className="font-black text-sm text-white truncate">{previewPdfName}</h3>
+                  <p className="text-[10px] text-zinc-400 font-semibold">AP Trap Radar Exam Document • PDF Preview</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setPreviewPdfUri(null)}
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Safe PDF Viewer Component */}
+            <div className="flex-1 w-full bg-zinc-800 overflow-hidden relative">
+              <SafePdfViewer pdfUrlOrBase64={previewPdfUri} />
+            </div>
+
+            {/* Download & Share Actions Footer */}
+            <div className="px-5 py-3 border-t border-zinc-800 bg-zinc-950 flex items-center justify-end gap-3">
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await fetch(previewPdfUri);
+                    const blob = await res.blob();
+                    await savePDFMobile(blob, previewPdfName, {
+                      featureTag: 'AP Trap Radar',
+                      customToast: '✅ Saved offline in app'
+                    });
+                  } catch (e) {
+                    console.error('PDF download error:', e);
+                    showToast('Download failed', 'error');
+                  }
+                }}
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>DOWNLOAD PDF</span>
+              </button>
+
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await fetch(previewPdfUri);
+                    const blob = await res.blob();
+                    await sharePDFMobile(blob, previewPdfName);
+                  } catch (e) {
+                    console.error('PDF share error:', e);
+                    showToast('Share failed', 'error');
+                  }
+                }}
+                className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-black text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>SHARE PDF</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

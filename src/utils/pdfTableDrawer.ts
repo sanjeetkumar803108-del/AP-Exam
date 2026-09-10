@@ -1,0 +1,465 @@
+import type { jsPDF } from 'jspdf';
+import { sanitizePdfText } from './pdfSanitizer';
+
+export interface DrawTextOptions {
+  fontName?: string;
+  fontStyle?: string;
+  fontSize?: number;
+  textColor?: [number, number, number];
+  lineSpacing?: number;
+  newPageY?: number;
+  checkPageBreak?: (neededHeight: number) => boolean;
+}
+
+/**
+ * Strips raw Markdown formatting characters (**bold**, *italics*, `code`) for clean jsPDF rendering.
+ */
+export function stripMarkdownFormatting(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*([^\*]+)\*/g, '$1')
+    .replace(/__([^_]+)__/g, '$1')
+    .replace(/_([^_]+)_/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .trim();
+}
+
+/**
+ * Checks if a string line is part of a Markdown table block.
+ */
+export function isTableLine(line: string): boolean {
+  const trimmed = line.trim();
+  if (!trimmed.includes('|')) return false;
+  const parts = trimmed.split('|').map(p => p.trim());
+  return parts.length >= 3;
+}
+
+/**
+ * Draws text with elevated superscripts (², ³, ¹) for textbook-grade mathematical power height.
+ */
+export function drawTextWithElevatedPowers(
+  doc: jsPDF,
+  text: string,
+  x: number,
+  y: number,
+  baseFontSize: number = 9.5
+): number {
+  if (!text) return x;
+
+  // Fast path: if text doesn't contain any caret or WinAnsi superscript
+  if (!text.includes('^') && !text.includes('²') && !text.includes('³') && !text.includes('¹')) {
+    doc.setFontSize(baseFontSize);
+    doc.text(text, x, y);
+    return x + doc.getTextWidth(text);
+  }
+
+  // Regex: Group 1=^{...}, Group 2=^(...), Group 3=^x, Group 4=WinAnsi legacy
+  const powerRegex = /(?<=[^\s+\-*\/=,;:(<>&])\^(?:\{([a-zA-Z0-9\+\-\/ .!^\u00B2\u00B3\u00B9]+)\}|\(([^()]+)\)|([\-]?[a-zA-Z0-9]+))|([\u00B2\u00B3\u00B9])/g;
+
+  let curX = x;
+  let lastIdx = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = powerRegex.exec(text)) !== null) {
+    const matchStart = match.index;
+    const matchEnd = powerRegex.lastIndex;
+
+    // 1. Draw normal text before the power
+    if (matchStart > lastIdx) {
+      const normalChunk = text.substring(lastIdx, matchStart);
+      doc.setFontSize(baseFontSize);
+      doc.text(normalChunk, curX, y);
+      curX += doc.getTextWidth(normalChunk);
+    }
+
+    // 2. Extract power text (stripped of ^, {, }, (, ))
+    const rawPower = match[1] || match[2] || match[3] || match[4] || '';
+    // Format power text: if isolated WinAnsi glyph, turn to digit; if expression, retain ²/³ as super-superscripts
+    const powerText = rawPower === '²'
+      ? '2'
+      : rawPower === '³'
+        ? '3'
+        : rawPower === '¹'
+          ? '1'
+          : rawPower.replace(/\^2/g, '²').replace(/\^3/g, '³').replace(/\^1/g, '¹');
+
+    // 3. Draw power elevated with smaller font size
+    if (powerText) {
+      const superSize = Math.max(5.5, baseFontSize * 0.70);
+      const elevationOffset = baseFontSize * 0.32;
+      doc.setFontSize(superSize);
+      doc.text(powerText, curX, y - elevationOffset);
+      curX += doc.getTextWidth(powerText);
+      // Add tiny spacer after superscript so next char doesn't collide
+      curX += baseFontSize * 0.04;
+    }
+
+    lastIdx = matchEnd;
+  }
+
+  // 4. Draw any remaining normal text after the last power
+  if (lastIdx < text.length) {
+    const remainingChunk = text.substring(lastIdx);
+    doc.setFontSize(baseFontSize);
+    doc.text(remainingChunk, curX, y);
+    curX += doc.getTextWidth(remainingChunk);
+  }
+
+  // Always reset font size before returning
+  doc.setFontSize(baseFontSize);
+
+  return curX;
+}
+
+/**
+ * Renders a Markdown table block as a pristine jsPDF grid table with headers,
+ * borders, alternating row backgrounds, vertical centering, and header repetition on page breaks.
+ */
+export function drawPdfGridTable(
+  doc: jsPDF,
+  tableLines: string[],
+  x: number,
+  startY: number,
+  maxWidth: number,
+  options: {
+    fontSize?: number;
+    newPageY?: number;
+    checkPageBreak?: (neededH: number) => boolean;
+  } = {}
+): number {
+  const checkPageBreak = options.checkPageBreak || (() => false);
+  const fontSize = options.fontSize || 7.5;
+  const newPageY = options.newPageY || 16;
+
+  // 1. Parse raw lines into table matrix
+  const rawRows: string[][] = [];
+  for (const line of tableLines) {
+    const trimmed = line.trim();
+    // Skip Markdown separator line (e.g., | --- | --- |)
+    if (/^\|?[\s:\-\|\+]+\|?$/.test(trimmed) && trimmed.includes('---')) {
+      continue;
+    }
+    const cells = trimmed
+      .split('|')
+      .map(c => c.trim());
+
+    // Remove leading/trailing empty cells from splitting "| col1 | col2 |"
+    if (cells.length > 0 && cells[0] === '') cells.shift();
+    if (cells.length > 0 && cells[cells.length - 1] === '') cells.pop();
+
+    if (cells.length > 0) {
+      rawRows.push(cells);
+    }
+  }
+
+  if (rawRows.length === 0) return startY;
+
+  const numCols = Math.max(...rawRows.map(r => r.length));
+  if (numCols === 0) return startY;
+
+  // Normalize row lengths
+  const rows = rawRows.map(r => {
+    while (r.length < numCols) r.push('');
+    return r;
+  });
+
+  // 2. Compute dynamic column widths
+  const colContentLens = Array(numCols).fill(1);
+  rows.forEach(r => {
+    r.forEach((cell, cIdx) => {
+      colContentLens[cIdx] = Math.max(colContentLens[cIdx], stripMarkdownFormatting(cell).length);
+    });
+  });
+
+  const totalLen = colContentLens.reduce((a, b) => a + b, 0) || 1;
+  const minColW = Math.max(16, Math.floor(maxWidth / (numCols * 1.5)));
+  const colWidths = colContentLens.map(len => {
+    const rawW = (len / totalLen) * maxWidth;
+    return Math.max(minColW, rawW);
+  });
+
+  const sumW = colWidths.reduce((a, b) => a + b, 0);
+  const scaledWidths = colWidths.map(w => (w / sumW) * maxWidth);
+
+  let currentY = startY;
+
+  // Row drawing function with automatic header repetition
+  const drawRow = (row: string[], rIdx: number, isHeader: boolean) => {
+    doc.setFont('Helvetica', isHeader ? 'bold' : 'normal');
+    doc.setFontSize(fontSize);
+
+    const cellLinesList: string[][] = row.map((cellText, cIdx) => {
+      const cleanCell = stripMarkdownFormatting(sanitizePdfText(cellText));
+      const cellW = scaledWidths[cIdx] - 5;
+      return doc.splitTextToSize(cleanCell, Math.max(12, cellW));
+    });
+
+    const maxLinesInRow = Math.max(1, ...cellLinesList.map(l => l.length));
+    const cellLineH = fontSize * 0.42 + 0.8;
+    const rowHeight = Math.max(isHeader ? 7.5 : 6.5, maxLinesInRow * cellLineH + 3.5);
+
+    if (checkPageBreak(rowHeight)) {
+      currentY = newPageY;
+      // If we broke on a data row, repeat the header row on the new page
+      if (!isHeader && rows.length > 0) {
+        drawRow(rows[0], 0, true);
+      }
+    }
+
+    let cellX = x;
+    row.forEach((cellText, cIdx) => {
+      const cellW = scaledWidths[cIdx];
+      const cellLines = cellLinesList[cIdx];
+
+      // Draw Cell Background & Border
+      if (isHeader) {
+        doc.setFillColor(238, 242, 255); // Indigo-50
+        doc.setDrawColor(199, 210, 254); // Indigo-200
+      } else {
+        if (rIdx % 2 === 1) {
+          doc.setFillColor(255, 255, 255); // White
+        } else {
+          doc.setFillColor(248, 250, 252); // Slate-50 alternating
+        }
+        doc.setDrawColor(226, 232, 240); // Slate-200
+      }
+
+      doc.setLineWidth(0.2);
+      doc.rect(cellX, currentY, cellW, rowHeight, 'FD');
+
+      // Top Indigo Accent Line on Header
+      if (isHeader) {
+        doc.setFillColor(99, 102, 241); // Indigo-500
+        doc.rect(cellX, currentY, cellW, 1.2, 'F');
+      }
+
+      // Draw Cell Text
+      const isCol0Bold = !isHeader && cIdx === 0 && cellText.includes('**');
+      doc.setFont('Helvetica', isHeader || isCol0Bold ? 'bold' : 'normal');
+      doc.setFontSize(fontSize);
+      doc.setTextColor(isHeader ? 67 : 30, isHeader ? 56 : 41, isHeader ? 202 : 59);
+
+      const textBlockH = cellLines.length * cellLineH;
+      let textY = currentY + (rowHeight - textBlockH) / 2 + (fontSize * 0.32);
+
+      cellLines.forEach(cl => {
+        const isNumeric = /^[0-9.,%$+\-><=^/°±]+$/.test(cl.trim());
+        if (isHeader || isNumeric) {
+          doc.text(cl, cellX + cellW / 2, textY, { align: 'center' });
+        } else {
+          doc.text(cl, cellX + 2.5, textY);
+        }
+        textY += cellLineH;
+      });
+
+      cellX += cellW;
+    });
+
+    currentY += rowHeight;
+  };
+
+  rows.forEach((row, rIdx) => {
+    drawRow(row, rIdx, rIdx === 0);
+  });
+
+  return currentY;
+}
+
+/**
+ * Draws rich text, hierarchical bullet points, subheadings, and embedded Markdown tables in jsPDF.
+ * Automatically parses Markdown tables (| col1 | col2 |) into structured PDF grid tables.
+ * Strips raw markdown syntax (**bold**, *italic*) and renders bold headings with proper indentation.
+ */
+export function drawRichTextWithTables(
+  doc: jsPDF,
+  rawText: string,
+  x: number,
+  startY: number,
+  maxWidth: number,
+  options: DrawTextOptions = {}
+): number {
+  if (!rawText || !rawText.trim()) return startY;
+
+  const sanitized = sanitizePdfText(rawText);
+  const lines = sanitized.split('\n');
+
+  const fontName = options.fontName || 'Helvetica';
+  const fontStyle = options.fontStyle || 'normal';
+  const fontSize = options.fontSize || 8;
+  const textColor = options.textColor || [55, 65, 81];
+  const newPageY = options.newPageY || 16;
+  const checkPageBreak = options.checkPageBreak || (() => false);
+
+  let currentY = startY;
+  let lineIdx = 0;
+
+  while (lineIdx < lines.length) {
+    const rawLine = lines[lineIdx];
+
+    // 1. Detect if this line is part of a markdown table
+    if (isTableLine(rawLine)) {
+      const tableLines: string[] = [];
+      while (lineIdx < lines.length && isTableLine(lines[lineIdx])) {
+        tableLines.push(lines[lineIdx]);
+        lineIdx++;
+      }
+
+      currentY += 1.5;
+      currentY = drawPdfGridTable(doc, tableLines, x, currentY, maxWidth, {
+        fontSize: Math.max(7, fontSize - 0.5),
+        newPageY,
+        checkPageBreak
+      });
+      currentY += 3.5; // Spacing after table
+      continue;
+    }
+
+    const trimmed = rawLine.trim();
+    if (!trimmed) {
+      currentY += 2; // Empty line spacing
+      lineIdx++;
+      continue;
+    }
+
+    // 2. Horizontal divider (---, ***, ___)
+    if (/^(\-\-\-|\*\*\*|___)$/.test(trimmed)) {
+      if (checkPageBreak(5)) currentY = newPageY;
+      doc.setDrawColor(229, 231, 235);
+      doc.setLineWidth(0.3);
+      doc.line(x, currentY + 1.5, x + maxWidth, currentY + 1.5);
+      currentY += 3.5;
+      lineIdx++;
+      continue;
+    }
+
+    // 3. Subheadings (e.g. ### Problem Scenario, ## Section)
+    if (trimmed.startsWith('### ') || trimmed.startsWith('## ') || trimmed.startsWith('# ')) {
+      const headingText = stripMarkdownFormatting(trimmed.replace(/^#+\s*/, ''));
+      if (checkPageBreak(8)) currentY = newPageY;
+
+      doc.setFont(fontName, 'bold');
+      doc.setFontSize(fontSize + 1);
+      doc.setTextColor(30, 41, 59);
+      doc.text(headingText, x, currentY + 3.2);
+      currentY += 5.5;
+      lineIdx++;
+      continue;
+    }
+
+    // 4. Bullet lists: detect indent level and bullet marker (*, -, •)
+    const indentMatch = rawLine.match(/^(\s*)([*•\-])\s+(.*)$/);
+    if (indentMatch) {
+      const spaces = indentMatch[1].length;
+      const bulletLevel = Math.min(2, Math.floor(spaces / 2));
+      const indentOffset = bulletLevel * 4;
+      const bulletContent = indentMatch[3].trim();
+
+      // Check if bullet has bold lead-in: e.g. **Transportation**: Erie Canal...
+      const boldLeadMatch = bulletContent.match(/^\*\*(.*?)\*\*:?\s*(.*)$/);
+
+      const availableW = maxWidth - indentOffset - 4.5;
+      const itemX = x + indentOffset;
+
+      if (boldLeadMatch) {
+        const leadHeading = stripMarkdownFormatting(boldLeadMatch[1]) + ':';
+        const restOfText = stripMarkdownFormatting(boldLeadMatch[2]);
+
+        doc.setFont(fontName, 'bold');
+        doc.setFontSize(fontSize);
+        const headingW = doc.getTextWidth(leadHeading + ' ');
+
+        const fullSanitized = restOfText ? `${leadHeading} ${restOfText}` : leadHeading;
+        const wrappedLines: string[] = doc.splitTextToSize(fullSanitized, availableW);
+        const lineH = 3.5;
+        const blockH = wrappedLines.length * lineH + 1;
+
+        if (checkPageBreak(blockH)) currentY = newPageY;
+
+        // Draw bullet dot
+        doc.setFillColor(bulletLevel === 0 ? 99 : 156, bulletLevel === 0 ? 102 : 163, bulletLevel === 0 ? 241 : 175);
+        doc.circle(itemX + 1.2, currentY + 2.2, bulletLevel === 0 ? 0.9 : 0.7, 'F');
+
+        // Draw text lines
+        for (let lIdx = 0; lIdx < wrappedLines.length; lIdx++) {
+          const wl = wrappedLines[lIdx];
+          const lineY = currentY + (lIdx * lineH) + 2.8;
+
+          if (lIdx === 0) {
+            // First line: bold heading + normal rest
+            doc.setFont(fontName, 'bold');
+            doc.setFontSize(fontSize);
+            doc.setTextColor(30, 41, 59);
+            doc.text(leadHeading, itemX + 3.5, lineY);
+
+            if (restOfText) {
+              const firstLineNormal = wl.startsWith(leadHeading) ? wl.slice(leadHeading.length).trim() : wl;
+              doc.setFont(fontName, 'normal');
+              doc.setFontSize(fontSize);
+              doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+              drawTextWithElevatedPowers(doc, firstLineNormal, itemX + 3.5 + headingW, lineY, fontSize);
+            }
+          } else {
+            // Continuation lines
+            doc.setFont(fontName, 'normal');
+            doc.setFontSize(fontSize);
+            doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+            drawTextWithElevatedPowers(doc, wl, itemX + 3.5, lineY, fontSize);
+          }
+        }
+        currentY += blockH + 0.8;
+      } else {
+        // Plain bullet
+        const cleanItem = stripMarkdownFormatting(bulletContent);
+        const wrappedLines: string[] = doc.splitTextToSize(cleanItem, availableW);
+        const lineH = 3.5;
+        const blockH = wrappedLines.length * lineH + 1;
+
+        if (checkPageBreak(blockH)) currentY = newPageY;
+
+        doc.setFillColor(156, 163, 175);
+        doc.circle(itemX + 1.2, currentY + 2.2, 0.7, 'F');
+
+        doc.setFont(fontName, fontStyle);
+        doc.setFontSize(fontSize);
+        doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+
+        wrappedLines.forEach((wl: string, lIdx: number) => {
+          drawTextWithElevatedPowers(doc, wl, itemX + 3.5, currentY + (lIdx * lineH) + 2.8, fontSize);
+        });
+
+        currentY += blockH + 0.8;
+      }
+
+      lineIdx++;
+      continue;
+    }
+
+    // 5. Standard paragraph text
+    const cleanParagraph = stripMarkdownFormatting(trimmed);
+    const wrappedLines: string[] = doc.splitTextToSize(cleanParagraph, maxWidth);
+    const lineH = 3.5;
+    const blockH = wrappedLines.length * lineH + 1;
+
+    if (checkPageBreak(blockH)) currentY = newPageY;
+
+    doc.setFont(fontName, fontStyle);
+    doc.setFontSize(fontSize);
+    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+
+    for (const wl of wrappedLines) {
+      if (checkPageBreak(lineH)) currentY = newPageY;
+      doc.setFont(fontName, fontStyle);
+      doc.setFontSize(fontSize);
+      doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+
+      drawTextWithElevatedPowers(doc, wl, x, currentY + 2.8, fontSize);
+      currentY += lineH;
+    }
+
+    currentY += 1.5;
+    lineIdx++;
+  }
+
+  return currentY;
+}

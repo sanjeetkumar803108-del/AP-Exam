@@ -5,7 +5,7 @@ export const AP_BIOLOGY_MIND_MAPS: APUnitMindMap[] = [
   // UNIT 1: CHEMISTRY OF LIFE (CED 8%–11%)
   // ==========================================
   {
-    unitId: 'bio-u1',
+    unitId: 'u1',
     unitNumber: 1,
     unitTitle: 'Chemistry of Life',
     subjectId: 'ap-biology',
@@ -151,7 +151,7 @@ export const AP_BIOLOGY_MIND_MAPS: APUnitMindMap[] = [
   // UNIT 2: CELL STRUCTURE & FUNCTION (CED 10%–13%)
   // ==========================================
   {
-    unitId: 'bio-u2',
+    unitId: 'u2',
     unitNumber: 2,
     unitTitle: 'Cell Structure and Function',
     subjectId: 'ap-biology',
@@ -263,7 +263,7 @@ export const AP_BIOLOGY_MIND_MAPS: APUnitMindMap[] = [
   // UNIT 3: CELLULAR ENERGETICS (CED 12%–16%)
   // ==========================================
   {
-    unitId: 'bio-u3',
+    unitId: 'u3',
     unitNumber: 3,
     unitTitle: 'Cellular Energetics',
     subjectId: 'ap-biology',
@@ -374,7 +374,7 @@ export const AP_BIOLOGY_MIND_MAPS: APUnitMindMap[] = [
   // UNIT 4: CELL COMMUNICATION & CELL CYCLE (CED 10%–15%)
   // ==========================================
   {
-    unitId: 'bio-u4',
+    unitId: 'u4',
     unitNumber: 4,
     unitTitle: 'Cell Communication and Cell Cycle',
     subjectId: 'ap-biology',
@@ -463,7 +463,7 @@ export const AP_BIOLOGY_MIND_MAPS: APUnitMindMap[] = [
   // UNIT 5: HEREDITY (CED 8%–11%)
   // ==========================================
   {
-    unitId: 'bio-u5',
+    unitId: 'u5',
     unitNumber: 5,
     unitTitle: 'Heredity',
     subjectId: 'ap-biology',
@@ -560,7 +560,7 @@ export const AP_BIOLOGY_MIND_MAPS: APUnitMindMap[] = [
   // UNIT 6: GENE EXPRESSION & REGULATION (CED 12%–15%)
   // ==========================================
   {
-    unitId: 'bio-u6',
+    unitId: 'u6',
     unitNumber: 6,
     unitTitle: 'Gene Expression and Regulation',
     subjectId: 'ap-biology',
@@ -679,7 +679,7 @@ export const AP_BIOLOGY_MIND_MAPS: APUnitMindMap[] = [
   // UNIT 7: NATURAL SELECTION (CED 13%–20%)
   // ==========================================
   {
-    unitId: 'bio-u7',
+    unitId: 'u7',
     unitNumber: 7,
     unitTitle: 'Natural Selection',
     subjectId: 'ap-biology',
@@ -792,7 +792,7 @@ export const AP_BIOLOGY_MIND_MAPS: APUnitMindMap[] = [
   // UNIT 8: ECOLOGY (CED 10%–15%)
   // ==========================================
   {
-    unitId: 'bio-u8',
+    unitId: 'u8',
     unitNumber: 8,
     unitTitle: 'Ecology',
     subjectId: 'ap-biology',

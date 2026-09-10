@@ -47,6 +47,22 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
 | **Input Method** | Data is in **resources/time required** (e.g. hours to make 1 chair, acres of land) | $\\text{Cost of A} = \\frac{\\text{Input A}}{\\text{Input B}}$ | **IOU** (Input: Other goes Under) | **Lower number** = Absolute Advantage (faster/fewer resources); **Lower Cost** = Comparative Advantage |
 | **Terms of Trade** | The mutually agreed exchange rate between two goods | Must be strictly between the two domestic opportunity costs | Between Cost A & Cost B | Both nations consume **beyond** their domestic PPC! |`
       }
+    ,
+      {
+        heading: '2. Opportunity Cost, PPC Curvature & Terms of Trade (CED 1.2-1.4)',
+        content: `Foundational production possibilities principles and trade negotiations:
+
+* **PPC Shape & Law of Increasing Opportunity Costs**:
+  * **Concave (Bowed-Out) PPC**: Reflects increasing opportunity costs because economic resources are NOT perfectly adaptable to alternative uses.
+  * **Straight-Line PPC**: Reflects constant opportunity costs where resources are completely interchangeable.
+* **Shifts vs. Movements Along PPC**:
+  * Movement along curve: Reallocates existing resources (trade-off between consumer and capital goods).
+  * Outward shift: Long-run economic growth driven by improvements in technology, discovery of new resources, or human capital investment.
+* **Negotiating Terms of Trade**:
+  * Mutually beneficial terms of trade must fall strictly between both trading partners' domestic opportunity costs:
+    $$\\text{Country A Opportunity Cost} < \\text{Terms of Trade} < \\text{Country B Opportunity Cost}$$
+  * This ensures both nations consume outside their individual production possibilities frontiers!`
+      }
     ],
     workedExamples: [
       {
@@ -137,6 +153,22 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
 | **Income Elasticity ($E_i$)** | $\%\\Delta Q_d / \\%\\Delta \\text{Income}$ | $E_i > 0$ (Positive) | **Normal Good** (demand rises with income) |
 | **Income Elasticity ($E_i$)** | $\%\\Delta Q_d / \\%\\Delta \\text{Income}$ | $E_i < 0$ (Negative) | **Inferior Good** (e.g. ramen noodles, used cars) |`
       }
+    ,
+      {
+        heading: '2. Consumer/Producer Surplus, Deadweight Loss & Taxes (CED 2.6-2.8)',
+        content: `Market welfare maximization, efficiency, and price control distortions:
+
+* **Consumer and Producer Surplus**:
+  * **Consumer Surplus (CS)**: Area below the demand curve and above the market price.
+  * **Producer Surplus (PS)**: Area above the supply curve and below the market price.
+  * **Total Economic Welfare ($CS + PS$)**: Maximized at competitive market equilibrium ($P_e, Q_e$), achieving allocative efficiency ($P = MC$).
+* **Price Controls & Deadweight Loss (DWL)**:
+  * **Binding Price Ceiling**: Set BELOW equilibrium price $\\implies$ creates chronic shortage ($Q_d > Q_s$) and generates Deadweight Loss.
+  * **Binding Price Floor**: Set ABOVE equilibrium price $\\implies$ creates persistent surplus ($Q_s > Q_d$) and generates Deadweight Loss.
+* **Tax Incidence & Relative Elasticity**:
+  * If demand is more inelastic than supply, buyers bear the greater share of a per-unit tax.
+  * If supply is more inelastic than demand, sellers bear the greater tax burden.`
+      }
     ],
     workedExamples: [
       {
@@ -224,6 +256,22 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
 | **Average Total Cost** | $ATC$ | $TC / Q$ | U-shaped; minimum $ATC$ is the productive efficiency point |
 | **Average Variable Cost** | $AVC$ | $TVC / Q$ | U-shaped; minimum $AVC$ is the short-run shutdown price |
 | **Average Fixed Cost** | $AFC$ | $TFC / Q$ | Continually declining asymptote toward 0 as output expands |`
+      }
+    ,
+      {
+        heading: '2. Side-by-Side Market & Firm Graphs and Long-Run Adjustments (CED 3.6-3.7)',
+        content: `Perfect competition dynamics from individual firm to industry equilibrium:
+
+* **The Perfectly Competitive Firm as Price Taker**:
+  * The firm faces a horizontal, perfectly elastic demand curve:
+    $$P = MR = AR = D$$
+  * Produces output where Marginal Revenue equals Marginal Cost ($P = MR = MC$) to maximize profit.
+* **Short-Run Profit and Long-Run Free Entry/Exit**:
+  * **Economic Profit ($P > ATC$)**: Attracts new firms into the industry $\\implies$ Industry Supply shifts right $\\implies$ Market price falls until $P = \\text{min } ATC$ with zero economic profit.
+  * **Economic Loss ($P < ATC$)**: Firms exit the industry in the long run $\\implies$ Industry Supply shifts left $\\implies$ Market price rises until normal profit is restored.
+* **Long-Run Efficiency Criteria**:
+  * **Productive Efficiency**: Producing at the lowest point on the average total cost curve ($P = \\text{min } ATC$).
+  * **Allocative Efficiency**: Producing the quantity most desired by society ($P = MC$).`
       }
     ],
     workedExamples: [
@@ -317,6 +365,23 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
 | **Long-Run Profit** | Zero ($P = \\min ATC$) | Zero ($P = ATC$) | Positive economic profit | Positive economic profit |
 | **Efficiency** | Productive & Allocative | Excess capacity (not efficient) | Neither efficient | Neither efficient |`
       }
+    ,
+      {
+        heading: '2. Game Theory Payoff Matrices, Dominant Strategy & Nash (CED 4.5)',
+        content: `Strategic interdependence in oligopolies and payoff matrix analysis:
+
+* **$2 \\times 2$ Payoff Matrix Structure**:
+  * Shows profits/payoffs for two competing firms given their strategic pricing or output choices.
+  * By convention, Firm 1's payoffs are listed first (bottom-left) and Firm 2's payoffs second (top-right).
+* **Identifying Dominant Strategies**:
+  * A strategy is **dominant** if it yields a strictly higher payoff regardless of which strategy the rival chooses.
+  * Circle the best response for Firm 1 for each possible move of Firm 2; repeat for Firm 2.
+* **Nash Equilibrium**:
+  * An outcome where **both players are choosing their best response** to each other's chosen action.
+  * Neither player has an incentive to unilaterally deviate from their strategy.
+* **The Prisoner's Dilemma**:
+  * Non-cooperative Nash equilibrium yields worse payoffs for both players than the collusive cooperative outcome.`
+      }
     ],
     workedExamples: [
       {
@@ -405,6 +470,20 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
 | **Wage Paid to Workers** | Set by competitive market ($W_c = MRP$) | Read down from $Q_m$ to the **Supply Curve** ($W_m < MRP$) |
 | **Economic Outcome** | Efficient allocation of labor ($W = MRP$) | **Wage exploitation**: Monopsony under-hires and under-pays workers |`
       }
+    ,
+      {
+        heading: '2. Derived Factor Demand, MRP vs. MFC & Monopsony (CED 5.1-5.3)',
+        content: `Labor market hiring rules and wage determinations:
+
+* **Derived Demand**: Demand for labor is derived directly from consumer demand for the good that labor produces.
+* **Profit-Maximizing Hiring Rule**:
+  * Hire additional workers as long as Marginal Revenue Product exceeds or equals Marginal Factor Cost:
+    $$MRP \\ge MFC$$
+  * In a competitive labor market, $MFC$ is constant and equals the market wage ($MFC = W$).
+* **Monopsony (Single Buyer of Labor)**:
+  * The monopsonist faces the upward-sloping market labor supply curve, so $MFC > S$ because hiring an additional worker requires raising the wage for ALL previously hired workers!
+  * **Monopsony Outcome**: Hires fewer workers and pays a lower wage than a competitive labor market, creating deadweight loss in factor allocation.`
+      }
     ],
     workedExamples: [
       {
@@ -492,6 +571,22 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
 | **Club / Toll Goods** | **YES** | **NO** | Cable TV, toll bridges, movie cinemas | Natural monopoly $\\implies$ Regulated user fees |
 | **Negative Externality** | Spillovers | $MSC > MPC$ | Industrial pollution, second-hand smoke | **Overproduction** $\\implies$ Levy Pigouvian tax |
 | **Positive Externality** | Spillovers | $MSB > MPB$ | Vaccinations, education, research | **Underproduction** $\\implies$ Provide per-unit subsidy |`
+      }
+    ,
+      {
+        heading: '2. Negative vs. Positive Externalities & Corrective Taxes (CED 6.1-6.4)',
+        content: `Market failures, social vs. private costs, and public intervention:
+
+* **Negative Externalities (Spillover Costs)**:
+  * Marginal Social Cost exceeds Marginal Private Cost: $MSC > MPC$.
+  * Free market overproduces relative to the socially optimal quantity ($Q_{\\text{mkt}} > Q_{\\text{opt}}$).
+  * **Correction**: Implement a per-unit **Pigouvian tax equal to marginal external damage**, shifting $MPC$ up to match $MSC$.
+* **Positive Externalities (Spillover Benefits)**:
+  * Marginal Social Benefit exceeds Marginal Private Benefit: $MSB > MPB$.
+  * Free market underproduces ($Q_{\\text{mkt}} < Q_{\\text{opt}}$).
+  * **Correction**: Implement a per-unit **Pigouvian subsidy equal to marginal external benefit**, shifting $MPB$ up to match $MSB$.
+* **Public Goods**:
+  * Non-excludable and non-rival in consumption; suffers from free-rider problem, requiring government financing.`
       }
     ],
     workedExamples: [
@@ -585,6 +680,22 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
 | **Structural** | Mismatch between worker skills and market needs (automation, globalization) | Job retraining programs, education subsidies | **YES** (Permanent skill shifts) |
 | **Cyclical** | Inadequate aggregate demand during economic downturns (recession) | Expansionary fiscal and monetary stimulus | **NO** (Zero at full employment) |`
       }
+    ,
+      {
+        heading: '2. Real vs. Nominal GDP, Deflator & Inflation Rates (CED 1.3-1.6)',
+        content: `Measuring national output and the general price level:
+
+* **Nominal GDP vs. Real GDP**:
+  * **Nominal GDP**: Total value of final goods/services evaluated at **current-year prices**.
+  * **Real GDP**: Total value evaluated at **constant base-year prices**, isolating genuine physical output changes from inflation.
+* **GDP Deflator vs. Consumer Price Index (CPI)**:
+  $$\\text{GDP Deflator} = \\left(\\frac{\\text{Nominal GDP}}{\\text{Real GDP}}\\right) \\times 100$$
+  * GDP Deflator reflects prices of all domestically produced goods and services.
+  * CPI reflects prices of a fixed market basket of consumer goods purchased by urban households.
+* **Real Interest Rate (Fisher Equation)**:
+  $$\\text{Real Interest Rate} = \\text{Nominal Interest Rate} - \\text{Inflation Rate}$$
+  * Unanticipated inflation hurts lenders and savers (repaid with dollars of reduced purchasing power) and benefits fixed-rate borrowers!`
+      }
     ],
     workedExamples: [
       {
@@ -670,6 +781,21 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
 | **Recessionary Gap** | $Y < Y_f$ (Cyclical unemployment $> 0$) | Deflationary / Disinflation | **Expansionary Fiscal Policy** | $\\uparrow$ Government spending ($G$), $\\downarrow$ Taxes ($T$) |
 | **Inflationary Gap** | $Y > Y_f$ (Overheating, tight labor) | Inflationary ($P \\uparrow$) | **Contractionary Fiscal Policy** | $\\downarrow$ Government spending ($G$), $\\uparrow$ Taxes ($T$) |
 | **Stagflation** | $Y < Y_f$ and $P \\uparrow$ (Negative supply shock) | High inflation + recession | Supply-side deregulation | Subsidies for inputs; tricky for monetary/fiscal policy |`
+      }
+    ,
+      {
+        heading: '2. AD-AS Macroeconomic Equilibrium Gaps & Multipliers (CED 2.3-2.6)',
+        content: `Aggregate Demand, Aggregate Supply, and fiscal stabilization:
+
+* **Macroeconomic Output Gaps**:
+  * **Recessionary Gap**: Current output is below full employment ($Y < Y_f$), with cyclical unemployment and downward pressure on price levels.
+  * **Inflationary Gap**: Current output exceeds full employment capacity ($Y > Y_f$), with low unemployment and upward inflationary pressure.
+* **Fiscal Multipliers**:
+  $$\\text{Spending Multiplier } (k_s) = \\frac{1}{1 - MPC} = \\frac{1}{MPS}$$
+  $$\\text{Tax Multiplier } (k_t) = -\\frac{MPC}{MPS} = -\\frac{MPC}{1 - MPC}$$
+  * The spending multiplier is ALWAYS larger in magnitude than the tax multiplier by exactly $1$, because initial government spending directly stimulates aggregate demand, whereas tax cuts are partially leaked into household savings ($MPS$)!
+* **Automatic Stabilizers**:
+  * Progressive income taxes and unemployment benefits that automatically cushion GDP fluctuations without legislative delay.`
       }
     ],
     workedExamples: [
@@ -759,6 +885,21 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
 | **Reserve Requirement ($rr$)** | Decrease reserve ratio | Increase reserve ratio | Frees up excess reserves / locks up lending |
 | **Administered Rates (IORB)** | Lower Interest on Reserve Balances | Raise Interest on Reserve Balances | Primary modern tool controlling the policy rate |`
       }
+    ,
+      {
+        heading: '2. Money Market vs. Loanable Funds & Central Bank Toolkit (CED 3.3-3.6)',
+        content: `The financial sector, interest rate determination, and monetary policy transmission:
+
+* **Money Market vs. Loanable Funds Market**:
+  * **Money Market**: Determines the **nominal interest rate** ($i$) via money demand and fixed vertical money supply ($MS$) set by the central bank.
+  * **Loanable Funds Market**: Determines the **real interest rate** ($r$) via national savings (supply) and private investment borrowing (demand).
+* **Central Bank Modern Policy Toolkit**:
+  * **Administered Rates Regime**: Sets the Policy Rate primarily by adjusting the **Interest on Reserve Balances (IORB)** rate and the Discount Rate.
+  * Raising IORB incentivizes banks to hold reserves, raising the federal funds rate, decreasing investment ($I$) and shifting $AD$ left.
+* **Fractional Reserve Banking Balance Sheets**:
+  $$\\text{Money Multiplier} = \\frac{1}{\\text{Reserve Ratio } (rr)}$$
+  $$\\text{Max Deposit Expansion} = \\text{Excess Reserves} \\times \\left(\\frac{1}{rr}\\right)$$`
+      }
     ],
     workedExamples: [
       {
@@ -846,6 +987,21 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
 | **Negative Supply Shock (Oil Spike)** | $SRAS$ shifts Left (Stagflation) | **ENTIRE SRPC SHIFTS RIGHT / OUTWARD** (Higher $\\pi$ AND Higher $u$) | Ambiguous | Negative supply shock lowers output and capital utilization |
 | **Positive Productivity Shock (Tech)** | $SRAS$ & $LRAS$ shift Right | **ENTIRE SRPC SHIFTS LEFT / INWARD** (Lower $\\pi$ AND Lower $u$) | Increases savings $\\implies$ Real $r \\downarrow$ | **Outward shift in LRAS** and sustained economic growth |`
       }
+    ,
+      {
+        heading: '2. Short-Run vs. Long-Run Phillips Curve & Crowding Out (CED 4.2-4.5)',
+        content: `Inflation-unemployment trade-offs and government borrowing consequences:
+
+* **The Phillips Curve Model**:
+  * **Short-Run Phillips Curve (SRPC)**: Displays an inverse relationship between inflation and unemployment.
+  * **Long-Run Phillips Curve (LRPC)**: Vertical at the Natural Rate of Unemployment (NRU).
+  * **Movements vs. Shifts**:
+    * A shift in Aggregate Demand ($AD$) causes a **movement along** the existing SRPC.
+    * A shift in Aggregate Supply ($AS$) causes the **entire SRPC to shift in the opposite direction** (e.g. negative supply shock shifts SRPC outward to the right, causing stagflation!).
+* **The Crowding-Out Effect**:
+  $$\\text{Deficit Spending} \\rightarrow \\text{Government Borrows} \\rightarrow \\text{Demand for Loanable Funds } \\uparrow \\rightarrow \\text{Real Interest Rate } \\uparrow \\rightarrow \\text{Private Investment } \\downarrow$$
+  * Crowded-out private capital investment reduces long-run economic growth and slows rightward shifts of the LRAS curve!`
+      }
     ],
     workedExamples: [
       {
@@ -926,11 +1082,26 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
 
 | Economic Driver | Shift in FOREX Market for US Dollar ($) | Impact on Value of Dollar | Impact on US Net Exports ($X_n$) | Impact on US Real GDP ($AD$) |
 | :--- | :--- | :--- | :--- | :--- |
-| **Higher US Real Interest Rates** | Demand for USD shifts Right ($D_{\\$} \\rightarrow$) as foreigners seek higher bond yields | **Appreciates** ($e \\uparrow$) | **Decreases** ($X_n \\downarrow$) (US goods become expensive) | $AD$ shifts Left ($AD \\downarrow$) |
-| **Lower US Price Level (Lower Inflation)** | Foreigners buy more US goods $\\implies D_{\\$} \\rightarrow$; Americans buy fewer imports $\\implies S_{\\$} \\leftarrow$ | **Appreciates** ($e \\uparrow$) | **Increases** ($X_n \\uparrow$) | $AD$ shifts Right ($AD \\uparrow$) |
-| **Rapid Foreign Economic Growth (Europe)** | Europeans have more disposable income to purchase US exports $\\implies D_{\\$} \\rightarrow$ | **Appreciates** ($e \\uparrow$) | **Increases** ($X_n \\uparrow$) | $AD$ shifts Right ($AD \\uparrow$) |
-| **Higher US National Income** | Americans spend more on European imports $\\implies S_{\\$} \\rightarrow$ | **Depreciates** ($e \\downarrow$) | **Decreases** ($X_n \\downarrow$) | $AD$ dampens |
-| **Foreign Tastes Shift Toward US Products** | Demand for US exports rises $\\implies D_{\\$} \\rightarrow$ | **Appreciates** ($e \\uparrow$) | **Increases** ($X_n \\uparrow$) | $AD$ shifts Right ($AD \\uparrow$) |`
+| **Higher US Real Interest Rates** | Demand for USD shifts Right ($D_{\\text{USD}} \\rightarrow$) as foreigners seek higher bond yields | **Appreciates** ($e \\uparrow$) | **Decreases** ($X_n \\downarrow$) (US goods become expensive) | $AD$ shifts Left ($AD \\downarrow$) |
+| **Lower US Price Level (Lower Inflation)** | Foreigners buy more US goods $\\implies D_{\\text{USD}} \\rightarrow$; Americans buy fewer imports $\\implies S_{\\text{USD}} \\leftarrow$ | **Appreciates** ($e \\uparrow$) | **Increases** ($X_n \\uparrow$) | $AD$ shifts Right ($AD \\uparrow$) |
+| **Rapid Foreign Economic Growth (Europe)** | Europeans have more disposable income to purchase US exports $\\implies D_{\\text{USD}} \\rightarrow$ | **Appreciates** ($e \\uparrow$) | **Increases** ($X_n \\uparrow$) | $AD$ shifts Right ($AD \\uparrow$) |
+| **Higher US National Income** | Americans spend more on European imports $\\implies S_{\\text{USD}} \\rightarrow$ | **Depreciates** ($e \\downarrow$) | **Decreases** ($X_n \\downarrow$) | $AD$ dampens |
+| **Foreign Tastes Shift Toward US Products** | Demand for US exports rises $\\implies D_{\\text{USD}} \\rightarrow$ | **Appreciates** ($e \\uparrow$) | **Increases** ($X_n \\uparrow$) | $AD$ shifts Right ($AD \\uparrow$) |`
+      }
+    ,
+      {
+        heading: '2. Balance of Payments & FOREX Determinants (CED 5.1-5.4)',
+        content: `International trade accounts and foreign currency exchange rate determinants:
+
+* **Balance of Payments Accounts**:
+  * **Current Account (CA)**: Trade balance (exports $-$ imports), net investment income, and net unilateral transfers.
+  * **Financial (Capital) Account (CFA)**: Foreign direct investment, purchases/sales of international financial assets (stocks, government bonds).
+  * **Balance of Payments Identity**: In a floating exchange rate regime, $CA + CFA = 0$.
+* **Determinants of Currency Appreciation vs. Depreciation**:
+  * **Higher Domestic Real Interest Rates**: Attracts foreign financial capital inflows (financial account surplus) $\\implies$ demand for currency increases $\\implies$ currency **appreciates**.
+  * **Higher Domestic Inflation**: Makes domestic goods relatively expensive $\\implies$ exports decrease and imports increase $\\implies$ currency **depreciates**.
+* **Net Export Feedback Effect**:
+  * When domestic currency appreciates, domestic exports become more expensive for foreigners and foreign imports become cheaper $\\implies$ **Net Exports ($X_n$) decrease**, shifting $AD$ left!`
       }
     ],
     workedExamples: [

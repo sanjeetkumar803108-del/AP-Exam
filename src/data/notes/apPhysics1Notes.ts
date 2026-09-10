@@ -424,6 +424,27 @@ $$W = \\int_{x_i}^{x_f} F(x) \\, dx$$
 | **Inelastic** | YES (Always) | **NO** ($K_f < K_i$) | Objects separate, but energy is lost to heat, sound, or deformation |
 | **Completely Inelastic** | YES (Always) | **NO** (Max $K$ loss) | Objects stick together and move with identical final velocity $v_f$ |
 | **Explosion / Separation** | YES (Always) | **NO** ($K_f > K_i$) | Internal potential energy released; objects push apart |`
+      },
+      {
+        heading: '2. Force vs. Time Curves & Impulse Delivery (CED 4.2)',
+        content: `Impulse $\\vec{J}$ represents the change in linear momentum produced by an applied force over time:
+
+$$\\vec{J} = \\Delta\\vec{p} = \\vec{F}_{\\text{avg}} \\Delta t = \\int_{t_i}^{t_f} \\vec{F}(t) \\, dt$$
+
+* **Graphical Area Rule**: On a Force vs. Time ($F-t$) graph, the **area under the curve** represents impulse ($J = \\Delta p$).
+* **Automotive Safety Application**: Crumple zones, airbags, and helmets do NOT decrease the required change in momentum ($\\Delta p$ is fixed by initial velocity). Instead, they **increase the collision duration** ($\\Delta t$), which dramatically reduces the **peak impact force** ($F_{\\text{avg}} = \\Delta p / \\Delta t$).
+* **Bouncing vs. Sticking**: Bouncing delivers roughly **twice the impulse** of sticking because $\\Delta v = v_f - (-v_i) = 2v$, requiring twice the force from the colliding surface!`
+      },
+      {
+        heading: '3. Center of Mass Velocity & 2D Vector Collisions (CED 4.3)',
+        content: `In any closed, isolated system with zero net external force:
+
+* **Center of Mass Velocity Invariance**:
+  $$v_{\\text{cm}} = \\frac{m_1 v_1 + m_2 v_2}{m_1 + m_2}$$
+  Because net external force is zero ($\\Sigma F_{\\text{ext}} = 0$), the center of mass of the system **continues moving at constant velocity** before, during, and after any collision or explosion!
+* **2D Vector Collisions**: Momentum is independently conserved along perpendicular axes:
+  $$\\Sigma p_{xi} = \\Sigma p_{xf} \\quad \\text{and} \\quad \\Sigma p_{yi} = \\Sigma p_{yf}$$
+  Always resolve initial and final velocity vectors into $v_x = v \\cos\\theta$ and $v_y = v \\sin\\theta$ before applying conservation equations.`
       }
     ],
     workedExamples: [
@@ -478,36 +499,31 @@ $$W = \\int_{x_i}^{x_f} F(x) \\, dx$$
       {
         name: 'Rotational Second Law of Motion',
         conditions: 'Rigid body rotating about a fixed axis of rotation.',
-        conclusion: 'Angular acceleration is proportional to net external torque and inversely proportional to moment of inertia: $\\alpha = \\frac{\\Sigma\\tau}{I}$.',
-        apTip: 'Moment of inertia $I = \\Sigma m r^2$ depends not just on total mass, but on HOW FAR mass is distributed from the axis. Mass located farther from the pivot increases $I$ quadratically!'
+        conclusion: 'Angular acceleration is proportional to net external torque and inversely proportional to moment of inertia: $\alpha = \frac{\Sigma\tau}{I}$.',
+        apTip: 'Moment of inertia $I = \Sigma m r^2$ depends not just on total mass, but on HOW FAR mass is distributed from the axis. Mass located farther from the pivot increases $I$ quadratically!'
       },
       {
         name: 'Static Equilibrium Conditions',
-        conditions: 'An object remaining completely stationary without translating or rotating.',
-        conclusion: 'Both translational and rotational net forces must equal zero simultaneously: $\\Sigma F_x = 0$, $\\Sigma F_y = 0$, and $\\Sigma\\tau = 0$ about ANY arbitrary pivot point.',
-        apTip: 'Smart trick on static equilibrium problems: Choose your pivot point at the location of an unknown force (like a hinge or wall support) to eliminate its torque (lever arm $r = 0$)!'
+        conditions: 'Any rigid body at complete rest without translational or rotational motion.',
+        conclusion: 'Two simultaneous vector conditions must be satisfied: $\Sigma\vec{F} = 0$ (translational balance) and $\Sigma\vec{\tau} = 0$ (rotational balance about ANY chosen pivot point).',
+        apTip: 'Always choose the pivot point at the location of an unknown or unasked force (e.g. hinge pin) to produce zero torque ($r=0$), eliminating it from the equation!'
       }
     ],
     formulas: [
       {
         name: 'Torque Formula',
-        latex: '\\tau = r_\\perp F = r F \\sin\\theta',
-        explanation: 'Product of lever arm radius $r$ and perpendicular component of applied force.'
+        latex: '\tau = r F \sin\theta = r_\perp F',
+        explanation: 'Magnitude of torque produced by force $F$ applied at distance $r$ from the pivot with angle $\theta$ between the position and force vectors.'
       },
       {
         name: 'Rotational Newton 2nd Law',
-        latex: '\\Sigma\\tau = I\\alpha',
-        explanation: 'Net torque equals rotational inertia times angular acceleration ($\\text{N}\\cdot\\text{m}$).'
+        latex: '\Sigma\tau = I\alpha',
+        explanation: 'Net external torque equals rotational inertia multiplied by angular acceleration.'
       },
       {
         name: 'Linear to Angular Bridge Relations',
-        latex: 's = r\\theta, \\quad v = r\\omega, \\quad a_t = r\\alpha',
-        explanation: 'Connects arc length, tangential velocity, and tangential acceleration to angular variables.'
-      },
-      {
-        name: 'Moments of Inertia (Common Shapes)',
-        latex: 'I_{\\text{hoop}} = MR^2, \\quad I_{\\text{disk}} = \\frac{1}{2}MR^2, \\quad I_{\\text{sphere}} = \\frac{2}{5}MR^2',
-        explanation: 'Hoop has highest inertia for same $M$ and $R$ because all mass is at rim; solid sphere has lowest.'
+        latex: 's = r\theta, \quad v = r\omega, \quad a_t = r\alpha',
+        explanation: 'Tangential displacement, velocity, and tangential acceleration as functions of radius and angular quantities.'
       }
     ],
     sections: [
@@ -517,12 +533,36 @@ $$W = \\int_{x_i}^{x_f} F(x) \\, dx$$
 
 | Linear Concept | Linear Symbol | Rotational Analogue | Rotational Symbol | Bridging Formula |
 | :--- | :--- | :--- | :--- | :--- |
-| **Displacement** | $x$ or $s$ | **Angular Displacement** | $\\theta$ | $s = r\\theta$ |
-| **Velocity** | $v$ | **Angular Velocity** | $\\omega$ | $v = r\\omega$ |
-| **Acceleration** | $a$ | **Angular Acceleration** | $\\alpha$ | $a_t = r\\alpha$ |
-| **Inertia / Mass** | $m$ | **Rotational Inertia** | $I$ | $I = \\Sigma m r^2$ |
-| **Cause of Motion** | Force ($F$) | **Torque** | $\\tau$ | $\\tau = r F \\sin\\theta$ |
-| **Newton 2nd Law** | $\\Sigma F = ma$ | **Rotational Newton 2nd** | $\\Sigma\\tau = I\\alpha$ | — |`
+| **Displacement** | $x$ or $s$ | **Angular Displacement** | $\theta$ | $s = r\theta$ |
+| **Velocity** | $v$ | **Angular Velocity** | $\omega$ | $v = r\omega$ |
+| **Acceleration** | $a$ | **Angular Acceleration** | $\alpha$ | $a_t = r\alpha$ |
+| **Inertia / Mass** | $m$ | **Rotational Inertia** | $I$ | $I = \Sigma m r^2$ |
+| **Cause of Motion** | Force ($F$) | **Torque** | $\tau$ | $\tau = r F \sin\theta$ |
+| **Newton 2nd Law** | $\Sigma F = ma$ | **Rotational Newton 2nd** | $\Sigma\tau = I\alpha$ | - |`
+      },
+      {
+        heading: '2. Static Equilibrium & Strategic Pivot Protocols (CED 5.2)',
+        content: `For any extended rigid body to remain in complete static equilibrium, two simultaneous vector conditions must be satisfied:
+
+$$\Sigma \vec{F} = 0 \quad \text{and} \quad \Sigma \vec{\tau}_{\text{pivot}} = 0$$
+
+* **Strategic Pivot Choice**: You can calculate torque about **ANY** pivot point. Always place the pivot at the location of an **unknown, unasked force** (such as a hinge pin or wall contact). Since distance $r = 0$, that force produces zero torque ($\tau = 0\cdot F = 0$), eliminating it from your torque balance equation!
+* **Lever Arm Concept**: Torque can be written as $\tau = r F \sin\theta$ or $\tau = F \cdot r_\perp$, where $r_\perp$ is the perpendicular lever arm from the pivot to the line of action of the force.`
+      },
+      {
+        heading: '3. Rotational Inertia ($I$) & Mass Distribution (CED 5.3)',
+        content: `Rotational inertia ($I = \Sigma m r^2$) measures an object's resistance to changes in rotational motion:
+
+| Geometry | Rotation Axis | Formula ($I$) | Conceptual Note |
+| :--- | :--- | :--- | :--- |
+| **Thin Hoop / Ring** | Central cylindrical axis | $I = M R^2$ | All mass located at maximum radius $R$ |
+| **Solid Cylinder / Disk** | Central cylindrical axis | $I = \frac{1}{2} M R^2$ | Mass distributed uniformly from center to rim |
+| **Solid Sphere** | Any central diameter | $I = \frac{2}{5} M R^2$ | Mass concentrated more tightly toward center |
+| **Thin Spherical Shell** | Any central diameter | $I = \frac{2}{3} M R^2$ | Mass restricted strictly to outer shell |
+| **Thin Rod** | Perpendicular through center | $I = \frac{1}{12} M L^2$ | Easy to spin about center |
+| **Thin Rod** | Perpendicular through end | $I = \frac{1}{3} M L^2$ | 4x harder to rotate from end than center! |
+
+* **AP Exam Rule**: An object with smaller rotational inertia ($I$) accelerates faster down an incline because less potential energy must be converted into rotational kinetic energy!`
       }
     ],
     workedExamples: [
@@ -727,6 +767,31 @@ $$v = \\sqrt{\\frac{2gh}{1 + \\beta}}$$
 | **Max Compression ($-A$)** | $-A$ | $0$ | **MAX POSITIVE** ($+A\\omega^2$) | **MAXIMUM** ($E$) | $0$ |
 
 *Key Graph Feature*: When $x(t) = A\\cos(\\omega t)$, velocity leads position by $90^\\circ$ ($\\pi/2$), and acceleration is $180^\\circ$ ($\\pi$) out of phase with position.`
+      },
+      {
+        heading: '2. Mass-Spring vs. Simple Pendulum Period Factors (CED 7.2)',
+        content: `Period $T$ formulas and experimental dependencies:
+
+| Oscillator Type | Period Formula | Depends On | Does NOT Depend On |
+| :--- | :--- | :--- | :--- |
+| **Mass-Spring** | $T = 2\\pi \\sqrt{\\frac{m}{k}}$ | Mass $m$, Spring constant $k$ | Amplitude $A$, Local gravity $g$, Angle of incline |
+| **Simple Pendulum** | $T = 2\\pi \\sqrt{\\frac{L}{g}}$ | Length $L$, Gravitational field $g$ | Bob mass $m$, Amplitude $A$ (for $\\theta < 15^\\circ$) |
+
+* **Elevator / Space Scenarios**:
+  * Taking a mass-spring to the Moon ($g_{\\text{moon}} = g/6$) does **NOT change its period**!
+  * Taking a pendulum to the Moon **increases its period** ($T \\propto 1/\\sqrt{g}$), making the clock run slower!
+  * In an upward accelerating elevator ($a$), effective gravity is $g + a$, decreasing a pendulum's period.`
+      },
+      {
+        heading: '3. Kinematics & Energy Graphs of SHM (CED 7.3)',
+        content: `Mathematical equations describing sinusoidal motion:
+
+* **Position**: $x(t) = A \\cos(\\omega t)$
+* **Velocity**: $v(t) = -A\\omega \\sin(\\omega t) \\implies v_{\\max} = A\\omega$
+* **Acceleration**: $a(t) = -A\\omega^2 \\cos(\\omega t) = -\\omega^2 x(t) \\implies a_{\\max} = A\\omega^2$
+* **Total Energy Invariance**:
+  $$E_{\\text{total}} = \\frac{1}{2} k x^2 + \\frac{1}{2} m v^2 = \\frac{1}{2} k A^2 = \\frac{1}{2} m v_{\\max}^2$$
+* **Equal Energy Point**: Kinetic and potential energy are exactly equal ($K = U = \\frac{1}{2}E$) when displacement is $x = \\pm \\frac{A}{\\sqrt{2}} \\approx \\pm 0.707 A$, NOT at half-amplitude $A/2$!`
       }
     ],
     workedExamples: [

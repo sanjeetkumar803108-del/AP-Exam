@@ -46,6 +46,24 @@ export const AP_PSYCHOLOGY_NOTES: APUnitNote[] = [
 | **Norepinephrine** | Alertness, arousal, fight-or-flight response | Depressive moods, fatigue, lack of focus (ADHD) | Anxiety, hypertension, panic attacks |
 | **Endorphins** | Natural opiate-like pain relief and euphoric runner’s high | Chronic pain sensitivity | Inability to feel physiological pain warning signals |`
       }
+    ,
+      {
+        heading: '2. Brain Anatomy, Limbic System & Split-Brain Research (CED 1.3-1.4)',
+        content: `Neuroanatomy, hemispheric lateralization, and endocrine integration:
+
+* **Cerebral Cortex Lobes**:
+  * **Frontal Lobe**: Prefrontal executive functioning, moral reasoning, planning, primary motor cortex, and **Broca's Area** (speech production, left hemisphere only).
+  * **Parietal Lobe**: Somatosensory cortex processing tactile touch, pressure, temperature, and spatial positioning.
+  * **Occipital Lobe**: Primary visual cortex processing shapes, angles, color, and visual perception.
+  * **Temporal Lobe**: Primary auditory cortex, facial recognition (fusiform gyrus), and **Wernicke's Area** (language comprehension, left hemisphere only).
+* **The Limbic System (Emotion & Memory)**:
+  * **Hippocampus**: Encodes and consolidates conscious, declarative memories into long-term storage.
+  * **Amygdala**: Regulates intense primal emotions, particularly fear detection, anger, and threat conditioning.
+  * **Hypothalamus**: Maintains internal bodily homeostasis; regulates the 'Four Fs' (Fighting, Fleeing, Feeding, and Reproduction); commands the endocrine system via the pituitary master gland.
+* **Split-Brain Research (Sperry & Gazzaniga)**:
+  * Severing the **corpus callosum** prevents communication between cerebral hemispheres.
+  * An image flashed to the **left visual field** travels to the **right hemisphere**: Patient can point to the object with the left hand, but **CANNOT verbally name it** (speech requires the left hemisphere)!`
+      }
     ],
     workedExamples: [
       {
@@ -128,6 +146,24 @@ export const AP_PSYCHOLOGY_NOTES: APUnitNote[] = [
 | **Explicit (Declarative)** | **Semantic** | Hippocampus & Neocortex | Knowing that Paris is the capital of France or that $E=mc^2$ |
 | **Implicit (Non-declarative)** | **Procedural** | Cerebellum & Basal Ganglia | Muscle memory for riding a bicycle, swimming, or typing |
 | **Implicit (Non-declarative)** | **Conditioning** | Amygdala & Cerebellum | Flinching at the sound of a dentist's drill or salivating at food smells |`
+      }
+    ,
+      {
+        heading: '2. Heuristics, Cognitive Biases & Language Acquisition (CED 2.3-2.4)',
+        content: `Problem-solving strategies, systemic cognitive distortions, and linguistic development:
+
+* **Algorithms vs. Heuristics**:
+  * **Algorithm**: Step-by-step exhaustive rule guaranteed to produce a correct solution (slow, resource-intensive).
+  * **Heuristic**: Mental shortcut / 'rule of thumb' providing rapid problem-solving but prone to predictable errors.
+* **Classic Cognitive Biases**:
+  * **Availability Heuristic**: Estimating the frequency or likelihood of an event based on how easily examples come to mind (e.g. fearing plane crashes or shark attacks over car crashes due to vivid news coverage).
+  * **Representativeness Heuristic**: Judging the probability of an event by comparing it to a prototype or stereotype while ignoring base-rate statistical realities.
+  * **Confirmation Bias**: Actively seeking and remembering information that validates pre-existing beliefs while ignoring contradictory evidence.
+  * **Functional Fixedness**: Inability to perceive an object being used for purposes other than its customary designed role.
+* **Language Structural Hierarchy**:
+  * **Phoneme**: Smallest distinctive unit of sound in a language (e.g. /k/, /a/, /t/).
+  * **Morpheme**: Smallest unit of meaningful language (e.g. 'un-', 'break-', '-able').
+  * **Noam Chomsky's Nativist Theory**: Humans possess an innate biological Language Acquisition Device (LAD) with universal grammar principles, opposing B.F. Skinner's purely behaviorist imitation model.`
       }
     ],
     workedExamples: [
@@ -213,6 +249,20 @@ export const AP_PSYCHOLOGY_NOTES: APUnitNote[] = [
 | **Adolescence (12–18)** | **Formal Operational**: Abstract hypotheses, moral reasoning | **Identity vs. Role Confusion**: Refining sense of self | **Postconventional**: Social contract, universal ethical principles |
 | **Adulthood (19+)** | Formal Operational continues; post-formal dialectical thought | **Intimacy vs. Isolation** $\\rightarrow$ **Generativity** $\\rightarrow$ **Integrity vs. Despair** | Postconventional: Autonomous ethical conscience |`
       }
+    ,
+      {
+        heading: '2. Operant Reinforcement Schedules & Observational Learning (CED 3.2 & 3.4)',
+        content: `Behavioral conditioning schedules and social learning dynamics:
+
+* **The 4 Schedules of Partial Reinforcement**:
+  * **Fixed-Ratio (FR)**: Reward delivered after an invariant, set number of responses (e.g. factory piecework bonus every 10 items; produces high response rates with brief post-reinforcement pauses).
+  * **Variable-Ratio (VR)**: Reward delivered after an unpredictable, varying number of responses (e.g. slot machines, lottery tickets; produces the **highest, steepest rate of responding** and greatest resistance to extinction!).
+  * **Fixed-Interval (FI)**: Reward delivered for first response after a fixed period of time (e.g. checking mail every 24 hours, studying before scheduled Friday exams; produces a distinctive **scalloped response curve**).
+  * **Variable-Interval (VI)**: Reward delivered for first response after unpredictable time durations (e.g. checking phone notifications, fishing; produces slow, steady, persistent responding).
+* **Albert Bandura's Social Learning Theory**:
+  * Children observing aggressive adult models striking an inflatable Bobo Doll exhibited novel aggressive behaviors through **observational modeling**, even without receiving direct reinforcement!
+  * Driven by internal **vicarious reinforcement** and biological mirror neuron systems.`
+      }
     ],
     workedExamples: [
       {
@@ -296,6 +346,22 @@ export const AP_PSYCHOLOGY_NOTES: APUnitNote[] = [
 | **Group Polarization** | Enhancement of a group's prevailing inclinations through mutual discussion | A group of moderately eco-friendly students becomes radical activists after discussing climate policy |
 | **Groupthink** | Mode of thinking that occurs when desire for harmony overrides realistic appraisal | Bay of Pigs invasion, Challenger shuttle launch; dissenting voices remain silent |
 | **Bystander Effect** | Tendency for any given bystander to be less likely to give aid if other bystanders are present | Kitty Genovese case; diffusion of responsibility ("Someone else will call 911") |`
+      }
+    ,
+      {
+        heading: '2. The Big Five Traits & Classic Social Influence Experiments (CED 4.3 & 4.4)',
+        content: `Trait personality models and landmark social psychological paradigms:
+
+* **The Big Five Personality Dimensions (OCEAN Trait Model)**:
+  * **O - Openness to Experience**: Curiosity, intellectual exploration, and artistic appreciation vs. conventionality.
+  * **C - Conscientiousness**: Self-discipline, organization, dependability, and goal-directed persistence.
+  * **E - Extraversion**: Sociability, assertiveness, talkativeness, and outward energy stimulation.
+  * **A - Agreeableness**: Empathy, trust, cooperativeness, and altruistic concern for others.
+  * **N - Neuroticism**: Emotional instability, anxiety, vulnerability to stress, and negative emotionality.
+* **Landmark Social Psychology Experiments**:
+  * **Stanley Milgram (Obedience Study)**: Over $65\%$ of ordinary participants complied with instructions from a perceived legitimate authority figure to administer what they believed were dangerous $450\\text{V}$ electric shocks to an innocent confederate.
+  * **Solomon Asch (Conformity Study)**: Over $75\%$ of participants conformed to an obviously erroneous majority line-judgment at least once, demonstrating **normative social influence** (desire to gain social approval and avoid rejection).
+  * **Philip Zimbardo (Stanford Prison Experiment)**: Healthy college students randomly assigned to roles of guards or prisoners rapidly internalized simulated social roles, illustrating the power of situational demands and **deindividuation**.`
       }
     ],
     workedExamples: [
@@ -382,6 +448,22 @@ export const AP_PSYCHOLOGY_NOTES: APUnitNote[] = [
 | **Obsessive-Compulsive** | **OCD** | Obsessions (intrusive unwanted thoughts) causing anxiety relieved by Compulsions (repetitive rituals) | Hyperactive anterior cingulate cortex; orbitofrontal cortex dysfunction |
 | **Psychotic Disorders** | **Schizophrenia** | Positive: Hallucinations (auditory), delusions (persecution/grandeur). Negative: Flat affect, catatonia | Excess dopamine receptor density ($D_2$); enlarged fluid-filled brain ventricles |
 | **Trauma & Stress** | **PTSD** | Flashbacks, hypervigilance, nightmare reliving, emotional numbing $>1$ month | Persistent sympathetic activation, traumatic memory consolidation failure |`
+      }
+    ,
+      {
+        heading: '2. Stress Physiology (Selye\'s GAS) & Evidence-Based Therapies (CED 5.3-5.5)',
+        content: `Somatic stress mechanisms and clinical therapeutic interventions:
+
+* **Hans Selye's General Adaptation Syndrome (GAS)**:
+  * **Stage 1: Alarm Reaction**: Immediate sympathetic nervous system 'fight-or-flight' surge; release of epinephrine, norepinephrine, and cortisol; heart rate and respiration escalate.
+  * **Stage 2: Resistance**: Body remains on physiological high alert to cope with ongoing chronic stressor; glucose levels and blood pressure remain elevated while non-essential digestive functions suppress.
+  * **Stage 3: Exhaustion**: Prolonged stress depletes bodily reserves; severe vulnerability to physical illness, immunosuppression, organ damage, and chronic depression.
+* **Evidence-Based Therapeutic Approaches**:
+  * **Cognitive-Behavioral Therapy (CBT - Beck & Ellis)**: Pinpoints and restructures irrational cognitive distortions (e.g. catastrophizing, black-and-white thinking) through collaborative cognitive reappraisal and behavioral activation.
+  * **Behavioral Therapy (Wolpe)**: Systematic desensitization pairing progressive relaxation with an anxiety hierarchy to eliminate conditioned phobias through counterconditioning.
+  * **Biological Psychopharmacology**:
+    * **SSRIs (Selective Serotonin Reuptake Inhibitors)**: Prolong serotonin availability in the synaptic cleft to treat major depressive and anxiety disorders.
+    * **Antipsychotics (Neuroleptics)**: Antagonize dopamine $D_2$ receptors to manage positive symptoms of schizophrenia.`
       }
     ],
     workedExamples: [

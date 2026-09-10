@@ -12,7 +12,21 @@ async function getBase64(data: Blob | ArrayBuffer | string): Promise<string> {
     if (data.startsWith('data:')) {
       return data.split(',')[1];
     }
-    return btoa(data);
+    // If it's a URL (http, https, blob:, or local /path), fetch the actual binary data!
+    if (data.startsWith('http://') || data.startsWith('https://') || data.startsWith('blob:') || data.startsWith('/')) {
+      try {
+        const response = await fetch(data);
+        const blob = await response.blob();
+        return getBase64(blob);
+      } catch (fetchErr) {
+        console.warn('[mobileSaver] Failed to fetch URL, falling back:', fetchErr);
+      }
+    }
+    try {
+      return btoa(data);
+    } catch {
+      return '';
+    }
   }
   if (data instanceof ArrayBuffer) {
     const bytes = new Uint8Array(data);
@@ -86,13 +100,20 @@ export async function savePDFMobile(
 
   const b64Data = await getBase64(pdfData);
 
-  // Automatically save to in-app offline history so it is always accessible offline inside the app!
+  // Automatically calculate true file size
+  const approxBytes = Math.round((b64Data.length * 3) / 4);
+  const fileSizeStr = approxBytes >= 1024 * 1024
+    ? `${(approxBytes / (1024 * 1024)).toFixed(1)} MB`
+    : `${Math.max(1, Math.round(approxBytes / 1024))} KB`;
+
+  // Automatically save to in-app offline history (IndexedDB persistent storage)
   try {
     const dataUri = `data:application/pdf;base64,${b64Data}`;
     savePdfToHistory({
       title: cleanFilename,
       fileUri: dataUri,
       featureTag: options?.featureTag || 'Practice PDF',
+      fileSize: fileSizeStr,
     });
   } catch (histErr) {
     console.warn('[MobileSaver] Error saving to in-app history:', histErr);
@@ -102,7 +123,19 @@ export async function savePDFMobile(
     try {
       console.log(`[MobileSaver] Native saving starting for: ${cleanFilename}`);
 
-      // Write file to native Cache directory (safe from Scoped Storage EACCES restrictions on Android 10+)
+      // Write file to native permanent Data directory (never wiped by OS cache cleaner)
+      try {
+        await Filesystem.writeFile({
+          path: cleanFilename,
+          data: b64Data,
+          directory: Directory.Data,
+          recursive: true,
+        });
+      } catch (dataDirErr) {
+        console.warn('[MobileSaver] Permanent Data write notice:', dataDirErr);
+      }
+
+      // Write file to native Cache directory (accessible to FileOpener / Share sheet)
       const savedFile = await Filesystem.writeFile({
         path: cleanFilename,
         data: b64Data,

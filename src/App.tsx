@@ -864,7 +864,7 @@ export default function App() {
 
   if (isDeveloperMode) {
     return (
-      <div className={`w-full flex flex-col h-[100dvh] max-w-md mx-auto ${isDarkMode ? 'dark bg-zinc-950 text-zinc-100 sm:border-zinc-800' : 'bg-zinc-950 text-zinc-100 sm:border-zinc-800'} font-sans overflow-y-auto shadow-[0_0_50px_rgba(0,0,0,0.15)] sm:rounded-[2rem] sm:h-[90vh] sm:mt-[5vh] sm:border relative`}>
+      <div className={`w-full flex flex-col h-[100dvh] ${Capacitor.isNativePlatform() ? 'max-w-none m-0 rounded-none border-0' : 'max-w-md mx-auto landscape:max-w-none landscape:w-full landscape:h-[100dvh] landscape:m-0 landscape:rounded-none landscape:border-0 sm:rounded-[2rem] sm:h-[90vh] sm:mt-[5vh] sm:border'} ${isDarkMode ? 'dark bg-zinc-950 text-zinc-100 sm:border-zinc-800' : 'bg-zinc-950 text-zinc-100 sm:border-zinc-800'} font-sans overflow-y-auto shadow-[0_0_50px_rgba(0,0,0,0.15)] relative`}>
         <ToastProvider />
         <Suspense fallback={<FullPageSkeleton />}>
           <DeveloperDashboard
@@ -895,7 +895,7 @@ export default function App() {
         setShowAcademicSetup={setShowAcademicSetup}
         fallbackSkeleton={<FullPageSkeleton />}
       >
-        <div className={`w-full flex flex-col h-[100dvh] max-w-md mx-auto ${isDarkMode ? 'dark bg-zinc-950 text-zinc-100 sm:border-zinc-800' : 'bg-[#FAF9F6] text-zinc-900 sm:border-zinc-200'} font-sans overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.15)] sm:rounded-[2rem] sm:h-[90vh] sm:mt-[5vh] sm:border relative`}>
+        <div className={`w-full flex flex-col h-[100dvh] ${Capacitor.isNativePlatform() ? 'max-w-none m-0 rounded-none border-0' : 'max-w-md mx-auto landscape:max-w-none landscape:w-full landscape:h-[100dvh] landscape:m-0 landscape:rounded-none landscape:border-0 sm:rounded-[2rem] sm:h-[90vh] sm:mt-[5vh] sm:border'} ${isDarkMode ? 'dark bg-zinc-950 text-zinc-100 sm:border-zinc-800' : 'bg-[#FAF9F6] text-zinc-900 sm:border-zinc-200'} font-sans overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.15)] relative`}>
         {/* Global Network Status Banner */}
         <AnimatePresence>
           {networkStatus.visible && (
@@ -957,7 +957,7 @@ export default function App() {
         </header>
       )}
       
-      <main className={`w-full max-w-md mx-auto flex-1 min-h-0 relative z-0 ${(activeTab === 'scanner' || activeTab === 'aitutor' || activeTab === 'teacher' || activeTool !== null) ? 'overflow-hidden flex flex-col h-full' : 'overflow-y-auto pb-20'} bg-[#FAF9F6]`}>
+      <main className={`w-full ${(Capacitor.isNativePlatform() || activeTool !== null) ? 'max-w-none' : 'max-w-md mx-auto landscape:max-w-none'} flex-1 min-h-0 relative z-0 ${(activeTab === 'scanner' || activeTab === 'aitutor' || activeTab === 'teacher' || activeTool !== null) ? 'overflow-hidden flex flex-col h-full' : 'overflow-y-auto pb-20'} bg-[#FAF9F6]`}>
         {/* Scanner Tab */}
         <div className={activeTab === 'scanner' ? 'h-full flex flex-col' : 'hidden'}>
           <ErrorBoundary>
@@ -1067,7 +1067,7 @@ export default function App() {
             {activeTool === 'pdfhistory' && (
               <ErrorBoundary>
                 <PdfHistoryScreen 
-                  onBack={() => setActiveTool('image2pdf')} 
+                  onBack={() => setActiveTool(null)} 
                   onOpenImageToPdf={() => setActiveTool('image2pdf')}
                 />
               </ErrorBoundary>
@@ -1193,7 +1193,7 @@ export default function App() {
 
       {activeTool === null && (
         <nav className="absolute bottom-0 w-full border-t pb-safe z-20 transition-all duration-300 bg-white/90 border-zinc-200/60 backdrop-blur-2xl">
-          <div className="flex justify-around items-center px-2 py-0.5">
+          <div className="flex justify-around items-center px-2 py-0.5 max-w-md mx-auto landscape:max-w-lg">
             <NavItem 
               icon={<Home className="w-5 h-5" />} 
               label="Home" 

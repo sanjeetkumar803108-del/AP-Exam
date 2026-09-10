@@ -11,7 +11,8 @@ import { auth, db } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp, query, where, orderBy, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import jsPDF from 'jspdf';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
-import { sanitizePdfText } from '../utils/pdfSanitizer';
+import { sanitizePdfText, formatMathForPdf } from '../utils/pdfSanitizer';
+import { drawTextWithElevatedPowers } from '../utils/pdfTableDrawer';
 import SafePdfViewer from './SafePdfViewer';
 import { deductCoins, getCoins } from '../utils/coins';
 import { triggerVibration } from '../utils/vibrate';
@@ -157,7 +158,7 @@ export function generateContentPDFBlob(
     }
 
     // Normal or Academic Essay Paragraphs
-    const cleanPara = sanitizePdfText(trimmed.replace(/[*_`]/g, ''));
+    const cleanPara = sanitizePdfText(formatMathForPdf(trimmed.replace(/[*_`]/g, '')));
     const isAcademic = tone.toUpperCase() === 'ACADEMIC' || format.includes('APA') || format.includes('MLA');
     
     doc.setFont('Helvetica', 'normal');
@@ -183,7 +184,7 @@ export function generateContentPDFBlob(
       }
       // Indent 6mm for first line of academic paragraph
       const indentX = (isAcademic && isFirstLine) ? 6 : 0;
-      doc.text(line, margin + indentX, currentY);
+      drawTextWithElevatedPowers(doc, line, margin + indentX, currentY, 10);
       currentY += 5.2;
       isFirstLine = false;
     }
@@ -487,7 +488,28 @@ export default function ContentGenerator({ onBack }: ContentGeneratorProps) {
     }
   };
 
-  const handleSharePDF = async () => {
+    const handleDownloadPDF = async () => {
+    if (!result) return;
+    triggerVibration(15);
+    try {
+      const filename = previewPdfName || `HelpYou_AI_${selectedType.toLowerCase()}_${Date.now()}.pdf`;
+      const blob = generateContentPDFBlob(
+        selectedType,
+        topic || `${selectedType} Study Guide`,
+        selectedTone,
+        selectedType === 'Essay' ? selectedFormat : 'Standard',
+        result
+      );
+      await savePDFMobile(blob, filename, {
+        featureTag: 'AI Study Guide',
+        customToast: '✅ Saved offline in app'
+      });
+    } catch (err) {
+      console.error('Failed to download PDF:', err);
+    }
+  };
+
+const handleSharePDF = async () => {
     if (!result) return;
     triggerVibration(15);
     setExporting(true);
@@ -572,6 +594,13 @@ export default function ContentGenerator({ onBack }: ContentGeneratorProps) {
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                onClick={handleDownloadPDF}
+                className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-full font-black text-xs shadow-md transition-all cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+                <span>Save Offline</span>
+              </button>
               <button
                 onClick={handleSharePDF}
                 className="flex items-center gap-1.5 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 active:scale-95 text-white rounded-full font-black text-xs shadow-md transition-all cursor-pointer"

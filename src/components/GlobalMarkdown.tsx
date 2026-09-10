@@ -7,7 +7,7 @@ import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
 
 interface GlobalMarkdownProps {
-  children: string;
+  children?: any;
   className?: string;
   components?: any;
 }
@@ -40,9 +40,48 @@ export function cleanMarkdownMath(content: string): string {
   text = text.replace(/(^|[\s$(=_])ext\{/g, '$1\\text{');
   text = text.replace(/(^|[\s$(=_])heta([\s$_^0-9A-Za-z])/g, '$1\\theta$2');
 
-  // 3. Heal pseudo-code limits like lim(x -> infinity)
+  // 3. Heal pseudo-code limits and common mathematical notations
+  // Convert full limit equation like lim_{x->-inf} (3x-1)/sqrt(4x^2+5) = 3/(-sqrt(4)) = -3/2
+  text = text.replace(/lim_\{?x\s*->\s*-?\s*(?:inf|infinity)\}?\s*\(([^)]+)\)\/sqrt\(([^)]+)\)\s*=\s*([0-9\-\+]+)\/\(-?sqrt\(([0-9]+)\)\)\s*=\s*(-?[0-9]+\/[0-9]+)/gi,
+    '$$\\lim_{x \\to -\\infty} \\frac{$1}{\\sqrt{$2}} = \\frac{$3}{-\\sqrt{$4}} = $5$$');
+
+  // Convert limit arrow notations like lim_{x->2}, lim_{x->2^-}, lim_{x->2^+}, lim_{x->c}
+  text = text.replace(/(?<!\$)\blim_\{x\s*->\s*([a-zA-Z0-9]+)(\^[\+\-]|\^\{[\+\-]\})?\}(?!\$)/gi, (m, val, sign) => {
+    const s = sign ? sign.replace(/[\{\}]/g, '') : '';
+    return `$\\lim_{x \\to ${val}${s ? `^{${s.replace('^', '')}}` : ''}}$`;
+  });
+  text = text.replace(/(?<!\$)\blim_\{x\s*->\s*-?\s*(?:inf|infinity)\}(?!\$)/gi, '$\\lim_{x \\to -\\infty}$');
+
+  // Convert arrow directionals like (x->2^-) or (x->2^+) or x -> -infinity
+  text = text.replace(/(?<!\$)\bx\s*->\s*-?\s*(?:infinity|inf)\b(?!\$)/gi, '$x \\to -\\infty$');
+  text = text.replace(/(?<!\$)\bx\s*->\s*([0-9a-zA-Z]+)\^([\+\-])(?!\$)/gi, '$x \\to $1^{$2}$');
+  text = text.replace(/(?<!\$)\bx\s*->\s*([0-9a-zA-Z]+)(?!\$|\^)/gi, '$x \\to $1$');
+
+  // Convert bare sqrt expressions like sqrt(x^2), sqrt(4x^2+5), sqrt(4)
+  text = text.replace(/(?<![\\$a-zA-Z0-9])sqrt\(([^)]+)\)/g, (m, inner) => {
+    let cleanInner = inner.replace(/\^([0-9a-zA-Z]+)/g, '^{$1}');
+    return `$\\sqrt{${cleanInner}}$`;
+  });
+
+  // Convert algebraic derivatives like d/dx[pi^2], dy/dx
+  text = text.replace(/(?<!\$)d\/dx\[([^\]]+)\](?!\$)/g, (m, inner) => {
+    let clean = inner.replace(/\^([0-9a-zA-Z]+)/g, '^{$1}');
+    return `$\\frac{d}{dx}[${clean}]$`;
+  });
+  text = text.replace(/(?<!\$)dy\/dx(?!\$)/g, '$\\frac{dy}{dx}$');
+
+  // Convert integrals like integral(x^-1 dx)
+  text = text.replace(/(?<!\$)integral\(([^)]+)\)(?!\$)/g, (m, inner) => {
+    let clean = inner.replace(/\^([0-9a-zA-Z\-]+)/g, '^{$1}');
+    return `$\\int (${clean})$`;
+  });
+
+  // Convert != to \ne
+  text = text.replace(/(?<=\s)!=(?=\s)/g, '$\\ne$');
+
   text = text.replace(/\\?lim\s*\(\s*x\s*(?:->|\\to)\s*(?:infinity|\\infty)\s*\)/gi, '\\lim_{x \\to \\infty}');
   text = text.replace(/\\left\\\{([^$\n]*?)(?=(\$|\n|$))/g, (m) => m.includes('\\right') ? m : m + '\\right.');
+
 
   // 4. Convert standard LaTeX display and inline math delimiters:
   // \[ ... \] -> $$ ... $$
@@ -124,6 +163,18 @@ export function cleanMarkdownMath(content: string): string {
   // 9. Unescape HTML entities inside inline code spans and backticks:
   text = text.replace(/`([^`\n]+)`/g, (match, code) => {
     return '`' + code.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&') + '`';
+  });
+
+  // 10. Heal bare superscripts, subscripts, Pandoc syntax, and chemical equations outside math blocks:
+  text = text
+    .replace(/~([a-zA-Z0-9_\+\-]+)~/g, '<sub>$1</sub>')
+    .replace(/\^([a-zA-Z0-9_\+\-]+)\^/g, '<sup>$1</sup>');
+
+  text = text.replace(/(?<!\$)\\ce\{([^{}]+)\}(?!\$)/g, (_m, body) => {
+    let ce = body;
+    ce = ce.replace(/\^\{?([0-9]*[\+\-])\}?/g, '<sup>$1</sup>');
+    ce = ce.replace(/([A-Za-z\)])(\d+)/g, '$1<sub>$2</sub>');
+    return ce;
   });
 
   return text;

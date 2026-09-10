@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Capacitor } from '@capacitor/core';
 import appLogo from '../assets/logo.svg';
 import { triggerVibration } from '../utils/vibrate';
+import { getPdfHistory } from '../utils/pdfHistory';
 import { safeGetItem, safeSetItem } from '../utils/storage';
 import { getCoins, isUserLoggedIn } from '../utils/coins';
 import { useSettings } from '../hooks/useSettings';
@@ -84,6 +85,25 @@ function ToolsDashboard({
   onForceSync
 }: ToolsDashboardProps) {
   const [showAllTools, setShowAllTools] = useState(false);
+  const [savedPdfCount, setSavedPdfCount] = useState<number>(() => {
+    try {
+      return getPdfHistory().length;
+    } catch {
+      return 0;
+    }
+  });
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      try {
+        setSavedPdfCount(getPdfHistory().length);
+      } catch {
+        // ignore
+      }
+    };
+    window.addEventListener('pdf-history-updated', handleUpdate);
+    return () => window.removeEventListener('pdf-history-updated', handleUpdate);
+  }, []);
   const loggedIn = isUserLoggedIn();
   const { deepFocus } = useSettings();
 
@@ -664,6 +684,39 @@ function ToolsDashboard({
           </div>
           
           <div className="w-12 h-12 rounded-full bg-zinc-100 group-hover:bg-teal-500 group-hover:text-white flex items-center justify-center text-zinc-700 shrink-0 transition-colors shadow-sm">
+            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.4, ease: "easeOut" }}
+          whileHover={{ scale: 1.02, y: -2, boxShadow: "0 14px 30px -5px rgba(0, 0, 0, 0.08)" }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => handleSelectTool('pdfhistory')}
+          className="relative overflow-hidden bg-white border border-emerald-200/90 shadow-md rounded-[2.5rem] p-7 cursor-pointer flex items-center justify-between transition-all select-none group hover:border-emerald-400 hover:shadow-lg"
+        >
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-3xl shrink-0 group-hover:bg-gradient-to-br group-hover:from-emerald-500 group-hover:to-teal-600 group-hover:text-white transition-all duration-300">
+              💾
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
+                  Saved Offline PDFs
+                </h2>
+                <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  {savedPdfCount > 0 ? `${savedPdfCount} Saved` : 'Offline Vault'}
+                </span>
+              </div>
+              <p className="text-xs font-semibold text-emerald-600 mt-0.5">
+                Read all your downloaded notes, sample papers & exams offline anytime
+              </p>
+            </div>
+          </div>
+          
+          <div className="w-12 h-12 rounded-full bg-zinc-100 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center text-zinc-700 shrink-0 transition-colors shadow-sm">
             <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
           </div>
         </motion.div>

@@ -50,6 +50,37 @@ export const AP_BIOLOGY_NOTES: APUnitNote[] = [
 
 *Protein Structure Levels*: Primary (amino acid sequence), Secondary ($\\alpha$-helices and $\\beta$-sheets via backbone H-bonds), Tertiary (3D folding via R-group interactions), Quaternary (multiple polypeptide subunits).`
       }
+    ,
+      {
+        heading: '2. Properties of Water, Hydrogen Bonding & Water Potential (CED 1.1 & 1.2)',
+        content: `Unique physical and chemical properties of water vital to life:
+
+* **Key Water Properties Emergent from Polarity**:
+  * **Cohesion & Surface Tension**: Hydrogen bonding between water molecules creates capillary action pulling water up plant xylem.
+  * **Adhesion**: Water molecules hydrogen bond to other polar surfaces (e.g. cellulose xylem walls).
+  * **High Specific Heat & Heat of Vaporization**: Stabilizes aquatic temperatures and provides evaporative cooling (sweating, transpiration).
+  * **Density Anomaly**: Solid ice is less dense than liquid water due to an open hexagonal crystal lattice, insulating aquatic life below.
+* **Water Potential Calculation Formula**:
+  $$\\Psi = \\Psi_s + \\Psi_p$$
+  * Water always flows passively from **higher water potential to lower water potential**.
+  * In an open container, pressure potential $\\Psi_p = 0$.
+  * **Solute Potential**:
+    $$\\Psi_s = -iCRT$$
+    *(Where $i$ = ionization constant [$1.0$ for sucrose, $2.0$ for $NaCl$], $C$ = molar concentration in M, $R = 0.0831\\text{ L}\\cdot\\text{bar}/(\\text{mol}\\cdot\\text{K})$, and $T = \\text{temp in Kelvin} = ^\\circ\\text{C} + 273$). Adding solute ALWAYS makes $\\Psi_s$ more negative!*`
+      },
+      {
+        heading: '3. Protein Folding Hierarchy & Nucleic Acid Directionality (CED 1.4 & 1.5)',
+        content: `Structural organization of life's informational polymers:
+
+* **The 4 Levels of Protein Structure**:
+  * **Primary ($1^\\circ$)**: Linear sequence of amino acids held by covalent peptide bonds formed via dehydration synthesis.
+  * **Secondary ($2^\\circ$)**: Localized alpha-helices and beta-pleated sheets stabilized exclusively by **hydrogen bonds between polypeptide backbone** atoms.
+  * **Tertiary ($3^\\circ$)**: 3D globular shape dictated by **R-group (side-chain) interactions**: hydrophobic clustering, ionic bonds, hydrogen bonds, and covalent disulfide bridges (cysteine).
+  * **Quaternary ($4^\\circ$)**: Association of two or more distinct polypeptide chains (e.g. hemoglobin has 4 subunits).
+* **Nucleic Acid Directionality ($5'$ to $3'$)**:
+  * DNA and RNA strands have intrinsic polarity: a **$5'$ phosphate group** and a **$3'$ hydroxyl ($-OH$) group**.
+  * New nucleotides can **ONLY be added to the free $3'$ end** via phosphodiester bond formation during replication and transcription!`
+      }
     ],
     workedExamples: [
       {
@@ -135,6 +166,35 @@ export const AP_BIOLOGY_NOTES: APUnitNote[] = [
 | **Secondary (Active) Cotransport**| **YES** (Electrochemical) | Low $\\rightarrow$ High (Against) | YES (Symporter/Antiporter) | $\\text{Na}^+$/Glucose cotransporter, Proton-sucrose pump |
 | **Bulk Endocytosis / Exocytosis**| **YES** (Vesicle motor ATP) | N/A (Bulk packaging) | NO (Vesicular fusion) | Macrophage phagocytosis, insulin secretion |`
       }
+    ,
+      {
+        heading: '2. Subcellular Compartmentalization & Endosymbiosis (CED 2.1 & 2.2)',
+        content: `Eukaryotic cell compartmentalization and organelle specialization:
+
+* **Endomembrane System Flow**:
+  $$\\text{Nucleus (mRNA)} \\rightarrow \\text{Rough ER (translation/folding)} \\rightarrow \\text{Golgi (modification/sorting)} \\rightarrow \\text{Vesicles/Membrane}$$
+* **Endosymbiotic Theory Evidence**:
+  * Free-living ancestral aerobic prokaryotes and photosynthetic cyanobacteria were engulfed by primitive eukaryotic host cells.
+  * **Four Pillars of Evidence for Mitochondria and Chloroplasts**:
+    1. **Double Membranes**: Outer membrane derived from host vesicle; inner membrane represents original bacterial membrane.
+    2. **Independent Circular DNA**: Have their own naked circular genomes similar to bacterial plasmids.
+    3. **Bacterial-Type Ribosomes**: Possess $70S$ ribosomes (unlike host cytoplasmic $80S$ ribosomes).
+    4. **Binary Fission**: Replicate autonomously within the cell by splitting in half.`
+      },
+      {
+        heading: '3. Surface Area-to-Volume ($SA/V$) Ratio & Tonicity (CED 2.3 & 2.8)',
+        content: `Cell size constraints and osmotic environmental interactions:
+
+* **Surface Area-to-Volume ($SA/V$) Constraint**:
+  * As a sphere or cube grows in linear dimension $r$, surface area increases by $r^2$ while volume increases by $r^3$.
+  * **Smaller cells have a larger $SA/V$ ratio**, facilitating rapid exchange of nutrients, waste gases, and thermal energy. Large eukaryotic cells overcome this constraint through internal membrane folding (mitochondrial cristae, ER folds).
+* **Tonicity and Cellular Osmotic States**:
+  | Environment | Solute Concentration | Water Movement | Plant Cell State | Animal Cell State |
+  | :--- | :--- | :--- | :--- | :--- |
+  | **Hypotonic** | Lower solute than cell | Flows INTO cell | **Turgid (Normal)** | Lysis (Bursts) |
+  | **Isotonic** | Equal solute to cell | Equal dynamic exchange | Flaccid (Wilts) | **Normal (Homeostasis)** |
+  | **Hypertonic** | Higher solute than cell | Flows OUT of cell | Plasmolyzed (Shrinks) | Crenated (Shriveled) |`
+      }
     ],
     workedExamples: [
       {
@@ -218,6 +278,32 @@ export const AP_BIOLOGY_NOTES: APUnitNote[] = [
 | **Final Electron Acceptor** | $\\text{NADP}^+$ (reduced to $\\text{NADPH}$) | Oxygen ($\\text{O}_2$, reduced to form $\\text{H}_2\\text{O}$) |
 | **Proton Gradient Reservoir** | Thylakoid lumen (high $[\\text{H}^+]$, low pH) | Mitochondrial intermembrane space (high $[\\text{H}^+]$) |
 | **Carbon Fixation Step** | Calvin Cycle in Stroma (catalyzed by RuBisCO) | Krebs (Citric Acid) Cycle in Matrix releases $\\text{CO}_2$ |`
+      }
+    ,
+      {
+        heading: '2. Enzyme Catalysis, Active Sites & Environmental Stress (CED 3.13.3)',
+        content: `Enzymes are biological catalysts that lower activation energy ($E_a$):
+
+* **Induced-Fit Mechanism**: Substrate binding causes conformational changes in the enzyme's active site, straining substrate bonds and stabilizing the transition state.
+* **Environmental Impacts on Enzyme Activity**:
+  * **Temperature**: Rising temperature increases molecular collisions until the thermal kinetic energy disrupts weak hydrogen/ionic tertiary bonds, causing **denaturation** (irreversible loss of active site shape).
+  * **pH**: Changes in $[H^+]$ alter the ionization state of acidic and basic R-groups, disrupting ionic bonds and denaturing the enzyme.
+* **Inhibition Types**:
+  * **Competitive Inhibitor**: Chemically resembles substrate and binds directly to the active site; can be **overcome by increasing substrate concentration** $[S]$.
+  * **Noncompetitive / Allosteric Inhibitor**: Binds to an allosteric site away from the active site, changing enzyme conformation; **cannot be overcome** by adding substrate (decreases $V_{\\max}$). `
+      },
+      {
+        heading: '3. Proton Gradients, Chemiosmosis & ATP Synthase (CED 3.43.6)',
+        content: `The universal bioenergetic mechanism powering ATP generation:
+
+* **The Electron Transport Chain (ETC)**:
+  * High-energy electrons from $NADH$ and $FADH_2$ (respiration) or photo-excited electrons from $H_2O$ (photosynthesis) pass along membrane-bound redox proteins.
+  * As electrons drop in energy, energy is harnessed to pump $H^+$ protons across the membrane:
+    * **Cellular Respiration**: Protons pumped from mitochondrial matrix into the **intermembrane space**.
+    * **Photosynthesis**: Protons pumped from chloroplast stroma into the **thylakoid lumen**.
+* **Chemiosmosis and Proton-Motive Force**:
+  * Establishes both a chemical gradient ($\\Delta pH$) and electrical gradient ($\\Delta V$).
+  * Protons flow passively back across the membrane exclusively through the catalytic channel of **ATP Synthase**, powering rotational phosphorylation of $ADP + P_i \\rightarrow ATP$!`
       }
     ],
     workedExamples: [
@@ -407,6 +493,35 @@ export const AP_BIOLOGY_NOTES: APUnitNote[] = [
 | **Sex-Linked (X-Linked Recessive)** | Gene carried on X chromosome; males ($XY$) are hemizygous | Males affected much more frequently; carrier mothers pass trait to sons |
 | **Mitochondrial / Maternal** | Mitochondria passed exclusively in egg cytoplasm | Affected mother passes trait to **ALL** offspring; affected father passes to **NONE** |
 | **Polygenic Inheritance** | Multiple genes influence a single continuous trait | Bell-shaped curve distribution (e.g. human height, skin pigmentation) |`
+      }
+    ,
+      {
+        heading: '2. Meiosis, Crossing Over & Genetic Diversity (CED 5.1 & 5.2)',
+        content: `Meiosis produces four genetically distinct haploid ($n$) gametes:
+
+* **Key Meiotic Events Generating Diversity**:
+  1. **Crossing Over (Synapsis)**: During Prophase I, non-sister chromatids of homologous pairs exchange reciprocal segments of DNA, creating novel recombinant chromatids.
+  2. **Independent Assortment**: During Metaphase I, homologous pairs align randomly at the metaphase plate ($2^n$ possible chromosomal combinations; over 8 million in humans).
+  3. **Random Fertilization**: Any sperm can fuse with any ovum ($2^{23} \\times 2^{23} > 70$ trillion combinations).
+* **Meiosis I vs. Meiosis II**:
+  * **Meiosis I**: Reductional division; separates **homologous chromosome pairs** ($2n \\rightarrow n$).
+  * **Meiosis II**: Equational division; separates **sister chromatids** ($n \\rightarrow n$).`
+      },
+      {
+        heading: '3. Mendelian Genetics, Pedigrees & Chi-Square ($\\chi^2$) Analysis (CED 5.3 & 5.4)',
+        content: `Statistical testing of genetic hypotheses on the AP exam:
+
+* **Mendel\'s Fundamental Laws**:
+  * **Law of Segregation**: Alleles for a gene separate during meiosis so each gamete carries only one allele.
+  * **Law of Independent Assortment**: Genes on different chromosomes sort independently during gamete formation.
+* **Chi-Square Goodness-of-Fit Test**:
+  $$\\chi^2 = \\sum \\frac{(O - E)^2}{E}$$
+  * $O$: Observed count in each phenotypic class.
+  * $E$: Expected count based on Mendelian null hypothesis (e.g. 9:3:3:1 for dihybrid cross).
+* **Interpreting Results**:
+  * Degrees of freedom: $df = \\text{number of phenotypic classes} - 1$.
+  * If calculated $\\chi^2 < \\text{critical value}$ ($p = 0.05$): **Fail to reject null hypothesis** (differences are due to chance).
+  * If calculated $\\chi^2 \\ge \\text{critical value}$: **Reject null hypothesis** (significant difference; genes may be linked on the same chromosome)!`
       }
     ],
     workedExamples: [
@@ -708,6 +823,37 @@ export const AP_BIOLOGY_NOTES: APUnitNote[] = [
 | **Parasitism** | **Benefited ($+$)** | **Harmed ($-$)** | Ticks and tapeworms feeding on host tissues without immediately killing host |
 | **Predation / Herbivory** | **Benefited ($+$)** | **Harmed ($-$)** | Lynx hunting snowshoe hare; Deer grazing forest shrubs |
 | **Competition** | **Harmed ($-$)** | **Harmed ($-$)** | Lions and hyenas competing for identical prey resources |`
+      }
+    ,
+      {
+        heading: '2. Energy Flow, Trophic Pyramids & Biogeochemical Cycles (CED 8.1 & 8.2)',
+        content: `Thermodynamics and nutrient flux across ecosystems:
+
+* **The 10% Ecological Efficiency Rule**:
+  * Only approximately $10\\%$ (typically 5%–20%) of chemical energy stored as biomass at one trophic level is converted into biomass at the next level.
+  * The remaining $90\\%$ is lost as metabolic heat ($2^{\\text{nd}}$ Law of Thermodynamics) or unconsumed waste.
+* **Primary Productivity**:
+  $$NPP = GPP - R$$
+  * $GPP$: Gross Primary Productivity (total photosynthetic carbon fixed by autotrophs).
+  * $R$: Respiration energy consumed by autotrophic cellular maintenance.
+  * $NPP$: Net Primary Productivity (actual biomass available for consumers).
+* **Biogeochemical Nutrient Cycles**:
+  * **Nitrogen Cycle**: Atmospheric $N_2$ fixed by Rhizobium bacteria into $NH_4^+$; nitrified by soil bacteria into $NO_3^-$; absorbed by plant roots; returned to atmosphere by denitrifying bacteria.
+  * **Phosphorus Cycle**: No atmospheric gas phase; weathering of rocks releases phosphate into soil and water.`
+      },
+      {
+        heading: '3. Population Ecology, Growth Models & Keystone Species (CED 8.38.5)',
+        content: `Mathematical models of population dynamics and community stability:
+
+* **Exponential vs. Logistic Growth**:
+  * **Exponential Growth (J-Curve)**:
+    $$\\frac{dN}{dt} = rN$$
+    *(Idealized conditions with unlimited resources; $r$ is intrinsic per capita growth rate).*
+  * **Logistic Growth (S-Curve)**:
+    $$\\frac{dN}{dt} = rN \\left(1 - \\frac{N}{K}\\right)$$
+    *(Incorporates carrying capacity $K$; growth rate is maximal when population is at half carrying capacity $N = K/2$).*
+* **Trophic Cascades & Keystone Species**:
+  * **Keystone Species**: A species whose ecological impact is disproportionately large relative to its biomass or abundance (e.g. sea otters controlling urchin populations to preserve kelp forests). Removing a keystone species causes ecosystem collapse!`
       }
     ],
     workedExamples: [

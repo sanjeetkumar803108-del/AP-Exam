@@ -183,7 +183,10 @@ export default function Summariser({ onBack }: SummariserProps) {
       const blob = generateNotesPDFBlob(title, result || '', 'summary');
       const filename = `${title}.pdf`;
       
-      await savePDFMobile(blob, filename);
+      await savePDFMobile(blob, filename, {
+        featureTag: 'Summary Notes',
+        customToast: '✅ Saved offline in app'
+      });
       
       const blobUrl = URL.createObjectURL(blob);
       setPreviewPdfUri(blobUrl);
@@ -717,7 +720,10 @@ export default function Summariser({ onBack }: SummariserProps) {
                 triggerVibration(15);
                 const response = await fetch(previewPdfUri);
                 const blob = await response.blob();
-                await savePDFMobile(blob, previewPdfName);
+                await savePDFMobile(blob, previewPdfName, {
+                  featureTag: 'Summary Notes',
+                  customToast: '✅ Saved offline in app'
+                });
               }}
               className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 active:scale-95 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-600/10 flex items-center justify-center gap-2 cursor-pointer transition-all"
             >

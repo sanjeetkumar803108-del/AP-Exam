@@ -55,6 +55,39 @@ export const AP_CHEMISTRY_NOTES: APUnitNote[] = [
 
 *Crucial Anomaly*: Nitrogen has higher IE than Oxygen because N has a stable half-filled $2p^3$ subshell, whereas O has an electron pair in $2p^4$ experiencing electron-electron repulsion.`
       }
+    ,
+      {
+        heading: '2. Photoelectron Spectroscopy (PES) & Shell Architecture (CED 1.3)',
+        content: `Photoelectron Spectroscopy (PES) directly measures the binding energy of electrons in an atom:
+
+$$\\text{Photon Energy } (h\\nu) = \\text{Binding Energy } (E_b) + \\text{Kinetic Energy } (KE)$$
+
+* **Reading the PES Spectrum**:
+  * **Binding Energy Axis**: Plotted on the $x$-axis with values **decreasing from left to right** (higher energy close to the nucleus on the left).
+  * **Peak Height**: Directly proportional to the **relative number of electrons** occupying that specific subshell.
+  * **Subshell Order**: Peaks from left to right correspond to electron configurations ($1s$, $2s$, $2p$, $3s$, $3p$, etc.).
+* **Coulombic Attraction ($F \\propto \\frac{q_1 q_2}{r^2}$)**:
+  * Higher nuclear charge ($Z$) pulls electrons tighter, shifting all peaks to **higher binding energies** (further left).
+  * Subshell shielding: $2s$ electrons experience higher effective nuclear charge ($Z_{\\text{eff}}$) than $2p$ electrons, giving $2s$ a higher binding energy.`
+      },
+      {
+        heading: '3. Mass Spectrometry & Beer-Lambert Law Spectrophotometry (CED 1.2 & 1.4)',
+        content: `Analytical techniques frequently assessed on the AP Chemistry exam:
+
+* **Mass Spectrometry**:
+  * Separates isotopes by their mass-to-charge ratio ($m/z$).
+  * Average atomic mass is calculated from isotopic fractional abundances:
+    $$\\text{Average Mass} = \\sum (\\text{isotopic mass} \\times \\text{relative abundance})$$
+* **Beer-Lambert Law for Colored Solutions**:
+  $$A = \\epsilon \\cdot b \\cdot c$$
+  * $A$: Absorbance (unitless)
+  * $\\epsilon$: Molar absorptivity constant ($\\text{M}^{-1}\\text{cm}^{-1}$)
+  * $b$: Path length of cuvette ($1.0\\text{ cm}$ standard)
+  * $c$: Molar concentration (M)
+* **Common Experimental Lab Errors**:
+  * Fingerprints or water droplets on the clear sides of the cuvette scatter light, falsely **increasing measured absorbance** and calculated concentration!
+  * Setting spectrophotometer to wrong wavelength: must choose $\\lambda_{\\max}$ (wavelength of maximum absorbance) for highest sensitivity.`
+      }
     ],
     workedExamples: [
       {
@@ -147,6 +180,37 @@ export const AP_CHEMISTRY_NOTES: APUnitNote[] = [
 | **6** | 4 | 2 | Octahedral | **Square Planar** | $90^\\circ$ | $sp^3d^2$ |
 
 *Lone Pair Repulsion Rule*: Lone pairs occupy more volume than bonding pairs, compressing adjacent bond angles.`
+      }
+    ,
+      {
+        heading: '2. Lewis Structures, Resonance & Formal Charge Optimization (CED 2.5 & 2.6)',
+        content: `Selecting the dominant Lewis structure for molecules and polyatomic ions:
+
+$$\\text{Formal Charge} = V - L - \\frac{1}{2}B$$
+*(Where $V$ = valence electrons, $L$ = lone pair electrons, and $B$ = shared bonding electrons).*
+
+* **Formal Charge Minimization Rules**:
+  1. The dominant Lewis structure is the one in which formal charges on all atoms are **closest to zero**.
+  2. Any negative formal charge must reside on the **most electronegative atom** (e.g., Oxygen or Nitrogen).
+* **Resonance Hybrids**:
+  * When multiple valid Lewis structures exist (e.g., $NO_3^-$ or $CO_3^{2-}$), the actual molecule is a single **resonance hybrid** with identical, intermediate bond lengths and fractional bond orders (e.g. bond order of $4/3$ for carbonate).
+* **Octet Rule Exceptions**:
+  * Incomplete octets: Boron ($BF_3$, 6 electrons) and Beryllium ($BeCl_2$, 4 electrons).
+  * Expanded octets: Central atoms in Period 3 or below ($P, S, Cl, Xe$) have available empty $d$-orbitals (e.g., $SF_6$, $PCl_5$).`
+      },
+      {
+        heading: '3. Hybridization ($sp, sp^2, sp^3$) & Sigma/Pi Bonding (CED 2.7)',
+        content: `Orbital hybridization and molecular orbital geometry:
+
+| Steric Number | Hybridization | Geometry | $\\sigma$ and $\\pi$ Composition |
+| :--- | :--- | :--- | :--- |
+| **2** | $sp$ | Linear ($180^\\circ$) | Single bond = $1\\sigma$; Triple bond = $1\\sigma + 2\\pi$ |
+| **3** | $sp^2$ | Trigonal Planar ($120^\\circ$) | Double bond = $1\\sigma + 1\\pi$ |
+| **4** | $sp^3$ | Tetrahedral ($109.5^\\circ$) | Single bonds = $1\\sigma$ each |
+
+* **Sigma ($\\sigma$) vs. Pi ($\\pi$) Orbitals**:
+  * **$\\sigma$ bonds**: End-to-end orbital overlap along the internuclear axis; free rotation permitted.
+  * **$\\pi$ bonds**: Side-by-side overlap of unhybridized $p$-orbitals above and below the axis; prevents rotation, locking molecular geometry in place.`
       }
     ],
     workedExamples: [
@@ -465,6 +529,35 @@ $$\\text{Net Ionic}: \\text{Ag}^+(aq) + \\text{Cl}^-(aq) \\rightarrow \\text{AgC
 
 *Constant Half-Life Rule*: If concentration cuts in half every fixed time interval (e.g. $100 \\rightarrow 50$ in 10 min, $50 \\rightarrow 25$ in 10 min), the reaction is DEFINITIVELY 1st order!`
       }
+    ,
+      {
+        heading: '2. Reaction Mechanisms, Elementary Steps & Catalysts (CED 5.7 & 5.8)',
+        content: `Connecting proposed multi-step mechanisms to experimental rate laws:
+
+* **Elementary Steps**:
+  * The rate law for an **elementary step** is written directly from its stoichiometric coefficients (molecularity):
+    * Unimolecular ($A \\rightarrow P$): $\\text{Rate} = k[A]$
+    * Bimolecular ($A + B \\rightarrow P$): $\\text{Rate} = k[A][B]$
+* **Rate-Determining Step (RDS)**:
+  * The overall reaction rate law is governed entirely by the **slow step**.
+* **Intermediates vs. Catalysts**:
+  * **Reaction Intermediate**: Produced in an early elementary step and consumed in a later step (does NOT appear in overall equation).
+  * **Catalyst**: Introduced as a reactant in an early step and regenerated as a product in a later step.
+* **Pre-Equilibrium Approximation**: When a fast reversible step precedes a slow step, set forward rate equal to reverse rate to substitute for intermediate concentrations in the rate law!`
+      },
+      {
+        heading: '3. Collision Theory, Activation Energy & Maxwell-Boltzmann (CED 5.5 & 5.6)',
+        content: `Chemical reactions occur when reactant particles collide effectively:
+
+* **Two Criteria for Effective Collision**:
+  1. **Sufficient Kinetic Energy**: Collision energy must equal or exceed the **activation energy** ($E \\ge E_a$).
+  2. **Proper Molecular Orientation**: Reactive atomic centers must align precisely during impact.
+* **Maxwell-Boltzmann Molecular Energy Distribution**:
+  * At higher temperatures, the curve flattens and shifts to the right: a **substantially larger fraction of molecules** possess energy exceeding $E_a$, leading to exponentially higher reaction rates!
+* **Action of a Catalyst**:
+  * Provides an alternative mechanistic pathway with a **lower activation energy barrier** ($E_a$).
+  * A catalyst increases BOTH the forward and reverse reaction rates equally, having **zero effect on equilibrium constant $K$ or $\\Delta H$**!`
+      }
     ],
     workedExamples: [
       {
@@ -669,6 +762,33 @@ $$q_{\\text{reaction}} = -q_{\\text{solution}} = -(m_{\\text{solution}} \\cdot c
 | **Increase Temp (Exothermic $\\Delta H < 0$)** | System removes excess heat | **Shifts Left** ($\\leftarrow$) | **$K$ DECREASES** |
 | **Increase Temp (Endothermic $\\Delta H > 0$)** | System absorbs added heat | **Shifts Right** ($\\rightarrow$) | **$K$ INCREASES** |
 | **Add a Catalyst** | Accelerates forward and reverse rates equally | **NO SHIFT** | **NO CHANGE** |`
+      }
+    ,
+      {
+        heading: '2. ICE Tables, $Q$ vs. $K$ & Equilibrium Concentrations (CED 7.4 & 7.5)',
+        content: `Systematic problem-solving with Initial-Change-Equilibrium (ICE) tables:
+
+* **Comparing Reaction Quotient ($Q$) to Equilibrium Constant ($K$)**:
+  * $Q < K$: Ratio of products to reactants is too low $\\implies$ **reaction shifts forward ($\\rightarrow$)**.
+  * $Q = K$: Dynamic chemical equilibrium; rates of forward and reverse reactions are equal.
+  * $Q > K$: Ratio of products to reactants is too high $\\implies$ **reaction shifts reverse ($\\leftarrow$)**.
+* **Converting $K_c$ and $K_p$**:
+  $$K_p = K_c (RT)^{\\Delta n}$$
+  *(Where $\\Delta n = \\text{moles gaseous products} - \\text{moles gaseous reactants}$). If $\\Delta n = 0$, then $K_p = K_c$.*
+* **The 5% Approximation Rule**:
+  * If $K$ is extremely small ($K < 10^{-4}$), initial reactant concentration $C_0 - x \\approx C_0$, avoiding quadratic equation calculations on the AP exam!`
+      },
+      {
+        heading: '3. Solubility Product ($K_{sp}$) & Common-Ion Precipitation (CED 7.11 & 7.12)',
+        content: `Equilibrium between slightly soluble ionic solids and their dissolved aqueous ions:
+
+* **Solubility Product Expressions**:
+  * $AgCl(s) \\rightleftharpoons Ag^+(aq) + Cl^-(aq) \\implies K_{sp} = [Ag^+][Cl^-] = s^2$
+  * $PbI_2(s) \\rightleftharpoons Pb^{2+}(aq) + 2I^-(aq) \\implies K_{sp} = [Pb^{2+}][I^-]^2 = (s)(2s)^2 = 4s^3$
+* **The Common-Ion Effect**:
+  * Adding a soluble salt containing a common ion (e.g. adding $NaCl$ to saturated $AgCl$) shifts the equilibrium to the left, **drastically reducing molar solubility ($s$)**.
+* **Precipitation Prediction**:
+  * Calculate ion product $Q_{sp}$. If $Q_{sp} > K_{sp}$, a **solid precipitate forms** until ion concentrations drop back to $K_{sp}$ equilibrium!`
       }
     ],
     workedExamples: [
@@ -880,6 +1000,37 @@ $$q_{\\text{reaction}} = -q_{\\text{solution}} = -(m_{\\text{solution}} \\cdot c
 | **Positive ($+$)** | **Positive ($+$)** | Positive at low $T$; Negative at high $T$ | **Favored at HIGH temperatures** (Entropy driven) |
 
 *Crossover Temperature*: The temperature where a reaction switches between favored and unfavored occurs when $\\Delta G = 0 \\implies T = \\frac{\\Delta H^\\circ}{\\Delta S^\\circ}$.`
+      }
+    ,
+      {
+        heading: '2. Galvanic vs. Electrolytic Cells Anatomy & Electron Flow (CED 9.7 & 9.8)',
+        content: `Comprehensive comparison of electrochemical cell types:
+
+| Feature | Galvanic (Voltaic) Cell | Electrolytic Cell |
+| :--- | :--- | :--- |
+| **Thermodynamic Favorability** | **Spontaneous** ($\\Delta G^\\circ < 0, E^\\circ > 0$) | **Non-Spontaneous** ($\\Delta G^\\circ > 0, E^\\circ < 0$) |
+| **Energy Conversion** | Chemical energy $\\rightarrow$ Electrical work | Electrical power $\\rightarrow$ Chemical reaction |
+| **Anode Charge / Reaction** | Negative ($-$) / **Oxidation** | Positive ($+$) / **Oxidation** |
+| **Cathode Charge / Reaction** | Positive ($+$) / **Reduction** | Negative ($-$) / **Reduction** |
+| **Electron Flow Direction** | Anode $\\rightarrow$ Cathode (through external wire) | Anode $\\rightarrow$ Cathode (driven by battery) |
+| **Salt Bridge Ion Migration** | Cations $\\rightarrow$ Cathode; Anions $\\rightarrow$ Anode | Cations $\\rightarrow$ Cathode; Anions $\\rightarrow$ Anode |
+
+* **Standard Cell Potential**:
+  $$E^\\circ_{\\text{cell}} = E^\\circ_{\\text{red}}(\\text{cathode}) - E^\\circ_{\\text{red}}(\\text{anode})$$
+  *(Always use standard reduction potentials directly without flipping signs; the negative in the formula already accounts for oxidation).*`
+      },
+      {
+        heading: '3. Nernst Shifts & Faraday\'s Law of Electrolysis (CED 9.9 & 9.10)',
+        content: `Electrochemistry under non-standard conditions and quantitative electrolysis:
+
+* **Qualitative Nernst Analysis**:
+  $$E_{\\text{cell}} = E^\\circ_{\\text{cell}} - \\frac{0.0592}{n} \\log Q$$
+  * As a galvanic cell operates, reactants are consumed ($[\\text{reactants}] \\downarrow$) and products accumulate ($[\\text{products}] \\uparrow$), causing $Q$ to **increase**.
+  * As $Q$ increases, $E_{\\text{cell}}$ continuously **decreases until $E_{\\text{cell}} = 0$** (dead battery at chemical equilibrium, where $Q = K$).
+* **Faraday\'s Law of Electrolysis**:
+  $$I = \\frac{q}{t} \\implies q = I \\cdot t$$
+  $$\\text{Moles of Electrons } (n_e) = \\frac{q}{F} = \\frac{I \\cdot t}{96{,}485 \\text{ C/mol }e^-}$$
+  $$\\text{Grams Plated} = \\left(\\frac{I \\cdot t}{n \\cdot F}\\right) \\times \\text{Molar Mass}`
       }
     ],
     workedExamples: [

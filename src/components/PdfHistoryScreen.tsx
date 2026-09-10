@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, FileText, Trash2, Download, Eye, Calendar, Sparkles, 
-  Search, HardDrive, RefreshCw, X, Share2, Layers
+  Search, HardDrive, RefreshCw, X, Share2, Layers, CheckCircle2, ShieldCheck, WifiOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   getPdfHistory, 
   deletePdfFromHistory, 
   clearPdfHistory, 
+  getOfflinePdfData,
   PdfHistoryItem 
 } from '../utils/pdfHistory';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
@@ -25,6 +26,8 @@ interface PdfHistoryScreenProps {
 export default function PdfHistoryScreen({ onBack, onOpenImageToPdf }: PdfHistoryScreenProps) {
   const [historyItems, setHistoryItems] = useState<PdfHistoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [loadingPdfId, setLoadingPdfId] = useState<string | null>(null);
   const [selectedPdf, setSelectedPdf] = useState<PdfHistoryItem | null>(null);
   const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
   
@@ -112,11 +115,14 @@ export default function PdfHistoryScreen({ onBack, onOpenImageToPdf }: PdfHistor
     };
   }, []);
 
-  // Filter items based on search query
-  const filteredItems = historyItems.filter(item => 
-    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.featureTag.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter items based on search query and category
+  const filteredItems = historyItems.filter(item => {
+    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.featureTag.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+    if (selectedCategory === 'All') return true;
+    return item.featureTag.toLowerCase().includes(selectedCategory.toLowerCase());
+  });
 
   // Trigger safe custom confirmation before delete
   const handleDeleteTrigger = (item: PdfHistoryItem, e: React.MouseEvent) => {
@@ -153,15 +159,30 @@ export default function PdfHistoryScreen({ onBack, onOpenImageToPdf }: PdfHistor
     setShowClearConfirm(false);
   };
 
-  // Helper to open PDF in viewer
-  const handleViewPdf = (item: PdfHistoryItem) => {
+  // Helper to open PDF in viewer with full IndexedDB offline data retrieval
+  const handleViewPdf = async (item: PdfHistoryItem) => {
     triggerVibration(15);
-    setSelectedPdf(item);
+    setLoadingPdfId(item.id);
 
     try {
-      if (item.fileUri.startsWith('data:')) {
-        // Convert data URI to Blob URL for iframe viewing
-        const parts = item.fileUri.split(',');
+      // 1. Retrieve complete Base64 data URI from IndexedDB or cache
+      let fullData = await getOfflinePdfData(item.id);
+      if (!fullData && item.fileUri && item.fileUri.length > 50) {
+        fullData = item.fileUri;
+      }
+
+      if (!fullData) {
+        // If dataUri not yet ready, still set selected item so user sees title
+        setSelectedPdf(item);
+        setLoadingPdfId(null);
+        return;
+      }
+
+      const activeRecord = { ...item, fileUri: fullData };
+      setSelectedPdf(activeRecord);
+
+      if (fullData.startsWith('data:')) {
+        const parts = fullData.split(',');
         const mime = parts[0].match(/:(.*?);/)?.[1] || 'application/pdf';
         const bstr = atob(parts[1]);
         let n = bstr.length;
@@ -173,11 +194,13 @@ export default function PdfHistoryScreen({ onBack, onOpenImageToPdf }: PdfHistor
         const url = URL.createObjectURL(blob);
         setPreviewBlobUrl(url);
       } else {
-        setPreviewBlobUrl(item.fileUri);
+        setPreviewBlobUrl(fullData);
       }
     } catch (err) {
-      console.error('Error generating preview URL:', err);
-      setPreviewBlobUrl(item.fileUri);
+      console.error('[PDFHistoryScreen] Error generating preview URL:', err);
+      setSelectedPdf(item);
+    } finally {
+      setLoadingPdfId(null);
     }
   };
 
@@ -384,6 +407,10 @@ export default function PdfHistoryScreen({ onBack, onOpenImageToPdf }: PdfHistor
                       <div className="flex items-center gap-2 mb-1">
                         <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-md border uppercase tracking-wider ${getTagColor(item.featureTag)}`}>
                           {item.featureTag}
+                        </span>
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-0.5">
+                          <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                          <span>Offline</span>
                         </span>
                         {item.pageCount && (
                           <span className="text-[10px] text-zinc-400 font-bold">

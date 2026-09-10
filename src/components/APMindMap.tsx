@@ -1,23 +1,32 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
-  ArrowLeft, Eye, EyeOff, ChevronDown, ChevronUp, 
-  AlertTriangle, Search,
-  CheckCircle2, RotateCcw,
-  FileDown, Loader2, X, CheckCircle, Sparkles
+  ArrowLeft, Eye, EyeOff, ChevronDown, ChevronUp, ChevronRight,
+  AlertTriangle, Search, CheckCircle2, RotateCcw,
+  FileDown, Loader2, X, CheckCircle, Sparkles,
+  BookOpen, Layers, Compass, Brain, Zap, Target, Check, HelpCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { triggerVibration } from '../utils/vibrate';
-import { AP_BIOLOGY_MIND_MAPS } from '../data/mindmaps/apBiologyMindMap';
-import { APUnitMindMap, MindMapBranch, MindMapLeafNode } from '../data/mindmaps/types';
+import { 
+  getAllMindMapSubjects, 
+  getMindMapsForSubject, 
+  APUnitMindMap, 
+  MindMapBranch, 
+  MindMapLeafNode 
+} from '../data/mindmaps';
 import { exportMindMapPDF } from '../utils/mindMapPdfExporter';
 import { safeGetItem, safeSetItem } from '../utils/storage';
 import SafePdfViewer from './SafePdfViewer';
 import GlobalMarkdown from './GlobalMarkdown';
+import { APSubjectNoteEntry } from '../data/notes';
+import { GRADE_9_RECOMMENDED_IDS } from '../utils/apCurriculum';
 
 interface APMindMapProps {
   onBack: () => void;
   isVip?: boolean;
 }
+
+type Step = 'select-subject' | 'view-map';
 
 // Organic Pastel Color Themes for Branch Styling
 const BRANCH_THEMES: Record<string, {
@@ -60,114 +69,278 @@ const BRANCH_THEMES: Record<string, {
     cardBorder: 'border-[#A7F3D0]',
     accent: '#059669',
   },
-  purple: {
-    branchBg: 'bg-[#EDE9FE]',
-    branchBorder: 'border-[#C4B5FD]',
-    branchText: 'text-[#5B21B6]',
-    badgeBg: 'bg-[#DDD6FE] text-[#4C1D95]',
-    badgeText: 'text-[#4C1D95]',
-    cardBg: 'bg-[#FAF5FF]',
-    cardBorder: 'border-[#DDD6FE]',
-    accent: '#7C3AED',
+  teal: {
+    branchBg: 'bg-[#CCFBF1]',
+    branchBorder: 'border-[#5EEAD4]',
+    branchText: 'text-[#115E59]',
+    badgeBg: 'bg-[#99F6E4] text-[#134E4A]',
+    badgeText: 'text-[#134E4A]',
+    cardBg: 'bg-[#F0FDFA]',
+    cardBorder: 'border-[#99F6E4]',
+    accent: '#0D9488',
   },
   blue: {
-    branchBg: 'bg-[#E0F2FE]',
-    branchBorder: 'border-[#7DD3FC]',
-    branchText: 'text-[#075985]',
-    badgeBg: 'bg-[#BAE6FD] text-[#0C4A6E]',
-    badgeText: 'text-[#0C4A6E]',
-    cardBg: 'bg-[#F0F9FF]',
-    cardBorder: 'border-[#BAE6FD]',
-    accent: '#0284C7',
+    branchBg: 'bg-[#DBEAFE]',
+    branchBorder: 'border-[#93C5FD]',
+    branchText: 'text-[#1E40AF]',
+    badgeBg: 'bg-[#BFDBFE] text-[#1E3A8A]',
+    badgeText: 'text-[#1E3A8A]',
+    cardBg: 'bg-[#EFF6FF]',
+    cardBorder: 'border-[#BFDBFE]',
+    accent: '#2563EB',
   },
-  indigo: {
-    branchBg: 'bg-[#E0E7FF]',
-    branchBorder: 'border-[#A5B4FC]',
-    branchText: 'text-[#3730A3]',
-    badgeBg: 'bg-[#C7D2FE] text-[#312E81]',
-    badgeText: 'text-[#312E81]',
-    cardBg: 'bg-[#EEF2FF]',
-    cardBorder: 'border-[#C7D2FE]',
-    accent: '#4F46E5',
+  purple: {
+    branchBg: 'bg-[#F3E8FF]',
+    branchBorder: 'border-[#D8B4FE]',
+    branchText: 'text-[#6B21A8]',
+    badgeBg: 'bg-[#E9D5FF] text-[#581C87]',
+    badgeText: 'text-[#581C87]',
+    cardBg: 'bg-[#FAF5FF]',
+    cardBorder: 'border-[#E9D5FF]',
+    accent: '#7C3AED',
   },
 };
 
-export default function APMindMap({ onBack }: APMindMapProps) {
-  const [selectedUnitNumber, setSelectedUnitNumber] = useState<number>(1);
-  const [activeRecallMode, setActiveRecallMode] = useState<boolean>(false);
-  const [revealedNodeIds, setRevealedNodeIds] = useState<Set<string>>(new Set());
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [collapsedBranchIds, setCollapsedBranchIds] = useState<Set<string>>(new Set());
-  const [showCramSheet, setShowCramSheet] = useState<boolean>(false);
-  const [isExporting, setIsExporting] = useState<boolean>(false);
-  const [selectedNodeForModal, setSelectedNodeForModal] = useState<{
-    node: MindMapLeafNode;
-    branch: MindMapBranch;
-  } | null>(null);
+const CATEGORIES = [
+  'All',
+  'STEM & Math',
+  'Sciences',
+  'Humanities & Social Sciences',
+  'English & Tech',
+];
 
+/**
+ * Cleanly formats final answer strings so mathematical expressions render properly
+ * in KaTeX without squishing plain English explanation sentences together.
+ */
+function formatFinalAnswer(ans: string): string {
+  if (!ans) return '';
+  const trimmed = ans.trim();
+  if (trimmed.startsWith('$') || trimmed.includes('$$')) return trimmed;
+  // If it contains LaTeX math syntax like \frac, \sqrt, \int
+  if (/\\(?:frac|sqrt|int|sum|pi|infty|theta|alpha|beta|cdot|pm|approx|lim|partial)/.test(trimmed)) {
+    return `$${trimmed}$`;
+  }
+  return trimmed;
+}
+
+interface WorkedExampleCardProps {
+  data: NonNullable<MindMapLeafNode['workedExampleData']>;
+}
+
+function WorkedExampleCard({ data }: WorkedExampleCardProps) {
+  return (
+    <div className="space-y-3.5 pt-1 w-full text-left">
+      {/* 1. Problem Scenario Box */}
+      <div className="p-3.5 sm:p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200/80 space-y-1.5 shadow-2xs">
+        <div className="flex items-center gap-1.5 text-[11px] font-black uppercase text-indigo-700">
+          <HelpCircle className="w-3.5 h-3.5 shrink-0" />
+          <span>AP Exam Problem Scenario:</span>
+        </div>
+        <div className="text-xs sm:text-[13px] font-medium text-zinc-900 leading-relaxed overflow-x-auto">
+          <GlobalMarkdown>{data.question}</GlobalMarkdown>
+        </div>
+      </div>
+
+      {/* 2. Step-by-Step Analytical Solution */}
+      <div className="space-y-2.5">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md border border-emerald-200">
+            Step-by-Step Analytical Solution
+          </span>
+          <span className="text-[11px] font-bold text-zinc-500">
+            ({data.steps.length} Steps)
+          </span>
+        </div>
+
+        {/* Individual Step Cards */}
+        <div className="flex flex-col space-y-2.5 w-full">
+          {data.steps.map((stepText, sIdx) => {
+            const colonIdx = stepText.indexOf(':');
+            let stepHeader = `Step ${sIdx + 1}`;
+            let stepBody = stepText;
+            if (colonIdx > 0 && colonIdx < 50 && stepText.slice(0, colonIdx).toLowerCase().includes('step')) {
+              stepHeader = stepText.slice(0, colonIdx).trim();
+              stepBody = stepText.slice(colonIdx + 1).trim();
+            }
+
+            return (
+              <div 
+                key={sIdx}
+                className="p-3.5 sm:p-4 rounded-2xl bg-zinc-50/90 border border-zinc-200/90 shadow-2xs space-y-1.5 hover:border-zinc-300 transition-all w-full"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-indigo-600 text-white font-black text-[10px] flex items-center justify-center shrink-0">
+                    {sIdx + 1}
+                  </span>
+                  <span className="font-bold text-zinc-900 text-xs sm:text-sm">
+                    {stepHeader}
+                  </span>
+                </div>
+                <div className="text-xs sm:text-[13px] text-zinc-700 font-normal leading-relaxed overflow-x-auto pl-1 sm:pl-7 pt-1">
+                  <GlobalMarkdown>{stepBody}</GlobalMarkdown>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 3. Final Answer Box */}
+      {data.finalAnswer && (
+        <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs sm:text-sm shadow-2xs">
+          <span className="font-bold text-emerald-900 flex items-center gap-1.5">
+            <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>Final Analytical Answer:</span>
+          </span>
+          <span className="font-black font-mono text-emerald-950 bg-emerald-100/90 px-3 py-1 rounded-xl border border-emerald-200">
+            <GlobalMarkdown>{formatFinalAnswer(data.finalAnswer)}</GlobalMarkdown>
+          </span>
+        </div>
+      )}
+
+      {/* 4. College Board Scoring Tip */}
+      {data.scoringTip && (
+        <div className="p-3.5 rounded-2xl bg-rose-50/90 border border-rose-200 text-xs text-rose-950 flex items-start gap-2.5 shadow-2xs">
+          <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+          <div className="space-y-1 flex-1">
+            <span className="font-black text-[11px] uppercase tracking-wider text-rose-900 block">
+              Official College Board Scoring Tip:
+            </span>
+            <div className="text-rose-900 leading-relaxed font-normal">
+              <GlobalMarkdown>{data.scoringTip}</GlobalMarkdown>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function APMindMap({ onBack, isVip }: APMindMapProps) {
+  // Navigation State
+  const [step, setStep] = useState<Step>('select-subject');
+
+  // Grade check
+  const userGrade = safeGetItem('academic_grade') || '11th Grade (Junior)';
+  const isGrade9Student = userGrade.toLowerCase().includes('9th') || userGrade.toLowerCase().includes('freshman');
+
+  // Subjects Registry
+  const allSupportedSubjects = useMemo(() => getAllMindMapSubjects(), []);
+
+  // Selection State
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>(() => {
+    return isGrade9Student ? 'ap-human-geography' : 'ap-calculus-ab';
+  });
+  const [expandedSubjectIds, setExpandedSubjectIds] = useState<Set<string>>(() => new Set());
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedUnitId, setSelectedUnitId] = useState<string>('u1');
+
+  // Active Recall & Study Modes
+  const [activeRecallMode, setActiveRecallMode] = useState<boolean>(false);
+  const [revealedNodeIds, setRevealedNodeIds] = useState<Set<string>>(() => new Set());
+  const [collapsedBranchIds, setCollapsedBranchIds] = useState<Set<string>>(() => new Set());
   const [masteredNodeIds, setMasteredNodeIds] = useState<Set<string>>(() => {
     try {
-      const stored = safeGetItem('ap_mindmap_mastered_ids', '[]');
-      return new Set(JSON.parse(stored || '[]'));
+      const saved = safeGetItem('ap_mindmap_mastered_ids');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch {
       return new Set();
     }
   });
 
-  const [fullScreenPdfData, setFullScreenPdfData] = useState<{ 
-    uri: string; 
-    title: string; 
-    unitNumber: number; 
-  } | null>(null);
+  // Modals
+  const [showCramSheet, setShowCramSheet] = useState<boolean>(false);
+  const [selectedNodeForModal, setSelectedNodeForModal] = useState<{ node: MindMapLeafNode; branch: MindMapBranch } | null>(null);
+  const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [fullScreenPdfData, setFullScreenPdfData] = useState<{ uri: string; title: string; unitNumber: number } | null>(null);
 
-  const currentUnit: APUnitMindMap = useMemo(() => {
-    return AP_BIOLOGY_MIND_MAPS.find(u => u.unitNumber === selectedUnitNumber) || AP_BIOLOGY_MIND_MAPS[0];
-  }, [selectedUnitNumber]);
-
-  useEffect(() => {
-    try {
-      safeSetItem('ap_mindmap_mastered_ids', JSON.stringify(Array.from(masteredNodeIds)));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [masteredNodeIds]);
-
-  const toggleMastery = (nodeId: string) => {
+  // Resiliently open selected unit mind map
+  const openUnitMap = (subjectId: string, unitId: string, unitNum: number) => {
     triggerVibration(15);
-    setMasteredNodeIds(prev => {
+    setSelectedSubjectId(subjectId);
+    const maps = getMindMapsForSubject(subjectId);
+    const match = maps.find(m => m.unitId === unitId || m.unitNumber === unitNum);
+    setSelectedUnitId(match ? match.unitId : unitId);
+    setStep('view-map');
+  };
+
+  // Toggle subject accordion in select view
+  const toggleSubjectExpanded = (subjId: string) => {
+    triggerVibration(10);
+    setExpandedSubjectIds(prev => {
       const next = new Set(prev);
-      if (next.has(nodeId)) {
-        next.delete(nodeId);
+      if (next.has(subjId)) {
+        next.delete(subjId);
       } else {
-        next.add(nodeId);
+        next.add(subjId);
       }
       return next;
     });
   };
 
+  // Current Subject Units
+  const currentSubjectUnits = useMemo(() => {
+    return getMindMapsForSubject(selectedSubjectId);
+  }, [selectedSubjectId]);
+
+  // Current Unit Object (Resilient to bio- prefix or index)
+  const currentUnit = useMemo(() => {
+    return (
+      currentSubjectUnits.find(u => u.unitId === selectedUnitId || (selectedUnitId.startsWith('bio-') && u.unitId === selectedUnitId.replace('bio-', ''))) ||
+      currentSubjectUnits[0]
+    );
+  }, [currentSubjectUnits, selectedUnitId]);
+
+  // Reset selectedUnitId if invalid for current subject
+  useEffect(() => {
+    if (currentSubjectUnits.length > 0 && !currentSubjectUnits.some(u => u.unitId === selectedUnitId)) {
+      setSelectedUnitId(currentSubjectUnits[0].unitId);
+    }
+  }, [currentSubjectUnits, selectedUnitId]);
+
+  // Current Subject Object
+  const currentSubject = useMemo(() => {
+    return allSupportedSubjects.find(s => s.subjectId === selectedSubjectId) || allSupportedSubjects[0];
+  }, [allSupportedSubjects, selectedSubjectId]);
+
+  // Search filtering within mind map view
+  const [mapSearchQuery, setMapSearchQuery] = useState<string>('');
   const filteredBranches = useMemo(() => {
-    if (!searchQuery.trim()) return currentUnit.branches;
-    const q = searchQuery.toLowerCase();
+    if (!currentUnit) return [];
+    const q = mapSearchQuery.toLowerCase().trim();
+    if (!q) return currentUnit.branches;
+
     return currentUnit.branches
       .map(branch => {
-        const matchesBranch = branch.title.toLowerCase().includes(q) || branch.subtitle?.toLowerCase().includes(q);
-        const matchedChildren = branch.children.filter(
-          child => child.title.toLowerCase().includes(q) || child.detail.toLowerCase().includes(q)
+        const branchMatches = branch.title.toLowerCase().includes(q) || 
+                              (branch.subtitle && branch.subtitle.toLowerCase().includes(q));
+        const matchedChildren = branch.children.filter(leaf => 
+          leaf.title.toLowerCase().includes(q) ||
+          leaf.detail.toLowerCase().includes(q) ||
+          (leaf.fullContent && leaf.fullContent.toLowerCase().includes(q)) ||
+          (leaf.formulaLatex && leaf.formulaLatex.toLowerCase().includes(q)) ||
+          (leaf.trapAlert && leaf.trapAlert.toLowerCase().includes(q))
         );
-        if (matchesBranch) return branch;
+
+        if (branchMatches) return branch;
         if (matchedChildren.length > 0) {
           return { ...branch, children: matchedChildren };
         }
         return null;
       })
       .filter((b): b is MindMapBranch => b !== null);
-  }, [currentUnit, searchQuery]);
+  }, [currentUnit, mapSearchQuery]);
 
+  // Total concepts in unit
   const totalUnitConcepts = useMemo(() => {
+    if (!currentUnit) return 0;
     return currentUnit.branches.reduce((acc, b) => acc + b.children.length, 0);
   }, [currentUnit]);
 
   const masteredInCurrentUnit = useMemo(() => {
+    if (!currentUnit) return 0;
     let count = 0;
     currentUnit.branches.forEach(b => {
       b.children.forEach(c => {
@@ -177,439 +350,681 @@ export default function APMindMap({ onBack }: APMindMapProps) {
     return count;
   }, [currentUnit, masteredNodeIds]);
 
-  const toggleBranch = (branchId: string) => {
-    triggerVibration(10);
-    setCollapsedBranchIds(prev => {
-      const next = new Set(prev);
-      if (next.has(branchId)) {
-        next.delete(branchId);
-      } else {
-        next.add(branchId);
-      }
-      return next;
-    });
-  };
-
-  const toggleNodeReveal = (nodeId: string) => {
-    triggerVibration(15);
-    setRevealedNodeIds(prev => {
-      const next = new Set(prev);
-      if (next.has(nodeId)) {
-        next.delete(nodeId);
-      } else {
-        next.add(nodeId);
-      }
-      return next;
-    });
-  };
-
-  const resetActiveRecall = () => {
-    triggerVibration(15);
-    setRevealedNodeIds(new Set());
-  };
+  const unitMasteryPercent = totalUnitConcepts > 0 
+    ? Math.round((masteredInCurrentUnit / totalUnitConcepts) * 100) 
+    : 0;
 
   const handleExportPDF = async () => {
-    if (isExporting) return;
-    setIsExporting(true);
-    triggerVibration(20);
-
+    if (isExporting || !currentUnit) return;
     try {
-      const result = await exportMindMapPDF(currentUnit);
-      if (result.success && result.dataUri) {
-        triggerVibration(30);
+      setIsExporting(true);
+      triggerVibration(20);
+      const res = await exportMindMapPDF(currentUnit);
+      if (res.success && res.dataUri) {
         setFullScreenPdfData({
-          uri: result.dataUri,
-          title: `Unit ${currentUnit.unitNumber}: ${currentUnit.unitTitle} (Detailed Concept Tree)`,
-          unitNumber: currentUnit.unitNumber,
+          uri: res.dataUri,
+          title: `${currentUnit.subjectName} Unit ${currentUnit.unitNumber} Mind Map`,
+          unitNumber: currentUnit.unitNumber
         });
-      } else {
-        alert(result.error || 'Could not export Detailed Tree PDF.');
       }
-    } catch (err: any) {
-      console.error('Detailed Tree PDF export error:', err);
-      alert('PDF Export Error: ' + (err?.message || 'Please try again'));
+    } catch (err) {
+      console.error('Failed to export PDF:', err);
     } finally {
       setIsExporting(false);
     }
   };
 
+  // =========================================================================
+  // VIEW 1: VERTICAL SUBJECTS & UNITS ACCORDION
+  // =========================================================================
+  if (step === 'select-subject') {
+    const q = searchQuery.toLowerCase().trim();
+
+    // Filter subjects based on search & grade
+    let baseList = allSupportedSubjects;
+    if (isGrade9Student) {
+      baseList = baseList.filter(subj => subj.gradeLevels?.includes('9th') || GRADE_9_RECOMMENDED_IDS.includes(subj.subjectId));
+    }
+    const filteredSubjects = baseList.filter(subj => {
+      const matchesCategory = selectedCategory === 'All' || subj.category === selectedCategory;
+      if (!matchesCategory) return false;
+      if (!q) return true;
+      const nameMatch = subj.subjectName.toLowerCase().includes(q) || subj.shortCode.toLowerCase().includes(q);
+      const unitMatch = subj.notes.some(u => 
+        u.title.toLowerCase().includes(q) || 
+        u.bigIdea.toLowerCase().includes(q) || 
+        u.formulas.some(f => f.name.toLowerCase().includes(q) || f.explanation.toLowerCase().includes(q))
+      );
+      return nameMatch || unitMatch;
+    });
+
+    return (
+      <div className="fixed inset-0 z-40 bg-[#FAF7F2] text-zinc-900 flex flex-col overflow-hidden font-sans select-none">
+        {/* Top Header */}
+        <header className="shrink-0 z-30 bg-white/90 backdrop-blur-md border-b border-[#ECE6DD] px-4 sm:px-6 py-3.5 flex items-center justify-between shadow-2xs">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                triggerVibration(10);
+                onBack();
+              }}
+              className="w-10 h-10 rounded-full border border-zinc-200/80 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-50 shadow-2xs cursor-pointer transition-all active:scale-95"
+              title="Back to Dashboard"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-200">
+                AP® REVISION
+              </span>
+              <h1 className="text-base font-black text-zinc-900 tracking-tight">
+                Course Mind Maps
+              </h1>
+            </div>
+          </div>
+        </header>
+
+        {/* Scrollable Container with Over-scroll containment */}
+        <div className="flex-1 overflow-y-auto overscroll-contain max-w-4xl mx-auto px-4 sm:px-6 py-5 space-y-4 w-full pb-32">
+          {/* Hero Banner with Indigo/Purple Gradient */}
+          <div className="bg-gradient-to-br from-indigo-900 via-indigo-950 to-purple-950 rounded-3xl p-6 text-white relative overflow-hidden shadow-sm">
+            <div className="relative z-10 max-w-xl">
+              <h2 className="text-2xl font-black tracking-tight leading-tight">
+                AP® Mind Map Revision
+              </h2>
+              <p className="text-xs text-indigo-200 mt-1 leading-relaxed font-medium">
+                Select a subject and unit to review official College Board visual branches, active recall trees, formulas, and distractor traps.
+              </p>
+            </div>
+            <div className="absolute -right-4 -bottom-6 text-7xl opacity-20 select-none pointer-events-none">
+              🧠
+            </div>
+          </div>
+
+          {/* Search Input & Category Filters */}
+          <div className="space-y-3">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search subjects, units, formulas (e.g. Kinematics, DTM, Kinetics)..."
+                className="w-full pl-10 pr-10 py-3 rounded-2xl bg-white border border-zinc-200/90 text-zinc-900 placeholder:text-zinc-400 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 shadow-xs transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Category Filter Chips */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+              {CATEGORIES.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => {
+                    triggerVibration(10);
+                    setSelectedCategory(cat);
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer ${
+                    selectedCategory === cat
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'bg-white text-zinc-600 border border-zinc-200 hover:border-zinc-300'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Subjects Accordion List */}
+          <div className="space-y-3 pt-1">
+            {filteredSubjects.map(subj => {
+              const isExpanded = expandedSubjectIds.has(subj.subjectId);
+              return (
+                <div
+                  key={subj.subjectId}
+                  className="bg-white rounded-3xl border border-[#DFD8CE] overflow-hidden shadow-2xs transition-all"
+                >
+                  {/* Subject Header Card */}
+                  <div
+                    onClick={() => toggleSubjectExpanded(subj.subjectId)}
+                    className="p-4 sm:p-5 flex items-center justify-between cursor-pointer hover:bg-zinc-50/50 transition-colors select-none"
+                  >
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs">
+                        {subj.shortCode.slice(0, 3)}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-black uppercase text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200/60">
+                            {subj.category}
+                          </span>
+                          <span className="text-[11px] font-bold text-zinc-400">
+                            {subj.notes.length} Units
+                          </span>
+                        </div>
+                        <h3 className="text-sm sm:text-base font-black text-zinc-900 tracking-tight truncate mt-0.5">
+                          {subj.subjectName}
+                        </h3>
+                      </div>
+                    </div>
+
+                    <button className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-500 shrink-0 transition-colors">
+                      {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  {/* Units Expanded List */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeInOut' }}
+                        className="border-t border-zinc-100 bg-zinc-50/40 p-3 flex flex-col gap-2 overflow-hidden w-full"
+                      >
+                        {subj.notes.map(unit => (
+                          <div
+                            key={unit.unitId}
+                            className="w-full bg-white border border-zinc-200/80 hover:bg-zinc-50 hover:border-indigo-300 py-2.5 px-3.5 rounded-2xl flex items-center justify-between transition-all group/unit shadow-xs"
+                          >
+                            {/* Main Unit Click Target to Open Direct Mind Map */}
+                            <button
+                              onClick={() => openUnitMap(subj.subjectId, unit.unitId, unit.unitNumber)}
+                              className="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer pr-2"
+                            >
+                              <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-200/70 text-indigo-700 font-black text-xs flex items-center justify-center shrink-0">
+                                U{unit.unitNumber}
+                              </div>
+                              <div className="min-w-0">
+                                <span className="font-bold text-xs text-zinc-900 group-hover/unit:text-indigo-600 transition-colors truncate block">
+                                  Unit {unit.unitNumber}: {unit.title}
+                                </span>
+                                <span className="text-[10px] text-zinc-400 truncate block">
+                                  {unit.examWeight || 'CED Exam Core'} • {unit.sections.length} Concept Nodes
+                                </span>
+                              </div>
+                            </button>
+
+                            {/* Arrow Button */}
+                            <button
+                              onClick={() => openUnitMap(subj.subjectId, unit.unitId, unit.unitNumber)}
+                              className="w-8 h-8 rounded-xl bg-zinc-50 hover:bg-indigo-50 hover:text-indigo-700 text-zinc-400 group-hover/unit:text-indigo-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                              title={`Open Unit ${unit.unitNumber} Mind Map`}
+                            >
+                              <ChevronRight className="w-4 h-4 group-hover/unit:translate-x-0.5 transition-all" />
+                            </button>
+                          </div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+
+          {filteredSubjects.length === 0 && (
+            <div className="py-16 text-center space-y-3 bg-white rounded-3xl border border-[#DFD8CE]">
+              <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mx-auto">
+                <Search className="w-6 h-6" />
+              </div>
+              <h3 className="text-sm font-black text-zinc-800">No matching AP courses found</h3>
+              <p className="text-xs text-zinc-500 max-w-xs mx-auto">
+                Try searching for another keyword or change the category filter above.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // VIEW 2: VIEW MIND MAP (Interactive High-Yield Revision Engine)
+  // =========================================================================
+  if (!currentUnit) {
+    return (
+      <div className="fixed inset-0 z-40 bg-[#FAF7F2] text-zinc-900 flex flex-col items-center justify-center p-4">
+        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin mb-3" />
+        <p className="text-sm font-bold text-zinc-700">Loading AP Mind Map...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full h-full flex flex-col bg-[#FAF7F2] text-zinc-900 font-sans select-none overflow-hidden">
-      <header className="shrink-0 bg-white/95 backdrop-blur-md border-b border-[#E9E4DC] px-3.5 sm:px-5 py-2.5 z-30 flex items-center justify-between shadow-2xs">
-        <div className="flex items-center gap-2.5">
+    <div className="fixed inset-0 z-40 bg-[#FAF7F2] text-zinc-900 flex flex-col overflow-hidden font-sans select-none">
+      {/* Top Header */}
+      <header className="shrink-0 z-30 bg-white/90 backdrop-blur-md border-b border-[#ECE6DD] px-4 sm:px-6 py-2.5 flex items-center justify-between shadow-2xs">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => {
               triggerVibration(10);
-              onBack();
+              setStep('select-subject');
             }}
-            className="w-9 h-9 rounded-2xl bg-[#F4EFEA] hover:bg-[#EAE3DA] active:scale-95 border border-[#DFD8CE] flex items-center justify-center text-zinc-700 transition-all cursor-pointer"
+            className="w-10 h-10 rounded-full border border-zinc-200/80 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-50 shadow-2xs cursor-pointer transition-all active:scale-95"
+            title="Back to All Units"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
 
           <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
-                AP BIOLOGY
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 border border-indigo-200">
+                {currentSubject.shortCode}
               </span>
+              <h1 className="text-sm font-black text-zinc-900 truncate max-w-[180px] sm:max-w-xs">
+                Unit {currentUnit.unitNumber}: {currentUnit.unitTitle}
+              </h1>
             </div>
-            <h1 className="text-sm sm:text-base font-black text-zinc-950 tracking-tight">
-              Unit Revision
-            </h1>
+            <p className="text-[11px] text-zinc-500 font-medium">
+              {currentSubject.subjectName} • Mind Map Revision
+            </p>
           </div>
         </div>
 
+        {/* Action Buttons */}
         <div className="flex items-center gap-2">
+          {/* Quick Cram Sheet */}
           <button
             onClick={() => {
-              triggerVibration(20);
-              setActiveRecallMode(prev => !prev);
+              triggerVibration(15);
+              setShowCramSheet(true);
             }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border active:scale-95 ${
+            className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-xs hover:shadow-sm cursor-pointer transition-all active:scale-95"
+            title="Open Quick Cram Sheet"
+          >
+            <Zap className="w-3.5 h-3.5 fill-current" />
+            <span className="hidden sm:inline">Cram Sheet</span>
+          </button>
+
+          {/* Active Recall Blurring Toggle */}
+          <button
+            onClick={() => {
+              triggerVibration(15);
+              setActiveRecallMode(!activeRecallMode);
+              if (!activeRecallMode) {
+                setRevealedNodeIds(new Set());
+              }
+            }}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-bold border transition-all cursor-pointer ${
               activeRecallMode
-                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-transparent shadow-xs'
-                : 'bg-white text-zinc-700 border-[#DFD8CE] hover:bg-[#FAF7F2]'
+                ? 'bg-purple-600 border-purple-700 text-white shadow-xs'
+                : 'bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50'
             }`}
+            title={activeRecallMode ? 'Turn off Active Recall' : 'Turn on Active Recall'}
           >
-            {activeRecallMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5 text-purple-600" />}
-            <span className="hidden sm:inline">Recall</span>
+            {activeRecallMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+            <span className="hidden sm:inline">Active Recall</span>
           </button>
 
-          <button
-            onClick={() => {
-              triggerVibration(10);
-              setShowCramSheet(prev => !prev);
-            }}
-            className={`p-2 rounded-2xl border transition-all cursor-pointer active:scale-95 ${
-              showCramSheet 
-                ? 'bg-amber-100 border-amber-300 text-amber-900' 
-                : 'bg-white border-[#DFD8CE] text-zinc-700 hover:bg-[#FAF7F2]'
-            }`}
-          >
-            <Sparkles className="w-4 h-4 text-amber-600" />
-          </button>
-
+          {/* PDF Export */}
           <button
             onClick={handleExportPDF}
             disabled={isExporting}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-black bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-xs font-bold transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+            title="Download Mind Map Summary PDF"
           >
             {isExporting ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600" />
             ) : (
-              <FileDown className="w-3.5 h-3.5" />
+              <FileDown className="w-3.5 h-3.5 text-zinc-600" />
             )}
             <span className="hidden sm:inline">PDF</span>
           </button>
         </div>
       </header>
 
-      <div className="shrink-0 bg-white/70 backdrop-blur-xs border-b border-[#ECE6DD] px-4 py-2 flex flex-col sm:flex-row items-center justify-between gap-2.5">
-        <div className="w-full sm:w-80 relative">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+      {/* Unit Switcher Bar (Horizontal Carousel across all units) */}
+      <div className="shrink-0 bg-white border-b border-[#ECE6DD] px-4 py-2 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+        {currentSubjectUnits.map(u => (
+          <button
+            key={u.unitId}
+            onClick={() => {
+              triggerVibration(10);
+              setSelectedUnitId(u.unitId);
+              setRevealedNodeIds(new Set());
+            }}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer ${
+              u.unitId === selectedUnitId
+                ? 'bg-zinc-900 text-white shadow-xs'
+                : 'bg-zinc-100 hover:bg-zinc-200/80 text-zinc-700 border border-zinc-200/60'
+            }`}
+          >
+            U{u.unitNumber}: {u.unitTitle}
+          </button>
+        ))}
+      </div>
+
+      {/* Sub-toolbar: Search within Map, Active Recall Toggles, and Mastery Progress */}
+      <div className="shrink-0 bg-white/70 backdrop-blur-xs border-b border-zinc-200/60 px-4 sm:px-6 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+        <div className="relative w-full sm:w-72">
+          <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" />
           <input
             type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search mechanisms, formulas, CED topics..."
-            className="w-full pl-8 pr-3 py-1.5 bg-[#FAF7F2] border border-[#E3DCD2] rounded-xl text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-purple-500 shadow-2xs"
+            value={mapSearchQuery}
+            onChange={(e) => setMapSearchQuery(e.target.value)}
+            placeholder="Search concepts, formulas, traps..."
+            className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-zinc-100/80 border border-zinc-200 text-xs placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
-        </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-          {activeRecallMode && (
+          {mapSearchQuery && (
             <button
-              onClick={resetActiveRecall}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-purple-100 text-purple-800 text-xs font-bold hover:bg-purple-200 transition-colors border border-purple-200 cursor-pointer"
+              onClick={() => setMapSearchQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
             >
-              <RotateCcw className="w-3 h-3" />
-              <span>Mask All</span>
+              <X className="w-3 h-3" />
             </button>
           )}
+        </div>
 
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end text-xs">
+          {activeRecallMode && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[10px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200 flex items-center gap-1">
+                <Sparkles className="w-3 h-3" /> Blurring Active
+              </span>
+              <button
+                onClick={() => {
+                  triggerVibration(10);
+                  const allIds = new Set<string>();
+                  currentUnit?.branches.forEach(b => b.children.forEach(c => allIds.add(c.id)));
+                  setRevealedNodeIds(allIds);
+                }}
+                className="text-[10px] font-bold text-purple-800 bg-purple-100 hover:bg-purple-200 px-2 py-0.5 rounded-md transition-colors cursor-pointer"
+                title="Reveal all hidden cards in this unit"
+              >
+                Reveal All
+              </button>
+              <button
+                onClick={() => {
+                  triggerVibration(10);
+                  setRevealedNodeIds(new Set());
+                }}
+                className="text-[10px] font-bold text-zinc-600 bg-zinc-100 hover:bg-zinc-200 px-2 py-0.5 rounded-md transition-colors cursor-pointer"
+                title="Hide all cards in this unit"
+              >
+                Hide All
+              </button>
+            </div>
+          )}
 
-          <div className="flex items-center gap-1 text-[11px] font-mono font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-lg border border-emerald-200">
-            <CheckCircle className="w-3 h-3 text-emerald-600" />
-            <span>{masteredInCurrentUnit}/{totalUnitConcepts} Mastered</span>
+          <div className="flex items-center gap-1.5 text-zinc-600 text-xs font-semibold">
+            <span>Mastery:</span>
+            <span className="font-bold text-zinc-900">{masteredInCurrentUnit}/{totalUnitConcepts}</span>
+            <div className="w-16 h-2 bg-zinc-200 rounded-full overflow-hidden ml-1">
+              <div 
+                className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                style={{ width: `${unitMasteryPercent}%` }}
+              />
+            </div>
+            <span className="text-[10px] text-zinc-500 font-mono">({unitMasteryPercent}%)</span>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-thin">
-        <div className="max-w-4xl mx-auto space-y-5 pb-10">
-          <div className="bg-white rounded-3xl border border-[#DFD8CE] p-5 shadow-2xs">
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded-md bg-purple-100 text-purple-800">
-                CED BIG IDEA
+      {/* Main Revision Body - Smooth Vertical Scrolling with Overscroll Containment */}
+      <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-5 max-w-4xl mx-auto w-full pb-36">
+        {/* Core Big Idea Card */}
+        {currentUnit.coreBigIdea && (
+          <div className="p-4 sm:p-5 rounded-3xl bg-white border border-[#DFD8CE] shadow-2xs">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                CED Core Big Idea
               </span>
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
-                {currentUnit.examWeight}
+              <span className="text-xs text-zinc-400 font-semibold">
+                Exam Weight: {currentUnit.examWeight}
               </span>
             </div>
-            <h2 className="text-xl font-black text-zinc-950">
-              Unit {currentUnit.unitNumber}: {currentUnit.unitTitle}
-            </h2>
-            <div className="text-xs sm:text-sm text-zinc-600 mt-1 leading-relaxed">
+            <div className="text-xs sm:text-sm font-semibold text-zinc-800 mt-2 leading-relaxed">
               <GlobalMarkdown>{currentUnit.coreBigIdea}</GlobalMarkdown>
             </div>
           </div>
+        )}
 
+        {/* Branches & Concepts Stack */}
+        <div className="space-y-4">
           {filteredBranches.map((branch) => {
-            const theme = BRANCH_THEMES[branch.colorTheme] || BRANCH_THEMES.blue;
+            const theme = BRANCH_THEMES[branch.colorTheme || 'purple'] || BRANCH_THEMES.purple;
             const isCollapsed = collapsedBranchIds.has(branch.id);
 
             return (
-              <div 
-                key={branch.id} 
-                className="bg-white rounded-3xl border border-[#DFD8CE] shadow-2xs overflow-hidden"
+              <div
+                key={branch.id}
+                className={`rounded-3xl border ${theme.cardBorder} ${theme.cardBg} p-4 sm:p-5 space-y-3.5 transition-all shadow-2xs w-full`}
               >
+                {/* Branch Header */}
                 <div 
-                  onClick={() => toggleBranch(branch.id)}
-                  className={`p-4 flex items-center justify-between cursor-pointer ${theme.branchBg} border-b border-[#EADFCF]`}
+                  className="flex items-start justify-between gap-2 cursor-pointer select-none"
+                  onClick={() => {
+                    triggerVibration(10);
+                    setCollapsedBranchIds(prev => {
+                      const next = new Set(prev);
+                      if (next.has(branch.id)) next.delete(branch.id);
+                      else next.add(branch.id);
+                      return next;
+                    });
+                  }}
                 >
                   <div>
-                    <div className="flex items-center gap-2">
-                      {branch.cedTopicRef && (
-                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md ${theme.badgeBg}`}>
-                          {branch.cedTopicRef}
-                        </span>
-                      )}
-                      <span className="text-xs font-bold text-zinc-600 font-mono">
-                        {branch.children.length} Key Concepts
+                    <div className="flex items-center gap-1.5">
+                      <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${theme.badgeBg}`}>
+                        {branch.cedTopicRef || 'Key Concept'}
                       </span>
                     </div>
-                    <h3 className={`text-base font-bold ${theme.branchText} mt-1`}>
+                    <h3 className={`text-sm sm:text-base font-black ${theme.branchText} mt-1`}>
                       {branch.title}
                     </h3>
                     {branch.subtitle && (
-                      <p className="text-xs text-zinc-600 font-medium">
+                      <p className="text-[11px] text-zinc-500 font-medium">
                         {branch.subtitle}
                       </p>
                     )}
                   </div>
 
-                  <button 
-                    type="button"
-                    className="w-8 h-8 rounded-full bg-white border border-[#DFD8CE] flex items-center justify-center text-zinc-600 shadow-2xs cursor-pointer"
-                  >
+                  <button className="text-zinc-400 hover:text-zinc-600 p-1">
                     {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
                   </button>
                 </div>
 
+                {/* Leaf Nodes - Stacked Vertically Line-by-Line */}
                 {!isCollapsed && (
-                  <div className="p-4 sm:p-5 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {branch.children.map((node) => {
-                        const isRevealed = revealedNodeIds.has(node.id);
-                        const isMasked = activeRecallMode && !isRevealed;
-                        const isMastered = masteredNodeIds.has(node.id);
+                  <div className="flex flex-col space-y-2.5 pt-1 w-full">
+                    {branch.children.map((leaf) => {
+                      const isRevealed = revealedNodeIds.has(leaf.id);
+                      const isMastered = masteredNodeIds.has(leaf.id);
 
-                        return (
-                          <div
-                            key={node.id}
-                            onClick={() => {
-                              if (activeRecallMode && !isRevealed) {
-                                toggleNodeReveal(node.id);
-                              } else {
-                                setSelectedNodeForModal({ node, branch });
-                              }
-                            }}
-                            className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-                              isMasked
-                                ? 'bg-zinc-100 border-purple-200'
-                                : `${theme.cardBg} ${theme.cardBorder} hover:shadow-xs`
-                            }`}
-                          >
-                            <div className="flex items-center justify-between gap-2 mb-1.5">
-                              <div className="font-bold text-xs sm:text-sm text-zinc-900">
-                                <GlobalMarkdown components={{ p: ({ node: _n, ...props }: any) => <span {...props} /> }}>
-                                  {node.title}
-                                </GlobalMarkdown>
+                      return (
+                        <div
+                          key={leaf.id}
+                          onClick={() => {
+                            if (activeRecallMode && !isRevealed) {
+                              triggerVibration(15);
+                              setRevealedNodeIds(prev => new Set(prev).add(leaf.id));
+                            } else {
+                              setSelectedNodeForModal({ node: leaf, branch });
+                            }
+                          }}
+                          className={`bg-white border rounded-2xl p-3.5 sm:p-4 transition-all cursor-pointer shadow-2xs hover:shadow-xs w-full ${
+                            isMastered 
+                              ? 'border-emerald-300 bg-emerald-50/30' 
+                              : 'border-zinc-200/80 hover:border-zinc-300'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {leaf.badge && (
+                                  <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${
+                                    leaf.badge === 'trap' 
+                                      ? 'bg-rose-100 text-rose-800' 
+                                      : leaf.badge === 'formula'
+                                      ? 'bg-purple-100 text-purple-800'
+                                      : leaf.badge === 'high-yield'
+                                      ? 'bg-amber-100 text-amber-800'
+                                      : 'bg-blue-100 text-blue-800'
+                                  }`}>
+                                    {leaf.badgeLabel || leaf.badge}
+                                  </span>
+                                )}
+                                <h4 className="text-xs sm:text-sm font-bold text-zinc-900 leading-snug break-words">
+                                  {leaf.title}
+                                </h4>
                               </div>
-                              {isMastered && <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />}
-                            </div>
 
-                            {isMasked ? (
-                              <div className="py-3 text-center text-xs font-bold text-purple-700">
-                                Tap to Recall Mechanism
+                              {/* Detail text - Blur if Active Recall mode is active, KaTeX markdown rendered */}
+                              <div className="mt-2">
+                                {activeRecallMode && !isRevealed ? (
+                                  <div className="p-2.5 bg-purple-50/70 border border-purple-200/60 rounded-xl text-center cursor-pointer">
+                                    <span className="text-[11px] font-bold text-purple-700 flex items-center justify-center gap-1">
+                                      <Eye className="w-3 h-3" />
+                                      Tap to test & reveal memory trigger
+                                    </span>
+                                  </div>
+                                ) : leaf.workedExampleData ? (
+                                  <WorkedExampleCard data={leaf.workedExampleData} />
+                                ) : (
+                                  <div className="text-xs text-zinc-700 leading-relaxed font-normal overflow-x-auto">
+                                    <GlobalMarkdown>{leaf.detail || leaf.fullContent}</GlobalMarkdown>
+                                  </div>
+                                )}
                               </div>
-                            ) : (
-                              <div className="space-y-2">
-                                <div className="text-xs text-zinc-600 line-clamp-3 leading-relaxed">
-                                  <GlobalMarkdown components={{ p: ({ node: _n, ...props }: any) => <p className="text-xs text-zinc-600 leading-relaxed my-0" {...props} /> }}>
-                                    {node.detail}
-                                  </GlobalMarkdown>
-                                </div>
 
-                                {node.formulaLatex && (
-                                  <div className="p-2 rounded-xl bg-white/80 border border-indigo-100 text-[11px] text-indigo-900">
+                              {/* Formula / Identity formatted with KaTeX */}
+                              {leaf.formulaLatex && (!activeRecallMode || isRevealed) && (
+                                <div className="mt-2.5 p-3 rounded-2xl bg-purple-50/80 border border-purple-200/80 text-purple-950 text-xs overflow-x-auto shadow-2xs">
+                                  <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 block mb-1">
+                                    Key Formula / Equation:
+                                  </span>
+                                  <div className="overflow-x-auto">
                                     <GlobalMarkdown>
-                                      {`$$${node.formulaLatex}$$`}
+                                      {leaf.formulaLatex.trim().startsWith('$') 
+                                        ? leaf.formulaLatex.trim() 
+                                        : `$$${leaf.formulaLatex.trim()}$$`}
                                     </GlobalMarkdown>
                                   </div>
-                                )}
+                                </div>
+                              )}
 
-                                {node.trapAlert && (
-                                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-rose-600">
-                                    <AlertTriangle className="w-3 h-3 shrink-0" />
-                                    <span>AP Trap Alert Included</span>
+                              {/* Trap Alert formatted with KaTeX */}
+                              {leaf.trapAlert && leaf.badge !== 'trap' && !leaf.workedExampleData && (!activeRecallMode || isRevealed) && (
+                                <div className="mt-2.5 p-2.5 rounded-xl bg-rose-50/80 border border-rose-200/80 text-rose-900 text-xs shadow-2xs flex items-start gap-2">
+                                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                                  <div className="flex-1 min-w-0">
+                                    <GlobalMarkdown>{leaf.trapAlert}</GlobalMarkdown>
                                   </div>
-                                )}
-                              </div>
-                            )}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Mastery Check Icon */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                triggerVibration(10);
+                                setMasteredNodeIds(prev => {
+                                  const next = new Set(prev);
+                                  if (next.has(leaf.id)) next.delete(leaf.id);
+                                  else next.add(leaf.id);
+                                  safeSetItem('ap_mindmap_mastered_ids', JSON.stringify(Array.from(next)));
+                                  return next;
+                                });
+                              }}
+                              className={`p-1.5 rounded-lg border transition-colors shrink-0 ${
+                                isMastered 
+                                  ? 'bg-emerald-500 border-emerald-600 text-white' 
+                                  : 'border-zinc-200 text-zinc-300 hover:text-zinc-600 hover:border-zinc-300'
+                              }`}
+                              title={isMastered ? 'Mark as Unmastered' : 'Mark as Mastered'}
+                            >
+                              <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            </button>
                           </div>
-                        );
-                      })}
-                    </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
             );
           })}
         </div>
-      </div>
 
+        {/* Quick Help Tip Box */}
+        <div className="p-4 rounded-2xl bg-indigo-50/80 border border-indigo-200/80 text-indigo-950 text-xs flex items-start gap-3 w-full">
+          <HelpCircle className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <span className="font-bold block">How to use Mind Map Revision:</span>
+            <p className="text-zinc-700 leading-relaxed">
+              Tap any concept card to view its complete textbook breakdown. Turn on <strong>Active Recall</strong> to blur formulas and definitions until you attempt to remember them. Mark nodes with the green checkmark once mastered.
+            </p>
+          </div>
+        </div>
+      </main>
+
+      {/* ========================================================================= */}
+      {/* QUICK CRAM SHEET MODAL                                                    */}
+      {/* ========================================================================= */}
       <AnimatePresence>
         {showCramSheet && (
-          <motion.div
-            initial={{ opacity: 0, y: 100 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 100 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 280 }}
-            className="fixed bottom-0 inset-x-0 z-40 bg-[#FEF3C7] border-t-2 border-[#FDE68A] p-4 sm:p-5 shadow-xl max-h-[70vh] overflow-y-auto"
-          >
-            <div className="max-w-4xl mx-auto space-y-3">
-              <div className="flex items-center justify-between">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white rounded-3xl p-5 sm:p-6 max-w-lg w-full border border-zinc-200 shadow-xl space-y-4 max-h-[85vh] flex flex-col"
+            >
+              <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-black text-amber-950">⚡ 60-SECOND HIGH-YIELD CRAM CHECKLIST</span>
-                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900">
-                    Unit {currentUnit.unitNumber}
+                  <span className="p-2 rounded-xl bg-amber-100 text-amber-700">
+                    <Zap className="w-4 h-4 fill-current" />
                   </span>
+                  <div>
+                    <h3 className="font-black text-zinc-900 text-sm sm:text-base">
+                      Quick Cram Sheet
+                    </h3>
+                    <p className="text-[11px] text-zinc-500 font-medium">
+                      Unit {currentUnit.unitNumber} High-Yield Must-Knows
+                    </p>
+                  </div>
                 </div>
-                <button
+                <button 
                   onClick={() => setShowCramSheet(false)}
-                  className="w-7 h-7 rounded-full bg-amber-200 hover:bg-amber-300 flex items-center justify-center text-amber-900 cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-zinc-100 text-zinc-500 hover:text-zinc-900 flex items-center justify-center"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 text-xs overscroll-contain">
                 {currentUnit.quickCramBullets.map((bullet, idx) => (
-                  <div key={idx} className="bg-white/90 p-3 rounded-2xl border border-amber-200 text-xs text-amber-950 flex items-start gap-2 shadow-2xs">
-                    <span className="text-emerald-600 font-bold shrink-0 mt-0.5">✓</span>
-                    <div className="leading-relaxed">
-                      <GlobalMarkdown components={{ p: ({ node: _n, ...props }: any) => <span {...props} /> }}>
-                        {bullet}
-                      </GlobalMarkdown>
+                  <div 
+                    key={idx}
+                    className="p-3 rounded-2xl bg-amber-50/60 border border-amber-200/70 text-amber-950 flex items-start gap-2.5"
+                  >
+                    <div className="w-5 h-5 rounded-full bg-amber-200/80 text-amber-900 font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                      {idx + 1}
+                    </div>
+                    <div className="text-xs text-zinc-800 font-medium flex-1">
+                      <GlobalMarkdown>{bullet}</GlobalMarkdown>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      <AnimatePresence>
-        {selectedNodeForModal && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs">
-            <motion.div
-              initial={{ opacity: 0, y: 100 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 100 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-3xl border border-[#DFD8CE] shadow-2xl p-5 sm:p-6 max-h-[85vh] overflow-y-auto space-y-4"
-            >
-              <div className="flex items-start justify-between gap-3 border-b border-[#F0EAE1] pb-3">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    {selectedNodeForModal.branch.cedTopicRef && (
-                      <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-md bg-purple-100 text-purple-900">
-                        {selectedNodeForModal.branch.cedTopicRef}
-                      </span>
-                    )}
-                    {selectedNodeForModal.node.badge && (
-                      <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-200">
-                        {selectedNodeForModal.node.badgeLabel || selectedNodeForModal.node.badge}
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="text-base sm:text-lg font-black text-zinc-950">
-                    <GlobalMarkdown components={{ p: ({ node: _n, ...props }: any) => <span {...props} /> }}>
-                      {selectedNodeForModal.node.title}
-                    </GlobalMarkdown>
-                  </h3>
-                </div>
-
+              <div className="pt-2">
                 <button
-                  onClick={() => setSelectedNodeForModal(null)}
-                  className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 flex items-center justify-center cursor-pointer"
+                  onClick={() => setShowCramSheet(false)}
+                  className="w-full py-2.5 rounded-xl bg-zinc-900 text-white font-bold text-xs cursor-pointer"
                 >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="space-y-3.5">
-                <div>
-                  <h5 className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-1">
-                    Biological Mechanism & Concept
-                  </h5>
-                  <div className="text-xs sm:text-sm text-zinc-700 leading-relaxed bg-[#FAF7F2] p-3.5 rounded-2xl border border-[#ECE6DD]">
-                    <GlobalMarkdown>
-                      {selectedNodeForModal.node.detail}
-                    </GlobalMarkdown>
-                  </div>
-                </div>
-
-                {selectedNodeForModal.node.formulaLatex && (
-                  <div className="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-200 text-xs font-mono font-bold text-indigo-950">
-                    <div className="text-[10px] uppercase tracking-wider text-indigo-600 mb-1.5 font-sans">
-                      Official AP Formula
-                    </div>
-                    <div className="overflow-x-auto py-1">
-                      <GlobalMarkdown>
-                        {`$$${selectedNodeForModal.node.formulaLatex}$$`}
-                      </GlobalMarkdown>
-                    </div>
-                  </div>
-                )}
-
-                {selectedNodeForModal.node.trapAlert && (
-                  <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-950 space-y-1">
-                    <strong className="text-rose-700 flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px]">
-                      <AlertTriangle className="w-3.5 h-3.5" />
-                      <span>Common AP Exam Trap</span>
-                    </strong>
-                    <div className="leading-relaxed">
-                      <GlobalMarkdown>
-                        {selectedNodeForModal.node.trapAlert}
-                      </GlobalMarkdown>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="pt-3 border-t border-[#F0EAE1] flex items-center justify-between gap-3">
-                <button
-                  onClick={() => toggleMastery(selectedNodeForModal.node.id)}
-                  className={`flex-1 py-2.5 px-4 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${
-                    masteredNodeIds.has(selectedNodeForModal.node.id)
-                      ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
-                      : 'bg-zinc-900 text-white hover:bg-zinc-800'
-                  }`}
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>
-                    {masteredNodeIds.has(selectedNodeForModal.node.id) ? 'Mastered!' : 'Mark as Mastered'}
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => setSelectedNodeForModal(null)}
-                  className="px-4 py-2.5 rounded-2xl text-xs font-bold text-zinc-600 bg-zinc-100 hover:bg-zinc-200 cursor-pointer"
-                >
-                  Done
+                  Done Reviewing
                 </button>
               </div>
             </motion.div>
@@ -617,47 +1032,123 @@ export default function APMindMap({ onBack }: APMindMapProps) {
         )}
       </AnimatePresence>
 
-      {fullScreenPdfData && (
-        <div className="fixed inset-0 z-50 bg-black/90 flex flex-col">
-          <header className="px-4 py-3 bg-zinc-900 text-white flex items-center justify-between border-b border-zinc-800">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <button
-                onClick={() => setFullScreenPdfData(null)}
-                className="w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white flex items-center justify-center cursor-pointer active:scale-95"
-                title="Close Viewer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-              <div className="truncate">
-                <span className="text-[10px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-purple-900/60 text-purple-300 mr-2">
-                  PDF Preview
-                </span>
-                <span className="text-xs sm:text-sm font-bold text-zinc-100">
-                  Unit {fullScreenPdfData.unitNumber}: {fullScreenPdfData.title}
-                </span>
+      {/* ========================================================================= */}
+      {/* CONCEPT DETAIL MODAL                                                      */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {selectedNodeForModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white rounded-3xl p-5 sm:p-6 max-w-lg w-full border border-zinc-200 shadow-xl space-y-4 max-h-[85vh] flex flex-col"
+            >
+              <div className="flex items-start justify-between border-b border-zinc-100 pb-3 gap-2">
+                <div>
+                  <span className="text-[10px] font-black uppercase text-indigo-700 tracking-wider">
+                    {selectedNodeForModal.branch.title}
+                  </span>
+                  <h3 className="text-base font-black text-zinc-900 mt-0.5 leading-snug break-words">
+                    {selectedNodeForModal.node.title}
+                  </h3>
+                </div>
+                <button 
+                  onClick={() => setSelectedNodeForModal(null)}
+                  className="w-8 h-8 rounded-full bg-zinc-100 text-zinc-500 hover:text-zinc-900 flex items-center justify-center shrink-0"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  triggerVibration(15);
-                  const a = document.createElement('a');
-                  a.href = fullScreenPdfData.uri;
-                  a.download = `AP_Biology_Unit_${fullScreenPdfData.unitNumber}_Detailed_MindMap.pdf`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                }}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer active:scale-95 shadow-xs"
-              >
-                <FileDown className="w-3.5 h-3.5" />
-                <span className="hidden xs:inline">Download</span>
-              </button>
-            </div>
-          </header>
+              <div className="flex-1 overflow-y-auto space-y-3.5 pr-1 text-xs overscroll-contain">
+                {/* Full concept description or Step-by-Step Worked Example */}
+                {selectedNodeForModal.node.workedExampleData ? (
+                  <WorkedExampleCard data={selectedNodeForModal.node.workedExampleData} />
+                ) : (
+                  <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 leading-relaxed text-zinc-800 text-xs sm:text-sm overflow-x-auto">
+                    <GlobalMarkdown>{selectedNodeForModal.node.fullContent || selectedNodeForModal.node.detail}</GlobalMarkdown>
+                  </div>
+                )}
 
-          <div className="flex-1 overflow-hidden bg-zinc-900">
+                {/* Formula if present */}
+                {selectedNodeForModal.node.formulaLatex && (
+                  <div className="p-3.5 rounded-2xl bg-purple-50 border border-purple-200">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 block mb-1">
+                      Key Formula / Theorem:
+                    </span>
+                    <div className="text-sm text-purple-950 font-bold overflow-x-auto">
+                      <GlobalMarkdown>
+                        {selectedNodeForModal.node.formulaLatex.trim().startsWith('$')
+                          ? selectedNodeForModal.node.formulaLatex.trim()
+                          : `$$${selectedNodeForModal.node.formulaLatex.trim()}$$`}
+                      </GlobalMarkdown>
+                    </div>
+                  </div>
+                )}
+
+                {/* Trap alert if present */}
+                {selectedNodeForModal.node.trapAlert && selectedNodeForModal.node.badge !== 'trap' && !selectedNodeForModal.node.workedExampleData && (
+                  <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-rose-700 block mb-1 flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      College Board Trap Alert:
+                    </span>
+                    <div className="text-xs text-rose-900 font-medium">
+                      <GlobalMarkdown>{selectedNodeForModal.node.trapAlert}</GlobalMarkdown>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-2 flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const leafId = selectedNodeForModal.node.id;
+                    setMasteredNodeIds(prev => {
+                      const next = new Set(prev);
+                      if (next.has(leafId)) next.delete(leafId);
+                      else next.add(leafId);
+                      safeSetItem('ap_mindmap_mastered_ids', JSON.stringify(Array.from(next)));
+                      return next;
+                    });
+                  }}
+                  className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                    masteredNodeIds.has(selectedNodeForModal.node.id)
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-800'
+                  }`}
+                >
+                  <Check className="w-4 h-4" />
+                  {masteredNodeIds.has(selectedNodeForModal.node.id) ? 'Mastered!' : 'Mark as Mastered'}
+                </button>
+                <button
+                  onClick={() => setSelectedNodeForModal(null)}
+                  className="px-4 py-2.5 rounded-xl bg-zinc-900 text-white font-bold text-xs cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* FULLSCREEN PDF VIEWER                                                     */}
+      {/* ========================================================================= */}
+      {fullScreenPdfData && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-zinc-900 text-white">
+          <div className="p-3 bg-zinc-800 flex items-center justify-between border-b border-zinc-700">
+            <span className="text-sm font-bold truncate max-w-[80vw]">{fullScreenPdfData.title}</span>
+            <button
+              onClick={() => setFullScreenPdfData(null)}
+              className="p-1.5 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-white cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-auto bg-zinc-950">
             <SafePdfViewer pdfUrlOrBase64={fullScreenPdfData.uri} />
           </div>
         </div>
@@ -665,4 +1156,3 @@ export default function APMindMap({ onBack }: APMindMapProps) {
     </div>
   );
 }
-

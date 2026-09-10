@@ -346,7 +346,10 @@ export default function GrammarEnhancer({ onBack }: GrammarEnhancerProps) {
       fullContent += `\n\n### What Was Fixed\n` + fixes.map(f => `- ${f}`).join('\n');
     }
     const blob = generateNotesPDFBlob(title, fullContent, 'Grammar Enhancement');
-    savePDFMobile(blob, 'Grammar_Enhanced_Document.pdf');
+    savePDFMobile(blob, 'Grammar_Enhanced_Document.pdf', {
+      featureTag: 'Grammar Report',
+      customToast: '✅ Saved offline in app'
+    });
   };
 
   const handlePreviewPDF = () => {

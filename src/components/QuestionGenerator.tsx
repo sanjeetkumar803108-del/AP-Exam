@@ -14,7 +14,8 @@ import { safeGetItem, safeSetItem } from '../utils/storage';
 import { REGIONAL_TRACKS } from './AcademicSetup';
 import jsPDF from 'jspdf';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
-import { sanitizePdfText } from '../utils/pdfSanitizer';
+import { sanitizePdfText, formatMathForPdf } from '../utils/pdfSanitizer';
+import { drawTextWithElevatedPowers } from '../utils/pdfTableDrawer';
 import SafePdfViewer from './SafePdfViewer';
 import AdvancedLoader from './AdvancedLoader';
 import GlobalMarkdown from './GlobalMarkdown';
@@ -816,7 +817,7 @@ export default function QuestionGenerator({ onBack, onNavigateToTab }: QuestionG
     // List Questions
     for (let i = 0; i < qs.length; i++) {
       const qItem = qs[i];
-      const qText = sanitizePdfText(normalizeQuestionBreaks(getQuestionText(qItem)));
+      const qText = sanitizePdfText(formatMathForPdf(normalizeQuestionBreaks(getQuestionText(qItem))));
       const questionText = `${i + 1}. ${qText}`;
       
       // Wrap question text
@@ -840,7 +841,7 @@ export default function QuestionGenerator({ onBack, onNavigateToTab }: QuestionG
       doc.setTextColor(40, 40, 40);
 
       for (const line of wrappedQuestion) {
-        doc.text(line, margin, currentY);
+        drawTextWithElevatedPowers(doc, line, margin, currentY, 10.5);
         currentY += 5.5;
       }
 
@@ -879,6 +880,12 @@ export default function QuestionGenerator({ onBack, onNavigateToTab }: QuestionG
     } else if (currentSavedId) {
       await markHistoryItemAsPdf(currentSavedId);
     }
+
+    // Automatically save PDF offline into the app vault
+    await savePDFMobile(pdfBlob, filename, {
+      featureTag: 'Practice Questions',
+      customToast: '✅ Saved offline in app'
+    });
 
     // Instantly launch the visual PDF reader as fallback/visual confirmation
     setPreviewPdfUri(blobUrl);

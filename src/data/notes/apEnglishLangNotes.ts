@@ -47,6 +47,22 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
 | **Appeals** | How is connection established? | Ethos (character/trust), Pathos (emotion/values), Logos (reason/evidence). |
 | **Tone** | What is the author's emotional stance? | Shifts in tone across the text signal transitions in argument or emotional climax. |`
       }
+    ,
+      {
+        heading: '2. Exigence, Audience Orientation & Defensible Thesis Design (Skill 1.A-1.B, 3.A)',
+        content: `Deconstructing the rhetorical situation and engineering arguable thesis statements:
+
+* **The Core Rhetorical Situation Triangle**:
+  * **Speaker**: Persona, credentials, and moral character presented to the audience.
+  * **Audience**: Specific demographic group with distinct values, predispositions, vulnerabilities, and prejudices.
+  * **Message**: Core argument and claims advanced by the text.
+  * **Purpose**: Concrete action, emotional shift, or intellectual realization the speaker seeks to produce in the audience.
+  * **Exigence**: The immediate historical spark, crisis, or urgent defect that compelled the author to speak or write at that exact moment!
+  * **Context**: Broad historical, political, and cultural climate shaping the text.
+* **Engineering a Defensible Thesis**:
+  * A thesis must take a clear, arguable stance that a reasonable reader could dispute (never a statement of accepted fact or a plot summary).
+  * **Closed Thesis Formula**: 'By juxtaposing [Choice A] and establishing [Choice B], [Speaker] exposes [Insight] in order to compel [Audience] to [Action].'`
+      }
     ],
     workedExamples: [
       {
@@ -61,16 +77,6 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'A high-scoring thesis identifying 2 distinct choices (juxtaposition, statistical appeals) tied directly to Kelley’s legislative and moral purpose.',
         apScoringTip: 'Earn the thesis point on Row A by ensuring your claim cannot be answered with a simple "yes" or "no" and offers an analytical roadmap.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'rhetorical_triangle',
-        title: 'Aristotelian Rhetorical Triangle',
-        subtitle: 'Interlocking Dynamics of Speaker, Audience, and Message',
-        type: 'rhetoric_triangle',
-        description: 'Triangular model showing how Text/Message balances between Speaker Credibility (Ethos), Audience Emotion (Pathos), and Logical Evidence (Logos).',
-        takeaway: 'Rhetoric is never isolated text; every word is tailored specifically to bridge the speaker with the audience’s worldview.'
       }
     ],
     commonTraps: [
@@ -129,6 +135,23 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
 | **Expert Testimony** | Confers instant credibility (Ethos); specialized insight | Subject to authority bias if consensus is disputed | Complex technical subjects, ethical quandaries |
 | **Analogical Evidence** | Clarifies complex or unfamiliar ideas through comparison | Analogy breaks down if key dissimilarities exist | Conceptual explanations, philosophical debate |`
       }
+    ,
+      {
+        heading: '2. Strategic Deployment of Appeals & Line of Reasoning (Skill 3.B, 4.A-4.B)',
+        content: `Classical rhetorical appeals and structural logical progression:
+
+* **The Classical Triad of Rhetorical Appeals**:
+  * **Ethos (Character & Authority)**: Building perceived trustworthiness, expertise, and moral integrity; establishing shared communal values with the audience.
+  * **Logos (Logic & Reason)**: Constructing rational arguments via statistical data, empirical testimony, inductive generalizations, and deductive syllogisms.
+  * **Pathos (Emotional Resonance)**: Appealing to core human emotions (empathy, righteous indignation, patriotism, fear, shared grief) to motivate visceral audience engagement.
+* **Building a Cohesive Line of Reasoning**:
+  * An essay's **Line of Reasoning** is the logical trajectory connecting successive claims:
+    $$\\text{Thesis} \\rightarrow \\text{Claim 1 (Evidence + Commentary)} \\rightarrow \\text{Transition} \\rightarrow \\text{Claim 2} \\rightarrow \\text{Conclusion}$$
+  * Maintain explicit connective tissue between paragraphs using logical transition markers:
+    * Contrast: 'Conversely', 'Notwithstanding', 'Whereas'.
+    * Concession: 'Admittedly', 'Granted that', 'Even while conceding'.
+    * Amplification: 'Furthermore', 'More decisively', 'Compounding this reality'.`
+      }
     ],
     workedExamples: [
       {
@@ -143,16 +166,6 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Seamless integration where qualitative emotion and quantitative authority mutually reinforce the core claim.',
         apScoringTip: 'In the Synthesis essay (Q1), you must cite at least 3 distinct sources and converse *between* them rather than summarizing them one by one.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'toulmin_diagram',
-        title: 'Toulmin Model of Argumentation',
-        subtitle: 'Claim, Data, Warrant, Backing, Counter-Argument, Rebuttal',
-        type: 'toulmin_structure',
-        description: 'Flowchart showing how Data leads to Claim via Warrant, fortified by Backing and protected by Rebuttal.',
-        takeaway: 'The strength of an argument lies in the unspoken Warrant connecting the evidence to the conclusion.'
       }
     ],
     commonTraps: [
@@ -209,6 +222,22 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
 | **Row B: Evidence & Commentary** | 4 pts | Incorporates at least 3 sources with comprehensive commentary | Show relationships between sources; explain *why* and *how* the evidence advances your thesis. |
 | **Row C: Sophistication** | 1 pt | Demonstrates nuanced understanding, complex context, or vivid prose | Acknowledge complexities/tensions, recognize alternative interpretations, or craft an exceptional voice. |`
       }
+    ,
+      {
+        heading: '2. The Source Conversation Table & Attribution Protocols (Skill 4.C, 6.A-6.C)',
+        content: `Mastering Synthesis Essay (FRQ 1) architecture and source integration:
+
+* **The 'Dinner Table Conversation' Mental Model**:
+  * You are the host of a sophisticated dinner party; the prompt sources are your invited guests.
+  * Your task is to initiate an argument and have the sources **converse with and qualify one another**:
+    * 'While Source A champions technological automation for efficiency, Source C warns of displacement, creating a tension that Source E resolves through retraining.'
+  * You must synthesize a **minimum of 3 sources** to support your own independent argument.
+* **Seamless Source Attribution & Preventing 'Quote Bombs'**:
+  * **Quote Bomb Trap**: Dropping a raw, unintroduced direct quote as an isolated standalone sentence.
+  * **Integrated Attribution Formula**:
+    * Signal Phrase + Context + Embedded Snippet + Analytical Commentary:
+    * *As social theorist Robert Putnam observes, civic institutions serve as 'essential social capital' (Source B), demonstrating that communal participation precedes economic prosperity.*`
+      }
     ],
     workedExamples: [
       {
@@ -223,16 +252,6 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'A synthesis paragraph balancing cognitive science and modern economic utility with nuanced compromise.',
         apScoringTip: 'Synthesizing two sources in a single paragraph immediately elevates your commentary to the 3–4 point range on Row B.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'synthesis_matrix',
-        title: 'Synthesis Cross-Source Conversation Matrix',
-        subtitle: 'Mapping Overlaps, Contradictions, and Nuance',
-        type: 'synthesis_mapping',
-        description: 'Matrix showing Source A and Source D agreeing on economic costs, while Source C disputes their environmental assumptions.',
-        takeaway: 'True synthesis is not summarizing texts; it is mapping where authors collide and forging your own reasoned position.'
       }
     ],
     commonTraps: [
@@ -293,6 +312,28 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
 | **Hasty Generalization** | Drawing a universal conclusion from an insufficient or unrepresentative sample size | "My grandfather smoked two packs a day and lived to 95; smoking isn't harmful." |
 | **Bandwagon (Ad Populum)** | Claiming a proposition is true or right simply because it is popular | "Millions of people believe this conspiracy, so there must be truth to it." |`
       }
+    ,
+      {
+        heading: '2. Classical, Rogerian & Toulmin Argument Architectures (Skill 5.A, 7.A-7.B)',
+        content: `Structural rhetorical frameworks for organizing complex persuasive essays:
+
+* **Classical (Aristotelian) Argument**:
+  1. **Exordium**: Captures reader attention and establishes ethical goodwill.
+  2. **Narratio**: Contextual background information explaining the origin of the controversy.
+  3. **Partitio**: Clear statement of the central thesis claim.
+  4. **Confirmatio**: Body paragraphs presenting sub-claims, evidence, and rigorous commentary.
+  5. **Refutatio**: Anticipating and systematically refuting counterarguments.
+  6. **Peroratio**: Eloquent concluding summary and passionate call to action.
+* **Toulmin Argumentation Model**:
+  * **Claim**: The contentious assertion being argued.
+  * **Grounds (Data)**: Empirical facts and evidence supporting the claim.
+  * **Warrant**: The underlying implicit assumption connecting the evidence to the claim.
+  * **Backing**: Additional justification validating the warrant.
+  * **Qualifier**: Language limiting the scope of the claim ('in most cases', 'under specific economic conditions').
+  * **Rebuttal**: Acknowledgment of conditions where the claim does not hold true.
+* **Rogerian Argument (Seeking Common Ground)**:
+  * Best for deeply polarized, emotionally fraught topics; summarizes the opponent's perspective fairly before identifying mutually beneficial compromise zones.`
+      }
     ],
     workedExamples: [
       {
@@ -308,16 +349,6 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'A qualified, mature argument avoiding binary oversimplification.',
         apScoringTip: 'Qualified arguments ("under specific circumstances X is true, but when Y occurs, Z results") consistently earn the Row C Sophistication point over absolutist claims.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'argument_syllogism',
-        title: 'Deductive Syllogism vs. Inductive Leap',
-        subtitle: 'Top-Down Inescapable Logic vs. Bottom-Up Probabilistic Evidence',
-        type: 'logic_architecture',
-        description: 'Diagram contrasting deductive certainty from valid premises with inductive extrapolation requiring empirical guardrails.',
-        takeaway: 'Flawed premises corrupt deductive logic; unrepresentative samples invalidate inductive logic.'
       }
     ],
     commonTraps: [
@@ -378,6 +409,23 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
 | **Trope (Figurative)** | **Metonymy** | Substituting the name of an attribute for the entity itself | "The pen is mightier than the sword" (Pen = written word; sword = military force) |
 | **Trope (Figurative)** | **Synecdoche** | Using a physical part to represent the entire whole | "All hands on deck" (Hands = sailors/workers) |`
       }
+    ,
+      {
+        heading: '2. Syntactic Schemes, Periodic Sentences & Tone Shifts (Skill 7.B-7.C)',
+        content: `Macro-syntactic architecture and precise analytical vocabulary:
+
+* **Sentence Architecture Typologies**:
+  * **Cumulative (Loose) Sentence**: Opens with the main independent clause followed by accumulating modifiers (feels natural, conversational, descriptive).
+  * **Periodic Sentence**: Suspends the main grammatical clause until the very end, building mounting suspense and rhetorical gravitas:
+    * *'Unarmed, outnumbered, and shivering in the Valley Forge winter, Washington's soldiers persevered.'*
+* **Rhetorical Syntactic Schemes**:
+  * **Anaphora**: Repetition of words at the beginning of successive clauses (creates rhythmic, anthemic intensity).
+  * **Antithesis**: Juxtaposition of sharply contrasting ideas in balanced parallel structures (*'Ask not what your country can do for you; ask what you can do for your country'*).
+  * **Asyndeton vs. Polysyndeton**: Omitting conjunctions (hurried, breathless pace) vs. overusing conjunctions (deliberate, overwhelming accumulation).
+* **Tracking Tone Shifts**:
+  * Tone is the author's attitude toward the subject or audience.
+  * Locate tonal shift indicators: transitional adverbs ('Yet', 'Conversely'), changes in sentence length, or shifts in diction register (from academic detached to raw impassioned).`
+      }
     ],
     workedExamples: [
       {
@@ -392,16 +440,6 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'A transition from clinical detachment to raw, emotive grief that unmasks administrative cruelty.',
         apScoringTip: 'Highlighting and explaining *tone shifts* is one of the most reliable ways to demonstrate sophisticated analytical insight.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'syntax_pacing',
-        title: 'Syntactic Pacing and Dramatic Focus',
-        subtitle: 'Periodic vs. Cumulative vs. Balanced Structures',
-        type: 'syntax_flow',
-        description: 'Visual waveform showing tension building up in periodic sentences versus instant release in loose sentences.',
-        takeaway: 'Sentence structure controls the rhythm of reading; changing syntax alters emotional impact.'
       }
     ],
     commonTraps: [
@@ -460,6 +498,22 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
 | **Evidence Enhancement** | "The writer wants to add evidence to support the claim in sentence 12. Which choice best accomplishes this?" | Select evidence that directly answers the claim with specific empirical data or concrete precedent, avoiding vague generalities. |
 | **Deleting Text** | "Should the writer keep or delete the underlined sentence?" | Keep if it directly supports the paragraph’s topic; delete if it is an irrelevant digression or disrupts flow. |`
       }
+    ,
+      {
+        heading: '2. MCQ Reading Comprehension vs. Revision Strategies (Skill 1.B, 2.B, 6.B)',
+        content: `Strategic decision rules for the 45-question AP Lang Multiple Choice section:
+
+* **Part 1: Reading Questions (Questions 1-22 to 25, ~2 passages)**:
+  * Tests rhetorical comprehension of complex non-fiction texts (published 1600s-present).
+  * **Strategy**: Read actively for the author's thesis, tone, and line of reasoning before checking questions.
+  * Look for the **function** of sentences: *Why did the author place this anecdote here?* (Options often begin with active verbs: 'To qualify', 'To contextualize', 'To undermine').
+* **Part 2: Writing / Revision Questions (Questions 23 to 45, ~3 passages)**:
+  * You act as an expert editor revising a draft student essay.
+  * **Decision Rules**:
+    * **Sentence Addition/Deletion**: Keep sentences that provide relevant evidence directly developing the immediate paragraph topic; delete sentences that digress or introduce off-topic information.
+    * **Transitions**: Identify the exact logical relationship between sentences: addition ('Furthermore'), contrast ('However'), or cause-and-effect ('Consequently').
+    * **Syntactic Combining**: Choose options that eliminate passive voice, reduce wordiness, and create clean parallel structures.`
+      }
     ],
     workedExamples: [
       {
@@ -474,16 +528,6 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Clever political maneuvering or adroit evasion (used ironically).',
         apScoringTip: 'On historical prose questions, never pick the most common modern dictionary definition without verifying tone and historical context.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'mcq_pacing_strategy',
-        title: 'MCQ Pacing & Section Division',
-        subtitle: 'Balancing Reading Analysis (50%) and Editorial Revision (50%)',
-        type: 'mcq_strategy_chart',
-        description: 'Timeline showing 30 minutes allocated to deep historical reading passages and 30 minutes allocated to rapid editorial draft revisions.',
-        takeaway: 'Revision questions are lower cognitive load; do not get bogged down on early reading questions at the expense of writing points.'
       }
     ],
     commonTraps: [
@@ -544,6 +588,23 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
 | **Challenging Norms** | *Subverts, destabilizes, dismantles* | Inverts conventional wisdom or expectations | Unsettles traditional dogma and opens minds to radical alternatives |
 | **Inspiring Action** | *Galvanizes, rallies, mobilizes* | Resonant calls to collective identity | Translates emotional conviction into tangible political or social action |`
       }
+    ,
+      {
+        heading: '2. Chronological Textual Tracking vs. Feature Hunting (Skill 2.A, 4.A)',
+        content: `High-scoring FRQ 2 (Rhetorical Analysis) execution methodology:
+
+* **The 'Feature Hunting' Death Trap**:
+  * Organizing essays around isolated literary devices (Paragraph 1 on Diction, Paragraph 2 on Metaphor, Paragraph 3 on Pathos).
+  * This guarantees low scores because it isolates devices from their rhetorical function and fails to demonstrate how the author's argument develops over time!
+* **Best-Practice Chronological Architecture**:
+  * Trace the speaker's argument as it unfolds chronologically across three distinct movements:
+    1. **Beginning (Orientation/Exigence)**: How the speaker establishes common ground, defines the immediate crisis, and builds moral credibility.
+    2. **Middle (Development/Pivot)**: How the speaker shifts to emotional urgency, contrasts conflicting viewpoints, or presents empirical evidence.
+    3. **End (Climax/Call to Action)**: How the speaker resolves tensions, offers a unified vision of the future, and compels immediate audience action.
+* **Active Rhetorical Verbs to Deploy**:
+  * Avoid weak passive verbs (*'The author uses diction to show...'*)
+  * Use active power verbs: *delineates, subverts, galvanizes, repudiates, elucidates, lionizes, excoriates, contextualizes*!`
+      }
     ],
     workedExamples: [
       {
@@ -558,16 +619,6 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'A high-scoring paragraph analyzing the functional progression and audience psychology rather than isolated static figures of speech.',
         apScoringTip: 'Tracing shifts (tone shifts, perspective shifts, structural shifts) is the hallmark of upper-tier Row B (3–4 points) and Row C Sophistication.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'rhetorical_analysis_flow',
-        title: 'FRQ 2 Chronological Functional Progression',
-        subtitle: 'Beginning (Exigence & Rapport) $\\rightarrow$ Middle (Pivots & Contrast) $\\rightarrow$ End (Climax & Action)',
-        type: 'rhetorical_analysis_flow',
-        description: 'Flow diagram showing how an author moves from establishing initial credibility and context to intensifying emotional and logical appeals, concluding with a climactic call to action.',
-        takeaway: 'Great writers structure texts like musical compositions; analyze the functional movement from movement to movement.'
       }
     ],
     commonTraps: [
@@ -627,6 +678,23 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
 | **Politics / Philosophy** | **P** | Grounding arguments in constitutional law and governance theories | Locke’s social contract, Machiavelli’s political pragmatism, Citizens United ruling |
 | **Science / Technology** | **S** | Establishing empirical consensus and technological disruption | CRISPR gene editing ethics, neurobiology of screen addiction, renewable energy grids |`
       }
+    ,
+      {
+        heading: '2. The CHELPS Evidence Taxonomies & Nuanced Qualification (Skill 3.C, 4.C)',
+        content: `Brainstorming diverse, sophisticated evidence for FRQ 3 (Argument Essay):
+
+* **The CHELPS Brainstorming Matrix**:
+  * **C - Current Events**: Contemporary geopolitical conflicts, Supreme Court rulings, climate policy debates.
+  * **H - History**: American Revolution, Gilded Age labor strikes, Civil Rights movement, Cold War containment.
+  * **E - Economics & Environmental Science**: Free trade vs. protectionism, Tragedy of the Commons, resource allocation.
+  * **L - Literature & Philosophy**: Classic texts (*1984*, *The Crucible*, *The Great Gatsby*), John Locke, Machiavelli.
+  * **P - Pop Culture & Personal Experience**: Digital social media algorithms, modern artistic movements (use personal experience sparingly and elevated).
+  * **S - Science & Tech**: Artificial intelligence ethics, genetic engineering, space exploration.
+* **The Art of Nuanced Qualification**:
+  * Immature arguments take an extreme, absolute 'all-or-nothing' binary stance.
+  * Sophisticated writers **qualify their claims**, specifying under what conditions the assertion holds true and where its limitations lie:
+    * *'While technological automation undeniably boosts aggregate industrial productivity, it simultaneously exacerbates localized structural unemployment, demanding state-sponsored worker retraining rather than unchecked laissez-faire adoption.'*`
+      }
     ],
     workedExamples: [
       {
@@ -642,16 +710,6 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'A high-scoring, nuanced argument balancing philosophical governance theory with specific historical legal precedent.',
         apScoringTip: 'Specific details matter! Writing "after 9/11 people were scared" scores low. Writing "the passage of the 2001 USA PATRIOT Act expanded Title II electronic surveillance" scores high.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'argument_evidence_pyramid',
-        title: 'The CHELPS Evidence Architecture and Stance Continuum',
-        subtitle: 'Balancing Defend, Qualify, and Challenge across Multiple Real-World Domains',
-        type: 'argument_evidence_pyramid',
-        description: 'Pyramid diagram displaying evidence tiers from Current Events and History down to Literature and Science, anchored by the Defend-Qualify-Challenge stance spectrum.',
-        takeaway: 'Specific, multi-disciplinary evidence paired with a qualified stance creates an unassailable argument.'
       }
     ],
     commonTraps: [
@@ -708,6 +766,23 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
 | **Pathway 2: Exploring Tensions & Complexities** | Acknowledging legitimate counter-arguments, analyzing trade-offs, and explaining why competing values clash under specific real-world conditions | Simply inserting a standard "Some people disagree, but they are wrong" concession paragraph |
 | **Pathway 3: Vivid & Persuasive Prose** | Sustained, mature sentence variety, precise and evocative diction, fresh metaphors, and effortless syntactic transitions | "Thesaurus abuse"—cramming arcane SAT words into awkward, run-on sentences that obscure meaning |`
       }
+    ,
+      {
+        heading: '2. The 3 Pathways to Earning the Row C Sophistication Point (Rubric Row C)',
+        content: `Deconstructing the official College Board criteria for the coveted Row C point:
+
+* **Official Scoring Standard for Sophistication (1 Point)**:
+  * Demonstrates an elevated, complex understanding of the rhetorical situation or subject matter, and/or displays a consistently persuasive, mature writing style throughout the entire response.
+* **The 3 Official Scoring Pathways**:
+  * **Pathway 1: Crafting a Nuanced Argument**:
+    * Grappling with complexities, identifying unresolved tensions within the issue, and qualifying claims rather than defending simplistic absolutes.
+  * **Pathway 2: Situating the Text in Broader Cultural/Historical Context**:
+    * Linking the immediate argument to overarching philosophical movements, historical patterns, or broad socio-political implications beyond the prompt excerpt.
+  * **Pathway 3: Mature, Engaging Prose Style**:
+    * Employing vivid, precise diction, varied sentence structures (periodic sentences, parallelism), and a confident authorial voice free from formulaic template constraints.
+* **Key Rubric Caveats**:
+  * A single clever metaphor or a token sentence in the conclusion does NOT earn sophistication; the complexity must permeate the entire essay!`
+      }
     ],
     workedExamples: [
       {
@@ -722,16 +797,6 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'The revision contextualizes the problem historically, acknowledges user complicity, cites specialized scholarship, and features sophisticated syntactic flow.',
         apScoringTip: 'Show that you understand the underlying motives of both sides. When you explain WHY an opponent thinks the way they do, your essay instantly achieves academic sophistication.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'sophistication_rubric',
-        title: 'The Three Pathways to the Row C Sophistication Point',
-        subtitle: 'Broader Context • Multi-Faceted Tensions • Sustained Stylistic Voice',
-        type: 'sophistication_rubric',
-        description: 'Comparative breakdown of the three College Board approved routes to earning the final point on the 6-point rubric across all AP Lang FRQ essays.',
-        takeaway: 'Sophistication is sustained intellectual depth and rhetorical craftsmanship, not superficial vocabulary ornament.'
       }
     ],
     commonTraps: [

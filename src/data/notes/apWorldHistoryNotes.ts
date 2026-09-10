@@ -45,6 +45,23 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
 | **Americas** | **Mexica (Aztec) & Inca Empire** | Tribute empire (Aztec); Centralized Mita empire (Inca) | Polytheism, cosmic blood sacrifice (Aztec); Sun god Inti (Inca) | Chinampas (floating gardens), Quipu record-keeping, Terracing |
 | **Africa** | **Mali Empire & Great Zimbabwe** | Monarchy controlling gold-salt trade routes | Islam (Mali via Mansa Musa), Animism/Ancestor worship | Gold mining, trans-Saharan camel caravans, stone architecture |`
       }
+    ,
+      {
+        heading: '2. Song Bureaucracy, Neo-Confucianism & Commercial Boom (CED 1.1-1.3)',
+        content: `State building, agricultural innovation, and commercial expansion in Song China:
+
+* **Imperial Bureaucracy & The Civil Service Examination**:
+  * The Song Dynasty ($960-1279\\text{ CE}$) established a highly centralized meritocracy utilizing competitive civil service examinations based on the Confucian classics.
+  * Bureaucratic scholar-officials ('scholar-gentry') managed state affairs, reducing the political power of hereditary military aristocrats.
+* **Agricultural Revolution & Urbanization**:
+  * **Champa Rice**: Fast-ripening, drought-resistant grain variety introduced from Vietnam that allowed double-cropping per season.
+  * Triggered an unprecedented demographic boom, expanding Chinese population beyond $100$ million and fostering the largest metropolitan cities on Earth (Hangzhou).
+  * **The Grand Canal Expansion**: Connected the agricultural surplus of the southern Yangtze river basin with northern political/military capitals.
+* **Commercialization & Manufacturing Innovations**:
+  * **Proto-Industrial Production**: Large-scale blast furnaces produced immense quantities of iron and steel for agricultural tools and armor; porcelain became a premier global luxury export.
+  * **Monetary Systems**: Song invented **flying cash** (first government-issued paper currency) to replace heavy strings of copper coins.
+  * **Neo-Confucian Patriarchal Resurgence**: Synthetic philosophy blending Confucian ethics with Daoist and Buddhist metaphysics; reinforced strict social hierarchies, filial piety, and elite female subordination exemplified by **foot-binding**.`
+      }
     ],
     workedExamples: [
       {
@@ -59,16 +76,6 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Both used overarching belief systems to secure obedience, but Song China institutionalized civil exams while the Abbasids utilized religious caliphate authority and military slave institutions.',
         apScoringTip: 'To earn full analysis points on WHAP Short Answer Questions (SAQ) and Long Essay Questions (LEQ), always provide at least one specific piece of historical evidence (e.g. "scholar-gentry", "Mamluks").'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'whap_song_bureaucracy',
-        title: 'Song Dynasty Bureaucratic Examination Pyramid',
-        subtitle: 'Imperial Court $\\rightarrow$ Scholar-Gentry Class $\\rightarrow$ Provincial Administration',
-        type: 'imperial_hierarchy',
-        description: 'Pyramid showing millions of students studying Confucian classics, filtering through local and imperial exams into scholar-bureaucrat governance.',
-        takeaway: 'Meritocratic testing created an extraordinarily cohesive and durable administrative class in pre-modern China.'
       }
     ],
     commonTraps: [
@@ -125,6 +132,21 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
 | **Indian Ocean** (South China Sea to East Africa) | Bulk & luxury: Spices, cotton textiles, timber, ivory | Dhows, Junks, Lateen sails, Sternpost rudders, Astrolabe | Diasporic merchant communities, credit systems | Islam (Swahili coast, Indonesia), Hinduism/Buddhism |
 | **Trans-Saharan** (North Africa to West Africa) | Gold, salt, slaves, kola nuts | Camel saddles (carrying up to 600 lbs), Oasis caravans | Caravans, Timbuktu trade centers | Islam diffused across West African empires (Ghana, Mali, Songhai) |`
       }
+    ,
+      {
+        heading: '2. The Pax Mongolica & Indian Ocean Maritime Innovations (CED 2.1-2.4)',
+        content: `Afro-Eurasian trade network intensification, nomads, and maritime technology:
+
+* **The Mongol Empire & Pax Mongolica (13th-14th Centuries)**:
+  * Genghis Khan unified nomadic steppe pastoral clans through meritocratic military organization and horse archer mobility.
+  * **Pax Mongolica ('Mongol Peace')**: The unification of Afro-Eurasia under the four Mongol Khanates (Yuan Dynasty in China, Ilkhanate in Persia, Golden Horde in Russia, Chagatai in Central Asia) revitalized the **Silk Roads**.
+  * Facilitated safe commercial transit with the **Yam postal courier relay system** and issued passports (**paiza**) guaranteeing diplomatic immunity and trade protection.
+  * Diffusion of Chinese technologies westward: Gunpowder, magnetic compass, paper making, and movable type printing.
+* **Indian Ocean Trade Innovations**:
+  * **Environmental Knowledge**: Merchants scheduled voyages around predictable seasonal **monsoon winds** (blowing northeast in summer, southwest in winter).
+  * **Maritime Tech**: Triangular **lateen sails** allowed ships to tack against the wind; **sternpost rudders** improved steerage; **astrolabes** calculated latitude.
+  * **Diasporic Merchant Communities**: Arab, Persian, Chinese, and Indian traders settled in coastal entrepôts (Strait of Malacca, Calicut in India, Swahili city-states like Kilwa), introducing Islam and syncretic Swahili language (Bantu mixed with Arabic loanwords).`
+      }
     ],
     workedExamples: [
       {
@@ -138,24 +160,6 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Both travelogues document extensive transcontinental connectivity, illustrating how shared religions and Mongol peace facilitated safe long-distance travel and cross-cultural reporting.',
         apScoringTip: 'Traveler accounts are classic primary sources on Document-Based Questions (DBQs). Always identify the author’s point of view (POV) and cultural lens.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'whap_monsoon_winds',
-        title: 'Indian Ocean Monsoon Wind Circulation Pattern',
-        subtitle: 'Summer Southwest Winds vs. Winter Northeast Winds',
-        type: 'monsoon_map',
-        description: 'Map of Indian Ocean showing wind arrows reversing directions every six months, dictating sailing schedules and creating merchant settlements in Calicut and Malacca.',
-        takeaway: 'Pre-modern trade was fundamentally dictated by environmental cycles; human communities adapted through seasonal residency.'
-      },
-      {
-        id: 'whap_silk_roads_routes',
-        title: 'The Three Major Afro-Eurasian Trade Networks (1200–1450)',
-        subtitle: 'Silk Roads (Overland) vs. Indian Ocean (Maritime) vs. Trans-Saharan (Desert)',
-        type: 'trade_networks_comparison',
-        description: 'Comprehensive side-by-side comparison of routes, luxury vs. bulk commodities, navigational innovations, and cultural diffusion across Eurasia.',
-        takeaway: 'Overland networks prioritized high-value luxury goods due to transport costs, whereas maritime shipping carried bulk staples facilitated by monsoon rhythms.'
       }
     ],
     commonTraps: [
@@ -215,6 +219,23 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
 | **Russian Empire** | Ivan IV (the Terrible), Peter the Great | Streltsy military; Westernized nobility (Table of Ranks) | Russian Eastern Orthodox Christianity | St. Petersburg ("Window to the West"), Winter Palace |
 | **France (Bourbon)** | Louis XIV ("The Sun King") | Royal Intendants (civil bureaucrats displacing feudal nobles) | Catholicism (Revoked Edict of Nantes; Divine Right of Kings) | **Palace of Versailles** (forced nobles to reside under surveillance) |`
       }
+    ,
+      {
+        heading: '2. Gunpowder Empire Bureaucratic Recruitment & Monumental Art (CED 3.1-3.4)',
+        content: `Land-based imperial consolidation, military modernization, and ideological legitimation:
+
+* **The Ottoman Empire (Sunni Islamic Caliphate)**:
+  * Conquered Constantinople in $1453$ under Mehmed II, transforming it into Istanbul.
+  * **Devshirme System**: Enslaved Christian boys from the Balkans, converted them to Islam, and educated them for high-level civil administration or the elite firearm-wielding infantry corps (**Janissaries**).
+  * **Tax Farming (Iltizam)**: State auctioned the right to collect agricultural taxes to wealthy private bidding elites.
+* **The Safavid Empire (Twelver Shia Theocracy)**:
+  * Founded by Shah Ismail; established Twelver Shia Islam as the mandatory state religion, triggering chronic geopolitical and religious warfare against the neighboring Sunni Ottoman Empire (Battle of Chaldiran, $1514$).
+* **The Mughal Empire (South Asia)**:
+  * Akbar the Great ($1556-1605$) consolidated control over a Hindu majority through religious tolerance: abolished the **jizya** tax on non-Muslims, married Hindu Rajput princesses, and fostered cultural syncretism.
+  * **Monumental Architecture**: Shah Jahan constructed the **Taj Mahal** as an architectural testament combining Persian, Islamic, and Indian motifs to project imperial power and legitimacy.
+* **Qing Dynasty China ($1644-1912$)**:
+  * Manchu pastoralists from Manchuria overthrew the Ming Dynasty; enforced ethnic supremacy via the **queue hairstyle mandate** (punishable by death for Han men who refused), while maintaining Confucian civil service governance.`
+      }
     ],
     workedExamples: [
       {
@@ -228,16 +249,6 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Both constructed monumental architectural complexes to visually manifest wealth, project divine/imperial supremacy, and domesticate or intimidate political rivals.',
         apScoringTip: 'When writing LEQs, link physical architecture directly to *political function* (e.g. Versailles served as a political prison/gilded cage for nobles).'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'whap_devshirme_pipeline',
-        title: 'The Ottoman Devshirme Recruitment Pipeline',
-        subtitle: 'Balkan Conscription $\\rightarrow$ Palace School $\\rightarrow$ Janissary / Grand Vizier',
-        type: 'devshirme_chart',
-        description: 'Flowchart showing Christian youths converted to Islam, educated in administration or military arts, serving as elite soldiers directly loyal to the Sultan.',
-        takeaway: 'By utilizing non-hereditary, loyal slave bureaucrats, monarchs bypassed disloyal native noble factions.'
       }
     ],
     commonTraps: [
@@ -295,6 +306,23 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
 | **Domesticated Animals** | Turkeys, Llamas, Alpacas, Guinea Pigs | Horses, Cattle, Pigs, Sheep, Goats, Chickens | Horses revolutionized indigenous Great Plains hunting (Comanche); Pigs multiplied rapidly |
 | **Pathogens / Disease** | Syphilis (disputed origins) | **Smallpox**, Measles, Malaria, Yellow Fever, Influenza | **The Great Dying**: 80%–90% indigenous mortality in the Americas |`
       }
+    ,
+      {
+        heading: '2. European Maritime Empires, Global Silver & Transatlantic Trade (CED 4.2-4.7)',
+        content: `Oceanic voyaging, global commercial integration, and coercive plantation labor:
+
+* **European Maritime Exploration & Mercantilism**:
+  * Portugal built a **Trading Post Empire** along African and Asian coasts (Prince Henry the Navigator, Vasco da Gama), establishing naval choke-points and selling commercial trading permits (**cartaz**).
+  * Spain sponsored Christopher Columbus ($1492$); Treaty of Tordesillas ($1494$) divided non-European world between Spain and Portugal.
+* **The Global Silver Flow (The Silver Drain)**:
+  * Spanish extraction of massive silver deposits at **Potosí** (Bolivia) and Zacatecas (Mexico) utilizing the coerced indigenous **mita system**.
+  * Silver galleons sailed across the Pacific to Manila (Philippines), where Spanish silver was exchanged for Chinese luxury silks, porcelain, and tea.
+  * The Ming Dynasty's **Single Whip Tax Reform** mandated that all domestic taxes be paid strictly in silver, turning China into the ultimate global destination ('silver sink') for New World bullion!
+* **Joint-Stock Companies**:
+  * Dutch East India Company (**VOC**) and British East India Company (**EIC**): Privately financed chartered corporations with investor limited liability, possessing state-like powers to wage war, mint coinage, and administer colonial territories.
+* **The Transatlantic Chattel Slave Trade**:
+  * Capture and horrific middle passage shipment of over $12$ million enslaved Africans to Brazilian and Caribbean sugar plantations, causing catastrophic demographic depletion in West Africa and enriching European imperial powers.`
+      }
     ],
     workedExamples: [
       {
@@ -309,16 +337,6 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Encomienda granted labor rights; Hacienda was agrarian debt-peonage; Mita was coerced mining labor; all eventually supplemented by African chattel slavery.',
         apScoringTip: 'Identify the racial hierarchy: The Casta System classified colonial society by blood purity (Peninsulares $\\rightarrow$ Creoles $\\rightarrow$ Mestizos $\\rightarrow$ Mulattoes $\\rightarrow$ Indigenous/Africans).'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'whap_triangular_trade',
-        title: 'The Transatlantic Triangular Trade and Middle Passage',
-        subtitle: 'Manufactured Goods $\\rightarrow$ Enslaved Human Cargo $\\rightarrow$ Plantation Cash Crops',
-        type: 'trade_loop',
-        description: 'Triangular Atlantic map showing European firearms flowing to West Africa, Middle Passage carrying enslaved people to Caribbean/Brazil, sugar/tobacco returning to Europe.',
-        takeaway: 'European mercantile wealth was directly subsidized by the violent extraction of African labor and American land.'
       }
     ],
     commonTraps: [
@@ -377,6 +395,21 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
 | **Haitian** (1791–1804) | Brutality of sugar slavery, inspired by French declaration | **Toussaint Louverture**, Jean-Jacques Dessalines | Abolition of slavery, racial equality | Only successful enslaved rebellion; first free black republic |
 | **Latin American** (1808–1825) | Creole resentment of Peninsulares, Napoleonic invasion of Spain | **Simón Bolívar** (Jamaica Letter), José de San Martín | Enlightenment republicanism, Gran Colombia vision | Independence from Spain; Creoles replaced Peninsulares at the top |`
       }
+    ,
+      {
+        heading: '2. Enlightenment Ideology, Nationalism & The Atlantic Revolutions (CED 5.1-5.4)',
+        content: `Intellectual revolutions, constitutional challenges, and imperial dissolutions:
+
+* **The Enlightenment Intellectual Foundations**:
+  * **John Locke**: Posited inalienable natural rights (life, liberty, property) and a **social contract** where citizens retain the right to overthrow tyrannical rulers who violate their rights.
+  * **Baron de Montesquieu**: Advocated separation of powers into executive, legislative, and judicial branches.
+  * **Jean-Jacques Rousseau**: Promoted popular sovereignty and the 'General Will'.
+* **The Atlantic Revolutions Nexus**:
+  * **American Revolution ($1775-1783$)**: Colonists rebelled against British imperial taxes without parliamentary representation; established a democratic republic grounded in Enlightenment principles.
+  * **French Revolution ($1789-1799$)**: Third Estate revolted against aristocratic feudal privilege; National Assembly adopted the **Declaration of the Rights of Man and of the Citizen**; radical Jacobin Reign of Terror (Robespierre) followed by the rise of Napoleon Bonaparte spreading legal equality across Europe.
+  * **Haitian Revolution ($1791-1804$)**: Led by **Toussaint Louverture**, enslaved Black workers in the French sugar colony of Saint-Domingue executed the only successful slave revolt in world history, abolishing slavery and founding the world's first free Black republic.
+  * **Latin American Independence ($1808-1826$)**: **Simón Bolívar** (author of the *Jamaica Letter*) and José de San Martín led Creole elites in overthrowing Spanish colonial rule across South America.`
+      }
     ],
     workedExamples: [
       {
@@ -391,16 +424,6 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Bolívar used Enlightenment liberty to dismantle Spanish imperialism while preserving Creole elite authority over lower racial classes.',
         apScoringTip: 'Whenever analyzing Bolívar or Jefferson, evaluate the tension between their universal human rights rhetoric and their preservation of racial hierarchies.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'atlantic_revolutions_flow',
-        title: 'Interconnected Domino Wave of Atlantic Revolutions',
-        subtitle: 'American (1776) $\\rightarrow$ French (1789) $\\rightarrow$ Haitian (1791) $\\rightarrow$ Latin American (1810)',
-        type: 'domino_timeline',
-        description: 'Timeline showing Seven Years War debt igniting American and French uprisings, French instability enabling Haitian slave revolt, Napoleon invading Spain sparking Latin American independence.',
-        takeaway: 'Atlantic revolutions were deeply causally linked through imperial war debts and cascading Enlightenment ideals.'
       }
     ],
     commonTraps: [
@@ -458,6 +481,26 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
 | **Marxism / Socialism** (Karl Marx & Friedrich Engels) | *The Communist Manifesto* (1848) | History is driven by class struggle between the Bourgeoisie (owners) and Proletariat (workers); capitalism inevitably produces revolution | Proletariat seizes means of production; state eventually withers away into classless communism |
 | **Utilitarianism** (John Stuart Mill) | *Utilitarianism* (1861) | Actions are right if they promote the greatest happiness for the greatest number | Government intervention justified to protect workers, ban child labor, and secure public health |`
       }
+    ,
+      {
+        heading: '2. Industrial Imperialism, The Scramble for Africa & Meiji Japan (CED 6.1-6.6)',
+        content: `Technological military imbalances, colonial subjugation, and defensive modernization:
+
+* **Motives & Rationales for 19th-Century Imperialism**:
+  * **Economic Drivers**: Industrial factories demanded continuous raw materials (rubber from Congo, cotton from Egypt/India, copper from Chile, petroleum, palm oil for machine lubricants) and captive markets.
+  * **Ideological Justifications**:
+    * **Social Darwinism**: Pseudoscience claiming white European racial superiority destined Europeans to dominate 'weaker' non-white races.
+    * **The 'Civilizing Mission'**: Paternalistic duty to spread Christianity, Western medicine, and European law ('White Man's Burden').
+* **The Scramble for Africa ($1884-1914$)**:
+  * **The Berlin Conference ($1884-1885$)**: Organized by German Chancellor Otto von Bismarck; 14 European powers partitioned the African continent without inviting a single African leader, drawing artificial borders that exacerbated ethnic conflicts.
+  * **King Leopold II of Belgium**: Private owner of the Congo Free State; enforced horrific rubber quotas through mass mutilation and forced labor (an estimated 10 million Congolese died).
+* **Anti-Colonial Resistance Movements**:
+  * **Sepoy Mutiny / Indian Rebellion of 1857**: Indian soldiers rebelled against British East India Company over Enfield rifle cartridges greased with pig/cow fat; British brutally suppressed revolt and instituted direct **British Raj** rule.
+  * **Boxer Rebellion ($1899-1901$) in China**: Anti-foreign, anti-Christian uprising crushed by an Eight-Nation multinational coalition.
+* **Meiji Restoration in Japan ($1868$)**:
+  * Following Commodore Matthew Perry's forced opening of Japan ($1853$), young samurai overthrew the Tokugawa Shogunate and restored the Meiji Emperor.
+  * **Defensive Industrial Modernization**: Abolished feudal samurai privileges, modernized military along Prussian lines, built state-financed railways and factories sold to private conglomerates (**zaibatsu**), emerging as an imperialist power defeating China ($1895$) and Russia ($1905$).`
+      }
     ],
     workedExamples: [
       {
@@ -472,24 +515,6 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Colonial powers rationalized raw resource extraction using pseudo-scientific Social Darwinism and moralizing "civilizing mission" rhetoric.',
         apScoringTip: 'When discussing imperialism, distinguish between CAUSES (need for rubber, cotton, oil) and JUSTIFICATIONS (Social Darwinism, religion).'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'meiji_modernization_graph',
-        title: 'The Meiji Restoration Industrialization Pipeline',
-        subtitle: '1868 Shogunate Overthrow $\\rightarrow$ Western Tech Adoption $\\rightarrow$ Imperial Power',
-        type: 'modernization_flow',
-        description: 'Flowchart showing Japan abolishing samurai feudalism, sending envoys abroad (Iwakura Mission), building railroads and modern navy, defeating Russia in 1905.',
-        takeaway: 'Japan demonstrated that adopting Western technology and industrialization could beat Western imperial powers at their own game.'
-      },
-      {
-        id: 'scramble_for_africa_map',
-        title: 'The Scramble for Africa & Colonial Partition (1884–1885)',
-        subtitle: 'Berlin Conference "Effective Occupation" vs. African Anti-Colonial Resistance',
-        type: 'scramble_for_africa_map',
-        description: 'Visual map analyzing the Berlin Conference partition, King Leopold II’s Congo Free State, and Emperor Menelik II’s historic victory at the Battle of Adwa (1896) preserving Ethiopian independence.',
-        takeaway: 'European powers carved up 90% of Africa by 1914 using artificial boundaries, while Ethiopia successfully defended its sovereignty through modernization and modern military firepower.'
       }
     ],
     commonTraps: [
@@ -549,6 +574,25 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
 | **Casualties / Atrocities** | ~20 million military/civilian deaths; Armenian Genocide | ~75 million deaths; **The Holocaust**; Firebombing of Dresden/Tokyo; Hiroshima/Nagasaki |
 | **Political Outcome** | Fall of 4 empires (Russian, German, Ottoman, Austro-Hungarian); League of Nations | Emergence of two Superpowers (USA and USSR); Creation of United Nations (UN) |`
       }
+    ,
+      {
+        heading: '2. Total War Mobilization, Global Depression & The Holocaust (CED 7.2-7.8)',
+        content: `Industrialized carnage, economic collapse, fascist aggression, and genocide:
+
+* **World War I ($1914-1918$) as Total War**:
+  * **M-A-I-N Long-Term Causes**: Militarism, Alliances (Triple Entente vs. Triple Alliance), Imperialism, and Nationalism.
+  * Spark: Assassination of Archduke Franz Ferdinand by Gavrilo Princip (Black Hand) in Sarajevo.
+  * **Total War Reality**: Governments harnessed all domestic civilian resources, enforced military conscription, directed industrial production, rationed food, censored press, and deployed wartime propaganda.
+  * Industrial Military Tech: Machine guns, poison mustard gas, tanks, airplanes, flamethrowers, and subterranean **trench warfare** along the Western Front causing catastrophic attrition.
+* **The Interwar Crisis & Rise of Totalitarianism ($1919-1939$)**:
+  * **Treaty of Versailles ($1919$)**: Imposed catastrophic 'War Guilt Clause' (Article 231) and astronomical financial reparations on Germany, breeding bitter revanchist resentment.
+  * **The Great Depression ($1929$)**: Triggered by US stock market crash; global financial collapse collapsed international trade, discrediting democratic capitalism and paving the way for fascist dictators: Benito Mussolini in Italy and Adolf Hitler in Nazi Germany.
+* **World War II ($1939-1945$) & The Holocaust**:
+  * German **Blitzkrieg** conquered continental Europe; Axis powers (Germany, Italy, Japan) sought violent territorial Lebensraum and resource spheres (Greater East Asia Co-Prosperity Sphere).
+  * Turning Point Battles: Stalingrad ($1942-1943$, destruction of German 6th Army in Russia); Midway ($1942$, US naval victory in the Pacific).
+  * **The Holocaust**: Nazi industrialized state-sponsored genocide murdering $6$ million European Jews and millions of Roma, Soviet POWs, and disabled people in death camp gas chambers (Auschwitz-Birkenau).
+  * Concluded in August $1945$ with US atomic bombings of Hiroshima and Nagasaki, inaugurating the Nuclear Age.`
+      }
     ],
     workedExamples: [
       {
@@ -563,16 +607,6 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Both deployed civilian labor, rationed domestic economies, and targeted civilian populations through naval blockades and aerial bombardment.',
         apScoringTip: 'Remember that colonial troops played an indispensable role in Total Wars (e.g. over 1 million Indian soldiers fought for Britain in WWI).'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'total_war_concept',
-        title: 'Total War Mobilization and Targeting Spectrum',
-        subtitle: 'Civilian Economy $\\rightarrow$ Industrial Armaments $\\rightarrow$ Homefront Bombing',
-        type: 'total_war_diagram',
-        description: 'Circular diagram showing factory workers, rationing boards, propaganda censors, and military frontlines unified under state direction.',
-        takeaway: 'In total war, the factory worker and the soldier are treated as equally critical parts of the war machine.'
       }
     ],
     commonTraps: [
@@ -632,6 +666,27 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
 | **Vietnam** | France & USA | **Ho Chi Minh** | Armed guerrilla resistance (Viet Minh, Viet Cong) | Defeated French at Dien Bien Phu (1954); unified Vietnam under communism (1975) |
 | **South Africa** | Apartheid White Minority | **Nelson Mandela**, Desmond Tutu | ANC resistance, international economic boycotts | Ended Apartheid (1994); peaceful democratic transition |`
       }
+    ,
+      {
+        heading: '2. Cold War Proxy Conflicts, Decolonization & Non-Alignment (CED 8.2-8.8)',
+        content: `Bipolar superpower ideological struggles and anti-colonial national liberations:
+
+* **Cold War Ideological Confrontation**:
+  * Superpower rivalry between democratic capitalism (United States and NATO) and Marxist-Leninist state communism (Soviet Union and the Warsaw Pact).
+  * **Nuclear Deterrence & MAD**: The doctrine of Mutually Assured Destruction prevented direct military confrontation between superpowers, diverting conflict into global **proxy wars**:
+    * **Korean War ($1950-1953$)**: North Korean communist invasion backed by USSR/China opposed by US/UN forces; concluded with armistice along the 38th parallel.
+    * **Vietnam War ($1955-1975$)**: Communist Viet Minh and Viet Cong led by Ho Chi Minh defeated French and US forces, reunifying Vietnam under communist governance.
+    * **Soviet-Afghan War ($1979-1989$)**: Soviet invasion to prop up communist regime opposed by US-funded Islamic holy warriors (**Mujahideen**); became the 'Soviet Vietnam'.
+* **Decolonization Pathways Across Afro-Eurasia**:
+  * **Negotiated Independence**:
+    * **India ($1947$)**: Mahatma Gandhi led the Indian National Congress in nonviolent civil disobedience (**satyagraha**); British departure triggered the violent **Partition of India** into Hindu-majority India and Muslim-majority Pakistan, displacing $15$ million people and killing an estimated 1 million.
+    * **Ghana ($1957$)**: Kwame Nkrumah led peaceful negotiations, becoming the first sub-Saharan colony to gain independence, championing **Pan-Africanism**.
+  * **Armed National Liberation**:
+    * **Algerian War ($1954-1962$)**: National Liberation Front (FLN) fought a brutal guerrilla war against French settlers and military forces to achieve independence.
+* **The Non-Aligned Movement (NAM)**:
+  * Spearheaded by Prime Minister Jawaharlal Nehru (India), President Sukarno (Indonesia), President Gamal Abdel Nasser (Egypt), and President Josip Broz Tito (Yugoslavia) at the **1955 Bandung Conference**.
+  * Collective coalition of developing Third World nations refusing to align as vassal states of either the American capitalist or Soviet communist bloc.`
+      }
     ],
     workedExamples: [
       {
@@ -646,16 +701,6 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Gorbachev’s policies of Glasnost (political openness) and Perestroika (economic restructuring) unintentionally dismantled authoritarian control, triggering the USSR’s collapse.',
         apScoringTip: 'Always cite Glasnost and Perestroika by name and define both terms on Cold War essays.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'cold_war_bipolar_world',
-        title: 'The Bipolar Cold War World Order',
-        subtitle: 'NATO (First World) vs. Warsaw Pact (Second World) vs. Non-Aligned Movement (Third World)',
-        type: 'geopolitical_map',
-        description: 'Map showing US-led NATO capitalist bloc in blue, Soviet-led Warsaw Pact in red, and unaligned Bandung conference nations in green.',
-        takeaway: 'Developing nations navigated superpower pressure by forming the Non-Aligned Movement to preserve national autonomy.'
       }
     ],
     commonTraps: [
@@ -714,6 +759,23 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
 | **Medicine & Health** | **Antibiotics (Penicillin)**, vaccines (polio, COVID-19), artificial hearts | Doubled human life expectancy, eradicated smallpox | Antibiotic-resistant superbugs, unequal vaccine access between wealthy and developing nations |
 | **Culture & Society** | Global pop culture (Hollywood, K-Pop, anime, Bollywood), global human rights | Spread of universal human rights (UN Universal Declaration), feminist liberation | Cultural homogenization ("Americanization"), loss of indigenous languages |`
       }
+    ,
+      {
+        heading: '2. Technological Interconnectedness, Global Governance & Anthropocene (CED 9.1-9.9)',
+        content: `21st-century globalization, multilateral institutions, and environmental transformations:
+
+* **Technological Proliferation & Economic Integration**:
+  * Rapid communication via the **World Wide Web, smartphones, and fiber-optic cables** enabled instant global financial transactions and decentralized corporate workflows.
+  * Commercial aviation and standardized shipping containers slashed transportation costs, fostering multinational global supply chains.
+  * **Free-Market Neoliberalism**: Economic policies championed by Ronald Reagan and Margaret Thatcher promoting deregulation, privatization of state industries, and reduced tariffs via the **World Trade Organization (WTO)** and trade pacts (NAFTA/USMCA).
+* **Global Governance & Universal Human Rights**:
+  * **United Nations (UN)**: Established in $1945$ following League of Nations failure; created the **Universal Declaration of Human Rights (1948)** asserting universal rights regardless of nationality, race, or sex.
+  * Multilateral Institutions: International Monetary Fund (IMF) and World Bank financing international economic development and structural adjustment programs.
+* **Global Environmental Challenges & The Anthropocene**:
+  * **The Anthropocene Epoch**: Geological era defined by human industrial activity becoming the dominant influence on Earth's climate, atmosphere, and ecosystems.
+  * Escalating global challenges: Fossil fuel greenhouse gas emissions causing climate change, ocean acidification, deforestation in the Amazon basin, plastic pollution, and the Sixth Mass Extinction.
+  * Global environmental cooperation: **Kyoto Protocol ($1997$)** and **Paris Climate Agreement ($2015$)** establishing binding emissions targets to limit global temperature increases.`
+      }
     ],
     workedExamples: [
       {
@@ -728,16 +790,6 @@ export const AP_WORLD_HISTORY_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Positively prevented widespread famine via crop yields; negatively caused environmental pollution and bankrupted small non-mechanized farmers.',
         apScoringTip: 'The Green Revolution is the single most frequently tested technological development in Unit 9.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'global_supply_chain_phone',
-        title: 'The Multi-Continental Smartphone Supply Chain',
-        subtitle: 'Design (USA) $\\rightarrow$ Rare Earths (DR Congo) $\\rightarrow$ Assembly (China) $\\rightarrow$ Consumer',
-        type: 'supply_chain_map',
-        description: 'World map showing raw materials mined in Africa, microchips fabricated in Taiwan, software written in California, assembled in Shenzhen, shipped worldwide.',
-        takeaway: 'Modern manufactured products are no longer made in one country; they are assembled through complex, interdependent planetary supply chains.'
       }
     ],
     commonTraps: [

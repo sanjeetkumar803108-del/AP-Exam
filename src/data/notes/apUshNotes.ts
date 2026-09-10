@@ -43,6 +43,26 @@ export const AP_USH_NOTES: APUnitNote[] = [
 | **Mississippi Valley & East** | Fertile river valleys, humid deciduous forests | Mixed agricultural "Three Sisters" (corn, beans, squash); permanent villages; monumental earthen burial mounds | Cahokia (Mississippian mound builders), Cherokee |
 | **Pacific Northwest** | Temperate rainforests, coastal marine | Abundant salmon fishing, whaling, ocean foraging; permanent cedar plank longhouses and carved totem poles | Chinook, Tlingit |`
       }
+    ,
+      {
+        heading: '2. The Columbian Exchange, Encomienda & Spanish Casta System (CED 1.4-1.6)',
+        content: `Transatlantic ecological convergence and colonial racial hierarchies:
+
+* **The Columbian Exchange Biological Flux**:
+  * **From Old World to New World**:
+    * Deadly Epidemic Pathogens: Smallpox, measles, influenza decimated an estimated $80\%$ to $90\%$ of indigenous populations who lacked acquired immunological resistance.
+    * Domesticated Animals: Horses transformed nomadic Great Plains indigenous hunting culture; cattle and pigs altered American ecosystems.
+    * Cash Crops & Weeds: Sugar cane, coffee, wheat, bluegrass.
+  * **From New World to Old World**:
+    * Nutrient-Dense Caloric Crops: Potatoes, maize (corn), sweet potatoes, manioc, tomatoes.
+    * Fuelled a massive European population boom, facilitating the transition from European feudalism to early capitalism.
+* **Labor & Social Systems in New Spain**:
+  * **Encomienda System**: Spanish crown granted conquistadores legal rights to extract forced indigenous labor and tribute in exchange for converting them to Roman Catholicism (harsh silver mining in Potosí, plantation agriculture).
+  * **The Valladolid Debate (1550-1551)**: First moral debate over European colonial rights:
+    * **Bartolomé de Las Casas**: Argued indigenous peoples were rational, human souls deserving equal Christian rights and dignified protection.
+    * **Juan Ginés de Sepúlveda**: Defended Spanish conquest using Aristotle's concept of 'natural slaves' lacking moral civilization.
+  * **The Casta Hierarchy**: Rigid racial classification system: Peninsulares (Spanish-born) > Creoles (European descent born in Americas) > Mestizos (Spanish-Indigenous) > Mulattoes (Spanish-African) > Enslaved Indigenous and African laborers.`
+      }
     ],
     workedExamples: [
       {
@@ -56,16 +76,6 @@ export const AP_USH_NOTES: APUnitNote[] = [
         ],
         finalAnswer: '(a) Horses transformed Plains mobility while free-ranging pigs degraded native ecosystems; (b) Potatoes and corn spurred European population expansion; (c) The 1680 Pueblo Revolt successfully expelled Spanish colonists from New Mexico for over a decade.',
         apScoringTip: 'Always follow the A.C.E. method for Short Answer Questions: **A**nswer the prompt directly, **C**ite specific historical evidence, and **E**xplain how the evidence proves your claim.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'ush_columbian_exchange',
-        title: 'The Columbian Exchange Atlantic Flow',
-        subtitle: 'Biological, Agricultural, and Pathogenic Transatlantic Transfers',
-        type: 'columbian_exchange_map',
-        description: 'Atlantic map diagram showing exchange arrows: Smallpox, measles, horses, and sugarcane moving west to Americas; Corn, potatoes, tobacco, and syphilis moving east to Europe.',
-        takeaway: 'The introduction of American staple crops triggered European population booms, while Old World diseases decimated up to 90% of indigenous populations.'
       }
     ],
     commonTraps: [
@@ -122,6 +132,24 @@ export const AP_USH_NOTES: APUnitNote[] = [
 | **Middle Colonies** (NY, PA, NJ, DE) | Temperate climate, fertile broad river valleys | "Breadbasket" wheat, rye, and barley farming; flourishing port commerce in NYC and Philadelphia | High ethnic and religious diversity; William Penn’s **Quaker** "Holy Experiment" practicing religious tolerance | Representative colonial assemblies; indentured servants and tenant farmers |
 | **Southern & Chesapeake** (VA, MD, NC, SC, GA) | Rich fertile soils, long warm growing season, swampy tidewater | Cash-crop agriculture: Chesapeake grew **Tobacco**; Deep South grew **Rice and Indigo** | Dispersed rural plantations; aristocratic planter oligarchy; Anglican Church dominance | **Virginia House of Burgesses** (1619); massive reliance on enslaved African chattel labor |`
       }
+    ,
+      {
+        heading: '2. Mercantilism, The Navigation Acts & Chattel Slavery (CED 2.3-2.6)',
+        content: `Imperial economic controls, colonial resistance, and labor transformations:
+
+* **British Mercantilism & The Navigation Acts**:
+  * **Mercantilist Philosophy**: Economic doctrine that global wealth is finite; a mother country must maximize gold/silver reserves by maintaining a favorable balance of trade (exports > imports).
+  * **Colonies' Designated Function**: Supply raw agricultural staples (tobacco, sugar, timber, indigo) exclusively to England and consume British manufactured goods.
+  * **Navigation Acts (1651-1673)**: Restricted colonial trade strictly to English ships and mandated that 'enumerated goods' pass through English ports for inspection and taxation.
+  * **Period of Salutary Neglect (1688-1763)**: Weak British enforcement of trade regulations allowed colonists to build autonomous political assemblies and engage in widespread smuggling.
+* **The Transition to Racial Chattel Slavery**:
+  * Prior to the late 17th century, Chesapeake tobacco plantations relied primarily on European **indentured servants**.
+  * **Bacon's Rebellion (1676) as Watershed Turning Point**: Nathaniel Bacon led an armed rebellion of poor white former indentured servants and landless freemen against Governor William Berkeley's elite planter establishment.
+  * The terrified colonial planter elite deliberately transitioned toward **perpetual African chattel slavery** as a permanent, controllable, race-based labor force defined by matrilineal descent (children inherited mother's enslaved status).
+* **The First Great Awakening (1730s-1740s)**:
+  * Transatlantic evangelical Protestant revival led by **Jonathan Edwards** ('Sinners in the Hands of an Angry God') and traveling orator **George Whitefield**.
+  * Emphasized emotional, personal salvation over established church hierarchy, fostering an anti-authoritarian mindset that democratized religious thought across all 13 colonies.`
+      }
     ],
     workedExamples: [
       {
@@ -135,16 +163,6 @@ export const AP_USH_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'France focused on the fur trade with few settlers, fostering alliances and intermarriage with Native Americans; Britain sent large family settlements to acquire land for agriculture, driving violent displacement of native populations.',
         apScoringTip: 'Focus on motivations: Trade vs. Land. This fundamental distinction explains why indigenous relations differed so dramatically between European powers.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'ush_triangular_trade',
-        title: 'The Atlantic Triangular Trade and Middle Passage',
-        subtitle: 'Manufactured Goods $\\rightarrow$ Enslaved Africans $\\rightarrow$ Sugar and Tobacco',
-        type: 'triangular_trade_map',
-        description: 'Atlantic circuit map showing guns/textiles shipped from Britain to West Africa, the horrific Middle Passage transporting enslaved Africans to Caribbean/Americas, and raw sugar/tobacco shipped back to Britain.',
-        takeaway: 'The Atlantic mercantilist economy linked Europe, Africa, and the Americas in an exploitative trade network anchored by chattel slavery.'
       }
     ],
     commonTraps: [
@@ -204,6 +222,31 @@ export const AP_USH_NOTES: APUnitNote[] = [
 | **Commerce Regulation** | Congress could NOT regulate interstate commerce (states had tariffs) | **Commerce Clause**: Federal government regulates interstate and foreign trade |
 | **Catalyst for Change** | **Shays’ Rebellion (1786)**: Mass farmers revolt exposed federal impotence | Constitutional Convention called to establish a more stable union |`
       }
+    ,
+      {
+        heading: '2. The Imperial Crisis, Revolutionary War & The Constitution (CED 3.2-3.9)',
+        content: `The path to independence, war mobilization, and founding statecraft:
+
+* **1763: The Great Imperial Watershed Turning Point**:
+  * **Treaty of Paris (1763)**: Ended the French and Indian War (Seven Years' War), expelling France from North America but leaving Britain with immense national debt.
+  * **End of Salutary Neglect**: Britain enforced taxes on colonies to pay for imperial defense:
+    * **Proclamation of 1763**: Prohibited colonial settlement west of the Appalachian Mountains to avoid Pontiac's Rebellion.
+    * **Stamp Act (1765)**: First direct internal tax on printed paper; sparked the Stamp Act Congress, Sons of Liberty, and the rallying cry 'No Taxation Without Representation!'.
+    * **Intolerable (Coercive) Acts (1774)**: Punished Boston for the Boston Tea Party, closing the port and quartering troops, prompting the First Continental Congress.
+* **Thomas Paine's Common Sense (January 1776)**:
+  * Popular pamphlet using plain, accessible language to argue that it was contrary to common sense for an island across an ocean to govern a continent, propelling the Declaration of Independence (July 4, 1776).
+* **Articles of Confederation (1781) Failures**:
+  * Unicameral legislature with NO executive, NO federal judiciary, NO power to levy taxes, and NO standing army.
+  * **Shays' Rebellion (1786)**: Armed uprising of debt-ridden Massachusetts farmers exposed the federal government's total inability to maintain public order, prompting the Constitutional Convention.
+* **Constitutional Compromises (1787)**:
+  * **The Great (Connecticut) Compromise**: Bicameral legislature; proportional representation in the House of Representatives, equal representation (2 senators per state) in the Senate.
+  * **The Three-Fifths Compromise**: Counted three-fifths of enslaved persons for congressional representation and direct taxation.
+  * **Federalists vs. Anti-Federalists**: Federalists supported ratification (Hamilton, Madison, Jay authored *The Federalist Papers*); Anti-Federalists demanded a **Bill of Rights** to protect individual liberties against federal tyranny.
+* **Hamilton's Financial Plan (1790-1791)**:
+  * Full federal funding of national debt at par and assumption of state war debts.
+  * Protective tariffs and an excise tax on whiskey (sparking the 1794 Whiskey Rebellion).
+  * Creation of the **Bank of the United States (BUS)**, defended via the 'Elastic Clause' (Necessary and Proper Clause) under loose constitutional construction.`
+      }
     ],
     workedExamples: [
       {
@@ -218,16 +261,6 @@ export const AP_USH_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Paine wrote *Common Sense* to convince common colonists that reconciliation with the British Crown was impossible, mobilizing public support for the Declaration of Independence.',
         apScoringTip: 'When sourcing a document on the DBQ, explain WHY the author’s perspective or historical situation matters for interpreting the document.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'ush_checks_balances',
-        title: 'Constitutional Separation of Powers and Checks',
-        subtitle: 'Legislative $\\iff$ Executive $\\iff$ Judicial Interlocking Powers',
-        type: 'checks_and_balances',
-        description: 'Triangular diagram showing Congress passing laws/overriding vetoes, President vetoing bills/appointing judges, and Supreme Court striking down unconstitutional acts via judicial review.',
-        takeaway: 'Separation of powers and checks and balances prevent any single government branch from usurping tyrannical authority.'
       }
     ],
     commonTraps: [
@@ -287,6 +320,25 @@ export const AP_USH_NOTES: APUnitNote[] = [
 | **Asylum & Prison Reform** | Dorothea Dix | Humane treatment for the mentally ill, separating them from violent criminals | Documented horrific conditions in state legislatures; established state-funded mental hospitals and rehabilitation facilities |
 | **Utopian Communities** | Robert Owen (New Harmony), Oneida Community, Brook Farm | Create ideal cooperative societies transcending competitive industrial capitalism | Experimented with communal property, shared labor, and perfectionism; short-lived but challenged capitalist norms |`
       }
+    ,
+      {
+        heading: '2. The Market Revolution, Jacksonian Democracy & Sectionalism (CED 4.2-4.8)',
+        content: `Economic transformation, democratic expansion, and early sectional fissures:
+
+* **The Market Revolution Triad of Innovations**:
+  * **Transportation**: Erie Canal (1825) linked Western grain farmers to New York City port; Robert Fulton's steamboats enabled upstream navigation; early railroads connected regional hubs.
+  * **Communication**: Samuel Morse's electric telegraph (1844) coordinated national commerce instantly.
+  * **Industrial Production**: Eli Whitney's interchangeable parts and cotton gin; Samuel Slater's factory system and Francis Cabot Lowell's textile mills employing young single women ('Lowell Mill Girls').
+  * **Social Transformation**: Rise of the urban middle class and the 'Cult of Domesticity' (middle-class gender ideology prescribing women's sphere strictly to home and moral nurturing).
+* **Jacksonian Democracy & Mass Politics**:
+  * **Universal White Male Suffrage**: Elimination of property ownership requirements for voting expanded the electorate.
+  * **The Spoils System**: Andrew Jackson rewarded loyal political partisans with federal administrative jobs ('rotation in office').
+  * **The Indian Removal Act (1830)**: Defied Supreme Court Chief Justice John Marshall's ruling in *Worcester v. Georgia* (1832), forcibly marching the Cherokee along the **Trail of Tears** (over 4,000 perished).
+  * **The Bank War (1832)**: Jackson vetoed the recharter of the Second Bank of the United States, transferring federal deposits to state 'pet banks', triggering the Panic of 1837.
+* **Early Sectional Crises**:
+  * **The Missouri Compromise of 1820 (Henry Clay)**: Admitted Missouri as a slave state and Maine as a free state; banned slavery in Louisiana Territory north of latitude **36°30'**.
+  * **The Nullification Crisis (1832-1833)**: South Carolina (led by John C. Calhoun) declared the 1828 'Tariff of Abominations' unconstitutional; Jackson threatened military force with the Force Bill while Clay brokered a lower compromise tariff.`
+      }
     ],
     workedExamples: [
       {
@@ -301,16 +353,6 @@ export const AP_USH_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'The Missouri Compromise admitted Missouri as slave, Maine as free, and drew the $36^\\circ 30\'$ line banning slavery north of it; it temporarily preserved legislative balance but failed to permanently settle the slavery expansion question.',
         apScoringTip: 'Remember all three components of the 1820 compromise: Missouri (slave), Maine (free), and the $36^\\circ 30\'$ boundary line.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'ush_missouri_compromise',
-        title: 'The Missouri Compromise Line of 1820',
-        subtitle: 'Preserving Senate Balance with the $36^\\circ 30\'$ Parallel',
-        type: 'missouri_compromise_map',
-        description: 'Map showing free states in North, slave states in South, and the $36^\\circ 30\'$ parallel line cutting across the Louisiana Purchase prohibiting slavery north of the line.',
-        takeaway: 'Preserving the equal numerical balance between free and slave states in the US Senate was the primary goal of antebellum political compromises.'
       }
     ],
     commonTraps: [
@@ -370,6 +412,31 @@ export const AP_USH_NOTES: APUnitNote[] = [
 | **Dred Scott v. Sandford** | 1857 | Chief Justice Taney ruled Black people were not citizens; Congress has NO constitutional power to ban territorial slavery | Invalidated Republican platform; outraged Northern public opinion; Southern Democrats emboldened to demand federal protection |
 | **Crittenden Compromise** | 1860 | Last-ditch proposal to extend $36^\\circ 30'$ line to California to prevent southern secession | Rejected by Lincoln and Republicans because it allowed territorial slavery expansion; Deep South seceded |`
       }
+    ,
+      {
+        heading: '2. Manifest Destiny, Road to Disunion, Civil War & Reconstruction (CED 5.2-5.11)',
+        content: `Territorial expansion, escalating slavery crises, total war, and constitutional rebuilding:
+
+* **Manifest Destiny & Territorial Conquest**:
+  * Term coined by John L. O'Sullivan (1845): The God-given belief that the United States was divinely destined to expand across the North American continent from Atlantic to Pacific.
+  * **Mexican-American War (1846-1848)**: Sparked by Texas annexation; concluded with the **Treaty of Guadalupe Hidalgo**, ceding California and the American Southwest (Mexican Cession) for $15 million.
+  * **Wilmot Proviso (1846)**: Proposal to ban slavery in all territory acquired from Mexico; repeatedly passed House but failed Senate, reigniting explosive sectional conflict.
+* **The Escalating Sectional Crisis of the 1850s**:
+  * **Compromise of 1850 (Henry Clay)**: Admitted California as a free state, abolished slave trade in Washington D.C., opened Utah and New Mexico territories to **popular sovereignty**, and enacted a draconian **Fugitive Slave Act** that outraged Northern abolitionists.
+  * **Kansas-Nebraska Act (1854 - Stephen Douglas)**: Repealed the Missouri Compromise 36°30' line to allow popular sovereignty in Kansas and Nebraska, triggering the bloody guerrilla violence of 'Bleeding Kansas' and giving birth to the modern anti-slavery **Republican Party**.
+  * **Dred Scott v. Sandford (1857 - Chief Justice Roger Taney)**: Ruled that African Americans were not citizens, that enslaved people were private property protected by the 5th Amendment, and that Congress had **NO constitutional authority to ban slavery in ANY federal territory**.
+  * **John Brown's Raid on Harpers Ferry (1859)**: Radical abolitionist attempted to seize federal armory to arm an enslaved rebellion; executed, polarising North and South.
+  * **Election of 1860**: Abraham Lincoln won with zero Southern electoral votes; South Carolina seceded in December 1860.
+* **Civil War & Emancipation (1861-1865)**:
+  * **Emancipation Proclamation (Jan 1, 1863)**: Freed enslaved people in rebelling Confederate states; reframed the war from preserving the Union into a moral crusade against slavery, blocking British/French diplomatic intervention and authorizing African American Union army enlistment (~180,000 served).
+  * Turning Point Battles: Gettysburg (July 1-3, 1863) and Vicksburg (July 4, 1863, securing Union control of the Mississippi River).
+* **Reconstruction (1865-1877)**:
+  * **The Reconstruction Amendments**:
+    * **13th Amendment (1865)**: Completely abolished slavery (except as punishment for crime).
+    * **14th Amendment (1868)**: Granted birthright citizenship and guaranteed equal protection of the laws and due process against state infringement.
+    * **15th Amendment (1870)**: Prohibited denial of voting rights based on race, color, or previous condition of servitude (angered women's suffrage advocates who were excluded).
+  * **Compromise of 1877**: Rutherford B. Hayes awarded disputed presidency in exchange for withdrawing federal troops from the South, abandoning Southern Black Americans to Jim Crow disenfranchisement, poll taxes, literacy tests, and violent sharecropping peonage.`
+      }
     ],
     workedExamples: [
       {
@@ -385,16 +452,6 @@ export const AP_USH_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'The Emancipation Proclamation freed slaves in rebellious Confederate states, added 180,000 Black soldiers to Union ranks, and blocked European intervention; it exempted loyal border states.',
         apScoringTip: 'Never say the Emancipation Proclamation freed ALL slaves! It freed only those in rebel territory; the 13th Amendment was required to officially abolish slavery nationwide.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'ush_civil_war_strategy',
-        title: 'The Union Anaconda Plan Strategy',
-        subtitle: 'Naval Blockade, Mississippi River Control, and March to the Sea',
-        type: 'civil_war_map',
-        description: 'Map illustrating General Winfield Scott’s Anaconda Plan: Atlantic naval blockade suffocating southern cotton trade, Union gunboats splitting Confederacy along Mississippi River, and Sherman’s March to the Sea crushing southern infrastructure.',
-        takeaway: 'The Union triumphed through strategic total war: Suffocating maritime trade, capturing the Mississippi River, and destroying Confederate industrial infrastructure.'
       }
     ],
     commonTraps: [
@@ -454,6 +511,33 @@ export const AP_USH_NOTES: APUnitNote[] = [
 | **Homestead Strike** | 1892 (Amalgamated Assoc. vs. Frick) | Carnegie Steel union workers fighting wage cuts and lockouts | Henry Clay Frick hired Pinkerton armed guards; bloody shootout ended with PA state militia crushing the union |
 | **Pullman Strike** | 1894 (Eugene V. Debs & ARU) | American Railway Union striking against Pullman company town wage cuts | Rail traffic halted across Midwest; President Cleveland sent federal troops citing mail disruption; Debs jailed under Sherman Act |`
       }
+    ,
+      {
+        heading: '2. Industrial Capitalism, Urbanization & The Populist Movement (CED 6.2-6.11)',
+        content: `Second Industrial Revolution corporate consolidation, labor struggles, and agrarian revolt:
+
+* **Rise of Corporate Monopolies & Robber Barons**:
+  * **Vertical Integration (Andrew Carnegie - Carnegie Steel)**: Controlling every phase of production from iron ore extraction and rail transport to manufacturing mills, eliminating intermediate markups.
+  * **Horizontal Integration (John D. Rockefeller - Standard Oil)**: Buying out or crushing competing oil refineries into a singular dominant trust, controlling over $90\%$ of national refining capacity.
+  * **Ideological Justifications**:
+    * **Social Darwinism (Herbert Spencer)**: Applied Darwin's biological 'survival of the fittest' to human society, arguing poverty resulted from inherent personal unfitness.
+    * **The Gospel of Wealth (Andrew Carnegie)**: Wealthy elites held fortunes as trustees with a moral obligation to fund philanthropic civic institutions (libraries, universities, concert halls).
+* **Labor Unrest & Union Clashes**:
+  * **Knights of Labor (Terence Powderly)**: Inclusive union welcoming skilled, unskilled, women, and Black workers; collapsed after being unfairly blamed for the **Haymarket Square Riot (1886)** bomb in Chicago.
+  * **American Federation of Labor (AFL - Samuel Gompers)**: Focused strictly on skilled craft workers and 'bread-and-butter' issues (higher wages, 8-hour workday, safer workplace conditions).
+  * Violent strikes suppressed by federal troops: Great Railroad Strike of 1877, Homestead Steel Strike (1892), Pullman Strike (1894).
+* **Urbanization & The New Immigrants**:
+  * Shift from 'Old Immigrants' (Northern/Western Europe) to **'New Immigrants' (Southern/Eastern Europe - Italy, Poland, Russia, Greece)**: Catholic, Jewish, settled in ethnic urban enclaves; met by nativist backlashes (American Protective Association).
+  * Political Machines: **Tammany Hall (Boss Tweed)** traded municipal services, jobs, and coal to poor immigrants in exchange for political votes.
+* **The Agrarian Revolt & The Populist Party**:
+  * Farmers squeezed by falling crop prices, high railroad freight rates, and deflated gold-backed currency.
+  * **The Populist (People's) Party 1892 Omaha Platform**:
+    1. **Free Silver (Bimetallism)**: Unlimited coinage of silver at 16:1 ratio to inflate currency and ease debtor burdens.
+    2. Government ownership of railroads and telegraphs.
+    3. Graduated federal income tax.
+    4. Direct election of US Senators.
+  * **Election of 1896**: William Jennings Bryan gave the famous 'Cross of Gold' speech; defeated by Republican William McKinley, securing corporate-industrial dominance.`
+      }
     ],
     workedExamples: [
       {
@@ -468,16 +552,6 @@ export const AP_USH_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Turner argued the frontier forged American democracy and character; its closing in 1890 drove political leaders to seek new overseas commercial and colonial frontiers in the Pacific and Caribbean.',
         apScoringTip: 'Connect the domestic closing of the frontier in 1890 directly to the overseas imperialist expansion of 1898.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'ush_monopoly_structures',
-        title: 'Horizontal vs. Vertical Integration Monopoly Models',
-        subtitle: 'Rockefeller Standard Oil (Horizontal) vs. Carnegie Steel (Vertical)',
-        type: 'monopoly_diagram',
-        description: 'Diagram comparing horizontal buyout of competing refineries in a single tier vs vertical ownership of iron mines, coal fields, rail lines, and blast furnaces.',
-        takeaway: 'Horizontal integration controls an entire tier of the market; vertical integration controls all supply chain stages to eliminate middleman costs.'
       }
     ],
     commonTraps: [
@@ -538,6 +612,35 @@ export const AP_USH_NOTES: APUnitNote[] = [
 | **Federal Deposit Insurance Corp (FDIC)** | 1933 (Reform) | Insured bank deposits up to $2,500 (now $250,000) under the Glass-Steagall Banking Act | Ended panic runs on commercial banks; restored national public confidence in the banking system |
 | **Social Security Act** | 1935 (Reform) | Established federal old-age pensions, unemployment compensation, and aid to dependent children/disabled | Created the cornerstone of the modern American welfare state, guaranteeing federal financial safety net |`
       }
+    ,
+      {
+        heading: '2. Imperialism, The Progressive Era, World War I & The New Deal (CED 7.2-7.14)',
+        content: `America on the global stage, domestic reform movements, economic collapse, and state expansion:
+
+* **American Imperialism (1898-1914)**:
+  * **Spanish-American War (1898)**: Yellow journalism and sinking of the USS Maine; Treaty of Paris granted the US Puerto Rico, Guam, and the Philippines, sparking the Philippine-American War and the Anti-Imperialist League (Mark Twain).
+  * **The Open Door Policy (John Hay)**: Demanded equal commercial trading access for all nations in China.
+  * **Roosevelt Corollary to the Monroe Doctrine (1904)**: Asserted the US right to act as an international police power in Latin America ('Big Stick Diplomacy').
+* **The Progressive Era (1890-1920)**:
+  * Reform movement led by educated urban middle-class professionals to remedy Gilded Age social and political abuses.
+  * **Muckrakers**: Upton Sinclair (*The Jungle*, exposing meatpacking horrors, inspiring Pure Food and Drug Act), Ida Tarbell (exposing Standard Oil trust), Jacob Riis (*How the Other Half Lives*).
+  * **Progressive Constitutional Amendments**:
+    * **16th Amendment (1913)**: Graduated federal income tax.
+    * **17th Amendment (1913)**: Direct popular election of US Senators.
+    * **18th Amendment (1919)**: Prohibition of alcoholic beverages.
+    * **19th Amendment (1920)**: Guaranteed women the right to vote.
+* **World War I & The Homefront (1917-1919)**:
+  * US abandoned neutrality due to unrestricted German submarine warfare (Lusitania, Sussex Pledge) and the **Zimmermann Telegram**.
+  * **Domestic Civil Liberties Infringements**: Espionage Act (1917) and Sedition Act (1918) jailed anti-war dissenters like Eugene V. Debs; upheld in *Schenck v. United States* (1919 - 'clear and present danger').
+  * **The Great Migration**: Hundreds of thousands of Black Americans migrated from the Jim Crow South to Northern urban industrial centers for factory jobs, giving rise to the **Harlem Renaissance**.
+  * Woodrow Wilson's **Fourteen Points** and League of Nations; Senate rejected Treaty of Versailles led by reservationist Henry Cabot Lodge, returning to isolationism.
+* **The Great Depression & FDR's New Deal (1929-1939)**:
+  * Stock Market Crash of October 29, 1929 ('Black Tuesday') ignited worldwide economic catastrophe; Herbert Hoover's voluntary cooperation failed.
+  * **Franklin D. Roosevelt's New Deal (The 3 R's)**:
+    * **Relief**: Civilian Conservation Corps (CCC), Works Progress Administration (WPA).
+    * **Recovery**: Agricultural Adjustment Act (AAA), National Industrial Recovery Act (NIRA).
+    * **Reform**: Federal Deposit Insurance Corporation (FDIC) insuring bank deposits, Securities and Exchange Commission (SEC) regulating Wall Street, and the landmark **Social Security Act (1935)** establishing the modern social safety net.`
+      }
     ],
     workedExamples: [
       {
@@ -551,16 +654,6 @@ export const AP_USH_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Imperialists cited naval power, commercial access to Asian markets, and racial paternalism; Anti-Imperialists argued colonialism violated the founding democratic principle of self-determination.',
         apScoringTip: 'Remember that Anti-Imperialists included prominent industrialists like Andrew Carnegie alongside labor leaders and writers.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'ush_new_deal_programs',
-        title: 'FDR’s New Deal: Relief, Recovery, and Reform',
-        subtitle: 'The Three R’s Reshaping the Federal Social Safety Net',
-        type: 'new_deal_branches',
-        description: 'Tree diagram branching into Relief (CCC, WPA), Recovery (AAA, NIRA), and Reform (FDIC, SEC, Social Security Act of 1935).',
-        takeaway: 'The New Deal marked a permanent ideological shift from Gilded Age laissez-faire to the modern federal regulatory welfare state.'
       }
     ],
     commonTraps: [
@@ -620,6 +713,30 @@ export const AP_USH_NOTES: APUnitNote[] = [
 | **Education & Environment** | PWA/WPA school construction, Civilian Conservation Corps | Head Start, Elementary and Secondary Education Act, Clean Air/Water Acts |
 | **Downfall / Limitation** | Scaled back due to Supreme Court battles and WWII mobilization | Massive federal spending diverted to fund the disastrous **Vietnam War** |`
       }
+    ,
+      {
+        heading: '2. The Cold War, The Civil Rights Revolution & The Vietnam Era (CED 8.2-8.13)',
+        content: `Global ideological containment, mass movements for racial equality, and countercultural upheavals:
+
+* **Cold War Containment Geopolitics (1945-1991)**:
+  * **Containment Doctrine (George F. Kennan)**: Stop the expansion of Soviet communism wherever it threatened to spread.
+  * **Truman Doctrine (1947)**: $400 million in military aid to Greece and Turkey to resist communist subversion.
+  * **Marshall Plan (1948)**: $13 billion in economic aid to rebuild Western Europe and inoculate against communist parties.
+  * **NATO (1949)**: Collective security alliance against Soviet aggression; countered by the Warsaw Pact (1955).
+  * Proxy Hot Conflicts: Korean War (1950-1953, ended in armistice at 38th parallel); Cuban Missile Crisis (October 1962, closest the world came to nuclear war).
+  * **Second Red Scare**: Senator Joseph McCarthy's baseless anticommunist witch-hunts; House Un-American Activities Committee (HUAC) blacklisting Hollywood.
+* **The Modern Civil Rights Movement**:
+  * **Brown v. Board of Education (1954 - Chief Justice Earl Warren)**: Overturned *Plessy v. Ferguson*, ruling that separate educational facilities are inherently unequal.
+  * Nonviolent Direct Action: Montgomery Bus Boycott (1955 - Rosa Parks, Martin Luther King Jr.), Greensboro sit-ins (1960), Freedom Rides (1961), March on Washington (1963).
+  * **Landmark Federal Civil Rights Legislation**:
+    * **Civil Rights Act of 1964**: Banned racial segregation in all public accommodations and outlawed employment discrimination based on race, religion, sex, or national origin.
+    * **Voting Rights Act of 1965**: Outlawed literacy tests and sent federal registrars to Southern counties, dramatically expanding Black political participation.
+* **The Vietnam War & Domestic Crisis (1964-1975)**:
+  * **Gulf of Tonkin Resolution (1964)**: Blank check handed to President Lyndon B. Johnson to escalate military deployment without formal congressional declaration of war.
+  * **Tet Offensive (1968)**: Coordinated Vietcong surprise attacks proved the war was unwinnable, shattering US public credibility ('credibility gap').
+  * 1968 Watershed: MLK and Robert F. Kennedy assassinations, violent anti-war protests at Chicago Democratic National Convention.
+  * **Watergate Scandal (1972-1974)**: Richard Nixon's cover-up of DNC break-in led to near-impeachment and his historic resignation in August 1974, eroding American public trust in government.`
+      }
     ],
     workedExamples: [
       {
@@ -634,16 +751,6 @@ export const AP_USH_NOTES: APUnitNote[] = [
         ],
         finalAnswer: '*Brown v. Board* struck down "separate but equal" as a violation of the 14th Amendment Equal Protection Clause; southern states enacted "Massive Resistance" to stall integration.',
         apScoringTip: 'Always link *Brown v. Board* directly to the **14th Amendment’s Equal Protection Clause**.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'ush_cold_war_alliances',
-        title: 'Cold War Spheres of Influence and Alliances',
-        subtitle: 'NATO (Democracy/Capitalism) vs. Warsaw Pact (Soviet Communism)',
-        type: 'cold_war_map',
-        description: 'Map of divided Europe showing Churchill’s "Iron Curtain" separating NATO democratic allies in Western Europe from Soviet satellite nations bound by the Warsaw Pact in Eastern Europe.',
-        takeaway: 'Cold War geopolitics split the globe into two nuclear-armed ideological blocs governed by containment and Mutually Assured Destruction (MAD).'
       }
     ],
     commonTraps: [
@@ -703,6 +810,28 @@ export const AP_USH_NOTES: APUnitNote[] = [
 | **Demographic Shift: Sun Belt Boom** | 1970s–Present | Mass migration from northern industrial "Rust Belt" to southern and western "Sun Belt" (TX, FL, AZ, GA) | Shifted congressional seats and electoral college votes South/West; spurred by air conditioning, lower taxes, and aerospace/tech |
 | **Immigration Act of 1965 Transformation** | 1965–Present | Replaced discriminatory 1920s national origin quotas with family reunification and skilled employment preferences | Sparked demographic diversification with majority of immigrants arriving from **Latin America and Asia** |`
       }
+    ,
+      {
+        heading: '2. The Reagan Revolution, Post-Cold War Order & The 21st Century (CED 9.2-9.6)',
+        content: `Rise of modern conservatism, geopolitical realignments, and post-industrial transitions:
+
+* **The Reagan Revolution of 1980**:
+  * Coalition of fiscal conservatives, Cold War hawks, and the evangelical Christian Right (**Moral Majority - Jerry Falwell**).
+  * **Supply-Side Economics ('Reaganomics')**:
+    * Tax cuts (Economic Recovery Tax Act of 1981) targeting wealthy and corporations to stimulate capital investment (Laffer Curve premise).
+    * Substantial domestic deregulation of banking, airline, and environmental industries.
+    * Massive increase in defense spending (Strategic Defense Initiative 'Star Wars'), which ran federal budget deficits to record highs.
+* **The End of the Cold War (1989-1991)**:
+  * Mikhail Gorbachev implemented **Glasnost** (political openness) and **Perestroika** (economic restructuring).
+  * Fall of the Berlin Wall (November 1989) and dissolution of the Soviet Union in December 1991 left the United States as the sole global superpower.
+* **Globalization & Technological Boom**:
+  * **NAFTA (1994)**: Eliminated trade tariffs between the US, Canada, and Mexico.
+  * Rise of the personal computer, Internet, and dot-com boom revolutionized productivity while speeding the loss of manufacturing jobs to overseas outsourcing.
+* **Post-9/11 Era & The Global War on Terror**:
+  * Al-Qaeda terrorist attacks on September 11, 2001 prompted US invasions of Afghanistan (2001) and Iraq (2003).
+  * **USA PATRIOT Act (2001)**: Broadened federal electronic surveillance powers, reigniting intense debates balancing national security against 4th Amendment privacy protections.
+  * **Demographic Shifts**: The Immigration and Nationality Act of 1965 abolished national origins quotas, transforming American demographics with major immigration waves from Latin America and Asia alongside internal population shifts to the Sunbelt.`
+      }
     ],
     workedExamples: [
       {
@@ -717,16 +846,6 @@ export const AP_USH_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'The Soviet Union collapsed due to Gorbachev’s internal reforms (Glasnost and Perestroika) that unleashed regional nationalism, combined with crippling economic strain from an unsustainable military arms race with the US.',
         apScoringTip: 'Know the definitions of Glasnost (openness) and Perestroika (economic restructuring) for Period 9 foreign policy questions.'
-      }
-    ],
-    diagrams: [
-      {
-        id: 'ush_sunbelt_migration',
-        title: 'The Rust Belt to Sun Belt Demographic Shift',
-        subtitle: 'Deindustrialization in Midwest $\\rightarrow$ Aerospace and Tech Boom in South/West',
-        type: 'migration_flow_map',
-        description: 'Map showing population arrows fleeing declining manufacturing centers in the Rust Belt (Detroit, Cleveland, Pittsburgh) toward booming Sun Belt cities (Atlanta, Dallas, Phoenix, Las Vegas).',
-        takeaway: 'Air conditioning, low taxes, and defense industry contracts shifted millions of citizens and dozens of congressional electoral votes to the Sun Belt.'
       }
     ],
     commonTraps: [

@@ -5,6 +5,7 @@ import { addStudyXP, trackQuestProgress } from './gamification';
 import { triggerVibration } from './vibrate';
 import { safeGetItem, safeSetItem } from './storage';
 import { sanitizePdfText, formatLatexToAscii } from './pdfSanitizer';
+import { drawTextWithElevatedPowers } from './pdfTableDrawer';
 
 export interface FormulaItem {
   name: string;
@@ -177,7 +178,7 @@ export async function exportFormulaSheetPDF(
       doc.setTextColor(67, 56, 202); // Indigo 700
       textY += 1.2;
       for (const line of mathLines) {
-        doc.text(line, margin + 5, textY);
+        drawTextWithElevatedPowers(doc, line, margin + 5, textY, 10);
         textY += 4.6;
       }
 
@@ -195,27 +196,10 @@ export async function exportFormulaSheetPDF(
     ? `${selectedCategoryName.replace(/[^a-zA-Z0-9]/g, '_')}_Formula_Sheet.pdf`
     : 'HelpYou_AI_Quick_Formula_Sheet.pdf';
 
-  const saved = await savePDFMobile(pdfBlob, filename);
-
-  if (saved) {
-    savePdfToHistory({
-      title: filename,
-      fileUri: URL.createObjectURL(pdfBlob),
-      featureTag: 'Formula Sheet',
-      fileSize: `${(pdfBlob.size / 1024).toFixed(1)} KB`,
-      pageCount: pageIndex
-    });
-
-    const todayStr = new Date().toISOString().split('T')[0];
-    const claimKey = `study_claimed_formula_xp_${filename}_${todayStr}`;
-    const alreadyClaimed = safeGetItem(claimKey);
-
-    if (!alreadyClaimed) {
-      safeSetItem(claimKey, 'true');
-      addStudyXP(25, 'Exported Formula Cheat Sheet');
-      trackQuestProgress('calculator', 1);
-    }
-  }
+  const saved = await savePDFMobile(pdfBlob, filename, {
+    featureTag: 'Formula Sheet',
+    customToast: '✅ Saved offline in app'
+  });
 
   return saved;
 }

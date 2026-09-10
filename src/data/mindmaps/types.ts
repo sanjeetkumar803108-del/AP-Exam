@@ -4,10 +4,17 @@ export interface MindMapLeafNode {
   id: string;
   title: string;
   detail: string;
+  fullContent?: string;
   badge?: NodeBadgeType;
   badgeLabel?: string;
   trapAlert?: string;
   formulaLatex?: string;
+  workedExampleData?: {
+    question: string;
+    steps: string[];
+    finalAnswer?: string;
+    scoringTip?: string;
+  };
 }
 
 export interface MindMapBranch {
