@@ -57,7 +57,6 @@ interface ProfileProps {
   onOpenLogin?: () => void;
   onNavigateToCoinPage?: () => void;
   onNavigateToStreakPage?: () => void;
-  onOpenPdfHistory?: () => void;
 }
 
 interface PassiveUsageItem {
@@ -175,8 +174,7 @@ export default function Profile({
   isTabMode = false,
   onOpenLogin,
   onNavigateToCoinPage,
-  onNavigateToStreakPage,
-  onOpenPdfHistory
+  onNavigateToStreakPage
 }: ProfileProps) {
   // App Settings Toggles
   const [saveHistory] = useState<boolean>(true);
@@ -1523,37 +1521,6 @@ export default function Profile({
           </div>
 
           {/* Learning Preferences */}
-          {/* Saved Offline PDFs Vault Card */}
-          <div 
-            onClick={() => {
-              triggerVibration(15);
-              if (onOpenPdfHistory) {
-                onOpenPdfHistory();
-              }
-            }}
-            className="bg-white rounded-[2.5rem] p-5 border border-emerald-200/80 shadow-sm relative overflow-hidden flex items-center justify-between cursor-pointer hover:bg-emerald-50/40 hover:border-emerald-300 active:scale-95 transition-all group"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-2xl shrink-0 group-hover:scale-105 transition-transform">
-                💾
-              </div>
-              <div>
-                <h3 className="text-sm font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
-                  Saved Offline PDFs
-                  <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                    Offline Vault
-                  </span>
-                </h3>
-                <p className="text-[11px] font-semibold text-zinc-500 mt-0.5">
-                  View and manage all downloaded documents offline
-                </p>
-              </div>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-zinc-100 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center text-zinc-600 shrink-0 transition-colors shadow-2xs">
-              <ChevronRight className="w-4 h-4" />
-            </div>
-          </div>
-
           <div className="bg-white rounded-[2.5rem] p-6 border border-zinc-200 shadow-sm space-y-4">
             <h3 className="text-xs font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2 mb-2">
               <Zap className="w-4 h-4 text-zinc-400" /> Accessibility & Focus
@@ -1932,29 +1899,6 @@ export default function Profile({
                     <div className="text-left">
                       <span className="text-xs font-black text-zinc-850 block">Manage Subscription</span>
                       <span className="text-[9px] text-zinc-400 font-bold">View billing, update plans & history</span>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-zinc-400" />
-                </div>
-
-                {/* Saved Offline PDFs Shortcut */}
-                <div 
-                  onClick={() => {
-                    triggerVibration(15);
-                    setShowSettings(false);
-                    if (onOpenPdfHistory) {
-                      onOpenPdfHistory();
-                    }
-                  }}
-                  className="bg-white rounded-3xl border border-zinc-200 p-4.5 flex justify-between items-center cursor-pointer hover:bg-zinc-50 transition-colors shadow-sm"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100 shrink-0">
-                      <FileText className="w-4 h-4" />
-                    </div>
-                    <div className="text-left">
-                      <span className="text-xs font-black text-zinc-850 block">Saved Offline PDFs</span>
-                      <span className="text-[9px] text-zinc-400 font-bold">Access downloaded documents offline</span>
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-zinc-400" />

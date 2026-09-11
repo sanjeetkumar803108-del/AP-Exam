@@ -49,7 +49,6 @@ function lazyWithRetry<T extends React.ComponentType<any>>(
 
 const LearningIsland = lazyWithRetry(() => import('./components/LearningIsland'));
 const ToolsDashboard = lazyWithRetry(() => import('./components/ToolsDashboard'));
-const PdfHistoryScreen = lazyWithRetry(() => import('./components/PdfHistoryScreen'));
 const MagicScanner = lazyWithRetry(() => import('./components/MagicScanner'));
 const EssayGrader = lazyWithRetry(() => import('./components/EssayGrader'));
 const FlashcardGenerator = lazyWithRetry(() => import('./components/FlashcardGenerator'));
@@ -1069,13 +1068,6 @@ export default function App() {
                 />
               </ErrorBoundary>
             )}
-            {activeTool === 'pdfhistory' && (
-              <ErrorBoundary>
-                <PdfHistoryScreen 
-                  onBack={() => setActiveTool(null)} 
-                />
-              </ErrorBoundary>
-            )}
             {activeTool === 'contentgenerator' && (
               <ErrorBoundary>
                 <LockedFeature cost={1} featureName="AI Study Content Generator" onBack={() => setActiveTool(null)} onEarnCoins={() => setActiveTool('coinpage')}>
@@ -1185,10 +1177,6 @@ export default function App() {
                 onNavigateToStreakPage={() => {
                   setActiveTab('notes');
                   setActiveTool('streakpage');
-                }}
-                onOpenPdfHistory={() => {
-                  setActiveTab('notes');
-                  setActiveTool('pdfhistory');
                 }}
               />
             </Suspense>
