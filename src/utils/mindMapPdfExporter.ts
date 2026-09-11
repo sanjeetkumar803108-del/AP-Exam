@@ -87,7 +87,7 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
     if (currentY + requiredHeight > pageHeight - 18) {
       drawPageFooter();
       doc.addPage();
-      currentY = 15;
+      currentY = 18;
       drawPageHeader(doc.getNumberOfPages());
     }
   };
@@ -216,61 +216,111 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
     const branch = unit.branches[bIdx];
     ensureSpace(14);
 
-    // Branch Banner Box
-    doc.setFillColor(244, 244, 245);
-    doc.setDrawColor(212, 212, 216);
-    doc.setLineWidth(0.3);
-    doc.roundedRect(margin, currentY, contentWidth, 8, 1.2, 1.2, 'FD');
-
-    // Colored tag pip
-    doc.setFillColor(79, 70, 229);
-    doc.circle(margin + 3.5, currentY + 4.0, 1.4, 'F');
-
-    doc.setFont('Helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(24, 24, 27);
+    // 1. Prepare Branch Title and Subtitle text with word-wrapping
     const branchTitleText = branch.cedTopicRef
       ? `[${branch.cedTopicRef}]  ${sanitizePdfText(stripMarkdownFormatting(branch.title))}`
       : sanitizePdfText(stripMarkdownFormatting(branch.title));
-    doc.text(branchTitleText, margin + 7, currentY + 5.2);
 
-    currentY += 8.5;
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(8.5);
+    const titleLines: string[] = doc.splitTextToSize(branchTitleText, contentWidth - 14);
 
+    let subtitleLines: string[] = [];
     if (branch.subtitle) {
       doc.setFont('Helvetica', 'italic');
       doc.setFontSize(7.5);
-      doc.setTextColor(113, 113, 122);
-      doc.text(sanitizePdfText(stripMarkdownFormatting(branch.subtitle)), margin + 4, currentY);
-      currentY += 4.5;
+      const cleanSub = sanitizePdfText(stripMarkdownFormatting(branch.subtitle));
+      subtitleLines = doc.splitTextToSize(cleanSub, contentWidth - 14);
     }
+
+    // 2. Compute dynamic, perfectly-fitted box height with top and bottom breathing room
+    const titleLineH = 4.0;
+    const subLineH = 3.4;
+    const topPad = 3.6;
+    const bottomPad = 3.2;
+    const interGap = subtitleLines.length > 0 ? 1.6 : 0;
+    const totalTextH = (titleLines.length * titleLineH) + interGap + (subtitleLines.length * subLineH);
+    const boxHeight = Math.max(9.0, topPad + totalTextH + bottomPad);
+
+    ensureSpace(boxHeight + 4);
+
+    // 3. Draw Branch Banner Box (enclosing BOTH title and subtitle completely inside the box!)
+    doc.setFillColor(244, 244, 245);
+    doc.setDrawColor(212, 212, 216);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(margin, currentY, contentWidth, boxHeight, 1.5, 1.5, 'FD');
+
+    // Colored tag pip (vertically aligned with first line of title)
+    doc.setFillColor(79, 70, 229);
+    doc.circle(margin + 3.8, currentY + topPad + 1.4, 1.4, 'F');
+
+    // Render Title Lines inside the box
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(24, 24, 27);
+    let lineCursorY = currentY + topPad + 2.6;
+    for (const tL of titleLines) {
+      doc.text(tL, margin + 7.5, lineCursorY);
+      lineCursorY += titleLineH;
+    }
+
+    // Render Subtitle Lines safely inside the box with proper padding
+    if (subtitleLines.length > 0) {
+      lineCursorY += interGap;
+      doc.setFont('Helvetica', 'italic');
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 116, 139);
+      for (const sL of subtitleLines) {
+        doc.text(sL, margin + 7.5, lineCursorY);
+        lineCursorY += subLineH;
+      }
+    }
+
+    // Advance cursor safely past the box
+    currentY += boxHeight + 4.5;
 
     // Branch Leaf Nodes
     for (const node of branch.children) {
       ensureSpace(18);
 
-      // Concept Header
-      doc.setFillColor(79, 70, 229);
-      doc.circle(margin + 2.5, currentY + 2.5, 1.2, 'F');
+      // Concept Header (with safe badge and wrapping layout)
+      const cleanTitle = sanitizePdfText(stripMarkdownFormatting(node.title));
+      const badgeText = node.badge ? (node.badgeLabel || node.badge).toUpperCase() : '';
 
       doc.setFont('Helvetica', 'bold');
       doc.setFontSize(8.5);
-      doc.setTextColor(30, 41, 59);
+      const titleW = doc.getTextWidth(cleanTitle);
+      const badgeW = badgeText ? doc.getTextWidth(`  [${badgeText}]`) : 0;
 
-      const cleanTitle = sanitizePdfText(stripMarkdownFormatting(node.title));
-      doc.text(cleanTitle, margin + 5.5, currentY + 3.5);
+      if (margin + 6 + titleW + badgeW < pageWidth - margin) {
+        doc.setFillColor(79, 70, 229);
+        doc.circle(margin + 2.5, currentY + 2.5, 1.2, 'F');
+        doc.setTextColor(30, 41, 59);
+        doc.text(cleanTitle, margin + 5.5, currentY + 3.5);
 
-      if (node.badge) {
-        const badgeText = (node.badgeLabel || node.badge).toUpperCase();
-        const titleW = doc.getTextWidth(cleanTitle);
-        const badgeX = margin + 5.5 + titleW + 3;
-        if (badgeX + 35 < pageWidth - margin) {
-          doc.setFont('Helvetica', 'bold');
-          doc.setFontSize(7);
+        if (badgeText) {
+          doc.setFontSize(7.2);
           doc.setTextColor(node.workedExampleData ? 217 : 99, node.workedExampleData ? 119 : 102, node.workedExampleData ? 6 : 241);
-          doc.text(`[${badgeText}]`, badgeX, currentY + 3.5);
+          doc.text(`[${badgeText}]`, margin + 5.5 + titleW + 3, currentY + 3.5);
         }
+        currentY += 5.5;
+      } else {
+        const titleLines = doc.splitTextToSize(cleanTitle, contentWidth - 12);
+        doc.setFillColor(79, 70, 229);
+        doc.circle(margin + 2.5, currentY + 2.5, 1.2, 'F');
+        doc.setTextColor(30, 41, 59);
+        for (let tlIdx = 0; tlIdx < titleLines.length; tlIdx++) {
+          doc.text(titleLines[tlIdx], margin + 5.5, currentY + 3.5);
+          currentY += 4.0;
+        }
+        if (badgeText) {
+          doc.setFontSize(7.2);
+          doc.setTextColor(node.workedExampleData ? 217 : 99, node.workedExampleData ? 119 : 102, node.workedExampleData ? 6 : 241);
+          doc.text(`[${badgeText}]`, margin + 5.5, currentY + 3.0);
+          currentY += 4.0;
+        }
+        currentY += 1.5;
       }
-      currentY += 6;
 
       // Worked Example Box (if node contains worked example data) - Structured UI Cards matching the Real App
       if (node.workedExampleData) {
@@ -466,10 +516,10 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
         currentY += trapBoxH + 3;
       }
 
-      currentY += 3;
+      currentY += 5.0;
     }
 
-    currentY += 4;
+    currentY += 6.0;
   }
 
   // Finish footer on the final page
