@@ -3608,15 +3608,20 @@ ${combinedAntiRepetition}
 BATCH TARGET ARCHETYPES:
 ${batchArchetypePlan}
 
-CRITICAL MATH & LATEX FORMATTING:
-- Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for block.
-- For data tables and matrices, ALWAYS wrap in $$ block delimiters:
-  $$\\begin{array}{c|ccccc} x & -1 & 0 & 2 & 3 & 4 \\\\ \\hline g(x) & -5 & 3 & -2 & 7 & 10 \\end{array}$$
-  NEVER output bare \\begin{array} without $$...$$ delimiters!
-- For piecewise functions, ALWAYS use clean LaTeX with $$:
-  $$f(x) = \\begin{cases} g(x) & \\text{for } x < c \\\\ h(x) & \\text{for } x \\ge c \\end{cases}$$
-  NEVER write raw unescaped pseudo-code like 'f(x) = { ... }' or '<=' or '->' which breaks math parsers!
-- Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\to, \\\\infty, \\\\begin{cases}, \\\\end{cases}, \\\\begin{array}, \\\\end{array}.
+CRITICAL CODE, MATH & LATEX FORMATTING:
+- FOR COMPUTER SCIENCE / PROGRAMMING (AP Computer Science A, AP Computer Science Principles):
+  * Always format code snippets inside standard Markdown fenced code blocks (\`\`\`java ... \`\`\`).
+  * In code blocks and programming expressions, ALWAYS use standard programming operators: ` <= `, ` >= `, ` != `, ` == `, ` && `, ` || `, ``. NEVER substitute LaTeX symbols like \\leqslant, \\le, \\ge, \\times into code!
+  * For inline variable names, methods, or keywords in question text (e.g. \`reverseString("APCS")\`, \`true\`, \`false\`, \`StackOverflowError\`), ALWAYS use Markdown backticks (\`code\`) and NEVER raw LaTeX like \\texttt{...}.
+- FOR MATHEMATICS & SCIENCE (AP Calculus, AP Physics, AP Chemistry, AP Statistics):
+  * Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for block.
+  * For data tables and matrices, ALWAYS wrap in $$ block delimiters:
+    $$\\begin{array}{c|ccccc} x & -1 & 0 & 2 & 3 & 4 \\\\ \\hline g(x) & -5 & 3 & -2 & 7 & 10 \\end{array}$$
+    NEVER output bare \\begin{array} without $$...$$ delimiters!
+  * For piecewise functions, ALWAYS use clean LaTeX with $$:
+    $$f(x) = \\begin{cases} g(x) & \\text{for } x < c \\\\ h(x) & \\text{for } x \\ge c \\end{cases}$$
+    NEVER write raw unescaped pseudo-code like 'f(x) = { ... }' or '<=' inside math equations that breaks KaTeX!
+  * Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\to, \\\\infty, \\\\begin{cases}, \\\\end{cases}, \\\\begin{array}, \\\\end{array}.
 
 STRICT JSON OUTPUT:
 Return ONLY a valid JSON array of objects with this exact structure:
@@ -3833,15 +3838,20 @@ ${combinedAntiRepetition}
 BATCH TARGET ARCHETYPES:
 ${batchArchetypePlan}
 
-CRITICAL MATH & LATEX FORMATTING:
-- Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for block.
-- For data tables and matrices, ALWAYS wrap in $$ block delimiters:
-  $$\\begin{array}{c|ccccc} x & -1 & 0 & 2 & 3 & 4 \\\\ \\hline g(x) & -5 & 3 & -2 & 7 & 10 \\end{array}$$
-  NEVER output bare \\begin{array} without $$...$$ delimiters!
-- For piecewise functions, ALWAYS use clean LaTeX with $$:
-  $$f(x) = \\begin{cases} g(x) & \\text{for } x < c \\\\ h(x) & \\text{for } x \\ge c \\end{cases}$$
-  NEVER write raw unescaped pseudo-code like 'f(x) = { ... }' or '<=' or '->' which breaks math parsers!
-- Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\to, \\\\infty, \\\\begin{cases}, \\\\end{cases}, \\\\begin{array}, \\\\end{array}.
+CRITICAL CODE, MATH & LATEX FORMATTING:
+- FOR COMPUTER SCIENCE / PROGRAMMING (AP Computer Science A, AP Computer Science Principles):
+  * Always format code snippets inside standard Markdown fenced code blocks (\`\`\`java ... \`\`\`).
+  * In code blocks and programming expressions, ALWAYS use standard programming operators: ` <= `, ` >= `, ` != `, ` == `, ` && `, ` || `, ``. NEVER substitute LaTeX symbols like \\leqslant, \\le, \\ge, \\times into code!
+  * For inline variable names, methods, or keywords in question text (e.g. \`reverseString("APCS")\`, \`true\`, \`false\`, \`StackOverflowError\`), ALWAYS use Markdown backticks (\`code\`) and NEVER raw LaTeX like \\texttt{...}.
+- FOR MATHEMATICS & SCIENCE (AP Calculus, AP Physics, AP Chemistry, AP Statistics):
+  * Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for block.
+  * For data tables and matrices, ALWAYS wrap in $$ block delimiters:
+    $$\\begin{array}{c|ccccc} x & -1 & 0 & 2 & 3 & 4 \\\\ \\hline g(x) & -5 & 3 & -2 & 7 & 10 \\end{array}$$
+    NEVER output bare \\begin{array} without $$...$$ delimiters!
+  * For piecewise functions, ALWAYS use clean LaTeX with $$:
+    $$f(x) = \\begin{cases} g(x) & \\text{for } x < c \\\\ h(x) & \\text{for } x \\ge c \\end{cases}$$
+    NEVER write raw unescaped pseudo-code like 'f(x) = { ... }' or '<=' inside math equations that breaks KaTeX!
+  * Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\to, \\\\infty, \\\\begin{cases}, \\\\end{cases}, \\\\begin{array}, \\\\end{array}.
 
 STRICT JSON OUTPUT:
 Return ONLY a valid JSON object with key "questions" containing an array of objects:

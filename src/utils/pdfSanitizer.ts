@@ -127,7 +127,8 @@ function parseRadicals(input: string): string {
     }
     if (radicandEnd !== -1) {
       const radicand = output.substring(radicandStart, radicandEnd).trim();
-      output = output.substring(0, idx) + `sqrt(${radicand})` + output.substring(radicandEnd + 1);
+      const cleanRad = radicand.replace(/\s*\/\s*/g, '/');
+      output = output.substring(0, idx) + `sqrt(${cleanRad})` + output.substring(radicandEnd + 1);
     } else {
       break;
     }
@@ -138,7 +139,7 @@ function parseRadicals(input: string): string {
   output = output.replace(/\\sqrt\b/g, 'sqrt');
 
   // 4. Unicode radical symbol √
-  output = output.replace(/√\s*\(([^()]+)\)/g, 'sqrt($1)');
+  output = output.replace(/√\s*\(([^()]+)\)/g, (_m, inner) => `sqrt(${inner.replace(/\s*\/\s*/g, '/')})`);
   output = output.replace(/√\s*([0-9a-zA-Z]+)/g, 'sqrt($1)');
   output = output.replace(/(\d)\s*√/g, '$1 * sqrt');
   output = output.replace(/\b([a-zA-Z])\s*√/g, '$1 * sqrt');
@@ -149,7 +150,8 @@ function parseRadicals(input: string): string {
   output = output.replace(/\b([a-zA-Z])\s*sqrt\(/g, '$1 * sqrt(');
 
   // 6. Cleanup leftover raw braces: sqrt{...} -> sqrt(...)
-  output = output.replace(/\bsqrt\s*\{([^{}]+)\}/g, 'sqrt($1)');
+  output = output.replace(/\bsqrt\s*\{([^{}]+)\}/g, (_m, r) => `sqrt(${r.replace(/\s*\/\s*/g, '/')})`);
+  output = output.replace(/\bsqrt\s+\(/g, 'sqrt(');
 
   return output;
 }
@@ -419,7 +421,7 @@ export function formatLatexToAscii(latex: string): string {
     const cleanNum = isSimpleTerm(num) ? num : `(${num})`;
     const cleanDen = isSimpleDen(den) ? den : `(${den})`;
 
-    return `${cleanNum} / ${cleanDen}`;
+    return `${cleanNum}/${cleanDen}`;
   }
 
   function parseFractions(input: string): string {
@@ -523,10 +525,12 @@ export function formatLatexToAscii(latex: string): string {
   
   // Clean subscripts without raw programming underscores:
   // e.g. x_{i} -> xi, x_{f} -> xf, U_{s} -> Us, v_{0} -> v0, F_{net} -> Fnet, Ca^{2+} -> Ca²⁺
+  str = str.replace(/(?<!lim)_\{([a-zA-Z0-9]+)\}(?=[a-zA-Z])/g, '$1 ');
   str = str.replace(/(?<!lim)_\{([a-zA-Z0-9]+)\}/g, '$1');
   str = str.replace(/(?<!lim)_\{([0-9]+\/[0-9]+)\}/g, '($1)');
   str = str.replace(/(?<!lim)_\{([^{}]+)\}/g, '($1)');
   // Subscripts on variables: x_i -> xi, x_f -> xf, U_s -> Us, v_0 -> v0, v_i -> vi, v_f -> vf, a_x -> ax, F_g -> Fg
+  str = str.replace(/([a-zA-Z])_([a-zA-Z0-9])(?=[a-zA-Z])/g, '$1$2 ');
   str = str.replace(/([a-zA-Z])_([a-zA-Z0-9])\b/g, '$1$2');
   str = str.replace(/([a-zA-Z])_([a-zA-Z0-9]{2,4})\b/g, '$1$2');
 
@@ -661,12 +665,12 @@ export function formatLatexToAscii(latex: string): string {
   }
 
   // Clean up fractions wrapped in redundant parens:
-  str = str.replace(/\(\s*([a-zA-Z0-9_]+)\s*\)\s*\/\s*\(\s*([a-zA-Z0-9_]+)\s*\)/g, '$1 / $2');
-  str = str.replace(/\/\s*\(\s*([a-zA-Z0-9_]+)\s*\)(?![a-zA-Z0-9_\^])/g, '/ $1');
+  str = str.replace(/\(\s*([a-zA-Z0-9_]+)\s*\)\s*\/\s*\(\s*([a-zA-Z0-9_]+)\s*\)/g, '$1/$2');
+  str = str.replace(/\/\s*\(\s*([a-zA-Z0-9_]+)\s*\)(?![a-zA-Z0-9_\^])/g, '/$1');
   // safe fraction cleanup without stripping valid parentheses
-  str = str.replace(/\(\s*([0-9]+(?:\.[0-9]+)?)\s*\)\s*\/\s*([a-zA-Z0-9_]+)/g, '$1 / $2');
-  str = str.replace(/\(\s*1\s*\)\s*\/\s*\[([^\[\]]+)\]/g, '1 / [$1]');
-  str = str.replace(/\(\s*([a-zA-Z0-9\s]+)\s*\)\s*\/\s*\(\s*([0-9]+)\s*\)/g, '($1) / $2');
+  str = str.replace(/\(\s*([0-9]+(?:\.[0-9]+)?)\s*\)\s*\/\s*([a-zA-Z0-9_]+)/g, '$1/$2');
+  str = str.replace(/\(\s*1\s*\)\s*\/\s*\[([^\[\]]+)\]/g, '1/[$1]');
+  str = str.replace(/\(\s*([a-zA-Z0-9\s]+)\s*\)\s*\/\s*\(\s*([0-9]+)\s*\)/g, '($1)/$2');
 
   return str.replace(/[ \t]+/g, ' ').trim();
 }
@@ -703,12 +707,15 @@ export function sanitizePdfText(text: string): string {
   }
 
   // 1b. Normalize Unicode radical symbol √ to clean standard notation
-  str = str.replace(/√\s*\(([^()]+)\)/g, 'sqrt($1)');
+  str = str.replace(/√\s*\(([^()]+)\)/g, (_m, inner) => `sqrt(${inner.replace(/\s*\/\s*/g, '/')})`);
   str = str.replace(/√\s*([0-9a-zA-Z]+)/g, 'sqrt($1)');
   str = str.replace(/(\d)\s*√/g, '$1 * sqrt');
   str = str.replace(/\b([a-zA-Z])\s*√/g, '$1 * sqrt');
-  str = str.replace(/√/g, 'sqrt ');
-  str = str.replace(/\bsqrt\s*\{([^{}]+)\}/g, 'sqrt($1)');
+  str = str.replace(/√/g, 'sqrt');
+  str = str.replace(/\bsqrt\s*\{([^{}]+)\}/g, (_m, inner) => `sqrt(${inner.replace(/\s*\/\s*/g, '/')})`);
+  str = str.replace(/\bsqrt\s+\(/g, 'sqrt(');
+  str = str.replace(/\bsqrt\s*\(([^()\n]+)\)/g, (_m, inner) => `sqrt(${inner.replace(/\s*\/\s*/g, '/')})`);
+  str = str.replace(/\(\s*([a-zA-Z0-9_\^]+)\s*\/\s*([a-zA-Z0-9_\^]+)\s*\)/g, '($1/$2)');
 
   // 2. Convert emojis, checkmarks, bullets to pure ASCII
   str = str

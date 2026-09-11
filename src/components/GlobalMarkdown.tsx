@@ -4,7 +4,6 @@ import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
-import 'katex/dist/katex.min.css';
 
 interface GlobalMarkdownProps {
   children?: any;
@@ -129,9 +128,11 @@ export function cleanMarkdownMath(content: string): string {
   text = fixedLines.join('\n');
 
   // 8. Clean and sanitize math blocks while strictly protecting LaTeX syntax
-  // Unescape any HTML entities inside LaTeX math expressions so KaTeX never receives invalid '&lt;', '&gt;', etc.
+  // Extract and mask math blocks ($$...$$ and $...$) so we don't accidentally mutate valid LaTeX math formulas
+  const mathBlocks: string[] = [];
   const mathTokenRegex = /(\$\$[\s\S]*?\$\$|\$(?:\\.|[^\$\n\\])+\$)/g;
-  text = text.replace(mathTokenRegex, (match) => {
+
+  let maskedText = text.replace(mathTokenRegex, (match) => {
     let math = match
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
@@ -144,28 +145,91 @@ export function cleanMarkdownMath(content: string): string {
       .replace(/&quot;/g, '"')
       .replace(/&nbsp;/g, ' ');
 
-    // If inside a tabular/matrix environment, restore &amp; to & (column separator), otherwise \&
     if (math.includes('\\begin{')) {
       math = math.replace(/&amp;/g, ' & ');
     } else {
       math = math.replace(/&amp;/g, '\\&');
     }
-    
-    // Repair single-backslash row breaks inside math blocks
     math = math.replace(/([^\\])\\\s*\\hline/g, '$1\\\\ \\hline');
-
-    // Heal unescaped % inside math expressions so KaTeX does not treat % as a comment and blank out the formula
     math = math.replace(/(?<!\\)%/g, '\\%');
 
-    return math;
+    const idx = mathBlocks.length;
+    mathBlocks.push(math);
+    return `__AP_MATH_TOKEN_${idx}__`;
   });
 
-  // 9. Unescape HTML entities inside inline code spans and backticks:
-  text = text.replace(/`([^`\n]+)`/g, (match, code) => {
-    return '`' + code.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&') + '`';
+  // 9. Heal code blocks (fenced ```...``` and inline `...`)
+  // Replace LaTeX comparison/math symbols with authentic programming operators in code blocks
+  maskedText = maskedText.replace(/(```[a-zA-Z0-9_-]*\n[\s\S]*?```)/g, (block) => {
+    return block
+      .replace(/\\(?:leqslant|le)\b/g, '<=')
+      .replace(/\\(?:geqslant|ge)\b/g, '>=')
+      .replace(/\\(?:neq|ne)\b/g, '!=')
+      .replace(/\\(?:to|rightarrow)\b/g, '->')
+      .replace(/\\times\b/g, '*')
+      .replace(/\\texttt\{([^{}]*)\}/g, '$1')
+      .replace(/\\textbf\{([^{}]*)\}/g, '$1')
+      .replace(/\\textit\{([^{}]*)\}/g, '$1')
+      .replace(/\b([a-zA-Z0-9_]+)\s*=\s*null\b/g, '$1 == null'); // Heal accidental assignment inside code conditions
   });
 
-  // 10. Heal bare superscripts, subscripts, Pandoc syntax, and chemical equations outside math blocks:
+  maskedText = maskedText.replace(/`([^`\n]+)`/g, (_m, code) => {
+    const cleanCode = code
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      .replace(/\\(?:leqslant|le)\b/g, '<=')
+      .replace(/\\(?:geqslant|ge)\b/g, '>=')
+      .replace(/\\(?:neq|ne)\b/g, '!=')
+      .replace(/\\(?:to|rightarrow)\b/g, '->')
+      .replace(/\\times\b/g, '*')
+      .replace(/\\texttt\{([^{}]*)\}/g, '$1');
+    return '`' + cleanCode + '`';
+  });
+
+  // 10. Convert raw LaTeX formatting commands in prose into standard Markdown
+  let prevMasked = '';
+  let iterations = 0;
+  while (prevMasked !== maskedText && iterations < 8) {
+    prevMasked = maskedText;
+    iterations++;
+    maskedText = maskedText.replace(/\\texttt\{([^{}]*)\}/g, '`$1`');
+    maskedText = maskedText.replace(/\\textbf\{([^{}]*)\}/g, '**$1**');
+    maskedText = maskedText.replace(/\\textit\{([^{}]*)\}/g, '*$1*');
+    maskedText = maskedText.replace(/\\emph\{([^{}]*)\}/g, '*$1*');
+    maskedText = maskedText.replace(/\\textsf\{([^{}]*)\}/g, '$1');
+    maskedText = maskedText.replace(/\\textrm\{([^{}]*)\}/g, '$1');
+    maskedText = maskedText.replace(/\\textnormal\{([^{}]*)\}/g, '$1');
+    maskedText = maskedText.replace(/\\underline\{([^{}]*)\}/g, '<u>$1</u>');
+  }
+  maskedText = maskedText.replace(/\\verb\|([^|\n]+)\|/g, '`$1`');
+  maskedText = maskedText.replace(/\\verb!([^!\n]+)!/g, '`$1`');
+  maskedText = maskedText.replace(/\\verb\+([^+\n]+)\+/g, '`$1`');
+
+  // 11. Heal stray comparison and programming operators in prose outside math mode
+  maskedText = maskedText
+    .replace(/\\(?:leqslant|le)\b/g, '<=')
+    .replace(/\\(?:geqslant|ge)\b/g, '>=')
+    .replace(/\\(?:neq|ne)\b/g, '!=')
+    .replace(/\\times\b/g, '×')
+    .replace(/\\to\b/g, '->')
+    .replace(/\\rightarrow\b/g, '->')
+    .replace(/\\leftarrow\b/g, '<-')
+    .replace(/\\dots\b|\\ldots\b/g, '...')
+    .replace(/\\quad\b/g, '  ')
+    .replace(/\\qquad\b/g, '    ');
+
+  // Heal accidental single equals in if (var = null) conditions
+  maskedText = maskedText.replace(/\bif\s*\(([^()]+)\)/g, (_m, condition) => {
+    return `if (${condition.replace(/\b([a-zA-Z0-9_]+)\s*=\s*null\b/g, '$1 == null')})`;
+  });
+
+  // 12. Restore protected LaTeX math blocks
+  text = maskedText.replace(/__AP_MATH_TOKEN_(\d+)__/g, (_, idx) => {
+    return mathBlocks[Number(idx)] || '';
+  });
+
+  // 13. Heal bare superscripts, subscripts, Pandoc syntax, and chemical equations outside math blocks:
   text = text
     .replace(/~([a-zA-Z0-9_\+\-]+)~/g, '<sub>$1</sub>')
     .replace(/\^([a-zA-Z0-9_\+\-]+)\^/g, '<sup>$1</sup>');
@@ -185,48 +249,77 @@ const rehypePluginsList: any[] = [[rehypeKatex, { strict: false, throwOnError: f
 
 const defaultComponents = {
   h1: ({ node, ...props }: any) => (
-    <h1 className="text-base sm:text-lg font-bold text-zinc-900 mt-4 mb-2 tracking-tight leading-snug break-words" {...props} />
+    <h1 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 mt-4 mb-2 tracking-tight leading-snug break-words" {...props} />
   ),
   h2: ({ node, ...props }: any) => (
-    <h2 className="text-sm sm:text-base font-bold text-zinc-900 mt-3.5 mb-1.5 tracking-tight leading-snug break-words" {...props} />
+    <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100 mt-3.5 mb-1.5 tracking-tight leading-snug break-words" {...props} />
   ),
   h3: ({ node, ...props }: any) => (
-    <h3 className="text-xs sm:text-sm font-bold text-zinc-800 mt-3 mb-1 tracking-tight leading-snug break-words" {...props} />
+    <h3 className="text-xs sm:text-sm font-bold text-zinc-800 dark:text-zinc-200 mt-3 mb-1 tracking-tight leading-snug break-words" {...props} />
   ),
   h4: ({ node, ...props }: any) => (
-    <h4 className="text-xs font-bold text-zinc-700 mt-2 mb-1 tracking-tight leading-snug break-words" {...props} />
+    <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 mt-2 mb-1 tracking-tight leading-snug break-words" {...props} />
   ),
   p: ({ node, ...props }: any) => (
-    <p className="text-xs sm:text-[13px] text-zinc-800 font-normal leading-relaxed my-2 break-words" {...props} />
+    <p className="text-xs sm:text-[13px] text-zinc-800 dark:text-zinc-200 font-normal leading-relaxed my-2 break-words" {...props} />
   ),
   ul: ({ node, ...props }: any) => (
-    <ul className="list-disc pl-4 space-y-1 my-2 text-xs sm:text-[13px] text-zinc-800 leading-relaxed" {...props} />
+    <ul className="list-disc pl-4 space-y-1 my-2 text-xs sm:text-[13px] text-zinc-800 dark:text-zinc-200 leading-relaxed" {...props} />
   ),
   ol: ({ node, ...props }: any) => (
-    <ol className="list-decimal pl-4 space-y-1 my-2 text-xs sm:text-[13px] text-zinc-800 leading-relaxed" {...props} />
+    <ol className="list-decimal pl-4 space-y-1 my-2 text-xs sm:text-[13px] text-zinc-800 dark:text-zinc-200 leading-relaxed" {...props} />
   ),
   li: ({ node, ...props }: any) => (
     <li className="leading-relaxed" {...props} />
   ),
+  code: ({ node, inline, className, children, ...props }: any) => {
+    const isInline = !className && !String(children).includes('\n');
+    if (isInline) {
+      return (
+        <code
+          className="px-1.5 py-0.5 mx-0.5 rounded-md bg-purple-50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 font-mono text-[12px] font-semibold border border-purple-200/80 dark:border-purple-800/60 break-words"
+          {...props}
+        >
+          {children}
+        </code>
+      );
+    }
+    return (
+      <code className={`font-mono text-xs text-zinc-100 ${className || ''}`} {...props}>
+        {children}
+      </code>
+    );
+  },
+  pre: ({ node, children, ...props }: any) => (
+    <pre
+      className="p-3.5 my-3 rounded-2xl bg-zinc-950 dark:bg-zinc-900 text-zinc-100 font-mono text-xs overflow-x-auto border border-zinc-800/90 shadow-xs leading-relaxed"
+      {...props}
+    >
+      {children}
+    </pre>
+  ),
+  blockquote: ({ node, ...props }: any) => (
+    <blockquote className="border-l-4 border-purple-500 pl-3.5 my-2.5 text-zinc-700 dark:text-zinc-300 italic text-xs sm:text-sm bg-purple-50/40 dark:bg-purple-950/20 py-1.5 rounded-r-xl" {...props} />
+  ),
   table: ({ node, ...props }: any) => (
-    <div className="overflow-x-auto my-4 rounded-xl border border-zinc-200 shadow-2xs">
+    <div className="overflow-x-auto my-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-2xs">
       <table className="w-full text-left border-collapse text-xs sm:text-sm" {...props} />
     </div>
   ),
   thead: ({ node, ...props }: any) => (
-    <thead className="bg-zinc-50/90 border-b border-zinc-200" {...props} />
+    <thead className="bg-zinc-50/90 dark:bg-zinc-800/90 border-b border-zinc-200 dark:border-zinc-700" {...props} />
   ),
   th: ({ node, ...props }: any) => (
-    <th className="px-3.5 py-2.5 font-bold text-zinc-800 border-b border-zinc-200 whitespace-nowrap text-xs" {...props} />
+    <th className="px-3.5 py-2.5 font-bold text-zinc-800 dark:text-zinc-200 border-b border-zinc-200 dark:border-zinc-700 whitespace-nowrap text-xs" {...props} />
   ),
   td: ({ node, ...props }: any) => (
-    <td className="px-3.5 py-2.5 border-b border-zinc-100 text-zinc-700 text-xs" {...props} />
+    <td className="px-3.5 py-2.5 border-b border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs" {...props} />
   ),
   tr: ({ node, ...props }: any) => (
-    <tr className="hover:bg-zinc-50/50 transition-colors" {...props} />
+    <tr className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50 transition-colors" {...props} />
   ),
   stepbox: ({ node, ...props }: any) => (
-    <div className="bg-white border border-zinc-200/80 shadow-2xs rounded-2xl p-4 my-3 font-sans text-zinc-800" {...props} />
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs rounded-2xl p-4 my-3 font-sans text-zinc-800 dark:text-zinc-200" {...props} />
   ),
 };
 
