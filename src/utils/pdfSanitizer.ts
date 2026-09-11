@@ -874,10 +874,12 @@ export function parseSolutionStepsForPdf(rawText: string, forceCalculation?: boo
   // 2. Fix glued periods between words (e.g. "continuity.Next" -> "continuity. Next")
   text = text.replace(/([a-z]{2,})\.([A-Z])/g, '$1. $2');
 
-  // 3. Fix missing spaces after commas, colons, semicolons, and parentheses
+  // 3. Fix missing spaces after commas, colons, semicolons, and parentheses (excluding math functions)
   text = text.replace(/([,;:])([A-Za-z])/g, '$1 $2');
   text = text.replace(/(\))([A-Za-z]{2,})/g, '$1 $2');
-  text = text.replace(/([A-Za-z]{2,})(\()/g, '$1 $2');
+  const mathFuncs = 'sqrt|cbrt|root|sin|cos|tan|sec|csc|cot|arcsin|arccos|arctan|ln|log|exp|lim|max|min|det|gcd';
+  text = text.replace(new RegExp(`(?<!\\b(?:${mathFuncs}))\\b([A-Za-z]{2,})(\\()`, 'gi'), '$1 $2');
+  text = text.replace(new RegExp(`\\b(${mathFuncs})\\s+\\(`, 'gi'), '$1(');
   text = text.replace(/(\*\*[^*]+\*\*)([A-Za-z])/g, '$1 $2');
   text = text.replace(/([A-Za-z])(\*\*[^*]+\*\*)/g, '$1 $2');
 
@@ -1010,5 +1012,11 @@ export function parseSolutionStepsForPdf(rawText: string, forceCalculation?: boo
     });
   }
 
-  return steps;
+  return steps.map(s => ({
+    ...s,
+    content: sanitizePdfText(s.content)
+      .replace(/\bsqrt\s+\(/gi, 'sqrt(')
+      .replace(/\(([^()\n]+)\)/g, (_m, inner) => `(${inner.replace(/\s*\/\s*/g, '/')})`)
+      .replace(/\bsqrt\s*\(([^()\n]+)\)/gi, (_m, inner) => `sqrt(${inner.replace(/\s*\/\s*/g, '/')})`)
+  }));
 }

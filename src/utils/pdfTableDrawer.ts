@@ -16,13 +16,21 @@ export interface DrawTextOptions {
  */
 export function stripMarkdownFormatting(text: string): string {
   if (!text) return '';
-  return text
+  let str = text
     .replace(/\*\*(.*?)\*\*/g, '$1')
     .replace(/\*([^\*]+)\*/g, '$1')
     .replace(/__([^_]+)__/g, '$1')
     .replace(/_([^_]+)_/g, '$1')
     .replace(/`([^`]+)`/g, '$1')
     .trim();
+
+  // Contract math functions & parenthesized fractions so jsPDF splitTextToSize never breaks terms across lines:
+  // e.g. "sqrt (2H / g)" -> "sqrt(2H/g)", "(2H / g)" -> "(2H/g)"
+  str = str.replace(/\bsqrt\s+\(/gi, 'sqrt(');
+  str = str.replace(/\(([^()\n]+)\)/g, (_m, inner) => `(${inner.replace(/\s*\/\s*/g, '/')})`);
+  str = str.replace(/\bsqrt\s*\(([^()\n]+)\)/gi, (_m, inner) => `sqrt(${inner.replace(/\s*\/\s*/g, '/')})`);
+
+  return str;
 }
 
 /**
