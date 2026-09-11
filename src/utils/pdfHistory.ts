@@ -30,19 +30,21 @@ export function isExcludedFromPdfHistory(tag: string = '', title: string = ''): 
 
   // AP Notes checks
   if (t === 'ap notes' || t === 'ap note' || t === 'ap_notes' || t === 'apnotes') return true;
-  if (s.includes('unit_notes') || (s.includes('_unit_') && s.includes('notes'))) return true;
+  if (t.includes('unit note') || (t.includes('unit') && t.includes('note'))) return true;
+  if (s.includes('unit_notes') || (s.includes('_unit_') && s.includes('notes')) || s.includes('unit notes')) return true;
   if (s.includes('helpyou_ai') && s.includes('unit_') && !s.includes('trap')) return true;
+  if (s.includes('unit') && s.includes('notes') && !s.includes('trap') && !s.includes('radar')) return true;
 
   // Mind Map checks
-  if (t.includes('mind map') || t.includes('mindmap')) return true;
-  if (s.includes('mind_map') || s.includes('mindmap')) return true;
+  if (t.includes('mind map') || t.includes('mindmap') || t.includes('revision note')) return true;
+  if (s.includes('mind_map') || s.includes('mindmap') || s.includes('revision_note')) return true;
 
   return false;
 }
 
 /**
  * Retrieves all saved PDF history records sorted by newest first (synchronous for instant UI).
- * Automatically purges and filters out built-in AP Notes and Mind Maps.
+ * Automatically purges and filters out built-in AP Notes, Mind Maps, and dead volatile blob: items.
  */
 export function getPdfHistory(): PdfHistoryItem[] {
   try {
@@ -50,14 +52,22 @@ export function getPdfHistory(): PdfHistoryItem[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
-      const filtered = parsed.filter(item => !isExcludedFromPdfHistory(item.featureTag, item.title));
+      const filtered = parsed.filter(item => {
+        if (!item || !item.title) return false;
+        if (isExcludedFromPdfHistory(item.featureTag, item.title)) return false;
+        // Purge legacy records that only held temporary blob URLs (broken on reload)
+        if (item.fileUri && item.fileUri.startsWith('blob:') && !memoryPdfCache.has(item.id)) {
+          return false;
+        }
+        return true;
+      });
 
-      // Auto-purge any excluded items from persisted storage if present
+      // Auto-purge any excluded or corrupted items from persisted storage if present
       if (filtered.length !== parsed.length) {
         try {
           const lightweightManifest = filtered.map(rec => ({
             ...rec,
-            fileUri: (rec.fileUri && rec.fileUri.length < 200 && !rec.fileUri.startsWith('data:')) ? rec.fileUri : ''
+            fileUri: (rec.fileUri && rec.fileUri.length < 200 && !rec.fileUri.startsWith('data:') && !rec.fileUri.startsWith('blob:')) ? rec.fileUri : ''
           }));
           localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweightManifest));
         } catch {}
@@ -66,7 +76,7 @@ export function getPdfHistory(): PdfHistoryItem[] {
       return filtered.map(item => ({
         ...item,
         // Restore from in-memory cache if available
-        fileUri: memoryPdfCache.get(item.id) || item.fileUri || '',
+        fileUri: memoryPdfCache.get(item.id) || (item.fileUri && !item.fileUri.startsWith('blob:') ? item.fileUri : ''),
         isOfflineSaved: true
       })).sort((a, b) => b.timestamp - a.timestamp);
     }
@@ -83,13 +93,20 @@ export async function getPdfHistoryAsync(): Promise<PdfHistoryItem[]> {
   try {
     const fromIdb = await get<PdfHistoryItem[]>(IDB_MANIFEST_KEY);
     if (Array.isArray(fromIdb) && fromIdb.length > 0) {
-      const filtered = fromIdb.filter(item => !isExcludedFromPdfHistory(item.featureTag, item.title));
+      const filtered = fromIdb.filter(item => {
+        if (!item || !item.title) return false;
+        if (isExcludedFromPdfHistory(item.featureTag, item.title)) return false;
+        if (item.fileUri && item.fileUri.startsWith('blob:') && !memoryPdfCache.has(item.id)) {
+          return false;
+        }
+        return true;
+      });
       if (filtered.length !== fromIdb.length) {
         set(IDB_MANIFEST_KEY, filtered).catch(() => {});
       }
       return filtered.map(item => ({
         ...item,
-        fileUri: memoryPdfCache.get(item.id) || item.fileUri || '',
+        fileUri: memoryPdfCache.get(item.id) || (item.fileUri && !item.fileUri.startsWith('blob:') ? item.fileUri : ''),
         isOfflineSaved: true
       })).sort((a, b) => b.timestamp - a.timestamp);
     }
@@ -102,20 +119,20 @@ export async function getPdfHistoryAsync(): Promise<PdfHistoryItem[]> {
 /**
  * Retrieves the full offline PDF binary data (Base64 data URI) for any document.
  * Checks: 1. In-memory cache -> 2. IndexedDB -> 3. Manifest fileUri.
- * 100% offline compatible, no network requests.
+ * 100% offline compatible, rejects dead volatile blob: URLs.
  */
 export async function getOfflinePdfData(id: string): Promise<string | null> {
   // 1. Check in-memory cache
   if (memoryPdfCache.has(id)) {
     const cached = memoryPdfCache.get(id);
-    if (cached && cached.length > 100) return cached;
+    if (cached && (cached.startsWith('data:application/pdf') || cached.length > 500)) return cached;
   }
 
   // 2. Check IndexedDB full storage
   try {
     const dataKey = `${PDF_DATA_PREFIX}${id}`;
     const fromIdb = await get<string>(dataKey);
-    if (fromIdb && fromIdb.length > 100) {
+    if (fromIdb && (fromIdb.startsWith('data:application/pdf') || fromIdb.length > 500)) {
       memoryPdfCache.set(id, fromIdb);
       return fromIdb;
     }
@@ -126,7 +143,7 @@ export async function getOfflinePdfData(id: string): Promise<string | null> {
   // 3. Fallback: Check localStorage manifest record
   const history = getPdfHistory();
   const found = history.find(item => item.id === id);
-  if (found && found.fileUri && found.fileUri.length > 100) {
+  if (found && found.fileUri && (found.fileUri.startsWith('data:application/pdf') || found.fileUri.length > 500)) {
     memoryPdfCache.set(id, found.fileUri);
     return found.fileUri;
   }
@@ -146,9 +163,15 @@ export function savePdfToHistory(item: {
   fileSize?: string;
   pageCount?: number;
 }): PdfHistoryItem | null {
-  // Guard: Never save built-in materials (AP Notes and Mind Maps) to user Saved Offline PDFs
+  // Guard 1: Never save built-in materials (AP Notes and Mind Maps) to user Saved Offline PDFs
   if (isExcludedFromPdfHistory(item.featureTag, item.title)) {
     console.log('[PDFHistory] Excluded pre-bundled material from Saved Offline PDFs:', item.title);
+    return null;
+  }
+
+  // Guard 2: Never save temporary blob: URLs to persistent history (they die on reload)
+  if (item.fileUri && item.fileUri.startsWith('blob:')) {
+    console.warn('[PDFHistory] Refused to save temporary blob: URL to offline history:', item.title);
     return null;
   }
 
@@ -212,11 +235,10 @@ export function savePdfToHistory(item: {
     });
   }
 
-  // 3. Save lightweight manifest to localStorage (omit huge Base64 strings to stay well within 5MB)
+  // 3. Save lightweight manifest to localStorage (omit huge Base64 strings and blob URLs)
   const lightweightManifest = updated.map(rec => ({
     ...rec,
-    // If fileUri is a huge base64 string (> 200 chars), omit it from localStorage
-    fileUri: (rec.fileUri && rec.fileUri.length < 200 && !rec.fileUri.startsWith('data:')) 
+    fileUri: (rec.fileUri && rec.fileUri.length < 200 && !rec.fileUri.startsWith('data:') && !rec.fileUri.startsWith('blob:')) 
       ? rec.fileUri 
       : ''
   }));

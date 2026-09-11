@@ -1,6 +1,5 @@
 import { jsPDF } from 'jspdf';
 import { savePDFMobile } from './mobileSaver';
-import { savePdfToHistory } from './pdfHistory';
 import { addStudyXP, trackQuestProgress } from './gamification';
 import { triggerVibration } from './vibrate';
 import { safeGetItem, safeSetItem } from './storage';

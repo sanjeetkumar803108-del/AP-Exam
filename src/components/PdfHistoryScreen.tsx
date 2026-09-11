@@ -171,38 +171,41 @@ export default function PdfHistoryScreen({ onBack }: PdfHistoryScreenProps) {
     try {
       // 1. Retrieve complete Base64 data URI from IndexedDB or cache
       let fullData = await getOfflinePdfData(item.id);
-      if (!fullData && item.fileUri && item.fileUri.length > 50) {
+      if (!fullData && item.fileUri && item.fileUri.startsWith('data:')) {
         fullData = item.fileUri;
       }
 
       if (!fullData) {
-        // If dataUri not yet ready, still set selected item so user sees title
-        setSelectedPdf(item);
+        alert('This document was not downloaded or its offline data is no longer available. Please redownload it.');
         setLoadingPdfId(null);
         return;
       }
 
-      const activeRecord = { ...item, fileUri: fullData };
-      setSelectedPdf(activeRecord);
-
+      // Convert fullData into a fresh blob URL for the SafePdfViewer session
+      let sessionUrl: string = fullData;
       if (fullData.startsWith('data:')) {
-        const parts = fullData.split(',');
-        const mime = parts[0].match(/:(.*?);/)?.[1] || 'application/pdf';
-        const bstr = atob(parts[1]);
-        let n = bstr.length;
-        const u8arr = new Uint8Array(n);
-        while (n--) {
-          u8arr[n] = bstr.charCodeAt(n);
+        try {
+          const parts = fullData.split(',');
+          const mime = parts[0].match(/:(.*?);/)?.[1] || 'application/pdf';
+          const bstr = atob(parts[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+          }
+          const blob = new Blob([u8arr], { type: mime });
+          sessionUrl = URL.createObjectURL(blob);
+        } catch (e) {
+          console.warn('[PDFHistoryScreen] Fallback to raw data URI:', e);
+          sessionUrl = fullData;
         }
-        const blob = new Blob([u8arr], { type: mime });
-        const url = URL.createObjectURL(blob);
-        setPreviewBlobUrl(url);
-      } else {
-        setPreviewBlobUrl(fullData);
       }
+
+      setPreviewBlobUrl(sessionUrl);
+      setSelectedPdf({ ...item, fileUri: sessionUrl });
     } catch (err) {
       console.error('[PDFHistoryScreen] Error generating preview URL:', err);
-      setSelectedPdf(item);
+      alert('Could not open document offline. Please try redownloading.');
     } finally {
       setLoadingPdfId(null);
     }
@@ -273,7 +276,13 @@ export default function PdfHistoryScreen({ onBack }: PdfHistoryScreenProps) {
         {/* Top sticky app bar */}
         <div className="bg-zinc-900 border-b border-zinc-800 px-5 py-4 flex items-center gap-4 shrink-0">
           <button
-            onClick={() => { setSelectedPdf(null); setPreviewBlobUrl(null); }}
+            onClick={() => { 
+              if (previewBlobUrl && previewBlobUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(previewBlobUrl);
+              }
+              setSelectedPdf(null); 
+              setPreviewBlobUrl(null); 
+            }}
             className="w-10 h-10 bg-zinc-800 hover:bg-zinc-750 rounded-full flex items-center justify-center text-white transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -285,8 +294,8 @@ export default function PdfHistoryScreen({ onBack }: PdfHistoryScreenProps) {
         </div>
         {/* Preview Content */}
         <div className="flex-1 overflow-hidden relative flex flex-col">
-          {selectedPdf.fileUri ? (
-            <SafePdfViewer pdfUrlOrBase64={selectedPdf.fileUri} />
+          {previewBlobUrl || selectedPdf.fileUri ? (
+            <SafePdfViewer pdfUrlOrBase64={previewBlobUrl || selectedPdf.fileUri} />
           ) : (
             <div className="text-center p-6 text-zinc-500 my-auto">
               <p className="text-xs font-bold text-zinc-400">Loading PDF Preview...</p>

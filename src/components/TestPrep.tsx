@@ -19,7 +19,6 @@ import AdvancedLoader from './AdvancedLoader';
 import AIThinkingLoader from './AIThinkingLoader';
 import jsPDF from 'jspdf';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
-import { savePdfToHistory } from '../utils/pdfHistory';
 import { showToast } from '../utils/toast';
 import { sanitizePdfText, parseSolutionStepsForPdf } from '../utils/pdfSanitizer';
 import { drawRichTextWithTables } from '../utils/pdfTableDrawer';

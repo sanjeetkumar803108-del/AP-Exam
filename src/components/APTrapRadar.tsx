@@ -48,7 +48,6 @@ import SafePdfViewer from './SafePdfViewer';
 import { sanitizePdfText, formatMathForPdf } from '../utils/pdfSanitizer';
 import { drawTextWithElevatedPowers, drawRichTextWithTables } from '../utils/pdfTableDrawer';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
-import { savePdfToHistory } from '../utils/pdfHistory';
 import { FileText, Download, Share2, HelpCircle } from 'lucide-react';
 import { takeNativePhoto, pickNativeFiles } from '../utils/mobilePicker';
 import { Capacitor } from '@capacitor/core';
@@ -1314,13 +1313,6 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       setIsPdfDownloaded(false);
       setPreviewPdfUri(blobUrl);
       setPreviewPdfName(filename);
-
-      savePdfToHistory({
-        title: `AP ${selectedSubject.name} Trap Radar Practice (${selectedUnit})`,
-        fileUri: blobUrl,
-        featureTag: 'AP Trap Radar',
-        pageCount: doc.getNumberOfPages()
-      });
 
       showToast('PDF ready for viewing and export!', 'success');
     } catch (err: any) {

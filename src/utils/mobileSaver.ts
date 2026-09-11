@@ -4,7 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { FileOpener } from '@capacitor-community/file-opener';
 import { Share } from '@capacitor/share';
-import { savePdfToHistory } from './pdfHistory';
+import { savePdfToHistory, isExcludedFromPdfHistory } from './pdfHistory';
 
 // Helper: Convert anything to Base64
 async function getBase64(data: Blob | ArrayBuffer | string): Promise<string> {
@@ -107,16 +107,19 @@ export async function savePDFMobile(
     : `${Math.max(1, Math.round(approxBytes / 1024))} KB`;
 
   // Automatically save to in-app offline history (IndexedDB persistent storage)
-  try {
-    const dataUri = `data:application/pdf;base64,${b64Data}`;
-    savePdfToHistory({
-      title: cleanFilename,
-      fileUri: dataUri,
-      featureTag: options?.featureTag || 'Practice PDF',
-      fileSize: fileSizeStr,
-    });
-  } catch (histErr) {
-    console.warn('[MobileSaver] Error saving to in-app history:', histErr);
+  // Strictly exclude pre-bundled notes (AP Notes and Mind Maps) which are already available offline
+  if (!isExcludedFromPdfHistory(options?.featureTag, cleanFilename)) {
+    try {
+      const dataUri = `data:application/pdf;base64,${b64Data}`;
+      savePdfToHistory({
+        title: cleanFilename,
+        fileUri: dataUri,
+        featureTag: options?.featureTag || 'Practice PDF',
+        fileSize: fileSizeStr,
+      });
+    } catch (histErr) {
+      console.warn('[MobileSaver] Error saving to in-app history:', histErr);
+    }
   }
 
   if (Capacitor.isNativePlatform()) {
