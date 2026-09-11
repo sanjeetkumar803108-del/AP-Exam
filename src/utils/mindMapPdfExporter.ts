@@ -76,10 +76,10 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
     doc.line(margin, pageHeight - 12, pageWidth - margin, pageHeight - 12);
 
     doc.setFont('Helvetica', 'normal');
-    doc.setFontSize(7.5);
+    doc.setFontSize(7.2);
     doc.setTextColor(140, 140, 140);
     doc.text('HelpYou AI - AP Exam Mind Map & Concept Revision Sheet', margin, pageHeight - 8);
-    doc.text('College Board AP Curriculum Aligned', pageWidth - margin, pageHeight - 8, { align: 'right' });
+    doc.text('College Board AP Aligned  •  Best viewed in HelpYou AI app', pageWidth - margin, pageHeight - 8, { align: 'right' });
   };
 
   // Helper: Check space and add new page if needed (strictly before pageHeight - 18 = 279mm)
@@ -233,14 +233,14 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
       subtitleLines = doc.splitTextToSize(cleanSub, contentWidth - 14);
     }
 
-    // 2. Compute dynamic, perfectly-fitted box height with top and bottom breathing room
-    const titleLineH = 4.0;
-    const subLineH = 3.4;
-    const topPad = 3.6;
-    const bottomPad = 3.2;
-    const interGap = subtitleLines.length > 0 ? 1.6 : 0;
+    // 2. Compute dynamic, perfectly-fitted box height with generous top and bottom breathing room
+    const titleLineH = 4.4;
+    const subLineH = 3.8;
+    const topPad = 4.2;
+    const bottomPad = 4.0;
+    const interGap = subtitleLines.length > 0 ? 2.0 : 0;
     const totalTextH = (titleLines.length * titleLineH) + interGap + (subtitleLines.length * subLineH);
-    const boxHeight = Math.max(9.0, topPad + totalTextH + bottomPad);
+    const boxHeight = Math.max(10.0, topPad + totalTextH + bottomPad);
 
     ensureSpace(boxHeight + 4);
 
@@ -252,13 +252,13 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
 
     // Colored tag pip (vertically aligned with first line of title)
     doc.setFillColor(79, 70, 229);
-    doc.circle(margin + 3.8, currentY + topPad + 1.4, 1.4, 'F');
+    doc.circle(margin + 3.8, currentY + topPad + 1.6, 1.4, 'F');
 
     // Render Title Lines inside the box
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(8.5);
     doc.setTextColor(24, 24, 27);
-    let lineCursorY = currentY + topPad + 2.6;
+    let lineCursorY = currentY + topPad + 2.8;
     for (const tL of titleLines) {
       doc.text(tL, margin + 7.5, lineCursorY);
       lineCursorY += titleLineH;
@@ -277,7 +277,7 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
     }
 
     // Advance cursor safely past the box
-    currentY += boxHeight + 4.5;
+    currentY += boxHeight + 5.0;
 
     // Branch Leaf Nodes
     for (const node of branch.children) {
@@ -520,6 +520,47 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
     }
 
     currentY += 6.0;
+  }
+
+  // ─── FINAL PAGE PRO TIP CALLOUT BOX ───
+  const tipBoxHeight = 14.0;
+  // If not enough room before the footer line (pageHeight - 14), add clean new page
+  if (currentY + tipBoxHeight > pageHeight - 16) {
+    drawPageFooter();
+    doc.addPage();
+    currentY = 20;
+    drawPageHeader(doc.getNumberOfPages());
+  }
+
+  // Anchor the tip box gracefully towards the bottom above the footer line if there is whitespace
+  const targetTipY = Math.max(currentY + 3.5, pageHeight - 15 - tipBoxHeight);
+
+  // Card background & rounded border
+  doc.setFillColor(245, 243, 255); // Soft indigo/purple-50
+  doc.setDrawColor(199, 210, 254); // Indigo-200
+  doc.setLineWidth(0.35);
+  doc.roundedRect(margin, targetTipY, contentWidth, tipBoxHeight, 2, 2, 'FD');
+
+  // Left vertical accent bar
+  doc.setFillColor(79, 70, 229); // Indigo-600
+  doc.roundedRect(margin, targetTipY, 2.5, tipBoxHeight, 1, 1, 'F');
+
+  // Tip Title
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(8.2);
+  doc.setTextColor(67, 56, 202); // Indigo-700
+  doc.text('★ PRO TIP: FOR THE BEST STUDY EXPERIENCE', margin + 5.5, targetTipY + 4.8);
+
+  // Tip Description
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(7.4);
+  doc.setTextColor(55, 65, 81); // Slate-700
+  const tipText = 'To enjoy active recall flashcards, interactive concept mastery, and instant AI tutor explanations, view these notes directly inside the HelpYou AI app rather than static PDFs!';
+  const tipLines = doc.splitTextToSize(tipText, contentWidth - 10);
+  let tCursorY = targetTipY + 8.8;
+  for (const tLine of tipLines) {
+    doc.text(tLine, margin + 5.5, tCursorY);
+    tCursorY += 3.5;
   }
 
   // Finish footer on the final page

@@ -428,11 +428,20 @@ export function generateUnitNotesHtml(unit: APUnitNote, subject: APSubjectNoteEn
           `).join('')}
         </div>
       ` : ''}
+      <!-- Interactive In-App Notes Pro Tip Callout Card -->
+      <div style="margin-top: 26px; margin-bottom: 20px; background: #f5f3ff; border: 1.5px solid #c7d2fe; border-left: 4px solid #6366f1; border-radius: 8px; padding: 12px 16px;">
+        <div style="font-size: 11px; font-weight: 800; color: #4338ca; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+          <span>★</span> <span>PRO TIP: FOR THE BEST STUDY EXPERIENCE</span>
+        </div>
+        <p style="font-size: 11px; color: #334155; margin: 0; line-height: 1.5;">
+          To enjoy active recall flashcards, instant AI tutor explanations, interactive formula solvers, and audio recaps, view these notes directly inside the <strong>HelpYou AI</strong> app rather than static PDFs!
+        </p>
+      </div>
     </div>
 
     <div class="doc-footer">
-      <span>Confidential & Educational - Aligned with Official College Board CED Standards</span>
-      <span style="font-weight: bold; color: #334155; background: #ffffff; padding: 2px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">Page 1</span>
+      <span>HelpYou AI Study Guide • For interactive active recall, open notes in HelpYou AI app</span>
+      <span style="font-weight: bold; color: #334155; background: #ffffff; padding: 2px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">Official CED Guide</span>
     </div>
   </div>
 </body>

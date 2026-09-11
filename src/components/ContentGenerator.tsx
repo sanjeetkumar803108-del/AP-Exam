@@ -57,8 +57,8 @@ export function generateContentPDFBlob(
     doc.setDrawColor(225, 225, 225);
     doc.setLineWidth(0.2);
     doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
-    doc.text(`Page ${pageNum}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
-    doc.text('HelpYou AI - Academic & Creative Suite', pageWidth - margin, pageHeight - 10, { align: 'right' });
+    doc.text('For the best interactive study experience, view notes in HelpYou AI app', margin, pageHeight - 10);
+    doc.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
   };
 
   // Header Decorative Top Bar
@@ -190,6 +190,41 @@ export function generateContentPDFBlob(
       isFirstLine = false;
     }
     currentY += 4; // Paragraph spacing
+  }
+
+  // ─── FINAL PAGE PRO TIP CALLOUT BOX ───
+  const tipBoxH = 14;
+  if (currentY + tipBoxH > pageHeight - 18) {
+    doc.addPage();
+    pageCount++;
+    addFooter(pageCount);
+    currentY = 22;
+  }
+
+  const targetTipY = Math.max(currentY + 4, pageHeight - 17 - tipBoxH);
+
+  doc.setFillColor(245, 243, 255);
+  doc.setDrawColor(199, 210, 254);
+  doc.setLineWidth(0.35);
+  doc.roundedRect(margin, targetTipY, contentWidth, tipBoxH, 2, 2, 'FD');
+
+  doc.setFillColor(8, 145, 178); // Cyan accent
+  doc.roundedRect(margin, targetTipY, 2.5, tipBoxH, 1, 1, 'F');
+
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(8.2);
+  doc.setTextColor(14, 116, 144);
+  doc.text('★ PRO TIP: FOR THE BEST STUDY EXPERIENCE', margin + 5.5, targetTipY + 4.8);
+
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(7.6);
+  doc.setTextColor(55, 65, 81);
+  const tipText = 'To enjoy active recall flashcards, instant AI revisions, speech audio, and interactive quizzing, explore your generated notes directly inside the HelpYou AI app rather than static PDFs!';
+  const tipLines = doc.splitTextToSize(tipText, contentWidth - 10);
+  let tY = targetTipY + 8.8;
+  for (const line of tipLines) {
+    doc.text(line, margin + 5.5, tY);
+    tY += 3.5;
   }
 
   return doc.output('blob');

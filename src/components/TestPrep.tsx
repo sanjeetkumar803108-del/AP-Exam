@@ -1322,9 +1322,9 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         doc.line(margin, pageHeight - 24, pageWidth - margin, pageHeight - 24);
 
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
+        doc.setFontSize(7.5);
         doc.setTextColor(148, 163, 184);
-        doc.text('Confidential & Educational - Prepared with HelpYou AI Mobile Tutor', margin, pageHeight - 12);
+        doc.text('HelpYou AI Exam Prep  •  For interactive AI scoring & practice, use HelpYou AI app', margin, pageHeight - 12);
         doc.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 12, { align: 'right' });
       };
 
@@ -1679,6 +1679,37 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
             currentY += 24;
           }
         });
+      }
+
+      // ─── FINAL PAGE PRO TIP CALLOUT BOX ───
+      const tipBoxH = 38;
+      checkPageBreak(tipBoxH + 15);
+
+      const targetTipY = Math.max(currentY + 14, pageHeight - 36 - tipBoxH);
+
+      doc.setFillColor(245, 243, 255);
+      doc.setDrawColor(199, 210, 254);
+      doc.setLineWidth(0.8);
+      doc.roundedRect(margin, targetTipY, contentWidth, tipBoxH, 4, 4, 'FD');
+
+      // Left vertical accent
+      doc.setFillColor(99, 102, 241);
+      doc.roundedRect(margin, targetTipY, 5, tipBoxH, 2, 2, 'F');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8.5);
+      doc.setTextColor(67, 56, 202);
+      doc.text('★ PRO TIP: FOR THE BEST STUDY & PRACTICE EXPERIENCE', margin + 12, targetTipY + 13);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.6);
+      doc.setTextColor(55, 65, 81);
+      const tipText = 'To get instant AI feedback, interactive step-by-step hints, audio explanations, and timed exams, practice directly inside the HelpYou AI app rather than static PDFs!';
+      const tipLines = doc.splitTextToSize(tipText, contentWidth - 20);
+      let tCursorY = targetTipY + 24;
+      for (const line of tipLines) {
+        doc.text(line, margin + 12, tCursorY);
+        tCursorY += 9.5;
       }
 
       const isCompPdf = isComputerSubject(subj);

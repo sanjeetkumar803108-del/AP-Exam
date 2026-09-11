@@ -78,8 +78,8 @@ export async function exportFormulaSheetPDF(
     doc.setLineWidth(0.2);
     doc.line(margin, pageHeight - 12, pageWidth - margin, pageHeight - 12);
     
-    doc.text('HelpYou AI - Smart Calculator & Homework Helper', margin, pageHeight - 7);
-    doc.text(`www.helpyou.ai`, pageWidth - margin, pageHeight - 7, { align: 'right' });
+    doc.text('HelpYou AI - Smart Calculator & Formula Helper', margin, pageHeight - 7);
+    doc.text(`Page ${pageNumber}  •  For interactive math solvers, view in HelpYou AI app`, pageWidth - margin, pageHeight - 7, { align: 'right' });
   };
 
   let pageIndex = 1;
@@ -185,6 +185,42 @@ export async function exportFormulaSheetPDF(
     }
 
     currentY += 4;
+  }
+
+  // ─── FINAL PAGE PRO TIP CALLOUT BOX ───
+  const tipBoxH = 13.5;
+  if (currentY + tipBoxH > pageHeight - 16) {
+    drawPageFooter(pageIndex);
+    doc.addPage();
+    pageIndex++;
+    drawPageHeader(pageIndex);
+    currentY = 20;
+  }
+
+  const targetTipY = Math.max(currentY + 4, pageHeight - 14.5 - tipBoxH);
+
+  doc.setFillColor(245, 243, 255);
+  doc.setDrawColor(199, 210, 254);
+  doc.setLineWidth(0.35);
+  doc.roundedRect(margin, targetTipY, contentWidth, tipBoxH, 2, 2, 'FD');
+
+  doc.setFillColor(99, 102, 241);
+  doc.roundedRect(margin, targetTipY, 2.5, tipBoxH, 1, 1, 'F');
+
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(8.2);
+  doc.setTextColor(67, 56, 202);
+  doc.text('★ PRO TIP: FOR THE BEST STUDY EXPERIENCE', margin + 5.5, targetTipY + 4.6);
+
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(55, 65, 81);
+  const tipText = 'To practice formulas interactively with step-by-step solvers, graphing, and instant AI explanations, view these formulas inside the HelpYou AI app rather than static PDFs!';
+  const tipLines = doc.splitTextToSize(tipText, contentWidth - 10);
+  let tY = targetTipY + 8.5;
+  for (const line of tipLines) {
+    doc.text(line, margin + 5.5, tY);
+    tY += 3.4;
   }
 
   drawPageFooter(pageIndex);

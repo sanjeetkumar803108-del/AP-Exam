@@ -31,9 +31,9 @@ export function generateNotesPDFBlob(title: string, markdownContent: string, act
     doc.setLineWidth(0.2);
     doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
     
-    // Page indicators
-    doc.text(`Page ${pageNum}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
-    doc.text('HelpYou AI - Super Note-Maker', pageWidth - margin, pageHeight - 10, { align: 'right' });
+    // Page indicators and prompt
+    doc.text('For the best interactive study experience, view notes in HelpYou AI app', margin, pageHeight - 10);
+    doc.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
   };
 
   // Header Decorative Colored Bar
@@ -187,6 +187,44 @@ export function generateNotesPDFBlob(title: string, markdownContent: string, act
       drawTextWithElevatedPowers(doc, line, margin + indent, currentY, fontSize);
       currentY += (fontSize * 0.45) + 2.5; // Dynamically computed line height
     }
+  }
+
+  // ─── FINAL PAGE PRO TIP CALLOUT BOX ───
+  const tipBoxH = 14;
+  if (currentY + tipBoxH > pageHeight - 18) {
+    doc.addPage();
+    pageCount++;
+    addFooter(pageCount);
+    currentY = 25;
+  }
+
+  const targetTipY = Math.max(currentY + 5, pageHeight - 17 - tipBoxH);
+
+  doc.setFillColor(245, 243, 255); // Soft purple-50
+  doc.setDrawColor(199, 210, 254); // Indigo-200
+  doc.setLineWidth(0.35);
+  doc.roundedRect(margin, targetTipY, contentWidth, tipBoxH, 2, 2, 'FD');
+
+  // Left accent bar
+  doc.setFillColor(124, 58, 237); // Purple accent
+  doc.roundedRect(margin, targetTipY, 2.5, tipBoxH, 1, 1, 'F');
+
+  // Tip Title
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(109, 40, 217);
+  doc.text('★ PRO TIP: FOR THE BEST STUDY EXPERIENCE', margin + 6, targetTipY + 4.8);
+
+  // Tip Body
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(7.6);
+  doc.setTextColor(55, 65, 81);
+  const tipText = 'To enjoy active recall flashcards, instant AI explanations, interactive quizzes, and speech audio, explore these notes directly inside the HelpYou AI app rather than static PDFs!';
+  const tipLines = doc.splitTextToSize(tipText, contentWidth - 12);
+  let tY = targetTipY + 8.8;
+  for (const line of tipLines) {
+    doc.text(line, margin + 6, tY);
+    tY += 3.5;
   }
 
   return doc.output('blob');

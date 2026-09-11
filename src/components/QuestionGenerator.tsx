@@ -767,8 +767,8 @@ export default function QuestionGenerator({ onBack, onNavigateToTab }: QuestionG
       doc.setLineWidth(0.2);
       doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
       
-      doc.text(`Page ${pageNum}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
-      doc.text('HelpYou AI - Subjective Practice & Answer Key', pageWidth - margin, pageHeight - 10, { align: 'right' });
+      doc.text('For the best interactive practice experience, solve questions in HelpYou AI app', margin, pageHeight - 10);
+      doc.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
     };
 
     // Header Decorative Bar
@@ -965,6 +965,40 @@ export default function QuestionGenerator({ onBack, onNavigateToTab }: QuestionG
           currentY += 8;
         }
       }
+    }
+
+    // ─── FINAL PAGE PRO TIP CALLOUT BOX ───
+    const tipBoxH = 14;
+    if (currentY + tipBoxH > pageHeight - 18) {
+      doc.addPage();
+      currentY = 25;
+      addFooter(doc.getNumberOfPages());
+    }
+
+    const targetTipY = Math.max(currentY + 6, pageHeight - 17 - tipBoxH);
+
+    doc.setFillColor(245, 243, 255);
+    doc.setDrawColor(199, 210, 254);
+    doc.setLineWidth(0.35);
+    doc.roundedRect(margin, targetTipY, contentWidth, tipBoxH, 2, 2, 'FD');
+
+    doc.setFillColor(147, 51, 234); // Purple-600
+    doc.roundedRect(margin, targetTipY, 2.5, tipBoxH, 1, 1, 'F');
+
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(8.2);
+    doc.setTextColor(107, 33, 168);
+    doc.text('★ PRO TIP: FOR THE BEST STUDY EXPERIENCE', margin + 5.5, targetTipY + 4.8);
+
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(7.6);
+    doc.setTextColor(55, 65, 81);
+    const tipText = 'To get instant AI evaluation, step-by-step grading rubrics, and personalized improvement tips, practice directly inside the HelpYou AI app rather than static PDFs!';
+    const tipLines = doc.splitTextToSize(tipText, contentWidth - 10);
+    let tY = targetTipY + 8.8;
+    for (const line of tipLines) {
+      doc.text(line, margin + 5.5, tY);
+      tY += 3.5;
     }
 
     return doc;
