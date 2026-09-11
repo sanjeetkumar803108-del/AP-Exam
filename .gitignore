@@ -19,3 +19,7 @@ android/.idea/
 android/captures/
 scratch/
 
+# Google Services Config (Keep local, do not expose API secrets to git)
+**/google-services.json
+
+

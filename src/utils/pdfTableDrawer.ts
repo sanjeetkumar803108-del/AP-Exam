@@ -86,13 +86,14 @@ export function drawTextWithElevatedPowers(
 
     // 3. Draw power elevated with smaller font size
     if (powerText) {
+      const scaleFactor = doc.internal.scaleFactor || 1;
       const superSize = Math.max(5.5, baseFontSize * 0.70);
-      const elevationOffset = baseFontSize * 0.32;
+      const elevationOffset = (baseFontSize * 0.35) / scaleFactor;
       doc.setFontSize(superSize);
       doc.text(powerText, curX, y - elevationOffset);
       curX += doc.getTextWidth(powerText);
       // Add tiny spacer after superscript so next char doesn't collide
-      curX += baseFontSize * 0.04;
+      curX += (baseFontSize * 0.04) / scaleFactor;
     }
 
     lastIdx = matchEnd;
@@ -130,7 +131,8 @@ export function drawPdfGridTable(
 ): number {
   const checkPageBreak = options.checkPageBreak || (() => false);
   const fontSize = options.fontSize || 7.5;
-  const newPageY = options.newPageY || 16;
+  const scaleFactor = doc.internal.scaleFactor || 1;
+  const newPageY = options.newPageY || (scaleFactor === 1 ? 46 : 16);
 
   // 1. Parse raw lines into table matrix
   const rawRows: string[][] = [];
@@ -191,13 +193,13 @@ export function drawPdfGridTable(
 
     const cellLinesList: string[][] = row.map((cellText, cIdx) => {
       const cleanCell = stripMarkdownFormatting(sanitizePdfText(cellText));
-      const cellW = scaledWidths[cIdx] - 5;
-      return doc.splitTextToSize(cleanCell, Math.max(12, cellW));
+      const cellW = scaledWidths[cIdx] - (5 / scaleFactor);
+      return doc.splitTextToSize(cleanCell, Math.max(12 / scaleFactor, cellW));
     });
 
     const maxLinesInRow = Math.max(1, ...cellLinesList.map(l => l.length));
-    const cellLineH = fontSize * 0.42 + 0.8;
-    const rowHeight = Math.max(isHeader ? 7.5 : 6.5, maxLinesInRow * cellLineH + 3.5);
+    const cellLineH = (fontSize * 1.34) / scaleFactor;
+    const rowHeight = Math.max((fontSize * 1.85) / scaleFactor, (maxLinesInRow * cellLineH) + (6 / scaleFactor));
 
     if (checkPageBreak(rowHeight)) {
       currentY = newPageY;
@@ -231,7 +233,7 @@ export function drawPdfGridTable(
       // Top Indigo Accent Line on Header
       if (isHeader) {
         doc.setFillColor(99, 102, 241); // Indigo-500
-        doc.rect(cellX, currentY, cellW, 1.2, 'F');
+        doc.rect(cellX, currentY, cellW, Math.max(0.8, 1.2 / scaleFactor), 'F');
       }
 
       // Draw Cell Text
@@ -241,14 +243,14 @@ export function drawPdfGridTable(
       doc.setTextColor(isHeader ? 67 : 30, isHeader ? 56 : 41, isHeader ? 202 : 59);
 
       const textBlockH = cellLines.length * cellLineH;
-      let textY = currentY + (rowHeight - textBlockH) / 2 + (fontSize * 0.32);
+      let textY = currentY + (rowHeight - textBlockH) / 2 + (fontSize * 0.82) / scaleFactor;
 
       cellLines.forEach(cl => {
         const isNumeric = /^[0-9.,%$+\-><=^/°±]+$/.test(cl.trim());
         if (isHeader || isNumeric) {
           doc.text(cl, cellX + cellW / 2, textY, { align: 'center' });
         } else {
-          doc.text(cl, cellX + 2.5, textY);
+          doc.text(cl, cellX + (3 / scaleFactor), textY);
         }
         textY += cellLineH;
       });
@@ -268,8 +270,8 @@ export function drawPdfGridTable(
 
 /**
  * Draws rich text, hierarchical bullet points, subheadings, and embedded Markdown tables in jsPDF.
- * Automatically parses Markdown tables (| col1 | col2 |) into structured PDF grid tables.
- * Strips raw markdown syntax (**bold**, *italic*) and renders bold headings with proper indentation.
+ * Automatically computes correct line height and text positioning using doc.internal.scaleFactor,
+ * completely eliminating overlapping / colliding text across both pt and mm document modes.
  */
 export function drawRichTextWithTables(
   doc: jsPDF,
@@ -288,8 +290,16 @@ export function drawRichTextWithTables(
   const fontStyle = options.fontStyle || 'normal';
   const fontSize = options.fontSize || 8;
   const textColor = options.textColor || [55, 65, 81];
-  const newPageY = options.newPageY || 16;
   const checkPageBreak = options.checkPageBreak || (() => false);
+
+  // Scale factor: 1 for pt, 2.83465 for mm
+  const scaleFactor = doc.internal.scaleFactor || 1;
+  const newPageY = options.newPageY || (scaleFactor === 1 ? 46 : 16);
+  const lineSpacingRatio = options.lineSpacing || 1.38;
+  const lineH = (fontSize * lineSpacingRatio) / scaleFactor;
+  const baselineOffset = (fontSize * 0.84) / scaleFactor;
+  const paragraphSpacing = (fontSize * 0.5) / scaleFactor;
+  const emptyLineSpacing = (fontSize * 0.6) / scaleFactor;
 
   let currentY = startY;
   let lineIdx = 0;
@@ -305,30 +315,31 @@ export function drawRichTextWithTables(
         lineIdx++;
       }
 
-      currentY += 1.5;
+      currentY += (4 / scaleFactor);
       currentY = drawPdfGridTable(doc, tableLines, x, currentY, maxWidth, {
         fontSize: Math.max(7, fontSize - 0.5),
         newPageY,
         checkPageBreak
       });
-      currentY += 3.5; // Spacing after table
+      currentY += (8 / scaleFactor); // Spacing after table
       continue;
     }
 
     const trimmed = rawLine.trim();
     if (!trimmed) {
-      currentY += 2; // Empty line spacing
+      currentY += emptyLineSpacing;
       lineIdx++;
       continue;
     }
 
     // 2. Horizontal divider (---, ***, ___)
     if (/^(\-\-\-|\*\*\*|___)$/.test(trimmed)) {
-      if (checkPageBreak(5)) currentY = newPageY;
+      const divH = (10 / scaleFactor);
+      if (checkPageBreak(divH)) currentY = newPageY;
       doc.setDrawColor(229, 231, 235);
       doc.setLineWidth(0.3);
-      doc.line(x, currentY + 1.5, x + maxWidth, currentY + 1.5);
-      currentY += 3.5;
+      doc.line(x, currentY + (3 / scaleFactor), x + maxWidth, currentY + (3 / scaleFactor));
+      currentY += divH;
       lineIdx++;
       continue;
     }
@@ -336,13 +347,16 @@ export function drawRichTextWithTables(
     // 3. Subheadings (e.g. ### Problem Scenario, ## Section)
     if (trimmed.startsWith('### ') || trimmed.startsWith('## ') || trimmed.startsWith('# ')) {
       const headingText = stripMarkdownFormatting(trimmed.replace(/^#+\s*/, ''));
-      if (checkPageBreak(8)) currentY = newPageY;
+      const headingFont = fontSize + 1.5;
+      const headingLineH = (headingFont * 1.4) / scaleFactor;
+      const headingTotalH = headingLineH + (8 / scaleFactor);
+      if (checkPageBreak(headingTotalH)) currentY = newPageY;
 
       doc.setFont(fontName, 'bold');
-      doc.setFontSize(fontSize + 1);
+      doc.setFontSize(headingFont);
       doc.setTextColor(30, 41, 59);
-      doc.text(headingText, x, currentY + 3.2);
-      currentY += 5.5;
+      doc.text(headingText, x, currentY + (headingFont * 0.84) / scaleFactor);
+      currentY += headingTotalH;
       lineIdx++;
       continue;
     }
@@ -352,13 +366,13 @@ export function drawRichTextWithTables(
     if (indentMatch) {
       const spaces = indentMatch[1].length;
       const bulletLevel = Math.min(2, Math.floor(spaces / 2));
-      const indentOffset = bulletLevel * 4;
+      const indentOffset = (bulletLevel * 10) / scaleFactor;
       const bulletContent = indentMatch[3].trim();
 
       // Check if bullet has bold lead-in: e.g. **Transportation**: Erie Canal...
       const boldLeadMatch = bulletContent.match(/^\*\*(.*?)\*\*:?\s*(.*)$/);
 
-      const availableW = maxWidth - indentOffset - 4.5;
+      const availableW = maxWidth - indentOffset - (12 / scaleFactor);
       const itemX = x + indentOffset;
 
       if (boldLeadMatch) {
@@ -371,64 +385,60 @@ export function drawRichTextWithTables(
 
         const fullSanitized = restOfText ? `${leadHeading} ${restOfText}` : leadHeading;
         const wrappedLines: string[] = doc.splitTextToSize(fullSanitized, availableW);
-        const lineH = 3.5;
-        const blockH = wrappedLines.length * lineH + 1;
+        const blockH = (wrappedLines.length * lineH) + paragraphSpacing;
 
         if (checkPageBreak(blockH)) currentY = newPageY;
 
-        // Draw bullet dot
+        // Draw bullet dot vertically centered with the first line
         doc.setFillColor(bulletLevel === 0 ? 99 : 156, bulletLevel === 0 ? 102 : 163, bulletLevel === 0 ? 241 : 175);
-        doc.circle(itemX + 1.2, currentY + 2.2, bulletLevel === 0 ? 0.9 : 0.7, 'F');
+        doc.circle(itemX + (3 / scaleFactor), currentY + (fontSize * 0.46) / scaleFactor, (fontSize * 0.18) / scaleFactor, 'F');
 
         // Draw text lines
         for (let lIdx = 0; lIdx < wrappedLines.length; lIdx++) {
           const wl = wrappedLines[lIdx];
-          const lineY = currentY + (lIdx * lineH) + 2.8;
+          const lineY = currentY + (lIdx * lineH) + baselineOffset;
 
           if (lIdx === 0) {
-            // First line: bold heading + normal rest
             doc.setFont(fontName, 'bold');
             doc.setFontSize(fontSize);
             doc.setTextColor(30, 41, 59);
-            doc.text(leadHeading, itemX + 3.5, lineY);
+            doc.text(leadHeading, itemX + (8 / scaleFactor), lineY);
 
             if (restOfText) {
               const firstLineNormal = wl.startsWith(leadHeading) ? wl.slice(leadHeading.length).trim() : wl;
               doc.setFont(fontName, 'normal');
               doc.setFontSize(fontSize);
               doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-              drawTextWithElevatedPowers(doc, firstLineNormal, itemX + 3.5 + headingW, lineY, fontSize);
+              drawTextWithElevatedPowers(doc, firstLineNormal, itemX + (8 / scaleFactor) + headingW, lineY, fontSize);
             }
           } else {
-            // Continuation lines
             doc.setFont(fontName, 'normal');
             doc.setFontSize(fontSize);
             doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-            drawTextWithElevatedPowers(doc, wl, itemX + 3.5, lineY, fontSize);
+            drawTextWithElevatedPowers(doc, wl, itemX + (8 / scaleFactor), lineY, fontSize);
           }
         }
-        currentY += blockH + 0.8;
+        currentY += blockH;
       } else {
         // Plain bullet
         const cleanItem = stripMarkdownFormatting(bulletContent);
         const wrappedLines: string[] = doc.splitTextToSize(cleanItem, availableW);
-        const lineH = 3.5;
-        const blockH = wrappedLines.length * lineH + 1;
+        const blockH = (wrappedLines.length * lineH) + paragraphSpacing;
 
         if (checkPageBreak(blockH)) currentY = newPageY;
 
         doc.setFillColor(156, 163, 175);
-        doc.circle(itemX + 1.2, currentY + 2.2, 0.7, 'F');
+        doc.circle(itemX + (3 / scaleFactor), currentY + (fontSize * 0.46) / scaleFactor, (fontSize * 0.16) / scaleFactor, 'F');
 
         doc.setFont(fontName, fontStyle);
         doc.setFontSize(fontSize);
         doc.setTextColor(textColor[0], textColor[1], textColor[2]);
 
         wrappedLines.forEach((wl: string, lIdx: number) => {
-          drawTextWithElevatedPowers(doc, wl, itemX + 3.5, currentY + (lIdx * lineH) + 2.8, fontSize);
+          drawTextWithElevatedPowers(doc, wl, itemX + (8 / scaleFactor), currentY + (lIdx * lineH) + baselineOffset, fontSize);
         });
 
-        currentY += blockH + 0.8;
+        currentY += blockH;
       }
 
       lineIdx++;
@@ -438,8 +448,7 @@ export function drawRichTextWithTables(
     // 5. Standard paragraph text
     const cleanParagraph = stripMarkdownFormatting(trimmed);
     const wrappedLines: string[] = doc.splitTextToSize(cleanParagraph, maxWidth);
-    const lineH = 3.5;
-    const blockH = wrappedLines.length * lineH + 1;
+    const blockH = (wrappedLines.length * lineH) + paragraphSpacing;
 
     if (checkPageBreak(blockH)) currentY = newPageY;
 
@@ -447,17 +456,14 @@ export function drawRichTextWithTables(
     doc.setFontSize(fontSize);
     doc.setTextColor(textColor[0], textColor[1], textColor[2]);
 
-    for (const wl of wrappedLines) {
-      if (checkPageBreak(lineH)) currentY = newPageY;
-      doc.setFont(fontName, fontStyle);
-      doc.setFontSize(fontSize);
-      doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-
-      drawTextWithElevatedPowers(doc, wl, x, currentY + 2.8, fontSize);
+    for (let lIdx = 0; lIdx < wrappedLines.length; lIdx++) {
+      const wl = wrappedLines[lIdx];
+      const lineY = currentY + baselineOffset;
+      drawTextWithElevatedPowers(doc, wl, x, lineY, fontSize);
       currentY += lineH;
     }
 
-    currentY += 1.5;
+    currentY += paragraphSpacing;
     lineIdx++;
   }
 

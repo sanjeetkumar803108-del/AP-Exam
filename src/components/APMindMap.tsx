@@ -603,47 +603,42 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
   return (
     <div className="fixed inset-0 z-40 bg-[#FAF7F2] text-zinc-900 flex flex-col overflow-hidden font-sans select-none">
       {/* Top Header */}
-      <header className="shrink-0 z-30 bg-white/90 backdrop-blur-md border-b border-[#ECE6DD] px-4 sm:px-6 py-2.5 flex items-center justify-between shadow-2xs">
-        <div className="flex items-center gap-3">
+      <header className="shrink-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#ECE6DD] px-3 sm:px-6 py-2.5 flex items-center justify-between shadow-2xs gap-2">
+        <div className="flex items-center gap-2.5 min-w-0 pr-1">
           <button
             onClick={() => {
               triggerVibration(10);
               setStep('select-subject');
             }}
-            className="w-10 h-10 rounded-full border border-zinc-200/80 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-50 shadow-2xs cursor-pointer transition-all active:scale-95"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-zinc-200/80 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-50 shadow-2xs cursor-pointer transition-all active:scale-95 shrink-0"
             title="Back to All Units"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
 
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 border border-indigo-200">
-                {currentSubject.shortCode}
-              </span>
-              <h1 className="text-sm font-black text-zinc-900 truncate max-w-[180px] sm:max-w-xs">
-                Unit {currentUnit.unitNumber}: {currentUnit.unitTitle}
-              </h1>
-            </div>
-            <p className="text-[11px] text-zinc-500 font-medium">
-              {currentSubject.subjectName} • Mind Map Revision
+          <div className="min-w-0">
+            <h1 className="text-xs sm:text-sm font-black text-zinc-900 tracking-tight truncate">
+              Mind Map Revision
+            </h1>
+            <p className="text-[10px] sm:text-[11px] text-zinc-500 font-medium truncate">
+              {currentSubject.subjectName}
             </p>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        {/* Action Buttons with shrink-0 and guaranteed visibility on mobile */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Quick Cram Sheet */}
           <button
             onClick={() => {
               triggerVibration(15);
               setShowCramSheet(true);
             }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-xs hover:shadow-sm cursor-pointer transition-all active:scale-95"
+            className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-xs hover:shadow-sm cursor-pointer transition-all active:scale-95 shrink-0"
             title="Open Quick Cram Sheet"
           >
             <Zap className="w-3.5 h-3.5 fill-current" />
-            <span className="hidden sm:inline">Cram Sheet</span>
+            <span className="text-[11px] hidden sm:inline">Cram</span>
           </button>
 
           {/* Active Recall Blurring Toggle */}
@@ -655,7 +650,7 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
                 setRevealedNodeIds(new Set());
               }
             }}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-bold border transition-all cursor-pointer ${
+            className={`flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-xs font-bold border transition-all cursor-pointer shrink-0 ${
               activeRecallMode
                 ? 'bg-purple-600 border-purple-700 text-white shadow-xs'
                 : 'bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50'
@@ -663,24 +658,10 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
             title={activeRecallMode ? 'Turn off Active Recall' : 'Turn on Active Recall'}
           >
             {activeRecallMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-            <span className="hidden sm:inline">Active Recall</span>
+            <span className="text-[11px] hidden sm:inline">Recall</span>
           </button>
 
-          {/* PDF Export */}
-          <button
-            onClick={handleExportPDF}
-            disabled={isExporting}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-xs font-bold transition-all cursor-pointer active:scale-95 disabled:opacity-50"
-            title="Download Mind Map Summary PDF"
-          >
-            {isExporting ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600" />
-            ) : (
-              <FileDown className="w-3.5 h-3.5 text-zinc-600" />
-            )}
-            <span className="hidden sm:inline">PDF</span>
-          </button>
-        </div>
+          </div>
       </header>
 
       {/* Unit Switcher Bar (Horizontal Carousel across all units) */}
@@ -772,6 +753,81 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
 
       {/* Main Revision Body - Smooth Vertical Scrolling with Overscroll Containment */}
       <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-5 max-w-4xl mx-auto w-full pb-36">
+        {/* Live News-Headline Unit Ticker Bar (Circulates continuously for long unit names) */}
+        {(() => {
+          const fullUnitTitle = `Unit ${currentUnit.unitNumber}: ${currentUnit.unitTitle}`;
+          // Condition: "only in baada unit naame bhai" (> 26 characters)
+          const isLongTitle = fullUnitTitle.length > 26;
+
+          return (
+            <div className="w-full rounded-2xl bg-gradient-to-r from-zinc-900 via-indigo-950 to-zinc-900 text-white p-2.5 sm:p-3 shadow-md border border-zinc-800 flex items-center gap-2.5 sm:gap-3 overflow-hidden relative">
+              {/* Left Badge: Unit Pill + Live Pulse Indicator */}
+              <div className="flex items-center gap-1.5 shrink-0 z-10 bg-indigo-600 text-white px-2.5 py-1 rounded-xl shadow-xs border border-indigo-400/30">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span className="text-[10px] font-black uppercase tracking-wider whitespace-nowrap">
+                  U{currentUnit.unitNumber} FOCUS
+                </span>
+              </div>
+
+              {/* Center: Live Circulating News Ticker or Clean Static Display */}
+              <div className="flex-1 overflow-hidden relative flex items-center min-w-0">
+                {isLongTitle ? (
+                  <div className="w-full overflow-hidden whitespace-nowrap flex">
+                    <motion.div
+                      key={currentUnit.unitId}
+                      className="flex items-center gap-8 shrink-0 whitespace-nowrap"
+                      animate={{ x: ['0%', '-50%'] }}
+                      transition={{
+                        repeat: Infinity,
+                        ease: 'linear',
+                        duration: Math.max(14, fullUnitTitle.length * 0.45),
+                      }}
+                    >
+                      <span className="text-xs sm:text-sm font-black tracking-wide text-zinc-100 flex items-center gap-2.5">
+                        <span>{fullUnitTitle}</span>
+                        {currentUnit.examWeight && (
+                          <span className="text-[10px] font-bold text-amber-300 bg-amber-400/15 px-2 py-0.5 rounded border border-amber-400/30">
+                            Exam Weight: {currentUnit.examWeight}
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-zinc-600 font-bold">•</span>
+                      <span className="text-xs sm:text-sm font-black tracking-wide text-zinc-100 flex items-center gap-2.5">
+                        <span>{fullUnitTitle}</span>
+                        {currentUnit.examWeight && (
+                          <span className="text-[10px] font-bold text-amber-300 bg-amber-400/15 px-2 py-0.5 rounded border border-amber-400/30">
+                            Exam Weight: {currentUnit.examWeight}
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-zinc-600 font-bold">•</span>
+                    </motion.div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-xs sm:text-sm font-black tracking-wide text-zinc-100 truncate">
+                      {fullUnitTitle}
+                    </span>
+                    {currentUnit.examWeight && (
+                      <span className="text-[10px] font-bold text-amber-300 bg-amber-400/15 px-2 py-0.5 rounded border border-amber-400/30 shrink-0 hidden sm:inline">
+                        {currentUnit.examWeight}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Edge Gradient Fades for Smooth Infinite Marquee Effect */}
+              {isLongTitle && (
+                <>
+                  <div className="absolute left-[92px] sm:left-[105px] top-0 bottom-0 w-5 bg-gradient-to-r from-zinc-900 to-transparent pointer-events-none z-10" />
+                  <div className="absolute right-0 top-0 bottom-0 w-5 bg-gradient-to-l from-zinc-900 to-transparent pointer-events-none z-10" />
+                </>
+              )}
+            </div>
+          );
+        })()}
+
         {/* Core Big Idea Card */}
         {currentUnit.coreBigIdea && (
           <div className="p-4 sm:p-5 rounded-3xl bg-white border border-[#DFD8CE] shadow-2xs">

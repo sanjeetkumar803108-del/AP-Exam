@@ -4071,9 +4071,10 @@ ANALYZE THE QUESTION THOROUGHLY:
 1. Identify the AP Subject and Core Unit/Skill.
 2. Question & Concept Master Breakdown: Provide a crystal-clear, thorough pedagogical explanation of what the question is asking, what underlying AP course concept, theorem, formula, or historical event it tests, and the step-by-step logic required to solve it.
 3. Determine which option is the true, verified correct answer, and explain why it is 100% correct according to the CED.
-4. For EVERY option (A, B, C, D), deconstruct its purpose:
-   - If correct: Mark as \u{1F3AF} Official College Board Target, explain why it's right and verify the calculations/historical reasoning.
-   - If incorrect: Identify the exact Trap Archetype, why test-makers engineered it, what common misconception it targets, and what % of AP students typically fall for it under exam time pressure.
+4. For EVERY option (A, B, C, D), deconstruct its purpose with deep pedagogical clarity:
+   - If correct: Mark as "\u{1F3AF} Official College Board Target". In "trapDescription", write an authoritative, crystal-clear explanation demonstrating exactly WHY this choice is 100% correct according to the College Board Course and Exam Description (CED), validating any formulas, definitions, or historical causal chains.
+   - If incorrect: Identify the exact Trap Archetype. In "trapDescription", write a sharp, eye-opening diagnosis of the exact misconception, calculation slip, or subtle wording trick that causes students to choose it, and explain why it is factually or conceptually flawed.
+   - In "text": Provide the exact text of the choice without prepending the letter (e.g. "All living organisms share a common ancestral origin", NOT "A) All living organisms...").
 5. Provide the "5-Second Disarm Secret": A bulletproof heuristic or mental model to immediately spot and eliminate the distractor on the real exam.
 
 CRITICAL LATEX & FORMULA FORMATTING RULES:
@@ -4093,19 +4094,19 @@ STRICT JSON OUTPUT FORMAT (WHEN VALID):
   "traps": [
     {
       "option": "A",
-      "text": "Full option text",
+      "text": "Full option text without option letter prefix",
       "isCorrect": true,
       "trapType": "\u{1F3AF} Official College Board Target",
-      "trapDescription": "Clear, rigorous explanation of why this option is 100% correct.",
+      "trapDescription": "Clear, rigorous, step-by-step explanation of why this option is 100% CED-verified correct.",
       "collegeBoardMindset": "Evaluates mastery of CED concept...",
       "vulnerabilityRate": "Target Answer (0% Trap)"
     },
     {
       "option": "B",
-      "text": "Full option text",
+      "text": "Full option text without option letter prefix",
       "isCorrect": false,
       "trapType": "\u26A0\uFE0F The Reverse Logic / Sign Flip Trap",
-      "trapDescription": "Explains why students fall for this...",
+      "trapDescription": "Explains why students fall for this and why it is wrong...",
       "collegeBoardMindset": "Test-makers set this trap for students who...",
       "vulnerabilityRate": "38% of AP students fall for this under time pressure"
     }
@@ -4136,6 +4137,18 @@ STRICT JSON OUTPUT FORMAT (WHEN VALID):
         }
       });
       const parsed2 = safeParseJSON(response2.text || "{}", "object");
+      if (parsed2 && Array.isArray(parsed2.traps)) {
+        parsed2.traps = parsed2.traps.map((t, idx) => {
+          const opt = String(t.option || String.fromCharCode(65 + idx)).trim().toUpperCase();
+          let txt = String(t.text || "").trim();
+          txt = txt.replace(new RegExp(`^\\s*${opt}\\s*[:.)-]\\s*`, "i"), "").trim();
+          return {
+            ...t,
+            option: opt,
+            text: txt
+          };
+        });
+      }
       return res.json({ success: true, analysis: parsed2 });
     }
     if (!subject) {
@@ -4520,12 +4533,42 @@ The Gemini API is currently experiencing rate limits. Please try again in 60 sec
 });
 app.post("/api/ap-tutor-explain", async (req, res) => {
   try {
-    const { questionText, stimulus, options, questionType, subject, unit, followUpQuestion } = req.body;
+    const { questionText, stimulus, options, questionType, subject, unit, followUpQuestion, mode, correctAnswer, explanation, modelAnswer, scoringRubric, trapsData, disarmStrategy } = req.body;
     if (!questionText) {
       return res.status(400).json({ error: "Missing questionText" });
     }
-    const systemInstruction = `You are the AI Magic Tutor for College Board AP ${subject || "Exams"}.
-A high-school student is practicing an AP exam question and has clicked "Ask with AI".
+    const isTrapsMode = mode === "traps";
+    const isFullSolution = mode === "full-solution";
+    let systemInstruction = "";
+    if (isTrapsMode) {
+      systemInstruction = `You are the Master AP Chief Reader & AP Trap Radar Specialist for College Board AP ${subject || "Exams"}.
+A high-school student is practicing with AP Trap Radar and clicked: "EXPLAIN QUESTION TRAPS WITH AI".
+Your mission is to act as an elite AP Exam Examiner who knows every psychological, psychometric, and conceptual trap designed by College Board test-makers.
+
+TRAP ANALYSIS TEACHING STRUCTURE:
+1. \u{1FAA4} **Primary AP Trap Archetype**:
+   - Explicitly name and classify the core trap in this question (e.g., Reverse Logic / Sign Flip, Half-Truth / Scope Creep, Chronological Anachronism, Unit / Dimension Mismatch, Formula Misapplication, Distractor Decoy, or Incomplete Justification).
+2. \u26A0\uFE0F **Deceptive Wording & Cognitive Triggers**:
+   - Highlight the sneaky phrasing, subtle qualifiers, or tricky graph/table nuances that cause 60%+ of students to lose points (e.g., "rate of decrease vs decrease", "except", "not supported", hidden negative signs).
+3. \u{1F3AF} **Distractor Autopsy (Where Students Trip)**:
+   - Break down why the wrong options are so tempting and dissect the exact misconception behind each trap distractor.
+4. \u26A1 **Examiner's 5-Second Disarm Secret**:
+   - Give the student a foolproof, actionable heuristic/rule of thumb to disarm this trap instantly on the May AP exam!
+Format cleanly in Markdown with bold headers, bullet points, clean LaTeX ($...$) where applicable, and readable spacing.`;
+    } else if (isFullSolution) {
+      systemInstruction = `You are the AI Magic Tutor for College Board AP ${subject || "Exams"}.
+A high-school student is practicing an AP exam question and has requested a COMPLETE STEP-BY-STEP EXPLANATION AND SOLUTION.
+Your mission is to act as their master AP teacher: deliver a crystal-clear, thorough, and highly pedagogical breakdown of the question, its full mathematical or conceptual solution, why the correct answer is right, why incorrect distractors fail, and essential AP exam traps to avoid.
+
+TEACHING STRUCTURE:
+1. \u{1F3AF} **Official Correct Answer & Quick Summary**: State the correct answer or key result upfront.
+2. \u{1F4D0} **Step-by-Step Solution & Working**: Walk through every single calculation, theorem, or piece of evidence with clean LaTeX ($...$) formulas.
+3. \u26A0\uFE0F **Distractor Autopsy & Common Traps**: Explain why common wrong choices fail and what misunderstandings cause students to pick them.
+4. \u{1F4A1} **Chief Reader AP Exam Strategy**: Share a high-scoring College Board tip to guarantee full points on similar May exam questions.
+Format cleanly in Markdown with bold headers and readable spacing.`;
+    } else {
+      systemInstruction = `You are the AI Magic Tutor for College Board AP ${subject || "Exams"}.
+A high-school student is practicing an AP exam question and has clicked "Ask with AI" for guided hints.
 Your mission is to act as their world-class AP teacher: break down the question thoroughly, explain the core concepts, and provide strategic hints so they can solve it THEMSELVES.
 
 CRITICAL SOCRATIC AP TUTORING PRINCIPLES:
@@ -4546,6 +4589,13 @@ CRITICAL SOCRATIC AP TUTORING PRINCIPLES:
 5. TONE & FORMAT:
    - Warm, empowering, brilliant high-school AP teacher tone.
    - Format cleanly in Markdown with bold headers and clear spacing.`;
+    }
+    let promptGoal = "Please decode what College Board is asking, explain core concepts, and provide strategic hints so I can solve it myself without spoiling the answer!";
+    if (isTrapsMode) {
+      promptGoal = "Please conduct a deep AP Trap Radar analysis on this question: expose the College Board traps, deceptive wording, why students pick the wrong distractors, and give the 5-second disarm secret!";
+    } else if (isFullSolution) {
+      promptGoal = "Please provide the complete step-by-step solution, explain why the correct answer is true, why wrong options fail, and key AP traps.";
+    }
     const userPrompt = followUpQuestion ? `Original Question: ${questionText}
 ${stimulus ? `Stimulus: ${stimulus}
 ` : ""}${options && options.length > 0 ? `Options:
@@ -4560,9 +4610,22 @@ ${stimulus ? `Stimulus / Context:
 ${stimulus}
 ` : ""}${options && options.length > 0 ? `Multiple Choice Options:
 ${options.join("\n")}
+` : ""}${correctAnswer ? `
+Official Correct Answer: ${correctAnswer}
+` : ""}${explanation ? `
+Official Explanation: ${explanation}
+` : ""}${modelAnswer ? `
+Model Answer: ${modelAnswer}
+` : ""}${scoringRubric ? `
+Rubric: ${scoringRubric}
+` : ""}${trapsData ? `
+Identified Traps Context:
+${JSON.stringify(trapsData, null, 2)}
+` : ""}${disarmStrategy ? `
+Disarm Secret Note: ${disarmStrategy}
 ` : ""}
 
-Please thoroughly explain this question to me, decode what College Board is asking, explain the core AP concept and formulas, and give me strategic hints to solve it without spoiling the answer!`;
+${promptGoal}`;
     const response = await safeGenerateContent({
       gradeLevel: "AP High School (Advanced Placement)",
       model: "gemini-3.5-flash-lite",

@@ -31,7 +31,10 @@ import {
   Image as ImageIcon,
   History,
   Trash2,
-  Clock
+  Clock,
+  ChevronDown,
+  Search,
+  Loader2
 } from 'lucide-react';
 import { triggerVibration } from '../utils/vibrate';
 import { showToast } from '../utils/toast';
@@ -114,6 +117,12 @@ export interface TrapQuestion {
   aiFix?: AIMistakeFix | null;
 }
 
+function cleanOptionText(text: string | undefined, optionLetter: string): string {
+  if (!text) return '';
+  const regex = new RegExp(`^\\s*${optionLetter}\\s*[:.)-]\\s*`, 'i');
+  return text.replace(regex, '').trim();
+}
+
 const TRAP_ARCHETYPES = [
   {
     id: 'reverse-logic',
@@ -184,36 +193,120 @@ interface RealRadarLoadingScreenProps {
   mode: 'challenge' | 'scan' | 'disarm';
 }
 
+interface RadarThought {
+  phase: string;
+  action: string;
+  detail: string;
+  log: string;
+}
+
 function RealRadarLoadingScreen({ title, subtitle, subjectName, mode }: RealRadarLoadingScreenProps) {
   const [hudIndex, setHudIndex] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
-  const statusTelemetry = useMemo(() => {
+  const statusTelemetry: RadarThought[] = useMemo(() => {
     if (mode === 'scan') {
       return [
-        'RADAR SWEEP ACTIVE: FREQUENCY 2.45 GHz...',
-        'PARSING QUESTION STEM & DISTRACTOR CHOICES...',
-        'INTERCEPTING PSYCHOMETRIC TRAP ARCHETYPES...',
-        'CROSS-REFERENCING COLLEGE BOARD PITFALL DATABASE...',
-        'DECODING EXAMINER 5-SECOND DISARM SECRETS...'
+        {
+          phase: 'RADAR OCR & STEM PARSING',
+          action: 'Scanning Question Stem & Extracting Stimulus',
+          detail: 'Parsing multiple-choice choices (A, B, C, D) and verifying complete context...',
+          log: 'RADAR SWEEP ACTIVE: Stem and distractor tokens extracted'
+        },
+        {
+          phase: 'TRAP ARCHETYPE RECON',
+          action: 'Cross-Referencing College Board Distractor Database',
+          detail: 'Isolating reverse-logic sign flips, chronological traps, and pseudo-jargon lures...',
+          log: 'DISTRACTOR MATRIX: 6 College Board trap archetypes mapped'
+        },
+        {
+          phase: 'CED TARGET VERIFICATION',
+          action: 'Auditing 100% CED-Compliant Correct Target',
+          detail: 'Validating mathematical formulas, historical causal chains, and CED learning objectives...',
+          log: 'TARGET PROOF: Official College Board target verified'
+        },
+        {
+          phase: 'TEST-MAKER INTENT AUTOPSY',
+          action: 'Uncovering Cognitive Trap & Student Misconception',
+          detail: 'Calculating percentage of AP students who forfeit points on this exact distractor under time pressure...',
+          log: 'PSYCHOMETRICS: Student cognitive slip model calculated'
+        },
+        {
+          phase: 'EXAMINER DEFENSE',
+          action: "Synthesizing 5-Second Disarm Secret",
+          detail: 'Constructing Score-5 mental heuristic to neutralize this distractor in seconds...',
+          log: 'COMPLETE: Trap Radar autopsy report assembled'
+        }
       ];
     }
     if (mode === 'disarm') {
       return [
-        'RADAR SWEEP LOCKING ON SELECTED OPTION...',
-        'SCANNING FOR RECURRENT DISTRACTOR PATTERNS...',
-        'ANALYZING FALSE PREMISES & SIGN-FLIP TRAPS...',
-        'CALCULATING OPTION VULNERABILITY MATRIX...',
-        'REVEALING EXAMINER AUTOPSY REPORT...'
+        {
+          phase: 'OPTION LOCK-ON',
+          action: 'Locking On Selected Multiple Choice Option',
+          detail: 'Isolating linguistic qualifiers, formula substitutions, and scope boundaries...',
+          log: 'RADAR LOCK: Scanning selected choice for vulnerability markers'
+        },
+        {
+          phase: 'PATTERN ANALYSIS',
+          action: 'Detecting Sign-Flip & Half-Truth Patterns',
+          detail: 'Checking for inverted algebraic signs, reciprocal traps, or premature calculation stops...',
+          log: 'AUTOPSY SCAN: Deconstructive distractor analysis running'
+        },
+        {
+          phase: 'VULNERABILITY SCORING',
+          action: 'Evaluating Vulnerability Rate & Student Trap Risk',
+          detail: 'Benchmarking choice against real College Board score distribution models...',
+          log: 'VULNERABILITY: Psychometric risk evaluated'
+        },
+        {
+          phase: 'EXAMINER REVEAL',
+          action: 'Compiling Final Examiner Autopsy Card',
+          detail: 'Preparing full diagnostic breakdown and Score-5 memory tricks...',
+          log: 'RADAR REPORT: Disarm diagnostic ready to reveal'
+        }
       ];
     }
     return [
-      `DEPLOYING TRAP RADAR FOR ${subjectName?.toUpperCase() || 'AP EXAM'}...`,
-      'SWEEPING HIGH-YIELD CURRICULUM FOR DISTRACTORS...',
-      'INTERCEPTING EXAM-DAY TIME-DRAIN TRAPS...',
-      'CALIBRATING 5-SECOND EXAMINER DISARM TACTICS...',
-      'SYNTHESIZING COLLEGE BOARD TRAP MCQs...'
+      {
+        phase: 'CED RECONNAISSANCE',
+        title: `Deploying Trap Radar for ${subjectName || 'AP Exam'}`,
+        action: `Scanning ${subjectName || 'AP Exam'} CED Curriculum Framework`,
+        detail: 'Sweeping high-yield units for standard high-school misconceptions and time-drain traps...',
+        log: `DEPLOYING: Trap Radar anchored to ${subjectName || 'AP Exam'} standards`
+      },
+      {
+        phase: 'DECEPTIVE ENGINEERING',
+        action: 'Engineering 3 Deceptive Psychometric Distractors',
+        detail: 'Injecting sign-flip errors, scope-creep traps, and pseudo-vocabulary jargon salads...',
+        log: 'ENGINEERING: 3 authentic distractor traps synthesized'
+      },
+      {
+        phase: 'STIMULUS SYNTHESIS',
+        action: 'Synthesizing Authentic Stimulus Context & Equations',
+        detail: 'Formatting LaTeX formulas, data tables, lab coordinates, and primary source excerpts...',
+        log: 'STIMULUS: College Board stimulus scenario constructed'
+      },
+      {
+        phase: 'PSYCHOMETRIC CALIBRATION',
+        action: 'Balancing 25% Random Target Distribution',
+        detail: 'Verifying that Options A, B, C, and D have evenly distributed target probabilities...',
+        log: 'CALIBRATION: 25% balanced target distribution verified'
+      },
+      {
+        phase: 'DISARM TACTICS',
+        action: "Encoding 5-Second Examiner Disarm Rules",
+        detail: 'Formulating unforgettable Score-5 mental shortcuts to disarm traps under exam stress...',
+        log: 'COMPLETE: Trap Radar challenge deck compiled and ready'
+      }
     ];
   }, [mode, subjectName]);
+
+  // Timer
+  useEffect(() => {
+    const timer = setInterval(() => setElapsedSeconds(prev => prev + 1), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Audio & Haptic Ping simulation
   useEffect(() => {
@@ -247,10 +340,13 @@ function RealRadarLoadingScreen({ title, subtitle, subjectName, mode }: RealRada
     const interval = setInterval(() => {
       setHudIndex((prev) => (prev + 1) % statusTelemetry.length);
       playPing();
-    }, 1500);
+    }, 2200);
 
     return () => clearInterval(interval);
   }, [statusTelemetry.length]);
+
+  const activeThought = statusTelemetry[hudIndex] || statusTelemetry[0];
+  const formattedTime = `${Math.floor(elapsedSeconds / 60).toString().padStart(2, '0')}:${(elapsedSeconds % 60).toString().padStart(2, '0')}s`;
 
   return (
     <motion.div
@@ -258,7 +354,7 @@ function RealRadarLoadingScreen({ title, subtitle, subjectName, mode }: RealRada
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
-      className="fixed inset-0 z-[120] bg-[#050807]/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 sm:p-6 select-none overflow-hidden"
+      className="fixed inset-0 z-[120] bg-[#050807]/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 sm:p-6 select-none overflow-y-auto"
     >
       {/* High-tech Military Grid Background */}
       <div 
@@ -270,11 +366,17 @@ function RealRadarLoadingScreen({ title, subtitle, subjectName, mode }: RealRada
       />
 
       {/* Cockpit Status Header */}
-      <div className="relative z-10 text-center mb-5 sm:mb-7 space-y-2">
-        <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-md">
+      <div className="relative z-10 text-center mb-4 sm:mb-5 space-y-2">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 shadow-xs">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+          <span>AI TRAP RADAR • COGNITIVE TELEMETRY</span>
+          <span className="text-emerald-400/60">•</span>
+          <span className="text-emerald-200">⏱️ {formattedTime}</span>
+        </div>
+        <h2 className="text-lg sm:text-xl font-black text-white tracking-tight drop-shadow-md">
           {title}
         </h2>
-        <p className="text-xs text-emerald-300/80 font-mono max-w-sm sm:max-w-md mx-auto">
+        <p className="text-[11px] sm:text-xs text-emerald-300/80 font-mono max-w-sm sm:max-w-md mx-auto">
           {subtitle}
         </p>
       </div>
@@ -282,77 +384,34 @@ function RealRadarLoadingScreen({ title, subtitle, subjectName, mode }: RealRada
       {/* ======================================================= */}
       {/* CIRCULAR REAL RADAR SCOPE SCREEN WITH 360° SWEEP        */}
       {/* ======================================================= */}
-      <div className="relative z-10 w-64 h-64 sm:w-80 sm:h-80 rounded-full border-4 border-emerald-500/60 flex items-center justify-center overflow-hidden bg-radial from-emerald-950/90 via-[#061811] to-[#020a06] shadow-[0_0_65px_rgba(16,185,129,0.4)] ring-4 ring-emerald-500/20">
+      <div className="relative z-10 w-52 h-52 sm:w-64 sm:h-64 rounded-full border-4 border-emerald-500/60 flex items-center justify-center overflow-hidden bg-radial from-emerald-950/90 via-[#061811] to-[#020a06] shadow-[0_0_50px_rgba(16,185,129,0.4)] ring-4 ring-emerald-500/20 shrink-0">
         
         {/* Cardinal Azimuth Degrees */}
-        <span className="absolute top-2 text-[9px] font-mono font-bold text-emerald-400/90 tracking-wider">000° N</span>
-        <span className="absolute bottom-2 text-[9px] font-mono font-bold text-emerald-400/90 tracking-wider">180° S</span>
-        <span className="absolute left-2 text-[9px] font-mono font-bold text-emerald-400/90 tracking-wider">270° W</span>
-        <span className="absolute right-2 text-[9px] font-mono font-bold text-emerald-400/90 tracking-wider">090° E</span>
+        <span className="absolute top-2 text-[8px] font-mono font-bold text-emerald-400/90 tracking-wider">000° N</span>
+        <span className="absolute bottom-2 text-[8px] font-mono font-bold text-emerald-400/90 tracking-wider">180° S</span>
+        <span className="absolute left-2 text-[8px] font-mono font-bold text-emerald-400/90 tracking-wider">270° W</span>
+        <span className="absolute right-2 text-[8px] font-mono font-bold text-emerald-400/90 tracking-wider">090° E</span>
 
         {/* Concentric Distance Rings */}
         <div className="absolute inset-4 rounded-full border border-emerald-500/25 pointer-events-none" />
-        <div className="absolute inset-12 sm:inset-16 rounded-full border border-emerald-500/25 border-dashed pointer-events-none" />
-        <div className="absolute inset-20 sm:inset-28 rounded-full border border-emerald-500/20 pointer-events-none" />
-        <div className="absolute inset-28 sm:inset-40 rounded-full border border-emerald-500/15 pointer-events-none" />
+        <div className="absolute inset-10 sm:inset-14 rounded-full border border-emerald-500/25 border-dashed pointer-events-none" />
+        <div className="absolute inset-18 sm:inset-24 rounded-full border border-emerald-500/20 pointer-events-none" />
 
         {/* 4-Quadrant Crosshairs */}
         <div className="absolute w-full h-[1px] bg-emerald-500/35 pointer-events-none" />
         <div className="absolute h-full w-[1px] bg-emerald-500/35 pointer-events-none" />
-        {/* Diagonal Crosshair Guidelines */}
         <div className="absolute w-full h-[1px] bg-emerald-500/15 rotate-45 pointer-events-none" />
         <div className="absolute w-full h-[1px] bg-emerald-500/15 -rotate-45 pointer-events-none" />
 
-        {/* ======================================================= */}
-        {/* REAL 360° CONTINUOUS ROTATING RADAR SWEEP BEAM          */}
-        {/* ======================================================= */}
+        {/* 360° SWEEP BEAM */}
         <motion.div
           animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, ease: 'linear', duration: 2.4 }}
+          transition={{ repeat: Infinity, ease: 'linear', duration: 2.2 }}
           className="absolute inset-0 rounded-full pointer-events-none origin-center"
           style={{
             background: 'conic-gradient(from 0deg, rgba(16, 185, 129, 0.6) 0deg, rgba(16, 185, 129, 0.25) 35deg, rgba(16, 185, 129, 0.08) 60deg, transparent 80deg, transparent 360deg)'
           }}
-        >
-          {/* Bright Glowing Leading Sweep Line */}
-          <div className="absolute top-0 left-1/2 w-[1.5px] h-1/2 bg-gradient-to-t from-emerald-100 via-white to-emerald-300 shadow-[0_0_15px_#34d399]" />
-        </motion.div>
-
-        {/* ======================================================= */}
-        {/* PINGING TRAP TARGETS (BLIPS) ON RADAR                   */}
-        {/* ======================================================= */}
-        {/* Blip 1: Top-Right (Distractor) */}
-        <div className="absolute top-[22%] right-[24%] pointer-events-none flex flex-col items-center">
-          <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500 shadow-[0_0_12px_#f59e0b]" />
-          </span>
-          <span className="text-[7.5px] font-mono font-bold text-amber-300 bg-black/85 px-1 py-0.2 rounded mt-1 border border-amber-500/40">
-            TRAP: SIGN-FLIP
-          </span>
-        </div>
-
-        {/* Blip 2: Bottom-Left (Premature Stop) */}
-        <div className="absolute bottom-[24%] left-[22%] pointer-events-none flex flex-col items-center">
-          <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75" />
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-600 shadow-[0_0_12px_#f43f5e]" />
-          </span>
-          <span className="text-[7.5px] font-mono font-bold text-rose-300 bg-black/85 px-1 py-0.2 rounded mt-1 border border-rose-500/40">
-            DISTRACTOR LOCK
-          </span>
-        </div>
-
-        {/* Blip 3: Top-Left (Half-Truth) */}
-        <div className="absolute top-[32%] left-[25%] pointer-events-none flex flex-col items-center">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 shadow-[0_0_12px_#10b981]" />
-          </span>
-          <span className="text-[7px] font-mono font-bold text-emerald-300 bg-black/85 px-1 py-0.2 rounded mt-1 border border-emerald-500/40">
-            DISARM KEY
-          </span>
-        </div>
+        />
 
         {/* Radar Origin Center Emitter */}
         <div className="relative z-10 w-4 h-4 rounded-full bg-emerald-400 flex items-center justify-center shadow-[0_0_20px_#10b981]">
@@ -360,27 +419,59 @@ function RealRadarLoadingScreen({ title, subtitle, subjectName, mode }: RealRada
         </div>
       </div>
 
-      {/* Telemetry Status Console */}
-      <div className="relative z-10 mt-6 sm:mt-8 w-full max-w-sm text-center space-y-3">
-        <div className="bg-emerald-950/50 border border-emerald-500/35 rounded-2xl p-3 shadow-inner">
-          <div className="flex items-center justify-center gap-2 text-xs font-mono font-bold text-emerald-400 tracking-wider">
-            <Radar className="w-4 h-4 animate-spin text-emerald-400" />
-            <span className="animate-pulse">{statusTelemetry[hudIndex]}</span>
-          </div>
+      {/* Real-time AI Chain of Thought Box */}
+      <div className="relative z-10 mt-4 sm:mt-5 w-full max-w-sm space-y-2.5">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={hudIndex}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2 }}
+            className="bg-emerald-950/70 border border-emerald-500/40 rounded-2xl p-3.5 shadow-lg text-left space-y-1.5 backdrop-blur-md"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-900/60 px-2 py-0.5 rounded border border-emerald-500/30">
+                {activeThought.phase} ({hudIndex + 1}/{statusTelemetry.length})
+              </span>
+              <Radar className="w-3.5 h-3.5 text-emerald-400 animate-spin" />
+            </div>
+            <h4 className="text-xs font-bold text-white font-sans leading-snug">
+              {activeThought.action}
+            </h4>
+            <p className="text-[10px] text-emerald-300/80 leading-relaxed font-mono">
+              {activeThought.detail}
+            </p>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Live Thought Trace Terminal */}
+        <div className="rounded-xl bg-black/80 border border-emerald-500/25 p-2.5 font-mono text-[9px] sm:text-[10px] space-y-1 max-h-24 overflow-y-auto">
+          {statusTelemetry.slice(0, hudIndex + 1).map((item, idx) => {
+            const isCurrent = idx === hudIndex;
+            return (
+              <div
+                key={idx}
+                className={`flex items-start gap-1.5 ${
+                  isCurrent ? 'text-emerald-300 font-bold' : 'text-emerald-600 font-normal'
+                }`}
+              >
+                <span>{isCurrent ? '▶' : '✓'}</span>
+                <span>{item.log}</span>
+                {isCurrent && <span className="inline-block w-1.5 h-2.5 bg-emerald-400 animate-pulse ml-0.5" />}
+              </div>
+            );
+          })}
         </div>
 
         {/* Glowing Progress Track */}
         <div className="w-full bg-zinc-900/90 rounded-full h-1.5 overflow-hidden border border-emerald-500/20">
           <motion.div
-            animate={{ x: ['-100%', '100%'] }}
-            transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
-            className="w-1/2 h-full bg-gradient-to-r from-emerald-500 via-teal-300 to-emerald-500 shadow-[0_0_12px_#10b981]"
+            className="h-full bg-gradient-to-r from-emerald-500 via-teal-300 to-emerald-500 shadow-[0_0_12px_#10b981]"
+            animate={{ width: `${((hudIndex + 1) / statusTelemetry.length) * 100}%` }}
+            transition={{ duration: 0.4 }}
           />
         </div>
-
-        <p className="text-[10px] font-mono text-zinc-500">
-          Powered by College Board Psychometric Trap Disarmer Engine
-        </p>
       </div>
     </motion.div>
   );
@@ -399,6 +490,26 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
   const [questionCount, setQuestionCount] = useState<number>(5);
   const [selectedSubject, setSelectedSubject] = useState<APSubject>(TOP_10_AP_SUBJECTS[0]);
   const [selectedUnit, setSelectedUnit] = useState<string>('All Units');
+  const [showSubjectModal, setShowSubjectModal] = useState<boolean>(false);
+  const [showUnitModal, setShowUnitModal] = useState<boolean>(false);
+  const [subjectSearchQuery, setSubjectSearchQuery] = useState<string>('');
+  const [subjectCategoryFilter, setSubjectCategoryFilter] = useState<string>('All');
+
+  const filteredSubjects = useMemo(() => {
+    return TOP_10_AP_SUBJECTS.filter(s => {
+      if (subjectCategoryFilter !== 'All' && s.category !== subjectCategoryFilter) {
+        return false;
+      }
+      if (!subjectSearchQuery.trim()) return true;
+      const q = subjectSearchQuery.toLowerCase();
+      return (
+        s.name.toLowerCase().includes(q) ||
+        s.shortCode.toLowerCase().includes(q) ||
+        s.category.toLowerCase().includes(q)
+      );
+    });
+  }, [subjectSearchQuery, subjectCategoryFilter]);
+
   const [loading, setLoading] = useState(false);
   const [questions, setQuestions] = useState<TrapQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -410,9 +521,16 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
   const [questionFormat, setQuestionFormat] = useState<'objective' | 'subjective'>('objective');
   const [userFrqDraft, setUserFrqDraft] = useState<Record<string, string>>({});
   const [frqSelfGrading, setFrqSelfGrading] = useState<Record<string, 'avoided' | 'tripped'>>({});
+  const [showFrqPlusMenu, setShowFrqPlusMenu] = useState<boolean>(false);
+  const [frqAttachedImages, setFrqAttachedImages] = useState<Record<string, string[]>>({});
+  const [frqEvaluating, setFrqEvaluating] = useState<boolean>(false);
+  const [frqAiFeedback, setFrqAiFeedback] = useState<Record<string, string>>({});
+  const frqCameraInputRef = useRef<HTMLInputElement>(null);
+  const frqGalleryInputRef = useRef<HTMLInputElement>(null);
   const [vaultFilter, setVaultFilter] = useState<'all' | 'objective' | 'subjective'>('all');
   const [previewPdfUri, setPreviewPdfUri] = useState<string | null>(null);
   const [previewPdfName, setPreviewPdfName] = useState<string>('AP_Trap_Radar_Practice.pdf');
+  const [isPdfDownloaded, setIsPdfDownloaded] = useState<boolean>(false);
   const [explainingMistakeId, setExplainingMistakeId] = useState<string | number | null>(null);
   const [activeAiDoctorModal, setActiveAiDoctorModal] = useState<{ question: string; wrongInput: string; fix: AIMistakeFix } | null>(null);
 
@@ -500,6 +618,85 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
   const activeQuestion = questions[currentIndex] || null;
 
+  // Ask AI Modal & In-Question Inline AI Explanation State
+  const [askAiModalQuestion, setAskAiModalQuestion] = useState<TrapQuestion | null>(null);
+  const [inlineAiExplanations, setInlineAiExplanations] = useState<Record<string, {
+    loading: boolean;
+    text?: string;
+    mode: 'traps' | 'full-solution';
+    error?: string;
+  }>>({});
+
+  // Open 2-Suggestion Ask AI Modal
+  const handleOpenAITutor = (q: TrapQuestion) => {
+    triggerVibration(10);
+    setAskAiModalQuestion(q);
+  };
+
+  // User chooses one of the 2 AI suggestions -> Explains directly under the question in Trap Radar!
+  const handleSelectAITutorMode = async (
+    mode: 'traps' | 'full-solution',
+    explicitQ?: TrapQuestion
+  ) => {
+    const targetQ = explicitQ || askAiModalQuestion;
+    if (!targetQ) return;
+    triggerVibration(15);
+    setAskAiModalQuestion(null);
+
+    const qKey = String(targetQ.id || currentIndex);
+    setInlineAiExplanations(prev => ({
+      ...prev,
+      [qKey]: { loading: true, mode }
+    }));
+
+    try {
+      const response = await fetch(getApiUrl('/api/ap-tutor-explain'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionText: targetQ.prompt,
+          stimulus: targetQ.stimulus,
+          options: targetQ.options,
+          correctAnswer: targetQ.correctAnswer,
+          questionType: targetQ.format || 'objective',
+          subject: selectedSubject.name,
+          unit: selectedUnit || selectedSubject.name,
+          trapsData: targetQ.traps || targetQ.parts?.map(p => ({ part: p.partLabel, traps: p.frqTraps })),
+          disarmStrategy: targetQ.disarmStrategy,
+          modelAnswer: targetQ.parts?.map(p => `Part ${p.partLabel}: ${p.modelAnswer}`).join('\n\n'),
+          scoringRubric: targetQ.parts?.map(p => `Part ${p.partLabel} (${p.points} Pts): ${p.scoringCriteria}`).join('\n'),
+          mode
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Server returned status ' + response.status);
+      }
+
+      const data = await response.json();
+      setInlineAiExplanations(prev => ({
+        ...prev,
+        [qKey]: { loading: false, text: data.explanation, mode }
+      }));
+      triggerVibration([20, 40]);
+    } catch (err: any) {
+      console.error('[APTrapRadar] Inline AI Tutor error:', err);
+      setInlineAiExplanations(prev => ({
+        ...prev,
+        [qKey]: { loading: false, error: 'Could not load AI explanation. Please check your network and retry.', mode }
+      }));
+    }
+  };
+
+  const handleCloseInlineAi = (qKey: string) => {
+    triggerVibration(10);
+    setInlineAiExplanations(prev => {
+      const next = { ...prev };
+      delete next[qKey];
+      return next;
+    });
+  };
+
   // Image Picker Helpers
   const handleNativeImagePicked = (picked: { dataUrl: string; name?: string }) => {
     if (!picked?.dataUrl) return;
@@ -555,6 +752,64 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       reader.readAsDataURL(file);
     });
     e.target.value = '';
+  };
+
+  // FRQ Camera & Gallery Handlers for Subjective Scratchpad
+  const handleFrqCameraClick = async () => {
+    setShowFrqPlusMenu(false);
+    triggerVibration(10);
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const picked = await takeNativePhoto();
+        if (picked && picked.dataUrl) {
+          handleFrqImagePicked(picked.dataUrl);
+        }
+      } catch (err: any) {
+        console.warn('[APTrapRadar] FRQ Camera error:', err);
+        frqCameraInputRef.current?.click();
+      }
+    } else {
+      frqCameraInputRef.current?.click();
+    }
+  };
+
+  const handleFrqGalleryClick = async () => {
+    setShowFrqPlusMenu(false);
+    triggerVibration(10);
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const picked = await pickNativeFiles({ types: 'image', multiple: true });
+        if (picked && picked.length > 0) {
+          picked.forEach(p => {
+            if (p.dataUrl) handleFrqImagePicked(p.dataUrl);
+          });
+        }
+      } catch (err: any) {
+        console.warn('[APTrapRadar] FRQ Gallery error:', err);
+        frqGalleryInputRef.current?.click();
+      }
+    } else {
+      frqGalleryInputRef.current?.click();
+    }
+  };
+
+  const handleFrqImagePicked = (dataUrl: string) => {
+    const qKey = String(activeQuestion?.id || currentIndex);
+    setFrqAttachedImages(prev => ({
+      ...prev,
+      [qKey]: [...(prev[qKey] || []), dataUrl]
+    }));
+    triggerVibration(15);
+    showToast('Photo of work attached to scratchpad', 'success');
+  };
+
+  const removeFrqImage = (indexToRemove: number) => {
+    const qKey = String(activeQuestion?.id || currentIndex);
+    setFrqAttachedImages(prev => ({
+      ...prev,
+      [qKey]: (prev[qKey] || []).filter((_, i) => i !== indexToRemove)
+    }));
+    triggerVibration(10);
   };
 
   // Fetch Challenge Questions
@@ -615,12 +870,71 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
   };
 
   // Activate Radar Sweep & Reveal Traps
-  const handleActivateRadar = () => {
+  const handleActivateRadar = async () => {
     if (!activeQuestion) return;
 
     // For Objective (MCQ): Require option selection first
     if (activeQuestion.format !== 'subjective' && !selectedOption) {
       showToast('Select an option first to test your Trap Radar!', 'warning');
+      return;
+    }
+
+    const qKey = String(activeQuestion.id || currentIndex);
+    const draftText = (userFrqDraft[qKey] || '').trim();
+    const images = frqAttachedImages[qKey] || [];
+    const hasStudentWork = draftText.length > 0 || images.length > 0;
+
+    // Subjective (FRQ) Evaluation Path when student provided work
+    if (activeQuestion.format === 'subjective' && hasStudentWork) {
+      setFrqEvaluating(true);
+      setIsScanningAnimation(true);
+      triggerVibration(30);
+
+      try {
+        const questionText = [
+          activeQuestion.prompt,
+          activeQuestion.stimulus ? `Context / Stimulus:\n${activeQuestion.stimulus}` : '',
+          activeQuestion.parts && activeQuestion.parts.length > 0
+            ? activeQuestion.parts.map(p => `${p.partLabel} (${p.points} Pts): ${p.task}`).join('\n')
+            : ''
+        ].filter(Boolean).join('\n\n');
+
+        const scoringRubric = activeQuestion.parts?.map(p => `${p.partLabel} (${p.points} Pts): ${p.scoringCriteria}`) || [];
+        const modelAnswer = activeQuestion.parts?.map(p => `${p.partLabel}: ${p.modelAnswer}`).join('\n\n') || activeQuestion.disarmStrategy || '';
+
+        const payload = {
+          questionText,
+          userAnswer: draftText || 'Student submitted handwritten calculation work in attached photo.',
+          image: images[0] || '',
+          subject: selectedSubject?.name || 'AP High School Exam Standard',
+          userGrade: 'AP High School Exam Standard',
+          scoringRubric,
+          modelAnswer
+        };
+
+        const response = await fetch(getApiUrl('/api/evaluate-answer'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server returned status ${response.status}`);
+        }
+
+        const data = await response.json();
+        const evalFeedback = data.evaluation || data.feedback || '';
+        setFrqAiFeedback(prev => ({ ...prev, [qKey]: evalFeedback }));
+        triggerVibration([20, 60, 20]);
+        showToast('AI Chief Reader evaluated your answer!', 'success');
+      } catch (err: any) {
+        console.error('[APTrapRadar] FRQ Evaluation error:', err);
+        showToast('Revealing official College Board rubric & model solution.', 'info');
+      } finally {
+        setFrqEvaluating(false);
+        setIsScanningAnimation(false);
+        setIsRadarRevealed(true);
+      }
       return;
     }
 
@@ -997,6 +1311,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       const filename = `AP_${selectedSubject.shortCode || selectedSubject.name.replace(/\s+/g, '_')}_TrapRadar_${effFormat.toUpperCase()}.pdf`;
       const pdfBlob = doc.output('blob');
       const blobUrl = URL.createObjectURL(pdfBlob);
+      setIsPdfDownloaded(false);
       setPreviewPdfUri(blobUrl);
       setPreviewPdfName(filename);
 
@@ -1302,45 +1617,76 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                  {/* Premium Subject Picker Trigger */}
                   <div>
-                    <label className="text-[11px] font-bold text-zinc-600 uppercase tracking-wider block mb-1.5">
-                      Target AP Subject
+                    <label className="text-[11px] font-bold text-zinc-600 uppercase tracking-wider block mb-1.5 flex items-center justify-between">
+                      <span>Target AP Subject</span>
+                      <span className="text-[10px] text-amber-700 font-bold bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                        Tap to Change
+                      </span>
                     </label>
-                    <select
-                      value={selectedSubject.id}
-                      onChange={(e) => {
-                        const found = TOP_10_AP_SUBJECTS.find(s => s.id === e.target.value);
-                        if (found) {
-                          setSelectedSubject(found);
-                          setSelectedUnit('All Units');
-                        }
+                    <button
+                      type="button"
+                      onClick={() => {
+                        triggerVibration(10);
+                        setSubjectSearchQuery('');
+                        setShowSubjectModal(true);
                       }}
-                      className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-3.5 py-2.5 text-xs font-bold text-zinc-900 focus:bg-white focus:border-amber-500 focus:outline-none transition-colors"
+                      className="w-full bg-zinc-50 hover:bg-zinc-100/90 border-2 border-zinc-200 hover:border-amber-400 active:scale-[0.99] rounded-2xl p-3 flex items-center justify-between transition-all cursor-pointer shadow-2xs group text-left"
                     >
-                      {TOP_10_AP_SUBJECTS.map(subj => (
-                        <option key={subj.id} value={subj.id}>
-                          {subj.name}
-                        </option>
-                      ))}
-                    </select>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-white border border-zinc-200 flex items-center justify-center text-xl shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                          {selectedSubject.icon}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className="text-[9px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded border border-amber-300">
+                              {selectedSubject.shortCode}
+                            </span>
+                            <span className="text-[10px] text-zinc-500 font-semibold truncate">
+                              {selectedSubject.category}
+                            </span>
+                          </div>
+                          <h4 className="text-xs sm:text-sm font-black text-zinc-900 truncate">
+                            {selectedSubject.name}
+                          </h4>
+                        </div>
+                      </div>
+                      <ChevronDown className="w-4 h-4 text-zinc-400 group-hover:text-amber-600 transition-colors shrink-0 ml-2" />
+                    </button>
                   </div>
 
+                  {/* Premium Unit Picker Trigger */}
                   <div>
-                    <label className="text-[11px] font-bold text-zinc-600 uppercase tracking-wider block mb-1.5">
-                      Specific CED Unit
+                    <label className="text-[11px] font-bold text-zinc-600 uppercase tracking-wider block mb-1.5 flex items-center justify-between">
+                      <span>Specific CED Unit</span>
+                      <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                        {selectedUnit === 'All Units' ? 'Full Simulation' : 'Single Unit'}
+                      </span>
                     </label>
-                    <select
-                      value={selectedUnit}
-                      onChange={(e) => setSelectedUnit(e.target.value)}
-                      className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-3.5 py-2.5 text-xs font-bold text-zinc-900 focus:bg-white focus:border-amber-500 focus:outline-none transition-colors"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        triggerVibration(10);
+                        setShowUnitModal(true);
+                      }}
+                      className="w-full bg-zinc-50 hover:bg-zinc-100/90 border-2 border-zinc-200 hover:border-emerald-400 active:scale-[0.99] rounded-2xl p-3 flex items-center justify-between transition-all cursor-pointer shadow-2xs group text-left"
                     >
-                      <option value="All Units">All High-Yield Units (Exam Simulation)</option>
-                      {selectedSubject.units.map(u => (
-                        <option key={u.id} value={u.title}>
-                          {u.title}
-                        </option>
-                      ))}
-                    </select>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-white border border-zinc-200 flex items-center justify-center text-emerald-600 shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                          <Layers className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block mb-0.5">
+                            {selectedUnit === 'All Units' ? 'All Units Practice' : 'Target Unit Focus'}
+                          </span>
+                          <h4 className="text-xs sm:text-sm font-black text-zinc-900 truncate">
+                            {selectedUnit === 'All Units' ? 'All High-Yield Units (Exam Simulation)' : selectedUnit}
+                          </h4>
+                        </div>
+                      </div>
+                      <ChevronDown className="w-4 h-4 text-zinc-400 group-hover:text-emerald-600 transition-colors shrink-0 ml-2" />
+                    </button>
                   </div>
                 </div>
 
@@ -1640,16 +1986,6 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                       <ChevronRight className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => {
-                        saveToVault(activeQuestion);
-                        showToast('Bookmarked to My Trap Vault', 'success');
-                      }}
-                      className="p-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:text-amber-600 cursor-pointer border border-zinc-200"
-                      title="Bookmark to Trap Vault"
-                    >
-                      <Bookmark className="w-4 h-4" />
-                    </button>
-                    <button
                       onClick={() => handleExportPDF()}
                       className="px-2.5 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-bold flex items-center gap-1.5 hover:bg-zinc-800 cursor-pointer shadow-xs ml-1"
                       title="Export Practice & Distractor Autopsy to PDF"
@@ -1662,13 +1998,28 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
                 {/* Question Stimulus & Prompt Card */}
                 <div className="bg-white border border-zinc-200 rounded-3xl p-5 sm:p-7 shadow-sm space-y-4">
-                  {/* Skill Badge */}
-                  {activeQuestion.skill && (
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-[10px] font-bold text-zinc-700">
-                      <Target className="w-3 h-3 text-amber-600" />
-                      <span>{activeQuestion.skill}</span>
-                    </div>
-                  )}
+                  {/* Skill / Unit Badge & Ask AI Button */}
+                  <div className="flex items-center justify-between gap-2">
+                    {activeQuestion.skill ? (
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-[10px] font-bold text-zinc-700">
+                        <Target className="w-3 h-3 text-amber-600" />
+                        <span>{activeQuestion.skill}</span>
+                      </div>
+                    ) : (
+                      <div className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider">
+                        {activeQuestion.format === 'subjective' ? 'AP Free Response Trap' : 'AP Multiple Choice Trap'}
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleOpenAITutor(activeQuestion)}
+                      className="px-2.5 py-1 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
+                      title="Ask AI to Explain Question Traps or Full Answer Breakdown"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                      <span>Ask AI</span>
+                    </button>
+                  </div>
 
                   {/* Stimulus Context Box */}
                   {activeQuestion.stimulus && activeQuestion.stimulus.trim().length > 0 && (
@@ -1787,19 +2138,154 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                         </div>
                       )}
 
-                      {/* Student Workspace (Notes / Outline) */}
+                      {/* Hidden file inputs for FRQ Camera and Gallery fallback */}
+                      <input
+                        ref={frqCameraInputRef}
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={(e) => {
+                          const files = e.target.files;
+                          if (!files || files.length === 0) return;
+                          Array.from(files).forEach((file: any) => {
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              if (typeof reader.result === 'string') {
+                                handleFrqImagePicked(reader.result);
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          });
+                          e.target.value = '';
+                        }}
+                      />
+                      <input
+                        ref={frqGalleryInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => {
+                          const files = e.target.files;
+                          if (!files || files.length === 0) return;
+                          Array.from(files).forEach((file: any) => {
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              if (typeof reader.result === 'string') {
+                                handleFrqImagePicked(reader.result);
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          });
+                          e.target.value = '';
+                        }}
+                      />
+
+                      {/* Student Workspace (Notes / Outline / Photos) */}
                       {!isRadarRevealed && (
-                        <div className="space-y-2 pt-1">
-                          <label className="text-[11px] font-bold text-zinc-600 uppercase tracking-wider block">
-                            Student Scratchpad (Draft Outline or Calculations - Optional)
-                          </label>
+                        <div className="space-y-2.5 pt-1">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <label className="text-[11px] font-black text-zinc-700 uppercase tracking-wider flex items-center gap-1.5">
+                              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                              <span>Student Answer & Scratchpad (Typed or Photo)</span>
+                            </label>
+
+                            {/* PLUS (+) Button to attach Camera or Gallery */}
+                            <div className="relative">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  triggerVibration(10);
+                                  setShowFrqPlusMenu(prev => !prev);
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-black shadow-xs cursor-pointer active:scale-95 transition-all"
+                                title="Attach photo of handwritten calculation"
+                              >
+                                <Plus className={`w-3.5 h-3.5 transition-transform ${showFrqPlusMenu ? 'rotate-45' : ''}`} />
+                                <span>Attach Work</span>
+                              </button>
+
+                              {/* Plus Menu Popover (Camera & Gallery) */}
+                              <AnimatePresence>
+                                {showFrqPlusMenu && (
+                                  <>
+                                    <div 
+                                      className="fixed inset-0 z-40" 
+                                      onClick={() => setShowFrqPlusMenu(false)} 
+                                    />
+                                    <motion.div
+                                      initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                                      exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                                      className="absolute right-0 top-full mt-1.5 z-50 w-52 bg-white border border-zinc-200 rounded-2xl shadow-xl p-1.5 space-y-1 select-none font-sans"
+                                    >
+                                      {/* Camera Option */}
+                                      <button
+                                        type="button"
+                                        onClick={handleFrqCameraClick}
+                                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-zinc-800 hover:bg-emerald-50 hover:text-emerald-800 transition-colors cursor-pointer text-left"
+                                      >
+                                        <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                                          <Camera className="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                          <span className="block leading-tight font-black">Camera</span>
+                                          <span className="text-[10px] text-zinc-500 font-medium">Take photo of paper</span>
+                                        </div>
+                                      </button>
+
+                                      {/* Gallery Option */}
+                                      <button
+                                        type="button"
+                                        onClick={handleFrqGalleryClick}
+                                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-zinc-800 hover:bg-teal-50 hover:text-teal-800 transition-colors cursor-pointer text-left"
+                                      >
+                                        <div className="w-7 h-7 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center shrink-0">
+                                          <ImageIcon className="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                          <span className="block leading-tight font-black">Gallery</span>
+                                          <span className="text-[10px] text-zinc-500 font-medium">Upload from device</span>
+                                        </div>
+                                      </button>
+                                    </motion.div>
+                                  </>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          </div>
+
                           <textarea
                             value={userFrqDraft[String(activeQuestion.id || currentIndex)] || ''}
                             onChange={e => setUserFrqDraft(prev => ({ ...prev, [String(activeQuestion.id || currentIndex)]: e.target.value }))}
-                            placeholder="Jot down your key calculations, theorem names, or outline here before revealing the scoring rubrics..."
+                            placeholder="Type your final answer, steps, and formulas here, or attach a photo of your handwritten paper above..."
                             rows={3}
                             className="w-full p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-sans"
                           />
+
+                          {/* Attached Photos Preview */}
+                          {(frqAttachedImages[String(activeQuestion.id || currentIndex)] || []).length > 0 && (
+                            <div className="flex items-center gap-2.5 flex-wrap pt-1">
+                              {(frqAttachedImages[String(activeQuestion.id || currentIndex)] || []).map((imgUrl, idx) => (
+                                <div key={idx} className="relative group rounded-2xl overflow-hidden border border-zinc-200 bg-zinc-100 shadow-xs">
+                                  <img 
+                                    src={imgUrl} 
+                                    alt={`Handwritten work ${idx + 1}`} 
+                                    className="w-20 h-20 sm:w-24 sm:h-24 object-cover"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => removeFrqImage(idx)}
+                                    className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-md cursor-pointer transition-transform active:scale-90"
+                                    title="Remove photo"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -1808,14 +2294,98 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                         {!isRadarRevealed ? (
                           <button
                             onClick={handleActivateRadar}
-                            disabled={isScanningAnimation}
-                            className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-amber-500 hover:opacity-95 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 active:scale-98 transition-all cursor-pointer"
+                            disabled={isScanningAnimation || frqEvaluating}
+                            className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-amber-500 hover:opacity-95 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 active:scale-98 transition-all cursor-pointer disabled:opacity-75"
                           >
-                            <Radar className="w-4 h-4" />
-                            <span>Scan Chief Reader Rubric & Expose FRQ Traps</span>
+                            {frqEvaluating ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin text-white" />
+                                <span>AI Chief Reader Grading Your Answer...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Radar className="w-4 h-4" />
+                                <span>
+                                  {((userFrqDraft[String(activeQuestion.id || currentIndex)] || '').trim() || (frqAttachedImages[String(activeQuestion.id || currentIndex)] || []).length > 0)
+                                    ? 'Check My Answer with AI & Reveal Traps'
+                                    : 'Scan Chief Reader Rubric & Expose FRQ Traps'}
+                                </span>
+                              </>
+                            )}
                           </button>
                         ) : (
                           <div className="w-full space-y-4">
+                            {/* AI Chief Reader Evaluation & Rubric Verdict (When student submitted response) */}
+                            {frqAiFeedback[String(activeQuestion.id || currentIndex)] && (
+                              <motion.div
+                                initial={{ opacity: 0, y: 12 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-zinc-950 text-white border border-indigo-500/30 shadow-xl space-y-4"
+                              >
+                                <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3 flex-wrap">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-xl bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-indigo-300">
+                                      <Sparkles className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                      <h4 className="text-xs sm:text-sm font-black text-white tracking-tight flex items-center gap-2">
+                                        AI Chief Reader Evaluation
+                                        <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">
+                                          Verified AP Scoring
+                                        </span>
+                                      </h4>
+                                      <p className="text-[10px] text-zinc-400 font-medium">Point-by-point rubric analysis of your submitted work</p>
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setIsRadarRevealed(false);
+                                      triggerVibration(10);
+                                    }}
+                                    className="text-[11px] font-bold text-indigo-300 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 transition-colors cursor-pointer"
+                                    title="Edit work and re-evaluate"
+                                  >
+                                    ✏️ Edit & Re-evaluate
+                                  </button>
+                                </div>
+
+                                {/* Submitted Work Summary */}
+                                <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                                  <span className="text-[10px] font-black uppercase tracking-wider text-indigo-300 block">
+                                    Your Submitted Response:
+                                  </span>
+                                  {userFrqDraft[String(activeQuestion.id || currentIndex)] && (
+                                    <p className="text-xs text-zinc-300 whitespace-pre-wrap font-mono bg-black/30 p-2.5 rounded-xl border border-white/5">
+                                      {userFrqDraft[String(activeQuestion.id || currentIndex)]}
+                                    </p>
+                                  )}
+                                  {(frqAttachedImages[String(activeQuestion.id || currentIndex)] || []).length > 0 && (
+                                    <div className="flex items-center gap-2 flex-wrap pt-1">
+                                      {(frqAttachedImages[String(activeQuestion.id || currentIndex)] || []).map((imgUrl, idx) => (
+                                        <a 
+                                          key={idx} 
+                                          href={imgUrl} 
+                                          target="_blank" 
+                                          rel="noreferrer" 
+                                          className="relative rounded-xl overflow-hidden border border-white/20 block hover:opacity-90 transition-opacity"
+                                        >
+                                          <img src={imgUrl} alt={`Submitted work ${idx + 1}`} className="w-16 h-16 object-cover" />
+                                          <span className="absolute bottom-0 inset-x-0 bg-black/70 text-[9px] text-center text-white font-bold py-0.5">
+                                            Work {idx + 1}
+                                          </span>
+                                        </a>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Formatted Markdown Evaluation */}
+                                <div className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-sans prose-invert max-w-none">
+                                  <GlobalMarkdown>{frqAiFeedback[String(activeQuestion.id || currentIndex)]}</GlobalMarkdown>
+                                </div>
+                              </motion.div>
+                            )}
                             {/* Chief Reader 5-Second Disarm Secret Banner */}
                             {activeQuestion.disarmStrategy && (
                               <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs space-y-1.5 shadow-xs">
@@ -1919,6 +2489,116 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                           </div>
                         )}
                       </div>
+
+                      {/* Inline AI Trap Radar Explanation Section for FRQ */}
+                      {(() => {
+                        const qKey = String(activeQuestion.id || currentIndex);
+                        const inlineAi = inlineAiExplanations[qKey];
+                        if (!inlineAi) return null;
+
+                        return (
+                          <motion.div
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`mt-4 rounded-2xl border overflow-hidden shadow-xs transition-all ${
+                              inlineAi.mode === 'traps'
+                                ? 'bg-amber-50/80 border-amber-300'
+                                : 'bg-purple-50/80 border-purple-200'
+                            }`}
+                          >
+                            {/* Card Header */}
+                            <div className={`px-4 py-2.5 flex items-center justify-between border-b ${
+                              inlineAi.mode === 'traps'
+                                ? 'bg-amber-100/90 border-amber-300 text-amber-950'
+                                : 'bg-purple-100/90 border-purple-200 text-purple-950'
+                            }`}>
+                              <div className="flex items-center gap-2 min-w-0">
+                                <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                                  inlineAi.mode === 'traps' ? 'bg-amber-600 text-white' : 'bg-purple-600 text-white'
+                                }`}>
+                                  <Sparkles className="w-3.5 h-3.5" />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-xs font-black tracking-tight">
+                                      AI Trap Radar Breakdown
+                                    </span>
+                                    <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                                      inlineAi.mode === 'traps'
+                                        ? 'bg-amber-200/90 text-amber-900 border border-amber-300'
+                                        : 'bg-purple-200/90 text-purple-900 border border-purple-300'
+                                    }`}>
+                                      {inlineAi.mode === 'traps' ? '🪤 AP Question Traps & Disarm Secrets' : '🎯 Full Solution & Rubric'}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {!inlineAi.loading && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSelectAITutorMode(
+                                      inlineAi.mode === 'traps' ? 'full-solution' : 'traps',
+                                      activeQuestion
+                                    )}
+                                    className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
+                                      inlineAi.mode === 'traps'
+                                        ? 'bg-white hover:bg-amber-50 text-amber-900 border-amber-300 shadow-2xs'
+                                        : 'bg-white hover:bg-purple-50 text-purple-900 border-purple-300 shadow-2xs'
+                                    }`}
+                                    title={inlineAi.mode === 'traps' ? 'Switch to Full Solution' : 'Switch to Traps Breakdown'}
+                                  >
+                                    {inlineAi.mode === 'traps' ? 'Full Solution' : 'Traps Breakdown'}
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleCloseInlineAi(qKey)}
+                                  className="w-6 h-6 rounded-full hover:bg-black/10 flex items-center justify-center text-zinc-500 hover:text-zinc-800 cursor-pointer transition-colors"
+                                  title="Close AI explanation"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Card Body */}
+                            <div className="p-4 text-xs leading-relaxed">
+                              {inlineAi.loading ? (
+                                <div className="flex items-center gap-3 py-2 text-zinc-600 animate-pulse">
+                                  <Loader2 className={`w-4 h-4 animate-spin ${inlineAi.mode === 'traps' ? 'text-amber-600' : 'text-purple-600'}`} />
+                                  <div className="text-xs">
+                                    <div className="font-bold text-zinc-800">
+                                      {inlineAi.mode === 'traps' 
+                                        ? 'AI Trap Radar is analyzing FRQ traps & scoring pitfalls...' 
+                                        : 'AI Magic Tutor is generating step-by-step FRQ model solution...'}
+                                    </div>
+                                    <div className="text-[10px] text-zinc-500">
+                                      Cross-referencing Chief Reader scoring rubrics & traps...
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : inlineAi.error ? (
+                                <div className="flex flex-col gap-2 py-1">
+                                  <p className="text-xs font-semibold text-red-600">{inlineAi.error}</p>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSelectAITutorMode(inlineAi.mode, activeQuestion)}
+                                    className="self-start px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-800 text-xs font-bold rounded-lg cursor-pointer"
+                                  >
+                                    Retry
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="text-zinc-800 space-y-2">
+                                  <GlobalMarkdown>{inlineAi.text || ''}</GlobalMarkdown>
+                                </div>
+                              )}
+                            </div>
+                          </motion.div>
+                        );
+                      })()}
                     </div>
                   ) : (
                     /* ========================================================================= */
@@ -2149,6 +2829,116 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                           </div>
                         )}
                       </div>
+
+                      {/* Inline AI Trap Radar Explanation Section for MCQ */}
+                      {(() => {
+                        const qKey = String(activeQuestion.id || currentIndex);
+                        const inlineAi = inlineAiExplanations[qKey];
+                        if (!inlineAi) return null;
+
+                        return (
+                          <motion.div
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`mt-4 rounded-2xl border overflow-hidden shadow-xs transition-all ${
+                              inlineAi.mode === 'traps'
+                                ? 'bg-amber-50/80 border-amber-300'
+                                : 'bg-purple-50/80 border-purple-200'
+                            }`}
+                          >
+                            {/* Card Header */}
+                            <div className={`px-4 py-2.5 flex items-center justify-between border-b ${
+                              inlineAi.mode === 'traps'
+                                ? 'bg-amber-100/90 border-amber-300 text-amber-950'
+                                : 'bg-purple-100/90 border-purple-200 text-purple-950'
+                            }`}>
+                              <div className="flex items-center gap-2 min-w-0">
+                                <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                                  inlineAi.mode === 'traps' ? 'bg-amber-600 text-white' : 'bg-purple-600 text-white'
+                                }`}>
+                                  <Sparkles className="w-3.5 h-3.5" />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-xs font-black tracking-tight">
+                                      AI Trap Radar Breakdown
+                                    </span>
+                                    <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                                      inlineAi.mode === 'traps'
+                                        ? 'bg-amber-200/90 text-amber-900 border border-amber-300'
+                                        : 'bg-purple-200/90 text-purple-900 border border-purple-300'
+                                    }`}>
+                                      {inlineAi.mode === 'traps' ? '🪤 AP Question Traps & Disarm Secrets' : '🎯 Full Solution & Traps'}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {!inlineAi.loading && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSelectAITutorMode(
+                                      inlineAi.mode === 'traps' ? 'full-solution' : 'traps',
+                                      activeQuestion
+                                    )}
+                                    className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
+                                      inlineAi.mode === 'traps'
+                                        ? 'bg-white hover:bg-amber-50 text-amber-900 border-amber-300 shadow-2xs'
+                                        : 'bg-white hover:bg-purple-50 text-purple-900 border-purple-300 shadow-2xs'
+                                    }`}
+                                    title={inlineAi.mode === 'traps' ? 'Switch to Full Solution' : 'Switch to Traps Breakdown'}
+                                  >
+                                    {inlineAi.mode === 'traps' ? 'Full Solution' : 'Traps Breakdown'}
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleCloseInlineAi(qKey)}
+                                  className="w-6 h-6 rounded-full hover:bg-black/10 flex items-center justify-center text-zinc-500 hover:text-zinc-800 cursor-pointer transition-colors"
+                                  title="Close AI explanation"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Card Body */}
+                            <div className="p-4 text-xs leading-relaxed">
+                              {inlineAi.loading ? (
+                                <div className="flex items-center gap-3 py-2 text-zinc-600 animate-pulse">
+                                  <Loader2 className={`w-4 h-4 animate-spin ${inlineAi.mode === 'traps' ? 'text-amber-600' : 'text-purple-600'}`} />
+                                  <div className="text-xs">
+                                    <div className="font-bold text-zinc-800">
+                                      {inlineAi.mode === 'traps' 
+                                        ? 'AI Trap Radar is analyzing question traps & deceptive wording...' 
+                                        : 'AI Magic Tutor is generating step-by-step solution & distractor autopsy...'}
+                                    </div>
+                                    <div className="text-[10px] text-zinc-500">
+                                      Cross-referencing College Board AP CED psychometric distractors...
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : inlineAi.error ? (
+                                <div className="flex flex-col gap-2 py-1">
+                                  <p className="text-xs font-semibold text-red-600">{inlineAi.error}</p>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSelectAITutorMode(inlineAi.mode, activeQuestion)}
+                                    className="self-start px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-800 text-xs font-bold rounded-lg cursor-pointer"
+                                  >
+                                    Retry
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="text-zinc-800 space-y-2">
+                                  <GlobalMarkdown>{inlineAi.text || ''}</GlobalMarkdown>
+                                </div>
+                              )}
+                            </div>
+                          </motion.div>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>
@@ -2434,62 +3224,85 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                     <ShieldAlert className="w-4 h-4 text-amber-500" />
                     <span>Option-By-Option Trap Analysis:</span>
                   </h4>
-                  {scannedResult.traps?.map((trap: any, i: number) => (
-                    <div
-                      key={i}
-                      className={`p-4 rounded-2xl border text-xs space-y-2.5 transition-all shadow-xs ${
-                        trap.isCorrect
-                          ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950'
-                          : 'bg-zinc-50 border-zinc-200 text-zinc-900'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-2.5 flex-1 min-w-0">
-                          <span className={`w-7 h-7 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
-                            trap.isCorrect ? 'bg-emerald-600 text-white shadow-xs' : 'bg-zinc-200 text-zinc-700'
-                          }`}>
-                            {trap.option}
-                          </span>
-                          <div className="flex-1 min-w-0 text-xs sm:text-sm font-bold text-zinc-900 pt-0.5">
-                            <GlobalMarkdown>{trap.text || `Option ${trap.option}`}</GlobalMarkdown>
+                  {scannedResult.traps?.map((trap: any, i: number) => {
+                    const optionLetter = String(trap.option || String.fromCharCode(65 + i)).trim().toUpperCase();
+                    const cleanText = cleanOptionText(trap.text || `Option ${optionLetter}`, optionLetter);
+
+                    return (
+                      <div
+                        key={i}
+                        className={`p-4 sm:p-5 rounded-2xl border text-xs space-y-3.5 transition-all shadow-xs ${
+                          trap.isCorrect
+                            ? 'bg-emerald-50/70 border-emerald-300 text-emerald-950 ring-1 ring-emerald-400/20'
+                            : 'bg-white border-zinc-200 text-zinc-900'
+                        }`}
+                      >
+                        {/* Header: Option Badge + Trap Classification + Vulnerability */}
+                        <div className="flex items-center justify-between gap-2 flex-wrap pb-2.5 border-b border-zinc-200/70">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`w-7 h-7 rounded-xl flex items-center justify-center font-black text-xs shrink-0 shadow-xs ${
+                              trap.isCorrect ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-white'
+                            }`}>
+                              {optionLetter}
+                            </span>
+                            <span className={`text-[10px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-lg border shadow-2xs ${
+                              trap.isCorrect
+                                ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                                : 'bg-amber-100 text-amber-900 border-amber-300'
+                            }`}>
+                              {trap.trapType}
+                            </span>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                          <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border ${
-                            trap.isCorrect
-                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                              : 'bg-amber-100 text-amber-800 border-amber-300'
-                          }`}>
-                            {trap.trapType}
-                          </span>
                           {trap.vulnerabilityRate && trap.vulnerabilityRate !== 'N/A' && (
-                            <span className="text-[10px] font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 hidden sm:inline-block">
+                            <span className="text-[10px] font-bold text-amber-900 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 shadow-2xs">
                               ⚠️ {trap.vulnerabilityRate}
                             </span>
                           )}
                         </div>
-                      </div>
 
-                      {/* Mobile Vulnerability Rate Badge if present */}
-                      {trap.vulnerabilityRate && trap.vulnerabilityRate !== 'N/A' && (
-                        <div className="sm:hidden pl-9">
-                          <span className="text-[10px] font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block">
-                            ⚠️ {trap.vulnerabilityRate}
-                          </span>
+                        {/* Full Option Choice Text (Guaranteed Full Width, Never Squeezed) */}
+                        <div className="w-full text-xs sm:text-sm font-semibold text-zinc-900 leading-relaxed bg-zinc-50/80 p-3 rounded-xl border border-zinc-200/80">
+                          <GlobalMarkdown>{cleanText}</GlobalMarkdown>
                         </div>
-                      )}
 
-                      <div className="text-xs text-zinc-700 leading-relaxed pl-9">
-                        <GlobalMarkdown>{trap.trapDescription}</GlobalMarkdown>
-                      </div>
-
-                      {trap.collegeBoardMindset && (
-                        <div className="text-[11px] text-zinc-600 italic bg-white p-2.5 rounded-xl border border-zinc-200 ml-9">
-                          <GlobalMarkdown>{`**Test-Maker's Psychological Intent:** ${trap.collegeBoardMindset}`}</GlobalMarkdown>
+                        {/* Diagnostic Breakdown Card */}
+                        <div className={`p-3 sm:p-3.5 rounded-xl border space-y-1.5 ${
+                          trap.isCorrect 
+                            ? 'bg-emerald-100/60 border-emerald-300/80 text-emerald-950' 
+                            : 'bg-amber-50/70 border-amber-200/80 text-zinc-800'
+                        }`}>
+                          <div className="flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wide">
+                            {trap.isCorrect ? (
+                              <>
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                <span className="text-emerald-800 font-black">Official College Board Target Justification:</span>
+                              </>
+                            ) : (
+                              <>
+                                <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                <span className="text-amber-900 font-black">Trap Autopsy & Misconception Breakdown:</span>
+                              </>
+                            )}
+                          </div>
+                          <div className="text-xs leading-relaxed text-zinc-800">
+                            <GlobalMarkdown>{trap.trapDescription}</GlobalMarkdown>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  ))}
+
+                        {/* Psychological Mindset */}
+                        {trap.collegeBoardMindset && (
+                          <div className="text-[11px] text-zinc-600 bg-zinc-50 p-2.5 rounded-xl border border-zinc-200 space-y-1">
+                            <span className="font-bold text-zinc-700 block text-[10px] uppercase tracking-wider">
+                              🧠 Test-Maker's Psychological Intent:
+                            </span>
+                            <div className="italic leading-relaxed">
+                              <GlobalMarkdown>{trap.collegeBoardMindset}</GlobalMarkdown>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </motion.div>
             )}
@@ -3004,12 +3817,17 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                 </button>
                 <div className="truncate">
                   <h3 className="font-black text-sm text-white truncate">{previewPdfName}</h3>
-                  <p className="text-[10px] text-zinc-400 font-semibold">AP Trap Radar Exam Document • PDF Preview</p>
+                  <p className="text-[10px] text-zinc-400 font-semibold">
+                    {isPdfDownloaded ? '✅ Downloaded Offline • PDF Preview' : 'AP Trap Radar Exam Document • PDF Preview'}
+                  </p>
                 </div>
               </div>
 
               <button
-                onClick={() => setPreviewPdfUri(null)}
+                onClick={() => {
+                  setIsPdfDownloaded(false);
+                  setPreviewPdfUri(null);
+                }}
                 className="w-8 h-8 rounded-xl flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
@@ -3023,25 +3841,28 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
             {/* Download & Share Actions Footer */}
             <div className="px-5 py-3 border-t border-zinc-800 bg-zinc-950 flex items-center justify-end gap-3">
-              <button
-                onClick={async () => {
-                  try {
-                    const res = await fetch(previewPdfUri);
-                    const blob = await res.blob();
-                    await savePDFMobile(blob, previewPdfName, {
-                      featureTag: 'AP Trap Radar',
-                      customToast: '✅ Saved offline in app'
-                    });
-                  } catch (e) {
-                    console.error('PDF download error:', e);
-                    showToast('Download failed', 'error');
-                  }
-                }}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>DOWNLOAD PDF</span>
-              </button>
+              {!isPdfDownloaded && (
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(previewPdfUri);
+                      const blob = await res.blob();
+                      await savePDFMobile(blob, previewPdfName, {
+                        featureTag: 'AP Trap Radar',
+                        customToast: '✅ Saved offline in app'
+                      });
+                      setIsPdfDownloaded(true);
+                    } catch (e) {
+                      console.error('PDF download error:', e);
+                      showToast('Download failed', 'error');
+                    }
+                  }}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm animate-fade-in"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>DOWNLOAD PDF</span>
+                </button>
+              )}
 
               <button
                 onClick={async () => {
@@ -3063,6 +3884,398 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
           </div>
         </div>
       )}
+
+      {/* ================= PREMIUM IN-APP SUBJECT SELECTION BOTTOM SHEET / MODAL ================= */}
+      <AnimatePresence>
+        {showSubjectModal && (
+          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 backdrop-blur-sm animate-fade-in">
+            <motion.div
+              initial={{ opacity: 0, y: 50, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 50, scale: 0.96 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[88vh]"
+            >
+              {/* Modal Header */}
+              <div className="p-4 sm:p-5 border-b border-zinc-100 flex items-center justify-between bg-gradient-to-r from-amber-50/70 via-orange-50/40 to-white shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-emerald-600 text-white flex items-center justify-center shadow-md shadow-amber-500/20 text-lg shrink-0">
+                    🎯
+                  </div>
+                  <div>
+                    <h3 className="font-black text-sm sm:text-base text-zinc-900 leading-tight">
+                      Select Target AP Subject
+                    </h3>
+                    <p className="text-[11px] text-zinc-500 font-medium">
+                      Official College Board CED Courses ({TOP_10_AP_SUBJECTS.length} Subjects)
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerVibration(10);
+                    setShowSubjectModal(false);
+                  }}
+                  className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-zinc-800 flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Search Bar & Category Filter */}
+              <div className="p-3 border-b border-zinc-100 bg-zinc-50/80 shrink-0 space-y-2.5">
+                <div className="relative">
+                  <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={subjectSearchQuery}
+                    onChange={(e) => setSubjectSearchQuery(e.target.value)}
+                    placeholder="Search subjects (e.g., APHG, Calc, Bio, History)..."
+                    className="w-full bg-white border border-zinc-200 rounded-xl pl-9 pr-8 py-2 text-xs font-semibold text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                  />
+                  {subjectSearchQuery && (
+                    <button
+                      onClick={() => setSubjectSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 p-0.5"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Category Filter Pills */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+                  {['All', 'Sciences', 'Humanities & Social Sciences', 'STEM & Math', 'English & Tech'].map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => {
+                        triggerVibration(10);
+                        setSubjectCategoryFilter(cat);
+                      }}
+                      className={`text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all shrink-0 cursor-pointer ${
+                        subjectCategoryFilter === cat
+                          ? 'bg-amber-600 text-white shadow-xs'
+                          : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-100'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Subject Scrollable List */}
+              <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2.5">
+                {filteredSubjects.length === 0 ? (
+                  <div className="py-12 text-center text-zinc-400 space-y-1">
+                    <p className="text-sm font-bold text-zinc-600">No matching subjects found</p>
+                    <p className="text-xs">Try searching with a different name or keyword</p>
+                  </div>
+                ) : (
+                  filteredSubjects.map(subj => {
+                    const isSelected = selectedSubject.id === subj.id;
+                    return (
+                      <button
+                        key={subj.id}
+                        type="button"
+                        onClick={() => {
+                          triggerVibration(15);
+                          setSelectedSubject(subj);
+                          setSelectedUnit('All Units');
+                          setShowSubjectModal(false);
+                          showToast(`Selected ${subj.shortCode}`, 'success');
+                        }}
+                        className={`w-full p-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 text-left cursor-pointer active:scale-[0.99] ${
+                          isSelected
+                            ? 'bg-amber-50/70 border-amber-500 shadow-sm ring-1 ring-amber-500/20'
+                            : 'bg-white border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/60'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3.5 min-w-0">
+                          <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-xl shrink-0 border ${
+                            isSelected ? 'bg-amber-100 border-amber-300' : 'bg-zinc-50 border-zinc-200'
+                          }`}>
+                            {subj.icon}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-zinc-900 text-white">
+                                {subj.shortCode}
+                              </span>
+                              {subj.badge && (
+                                <span className="text-[9px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">
+                                  {subj.badge}
+                                </span>
+                              )}
+                              <span className="text-[10px] text-zinc-400 font-semibold truncate">
+                                {subj.category}
+                              </span>
+                            </div>
+                            <h4 className="text-xs sm:text-sm font-black text-zinc-900 truncate">
+                              {subj.name}
+                            </h4>
+                            <p className="text-[10px] text-zinc-500 font-medium mt-0.5">
+                              {subj.units.length} High-Yield Units • Authentic Distractor Traps
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="shrink-0">
+                          {isSelected ? (
+                            <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                              <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            </div>
+                          ) : (
+                            <div className="w-6 h-6 rounded-full border border-zinc-300" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ================= PREMIUM IN-APP CED UNIT SELECTION BOTTOM SHEET / MODAL ================= */}
+      <AnimatePresence>
+        {showUnitModal && (
+          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 backdrop-blur-sm animate-fade-in">
+            <motion.div
+              initial={{ opacity: 0, y: 50, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 50, scale: 0.96 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[88vh]"
+            >
+              {/* Modal Header */}
+              <div className="p-4 sm:p-5 border-b border-zinc-100 flex items-center justify-between bg-gradient-to-r from-emerald-50/70 via-teal-50/40 to-white shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-white border border-zinc-200 flex items-center justify-center text-xl shrink-0 shadow-2xs">
+                    {selectedSubject.icon}
+                  </div>
+                  <div>
+                    <h3 className="font-black text-sm sm:text-base text-zinc-900 leading-tight">
+                      {selectedSubject.shortCode} — Select CED Unit
+                    </h3>
+                    <p className="text-[11px] text-zinc-500 font-medium">
+                      Focus on a single unit or full exam simulation
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerVibration(10);
+                    setShowUnitModal(false);
+                  }}
+                  className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-zinc-800 flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Unit Scrollable List */}
+              <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2.5">
+                {/* All Units Option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerVibration(15);
+                    setSelectedUnit('All Units');
+                    setShowUnitModal(false);
+                  }}
+                  className={`w-full p-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 text-left cursor-pointer active:scale-[0.99] ${
+                    selectedUnit === 'All Units'
+                      ? 'bg-emerald-50/70 border-emerald-500 shadow-sm ring-1 ring-emerald-500/20'
+                      : 'bg-white border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/60'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center justify-center font-black text-sm shrink-0">
+                      🎯
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-900 px-1.5 py-0.2 rounded border border-emerald-300">
+                          Full Exam Simulation
+                        </span>
+                      </div>
+                      <h4 className="text-xs sm:text-sm font-black text-zinc-900">
+                        All High-Yield Units (Exam Simulation)
+                      </h4>
+                      <p className="text-[10px] text-zinc-500 font-medium mt-0.5">
+                        Randomized mix across all CED units with high-frequency distractor traps.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0">
+                    {selectedUnit === 'All Units' ? (
+                      <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      </div>
+                    ) : (
+                      <div className="w-6 h-6 rounded-full border border-zinc-300" />
+                    )}
+                  </div>
+                </button>
+
+                {/* Individual Units */}
+                {selectedSubject.units.map(u => {
+                  const isSelected = selectedUnit === u.title;
+                  return (
+                    <button
+                      key={u.id}
+                      type="button"
+                      onClick={() => {
+                        triggerVibration(15);
+                        setSelectedUnit(u.title);
+                        setShowUnitModal(false);
+                      }}
+                      className={`w-full p-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 text-left cursor-pointer active:scale-[0.99] ${
+                        isSelected
+                          ? 'bg-emerald-50/70 border-emerald-500 shadow-sm ring-1 ring-emerald-500/20'
+                          : 'bg-white border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center justify-center font-black text-xs shrink-0">
+                          {u.id.toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs sm:text-sm font-black text-zinc-900 truncate">
+                            {u.title}
+                          </h4>
+                          <p className="text-[10px] text-zinc-500 font-medium line-clamp-1 mt-0.5">
+                            {u.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="shrink-0">
+                        {isSelected ? (
+                          <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                          </div>
+                        ) : (
+                          <div className="w-6 h-6 rounded-full border border-zinc-300" />
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ================= ASK AI 2-SUGGESTION MODAL PAGE ================= */}
+      <AnimatePresence>
+        {askAiModalQuestion && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <motion.div
+              initial={{ opacity: 0, y: 50, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 50, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              {/* Modal Header */}
+              <div className="p-5 border-b border-zinc-100 flex items-center justify-between bg-gradient-to-r from-amber-50 via-purple-50 to-white">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-amber-500 via-purple-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-amber-500/20">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-sm text-zinc-900 leading-tight">
+                      AI Trap Radar Assistance
+                    </h3>
+                    <p className="text-[11px] text-zinc-500 font-medium">
+                      Choose how you want AI to break down this question
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerVibration(10);
+                    setAskAiModalQuestion(null);
+                  }}
+                  className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* 2 AI Suggestions */}
+              <div className="p-5 flex flex-col gap-3.5 overflow-y-auto">
+                {/* Suggestion 1: Explain Question Traps with AI */}
+                <button
+                  type="button"
+                  onClick={() => handleSelectAITutorMode('traps')}
+                  className="group w-full p-4 rounded-2xl border-2 border-amber-200/90 bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-white hover:border-amber-400 hover:shadow-md transition-all text-left flex items-start gap-3.5 cursor-pointer active:scale-[0.98]"
+                >
+                  <div className="w-10 h-10 rounded-2xl bg-amber-100 group-hover:bg-amber-500 group-hover:text-white text-amber-700 flex items-center justify-center shrink-0 transition-colors shadow-xs">
+                    <ShieldAlert className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1 mb-1">
+                      <h4 className="text-xs font-black text-zinc-900 group-hover:text-amber-950 transition-colors">
+                        Explain Question Traps with AI
+                      </h4>
+                      <span className="text-[9px] font-black uppercase tracking-wider text-amber-800 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-full shrink-0">
+                        Trap Questions
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-zinc-600 leading-relaxed font-normal">
+                      AI scans and exposes the hidden College Board traps, deceptive phrasing tricks, and psychometric distractors so you never get fooled on the exam!
+                    </p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-amber-400 group-hover:text-amber-600 group-hover:translate-x-0.5 transition-all self-center shrink-0" />
+                </button>
+
+                {/* Suggestion 2: Explain Question & Answer with AI */}
+                <button
+                  type="button"
+                  onClick={() => handleSelectAITutorMode('full-solution')}
+                  className="group w-full p-4 rounded-2xl border-2 border-indigo-200/90 bg-gradient-to-br from-indigo-50/70 via-purple-50/40 to-white hover:border-indigo-400 hover:shadow-md transition-all text-left flex items-start gap-3.5 cursor-pointer active:scale-[0.98]"
+                >
+                  <div className="w-10 h-10 rounded-2xl bg-indigo-100 group-hover:bg-indigo-600 group-hover:text-white text-indigo-700 flex items-center justify-center shrink-0 transition-colors shadow-xs">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1 mb-1">
+                      <h4 className="text-xs font-black text-zinc-900 group-hover:text-indigo-950 transition-colors">
+                        Explain Question & Answer with AI
+                      </h4>
+                      <span className="text-[9px] font-black uppercase tracking-wider text-indigo-800 bg-indigo-100 border border-indigo-200 px-2 py-0.5 rounded-full shrink-0">
+                        Full Solution
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-zinc-600 leading-relaxed font-normal">
+                      AI Tutor gives the complete step-by-step master derivation, justifies the official correct answer, and autopsies all options.
+                    </p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-indigo-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all self-center shrink-0" />
+                </button>
+              </div>
+
+              {/* Footer Info */}
+              <div className="px-5 pb-5 pt-1 text-center">
+                <p className="text-[10px] text-zinc-400 font-medium">
+                  Powered by AP Course & Exam Description (CED) Trap Radar Intelligence
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

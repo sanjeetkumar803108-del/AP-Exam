@@ -63,7 +63,6 @@ function lazyWithRetry<T extends React.ComponentType<any>>(
 }
 
 const ToolsDashboard = lazyWithRetry(() => import('./components/ToolsDashboard'));
-const ImageToPDF = lazyWithRetry(() => import('./components/ImageToPDF'));
 const PdfHistoryScreen = lazyWithRetry(() => import('./components/PdfHistoryScreen'));
 const MagicScanner = lazyWithRetry(() => import('./components/MagicScanner'));
 const EssayGrader = lazyWithRetry(() => import('./components/EssayGrader'));
@@ -1056,19 +1055,10 @@ export default function App() {
                 />
               </ErrorBoundary>
             )}
-            {activeTool === 'image2pdf' && (
-              <ErrorBoundary>
-                <ImageToPDF 
-                  onBack={() => setActiveTool(null)} 
-                  onOpenHistory={() => setActiveTool('pdfhistory')} 
-                />
-              </ErrorBoundary>
-            )}
             {activeTool === 'pdfhistory' && (
               <ErrorBoundary>
                 <PdfHistoryScreen 
                   onBack={() => setActiveTool(null)} 
-                  onOpenImageToPdf={() => setActiveTool('image2pdf')}
                 />
               </ErrorBoundary>
             )}

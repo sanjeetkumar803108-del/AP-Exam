@@ -1,5 +1,4 @@
 import { get, set, del } from 'idb-keyval';
-import { savePdfToHistory } from './pdfHistory';
 
 export interface OfflineNoteMeta {
   id: string; // e.g. "calc_ab_u1"
@@ -129,18 +128,7 @@ export async function saveOfflineNote(input: SaveOfflineNoteInput): Promise<Offl
     // ignore
   }
 
-  // 3. Register in centralized app PDF History so it appears in the History screen as well
-  try {
-    savePdfToHistory({
-      title: `${input.subjectTitle} - Unit ${input.unitNumber}: ${input.title}.pdf`,
-      fileUri: input.pdfDataUri,
-      featureTag: 'AP Notes',
-      fileSize: input.fileSize,
-      pageCount: input.pageCount,
-    });
-  } catch (histErr) {
-    console.warn('[OfflineNotes] Error registering in PDF history:', histErr);
-  }
+  // 3. AP Notes are pre-bundled offline study materials and are strictly excluded from user PDF history.
 
   // 4. Dispatch custom event for real-time reactivity across components
   window.dispatchEvent(new CustomEvent('offline-notes-updated', { detail: { meta } }));

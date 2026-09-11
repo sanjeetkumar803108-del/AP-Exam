@@ -21,7 +21,28 @@ const PDF_DATA_PREFIX = 'helpyou_ai_offline_pdf_data_';
 const memoryPdfCache = new Map<string, string>();
 
 /**
+ * Strict filter to prevent pre-bundled offline material (AP Notes & Mind Map Revision Notes)
+ * from ever being saved to or displayed in the user-generated "Saved Offline PDFs" feature.
+ */
+export function isExcludedFromPdfHistory(tag: string = '', title: string = ''): boolean {
+  const t = (tag || '').toLowerCase().trim();
+  const s = (title || '').toLowerCase().trim();
+
+  // AP Notes checks
+  if (t === 'ap notes' || t === 'ap note' || t === 'ap_notes' || t === 'apnotes') return true;
+  if (s.includes('unit_notes') || (s.includes('_unit_') && s.includes('notes'))) return true;
+  if (s.includes('helpyou_ai') && s.includes('unit_') && !s.includes('trap')) return true;
+
+  // Mind Map checks
+  if (t.includes('mind map') || t.includes('mindmap')) return true;
+  if (s.includes('mind_map') || s.includes('mindmap')) return true;
+
+  return false;
+}
+
+/**
  * Retrieves all saved PDF history records sorted by newest first (synchronous for instant UI).
+ * Automatically purges and filters out built-in AP Notes and Mind Maps.
  */
 export function getPdfHistory(): PdfHistoryItem[] {
   try {
@@ -29,7 +50,20 @@ export function getPdfHistory(): PdfHistoryItem[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
-      return parsed.map(item => ({
+      const filtered = parsed.filter(item => !isExcludedFromPdfHistory(item.featureTag, item.title));
+
+      // Auto-purge any excluded items from persisted storage if present
+      if (filtered.length !== parsed.length) {
+        try {
+          const lightweightManifest = filtered.map(rec => ({
+            ...rec,
+            fileUri: (rec.fileUri && rec.fileUri.length < 200 && !rec.fileUri.startsWith('data:')) ? rec.fileUri : ''
+          }));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweightManifest));
+        } catch {}
+      }
+
+      return filtered.map(item => ({
         ...item,
         // Restore from in-memory cache if available
         fileUri: memoryPdfCache.get(item.id) || item.fileUri || '',
@@ -49,7 +83,11 @@ export async function getPdfHistoryAsync(): Promise<PdfHistoryItem[]> {
   try {
     const fromIdb = await get<PdfHistoryItem[]>(IDB_MANIFEST_KEY);
     if (Array.isArray(fromIdb) && fromIdb.length > 0) {
-      return fromIdb.map(item => ({
+      const filtered = fromIdb.filter(item => !isExcludedFromPdfHistory(item.featureTag, item.title));
+      if (filtered.length !== fromIdb.length) {
+        set(IDB_MANIFEST_KEY, filtered).catch(() => {});
+      }
+      return filtered.map(item => ({
         ...item,
         fileUri: memoryPdfCache.get(item.id) || item.fileUri || '',
         isOfflineSaved: true
@@ -107,7 +145,13 @@ export function savePdfToHistory(item: {
   featureTag: string;
   fileSize?: string;
   pageCount?: number;
-}): PdfHistoryItem {
+}): PdfHistoryItem | null {
+  // Guard: Never save built-in materials (AP Notes and Mind Maps) to user Saved Offline PDFs
+  if (isExcludedFromPdfHistory(item.featureTag, item.title)) {
+    console.log('[PDFHistory] Excluded pre-bundled material from Saved Offline PDFs:', item.title);
+    return null;
+  }
+
   const history = getPdfHistory();
   
   // Format title neatly

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ArrowLeft, FileText, Trash2, Download, Eye, Calendar, Sparkles, 
+  ArrowLeft, FileText, Trash2, Download, Eye, Calendar, 
   Search, HardDrive, RefreshCw, X, Share2, Layers, CheckCircle2, ShieldCheck, WifiOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -9,6 +9,7 @@ import {
   deletePdfFromHistory, 
   clearPdfHistory, 
   getOfflinePdfData,
+  isExcludedFromPdfHistory,
   PdfHistoryItem 
 } from '../utils/pdfHistory';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
@@ -20,10 +21,9 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 
 interface PdfHistoryScreenProps {
   onBack: () => void;
-  onOpenImageToPdf?: () => void;
 }
 
-export default function PdfHistoryScreen({ onBack, onOpenImageToPdf }: PdfHistoryScreenProps) {
+export default function PdfHistoryScreen({ onBack }: PdfHistoryScreenProps) {
   const [historyItems, setHistoryItems] = useState<PdfHistoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -72,15 +72,17 @@ export default function PdfHistoryScreen({ onBack, onOpenImageToPdf }: PdfHistor
         const cloudItems: PdfHistoryItem[] = [];
         snapshot.forEach(docSnap => {
           const data = docSnap.data();
-          cloudItems.push({
-            id: data.id || docSnap.id,
-            title: data.title,
-            fileUri: data.fileUri,
-            timestamp: data.timestamp,
-            featureTag: data.featureTag,
-            fileSize: data.fileSize || undefined,
-            pageCount: data.pageCount || undefined,
-          });
+          if (!isExcludedFromPdfHistory(data.featureTag, data.title)) {
+            cloudItems.push({
+              id: data.id || docSnap.id,
+              title: data.title,
+              fileUri: data.fileUri,
+              timestamp: data.timestamp,
+              featureTag: data.featureTag,
+              fileSize: data.fileSize || undefined,
+              pageCount: data.pageCount || undefined,
+            });
+          }
         });
         
         // Merge cloud items with local
@@ -115,14 +117,16 @@ export default function PdfHistoryScreen({ onBack, onOpenImageToPdf }: PdfHistor
     };
   }, []);
 
-  // Filter items based on search query and category
-  const filteredItems = historyItems.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.featureTag.toLowerCase().includes(searchQuery.toLowerCase());
-    if (!matchesSearch) return false;
-    if (selectedCategory === 'All') return true;
-    return item.featureTag.toLowerCase().includes(selectedCategory.toLowerCase());
-  });
+  // Filter items based on search query and category (strictly excluding pre-bundled AP Notes and Mind Maps)
+  const filteredItems = historyItems
+    .filter(item => !isExcludedFromPdfHistory(item.featureTag, item.title))
+    .filter(item => {
+      const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.featureTag.toLowerCase().includes(searchQuery.toLowerCase());
+      if (!matchesSearch) return false;
+      if (selectedCategory === 'All') return true;
+      return item.featureTag.toLowerCase().includes(selectedCategory.toLowerCase());
+    });
 
   // Trigger safe custom confirmation before delete
   const handleDeleteTrigger = (item: PdfHistoryItem, e: React.MouseEvent) => {
@@ -369,19 +373,10 @@ export default function PdfHistoryScreen({ onBack, onOpenImageToPdf }: PdfHistor
             <div className="w-20 h-20 bg-rose-50 border border-rose-100 rounded-3xl flex items-center justify-center text-rose-500 mb-4 shadow-sm">
               <FileText className="w-10 h-10" />
             </div>
-            <h3 className="font-extrabold text-zinc-900 text-lg mb-1">No PDF History Yet</h3>
-            <p className="text-xs text-zinc-500 max-w-xs leading-relaxed mb-6">
-              Whenever you generate or export a PDF (Image to PDF, Smart Notes, or Study Content), it automatically gets saved here for easy access!
+            <h3 className="font-extrabold text-zinc-900 text-lg mb-1">No Saved PDFs Yet</h3>
+            <p className="text-xs text-zinc-500 max-w-xs leading-relaxed">
+              Whenever you download user-generated PDFs (Practice Exams, AP Trap Radar, AI Summaries, Question Sets, or Formula Sheets), they will automatically appear here for instant offline access!
             </p>
-            {onOpenImageToPdf && (
-              <button
-                onClick={() => { triggerVibration(15); onOpenImageToPdf(); }}
-                className="bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-5 py-3 rounded-2xl shadow-sm hover:shadow transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4" />
-                <span>Create Image to PDF</span>
-              </button>
-            )}
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="text-center py-12 text-zinc-400">

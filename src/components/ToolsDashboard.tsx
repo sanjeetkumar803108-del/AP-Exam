@@ -32,7 +32,6 @@ const FEATURE_COSTS: Record<string, number> = {
   'grammar': 1,
   'summariser': 1,
   'calculator': 0,
-  'image2pdf': 0,
   'pdfhistory': 0,
   'livetutorsearch': 0,
   'apnotes': 0,

@@ -16,6 +16,7 @@ import { takeNativePhoto, pickNativeFiles } from '../utils/mobilePicker';
 import { Capacitor } from '@capacitor/core';
 import GlobalMarkdown from './GlobalMarkdown';
 import AdvancedLoader from './AdvancedLoader';
+import AIThinkingLoader from './AIThinkingLoader';
 import jsPDF from 'jspdf';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
 import { savePdfToHistory } from '../utils/pdfHistory';
@@ -294,22 +295,9 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
   const [previewPdfUri, setPreviewPdfUri] = useState<string | null>(null);
   const [previewPdfName, setPreviewPdfName] = useState<string>('AP_Practice_Set.pdf');
+  const [isPdfDownloaded, setIsPdfDownloaded] = useState<boolean>(false);
   const [fullscreenSvg, setFullscreenSvg] = useState<{ svg: string; title: string } | null>(null);
   const [svgZoom, setSvgZoom] = useState<number>(1);
-
-  // AI Magic Tutor States
-  const [showTutorModal, setShowTutorModal] = useState<boolean>(false);
-  const [tutorActiveQuestion, setTutorActiveQuestion] = useState<{
-    text: string;
-    stimulus?: string;
-    options?: string[];
-    type: 'objective' | 'subjective';
-    skill?: string;
-  } | null>(null);
-  const [tutorLoading, setTutorLoading] = useState<boolean>(false);
-  const [tutorExplanation, setTutorExplanation] = useState<string>('');
-  const [tutorFollowUp, setTutorFollowUp] = useState<string>('');
-  const [tutorChatHistory, setTutorChatHistory] = useState<Array<{ role: 'user' | 'tutor'; text: string }>>([]);
 
   // Session-wide anti-repetition memory cache (subjectId -> array of prompts)
   const sessionAvoidPromptsRef = useRef<Record<string, string[]>>({});
@@ -319,6 +307,14 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     question: APObjectiveQuestion | APSubjectiveQuestion;
     type: 'objective' | 'subjective';
   } | null>(null);
+
+  // Inline Ask AI In-Question Explanation State (Question Key -> explanation object)
+  const [inlineAiExplanations, setInlineAiExplanations] = useState<Record<string, {
+    loading: boolean;
+    text?: string;
+    mode: 'hints' | 'full-solution';
+    error?: string;
+  }>>({});
 
   // Custom Timer Settings & Time's Up Screen States
   const [showTimerSetupModal, setShowTimerSetupModal] = useState<boolean>(false);
@@ -756,10 +752,11 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         e.preventDefault();
         triggerVibration(10);
         setAskAiModalData(null);
-      } else if (tutorActiveQuestion) {
+      } else if (inlineAiExplanations[`obj_${currentObjIndex}`] || inlineAiExplanations[`sub_${currentSubIndex}`]) {
         e.preventDefault();
         triggerVibration(10);
-        setTutorActiveQuestion(null);
+        handleCloseInlineAi(`obj_${currentObjIndex}`);
+        handleCloseInlineAi(`sub_${currentSubIndex}`);
       } else if (fullscreenSvg) {
         e.preventDefault();
         triggerVibration(10);
@@ -784,7 +781,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     };
     window.addEventListener('appBackButton', handleHardwareBack);
     return () => window.removeEventListener('appBackButton', handleHardwareBack);
-  }, [confirmModal.isOpen, showFormulaModal, askAiModalData, tutorActiveQuestion, fullscreenSvg, showHistoryModal, showTimesUpModal, step]);
+  }, [confirmModal.isOpen, showFormulaModal, askAiModalData, inlineAiExplanations, currentObjIndex, currentSubIndex, fullscreenSvg, showHistoryModal, showTimesUpModal, step]);
 
   // API Call to Generate Questions
   const handleGenerateQuestions = async () => {
@@ -1128,13 +1125,18 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     setAskAiModalData({ question: q, type });
   };
 
-  // User chooses one of the 2 AI suggestions
-  const handleSelectAITutorMode = (mode: 'hints' | 'full-solution') => {
-    if (!askAiModalData) return;
-    const { question: q, type } = askAiModalData;
+  // User chooses one of the 2 AI suggestions -> Explains directly under the question in Test Prep!
+  const handleSelectAITutorMode = async (
+    mode: 'hints' | 'full-solution',
+    explicitData?: { question: APObjectiveQuestion | APSubjectiveQuestion; type: 'objective' | 'subjective' }
+  ) => {
+    const targetData = explicitData || askAiModalData;
+    if (!targetData) return;
+    const { question: q, type } = targetData;
     triggerVibration(15);
     setAskAiModalData(null);
 
+    const qKey = type === 'objective' ? `obj_${currentObjIndex}` : `sub_${currentSubIndex}`;
     const qText = 'question' in q ? q.question : q.prompt;
     const stimulus = 'stimulus' in q ? q.stimulus : undefined;
     const options = 'options' in q ? q.options : undefined;
@@ -1143,111 +1145,56 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     const modelAnswer = 'modelAnswer' in q ? q.modelAnswer : undefined;
     const scoringRubric = 'scoringRubric' in q ? q.scoringRubric : undefined;
 
-    let promptText = '';
-
-    if (mode === 'hints') {
-      promptText = `[AP® EXAM PREP - HINT & CONCEPT MODE]
-Subject: ${selectedSubject.name} (${selectedSubject.shortCode})
-Unit: ${selectedUnit?.title || 'AP Course Material'}
-
-Question / Prompt:
-"${qText}"${stimulus ? `\n\nContext / Stimulus:\n${stimulus}` : ''}${options ? `\n\nOptions:\n${options.join('\n')}` : ''}
-
-Student's Choice:
-"Explain question with hints by AI."
-
-Instructions for AI Magic Tutor:
-1. Break down what the question is asking in clear, intuitive terms.
-2. Explain the fundamental AP concepts, formulas, or historical/scientific contexts required.
-3. Provide 2-3 strategic clues or step-by-step guided hints so the student can think through and solve it themselves.
-4. DO NOT give away the final direct answer or correct option immediately—encourage the student to solve it with your hints!`;
-    } else {
-      promptText = `[AP® EXAM PREP - COMPLETE EXPLANATION & SOLUTION MODE]
-Subject: ${selectedSubject.name} (${selectedSubject.shortCode})
-Unit: ${selectedUnit?.title || 'AP Course Material'}
-
-Question / Prompt:
-"${qText}"${stimulus ? `\n\nContext / Stimulus:\n${stimulus}` : ''}${options ? `\n\nOptions:\n${options.join('\n')}` : ''}${correctAnswer ? `\n\nOfficial Correct Answer: ${correctAnswer}` : ''}${explanation ? `\n\nOfficial Solution & Explanation: ${explanation}` : ''}${modelAnswer ? `\n\nOfficial Model Solution: ${modelAnswer}` : ''}${scoringRubric && scoringRubric.length > 0 ? `\n\nOfficial Scoring Rubric:\n${scoringRubric.join('\n')}` : ''}
-
-Student's Choice:
-"Explain question and answer with AI."
-
-Instructions for AI Magic Tutor:
-1. Clearly state the correct answer / model response right away.
-2. Provide a thorough, crystal-clear step-by-step mathematical, scientific, or conceptual explanation of why this answer is correct.
-3. If options exist, explain specifically why the incorrect options (distractors) are wrong and what common student traps to avoid.
-4. Provide a high-yield College Board AP exam tip or takeaway to guarantee full points on similar exam questions!`;
-    }
-
-    const event = new CustomEvent('study-scanner-send-to-tutor', {
-      detail: {
-        text: promptText,
-        subject: selectedSubject.name,
-        isEvaluation: false
-      }
-    });
-    window.dispatchEvent(event);
-
-    if (onNavigateToTab) {
-      onNavigateToTab('aitutor');
-    }
-  };
-
-  // Send follow-up question to AI Magic Tutor
-  const handleSendTutorFollowUp = async () => {
-    if (!tutorFollowUp.trim() || tutorLoading || !tutorActiveQuestion) return;
-    const questionMsg = tutorFollowUp.trim();
-    triggerVibration(10);
-    setTutorFollowUp('');
-    setTutorChatHistory(prev => [...prev, { role: 'user', text: questionMsg }]);
-    setTutorLoading(true);
+    setInlineAiExplanations(prev => ({
+      ...prev,
+      [qKey]: { loading: true, mode }
+    }));
 
     try {
       const response = await fetch(getApiUrl('/api/ap-tutor-explain'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          questionText: tutorActiveQuestion.text,
-          stimulus: tutorActiveQuestion.stimulus,
-          options: tutorActiveQuestion.options,
-          questionType: tutorActiveQuestion.type,
+          questionText: qText,
+          stimulus,
+          options,
+          correctAnswer,
+          explanation,
+          modelAnswer,
+          scoringRubric,
+          questionType: type,
           subject: selectedSubject.name,
           unit: selectedUnit ? selectedUnit.title : selectedSubject.name,
-          followUpQuestion: questionMsg
+          mode
         })
       });
 
-      const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to get response');
+        throw new Error('Server returned status ' + response.status);
       }
-      setTutorChatHistory(prev => [...prev, { role: 'tutor', text: data.explanation }]);
+
+      const data = await response.json();
+      setInlineAiExplanations(prev => ({
+        ...prev,
+        [qKey]: { loading: false, text: data.explanation, mode }
+      }));
+      triggerVibration([20, 40]);
     } catch (err: any) {
-      setTutorChatHistory(prev => [...prev, { role: 'tutor', text: "⚠️ Let's think through this step: What mathematical or conceptual property from this unit applies to the given quantities?" }]);
-    } finally {
-      setTutorLoading(false);
+      console.error('[TestPrep] Inline AI Tutor error:', err);
+      setInlineAiExplanations(prev => ({
+        ...prev,
+        [qKey]: { loading: false, error: 'Could not load AI explanation. Please check your network and retry.', mode }
+      }));
     }
   };
 
-  // Transition seamlessly to full AI Magic Tutor Tab
-  const handleSendToFullAITutor = () => {
-    if (!tutorActiveQuestion) return;
-    const subjectiveName = isComputerSubject(selectedSubject) ? 'Create Performance Task' : 'Free Response';
-    const promptText = `[AP Exam Prep - ${selectedSubject.name}]\nPlease explain this AP ${tutorActiveQuestion.type === 'objective' ? 'Multiple Choice' : subjectiveName} question to me. Break down what it is asking, explain the core concepts, and provide strategic hints so I can solve it myself without giving away the direct answer!\n\nQuestion:\n${tutorActiveQuestion.text}${tutorActiveQuestion.stimulus ? `\n\nContext:\n${tutorActiveQuestion.stimulus}` : ''}${tutorActiveQuestion.options ? `\n\nOptions:\n${tutorActiveQuestion.options.join('\n')}` : ''}`;
-
-    const event = new CustomEvent('study-scanner-send-to-tutor', {
-      detail: {
-        text: promptText,
-        subject: selectedSubject.name,
-        isEvaluation: false
-      }
+  const handleCloseInlineAi = (qKey: string) => {
+    triggerVibration(10);
+    setInlineAiExplanations(prev => {
+      const next = { ...prev };
+      delete next[qKey];
+      return next;
     });
-    window.dispatchEvent(event);
-
-    setShowTutorModal(false);
-    if (onNavigateToTab) {
-      onNavigateToTab('aitutor');
-    }
   };
 
   // Calculate Objective Results
@@ -1404,7 +1351,7 @@ Instructions for AI Magic Tutor:
         for (let idx = 0; idx < objQs.length; idx++) {
           const q = objQs[idx];
 
-          checkPageBreak(80);
+          checkPageBreak(90);
 
           // Question badge & skill
           doc.setFillColor(241, 245, 249);
@@ -1444,7 +1391,7 @@ Instructions for AI Magic Tutor:
             textColor: [15, 23, 42],
             checkPageBreak
           });
-          currentY += 8;
+          currentY += 10;
 
           // High-DPI Diagram / Coordinate Graph (if provided)
           if (q.diagramSvg) {
@@ -1456,17 +1403,17 @@ Instructions for AI Magic Tutor:
                 const diagX = margin + (contentWidth - diagW) / 2;
                 checkPageBreak(diagH + 15);
                 doc.addImage(diagramImg, 'PNG', diagX, currentY, diagW, diagH);
-                currentY += diagH + 10;
+                currentY += diagH + 12;
               }
             } catch (err) {
               console.warn('Could not rasterize SVG diagram for PDF:', err);
             }
           }
 
-          // Options
+          // Options with generous spacing between choices
           q.options.forEach(opt => {
             doc.setFillColor(241, 245, 249);
-            doc.circle(margin + 6, currentY + 4, 3, 'F');
+            doc.circle(margin + 6, currentY + 6, 3, 'F');
 
             currentY = drawRichTextWithTables(doc, opt, margin + 16, currentY, contentWidth - 24, {
               fontName: 'helvetica',
@@ -1475,16 +1422,17 @@ Instructions for AI Magic Tutor:
               textColor: [30, 41, 59],
               checkPageBreak
             });
-            currentY += 4;
+            currentY += 8; // Generous space between options (answers)
           });
 
-          currentY += 10;
+          currentY += 14;
 
-          // Separator line between questions
+          // Separator line with generous spacing between questions
           if (idx < objQs.length - 1) {
             doc.setDrawColor(226, 232, 240);
+            doc.setLineWidth(0.5);
             doc.line(margin, currentY, pageWidth - margin, currentY);
-            currentY += 16;
+            currentY += 26; // Generous space before next question
           }
         }
 
@@ -1547,11 +1495,17 @@ Instructions for AI Magic Tutor:
                 textColor: [51, 65, 85],
                 checkPageBreak
               });
-              currentY += 6;
+              currentY += 8;
             }
           });
 
-          currentY += 14;
+          currentY += 12;
+          if (idx < objQs.length - 1) {
+            doc.setDrawColor(226, 232, 240);
+            doc.setLineWidth(0.5);
+            doc.line(margin, currentY, pageWidth - margin, currentY);
+            currentY += 20; // Distinct space between answer key items
+          }
         });
       } else {
         // Subjective (FRQ) - 1. Print all FRQ prompts first
@@ -1623,8 +1577,9 @@ Instructions for AI Magic Tutor:
           // Workspace line for student
           if (idx < subQs.length - 1) {
             doc.setDrawColor(226, 232, 240);
+            doc.setLineWidth(0.5);
             doc.line(margin, currentY, pageWidth - margin, currentY);
-            currentY += 16;
+            currentY += 26;
           }
         }
 
@@ -1696,7 +1651,7 @@ Instructions for AI Magic Tutor:
             currentY += 8;
           });
 
-          currentY += 6;
+          currentY += 8;
 
           // Scoring Guidelines
           checkPageBreak(50);
@@ -1714,14 +1669,15 @@ Instructions for AI Magic Tutor:
               textColor: [51, 65, 85],
               checkPageBreak
             });
-            currentY += 4;
+            currentY += 6;
           });
 
-          currentY += 16;
+          currentY += 14;
           if (idx < subQs.length - 1) {
             doc.setDrawColor(226, 232, 240);
+            doc.setLineWidth(0.5);
             doc.line(margin, currentY, pageWidth - margin, currentY);
-            currentY += 16;
+            currentY += 24;
           }
         });
       }
@@ -1733,6 +1689,7 @@ Instructions for AI Magic Tutor:
       const blobUrl = URL.createObjectURL(pdfBlob);
 
       // Instantly open preview reader!
+      setIsPdfDownloaded(false);
       setPreviewPdfUri(blobUrl);
       setPreviewPdfName(filename);
     } catch (err: any) {
@@ -1965,14 +1922,17 @@ Instructions for AI Magic Tutor:
 
       {/* Main Container */}
       <main className="flex-1 overflow-y-auto px-4 py-5 flex flex-col justify-start max-w-lg mx-auto w-full pb-20">
-        {/* Loading Overlay */}
+        {/* Loading Overlay with Real-time AI Chain of Thought */}
         {loading && (
-          <div className="flex-1 flex flex-col items-center justify-center py-16 text-center">
-            <AdvancedLoader type="orb" context="dashboard" />
-            <p className="font-bold text-zinc-800 text-base mt-6">{loadingMsg}</p>
-            <p className="text-xs text-zinc-500 mt-2 max-w-xs leading-relaxed">
-              Aligning with College Board AP Course & Exam Description (CED) standards...
-            </p>
+          <div className="flex-1 flex flex-col items-center justify-center py-6 w-full">
+            <AIThinkingLoader
+              subjectName={selectedSubject?.name || 'AP Exam'}
+              shortCode={selectedSubject?.shortCode || 'AP'}
+              topic={selectedUnit ? selectedUnit.title : customTopic || 'Curriculum Standards Review'}
+              questionCount={questionCount}
+              questionType={questionType}
+              mode="testprep"
+            />
           </div>
         )}
 
@@ -2478,6 +2438,116 @@ Instructions for AI Magic Tutor:
                           </div>
                         </motion.div>
                       )}
+
+                      {/* Inline AI Magic Tutor Breakdown Section */}
+                      {(() => {
+                        const qKey = `obj_${currentObjIndex}`;
+                        const inlineAi = inlineAiExplanations[qKey];
+                        if (!inlineAi) return null;
+
+                        return (
+                          <motion.div
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`mt-3 rounded-2xl border overflow-hidden shadow-xs transition-all ${
+                              inlineAi.mode === 'hints'
+                                ? 'bg-amber-50/80 border-amber-200'
+                                : 'bg-purple-50/80 border-purple-200'
+                            }`}
+                          >
+                            {/* Card Header */}
+                            <div className={`px-4 py-2.5 flex items-center justify-between border-b ${
+                              inlineAi.mode === 'hints'
+                                ? 'bg-amber-100/90 border-amber-200 text-amber-950'
+                                : 'bg-purple-100/90 border-purple-200 text-purple-950'
+                            }`}>
+                              <div className="flex items-center gap-2 min-w-0">
+                                <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                                  inlineAi.mode === 'hints' ? 'bg-amber-500 text-white' : 'bg-purple-600 text-white'
+                                }`}>
+                                  <Sparkles className="w-3.5 h-3.5" />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-xs font-black tracking-tight">
+                                      AI Magic Tutor Breakdown
+                                    </span>
+                                    <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                                      inlineAi.mode === 'hints'
+                                        ? 'bg-amber-200/90 text-amber-900'
+                                        : 'bg-purple-200/90 text-purple-900'
+                                    }`}>
+                                      {inlineAi.mode === 'hints' ? '💡 Guided Hints (No Spoilers)' : '🎯 Full Solution & Traps'}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {!inlineAi.loading && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSelectAITutorMode(
+                                      inlineAi.mode === 'hints' ? 'full-solution' : 'hints',
+                                      { question: q, type: 'objective' }
+                                    )}
+                                    className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
+                                      inlineAi.mode === 'hints'
+                                        ? 'bg-white hover:bg-amber-50 text-amber-900 border-amber-300 shadow-2xs'
+                                        : 'bg-white hover:bg-purple-50 text-purple-900 border-purple-300 shadow-2xs'
+                                    }`}
+                                    title={inlineAi.mode === 'hints' ? 'Switch to Full Solution' : 'Switch to Hints'}
+                                  >
+                                    {inlineAi.mode === 'hints' ? 'Full Solution' : 'Hints Only'}
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleCloseInlineAi(qKey)}
+                                  className="w-6 h-6 rounded-full hover:bg-black/10 flex items-center justify-center text-zinc-500 hover:text-zinc-800 cursor-pointer transition-colors"
+                                  title="Close AI explanation"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Card Body */}
+                            <div className="p-4 text-xs leading-relaxed">
+                              {inlineAi.loading ? (
+                                <div className="flex items-center gap-3 py-2 text-zinc-600 animate-pulse">
+                                  <Loader2 className={`w-4 h-4 animate-spin ${inlineAi.mode === 'hints' ? 'text-amber-600' : 'text-purple-600'}`} />
+                                  <div className="text-xs">
+                                    <div className="font-bold text-zinc-800">
+                                      {inlineAi.mode === 'hints' 
+                                        ? 'AI Magic Tutor is formulating Socratic hints...' 
+                                        : 'AI Magic Tutor is analyzing solution steps & traps...'}
+                                    </div>
+                                    <div className="text-[10px] text-zinc-500">
+                                      Aligning with College Board AP CED standards & options...
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : inlineAi.error ? (
+                                <div className="flex flex-col gap-2 py-1">
+                                  <p className="text-xs font-semibold text-red-600">{inlineAi.error}</p>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSelectAITutorMode(inlineAi.mode, { question: q, type: 'objective' })}
+                                    className="self-start px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-800 text-xs font-bold rounded-lg cursor-pointer"
+                                  >
+                                    Retry
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="text-zinc-800 space-y-2">
+                                  <GlobalMarkdown>{inlineAi.text || ''}</GlobalMarkdown>
+                                </div>
+                              )}
+                            </div>
+                          </motion.div>
+                        );
+                      })()}
                     </div>
                   );
                 })()}
@@ -2924,6 +2994,116 @@ Instructions for AI Magic Tutor:
                             </div>
                           </div>
                         )}
+
+                        {/* Inline AI Magic Tutor Breakdown Section for Subjective (FRQ) */}
+                        {(() => {
+                          const qKey = `sub_${currentSubIndex}`;
+                          const inlineAi = inlineAiExplanations[qKey];
+                          if (!inlineAi) return null;
+
+                          return (
+                            <motion.div
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className={`mt-2 rounded-2xl border overflow-hidden shadow-xs transition-all ${
+                                inlineAi.mode === 'hints'
+                                  ? 'bg-amber-50/80 border-amber-200'
+                                  : 'bg-purple-50/80 border-purple-200'
+                              }`}
+                            >
+                              {/* Header */}
+                              <div className={`px-4 py-2.5 flex items-center justify-between border-b ${
+                                inlineAi.mode === 'hints'
+                                  ? 'bg-amber-100/90 border-amber-200 text-amber-950'
+                                  : 'bg-purple-100/90 border-purple-200 text-purple-950'
+                              }`}>
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                                    inlineAi.mode === 'hints' ? 'bg-amber-500 text-white' : 'bg-purple-600 text-white'
+                                  }`}>
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <span className="text-xs font-black tracking-tight">
+                                        AI Magic Tutor Breakdown
+                                      </span>
+                                      <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                                        inlineAi.mode === 'hints'
+                                          ? 'bg-amber-200/90 text-amber-900'
+                                          : 'bg-purple-200/90 text-purple-900'
+                                      }`}>
+                                        {inlineAi.mode === 'hints' ? '💡 Guided Hints (No Spoilers)' : '🎯 Full Solution & Rubric'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  {!inlineAi.loading && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSelectAITutorMode(
+                                        inlineAi.mode === 'hints' ? 'full-solution' : 'hints',
+                                        { question: q, type: 'subjective' }
+                                      )}
+                                      className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
+                                        inlineAi.mode === 'hints'
+                                          ? 'bg-white hover:bg-amber-50 text-amber-900 border-amber-300 shadow-2xs'
+                                          : 'bg-white hover:bg-purple-50 text-purple-900 border-purple-300 shadow-2xs'
+                                      }`}
+                                      title={inlineAi.mode === 'hints' ? 'Switch to Full Solution' : 'Switch to Hints'}
+                                    >
+                                      {inlineAi.mode === 'hints' ? 'Full Solution' : 'Hints Only'}
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCloseInlineAi(qKey)}
+                                    className="w-6 h-6 rounded-full hover:bg-black/10 flex items-center justify-center text-zinc-500 hover:text-zinc-800 cursor-pointer transition-colors"
+                                    title="Close AI explanation"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Body */}
+                              <div className="p-4 text-xs leading-relaxed">
+                                {inlineAi.loading ? (
+                                  <div className="flex items-center gap-3 py-2 text-zinc-600 animate-pulse">
+                                    <Loader2 className={`w-4 h-4 animate-spin ${inlineAi.mode === 'hints' ? 'text-amber-600' : 'text-purple-600'}`} />
+                                    <div className="text-xs">
+                                      <div className="font-bold text-zinc-800">
+                                        {inlineAi.mode === 'hints' 
+                                          ? 'AI Magic Tutor is formulating Socratic FRQ hints...' 
+                                          : 'AI Magic Tutor is generating step-by-step FRQ model solution...'}
+                                      </div>
+                                      <div className="text-[10px] text-zinc-500">
+                                        Aligning with official scoring rubrics and point criteria...
+                                      </div>
+                                    </div>
+                                  </div>
+                                ) : inlineAi.error ? (
+                                  <div className="flex flex-col gap-2 py-1">
+                                    <p className="text-xs font-semibold text-red-600">{inlineAi.error}</p>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSelectAITutorMode(inlineAi.mode, { question: q, type: 'subjective' })}
+                                      className="self-start px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-800 text-xs font-bold rounded-lg cursor-pointer"
+                                    >
+                                      Retry
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="text-zinc-800 space-y-2">
+                                    <GlobalMarkdown>{inlineAi.text || ''}</GlobalMarkdown>
+                                  </div>
+                                )}
+                              </div>
+                            </motion.div>
+                          );
+                        })()}
                       </div>
 
                       {/* Navigation Bar */}
@@ -3569,6 +3749,7 @@ Instructions for AI Magic Tutor:
                 <button
                   onClick={() => {
                     triggerVibration(10);
+                    setIsPdfDownloaded(false);
                     setPreviewPdfUri(null);
                   }}
                   className="w-9 h-9 bg-zinc-800 hover:bg-zinc-700 rounded-full flex items-center justify-center text-white transition-colors cursor-pointer border-none shrink-0"
@@ -3578,12 +3759,21 @@ Instructions for AI Magic Tutor:
                 </button>
                 <div className="min-w-0 flex-1">
                   <h3 className="font-black text-sm text-white truncate">{previewPdfName}</h3>
-                  <p className="text-[10px] text-zinc-400 font-semibold">AP Exam Document • PDF Preview Mode</p>
+                  <p className="text-[10px] font-semibold flex items-center gap-1.5 text-zinc-400">
+                    {isPdfDownloaded ? (
+                      <span className="text-emerald-400 flex items-center gap-1 font-bold">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Downloaded Offline • PDF Preview
+                      </span>
+                    ) : (
+                      <span>AP Exam Document • PDF Preview Mode</span>
+                    )}
+                  </p>
                 </div>
               </div>
               <button
                 onClick={() => {
                   triggerVibration(10);
+                  setIsPdfDownloaded(false);
                   setPreviewPdfUri(null);
                 }}
                 className="w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer"
@@ -3599,27 +3789,30 @@ Instructions for AI Magic Tutor:
 
             {/* Bottom Action Bar: Download & Share */}
             <div className="bg-zinc-950 p-4 border-t border-zinc-900 flex shrink-0 z-10 gap-3">
-              <button
-                onClick={async () => {
-                  triggerVibration(20);
-                  try {
-                    const res = await fetch(previewPdfUri);
-                    const blob = await res.blob();
-                    await savePDFMobile(blob, previewPdfName, {
-                      openImmediately: false,
-                      customToast: '✅ Saved offline in app',
-                      featureTag: 'AP Practice Exam'
-                    });
-                  } catch (e: any) {
-                    console.error("PDF download error:", e);
-                    showToast("Download failed: " + (e.message || e), "error");
-                  }
-                }}
-                className="flex-1 bg-white hover:bg-zinc-100 text-zinc-900 font-black text-xs py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-all shadow-md"
-              >
-                <Download className="w-4 h-4 text-zinc-900" />
-                <span>DOWNLOAD PDF</span>
-              </button>
+              {!isPdfDownloaded && (
+                <button
+                  onClick={async () => {
+                    triggerVibration(20);
+                    try {
+                      const res = await fetch(previewPdfUri);
+                      const blob = await res.blob();
+                      await savePDFMobile(blob, previewPdfName, {
+                        openImmediately: false,
+                        customToast: '✅ Saved offline in app',
+                        featureTag: 'AP Practice Exam'
+                      });
+                      setIsPdfDownloaded(true);
+                    } catch (e: any) {
+                      console.error("PDF download error:", e);
+                      showToast("Download failed: " + (e.message || e), "error");
+                    }
+                  }}
+                  className="flex-1 bg-white hover:bg-zinc-100 text-zinc-900 font-black text-xs py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-all shadow-md animate-fade-in"
+                >
+                  <Download className="w-4 h-4 text-zinc-900" />
+                  <span>DOWNLOAD PDF</span>
+                </button>
+              )}
               <button
                 onClick={async () => {
                   triggerVibration(15);
@@ -3641,156 +3834,6 @@ Instructions for AI Magic Tutor:
           </div>
         )}
 
-        {/* AI Magic Tutor Concept Explanation & Hints Sheet / Modal */}
-        <AnimatePresence>
-          {showTutorModal && tutorActiveQuestion && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/65 backdrop-blur-xs animate-fade-in">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.94, y: 16 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.94, y: 16 }}
-                className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-purple-200 overflow-hidden flex flex-col max-h-[90vh]"
-              >
-                {/* Tutor Modal Header */}
-                <div className="p-4 border-b border-purple-100 flex items-center justify-between bg-gradient-to-r from-purple-50 via-indigo-50/70 to-purple-50">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center shadow-sm shrink-0">
-                      <Sparkles className="w-4 h-4 text-white animate-pulse" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-black text-sm text-zinc-900 truncate">AI Magic Tutor</h3>
-                        <span className="text-[9px] bg-purple-200 text-purple-800 font-black px-1.5 py-0.5 rounded-full">
-                          AP CONCEPT HINTS
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-purple-700 font-bold truncate">
-                        {selectedSubject.name} • {tutorActiveQuestion.skill || 'Concept Breakdown'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={handleSendToFullAITutor}
-                      className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-indigo-100 hover:bg-indigo-200 text-indigo-800 text-[10px] font-black transition-colors cursor-pointer"
-                      title="Open full conversation in AI Tutor tab"
-                    >
-                      <Send className="w-2.5 h-2.5" />
-                      <span>Full Tutor Tab</span>
-                    </button>
-                    <button
-                      onClick={() => setShowTutorModal(false)}
-                      className="w-8 h-8 rounded-full bg-zinc-200/70 hover:bg-zinc-300 text-zinc-700 flex items-center justify-center cursor-pointer"
-                      title="Close Tutor"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Modal Scroll Content */}
-                <div className="flex-1 overflow-y-auto p-4 sm:p-5 flex flex-col gap-4">
-                  {/* Question Summary Pill */}
-                  <div className="p-3 rounded-2xl bg-zinc-50 border border-zinc-200/80 text-xs text-zinc-700">
-                    <div className="flex items-center justify-between font-bold text-[10px] uppercase tracking-wide text-zinc-400 mb-1">
-                      <span>Question Context</span>
-                      <span>{tutorActiveQuestion.type === 'objective' ? 'Section I (MCQ)' : (isComputerSubject(selectedSubject) ? 'Section II (Create Task)' : 'Section II (FRQ)')}</span>
-                    </div>
-                    <div className="line-clamp-2 font-medium">
-                      <GlobalMarkdown>{tutorActiveQuestion.text}</GlobalMarkdown>
-                    </div>
-                  </div>
-
-                  {/* Socratic Anti-Spoiler Badge */}
-                  <div className="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200 flex items-center gap-2 text-amber-900 text-[11px] font-semibold">
-                    <span className="text-base shrink-0">💡</span>
-                    <span>
-                      <strong>Magic Tutor Rule:</strong> I will explain the question, break down the core concepts, and provide strategic hints so <strong>you</strong> can solve it yourself without spoilers!
-                    </span>
-                  </div>
-
-                  {/* Tutor Response / Explanation */}
-                  {tutorLoading && !tutorExplanation ? (
-                    <div className="py-10 flex flex-col items-center justify-center text-center gap-3">
-                      <AdvancedLoader type="orb" context="dashboard" />
-                      <p className="text-xs font-bold text-purple-900">
-                        Magic Tutor is analyzing the question & formulating strategic hints...
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-100 text-xs text-zinc-800 leading-relaxed space-y-2">
-                      <GlobalMarkdown>{tutorExplanation}</GlobalMarkdown>
-                    </div>
-                  )}
-
-                  {/* Conversational Q&A History */}
-                  {tutorChatHistory.map((msg, i) => (
-                    <div
-                      key={i}
-                      className={`p-3.5 rounded-2xl text-xs leading-relaxed ${
-                        msg.role === 'user'
-                          ? 'bg-indigo-600 text-white self-end ml-8 rounded-tr-none'
-                          : 'bg-purple-50/80 border border-purple-200 text-zinc-800 self-start mr-8 rounded-tl-none'
-                      }`}
-                    >
-                      <div className="text-[10px] font-black uppercase tracking-wider mb-1 opacity-75">
-                        {msg.role === 'user' ? 'You' : 'AI Magic Tutor'}
-                      </div>
-                      <GlobalMarkdown>{msg.text}</GlobalMarkdown>
-                    </div>
-                  ))}
-
-                  {tutorLoading && tutorExplanation && (
-                    <div className="p-3 rounded-2xl bg-purple-50 border border-purple-200 text-xs text-purple-800 italic flex items-center gap-2 self-start">
-                      <span className="w-2 h-2 rounded-full bg-purple-600 animate-ping" />
-                      <span>Magic Tutor is formulating your answer...</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Modal Bottom Follow-up Input */}
-                <div className="p-3 border-t border-zinc-200 bg-white flex flex-col gap-2">
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleSendTutorFollowUp();
-                    }}
-                    className="flex items-center gap-2"
-                  >
-                    <input
-                      type="text"
-                      value={tutorFollowUp}
-                      onChange={(e) => setTutorFollowUp(e.target.value)}
-                      placeholder="Ask Magic Tutor a question about this problem..."
-                      disabled={tutorLoading}
-                      className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-zinc-200 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 bg-zinc-50"
-                    />
-                    <button
-                      type="submit"
-                      disabled={!tutorFollowUp.trim() || tutorLoading}
-                      className="h-9 px-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-40 cursor-pointer hover:opacity-95"
-                    >
-                      <Send className="w-3 h-3" />
-                      <span className="hidden xs:inline">Ask</span>
-                    </button>
-                  </form>
-
-                  {/* Quick Option to switch to Full AI Tutor */}
-                  <div className="flex items-center justify-between text-[10px] text-zinc-400 px-1">
-                    <span>Powered by College Board AP AI Engine</span>
-                    <button
-                      type="button"
-                      onClick={handleSendToFullAITutor}
-                      className="text-indigo-600 hover:text-indigo-800 font-bold underline cursor-pointer"
-                    >
-                      Open in full AI Magic Tutor chat →
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
         {/* ================= ASK AI 2-SUGGESTION MODAL PAGE ================= */}
         <AnimatePresence>
           {askAiModalData && (

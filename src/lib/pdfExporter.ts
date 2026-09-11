@@ -202,5 +202,8 @@ export function exportNotesToPDF(title: string, markdownContent: string, actionT
   const fullFilename = `${safeFilename}_notes.pdf`;
   const blob = generateNotesPDFBlob(title, markdownContent, actionType);
 
-  savePDFMobile(blob, fullFilename);
+  savePDFMobile(blob, fullFilename, {
+    featureTag: 'Study Guide',
+    customToast: '✅ Saved offline in app'
+  });
 }

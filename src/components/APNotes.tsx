@@ -1831,26 +1831,12 @@ export default function APNotes({ onBack }: APNotesProps) {
               </div>
             </div>
 
-            {/* Actions: Export PDF (Emoji Only) + Share PDF */}
+            {/* Actions: Share PDF (Pre-bundled offline notes - no download needed) */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              {/* Export to PDF Button (Emoji Only, No Text) */}
-              <button
-                onClick={() => handleExportUnitPDF(currentUnit, currentSubjectEntry)}
-                disabled={isExporting || isSharing}
-                className="w-8 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 flex items-center justify-center transition-all cursor-pointer disabled:opacity-50 active:scale-95"
-                title="Export & View Full-Screen PDF"
-              >
-                {isExporting ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" />
-                ) : (
-                  <span className="text-base select-none leading-none" role="img" aria-label="PDF">📄</span>
-                )}
-              </button>
-
               {/* Share PDF Button */}
               <button
                 onClick={() => handleShareUnitPDF(currentUnit)}
-                disabled={isSharing || isExporting}
+                disabled={isSharing}
                 className="w-8 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 flex items-center justify-center transition-all cursor-pointer disabled:opacity-50 active:scale-95"
                 title="Share Unit PDF"
               >
