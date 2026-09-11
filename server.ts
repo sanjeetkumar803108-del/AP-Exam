@@ -251,6 +251,7 @@ async function fetchWithTimeout(url: string, options: any = {}, timeout = 90000)
 }
 let lastQuotaExceededTime = 0;
 const rateLimitedModels: Record<string, number> = {};
+const rateLimitedModelsCooldown: Record<string, number> = {};
 
 app.use(express.json({ limit: "35mb" }));
 
@@ -582,18 +583,20 @@ MANDATORY ADAPTATION RULES:
     params.model.includes("clip")
   ));
 
-  let requestedModel = isAudioModel ? (params.model || "gemini-3.6-flash") : (params.model || "gemini-3.6-flash");
-  if (requestedModel && (requestedModel.includes("2.5") || requestedModel.includes("2.0") || requestedModel.includes("1.5") || requestedModel.includes("3.5"))) {
-    requestedModel = "gemini-3.6-flash";
+  let requestedModel = isAudioModel ? (params.model || "gemini-3.5-flash-lite") : (params.model || "gemini-3.5-flash-lite");
+  if (requestedModel && (requestedModel.includes("2.5") || requestedModel.includes("2.0") || requestedModel.includes("1.5"))) {
+    requestedModel = "gemini-3.5-flash-lite";
   }
   let modelsToTry = isAudioModel 
-    ? [requestedModel, "gemini-3.6-flash", "gemini-3.5-flash-lite"].filter(Boolean)
+    ? [requestedModel, "gemini-3.5-flash-lite", "gemini-flash-lite-latest"].filter(Boolean)
     : isSpecialtyModel 
       ? [requestedModel] 
       : [
           requestedModel,
-          "gemini-3.6-flash",
-          "gemini-3.5-flash-lite"
+          "gemini-3.5-flash-lite",
+          "gemini-flash-lite-latest",
+          "gemini-3.7-flash",
+          "gemini-3.6-flash"
         ].filter((value, index, self) => self.indexOf(value) === index);
 
   if (!isSpecialtyModel) {
@@ -603,8 +606,9 @@ MANDATORY ADAPTATION RULES:
 
     for (const m of modelsToTry) {
       const lastLimited = rateLimitedModels[m] || 0;
-      // Keep on backburner for 1 minute to allow quick recovery
-      if (now - lastLimited < 60000) {
+      const cooldownMs = rateLimitedModelsCooldown[m] || 60000;
+      // Keep on backburner during cooldown period
+      if (now - lastLimited < cooldownMs) {
         backburnerModels.push(m);
       } else {
         activeModels.push(m);
@@ -707,6 +711,17 @@ MANDATORY ADAPTATION RULES:
 
           if (isModelNotFound) {
             console.warn(`[ai-client] Model ${model} is deprecated or not found (404). Skipping retries...`);
+            break;
+          }
+
+          const isHardDailyQuota = errorStr.includes("quota exceeded for metric") || 
+            errorStr.includes("limit: 20") || 
+            errorStr.includes("generaterequestsperday") ||
+            errorStr.includes("free_tier_requests");
+
+          if (isHardDailyQuota) {
+            rateLimitedModelsCooldown[model] = 3600000; // Backburner for 1 hour
+            console.warn(`[ai-client] Model ${model} reached daily quota. Skipping retries immediately to fail over without delay...`);
             break;
           }
 
@@ -4054,7 +4069,7 @@ STRICT JSON OUTPUT FORMAT:
 
       const response = await safeGenerateContent({
         gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-        model: "gemini-3.6-flash",
+        model: "gemini-3.5-flash-lite",
         contents: { parts: [{ text: `Question: ${questionPrompt || 'AP Question'}\nStudent Chose / Mistake: ${wrongInput || 'Distractor Trap'}\nCorrect Concept / Target: ${correctConcept || 'CED Standard'}\nTrap Type: ${trapType || 'Psychometric Trap'}` }] },
         config: {
           systemInstruction: { parts: [{ text: explainSystemInstruction }] },
@@ -4163,7 +4178,7 @@ STRICT JSON OUTPUT FORMAT (WHEN VALID):
 
       const response = await safeGenerateContent({
         gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-        model: "gemini-3.6-flash",
+        model: "gemini-3.5-flash-lite",
         contents: { parts: contentParts },
         config: {
           systemInstruction: { parts: [{ text: systemInstruction }] },
@@ -4280,7 +4295,7 @@ Return ONLY a valid JSON array of question objects:
 
       const response = await safeGenerateContent({
         gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-        model: "gemini-3.6-flash",
+        model: "gemini-3.5-flash-lite",
         contents: { parts: [{ text: `Generate ${requestedCount} authentic AP ${subject} Free Response Trap Radar questions for ${targetTopic}.` }] },
         config: {
           systemInstruction: { parts: [{ text: subjectiveSystemInstruction }] },
@@ -4319,9 +4334,11 @@ Return ONLY a valid JSON array of question objects:
 The student is training with the "AP TRAP RADAR™" to achieve a Score 5 in AP ${subject}.
 Your mission: Generate exactly ${requestedCount} ultra-authentic, high-caliber College Board AP Exam Multiple Choice Questions for "${targetTopic}" with DECEPTIVELY ENGINEERED PSYCHOMETRIC DISTRACTOR TRAPS.
 
-RAPID GENERATION & CONCISENESS DIRECTIVE (CRITICAL FOR HIGH SPEED):
-- Be razor-sharp and direct. Avoid verbose rambling.
-- Keep each distractor trap description to 1-2 punchy sentences.
+RAPID HIGH-SPEED GENERATION RULES:
+- Generate with ultra-high speed and razor-sharp clarity. Keep each trapDescription to 1 crisp, direct sentence.
+- Keep each collegeBoardMindset to 1 concise sentence.
+- Keep disarmStrategy to 1 sharp, high-yield heuristic.
+- No conversational preambles or filler. Output strictly valid JSON array directly.
 
 MANDATORY 25% BALANCED ANSWER DISTRIBUTION (CRITICAL RULE):
 - YOU MUST DISTRIBUTE THE CORRECT TARGET OPTION EVENLY ACROSS ALL 4 POSITIONS (A, B, C, D) WITH ROUGHLY 25% PROBABILITY EACH.
@@ -4409,7 +4426,7 @@ Return ONLY a valid JSON array of question objects:
 
     const response = await safeGenerateContent({
       gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-      model: "gemini-3.6-flash",
+      model: "gemini-3.5-flash-lite",
       contents: { parts: [{ text: `Generate ${requestedCount} authentic AP ${subject} Trap Radar questions for ${targetTopic}.` }] },
       config: {
         systemInstruction: { parts: [{ text: systemInstruction }] },

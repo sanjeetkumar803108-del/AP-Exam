@@ -189,17 +189,20 @@ interface RealRadarLoadingScreenProps {
   title: string;
   subtitle: string;
   subjectName?: string;
+  unitName?: string;
   mode: 'challenge' | 'scan' | 'disarm';
+  questionCount?: number;
+  format?: 'objective' | 'subjective';
 }
 
 interface RadarThought {
   phase: string;
   action: string;
   detail: string;
-  log: string;
+  log?: string;
 }
 
-function RealRadarLoadingScreen({ title, subtitle, subjectName, mode }: RealRadarLoadingScreenProps) {
+function RealRadarLoadingScreen({ title, subtitle, subjectName, unitName, mode, questionCount, format }: RealRadarLoadingScreenProps) {
   const [hudIndex, setHudIndex] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
@@ -208,33 +211,38 @@ function RealRadarLoadingScreen({ title, subtitle, subjectName, mode }: RealRada
       return [
         {
           phase: 'RADAR OCR & STEM PARSING',
-          action: 'Scanning Question Stem & Extracting Stimulus',
-          detail: 'Parsing multiple-choice choices (A, B, C, D) and verifying complete context...',
-          log: 'RADAR SWEEP ACTIVE: Stem and distractor tokens extracted'
+          action: 'Scanning Question Stem, Stimulus & Multiple-Choice Choices',
+          detail: 'Parsing problem context, extracting option tokens (A, B, C, D), and verifying clean data...'
         },
         {
-          phase: 'TRAP ARCHETYPE RECON',
-          action: 'Cross-Referencing College Board Distractor Database',
-          detail: 'Isolating reverse-logic sign flips, chronological traps, and pseudo-jargon lures...',
-          log: 'DISTRACTOR MATRIX: 6 College Board trap archetypes mapped'
+          phase: 'CED CURRICULUM RECON',
+          action: `Cross-Referencing ${subjectName || 'AP'} College Board Framework`,
+          detail: 'Matching question topic, tested skill, and difficulty tier against AP curriculum standards...'
+        },
+        {
+          phase: 'TRAP ARCHETYPE SCAN',
+          action: 'Auditing Choices Against 6 Psychometric Trap Archetypes',
+          detail: 'Checking for inverted algebraic signs, reciprocal traps, chronology slips, or pseudo-jargon lures...'
         },
         {
           phase: 'CED TARGET VERIFICATION',
-          action: 'Auditing 100% CED-Compliant Correct Target',
-          detail: 'Validating mathematical formulas, historical causal chains, and CED learning objectives...',
-          log: 'TARGET PROOF: Official College Board target verified'
+          action: 'Auditing 100% CED-Compliant Correct Solution with Proof',
+          detail: 'Validating mathematical formulas, historical causal chains, and core learning standards...'
         },
         {
           phase: 'TEST-MAKER INTENT AUTOPSY',
-          action: 'Uncovering Cognitive Trap & Student Misconception',
-          detail: 'Calculating percentage of AP students who forfeit points on this exact distractor under time pressure...',
-          log: 'PSYCHOMETRICS: Student cognitive slip model calculated'
+          action: 'Deconstructing Cognitive Slips & Student Misconceptions',
+          detail: 'Calculating percentage of AP students who forfeit points on this exact distractor under time pressure...'
         },
         {
-          phase: 'EXAMINER DEFENSE',
-          action: "Synthesizing 5-Second Disarm Secret",
-          detail: 'Constructing Score-5 mental heuristic to neutralize this distractor in seconds...',
-          log: 'COMPLETE: Trap Radar autopsy report assembled'
+          phase: 'EXAMINER DISARM HEURISTICS',
+          action: 'Synthesizing 5-Second Score-5 Elimination Secret',
+          detail: 'Constructing Score-5 mental shortcut to neutralize this distractor in seconds...'
+        },
+        {
+          phase: 'AUTOPSY CARD COMPILED',
+          action: 'Compiling Final Examiner Autopsy Breakdown',
+          detail: 'Preparing full diagnostic autopsy card, vulnerability metrics, and Score-5 memory tricks...'
         }
       ];
     }
@@ -243,63 +251,125 @@ function RealRadarLoadingScreen({ title, subtitle, subjectName, mode }: RealRada
         {
           phase: 'OPTION LOCK-ON',
           action: 'Locking On Selected Multiple Choice Option',
-          detail: 'Isolating linguistic qualifiers, formula substitutions, and scope boundaries...',
-          log: 'RADAR LOCK: Scanning selected choice for vulnerability markers'
+          detail: 'Isolating linguistic qualifiers, formula substitutions, and scope boundaries...'
         },
         {
           phase: 'PATTERN ANALYSIS',
-          action: 'Detecting Sign-Flip & Half-Truth Patterns',
-          detail: 'Checking for inverted algebraic signs, reciprocal traps, or premature calculation stops...',
-          log: 'AUTOPSY SCAN: Deconstructive distractor analysis running'
+          action: 'Detecting Sign-Flip, Scope-Creep & Intermediate-Stop Markers',
+          detail: 'Checking for inverted algebraic signs, reciprocal traps, or premature calculation stops...'
         },
         {
           phase: 'VULNERABILITY SCORING',
           action: 'Evaluating Vulnerability Rate & Student Trap Risk',
-          detail: 'Benchmarking choice against real College Board score distribution models...',
-          log: 'VULNERABILITY: Psychometric risk evaluated'
+          detail: 'Benchmarking choice against real College Board score distribution models...'
         },
         {
           phase: 'EXAMINER REVEAL',
           action: 'Compiling Final Examiner Autopsy Card',
-          detail: 'Preparing full diagnostic breakdown and Score-5 memory tricks...',
-          log: 'RADAR REPORT: Disarm diagnostic ready to reveal'
+          detail: 'Preparing full diagnostic breakdown and Score-5 memory tricks...'
         }
       ];
     }
+
+    if (format === 'subjective') {
+      return [
+        {
+          phase: 'CED FRQ RECONNAISSANCE',
+          action: `Auditing College Board Free-Response Standards for ${subjectName || 'AP Exam'}`,
+          detail: `Querying official Course & Exam Description scoring guidelines for ${unitName || 'Core Units'}...`
+        },
+        {
+          phase: 'RUBRIC PITFALL ISOLATION',
+          action: 'Scanning Chief Reader Diagnostic Logs for Point-Loss Pitfalls',
+          detail: 'Isolating naked-number penalties, missing SI units, unjustified claims, and prompt-echo loops...'
+        },
+        {
+          phase: 'MULTI-PART ARCHITECTURE',
+          action: 'Structuring Authentic Multi-Part AP Prompts (Parts a, b, c)',
+          detail: 'Calibrating official College Board task verbs: Identify, Calculate, Justify, Describe, and Explain...'
+        },
+        {
+          phase: 'BENCHMARK SOLUTION DERIVATION',
+          action: 'Deriving Step-by-Step Exemplary Full-Credit Solutions',
+          detail: 'Formulating complete mathematical derivation, theorem setup, substitutions, and causal reasoning...'
+        },
+        {
+          phase: 'RUBRIC PENALTY MAPPING',
+          action: 'Mapping 50%+ Student Point Forfeiture Traps per Rubric Point',
+          detail: 'Documenting exact student failure points identified by College Board scoring directors...'
+        },
+        {
+          phase: 'CHIEF READER SECRETS',
+          action: 'Encoding Chief Reader Scoring Secrets & Mnemonic Disarms',
+          detail: 'Formulating unforgettable test-day rules to secure maximum rubric points...'
+        },
+        {
+          phase: 'COCKPIT FINALIZATION',
+          action: 'Packaging Verified FRQ Challenge & Interactive Grading Rubric',
+          detail: `Synthesizing ${questionCount || 3} authentic free-response tasks and opening examiner terminal...`
+        }
+      ];
+    }
+
+    // Default: Objective (MCQ) Trap Challenge
     return [
       {
         phase: 'CED RECONNAISSANCE',
-        title: `Deploying Trap Radar for ${subjectName || 'AP Exam'}`,
-        action: `Scanning ${subjectName || 'AP Exam'} CED Curriculum Framework`,
-        detail: 'Sweeping high-yield units for standard high-school misconceptions and time-drain traps...',
-        log: `DEPLOYING: Trap Radar anchored to ${subjectName || 'AP Exam'} standards`
+        action: `Scanning College Board ${subjectName || 'AP Exam'} Framework`,
+        detail: `Connecting to official CED curriculum standards and exam unit weighting for ${unitName || 'Core Units'}...`
       },
       {
-        phase: 'DECEPTIVE ENGINEERING',
-        action: 'Engineering 3 Deceptive Psychometric Distractors',
-        detail: 'Injecting sign-flip errors, scope-creep traps, and pseudo-vocabulary jargon salads...',
-        log: 'ENGINEERING: 3 authentic distractor traps synthesized'
+        phase: 'HISTORICAL ARCHIVE SWEEP',
+        action: 'Sweeping 10-Year AP Chief Reader Diagnostic Archives',
+        detail: 'Isolating highest-frequency high-school misconceptions, cognitive illusions, and time-drain traps...'
       },
       {
-        phase: 'STIMULUS SYNTHESIS',
-        action: 'Synthesizing Authentic Stimulus Context & Equations',
-        detail: 'Formatting LaTeX formulas, data tables, lab coordinates, and primary source excerpts...',
-        log: 'STIMULUS: College Board stimulus scenario constructed'
+        phase: 'AUTHENTIC STIMULUS SYNTHESIS',
+        action: 'Synthesizing Real College Board Stimulus Scenario',
+        detail: 'Generating primary historical excerpts, lab experiment tables, code structures, or rate functions...'
       },
       {
-        phase: 'PSYCHOMETRIC CALIBRATION',
-        action: 'Balancing 25% Random Target Distribution',
-        detail: 'Verifying that Options A, B, C, and D have evenly distributed target probabilities...',
-        log: 'CALIBRATION: 25% balanced target distribution verified'
+        phase: 'TARGET SOLUTION PROOF',
+        action: 'Deriving 100% CED-Compliant Correct Answer with Proof',
+        detail: 'Establishing rigorous proof for the single verified College Board target answer...'
       },
       {
-        phase: 'DISARM TACTICS',
-        action: "Encoding 5-Second Examiner Disarm Rules",
-        detail: 'Formulating unforgettable Score-5 mental shortcuts to disarm traps under exam stress...',
-        log: 'COMPLETE: Trap Radar challenge deck compiled and ready'
+        phase: 'DISTRACTOR #1: SIGN-FLIP TRAP',
+        action: 'Engineering Reverse-Logic & Direction-Flip Distractor',
+        detail: 'Inverting vector directions, algebraic signs ($+ \\leftrightarrow -$), or causal sequences to bait rushed solvers...'
+      },
+      {
+        phase: 'DISTRACTOR #2: SCOPE-CREEP TRAP',
+        action: 'Engineering Scope-Creep & Plausible Half-Truth Distractor',
+        detail: 'Crafting factually true statements that do not answer the prompt or exceed the provided stimulus...'
+      },
+      {
+        phase: 'DISTRACTOR #3: PREMATURE STOP',
+        action: 'Manufacturing Absolute-Qualifier / Intermediate-Stop Distractor',
+        detail: 'Injecting extreme qualifiers and intermediate calculation results where students stop calculating early...'
+      },
+      {
+        phase: '25% PROBABILITY CALIBRATION',
+        action: 'Balancing Uniform Target Distribution Across Options (A, B, C, D)',
+        detail: 'Verifying that Options A, B, C, and D have evenly balanced target frequencies without position bias...'
+      },
+      {
+        phase: '5-SECOND DISARM SECRETS',
+        action: 'Encoding 5-Second Examiner Disarm Heuristics',
+        detail: 'Formulating unforgettable Score-5 mental shortcuts to spot and disarm traps under exam stress...'
+      },
+      {
+        phase: 'VULNERABILITY BENCHMARKING',
+        action: 'Calibrating Student Error Rates & Cognitive Temptation Curves',
+        detail: 'Benchmarking psychometric trap strength against actual College Board student scoring percentiles...'
+      },
+      {
+        phase: 'RADAR SYNCHRONIZATION',
+        action: 'Finalizing Challenge Deck & Opening Radar Cockpit',
+        detail: `Synthesizing ${questionCount || 5} verified questions, distractor metadata, and examiner autopsy rubrics...`
       }
     ];
-  }, [mode, subjectName]);
+  }, [mode, subjectName, unitName, format, questionCount]);
 
   // Timer
   useEffect(() => {
@@ -307,7 +377,7 @@ function RealRadarLoadingScreen({ title, subtitle, subjectName, mode }: RealRada
     return () => clearInterval(timer);
   }, []);
 
-  // Audio & Haptic Ping simulation
+  // Audio & Haptic Ping simulation - advances monotonically, NEVER loops backwards!
   useEffect(() => {
     const playPing = () => {
       try {
@@ -337,15 +407,33 @@ function RealRadarLoadingScreen({ title, subtitle, subjectName, mode }: RealRada
 
     playPing();
     const interval = setInterval(() => {
-      setHudIndex((prev) => (prev + 1) % statusTelemetry.length);
-      playPing();
-    }, 2200);
+      setHudIndex((prev) => {
+        if (prev < statusTelemetry.length - 1) {
+          playPing();
+          return prev + 1;
+        }
+        return prev;
+      });
+    }, 1800);
 
     return () => clearInterval(interval);
   }, [statusTelemetry.length]);
 
-  const activeThought = statusTelemetry[hudIndex] || statusTelemetry[0];
+  const isFinalPhase = hudIndex >= statusTelemetry.length - 1;
+  const currentThought = statusTelemetry[hudIndex] || statusTelemetry[0];
+  const activeThought = (isFinalPhase && elapsedSeconds > statusTelemetry.length * 1.8)
+    ? {
+        phase: 'FINALIZING DECK',
+        action: `Receiving Verified ${format === 'subjective' ? 'FRQ' : 'MCQ'} Questions & Encrypting Answer Keys`,
+        detail: `Synthesizing ${questionCount || 5} authentic questions. Preparing live radar scope and cockpit...`
+      }
+    : currentThought;
+
   const formattedTime = `${Math.floor(elapsedSeconds / 60).toString().padStart(2, '0')}:${(elapsedSeconds % 60).toString().padStart(2, '0')}s`;
+  const progressPercent = Math.min(
+    98,
+    Math.round(((hudIndex + 1) / statusTelemetry.length) * 88 + Math.min(elapsedSeconds * 1.2, 10))
+  );
 
   return (
     <motion.div
@@ -419,7 +507,7 @@ function RealRadarLoadingScreen({ title, subtitle, subjectName, mode }: RealRada
       </div>
 
       {/* Real-time AI Chain of Thought Box */}
-      <div className="relative z-10 mt-4 sm:mt-5 w-full max-w-sm space-y-2.5">
+      <div className="relative z-10 mt-4 sm:mt-5 w-full max-w-sm space-y-3">
         <AnimatePresence mode="wait">
           <motion.div
             key={hudIndex}
@@ -427,7 +515,7 @@ function RealRadarLoadingScreen({ title, subtitle, subjectName, mode }: RealRada
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
-            className="bg-emerald-950/70 border border-emerald-500/40 rounded-2xl p-3.5 shadow-lg text-left space-y-1.5 backdrop-blur-md"
+            className="bg-emerald-950/70 border border-emerald-500/40 rounded-2xl p-4 shadow-lg text-left space-y-1.5 backdrop-blur-md"
           >
             <div className="flex items-center justify-between">
               <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-900/60 px-2 py-0.5 rounded border border-emerald-500/30">
@@ -444,30 +532,11 @@ function RealRadarLoadingScreen({ title, subtitle, subjectName, mode }: RealRada
           </motion.div>
         </AnimatePresence>
 
-        {/* Live Thought Trace Terminal */}
-        <div className="rounded-xl bg-black/80 border border-emerald-500/25 p-2.5 font-mono text-[9px] sm:text-[10px] space-y-1 max-h-24 overflow-y-auto">
-          {statusTelemetry.slice(0, hudIndex + 1).map((item, idx) => {
-            const isCurrent = idx === hudIndex;
-            return (
-              <div
-                key={idx}
-                className={`flex items-start gap-1.5 ${
-                  isCurrent ? 'text-emerald-300 font-bold' : 'text-emerald-600 font-normal'
-                }`}
-              >
-                <span>{isCurrent ? '▶' : '✓'}</span>
-                <span>{item.log}</span>
-                {isCurrent && <span className="inline-block w-1.5 h-2.5 bg-emerald-400 animate-pulse ml-0.5" />}
-              </div>
-            );
-          })}
-        </div>
-
         {/* Glowing Progress Track */}
         <div className="w-full bg-zinc-900/90 rounded-full h-1.5 overflow-hidden border border-emerald-500/20">
           <motion.div
             className="h-full bg-gradient-to-r from-emerald-500 via-teal-300 to-emerald-500 shadow-[0_0_12px_#10b981]"
-            animate={{ width: `${((hudIndex + 1) / statusTelemetry.length) * 100}%` }}
+            animate={{ width: `${progressPercent}%` }}
             transition={{ duration: 0.4 }}
           />
         </div>
@@ -1418,7 +1487,10 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                 : 'Sweeping for sign-flips, premature stops & distractor traps...'
             }
             subjectName={selectedSubject.name}
+            unitName={selectedUnit}
             mode={loading ? 'challenge' : scanLoading ? 'scan' : 'disarm'}
+            questionCount={questionCount}
+            format={questionFormat}
           />
         )}
       </AnimatePresence>
