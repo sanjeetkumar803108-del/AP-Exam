@@ -24,33 +24,18 @@ import { showToast } from './utils/toast';
 import { setupDailyLocalNotifications } from './utils/notifications';
 import confetti from 'canvas-confetti';
 
-function retryImport<T>(fn: () => Promise<T>, retriesLeft = 2, interval = 800): Promise<T> {
+function retryImport<T>(fn: () => Promise<T>, retriesLeft = 3, interval = 500): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     fn()
       .then(resolve)
       .catch((error) => {
-        if (retriesLeft === 0) {
-          console.warn("Chunk load failed after retries:", error);
-          try {
-            const lastReloadStr = sessionStorage.getItem('chunk_reload_lock_ts');
-            const lastReload = lastReloadStr ? parseInt(lastReloadStr, 10) : 0;
-            const now = Date.now();
-            
-            // Only attempt a single reload if we haven't reloaded recently (within 30s)
-            if (now - lastReload > 30000) {
-              sessionStorage.setItem('chunk_reload_lock_ts', String(now));
-              console.warn("Attempting one-time fresh asset reload...");
-              window.location.reload();
-            } else {
-              console.error("Chunk load retry exhausted. Suppressing auto-reload to protect session stability.");
-            }
-          } catch (_) {
-            console.error("Storage unavailable; skipping auto-reload.");
-          }
+        if (retriesLeft <= 0) {
+          console.error("[ChunkLoader] Dynamic asset import failed after retries:", error);
+          // Never trigger window.location.reload() on chunk failures — it restarts the entire app!
           return reject(error);
         }
         setTimeout(() => {
-          retryImport(fn, retriesLeft - 1, interval).then(resolve, reject);
+          retryImport(fn, retriesLeft - 1, Math.round(interval * 1.5)).then(resolve, reject);
         }, interval);
       });
   });
@@ -259,6 +244,27 @@ export default function App() {
         }, 600);
       }
     } catch (_) {}
+  }, []);
+
+  // Idle-time prefetch of high-yield AP features to guarantee instant, 0ms loading and eliminate chunk fetch errors
+  useEffect(() => {
+    const prefetchModules = () => {
+      try {
+        import('./components/APNotes').catch(() => {});
+        import('./components/APMindMap').catch(() => {});
+        import('./components/APTrapRadar').catch(() => {});
+        import('./components/TestPrep').catch(() => {});
+        import('./components/APSamplePapers').catch(() => {});
+      } catch (_) {}
+    };
+
+    if (typeof window !== 'undefined') {
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(prefetchModules, { timeout: 3500 });
+      } else {
+        setTimeout(prefetchModules, 2000);
+      }
+    }
   }, []);
 
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -997,8 +1003,9 @@ export default function App() {
               </Suspense>
             </ErrorBoundary>
           </div>
-          {/* Active Tool Rendering */}
-          <Suspense fallback={<FullPageSkeleton />}>
+          {/* Active Tool Rendering wrapped in ErrorBoundary to catch Suspense chunk rejections */}
+          <ErrorBoundary fallbackMessage="Unable to load this feature right now. Tap below to return to Dashboard.">
+            <Suspense fallback={<FullPageSkeleton />}>
             {activeTool === 'apnotes' && (
               <ErrorBoundary>
                 <APNotes 
@@ -1147,7 +1154,8 @@ export default function App() {
                 <StreakDetailsPage onBack={() => setActiveTool(null)} />
               </ErrorBoundary>
             )}
-          </Suspense>
+            </Suspense>
+          </ErrorBoundary>
         </div>
 
         {/* Profile Tab */}

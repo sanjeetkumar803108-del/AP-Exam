@@ -30,9 +30,13 @@ window.addEventListener('error', (event) => {
   }
 });
 
+import ErrorBoundary from './components/ErrorBoundary';
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary fallbackMessage="The application encountered an unexpected state. Tap to return to Home.">
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 );
 
