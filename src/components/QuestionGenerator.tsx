@@ -856,6 +856,117 @@ export default function QuestionGenerator({ onBack, onNavigateToTab }: QuestionG
       currentY += 6; // spacing
     }
 
+    // =========================================================================
+    // SECTION II: OFFICIAL MODEL ANSWERS & SCORING RUBRIC
+    // =========================================================================
+    const hasAnswers = qs.some(q => getExpectedAnswer(q) || getKeyRubricPoints(q).length > 0);
+    if (hasAnswers) {
+      doc.addPage();
+      pageCount++;
+      addFooter(pageCount);
+      currentY = 25;
+
+      // Section Banner
+      doc.setFillColor(243, 232, 255); // Light Purple
+      doc.roundedRect(margin, currentY, contentWidth, 12, 2, 2, 'F');
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(126, 34, 206); // Purple 700
+      doc.text('SECTION II: OFFICIAL MODEL ANSWERS & SCORING RUBRICS', margin + 6, currentY + 8);
+      currentY += 18;
+
+      for (let i = 0; i < qs.length; i++) {
+        const qItem = qs[i];
+        const expected = getExpectedAnswer(qItem);
+        const rubrics = getKeyRubricPoints(qItem);
+
+        if (!expected && rubrics.length === 0) continue;
+
+        const checkAnswerPageBreak = (neededH: number) => {
+          if (currentY + neededH > pageHeight - 20) {
+            doc.addPage();
+            pageCount++;
+            addFooter(pageCount);
+            currentY = 25;
+            return true;
+          }
+          return false;
+        };
+
+        checkAnswerPageBreak(25);
+
+        // Question Title Label
+        doc.setFont('Helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(30, 41, 59);
+        doc.text(`Question ${i + 1} - Model Solution & Rubric`, margin, currentY);
+        currentY += 6;
+
+        if (expected) {
+          const cleanExpected = sanitizePdfText(formatMathForPdf(expected));
+          const expLines: string[] = doc.splitTextToSize(cleanExpected, contentWidth - 8);
+
+          checkAnswerPageBreak(expLines.length * 5 + 12);
+
+          doc.setFillColor(240, 253, 244); // Light emerald
+          doc.setDrawColor(187, 247, 208);
+          doc.setLineWidth(0.2);
+          const boxH = expLines.length * 5 + 8;
+          doc.roundedRect(margin, currentY, contentWidth, boxH, 2, 2, 'FD');
+
+          doc.setFont('Helvetica', 'bold');
+          doc.setFontSize(8.5);
+          doc.setTextColor(21, 128, 61); // Emerald 700
+          doc.text('Target Model Answer:', margin + 4, currentY + 5.5);
+
+          doc.setFont('Helvetica', 'normal');
+          doc.setFontSize(9);
+          doc.setTextColor(30, 41, 59);
+          expLines.forEach((el: string, eli: number) => {
+            drawTextWithElevatedPowers(doc, el, margin + 4, currentY + 10.5 + (eli * 5), 9);
+          });
+
+          currentY += boxH + 4;
+        }
+
+        if (rubrics.length > 0) {
+          checkAnswerPageBreak(rubrics.length * 6 + 10);
+
+          doc.setFont('Helvetica', 'bold');
+          doc.setFontSize(8.5);
+          doc.setTextColor(107, 33, 168); // Purple 800
+          doc.text('Key Scoring Rubric & Concepts:', margin + 2, currentY + 4);
+          currentY += 7;
+
+          rubrics.forEach(r => {
+            const cleanRubric = sanitizePdfText(formatMathForPdf(r));
+            const rLines: string[] = doc.splitTextToSize(cleanRubric, contentWidth - 14);
+            checkAnswerPageBreak(rLines.length * 4.8 + 2);
+
+            doc.setFillColor(147, 51, 234);
+            doc.circle(margin + 4, currentY + 2.5, 1.2, 'F');
+
+            doc.setFont('Helvetica', 'normal');
+            doc.setFontSize(8.5);
+            doc.setTextColor(71, 85, 105);
+            rLines.forEach((rl: string, rli: number) => {
+              drawTextWithElevatedPowers(doc, rl, margin + 8, currentY + 3.5 + (rli * 4.8), 8.5);
+            });
+            currentY += (rLines.length * 4.8) + 2;
+          });
+          currentY += 3;
+        }
+
+        // Divider between question answers
+        if (i < qs.length - 1) {
+          doc.setDrawColor(226, 232, 240);
+          doc.setLineWidth(0.3);
+          doc.line(margin, currentY, pageWidth - margin, currentY);
+          currentY += 8;
+        }
+      }
+    }
+
     return doc;
   };
 
@@ -887,16 +998,9 @@ export default function QuestionGenerator({ onBack, onNavigateToTab }: QuestionG
       customToast: '✅ Saved offline in app'
     });
 
-    // Instantly launch the visual PDF reader as fallback/visual confirmation
+    // Instantly launch the visual PDF reader in-app
     setPreviewPdfUri(blobUrl);
     setPreviewPdfName(filename);
-
-    // Direct launch in full screen (new page/tab)
-    try {
-      window.open(blobUrl, '_blank');
-    } catch (err) {
-      console.error("Popup blocked or window.open failed, fallback to in-app viewer", err);
-    }
   };
 
   const handleSharePDF = async (

@@ -497,8 +497,6 @@ export default function APNotes({ onBack }: APNotesProps) {
   const [isSharing, setIsSharing] = useState<boolean>(false);
   const [selectedDiagram, setSelectedDiagram] = useState<APNoteDiagram | null>(null);
   const [fullScreenPdfData, setFullScreenPdfData] = useState<{ uri: string; title: string; unitNumber: number } | null>(null);
-  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
 
 
   const allSupportedSubjects = getAllSupportedNoteSubjects();
@@ -1499,39 +1497,6 @@ export default function APNotes({ onBack }: APNotesProps) {
   };
 
 
-  // Automatically compile and cache the Unit PDF Document whenever the user chooses or switches units
-  useEffect(() => {
-    let url: string | null = null;
-    let isCancelled = false;
-
-    if (step === 'reading' && currentUnit) {
-      setIsGeneratingPdf(true);
-      const run = async () => {
-        try {
-          const doc = await buildUnitPdfDocument(currentUnit, currentSubjectEntry);
-          const blob = doc.output('blob');
-          if (!isCancelled) {
-            url = URL.createObjectURL(blob);
-            setPdfBlobUrl(url);
-            setIsGeneratingPdf(false);
-          }
-        } catch (err) {
-          console.error("Failed to compile unit PDF document:", err);
-          if (!isCancelled) {
-            setIsGeneratingPdf(false);
-          }
-        }
-      };
-      run();
-    }
-
-    return () => {
-      isCancelled = true;
-      if (url) {
-        URL.revokeObjectURL(url);
-      }
-    };
-  }, [currentUnit.unitId, selectedSubjectId, step]);
 
   return (
     <div className="h-full flex flex-col bg-[#FAF9F6] relative overflow-hidden font-sans select-none">

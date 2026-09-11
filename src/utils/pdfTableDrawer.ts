@@ -383,9 +383,56 @@ export function drawRichTextWithTables(
         doc.setFontSize(fontSize);
         const headingW = doc.getTextWidth(leadHeading + ' ');
 
-        const fullSanitized = restOfText ? `${leadHeading} ${restOfText}` : leadHeading;
-        const wrappedLines: string[] = doc.splitTextToSize(fullSanitized, availableW);
-        const blockH = (wrappedLines.length * lineH) + paragraphSpacing;
+        let linesToDraw: { text: string; isFirstWithHeading: boolean }[] = [];
+        let headingOnOwnLine = false;
+
+        if (!restOfText) {
+          linesToDraw = [{ text: '', isFirstWithHeading: true }];
+        } else {
+          const firstLineAvailableW = availableW - headingW;
+          // If heading takes more than 60% of width or first word doesn't fit, put heading on its own line
+          if (headingW >= availableW * 0.6 || firstLineAvailableW < 30 / scaleFactor) {
+            headingOnOwnLine = true;
+            const bodyLines = doc.splitTextToSize(restOfText, availableW);
+            linesToDraw = bodyLines.map((bl: string) => ({ text: bl, isFirstWithHeading: false }));
+          } else {
+            const words = restOfText.split(/\s+/);
+            let firstWords: string[] = [];
+            let remWords: string[] = [];
+            let acc = '';
+            for (let wi = 0; wi < words.length; wi++) {
+              const testStr = acc ? `${acc} ${words[wi]}` : words[wi];
+              doc.setFont(fontName, fontStyle);
+              doc.setFontSize(fontSize);
+              if (doc.getTextWidth(testStr) <= firstLineAvailableW) {
+                acc = testStr;
+                firstWords.push(words[wi]);
+              } else {
+                remWords = words.slice(wi);
+                break;
+              }
+            }
+
+            if (firstWords.length === 0) {
+              // Even first word didn't fit next to heading
+              headingOnOwnLine = true;
+              const bodyLines = doc.splitTextToSize(restOfText, availableW);
+              linesToDraw = bodyLines.map((bl: string) => ({ text: bl, isFirstWithHeading: false }));
+            } else {
+              const firstLineText = firstWords.join(' ');
+              const subsequentLines: string[] = remWords.length > 0 
+                ? doc.splitTextToSize(remWords.join(' '), availableW)
+                : [];
+              linesToDraw = [
+                { text: firstLineText, isFirstWithHeading: true },
+                ...subsequentLines.map((sl: string) => ({ text: sl, isFirstWithHeading: false }))
+              ];
+            }
+          }
+        }
+
+        const totalLineCount = headingOnOwnLine ? 1 + linesToDraw.length : linesToDraw.length;
+        const blockH = (totalLineCount * lineH) + paragraphSpacing;
 
         if (checkPageBreak(blockH)) currentY = newPageY;
 
@@ -393,31 +440,46 @@ export function drawRichTextWithTables(
         doc.setFillColor(bulletLevel === 0 ? 99 : 156, bulletLevel === 0 ? 102 : 163, bulletLevel === 0 ? 241 : 175);
         doc.circle(itemX + (3 / scaleFactor), currentY + (fontSize * 0.46) / scaleFactor, (fontSize * 0.18) / scaleFactor, 'F');
 
-        // Draw text lines
-        for (let lIdx = 0; lIdx < wrappedLines.length; lIdx++) {
-          const wl = wrappedLines[lIdx];
-          const lineY = currentY + (lIdx * lineH) + baselineOffset;
+        if (headingOnOwnLine) {
+          // Draw heading on line 0
+          doc.setFont(fontName, 'bold');
+          doc.setFontSize(fontSize);
+          doc.setTextColor(30, 41, 59);
+          doc.text(leadHeading, itemX + (8 / scaleFactor), currentY + baselineOffset);
 
-          if (lIdx === 0) {
-            doc.setFont(fontName, 'bold');
-            doc.setFontSize(fontSize);
-            doc.setTextColor(30, 41, 59);
-            doc.text(leadHeading, itemX + (8 / scaleFactor), lineY);
-
-            if (restOfText) {
-              const firstLineNormal = wl.startsWith(leadHeading) ? wl.slice(leadHeading.length).trim() : wl;
-              doc.setFont(fontName, 'normal');
-              doc.setFontSize(fontSize);
-              doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-              drawTextWithElevatedPowers(doc, firstLineNormal, itemX + (8 / scaleFactor) + headingW, lineY, fontSize);
-            }
-          } else {
-            doc.setFont(fontName, 'normal');
+          // Draw body lines starting on next line
+          linesToDraw.forEach((ld, idx) => {
+            const lineY = currentY + ((idx + 1) * lineH) + baselineOffset;
+            doc.setFont(fontName, fontStyle);
             doc.setFontSize(fontSize);
             doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-            drawTextWithElevatedPowers(doc, wl, itemX + (8 / scaleFactor), lineY, fontSize);
-          }
+            drawTextWithElevatedPowers(doc, ld.text, itemX + (8 / scaleFactor), lineY, fontSize);
+          });
+        } else {
+          // Draw heading + inline text on line 0, then subsequent lines
+          linesToDraw.forEach((ld, idx) => {
+            const lineY = currentY + (idx * lineH) + baselineOffset;
+            if (ld.isFirstWithHeading) {
+              doc.setFont(fontName, 'bold');
+              doc.setFontSize(fontSize);
+              doc.setTextColor(30, 41, 59);
+              doc.text(leadHeading, itemX + (8 / scaleFactor), lineY);
+
+              if (ld.text) {
+                doc.setFont(fontName, fontStyle);
+                doc.setFontSize(fontSize);
+                doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+                drawTextWithElevatedPowers(doc, ld.text, itemX + (8 / scaleFactor) + headingW, lineY, fontSize);
+              }
+            } else {
+              doc.setFont(fontName, fontStyle);
+              doc.setFontSize(fontSize);
+              doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+              drawTextWithElevatedPowers(doc, ld.text, itemX + (8 / scaleFactor), lineY, fontSize);
+            }
+          });
         }
+
         currentY += blockH;
       } else {
         // Plain bullet

@@ -172,9 +172,9 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl }: SafePdfViewerP
           badge.innerText = `Page ${pageNum} of ${pdf.numPages}`;
           pageCard.appendChild(badge);
 
-          // Render canvas to paint the PDF pixel map with Ultra High-Definition sharpness
-          const dpr = Math.max(window.devicePixelRatio || 1, 2);
-          const targetScale = Math.max(dpr * 1.5, 3.0); // 3x - 4.5x pixel density (300+ DPI equivalent)
+          // Render canvas with optimized mobile retina sharpness without memory exhaustion
+          const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1.5), 2.2);
+          const targetScale = dpr; // Crystal-clear 180-220 DPI retina text with safe memory footprint
           const viewport = page.getViewport({ scale: targetScale });
           const canvas = document.createElement('canvas');
           canvas.className = 'w-full h-auto bg-white border-0 block';
@@ -216,7 +216,7 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl }: SafePdfViewerP
     return () => {
       active = false;
     };
-  }, [pdfUrlOrBase64]);
+  }, [targetUrl]);
 
   return (
     <div className="w-full h-full flex flex-col bg-zinc-950 overflow-y-auto momentum-scroll px-0 py-0 items-center justify-start min-h-[300px]">

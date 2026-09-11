@@ -167,7 +167,8 @@ export function generateContentPDFBlob(
 
     const paraLines = doc.splitTextToSize(cleanPara, contentWidth - (isAcademic ? 6 : 0));
     
-    if (currentY + (paraLines.length * 5.2) > pageHeight - 22) {
+    // If there isn't room for at least 2 lines at the bottom of the current page, break cleanly to next page
+    if (currentY + 12 > pageHeight - 22) {
       doc.addPage();
       pageCount++;
       addFooter(pageCount);
