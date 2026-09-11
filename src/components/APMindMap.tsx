@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
-  ArrowLeft, Eye, EyeOff, ChevronDown, ChevronUp, ChevronRight,
+  ArrowLeft, Eye, EyeOff, Share2, ChevronDown, ChevronUp, ChevronRight,
   AlertTriangle, Search, CheckCircle2, RotateCcw,
   FileDown, Loader2, X, CheckCircle, Sparkles,
   BookOpen, Layers, Compass, Brain, Zap, Target, Check, HelpCircle
@@ -14,7 +14,7 @@ import {
   MindMapBranch, 
   MindMapLeafNode 
 } from '../data/mindmaps';
-import { exportMindMapPDF } from '../utils/mindMapPdfExporter';
+import { exportMindMapPDF, shareMindMapPDF } from '../utils/mindMapPdfExporter';
 import { safeGetItem, safeSetItem } from '../utils/storage';
 import SafePdfViewer from './SafePdfViewer';
 import GlobalMarkdown from './GlobalMarkdown';
@@ -637,6 +637,25 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
           >
             {activeRecallMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
             <span className="text-[11px] hidden sm:inline">Recall</span>
+          </button>
+
+          {/* Share Mind Map PDF */}
+          <button
+            onClick={async () => {
+              if (!currentUnit || isExporting) return;
+              setIsExporting(true);
+              try {
+                await shareMindMapPDF(currentUnit);
+              } finally {
+                setIsExporting(false);
+              }
+            }}
+            disabled={isExporting}
+            className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-xs font-bold shadow-2xs cursor-pointer transition-all active:scale-95 shrink-0"
+            title="Share Mind Map Notes (PDF)"
+          >
+            <Share2 className="w-3.5 h-3.5 text-indigo-600" />
+            <span className="text-[11px] hidden sm:inline">Share</span>
           </button>
 
           </div>

@@ -630,6 +630,38 @@ function ToolsDashboard({
           transition={{ duration: 0.35, delay: 0.24, ease: "easeOut" }}
           whileHover={{ scale: 1.02, y: -2, boxShadow: "0 14px 30px -5px rgba(0, 0, 0, 0.08)" }}
           whileTap={{ scale: 0.98 }}
+          onClick={() => handleSelectTool('learningisland')}
+          className="relative overflow-hidden bg-white border border-amber-300 shadow-md rounded-[2.5rem] p-7 cursor-pointer flex items-center justify-between transition-all select-none group hover:border-amber-500 hover:shadow-lg ring-1 ring-amber-400/20"
+        >
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-3xl shrink-0 group-hover:bg-gradient-to-br group-hover:from-amber-500 group-hover:to-yellow-500 group-hover:text-white transition-all duration-300 shadow-xs">
+              🏝️
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
+                  Learning Island™
+                </h2>
+                <span className="text-[10px] font-black uppercase tracking-wider bg-amber-100 border border-amber-300 text-amber-800 px-2 py-0.5 rounded-full">
+                  Adventure Quest
+                </span>
+              </div>
+              <p className="text-xs font-semibold text-amber-700 mt-0.5">
+                Gamified AP Syllabus Treasure Map • Master Units Level-by-Level
+              </p>
+            </div>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-zinc-100 group-hover:bg-amber-500 group-hover:text-white flex items-center justify-center text-zinc-700 shrink-0 transition-colors shadow-sm">
+            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.24, ease: "easeOut" }}
+          whileHover={{ scale: 1.02, y: -2, boxShadow: "0 14px 30px -5px rgba(0, 0, 0, 0.08)" }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => handleSelectTool('trapradar')}
           className="relative overflow-hidden bg-white border border-amber-200/90 shadow-md rounded-[2.5rem] p-7 cursor-pointer flex items-center justify-between transition-all select-none group hover:border-amber-400 hover:shadow-lg"
         >

@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import { savePDFMobile } from './mobileSaver';
+import { savePDFMobile, sharePDFMobile } from './mobileSaver';
 import { addStudyXP, trackQuestProgress } from './gamification';
 import { triggerVibration } from './vibrate';
 import { sanitizePdfText, formatMathForPdf } from './pdfSanitizer';
@@ -619,6 +619,28 @@ export async function exportMindMapPDF(unit: APUnitMindMap): Promise<MindMapPdfR
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error during PDF generation',
+    };
+  }
+}
+
+/**
+ * Compiles and directly shares an ultra-clean Printable AP Mind Map Revision PDF.
+ */
+export async function shareMindMapPDF(unit: APUnitMindMap): Promise<MindMapPdfResult> {
+  triggerVibration(20);
+  try {
+    const { blob, dataUri, fileName } = await generateMindMapPdfDocument(unit);
+    await sharePDFMobile(blob, fileName);
+    return {
+      success: true,
+      dataUri,
+      fileName,
+    };
+  } catch (error) {
+    console.error('Failed to share Mind Map PDF:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error during PDF sharing',
     };
   }
 }

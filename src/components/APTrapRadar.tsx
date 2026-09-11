@@ -1,3 +1,4 @@
+import AIThinkingLoader from './AIThinkingLoader';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -195,352 +196,33 @@ interface RealRadarLoadingScreenProps {
   format?: 'objective' | 'subjective';
 }
 
-interface RadarThought {
-  phase: string;
-  action: string;
-  detail: string;
-  log?: string;
-}
-
-function RealRadarLoadingScreen({ title, subtitle, subjectName, unitName, mode, questionCount, format }: RealRadarLoadingScreenProps) {
-  const [hudIndex, setHudIndex] = useState(0);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-
-  const statusTelemetry: RadarThought[] = useMemo(() => {
-    if (mode === 'scan') {
-      return [
-        {
-          phase: 'RADAR OCR & STEM PARSING',
-          action: 'Scanning Question Stem, Stimulus & Multiple-Choice Choices',
-          detail: 'Parsing problem context, extracting option tokens (A, B, C, D), and verifying clean data...'
-        },
-        {
-          phase: 'CED CURRICULUM RECON',
-          action: `Cross-Referencing ${subjectName || 'AP'} College Board Framework`,
-          detail: 'Matching question topic, tested skill, and difficulty tier against AP curriculum standards...'
-        },
-        {
-          phase: 'TRAP ARCHETYPE SCAN',
-          action: 'Auditing Choices Against 6 Psychometric Trap Archetypes',
-          detail: 'Checking for inverted algebraic signs, reciprocal traps, chronology slips, or pseudo-jargon lures...'
-        },
-        {
-          phase: 'CED TARGET VERIFICATION',
-          action: 'Auditing 100% CED-Compliant Correct Solution with Proof',
-          detail: 'Validating mathematical formulas, historical causal chains, and core learning standards...'
-        },
-        {
-          phase: 'TEST-MAKER INTENT AUTOPSY',
-          action: 'Deconstructing Cognitive Slips & Student Misconceptions',
-          detail: 'Calculating percentage of AP students who forfeit points on this exact distractor under time pressure...'
-        },
-        {
-          phase: 'EXAMINER DISARM HEURISTICS',
-          action: 'Synthesizing 5-Second Score-5 Elimination Secret',
-          detail: 'Constructing Score-5 mental shortcut to neutralize this distractor in seconds...'
-        },
-        {
-          phase: 'AUTOPSY CARD COMPILED',
-          action: 'Compiling Final Examiner Autopsy Breakdown',
-          detail: 'Preparing full diagnostic autopsy card, vulnerability metrics, and Score-5 memory tricks...'
-        }
-      ];
-    }
-    if (mode === 'disarm') {
-      return [
-        {
-          phase: 'OPTION LOCK-ON',
-          action: 'Locking On Selected Multiple Choice Option',
-          detail: 'Isolating linguistic qualifiers, formula substitutions, and scope boundaries...'
-        },
-        {
-          phase: 'PATTERN ANALYSIS',
-          action: 'Detecting Sign-Flip, Scope-Creep & Intermediate-Stop Markers',
-          detail: 'Checking for inverted algebraic signs, reciprocal traps, or premature calculation stops...'
-        },
-        {
-          phase: 'VULNERABILITY SCORING',
-          action: 'Evaluating Vulnerability Rate & Student Trap Risk',
-          detail: 'Benchmarking choice against real College Board score distribution models...'
-        },
-        {
-          phase: 'EXAMINER REVEAL',
-          action: 'Compiling Final Examiner Autopsy Card',
-          detail: 'Preparing full diagnostic breakdown and Score-5 memory tricks...'
-        }
-      ];
-    }
-
-    if (format === 'subjective') {
-      return [
-        {
-          phase: 'CED FRQ RECONNAISSANCE',
-          action: `Auditing College Board Free-Response Standards for ${subjectName || 'AP Exam'}`,
-          detail: `Querying official Course & Exam Description scoring guidelines for ${unitName || 'Core Units'}...`
-        },
-        {
-          phase: 'RUBRIC PITFALL ISOLATION',
-          action: 'Scanning Chief Reader Diagnostic Logs for Point-Loss Pitfalls',
-          detail: 'Isolating naked-number penalties, missing SI units, unjustified claims, and prompt-echo loops...'
-        },
-        {
-          phase: 'MULTI-PART ARCHITECTURE',
-          action: 'Structuring Authentic Multi-Part AP Prompts (Parts a, b, c)',
-          detail: 'Calibrating official College Board task verbs: Identify, Calculate, Justify, Describe, and Explain...'
-        },
-        {
-          phase: 'BENCHMARK SOLUTION DERIVATION',
-          action: 'Deriving Step-by-Step Exemplary Full-Credit Solutions',
-          detail: 'Formulating complete mathematical derivation, theorem setup, substitutions, and causal reasoning...'
-        },
-        {
-          phase: 'RUBRIC PENALTY MAPPING',
-          action: 'Mapping 50%+ Student Point Forfeiture Traps per Rubric Point',
-          detail: 'Documenting exact student failure points identified by College Board scoring directors...'
-        },
-        {
-          phase: 'CHIEF READER SECRETS',
-          action: 'Encoding Chief Reader Scoring Secrets & Mnemonic Disarms',
-          detail: 'Formulating unforgettable test-day rules to secure maximum rubric points...'
-        },
-        {
-          phase: 'COCKPIT FINALIZATION',
-          action: 'Packaging Verified FRQ Challenge & Interactive Grading Rubric',
-          detail: `Synthesizing ${questionCount || 3} authentic free-response tasks and opening examiner terminal...`
-        }
-      ];
-    }
-
-    // Default: Objective (MCQ) Trap Challenge
-    return [
-      {
-        phase: 'CED RECONNAISSANCE',
-        action: `Scanning College Board ${subjectName || 'AP Exam'} Framework`,
-        detail: `Connecting to official CED curriculum standards and exam unit weighting for ${unitName || 'Core Units'}...`
-      },
-      {
-        phase: 'HISTORICAL ARCHIVE SWEEP',
-        action: 'Sweeping 10-Year AP Chief Reader Diagnostic Archives',
-        detail: 'Isolating highest-frequency high-school misconceptions, cognitive illusions, and time-drain traps...'
-      },
-      {
-        phase: 'AUTHENTIC STIMULUS SYNTHESIS',
-        action: 'Synthesizing Real College Board Stimulus Scenario',
-        detail: 'Generating primary historical excerpts, lab experiment tables, code structures, or rate functions...'
-      },
-      {
-        phase: 'TARGET SOLUTION PROOF',
-        action: 'Deriving 100% CED-Compliant Correct Answer with Proof',
-        detail: 'Establishing rigorous proof for the single verified College Board target answer...'
-      },
-      {
-        phase: 'DISTRACTOR #1: SIGN-FLIP TRAP',
-        action: 'Engineering Reverse-Logic & Direction-Flip Distractor',
-        detail: 'Inverting vector directions, algebraic signs ($+ \\leftrightarrow -$), or causal sequences to bait rushed solvers...'
-      },
-      {
-        phase: 'DISTRACTOR #2: SCOPE-CREEP TRAP',
-        action: 'Engineering Scope-Creep & Plausible Half-Truth Distractor',
-        detail: 'Crafting factually true statements that do not answer the prompt or exceed the provided stimulus...'
-      },
-      {
-        phase: 'DISTRACTOR #3: PREMATURE STOP',
-        action: 'Manufacturing Absolute-Qualifier / Intermediate-Stop Distractor',
-        detail: 'Injecting extreme qualifiers and intermediate calculation results where students stop calculating early...'
-      },
-      {
-        phase: '25% PROBABILITY CALIBRATION',
-        action: 'Balancing Uniform Target Distribution Across Options (A, B, C, D)',
-        detail: 'Verifying that Options A, B, C, and D have evenly balanced target frequencies without position bias...'
-      },
-      {
-        phase: '5-SECOND DISARM SECRETS',
-        action: 'Encoding 5-Second Examiner Disarm Heuristics',
-        detail: 'Formulating unforgettable Score-5 mental shortcuts to spot and disarm traps under exam stress...'
-      },
-      {
-        phase: 'VULNERABILITY BENCHMARKING',
-        action: 'Calibrating Student Error Rates & Cognitive Temptation Curves',
-        detail: 'Benchmarking psychometric trap strength against actual College Board student scoring percentiles...'
-      },
-      {
-        phase: 'RADAR SYNCHRONIZATION',
-        action: 'Finalizing Challenge Deck & Opening Radar Cockpit',
-        detail: `Synthesizing ${questionCount || 5} verified questions, distractor metadata, and examiner autopsy rubrics...`
-      }
-    ];
-  }, [mode, subjectName, unitName, format, questionCount]);
-
-  // Timer
-  useEffect(() => {
-    const timer = setInterval(() => setElapsedSeconds(prev => prev + 1), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Audio & Haptic Ping simulation - advances monotonically, NEVER loops backwards!
-  useEffect(() => {
-    const playPing = () => {
-      try {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        if (!AudioCtx) return;
-        const ctx = new AudioCtx();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.12);
-        gain.gain.setValueAtTime(0.04, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.15);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.15);
-      } catch {
-        // Fallback silently if audio context is blocked
-      }
-      try {
-        triggerVibration(10);
-      } catch {
-        // Safe vibration fallback
-      }
-    };
-
-    playPing();
-    const interval = setInterval(() => {
-      setHudIndex((prev) => {
-        if (prev < statusTelemetry.length - 1) {
-          playPing();
-          return prev + 1;
-        }
-        return prev;
-      });
-    }, 1800);
-
-    return () => clearInterval(interval);
-  }, [statusTelemetry.length]);
-
-  const isFinalPhase = hudIndex >= statusTelemetry.length - 1;
-  const currentThought = statusTelemetry[hudIndex] || statusTelemetry[0];
-  const activeThought = (isFinalPhase && elapsedSeconds > statusTelemetry.length * 1.8)
-    ? {
-        phase: 'FINALIZING DECK',
-        action: `Receiving Verified ${format === 'subjective' ? 'FRQ' : 'MCQ'} Questions & Encrypting Answer Keys`,
-        detail: `Synthesizing ${questionCount || 5} authentic questions. Preparing live radar scope and cockpit...`
-      }
-    : currentThought;
-
-  const formattedTime = `${Math.floor(elapsedSeconds / 60).toString().padStart(2, '0')}:${(elapsedSeconds % 60).toString().padStart(2, '0')}s`;
-  const progressPercent = Math.min(
-    98,
-    Math.round(((hudIndex + 1) / statusTelemetry.length) * 88 + Math.min(elapsedSeconds * 1.2, 10))
-  );
-
+function RealRadarLoadingScreen({
+  title,
+  subtitle,
+  subjectName,
+  unitName,
+  mode,
+  questionCount,
+  format
+}: RealRadarLoadingScreenProps) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
-      className="fixed inset-0 z-[120] bg-[#050807]/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 sm:p-6 select-none overflow-y-auto"
+      className="fixed inset-0 z-[120] bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 sm:p-6 select-none overflow-y-auto"
     >
-      {/* High-tech Military Grid Background */}
-      <div 
-        className="absolute inset-0 pointer-events-none opacity-20"
-        style={{
-          backgroundImage: 'radial-gradient(#10b981 1px, transparent 1px), linear-gradient(to right, rgba(16,185,129,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(16,185,129,0.08) 1px, transparent 1px)',
-          backgroundSize: '28px 28px, 28px 28px, 28px 28px'
-        }}
+      <AIThinkingLoader
+        title={title}
+        subtitle={subtitle}
+        subjectName={subjectName}
+        unitName={unitName}
+        mode={mode}
+        questionCount={questionCount}
+        format={format}
+        variant="radar"
       />
-
-      {/* Cockpit Status Header */}
-      <div className="relative z-10 text-center mb-4 sm:mb-5 space-y-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 shadow-xs">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          <span>AI TRAP RADAR • COGNITIVE TELEMETRY</span>
-          <span className="text-emerald-400/60">•</span>
-          <span className="text-emerald-200">⏱️ {formattedTime}</span>
-        </div>
-        <h2 className="text-lg sm:text-xl font-black text-white tracking-tight drop-shadow-md">
-          {title}
-        </h2>
-        <p className="text-[11px] sm:text-xs text-emerald-300/80 font-mono max-w-sm sm:max-w-md mx-auto">
-          {subtitle}
-        </p>
-      </div>
-
-      {/* ======================================================= */}
-      {/* CIRCULAR REAL RADAR SCOPE SCREEN WITH 360° SWEEP        */}
-      {/* ======================================================= */}
-      <div className="relative z-10 w-52 h-52 sm:w-64 sm:h-64 rounded-full border-4 border-emerald-500/60 flex items-center justify-center overflow-hidden bg-radial from-emerald-950/90 via-[#061811] to-[#020a06] shadow-[0_0_50px_rgba(16,185,129,0.4)] ring-4 ring-emerald-500/20 shrink-0">
-        
-        {/* Cardinal Azimuth Degrees */}
-        <span className="absolute top-2 text-[8px] font-mono font-bold text-emerald-400/90 tracking-wider">000° N</span>
-        <span className="absolute bottom-2 text-[8px] font-mono font-bold text-emerald-400/90 tracking-wider">180° S</span>
-        <span className="absolute left-2 text-[8px] font-mono font-bold text-emerald-400/90 tracking-wider">270° W</span>
-        <span className="absolute right-2 text-[8px] font-mono font-bold text-emerald-400/90 tracking-wider">090° E</span>
-
-        {/* Concentric Distance Rings */}
-        <div className="absolute inset-4 rounded-full border border-emerald-500/25 pointer-events-none" />
-        <div className="absolute inset-10 sm:inset-14 rounded-full border border-emerald-500/25 border-dashed pointer-events-none" />
-        <div className="absolute inset-18 sm:inset-24 rounded-full border border-emerald-500/20 pointer-events-none" />
-
-        {/* 4-Quadrant Crosshairs */}
-        <div className="absolute w-full h-[1px] bg-emerald-500/35 pointer-events-none" />
-        <div className="absolute h-full w-[1px] bg-emerald-500/35 pointer-events-none" />
-        <div className="absolute w-full h-[1px] bg-emerald-500/15 rotate-45 pointer-events-none" />
-        <div className="absolute w-full h-[1px] bg-emerald-500/15 -rotate-45 pointer-events-none" />
-
-        {/* 360° SWEEP BEAM */}
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, ease: 'linear', duration: 2.2 }}
-          className="absolute inset-0 rounded-full pointer-events-none origin-center"
-          style={{
-            background: 'conic-gradient(from 0deg, rgba(16, 185, 129, 0.6) 0deg, rgba(16, 185, 129, 0.25) 35deg, rgba(16, 185, 129, 0.08) 60deg, transparent 80deg, transparent 360deg)'
-          }}
-        />
-
-        {/* Radar Origin Center Emitter */}
-        <div className="relative z-10 w-4 h-4 rounded-full bg-emerald-400 flex items-center justify-center shadow-[0_0_20px_#10b981]">
-          <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-        </div>
-      </div>
-
-      {/* Real-time AI Chain of Thought Box */}
-      <div className="relative z-10 mt-4 sm:mt-5 w-full max-w-sm space-y-3">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={hudIndex}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.2 }}
-            className="bg-emerald-950/70 border border-emerald-500/40 rounded-2xl p-4 shadow-lg text-left space-y-1.5 backdrop-blur-md"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-900/60 px-2 py-0.5 rounded border border-emerald-500/30">
-                {activeThought.phase} ({hudIndex + 1}/{statusTelemetry.length})
-              </span>
-              <Radar className="w-3.5 h-3.5 text-emerald-400 animate-spin" />
-            </div>
-            <h4 className="text-xs font-bold text-white font-sans leading-snug">
-              {activeThought.action}
-            </h4>
-            <p className="text-[10px] text-emerald-300/80 leading-relaxed font-mono">
-              {activeThought.detail}
-            </p>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Glowing Progress Track */}
-        <div className="w-full bg-zinc-900/90 rounded-full h-1.5 overflow-hidden border border-emerald-500/20">
-          <motion.div
-            className="h-full bg-gradient-to-r from-emerald-500 via-teal-300 to-emerald-500 shadow-[0_0_12px_#10b981]"
-            animate={{ width: `${progressPercent}%` }}
-            transition={{ duration: 0.4 }}
-          />
-        </div>
-      </div>
     </motion.div>
   );
 }
@@ -1383,10 +1065,24 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       setPreviewPdfUri(blobUrl);
       setPreviewPdfName(filename);
 
-      showToast('PDF ready for viewing and export!', 'success');
+      showToast('PDF ready for viewing and sharing!', 'success');
+      return { blob: pdfBlob, filename };
     } catch (err: any) {
       console.error('Failed to generate Trap Radar PDF:', err);
       showToast('PDF creation failed: ' + (err.message || err), 'error');
+    }
+  };
+
+  const handleSharePDF = async (customQuestions?: TrapQuestion[]) => {
+    triggerVibration(15);
+    try {
+      const res = await handleExportPDF(customQuestions);
+      if (res && res.blob && res.filename) {
+        await sharePDFMobile(res.blob, res.filename);
+      }
+    } catch (e: any) {
+      console.error('Share Trap Radar PDF error:', e);
+      showToast('Share failed: ' + (e.message || e), 'error');
     }
   };
 
@@ -2050,12 +1746,12 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                       <ChevronRight className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleExportPDF()}
+                      onClick={() => handleSharePDF()}
                       className="px-2.5 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-bold flex items-center gap-1.5 hover:bg-zinc-800 cursor-pointer shadow-xs ml-1"
-                      title="Export Practice & Distractor Autopsy to PDF"
+                      title="Share Practice & Distractor Autopsy as PDF"
                     >
-                      <FileText className="w-3.5 h-3.5 text-amber-400" />
-                      <span className="hidden sm:inline">Export PDF</span>
+                      <Share2 className="w-3.5 h-3.5 text-amber-400" />
+                      <span className="hidden sm:inline">Share PDF</span>
                     </button>
                   </div>
                 </div>
@@ -3905,28 +3601,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
             {/* Download & Share Actions Footer */}
             <div className="px-5 py-3 border-t border-zinc-800 bg-zinc-950 flex items-center justify-end gap-3">
-              {!isPdfDownloaded && (
-                <button
-                  onClick={async () => {
-                    try {
-                      const res = await fetch(previewPdfUri);
-                      const blob = await res.blob();
-                      await savePDFMobile(blob, previewPdfName, {
-                        featureTag: 'AP Trap Radar',
-                        customToast: '✅ Saved offline in app'
-                      });
-                      setIsPdfDownloaded(true);
-                    } catch (e) {
-                      console.error('PDF download error:', e);
-                      showToast('Download failed', 'error');
-                    }
-                  }}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm animate-fade-in"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>DOWNLOAD PDF</span>
-                </button>
-              )}
+              
 
               <button
                 onClick={async () => {

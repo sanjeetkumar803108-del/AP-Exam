@@ -320,21 +320,17 @@ export default function GrammarEnhancer({ onBack }: GrammarEnhancerProps) {
   const handleShareOutput = async () => {
     if (!result) return;
     triggerVibration(10);
-    const cleanOutput = result.trim();
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          text: cleanOutput
-        });
-        return;
-      } catch (e: any) {
-        if (e.name === 'AbortError') return;
+    try {
+      const title = `Grammar & Flow - ${mode === 'fix' ? 'Enhanced' : 'Academic Rewrite'}`;
+      let fullContent = `## Enhanced Text\n\n${result}`;
+      if (fixes && fixes.length > 0) {
+        fullContent += `\n\n### What Was Fixed\n` + fixes.map(f => `- ${f}`).join('\n');
       }
+      const blob = generateNotesPDFBlob(title, fullContent, 'Grammar Enhancement');
+      await sharePDFMobile(blob, 'Grammar_Enhanced_Document.pdf');
+    } catch (err) {
+      console.error('Failed to share Grammar PDF:', err);
     }
-    // Fallback
-    navigator.clipboard.writeText(cleanOutput);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleExportPDF = () => {
@@ -390,11 +386,12 @@ export default function GrammarEnhancer({ onBack }: GrammarEnhancerProps) {
                 </div>
               </div>
               <button
-                onClick={handleExportPDF}
+                onClick={handleShareOutput}
                 className="px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0"
+                title="Share PDF"
               >
-                <Download className="w-4 h-4" />
-                <span>Save</span>
+                <Share2 className="w-4 h-4" />
+                <span>Share</span>
               </button>
             </div>
             <div className="flex-1 overflow-hidden relative flex flex-col">
@@ -712,15 +709,15 @@ export default function GrammarEnhancer({ onBack }: GrammarEnhancerProps) {
             </div>
           )}
 
-          {/* MULTI-ACTION BAR: Share Output, PDF Export & PDF Preview */}
-          <div className="grid grid-cols-3 gap-2.5 mb-3">
+          {/* MULTI-ACTION BAR: Share (PDF) & View PDF */}
+          <div className="grid grid-cols-2 gap-2.5 mb-3">
             <button
               onClick={handleShareOutput}
               className="py-3.5 px-3 rounded-2xl font-extrabold text-xs transition-all flex items-center justify-center gap-1.5 border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 active:scale-95 shadow-xs cursor-pointer"
-              title="Share output text directly"
+              title="Share enhanced notes as PDF"
             >
               <Share2 className="w-4 h-4" />
-              <span>Share Output</span>
+              <span>Share (PDF)</span>
             </button>
 
             <button
@@ -730,15 +727,6 @@ export default function GrammarEnhancer({ onBack }: GrammarEnhancerProps) {
             >
               <Eye className="w-4 h-4 text-purple-600" />
               <span>View PDF</span>
-            </button>
-
-            <button
-              onClick={handleExportPDF}
-              className="py-3.5 px-3 rounded-2xl font-extrabold text-xs transition-all flex items-center justify-center gap-1.5 border border-purple-500/20 bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500 active:scale-95 shadow-md shadow-purple-500/10 cursor-pointer"
-              title="Download PDF"
-            >
-              <Download className="w-4 h-4" />
-              <span>Export PDF</span>
             </button>
           </div>
           

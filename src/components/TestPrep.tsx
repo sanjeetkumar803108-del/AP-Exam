@@ -1722,9 +1722,27 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
       setIsPdfDownloaded(false);
       setPreviewPdfUri(blobUrl);
       setPreviewPdfName(filename);
+      return { blob: pdfBlob, filename };
     } catch (err: any) {
       console.error("PDF Export Error:", err);
       showToast("Failed to create PDF preview: " + (err.message || err), "error");
+    }
+  };
+
+  const handleShareExamPDF = async (
+    customQuestions?: { type: 'objective'; items: APObjectiveQuestion[] } | { type: 'subjective'; items: APSubjectiveQuestion[] },
+    customSubject?: { name: string; shortCode: string },
+    customUnitTitle?: string
+  ) => {
+    triggerVibration(15);
+    try {
+      const res = await handleExportPDF(customQuestions, customSubject, customUnitTitle);
+      if (res && res.blob && res.filename) {
+        await sharePDFMobile(res.blob, res.filename);
+      }
+    } catch (err: any) {
+      console.error("Exam PDF Share Error:", err);
+      showToast("Failed to share exam PDF: " + (err.message || err), "error");
     }
   };
 
@@ -2620,14 +2638,14 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                   )}
                 </div>
 
-                {/* Prominent Export to PDF Action (Available during practice) */}
+                {/* Prominent Share Action (Available during practice) */}
                 <div className="pt-2">
                   <button
-                    onClick={() => handleExportPDF()}
+                    onClick={() => handleShareExamPDF()}
                     className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 active:scale-[0.99] transition-all hover:brightness-105 cursor-pointer"
                   >
-                    <FileText className="w-4 h-4 text-purple-200" />
-                    <span>Export to PDF</span>
+                    <Share2 className="w-4 h-4 text-purple-200" />
+                    <span>Share Exam Questions (PDF)</span>
                   </button>
                 </div>
               </>
@@ -2682,16 +2700,16 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                   </div>
                 </div>
 
-                {/* PDF & Retake Actions */}
+                {/* PDF Share & Retake Actions */}
                 <div className="flex flex-col gap-2.5">
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => handleExportPDF()}
-                    className="w-full py-4 rounded-2xl bg-zinc-900 text-white font-black text-sm flex items-center justify-center gap-2 shadow-sm"
+                    onClick={() => handleShareExamPDF()}
+                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black text-sm flex items-center justify-center gap-2 shadow-sm cursor-pointer"
                   >
-                    <Download className="w-4 h-4" />
-                    <span>Download AP Exam & Answer Key (PDF)</span>
+                    <Share2 className="w-4 h-4" />
+                    <span>Share AP Exam & Answer Key (PDF)</span>
                   </motion.button>
 
                   <div className="grid grid-cols-2 gap-2.5">
@@ -3191,14 +3209,14 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                         </div>
                       )}
 
-                      {/* Prominent Export to PDF Action (Available during practice) */}
+                      {/* Prominent Share Action (Available during practice) */}
                       <div className="pt-2 pb-2">
                         <button
-                          onClick={() => handleExportPDF()}
+                          onClick={() => handleShareExamPDF()}
                           className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 active:scale-[0.99] transition-all hover:brightness-105 cursor-pointer"
                         >
-                          <FileText className="w-4 h-4 text-purple-200" />
-                          <span>Export to PDF</span>
+                          <Share2 className="w-4 h-4 text-purple-200" />
+                          <span>Share Exam Questions (PDF)</span>
                         </button>
                       </div>
                     </div>
@@ -3303,16 +3321,16 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                   </div>
                 </div>
 
-                {/* PDF & Retake Actions */}
+                {/* PDF Share & Retake Actions */}
                 <div className="flex flex-col gap-2.5">
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => handleExportPDF()}
-                    className="w-full py-4 rounded-2xl bg-zinc-900 text-white font-black text-sm flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                    onClick={() => handleShareExamPDF()}
+                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black text-sm flex items-center justify-center gap-2 shadow-sm cursor-pointer"
                   >
-                    <Download className="w-4 h-4" />
-                    <span>Download AP Exam, Answers & Rubric (PDF)</span>
+                    <Share2 className="w-4 h-4" />
+                    <span>Share AP Exam, Answers & Rubric (PDF)</span>
                   </motion.button>
 
                   <div className="grid grid-cols-2 gap-2.5">
@@ -3702,7 +3720,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                       </div>
                       <h4 className="font-black text-zinc-800 text-sm">No Practice History Yet</h4>
                       <p className="text-xs text-zinc-500 max-w-xs mt-1">
-                        Generated questions will automatically appear here line-wise so you can practice again or export to PDF anytime.
+                        Generated questions will automatically appear here line-wise so you can practice again or share as PDF anytime.
                       </p>
                     </div>
                   ) : (
@@ -3755,7 +3773,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                           <button
                             onClick={() => handlePreviewHistoryPdf(item)}
                             className="py-2 px-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                            title="Preview & Export PDF"
+                            title="Share Exam PDF"
                           >
                             <FileText className="w-3.5 h-3.5 text-indigo-600" />
                             <span>Preview PDF</span>
@@ -3817,32 +3835,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
               <SafePdfViewer pdfUrlOrBase64={previewPdfUri} />
             </div>
 
-            {/* Bottom Action Bar: Download & Share */}
-            <div className="bg-zinc-950 p-4 border-t border-zinc-900 flex shrink-0 z-10 gap-3">
-              {!isPdfDownloaded && (
-                <button
-                  onClick={async () => {
-                    triggerVibration(20);
-                    try {
-                      const res = await fetch(previewPdfUri);
-                      const blob = await res.blob();
-                      await savePDFMobile(blob, previewPdfName, {
-                        openImmediately: false,
-                        customToast: '✅ Saved offline in app',
-                        featureTag: 'AP Practice Exam'
-                      });
-                      setIsPdfDownloaded(true);
-                    } catch (e: any) {
-                      console.error("PDF download error:", e);
-                      showToast("Download failed: " + (e.message || e), "error");
-                    }
-                  }}
-                  className="flex-1 bg-white hover:bg-zinc-100 text-zinc-900 font-black text-xs py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-all shadow-md animate-fade-in"
-                >
-                  <Download className="w-4 h-4 text-zinc-900" />
-                  <span>DOWNLOAD PDF</span>
-                </button>
-              )}
+            {/* Bottom Action Bar: Share PDF */}
+            <div className="bg-zinc-950 p-4 border-t border-zinc-900 flex shrink-0 z-10">
               <button
                 onClick={async () => {
                   triggerVibration(15);
@@ -3855,7 +3849,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                     showToast("Share failed: " + (e.message || e), "error");
                   }
                 }}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-all shadow-md"
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black text-xs py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-all shadow-md"
               >
                 <Share2 className="w-4 h-4 text-white" />
                 <span>SHARE PDF</span>

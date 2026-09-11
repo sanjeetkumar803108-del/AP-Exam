@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import { savePDFMobile } from './mobileSaver';
+import { savePDFMobile, sharePDFMobile } from './mobileSaver';
 import { addStudyXP, trackQuestProgress } from './gamification';
 import { triggerVibration } from './vibrate';
 import { safeGetItem, safeSetItem } from './storage';
@@ -237,4 +237,145 @@ export async function exportFormulaSheetPDF(
   });
 
   return saved;
+}
+
+/**
+ * Compiles and directly shares the authentic Formula Cheat Sheet as a PDF document.
+ */
+export async function shareFormulaSheetPDF(
+  categories: FormulaCategoryItem[],
+  selectedCategoryName?: string | null
+): Promise<boolean> {
+  triggerVibration(20);
+
+  try {
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 16;
+    const contentWidth = pageWidth - (margin * 2);
+
+    const filteredCategories = selectedCategoryName
+      ? categories.filter(c => c.name === selectedCategoryName)
+      : categories;
+
+    const titleText = selectedCategoryName 
+      ? `${selectedCategoryName} — Formula Sheet`
+      : 'HelpYou AI — Quick Formula Compendium';
+
+    let currentY = 20;
+
+    const drawPageHeader = (pageNumber: number) => {
+      doc.setFillColor(30, 27, 75);
+      doc.rect(0, 0, pageWidth, 28, 'F');
+      doc.setFillColor(99, 102, 241);
+      doc.rect(0, 28, pageWidth, 1.2, 'F');
+
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(8.5);
+      doc.setTextColor(251, 191, 36);
+      doc.text('HELPYOU AI  |  HIGH-YIELD MATHEMATICS & SCIENCE FORMULAS', margin, 9);
+
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(255, 255, 255);
+      doc.text(titleText, margin, 18);
+
+      doc.setFont('Helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(226, 232, 240);
+      doc.text('Comprehensive formula sheet formatted for quick reference, high retention, and exam mastery.', margin, 24);
+
+      currentY = 35;
+    };
+
+    const drawPageFooter = (pageNum: number) => {
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.3);
+      doc.line(margin, pageHeight - 8, pageWidth - margin, pageHeight - 8);
+
+      doc.setFont('Helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(148, 163, 184);
+      doc.text('For interactive step-by-step solvers, visit HelpYou AI', margin, pageHeight - 4.5);
+      doc.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 4.5, { align: 'right' });
+    };
+
+    let pageIndex = 1;
+    drawPageHeader(pageIndex);
+
+    filteredCategories.forEach((cat) => {
+      if (currentY + 20 > pageHeight - 16) {
+        drawPageFooter(pageIndex);
+        doc.addPage();
+        pageIndex++;
+        drawPageHeader(pageIndex);
+      }
+
+      doc.setFillColor(241, 245, 249);
+      doc.setDrawColor(203, 213, 225);
+      doc.setLineWidth(0.4);
+      doc.roundedRect(margin, currentY, contentWidth, 10, 2, 2, 'FD');
+
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(30, 41, 59);
+      doc.text(cat.name, margin + 4, currentY + 6.8);
+
+      doc.setFont('Helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text(cat.subtitle, pageWidth - margin - 4, currentY + 6.8, { align: 'right' });
+
+      currentY += 13;
+
+      cat.formulas.forEach((item) => {
+        const cleanLatex = cleanLatexForPdf(item.latex || item.insertText || '');
+        const cardHeight = 16;
+
+        if (currentY + cardHeight > pageHeight - 16) {
+          drawPageFooter(pageIndex);
+          doc.addPage();
+          pageIndex++;
+          drawPageHeader(pageIndex);
+        }
+
+        doc.setFillColor(255, 255, 255);
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(margin, currentY, contentWidth, cardHeight, 1.5, 1.5, 'FD');
+
+        doc.setFont('Helvetica', 'bold');
+        doc.setFontSize(8.5);
+        doc.setTextColor(15, 23, 42);
+        doc.text(item.name, margin + 3.5, currentY + 5);
+
+        doc.setFont('Helvetica', 'bold');
+        doc.setFontSize(9.5);
+        doc.setTextColor(67, 56, 202);
+        doc.text(cleanLatex, margin + 3.5, currentY + 11);
+
+        currentY += cardHeight + 3.5;
+      });
+
+      currentY += 4;
+    });
+
+    drawPageFooter(pageIndex);
+
+    const pdfBlob = doc.output('blob');
+    const filename = selectedCategoryName 
+      ? `${selectedCategoryName.replace(/[^a-zA-Z0-9]/g, '_')}_Formula_Sheet.pdf`
+      : 'HelpYou_AI_Quick_Formula_Sheet.pdf';
+
+    return await sharePDFMobile(pdfBlob, filename);
+  } catch (err) {
+    console.error('Failed to share formula sheet PDF:', err);
+    return false;
+  }
 }

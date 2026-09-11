@@ -47,6 +47,7 @@ function lazyWithRetry<T extends React.ComponentType<any>>(
   return lazy(() => retryImport(factory));
 }
 
+const LearningIsland = lazyWithRetry(() => import('./components/LearningIsland'));
 const ToolsDashboard = lazyWithRetry(() => import('./components/ToolsDashboard'));
 const PdfHistoryScreen = lazyWithRetry(() => import('./components/PdfHistoryScreen'));
 const MagicScanner = lazyWithRetry(() => import('./components/MagicScanner'));
@@ -1046,7 +1047,13 @@ export default function App() {
                 />
               </ErrorBoundary>
             )}
-            {activeTool === 'trapradar' && (
+            {activeTool === 'learningisland' && (
+                <ErrorBoundary>
+                  <LearningIsland onBack={() => setActiveTool(null)} />
+                </ErrorBoundary>
+              )}
+
+              {activeTool === 'trapradar' && (
               <ErrorBoundary>
                 <APTrapRadar 
                   onBack={() => setActiveTool(null)} 

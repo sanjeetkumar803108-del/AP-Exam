@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, ArrowLeft, Mic, BookOpen, Calculator as CalcIcon, X, ChevronDown, ChevronRight, Download, FileText, Check, History, Clock, Trash2 } from 'lucide-react';
+import { Sparkles, ArrowLeft, Mic, BookOpen, Calculator as CalcIcon, X, ChevronDown, ChevronRight, Download, Share2, FileText, Check, History, Clock, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import katex from 'katex';
 import { triggerVibration } from '../utils/vibrate';
 import UnitCircleVisualizer from './UnitCircleVisualizer';
-import { exportFormulaSheetPDF } from '../utils/formulaPdfExporter';
+import { exportFormulaSheetPDF, shareFormulaSheetPDF } from '../utils/formulaPdfExporter';
 
 const FORMULA_CATEGORIES = [
   {
@@ -516,12 +516,12 @@ export default function Calculator({ onBack, onNavigateToTab }: CalculatorProps)
   const [expandedFormulaCategory, setExpandedFormulaCategory] = useState<string | null>('Algebra & Polynomials');
   const [isExportingPdf, setIsExportingPdf] = useState(false);
 
-  const handleExportPdf = async (categoryName?: string) => {
+  const handleSharePdf = async (categoryName?: string) => {
     try {
       setIsExportingPdf(true);
-      await exportFormulaSheetPDF(FORMULA_CATEGORIES, categoryName);
+      await shareFormulaSheetPDF(FORMULA_CATEGORIES, categoryName);
     } catch (e) {
-      console.warn('PDF export error:', e);
+      console.warn('PDF share error:', e);
     } finally {
       setIsExportingPdf(false);
     }
@@ -1165,12 +1165,12 @@ export default function Calculator({ onBack, onNavigateToTab }: CalculatorProps)
                     <p className="text-xs font-black text-white truncate">Export All Formulas as PDF</p>
                   </div>
                   <button
-                    onClick={() => handleExportPdf()}
+                    onClick={() => handleSharePdf()}
                     disabled={isExportingPdf}
                     className="px-3.5 py-2 bg-white text-indigo-700 hover:bg-indigo-50 font-black text-xs rounded-xl shadow-sm transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer border-none shrink-0"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>{isExportingPdf ? 'Generating...' : 'Download PDF'}</span>
+                    <Share2 className="w-3.5 h-3.5" />
+                    <span>{isExportingPdf ? 'Preparing...' : 'Share PDF'}</span>
                   </button>
                 </div>
 
@@ -1204,13 +1204,13 @@ export default function Calculator({ onBack, onNavigateToTab }: CalculatorProps)
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleExportPdf(category.name);
+                            handleSharePdf(category.name);
                           }}
                           disabled={isExportingPdf}
-                          title={`Download ${category.name} PDF`}
-                          className="p-3.5 rounded-2xl bg-zinc-100 hover:bg-indigo-50 hover:text-indigo-600 border border-zinc-200/60 text-zinc-600 transition-all active:scale-95 shrink-0 flex items-center justify-center"
+                          title={`Share ${category.name} PDF`}
+                          className="p-3.5 rounded-2xl bg-zinc-100 hover:bg-indigo-50 hover:text-indigo-600 border border-zinc-200/60 text-zinc-600 transition-all active:scale-95 shrink-0 flex items-center justify-center cursor-pointer"
                         >
-                          <Download className="w-4 h-4" />
+                          <Share2 className="w-4 h-4" />
                         </button>
                       </div>
 

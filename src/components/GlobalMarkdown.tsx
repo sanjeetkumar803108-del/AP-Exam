@@ -7,6 +7,7 @@ import rehypeRaw from 'rehype-raw';
 
 interface GlobalMarkdownProps {
   children?: any;
+  content?: any;
   className?: string;
   components?: any;
 }
@@ -249,28 +250,34 @@ const rehypePluginsList: any[] = [[rehypeKatex, { strict: false, throwOnError: f
 
 const defaultComponents = {
   h1: ({ node, ...props }: any) => (
-    <h1 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 mt-4 mb-2 tracking-tight leading-snug break-words" {...props} />
+    <h1 className="text-base sm:text-lg font-black text-zinc-950 dark:text-zinc-100 mt-4 mb-2 tracking-tight leading-snug break-words" {...props} />
   ),
   h2: ({ node, ...props }: any) => (
-    <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100 mt-3.5 mb-1.5 tracking-tight leading-snug break-words" {...props} />
+    <h2 className="text-sm sm:text-base font-bold text-zinc-950 dark:text-zinc-100 mt-3.5 mb-1.5 tracking-tight leading-snug break-words" {...props} />
   ),
   h3: ({ node, ...props }: any) => (
-    <h3 className="text-xs sm:text-sm font-bold text-zinc-800 dark:text-zinc-200 mt-3 mb-1 tracking-tight leading-snug break-words" {...props} />
+    <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100 mt-3 mb-1 tracking-tight leading-snug break-words" {...props} />
   ),
   h4: ({ node, ...props }: any) => (
-    <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 mt-2 mb-1 tracking-tight leading-snug break-words" {...props} />
+    <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-200 mt-2 mb-1 tracking-tight leading-snug break-words" {...props} />
   ),
   p: ({ node, ...props }: any) => (
-    <p className="text-xs sm:text-[13px] text-zinc-800 dark:text-zinc-200 font-normal leading-relaxed my-2 break-words" {...props} />
+    <p className="text-xs sm:text-[13px] text-zinc-950 dark:text-zinc-100 font-medium leading-relaxed my-2 break-words" {...props} />
   ),
   ul: ({ node, ...props }: any) => (
-    <ul className="list-disc pl-4 space-y-1 my-2 text-xs sm:text-[13px] text-zinc-800 dark:text-zinc-200 leading-relaxed" {...props} />
+    <ul className="list-disc pl-4 space-y-1 my-2 text-xs sm:text-[13px] text-zinc-950 dark:text-zinc-100 font-medium leading-relaxed" {...props} />
   ),
   ol: ({ node, ...props }: any) => (
-    <ol className="list-decimal pl-4 space-y-1 my-2 text-xs sm:text-[13px] text-zinc-800 dark:text-zinc-200 leading-relaxed" {...props} />
+    <ol className="list-decimal pl-4 space-y-1 my-2 text-xs sm:text-[13px] text-zinc-950 dark:text-zinc-100 font-medium leading-relaxed" {...props} />
   ),
   li: ({ node, ...props }: any) => (
-    <li className="leading-relaxed" {...props} />
+    <li className="leading-relaxed text-zinc-950 dark:text-zinc-100 font-medium" {...props} />
+  ),
+  sub: ({ node, ...props }: any) => (
+    <sub className="text-[0.8em] font-bold align-sub" {...props} />
+  ),
+  sup: ({ node, ...props }: any) => (
+    <sup className="text-[0.8em] font-bold align-super" {...props} />
   ),
   code: ({ node, inline, className, children, ...props }: any) => {
     const isInline = !className && !String(children).includes('\n');
@@ -323,12 +330,13 @@ const defaultComponents = {
   ),
 };
 
-function GlobalMarkdown({ children, className = '', components = {} }: GlobalMarkdownProps) {
-  if (!children) return null;
+function GlobalMarkdown({ children, content, className = '', components = {} }: GlobalMarkdownProps) {
+  const rawText = content !== undefined ? content : children;
+  if (!rawText) return null;
 
   const processedContent = useMemo(() => {
-    return cleanMarkdownMath(children);
-  }, [children]);
+    return cleanMarkdownMath(rawText);
+  }, [rawText]);
 
   const mergedComponents = useMemo(() => {
     if (!components || Object.keys(components).length === 0) {

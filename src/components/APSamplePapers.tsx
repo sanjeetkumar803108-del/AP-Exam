@@ -20,7 +20,7 @@ import { APSamplePaper } from '../types/samplePapers';
 import { fetchSamplePapers } from '../services/samplePaperService';
 import SafePdfViewer from './SafePdfViewer';
 import { TOP_10_AP_SUBJECTS } from '../utils/apCurriculum';
-import { savePDFMobile } from '../utils/mobileSaver';
+import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
 
 interface APSamplePapersProps {
   onBack: () => void;

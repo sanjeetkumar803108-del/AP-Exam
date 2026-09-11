@@ -721,18 +721,7 @@ export default function QuestionGenerator({ onBack, onNavigateToTab }: QuestionG
   const handleShareQuestions = () => {
     if (!questions) return;
     triggerVibration(15);
-    const shareText = `📝 Subjective Practice Questions from HelpYou AI Tutor!\n\nTopic: ${customTopic || stream}\n\n` + 
-      questions.map((q, i) => `${i + 1}. ${normalizeQuestionBreaks(getQuestionText(q))}`).join('\n\n');
-    
-    if (navigator.share) {
-      navigator.share({
-        title: 'HelpYou AI - Subjective Questions',
-        text: shareText,
-      }).catch(console.error);
-    } else {
-      navigator.clipboard.writeText(shareText);
-      alert("Share content copied to clipboard!");
-    }
+    handleSharePDF();
   };
 
   const generateQuestionsPDF = (
@@ -1689,19 +1678,21 @@ export default function QuestionGenerator({ onBack, onNavigateToTab }: QuestionG
                 )}
               </AnimatePresence>
 
-              {/* PDF Export Actions */}
+              {/* PDF Share Actions */}
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <button
                   onClick={() => handleExportPDF()}
                   className="flex-1 bg-white border border-zinc-200 text-zinc-850 font-black text-xs py-3.5 rounded-2xl transition-all shadow-sm cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 hover:bg-zinc-50"
+                  title="View PDF"
                 >
                   <FileText className="w-4 h-4 text-purple-600" /> View PDF
                 </button>
                 <button
                   onClick={() => handleSharePDF()}
-                  className="flex-1 bg-white border border-zinc-200 text-zinc-850 font-black text-xs py-3.5 rounded-2xl transition-all shadow-sm cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 hover:bg-zinc-50"
+                  className="flex-1 bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 text-white font-black text-xs py-3.5 rounded-2xl transition-all shadow-sm cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 hover:brightness-105"
+                  title="Share Question Set as PDF"
                 >
-                  <Share2 className="w-4 h-4 text-purple-600" /> Share PDF
+                  <Share2 className="w-4 h-4 text-white" /> Share PDF
                 </button>
               </div>
 

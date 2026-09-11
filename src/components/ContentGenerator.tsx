@@ -631,13 +631,6 @@ const handleSharePDF = async () => {
 
             <div className="flex items-center gap-2">
               <button
-                onClick={handleDownloadPDF}
-                className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-full font-black text-xs shadow-md transition-all cursor-pointer"
-              >
-                <Download className="w-4 h-4" />
-                <span>Save Offline</span>
-              </button>
-              <button
                 onClick={handleSharePDF}
                 className="flex items-center gap-1.5 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 active:scale-95 text-white rounded-full font-black text-xs shadow-md transition-all cursor-pointer"
               >
