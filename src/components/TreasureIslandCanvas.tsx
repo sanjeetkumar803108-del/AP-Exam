@@ -122,20 +122,30 @@ export const TreasureIslandCanvas: React.FC<TreasureIslandCanvasProps> = ({
         viewBox={`0 0 100 ${safeHeight}`}
         preserveAspectRatio="none"
       >
-        {/* 1. Compass Rose at the bottom-left of map */}
-        <CompassRose x={22} y={safeHeight - 120} scale={0.88} />
-
-        {/* 2. Ocean Wave Ripples across open map */}
+        {/* 1. Ocean Wave Ripples across open map */}
         <OceanWaves x={76} y={safeHeight - 340} count={2} />
         <OceanWaves x={78} y={safeHeight - 650} count={3} />
         <OceanWaves x={15} y={safeHeight - 1250} count={2} />
         <OceanWaves x={78} y={safeHeight - 1650} count={2} />
 
-        {/* 3. Red "X" Marks the Spot at the Topmost Level / Final Summit */}
+        {/* 2. Red "X" Marks the Spot at the Topmost Level / Final Summit */}
         {finalCoord && (
           <RedXMark x={finalCoord.xPercent + 10} y={finalCoord.yPx - 28} scale={1.1} />
         )}
       </svg>
+
+      {/* Interactive Vintage Compass (Compact size, true 1:1 circle, spinning magnetic needle) */}
+      <div
+        className="absolute z-10 select-none cursor-pointer"
+        style={{
+          left: '20%',
+          top: `${safeHeight - 110}px`,
+          transform: 'translate(-50%, -50%)',
+        }}
+        title="Interactive Compass • Tap to spin!"
+      >
+        <CompassRose size={62} />
+      </div>
 
       {/* ========================================================================= */}
       {/* 3. DASHED PIRATE TRAIL WINDING ACROSS LEVELS                             */}

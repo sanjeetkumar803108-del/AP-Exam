@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { triggerVibration } from '../utils/vibrate';
 
 /**
  * High-fidelity 2D Vector assets for the Pirate Treasure Island Map
@@ -6,62 +7,185 @@ import React from 'react';
  * trees, rocks, compass rose, and red X from the reference design.
  */
 
-export const CompassRose: React.FC<{ x: number; y: number; scale?: number }> = ({ x, y, scale = 1 }) => (
-  <g transform={`translate(${x}, ${y}) scale(${scale})`} pointerEvents="none" className="select-none">
-    {/* Concentric rings */}
-    <circle cx="0" cy="0" r="48" fill="none" stroke="#78471f" strokeWidth="0.9" strokeDasharray="2,2" opacity="0.45" />
-    <circle cx="0" cy="0" r="44" fill="none" stroke="#6d3f19" strokeWidth="1.3" opacity="0.6" />
-    <circle cx="0" cy="0" r="32" fill="none" stroke="#78471f" strokeWidth="0.8" opacity="0.4" />
-    <circle cx="0" cy="0" r="16" fill="none" stroke="#78471f" strokeWidth="0.7" opacity="0.3" />
+export interface CompassRoseProps {
+  size?: number;
+  className?: string;
+  onClick?: () => void;
+}
 
-    {/* Crosshairs */}
-    <line x1="-50" y1="0" x2="50" y2="0" stroke="#78471f" strokeWidth="0.9" opacity="0.5" />
-    <line x1="0" y1="-50" x2="0" y2="50" stroke="#78471f" strokeWidth="0.9" opacity="0.5" />
+export const CompassRose: React.FC<CompassRoseProps> = ({
+  size = 62,
+  className = '',
+  onClick
+}) => {
+  const [rotation, setRotation] = useState(0);
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [transitionDuration, setTransitionDuration] = useState(3.0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-    {/* Diagonal rays */}
-    <line x1="-28" y1="-28" x2="28" y2="28" stroke="#78471f" strokeWidth="0.7" opacity="0.35" />
-    <line x1="28" y1="-28" x2="-28" y2="28" stroke="#78471f" strokeWidth="0.7" opacity="0.35" />
+  // Spin the needle like a physical spinner (multiple rotations + ease-out settle)
+  const triggerSpin = useCallback((fullSpins = 3) => {
+    setIsSpinning(true);
+    const duration = 2.8 + Math.random() * 0.5;
+    setTransitionDuration(duration);
 
-    {/* North Star Point */}
-    <polygon points="0,-42 5,-10 0,0" fill="#6d3f19" opacity="0.85" />
-    <polygon points="0,-42 -5,-10 0,0" fill="#c49a6c" opacity="0.75" />
+    // Land facing North (0 deg) with a subtle +-8 deg natural magnetic declination
+    const declination = (Math.random() * 16 - 8);
+    const targetDelta = fullSpins * 360 + declination;
 
-    {/* South Star Point */}
-    <polygon points="0,42 -5,10 0,0" fill="#6d3f19" opacity="0.85" />
-    <polygon points="0,42 5,10 0,0" fill="#c49a6c" opacity="0.75" />
+    setRotation(prev => prev + targetDelta);
 
-    {/* East Star Point */}
-    <polygon points="42,0 10,5 0,0" fill="#6d3f19" opacity="0.85" />
-    <polygon points="42,0 10,-5 0,0" fill="#c49a6c" opacity="0.75" />
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      setIsSpinning(false);
+    }, duration * 1000 + 100);
+  }, []);
 
-    {/* West Star Point */}
-    <polygon points="-42,0 -10,-5 0,0" fill="#6d3f19" opacity="0.85" />
-    <polygon points="-42,0 -10,5 0,0" fill="#c49a6c" opacity="0.75" />
+  // Spin automatically on load, then periodically spin like a spinner and come to rest
+  useEffect(() => {
+    const startTimer = setTimeout(() => {
+      triggerSpin(3);
+    }, 500);
 
-    {/* Diagonal Intermediate Points */}
-    <polygon points="26,-26 8,-4 0,0" fill="#78471f" opacity="0.65" />
-    <polygon points="26,-26 4,-8 0,0" fill="#d4ad80" opacity="0.6" />
+    const intervalTimer = setInterval(() => {
+      triggerSpin(2 + Math.floor(Math.random() * 2));
+    }, 12000);
 
-    <polygon points="-26,-26 -4,-8 0,0" fill="#78471f" opacity="0.65" />
-    <polygon points="-26,-26 -8,-4 0,0" fill="#d4ad80" opacity="0.6" />
+    return () => {
+      clearTimeout(startTimer);
+      clearInterval(intervalTimer);
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [triggerSpin]);
 
-    <polygon points="26,26 4,8 0,0" fill="#78471f" opacity="0.65" />
-    <polygon points="26,26 8,4 0,0" fill="#d4ad80" opacity="0.6" />
+  const handleTap = () => {
+    try {
+      triggerVibration(15);
+    } catch (_) {}
+    triggerSpin(3 + Math.floor(Math.random() * 2));
+    if (onClick) onClick();
+  };
 
-    <polygon points="-26,26 -8,4 0,0" fill="#78471f" opacity="0.65" />
-    <polygon points="-26,26 -4,8 0,0" fill="#d4ad80" opacity="0.6" />
+  return (
+    <div
+      className={`relative inline-block cursor-pointer select-none transition-transform hover:scale-105 active:scale-95 ${className}`}
+      onClick={handleTap}
+      title="Vintage Compass • Tap to spin needle!"
+      style={{ width: size, height: size }}
+    >
+      <svg
+        width={size}
+        height={size}
+        viewBox="-50 -50 100 100"
+        className="w-full h-full overflow-visible drop-shadow-xs"
+      >
+        <defs>
+          {/* Subtle needle drop shadow */}
+          <filter id="compass-needle-shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0.5" dy="1.5" stdDeviation="1.5" floodColor="#3d1f08" floodOpacity="0.45" />
+          </filter>
 
-    {/* Cardinal Letters in classic antique serif */}
-    <text x="0" y="-46" textAnchor="middle" fontFamily="Georgia, serif" fontSize="12" fontWeight="900" fill="#4a2a10">N</text>
-    <text x="0" y="56" textAnchor="middle" fontFamily="Georgia, serif" fontSize="11" fontWeight="900" fill="#4a2a10">S</text>
-    <text x="49" y="4" textAnchor="start" fontFamily="Georgia, serif" fontSize="11" fontWeight="900" fill="#4a2a10">E</text>
-    <text x="-49" y="4" textAnchor="end" fontFamily="Georgia, serif" fontSize="11" fontWeight="900" fill="#4a2a10">W</text>
+          {/* North needle: Bright Antique Crimson */}
+          <linearGradient id="needle-north-bright" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#dc2626" />
+            <stop offset="100%" stopColor="#ef4444" />
+          </linearGradient>
+          <linearGradient id="needle-north-dark" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#991b1b" />
+            <stop offset="100%" stopColor="#b91c1c" />
+          </linearGradient>
 
-    {/* Center brass pivot */}
-    <circle cx="0" cy="0" r="4.5" fill="#5c3817" />
-    <circle cx="0" cy="0" r="2" fill="#f5ecd8" />
-  </g>
-);
+          {/* South needle: Vintage Aged Bronze */}
+          <linearGradient id="needle-south-bright" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#78471f" />
+            <stop offset="100%" stopColor="#8d5628" />
+          </linearGradient>
+          <linearGradient id="needle-south-dark" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#45270c" />
+            <stop offset="100%" stopColor="#5c3817" />
+          </linearGradient>
+
+          {/* Brass Dial Face */}
+          <radialGradient id="compass-brass-face" cx="50%" cy="50%" r="50%">
+            <stop offset="70%" stopColor="#f8f0e1" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#eedcc2" stopOpacity="0.95" />
+          </radialGradient>
+        </defs>
+
+        {/* --- 1. STATIONARY COMPASS DIAL --- */}
+        <circle cx="0" cy="0" r="46" fill="url(#compass-brass-face)" stroke="#78471f" strokeWidth="1.2" />
+        <circle cx="0" cy="0" r="43.5" fill="none" stroke="#6d3f19" strokeWidth="0.8" strokeDasharray="1.5,2.5" opacity="0.6" />
+        <circle cx="0" cy="0" r="33" fill="none" stroke="#78471f" strokeWidth="0.6" opacity="0.35" />
+        <circle cx="0" cy="0" r="16" fill="none" stroke="#78471f" strokeWidth="0.5" opacity="0.25" />
+
+        {/* Dial Degree Ticks */}
+        {Array.from({ length: 12 }).map((_, i) => {
+          const deg = i * 30;
+          const isCardinal = deg % 90 === 0;
+          const len = isCardinal ? 4.5 : 2.5;
+          return (
+            <line
+              key={i}
+              x1="0"
+              y1="-43.5"
+              x2="0"
+              y2={-43.5 + len}
+              stroke="#6d3f19"
+              strokeWidth={isCardinal ? "1.2" : "0.7"}
+              opacity={isCardinal ? "0.8" : "0.4"}
+              transform={`rotate(${deg})`}
+            />
+          );
+        })}
+
+        {/* Subtle Background 8-Point Star */}
+        <g opacity="0.22">
+          <polygon points="0,-30 2.5,-7 0,0" fill="#6d3f19" />
+          <polygon points="0,-30 -2.5,-7 0,0" fill="#c49a6c" />
+          <polygon points="0,30 -2.5,7 0,0" fill="#6d3f19" />
+          <polygon points="0,30 2.5,7 0,0" fill="#c49a6c" />
+          <polygon points="30,0 7,2.5 0,0" fill="#6d3f19" />
+          <polygon points="30,0 7,-2.5 0,0" fill="#c49a6c" />
+          <polygon points="-30,0 -7,-2.5 0,0" fill="#6d3f19" />
+          <polygon points="-30,0 -7,2.5 0,0" fill="#c49a6c" />
+        </g>
+
+        {/* Cardinal Letters */}
+        <text x="0" y="-34" textAnchor="middle" dominantBaseline="middle" fontFamily="Georgia, serif" fontSize="9" fontWeight="900" fill="#b91c1c">N</text>
+        <text x="0" y="36" textAnchor="middle" dominantBaseline="middle" fontFamily="Georgia, serif" fontSize="8" fontWeight="900" fill="#4a2a10">S</text>
+        <text x="36" y="1" textAnchor="middle" dominantBaseline="middle" fontFamily="Georgia, serif" fontSize="8" fontWeight="900" fill="#4a2a10">E</text>
+        <text x="-36" y="1" textAnchor="middle" dominantBaseline="middle" fontFamily="Georgia, serif" fontSize="8" fontWeight="900" fill="#4a2a10">W</text>
+
+        {/* --- 2. ROTATING MAGNETIC SPINNER NEEDLE --- */}
+        <g
+          filter="url(#compass-needle-shadow)"
+          style={{
+            transform: `rotate(${rotation}deg)`,
+            transformOrigin: '0px 0px',
+            transition: isSpinning
+              ? `transform ${transitionDuration}s cubic-bezier(0.18, 0.89, 0.32, 1.08)`
+              : 'none',
+            willChange: 'transform'
+          }}
+        >
+          {/* North Point (Crimson with metallic facets) */}
+          <polygon points="0,-29 3.8,-5 0,0" fill="url(#needle-north-bright)" />
+          <polygon points="0,-29 -3.8,-5 0,0" fill="url(#needle-north-dark)" />
+          <circle cx="0" cy="-20" r="0.9" fill="#fef08a" opacity="0.85" />
+
+          {/* South Point (Bronze with metallic facets) */}
+          <polygon points="0,29 3.8,5 0,0" fill="url(#needle-south-bright)" />
+          <polygon points="0,29 -3.8,5 0,0" fill="url(#needle-south-dark)" />
+
+          {/* Center Brass Cap & Rivet Pivot */}
+          <circle cx="0" cy="0" r="4.2" fill="#5c3817" stroke="#eedcc2" strokeWidth="0.6" />
+          <circle cx="0" cy="0" r="2.8" fill="#d97706" />
+          <circle cx="-0.7" cy="-0.7" r="1" fill="#fef3c7" />
+        </g>
+      </svg>
+    </div>
+  );
+};
 
 export const SeaMonster: React.FC<{ x: number; y: number; scale?: number }> = ({ x, y, scale = 1 }) => (
   <g transform={`translate(${x}, ${y}) scale(${scale})`} pointerEvents="none" className="select-none" opacity="0.8">
