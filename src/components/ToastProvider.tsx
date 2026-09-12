@@ -1,5 +1,5 @@
 /**
- * HELPYOU AI — GLOBAL TOAST PROVIDER
+ * AP EXAM APP — GLOBAL TOAST PROVIDER
  *
  * Mount this ONCE at the root level (App.tsx) inside the main wrapper.
  * It listens for 'show-toast' custom events dispatched by showToast()

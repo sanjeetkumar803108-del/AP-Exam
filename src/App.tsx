@@ -894,7 +894,7 @@ export default function App() {
         </AnimatePresence>
       {activeTab !== 'scanner' && activeTab !== 'aitutor' && activeTab !== 'notes' && activeTab !== 'profile' && activeTool === null && (
         <header className="px-6 py-5 bg-white border-b border-zinc-200/60 z-10 flex justify-between items-center">
-          <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">HelpYou AI</h1>
+          <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-amber-500 bg-clip-text text-transparent">AP Exam</h1>
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
@@ -1315,7 +1315,7 @@ export default function App() {
           onSubscribe={(cycle, _hasTrial) => {
             setShowPaywallModal(false);
             triggerConfetti();
-            setMobileToast("🚀 Welcome to HelpYou AI PRO!");
+            setMobileToast("🚀 Welcome to AP Exam PRO!");
           }}
         />
       </Suspense>

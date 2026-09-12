@@ -1448,7 +1448,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
           doc.setTextColor(251, 191, 36); // Gold Amber
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(8.5);
-          doc.text('HELPYOU AI  |  ADVANCED PLACEMENT EXAM PREPARATION', margin, 24);
+          doc.text('AP EXAM APP  |  ADVANCED PLACEMENT EXAM PREPARATION', margin, 24);
 
           doc.setTextColor(255, 255, 255);
           doc.setFont('helvetica', 'bold');
@@ -1480,7 +1480,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
           doc.setFontSize(8);
           doc.setTextColor(100, 116, 139);
           doc.text(`AP ${sanitizePdfText(subj.shortCode)} - ${subTitle}`, margin, 18);
-          doc.text('HelpYou AI Practice Engine', pageWidth - margin, 18, { align: 'right' });
+          doc.text('AP Exam Practice Engine', pageWidth - margin, 18, { align: 'right' });
 
           currentY = 46;
         }
@@ -1495,7 +1495,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(7.5);
         doc.setTextColor(148, 163, 184);
-        doc.text('HelpYou AI Exam Prep  •  For interactive AI scoring & practice, use HelpYou AI app', margin, pageHeight - 12);
+        doc.text('AP Exam Prep  •  For interactive AI scoring & practice, use AP Exam app', margin, pageHeight - 12);
         doc.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 12, { align: 'right' });
       };
 
@@ -1875,7 +1875,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7.6);
       doc.setTextColor(55, 65, 81);
-      const tipText = 'To get instant AI feedback, interactive step-by-step hints, audio explanations, and timed exams, practice directly inside the HelpYou AI app rather than static PDFs!';
+      const tipText = 'To get instant AI feedback, interactive step-by-step hints, audio explanations, and timed exams, practice directly inside the AP Exam app rather than static PDFs!';
       const tipLines = doc.splitTextToSize(tipText, contentWidth - 20);
       let tCursorY = targetTipY + 24;
       for (const line of tipLines) {

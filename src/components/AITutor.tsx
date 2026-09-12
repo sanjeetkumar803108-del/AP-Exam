@@ -136,7 +136,7 @@ RULES:
 - Whenever using LaTeX for formulas, wrap in $$ or $ and double-escape backslashes in JSON (\\\\frac, \\\\sqrt, \\\\text).`;
 
 // Used when the student types a question/message WITHOUT an image
-const SYSTEM_INSTRUCTION_TEXT_CHAT = `You are an elite, polyglot AI Master Educator and Academic Tutor for HelpYou AI. You are intellectually brilliant, deeply empathetic, and dynamically adaptive to student needs.
+const SYSTEM_INSTRUCTION_TEXT_CHAT = `You are an elite, polyglot AI Master Educator and Academic Tutor for AP Exam App. You are intellectually brilliant, deeply empathetic, and dynamically adaptive to student needs.
 
 ================================================================
 CRITICAL GOVERNING PROTOCOLS (HIGHEST PRIORITY):
@@ -422,7 +422,7 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: parsedSolution?.topic_title || 'HelpYou AI Solution',
+          title: parsedSolution?.topic_title || 'AP Exam App Solution',
           text: textToShareOrCopy,
           url: window.location.href
         });
@@ -433,7 +433,7 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
       }
     } else {
       try {
-        await navigator.clipboard.writeText(`${textToShareOrCopy}\n\nShared via HelpYou AI`);
+        await navigator.clipboard.writeText(`${textToShareOrCopy}\n\nShared via AP Exam App`);
         setShared(true);
         setTimeout(() => setShared(false), 2000);
       } catch (err) {
@@ -1086,7 +1086,7 @@ export default function AITutor({ isVip, isActive = true }: { isVip: boolean; is
   // Must be declared AFTER recognitionRef (line 1173) and setIsListening (line 1081) to avoid crash
   useEffect(() => {
     if (isActive === false) {
-      window.dispatchEvent(new CustomEvent('helpyou:stop-all-tutor-audio'));
+      window.dispatchEvent(new CustomEvent('ap-exam:stop-all-tutor-audio'));
       try { window.speechSynthesis.cancel(); } catch (_) {}
       if (recognitionRef.current) {
         try { recognitionRef.current.abort(); } catch (_) {}
@@ -2372,14 +2372,14 @@ Please evaluate this answer strictly according to your system rubric.`;
                     const msg = String(err?.message || '').toLowerCase();
                     if (code === 'denied') {
                       showToast(
-                        '📷 Camera Blocked: Go to Phone Settings → Apps → HelpYou AI → Permissions → Camera → Allow',
+                        '📷 Camera Blocked: Go to Phone Settings → Apps → AP Exam → Permissions → Camera → Allow',
                         'warning',
                         7000
                       );
                     } else if (msg.includes('disk') || msg.includes('file') || msg.includes('storage') || msg.includes('create')) {
                       // "unable to create photo on disk" — storage issue on Android
                       showToast(
-                        '📂 Storage Error. Please clear HelpYou AI app cache: Settings → Apps → HelpYou AI → Storage → Clear Cache, then retry.',
+                        '📂 Storage Error. Please clear AP Exam app cache: Settings → Apps → AP Exam → Storage → Clear Cache, then retry.',
                         'warning',
                         8000
                       );

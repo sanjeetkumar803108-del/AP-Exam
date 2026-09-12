@@ -756,7 +756,7 @@ export default function QuestionGenerator({ onBack, onNavigateToTab }: QuestionG
       doc.setLineWidth(0.2);
       doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
       
-      doc.text('For the best interactive practice experience, solve questions in HelpYou AI app', margin, pageHeight - 10);
+      doc.text('For the best interactive practice experience, solve questions in AP Exam app', margin, pageHeight - 10);
       doc.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
     };
 
@@ -982,7 +982,7 @@ export default function QuestionGenerator({ onBack, onNavigateToTab }: QuestionG
     doc.setFont('Helvetica', 'normal');
     doc.setFontSize(7.6);
     doc.setTextColor(55, 65, 81);
-    const tipText = 'To get instant AI evaluation, step-by-step grading rubrics, and personalized improvement tips, practice directly inside the HelpYou AI app rather than static PDFs!';
+    const tipText = 'To get instant AI evaluation, step-by-step grading rubrics, and personalized improvement tips, practice directly inside the AP Exam app rather than static PDFs!';
     const tipLines = doc.splitTextToSize(tipText, contentWidth - 10);
     let tY = targetTipY + 8.8;
     for (const line of tipLines) {

@@ -215,7 +215,7 @@ export default function MagicScanner({ isVip, isFocused: isFocusedProp = true, o
 
           if (checkStatus.camera === 'denied') {
             // Permission was previously denied — redirect to Settings
-            showToast("Camera Permission Blocked: Please enable Camera in Device Settings → Apps → HelpYou AI", "warning", 4500);
+            showToast("Camera Permission Blocked: Please enable Camera in Device Settings → Apps → AP Exam", "warning", 4500);
             setCameraActive(false);
             return;
           }
@@ -551,7 +551,7 @@ export default function MagicScanner({ isVip, isFocused: isFocusedProp = true, o
       if (picked) {
         if ('error' in picked) {
           if (picked.error === 'blocked') {
-            showToast("Camera Permission Blocked: Please enable Camera in Device Settings → Apps → HelpYou AI", "warning", 4500);
+            showToast("Camera Permission Blocked: Please enable Camera in Device Settings → Apps → AP Exam", "warning", 4500);
           } else if (picked.error === 'denied') {
             showToast("Camera Permission Needed: Please allow camera access to scan questions.", "warning", 4000);
           }

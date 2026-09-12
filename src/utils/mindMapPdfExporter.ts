@@ -78,8 +78,8 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
     doc.setFont('Helvetica', 'normal');
     doc.setFontSize(7.2);
     doc.setTextColor(140, 140, 140);
-    doc.text('HelpYou AI - AP Exam Mind Map & Concept Revision Sheet', margin, pageHeight - 8);
-    doc.text('College Board AP Aligned  •  Best viewed in HelpYou AI app', pageWidth - margin, pageHeight - 8, { align: 'right' });
+    doc.text('AP Exam - Mind Map & Concept Revision Sheet', margin, pageHeight - 8);
+    doc.text('College Board AP Aligned  •  Best viewed in AP Exam app', pageWidth - margin, pageHeight - 8, { align: 'right' });
   };
 
   // Helper: Check space and add new page if needed (strictly before pageHeight - 18 = 279mm)
@@ -555,7 +555,7 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(7.4);
   doc.setTextColor(55, 65, 81); // Slate-700
-  const tipText = 'To enjoy active recall flashcards, interactive concept mastery, and instant AI tutor explanations, view these notes directly inside the HelpYou AI app rather than static PDFs!';
+  const tipText = 'To enjoy active recall flashcards, interactive concept mastery, and instant AI tutor explanations, view these notes directly inside the AP Exam app rather than static PDFs!';
   const tipLines = doc.splitTextToSize(tipText, contentWidth - 10);
   let tCursorY = targetTipY + 8.8;
   for (const tLine of tipLines) {

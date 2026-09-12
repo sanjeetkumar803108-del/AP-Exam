@@ -43,7 +43,7 @@ export default function VIPPass({ isVip, onUpgrade, onClose }: { isVip: boolean,
           <div className="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center border border-purple-200">
             <Crown className="w-4 h-4 text-purple-600" />
           </div>
-          <span className="text-sm font-black uppercase tracking-wider text-purple-700">HelpYou AI PRO</span>
+          <span className="text-sm font-black uppercase tracking-wider text-purple-700">AP Exam PRO</span>
         </div>
         <button 
           onClick={() => { triggerVibration(10); onClose(); }} 
@@ -62,7 +62,7 @@ export default function VIPPass({ isVip, onUpgrade, onClose }: { isVip: boolean,
             ⚡ UNLIMITED AI STUDY ACCESS
           </span>
           <h2 className="text-2xl font-black tracking-tight text-zinc-900 mt-3">
-            Unlock Full Academic Power with <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">HelpYou AI PRO</span>
+            Unlock Full Academic Power with <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">AP Exam PRO</span>
           </h2>
           <p className="text-xs text-zinc-600 font-medium">
             Get instant solutions, live web search, writing enhancements, and unlimited revision cards.

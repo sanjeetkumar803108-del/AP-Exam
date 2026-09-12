@@ -163,7 +163,7 @@ export default function LockedFeature({
 
       {/* Decorative clean footer */}
       <div className="relative z-10 py-4 text-center text-[10px] text-zinc-400 font-bold">
-        HelpYou AI Zero-Trust Security Shield Active
+        AP Exam App Zero-Trust Security Shield Active
       </div>
     </div>
   );

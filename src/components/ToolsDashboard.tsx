@@ -263,7 +263,7 @@ function ToolsDashboard({
 
   const handleShareTool = (toolId: string) => {
     const cleanId = toolId.startsWith('tab:') ? toolId.substring(4) : toolId;
-    const shareText = `📚 Check out the AI Tool - "${cleanId.toUpperCase()}" on HelpYou AI! It supercharges your learning! 🚀`;
+    const shareText = `📚 Check out the AI Tool - "${cleanId.toUpperCase()}" on AP Exam App! It supercharges your learning! 🚀`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(shareText);
       setShowToastMessage(`📋 Share text copied to clipboard!`);

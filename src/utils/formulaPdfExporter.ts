@@ -53,7 +53,7 @@ export async function exportFormulaSheetPDF(
 
   const titleText = selectedCategoryName 
     ? `${selectedCategoryName} — Formula Sheet`
-    : 'HelpYou AI — Quick Formula Compendium';
+    : 'AP Exam App — Quick Formula Compendium';
 
   let currentY = 20;
 
@@ -66,7 +66,7 @@ export async function exportFormulaSheetPDF(
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(8);
     doc.setTextColor(110, 110, 120);
-    doc.text('HELPYOU AI - FORMULA COMPENDIUM & CHEAT SHEET', margin, 8.5);
+    doc.text('AP EXAM APP - FORMULA COMPENDIUM & CHEAT SHEET', margin, 8.5);
     doc.text(`Page ${pageNumber}`, pageWidth - margin, 8.5, { align: 'right' });
   };
 
@@ -78,8 +78,8 @@ export async function exportFormulaSheetPDF(
     doc.setLineWidth(0.2);
     doc.line(margin, pageHeight - 12, pageWidth - margin, pageHeight - 12);
     
-    doc.text('HelpYou AI - Smart Calculator & Formula Helper', margin, pageHeight - 7);
-    doc.text(`Page ${pageNumber}  •  For interactive math solvers, view in HelpYou AI app`, pageWidth - margin, pageHeight - 7, { align: 'right' });
+    doc.text('AP Exam App - Smart Calculator & Formula Helper', margin, pageHeight - 7);
+    doc.text(`Page ${pageNumber}  •  For interactive math solvers, view in AP Exam app`, pageWidth - margin, pageHeight - 7, { align: 'right' });
   };
 
   let pageIndex = 1;
@@ -215,7 +215,7 @@ export async function exportFormulaSheetPDF(
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(55, 65, 81);
-  const tipText = 'To practice formulas interactively with step-by-step solvers, graphing, and instant AI explanations, view these formulas inside the HelpYou AI app rather than static PDFs!';
+  const tipText = 'To practice formulas interactively with step-by-step solvers, graphing, and instant AI explanations, view these formulas inside the AP Exam app rather than static PDFs!';
   const tipLines = doc.splitTextToSize(tipText, contentWidth - 10);
   let tY = targetTipY + 8.5;
   for (const line of tipLines) {
@@ -229,7 +229,7 @@ export async function exportFormulaSheetPDF(
   const pdfBlob = doc.output('blob');
   const filename = selectedCategoryName 
     ? `${selectedCategoryName.replace(/[^a-zA-Z0-9]/g, '_')}_Formula_Sheet.pdf`
-    : 'HelpYou_AI_Quick_Formula_Sheet.pdf';
+    : 'AP_Exam_Quick_Formula_Sheet.pdf';
 
   const saved = await savePDFMobile(pdfBlob, filename, {
     featureTag: 'Formula Sheet',
@@ -266,7 +266,7 @@ export async function shareFormulaSheetPDF(
 
     const titleText = selectedCategoryName 
       ? `${selectedCategoryName} — Formula Sheet`
-      : 'HelpYou AI — Quick Formula Compendium';
+      : 'AP Exam App — Quick Formula Compendium';
 
     let currentY = 20;
 
@@ -279,7 +279,7 @@ export async function shareFormulaSheetPDF(
       doc.setFont('Helvetica', 'bold');
       doc.setFontSize(8.5);
       doc.setTextColor(251, 191, 36);
-      doc.text('HELPYOU AI  |  HIGH-YIELD MATHEMATICS & SCIENCE FORMULAS', margin, 9);
+      doc.text('AP EXAM APP  |  HIGH-YIELD MATHEMATICS & SCIENCE FORMULAS', margin, 9);
 
       doc.setFont('Helvetica', 'bold');
       doc.setFontSize(14);
@@ -302,7 +302,7 @@ export async function shareFormulaSheetPDF(
       doc.setFont('Helvetica', 'normal');
       doc.setFontSize(7);
       doc.setTextColor(148, 163, 184);
-      doc.text('For interactive step-by-step solvers, visit HelpYou AI', margin, pageHeight - 4.5);
+      doc.text('For interactive step-by-step solvers, visit AP Exam App', margin, pageHeight - 4.5);
       doc.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 4.5, { align: 'right' });
     };
 
@@ -371,7 +371,7 @@ export async function shareFormulaSheetPDF(
     const pdfBlob = doc.output('blob');
     const filename = selectedCategoryName 
       ? `${selectedCategoryName.replace(/[^a-zA-Z0-9]/g, '_')}_Formula_Sheet.pdf`
-      : 'HelpYou_AI_Quick_Formula_Sheet.pdf';
+      : 'AP_Exam_Quick_Formula_Sheet.pdf';
 
     return await sharePDFMobile(pdfBlob, filename);
   } catch (err) {

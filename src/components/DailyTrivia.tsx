@@ -222,7 +222,7 @@ export default function DailyTrivia({ onBack }: DailyTriviaProps) {
     if (!trivia) return;
     triggerVibration(15);
     const optionsText = (trivia?.options || []).map((opt, i) => `${i + 1}. ${opt}`).join('\n');
-    const shareText = `🧠 Daily Trivia Challenge:\n${trivia.question}\n\nOptions:\n${optionsText}\n\nQuiz made by HelpYou AI`;
+    const shareText = `🧠 Daily Trivia Challenge:\n${trivia.question}\n\nOptions:\n${optionsText}\n\nQuiz made by AP Exam App`;
     
     // Check if running on a native platform (Android/iOS)
     if (Capacitor.isNativePlatform()) {

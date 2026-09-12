@@ -58,6 +58,7 @@ export async function runFullAppOptimization(): Promise<OptimizationResult> {
     // Safe keys that MUST BE PRESERVED:
     const preservedKeys = new Set([
       'helpyou_coins_balance',
+      'ap_exam_coins_balance',
       'study_streak_days',
       'study_streak_last_date',
       'academic_grade',

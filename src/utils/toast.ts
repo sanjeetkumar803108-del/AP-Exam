@@ -1,5 +1,5 @@
 /**
- * HELPYOU AI — GLOBAL IN-APP TOAST SYSTEM
+ * AP EXAM APP — GLOBAL IN-APP TOAST SYSTEM
  *
  * Replaces ALL native alert() / window.alert() calls across the app.
  * Usage:  showToast("Your message here")

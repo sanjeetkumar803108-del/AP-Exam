@@ -262,7 +262,7 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
             </div>
 
             <h2 className="text-2xl font-black text-center leading-tight mb-1">
-              Unlock HelpYou AI Pro
+              Unlock AP Exam Pro
             </h2>
             <p className="text-center text-white/90 font-bold text-xs">
               {featureName ? `Upgrade to use ${featureName} without limits!` : "Never run out of study juice."}

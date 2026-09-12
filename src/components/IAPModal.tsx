@@ -100,7 +100,7 @@ export default function IAPModal({ isOpen, onClose, billingCycle, hasTrial, onRe
                     <Crown className="w-4 h-4 text-amber-400" />
                   </div>
                   <div>
-                    <h4 className="font-black text-zinc-900 text-xs">HelpYou AI Pro</h4>
+                    <h4 className="font-black text-zinc-900 text-xs">AP Exam Pro</h4>
                     <p className="text-[9px] text-zinc-400 font-bold uppercase">
                       {billingCycle === 'monthly' ? 'Monthly Plan' : 'Yearly Plan'}
                     </p>

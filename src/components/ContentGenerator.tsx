@@ -57,7 +57,7 @@ export function generateContentPDFBlob(
     doc.setDrawColor(225, 225, 225);
     doc.setLineWidth(0.2);
     doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
-    doc.text('For the best interactive study experience, view notes in HelpYou AI app', margin, pageHeight - 10);
+    doc.text('For the best interactive study experience, view notes in AP Exam app', margin, pageHeight - 10);
     doc.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
   };
 
@@ -219,7 +219,7 @@ export function generateContentPDFBlob(
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(7.6);
   doc.setTextColor(55, 65, 81);
-  const tipText = 'To enjoy active recall flashcards, instant AI revisions, speech audio, and interactive quizzing, explore your generated notes directly inside the HelpYou AI app rather than static PDFs!';
+  const tipText = 'To enjoy active recall flashcards, instant AI revisions, speech audio, and interactive quizzing, explore your generated notes directly inside the AP Exam app rather than static PDFs!';
   const tipLines = doc.splitTextToSize(tipText, contentWidth - 10);
   let tY = targetTipY + 8.8;
   for (const line of tipLines) {
@@ -494,7 +494,7 @@ export default function ContentGenerator({ onBack }: ContentGeneratorProps) {
     triggerVibration(15);
     setExporting(true);
     try {
-      const filename = `HelpYou_AI_${selectedType.toLowerCase()}_${Date.now()}.pdf`;
+      const filename = `AP_Exam_${selectedType.toLowerCase()}_${Date.now()}.pdf`;
       const blob = generateContentPDFBlob(
         selectedType,
         topic || `${selectedType} Study Guide`,
@@ -528,7 +528,7 @@ export default function ContentGenerator({ onBack }: ContentGeneratorProps) {
     if (!result) return;
     triggerVibration(15);
     try {
-      const filename = previewPdfName || `HelpYou_AI_${selectedType.toLowerCase()}_${Date.now()}.pdf`;
+      const filename = previewPdfName || `AP_Exam_${selectedType.toLowerCase()}_${Date.now()}.pdf`;
       const blob = generateContentPDFBlob(
         selectedType,
         topic || `${selectedType} Study Guide`,
@@ -550,7 +550,7 @@ const handleSharePDF = async () => {
     triggerVibration(15);
     setExporting(true);
     try {
-      const filename = `HelpYou_AI_${selectedType.toLowerCase()}_${Date.now()}.pdf`;
+      const filename = `AP_Exam_${selectedType.toLowerCase()}_${Date.now()}.pdf`;
       const blob = generateContentPDFBlob(
         selectedType,
         topic || `${selectedType} Study Guide`,
@@ -583,7 +583,7 @@ const handleSharePDF = async () => {
     if (!result) return;
     triggerVibration(10);
     const shareTitle = `${selectedType}: ${topic.substring(0, 40)}`;
-    const shareText = `📚 ${selectedType.toUpperCase()} - generated with HelpYou AI\n\nTopic: ${topic}\nTone: ${selectedTone} | Format: ${selectedType === 'Essay' ? selectedFormat : 'Standard'}\n\n${result}`;
+    const shareText = `📚 ${selectedType.toUpperCase()} - generated with AP Exam App\n\nTopic: ${topic}\nTone: ${selectedTone} | Format: ${selectedType === 'Essay' ? selectedFormat : 'Standard'}\n\n${result}`;
 
     if (navigator.share) {
       try {

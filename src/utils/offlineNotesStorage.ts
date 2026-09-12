@@ -25,8 +25,10 @@ export interface SaveOfflineNoteInput {
   pageCount: number;
 }
 
-const MANIFEST_KEY = 'helpyou_ai_offline_notes_manifest_v1';
-const PDF_KEY_PREFIX = 'helpyou_ai_offline_pdf_data_';
+const OLD_MANIFEST_KEY = 'helpyou_ai_offline_notes_manifest_v1';
+const MANIFEST_KEY = 'ap_exam_offline_notes_manifest_v1';
+const OLD_PDF_KEY_PREFIX = 'helpyou_ai_offline_pdf_data_';
+const PDF_KEY_PREFIX = 'ap_exam_offline_pdf_data_';
 
 /**
  * Retrieve the manifest of all downloaded offline notes (metadata only, fast).
@@ -34,13 +36,16 @@ const PDF_KEY_PREFIX = 'helpyou_ai_offline_pdf_data_';
 export async function getOfflineNotesManifest(): Promise<OfflineNoteMeta[]> {
   try {
     // 1. Try IndexedDB first
-    const fromIdb = await get<OfflineNoteMeta[]>(MANIFEST_KEY);
+    let fromIdb = await get<OfflineNoteMeta[]>(MANIFEST_KEY);
+    if (!fromIdb || fromIdb.length === 0) {
+      fromIdb = await get<OfflineNoteMeta[]>(OLD_MANIFEST_KEY);
+    }
     if (Array.isArray(fromIdb) && fromIdb.length > 0) {
       return fromIdb.sort((a, b) => b.savedAt - a.savedAt);
     }
 
     // 2. Fallback to localStorage
-    const raw = localStorage.getItem(MANIFEST_KEY);
+    const raw = localStorage.getItem(MANIFEST_KEY) || localStorage.getItem(OLD_MANIFEST_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
@@ -58,7 +63,7 @@ export async function getOfflineNotesManifest(): Promise<OfflineNoteMeta[]> {
  */
 export function getDownloadedUnitIdsSync(): string[] {
   try {
-    const raw = localStorage.getItem(MANIFEST_KEY);
+    const raw = localStorage.getItem(MANIFEST_KEY) || localStorage.getItem(OLD_MANIFEST_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
@@ -142,9 +147,10 @@ export async function saveOfflineNote(input: SaveOfflineNoteInput): Promise<Offl
 export async function getOfflineNotePdfData(noteIdOrUnitId: string): Promise<string | null> {
   const noteId = noteIdOrUnitId.includes('_') ? noteIdOrUnitId : `calc_ab_${noteIdOrUnitId}`;
   const dataKey = `${PDF_KEY_PREFIX}${noteId}`;
+  const oldDataKey = `${OLD_PDF_KEY_PREFIX}${noteId}`;
 
   try {
-    const fromIdb = await get<string>(dataKey);
+    const fromIdb = (await get<string>(dataKey)) || (await get<string>(oldDataKey));
     if (fromIdb) return fromIdb;
   } catch {
     // ignore
@@ -152,7 +158,7 @@ export async function getOfflineNotePdfData(noteIdOrUnitId: string): Promise<str
 
   // Fallback to localStorage
   try {
-    const fromLs = localStorage.getItem(dataKey);
+    const fromLs = localStorage.getItem(dataKey) || localStorage.getItem(oldDataKey);
     if (fromLs) return fromLs;
   } catch {
     // ignore
@@ -167,14 +173,17 @@ export async function getOfflineNotePdfData(noteIdOrUnitId: string): Promise<str
 export async function deleteOfflineNote(noteIdOrUnitId: string): Promise<void> {
   const noteId = noteIdOrUnitId.includes('_') ? noteIdOrUnitId : `calc_ab_${noteIdOrUnitId}`;
   const dataKey = `${PDF_KEY_PREFIX}${noteId}`;
+  const oldDataKey = `${OLD_PDF_KEY_PREFIX}${noteId}`;
 
   try {
     await del(dataKey);
+    await del(oldDataKey);
   } catch {
     // ignore
   }
   try {
     localStorage.removeItem(dataKey);
+    localStorage.removeItem(oldDataKey);
   } catch {
     // ignore
   }

@@ -350,12 +350,12 @@ export function generateUnitNotesHtml(unit: APUnitNote, subject: APSubjectNoteEn
         <span class="badge-code">${subject.shortCode}</span>
         <span style="font-size: 12px; color: #64748b; font-weight: 500;">CED Review</span>
       </div>
-      <div style="font-size: 11px; color: #64748b; font-bold;">HelpYou AI Study Guide</div>
+      <div style="font-size: 11px; color: #64748b; font-bold;">AP Exam Study Guide</div>
     </div>
 
     <div class="hero-banner">
       <div style="color: #fde047; font-weight: 600; font-size: 11.5px; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">
-        ★ HELPYOU AI | OFFICIAL STUDY GUIDE
+        ★ AP EXAM APP | OFFICIAL STUDY GUIDE
       </div>
       <h1 style="font-size: 24px; font-weight: 900; margin: 0; line-height: 1.2;">
         Unit ${unit.unitNumber}: ${unit.title}
@@ -434,13 +434,13 @@ export function generateUnitNotesHtml(unit: APUnitNote, subject: APSubjectNoteEn
           <span>★</span> <span>PRO TIP: FOR THE BEST STUDY EXPERIENCE</span>
         </div>
         <p style="font-size: 11px; color: #334155; margin: 0; line-height: 1.5;">
-          To enjoy active recall flashcards, instant AI tutor explanations, interactive formula solvers, and audio recaps, view these notes directly inside the <strong>HelpYou AI</strong> app rather than static PDFs!
+          To enjoy active recall flashcards, instant AI tutor explanations, interactive formula solvers, and audio recaps, view these notes directly inside the <strong>AP Exam</strong> app rather than static PDFs!
         </p>
       </div>
     </div>
 
     <div class="doc-footer">
-      <span>HelpYou AI Study Guide • For interactive active recall, open notes in HelpYou AI app</span>
+      <span>AP Exam Study Guide • For interactive active recall, open notes in AP Exam app</span>
       <span style="font-weight: bold; color: #334155; background: #ffffff; padding: 2px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">Official CED Guide</span>
     </div>
   </div>

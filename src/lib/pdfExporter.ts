@@ -32,7 +32,7 @@ export function generateNotesPDFBlob(title: string, markdownContent: string, act
     doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
     
     // Page indicators and prompt
-    doc.text('For the best interactive study experience, view notes in HelpYou AI app', margin, pageHeight - 10);
+    doc.text('For the best interactive study experience, view notes in AP Exam app', margin, pageHeight - 10);
     doc.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
   };
 
@@ -219,7 +219,7 @@ export function generateNotesPDFBlob(title: string, markdownContent: string, act
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(7.6);
   doc.setTextColor(55, 65, 81);
-  const tipText = 'To enjoy active recall flashcards, instant AI explanations, interactive quizzes, and speech audio, explore these notes directly inside the HelpYou AI app rather than static PDFs!';
+  const tipText = 'To enjoy active recall flashcards, instant AI explanations, interactive quizzes, and speech audio, explore these notes directly inside the AP Exam app rather than static PDFs!';
   const tipLines = doc.splitTextToSize(tipText, contentWidth - 12);
   let tY = targetTipY + 8.8;
   for (const line of tipLines) {

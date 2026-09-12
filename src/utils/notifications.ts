@@ -2,7 +2,7 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 import { Capacitor } from '@capacitor/core';
 
 /**
- * HELPYOU AI — ULTRA ENGAGING AFTER-SCHOOL STUDY & HOMEWORK NOTIFICATIONS
+ * AP EXAM APP — ULTRA ENGAGING AFTER-SCHOOL STUDY & HOMEWORK NOTIFICATIONS
  *
  * Daily Strategy (2 Engaging Post-School Slots):
  * ─────────────────────────────────────────────────────
@@ -29,7 +29,7 @@ const AFTERNOON_HOMEWORK_MESSAGES: { title: string; body: string }[] = [
   },
   {
     title: "⚡ Finish Your Homework in 15 Minutes!",
-    body: "Why struggle alone for hours? Open HelpYou AI, scan your worksheet, and crush your assignments early today! 🎯"
+    body: "Why struggle alone for hours? Open AP Exam, scan your worksheet, and crush your assignments early today! 🎯"
   },
   {
     title: "✨ Homework Made 10x Easier!",
@@ -57,7 +57,7 @@ const AFTERNOON_HOMEWORK_MESSAGES: { title: string; body: string }[] = [
   },
   {
     title: "🎯 Free Homework Help Waiting For You!",
-    body: "Claim your daily free study coins and scan any textbook question right away! Open HelpYou AI 🪙"
+    body: "Claim your daily free study coins and scan any textbook question right away! Open AP Exam 🪙"
   }
 ];
 
@@ -85,7 +85,7 @@ const EVENING_STUDY_MESSAGES: { title: string; body: string }[] = [
   },
   {
     title: "🌟 Top Students Review Every Evening!",
-    body: "A quick 10-minute recap now makes exams effortless later. Open HelpYou AI and boost your grades! 🚀"
+    body: "A quick 10-minute recap now makes exams effortless later. Open AP Exam and boost your grades! 🚀"
   },
   {
     title: "📚 Convert Your Photo Notes to a Clean PDF!",

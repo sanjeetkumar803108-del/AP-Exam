@@ -680,7 +680,7 @@ export default function Profile({
     }
 
     triggerVibration(15);
-    const originalText = `🔥 I have kept my daily study streak alive for ${studyStreak} days in HelpYou AI! Keep up the grind! 🎓🎯`;
+    const originalText = `🔥 I have kept my daily study streak alive for ${studyStreak} days in AP Exam App! Keep up the grind! 🎓🎯`;
 
     try {
       showToast("📸 Capturing streak card...");
@@ -750,7 +750,7 @@ export default function Profile({
   };
 
   const handleShareMastery = async () => {
-    const shareText = `📊 Check out my Skill Mastery progress in HelpYou AI: Math (85%), Chemistry (90%), Physics (70%)! Personalized AI tutoring really works! 🧠🚀`;
+    const shareText = `📊 Check out my Skill Mastery progress in AP Exam App: Math (85%), Chemistry (90%), Physics (70%)! Personalized AI tutoring really works! 🧠🚀`;
     await handleShare(
       'My Skill Mastery',
       shareText,
@@ -764,7 +764,7 @@ export default function Profile({
     try {
       const userIdentifier = user ? (user.email || user.uid) : "Anonymous Guest";
       const subject = encodeURIComponent(`Data Export Request - ${userIdentifier}`);
-      const body = encodeURIComponent("Hello HelpYou AI Support, I would like to exercise my right to data portability. Please provide a complete export of my account data, including my profile, study notes, and history. Thank you.");
+      const body = encodeURIComponent("Hello AP Exam App Support, I would like to exercise my right to data portability. Please provide a complete export of my account data, including my profile, study notes, and history. Thank you.");
       window.location.href = `mailto:helpyou.ai.support@gmail.com?subject=${subject}&body=${body}`;
       showToast("✉️ Drafted data export email support request!");
     } catch (err) {
@@ -1809,7 +1809,7 @@ export default function Profile({
           <div className="bg-blue-50/50 rounded-2xl p-4 border border-blue-100 flex items-start gap-3">
             <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
             <p className="text-[10px] font-medium text-blue-700 leading-relaxed">
-              HelpYou AI customizes solutions, vocabulary, and tutor responses dynamically based on your selected Study Level (High School, College, or Advanced). Change your level anytime!
+              AP Exam App customizes solutions, vocabulary, and tutor responses dynamically based on your selected Study Level (High School, College, or Advanced). Change your level anytime!
             </p>
           </div>
         </div>
@@ -1858,7 +1858,7 @@ export default function Profile({
                           Active Plan
                         </span>
                         <h4 className="text-sm font-black mt-1 flex items-center gap-1">
-                          HelpYou AI Pro <Crown className="w-3 h-3 text-yellow-200 fill-yellow-200" />
+                          AP Exam Pro <Crown className="w-3 h-3 text-yellow-200 fill-yellow-200" />
                         </h4>
                         <p className="text-[9px] text-white/80 font-bold leading-normal mt-0.5">Unlimited scans & speech</p>
                       </div>
@@ -1880,7 +1880,7 @@ export default function Profile({
                         <Crown className="w-4 h-4 fill-amber-100" />
                       </div>
                       <div>
-                        <h4 className="text-[11px] font-black text-zinc-900 leading-tight">HelpYou AI</h4>
+                        <h4 className="text-[11px] font-black text-zinc-900 leading-tight">AP Exam</h4>
                         <p className="text-[9px] text-zinc-400 font-bold mt-0.5">Upgrade for unlimited tools</p>
                       </div>
                     </div>
@@ -2025,10 +2025,10 @@ export default function Profile({
                       try {
                         if (Capacitor.isNativePlatform()) {
                           await Share.share({
-                            title: '📚 HelpYou AI — Smart Study App',
-                            text: '🚀 I use HelpYou AI to solve homework, generate quizzes & get AI tutoring! Try it free 👇',
+                            title: '📚 AP Exam — Smart Study App',
+                            text: '🚀 I use AP Exam App to solve homework, generate quizzes & get AI tutoring! Try it free 👇',
                             url: 'https://play.google.com/store/apps/details?id=com.helpyou.ai',
-                            dialogTitle: 'Share HelpYou AI with friends'
+                            dialogTitle: 'Share AP Exam App with friends'
                           });
                         } else {
                           await navigator.clipboard.writeText('https://play.google.com/store/apps/details?id=com.helpyou.ai');
@@ -2043,7 +2043,7 @@ export default function Profile({
                     <div className="flex items-center gap-2 text-zinc-600 font-bold text-xs">
                       <Share2 className="w-3.5 h-3.5 text-zinc-400" />
                       <div>
-                        <span className="block">Share HelpYou AI</span>
+                        <span className="block">Share AP Exam App</span>
                         <span className="text-[10px] text-zinc-400 font-semibold">Invite your friends to study smarter</span>
                       </div>
                     </div>
@@ -2053,7 +2053,7 @@ export default function Profile({
                   <button 
                     onClick={() => { 
                       triggerVibration(hapticEnabled ? 15 : 0); 
-                      window.location.href = 'mailto:helpyou.ai.support@gmail.com?subject=HelpYou%20AI%20App%20-%20Support%20Request';
+                      window.location.href = 'mailto:helpyou.ai.support@gmail.com?subject=AP%20Exam%20App%20-%20Support%20Request';
                     }}
                     className="w-full p-4 flex justify-between items-center bg-white hover:bg-zinc-50/30 border-t border-zinc-100 transition-colors text-left"
                   >
@@ -2067,13 +2067,13 @@ export default function Profile({
                   <button 
                     onClick={() => { 
                       triggerVibration(15); 
-                      window.location.href = 'market://details?id=com.yourcompany.helpyouai';
+                      window.location.href = 'market://details?id=com.helpyou.ai';
                     }}
                     className="w-full p-4 flex justify-between items-center bg-white hover:bg-zinc-50/30 border-t border-zinc-100 transition-colors text-left"
                   >
                     <div className="flex items-center gap-2 text-zinc-600 font-bold text-xs">
                       <Star className="w-3.5 h-3.5 text-zinc-400" />
-                      <span>Rate HelpYou AI</span>
+                      <span>Rate AP Exam App</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-zinc-400" />
                   </button>
@@ -2081,7 +2081,7 @@ export default function Profile({
                   <button 
                     onClick={() => { 
                       triggerVibration(15); 
-                      window.location.href = 'mailto:helpyou.ai.support@gmail.com?subject=HelpYou%20AI%20App%20-%20Bug%20Report&body=Hi%20HelpYou%20AI%20Team%2C%20I%20found%20a%20bug.%0ADevice%20Model%3A%20%0AOS%20Version%3A%20%0AIssue%20Description%3A%20';
+                      window.location.href = 'mailto:helpyou.ai.support@gmail.com?subject=AP%20Exam%20App%20-%20Bug%20Report&body=Hi%20AP%20Exam%20Team%2C%20I%20found%20a%20bug.%0ADevice%20Model%3A%20%0AOS%20Version%3A%20%0AIssue%20Description%3A%20';
                     }}
                     className="w-full p-4 flex justify-between items-center bg-white hover:bg-zinc-50/30 border-t border-zinc-100 transition-colors text-left"
                   >
@@ -2219,7 +2219,7 @@ export default function Profile({
                 <div className="flex flex-col items-center gap-1 pt-2 pb-2">
                   <div className="flex items-center gap-1.5">
                     <Info className="w-3 h-3 text-zinc-300" />
-                    <span className="text-[10px] font-bold text-zinc-350 tracking-wide">HelpYou AI • Version 1.0.0</span>
+                    <span className="text-[10px] font-bold text-zinc-350 tracking-wide">AP Exam • Version 1.0.0</span>
                   </div>
                   <span className="text-[9px] text-zinc-300 font-semibold">Made with ❤️ for students worldwide</span>
                 </div>
@@ -2449,7 +2449,7 @@ export default function Profile({
                         <li>Open the Google Play Store app.</li>
                         <li>Tap your Profile icon at the top right.</li>
                         <li>Tap on Payments &amp; subscriptions &gt; Subscriptions.</li>
-                        <li>Select HelpYou AI and tap Cancel subscription.</li>
+                        <li>Select AP Exam and tap Cancel subscription.</li>
                       </ol>
                     </div>
                     <div className="flex flex-col gap-2 pt-2">
@@ -2476,10 +2476,10 @@ export default function Profile({
                 {activeModal === 'privacy' && (
                   <div className="space-y-5 text-left py-1 text-zinc-700">
                     <p className="text-xs font-semibold leading-relaxed text-zinc-500">
-                      At HelpYou AI, we are committed to safeguarding your personal information and ensuring full transparency. This Privacy Policy outlines our comprehensive data handling practices.
+                      At AP Exam App, we are committed to safeguarding your personal information and ensuring full transparency. This Privacy Policy outlines our comprehensive data handling practices.
                     </p>
                     <p className="text-xs font-semibold leading-relaxed text-zinc-700 bg-emerald-50/50 border border-emerald-100/50 rounded-xl p-3 mt-2">
-                      🌟 100% Ad-Free Guarantee: HelpYou AI is a completely ad-free learning environment. We do not sell your data, track you for marketing purposes, or display third-party advertisements.
+                      🌟 100% Ad-Free Guarantee: AP Exam App is a completely ad-free learning environment. We do not sell your data, track you for marketing purposes, or display third-party advertisements.
                     </p>
 
                     <div className="space-y-4">
@@ -2508,7 +2508,7 @@ export default function Profile({
                         </h4>
                         <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
                           <li>
-                            <span className="font-bold text-zinc-800">Artificial Intelligence:</span> HelpYou AI utilizes high-performance Google Gemini AI APIs to generate step-by-step answers, process image data, and deliver dynamic tutoring. Prompts and images sent to the AI service do not contain personally identifiable information (PII) and are never used to train public models.
+                            <span className="font-bold text-zinc-800">Artificial Intelligence:</span> AP Exam App utilizes high-performance Google Gemini AI APIs to generate step-by-step answers, process image data, and deliver dynamic tutoring. Prompts and images sent to the AI service do not contain personally identifiable information (PII) and are never used to train public models.
                           </li>
                           <li>
                             <span className="font-bold text-zinc-800">Payment Processors:</span> We utilize trusted payment gateways (such as Google Play Billing and Stripe) to securely process premium Pro Subscriptions. We do not store or have access to your credit card details or sensitive billing credentials.
@@ -2609,7 +2609,7 @@ export default function Profile({
                           🍪 9. Cookies & Tracking Technologies
                         </h4>
                         <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          To deliver a high-quality user experience, HelpYou AI utilizes multiple categories of cookies and identifiers:
+                          To deliver a high-quality user experience, AP Exam App utilizes multiple categories of cookies and identifiers:
                         </p>
                         <ul className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-8 space-y-1.5 list-disc">
                           <li><span className="font-semibold text-zinc-800">Essential Cookies:</span> Necessary for securing authentication sessions and accessing paid capabilities.</li>
@@ -2635,7 +2635,7 @@ export default function Profile({
                 {activeModal === 'terms' && (
                   <div className="space-y-5 text-left py-1 text-zinc-700">
                     <p className="text-xs font-semibold leading-relaxed text-zinc-500">
-                      Welcome to HelpYou AI. Please review these Terms of Use carefully before using our application. By accessing our services, you agree to be fully bound by these terms.
+                      Welcome to AP Exam App. Please review these Terms of Use carefully before using our application. By accessing our services, you agree to be fully bound by these terms.
                     </p>
 
                     <div className="space-y-4">
@@ -2646,10 +2646,10 @@ export default function Profile({
                         </h4>
                         <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
                           <li>
-                            <span className="font-bold text-zinc-800">Binding Agreement:</span> By installing, registering, or using any part of the HelpYou AI application, you acknowledge that you have read, understood, and agree to be bound by these Terms of Use.
+                            <span className="font-bold text-zinc-800">Binding Agreement:</span> By installing, registering, or using any part of the AP Exam App application, you acknowledge that you have read, understood, and agree to be bound by these Terms of Use.
                           </li>
                           <li>
-                            <span className="font-bold text-zinc-800">Age Restrictions:</span> HelpYou AI is strictly designed and permitted only for individuals aged 13 or older. We do not knowingly permit younger children to access our virtual learning systems.
+                            <span className="font-bold text-zinc-800">Age Restrictions:</span> AP Exam App is strictly designed and permitted only for individuals aged 13 or older. We do not knowingly permit younger children to access our virtual learning systems.
                           </li>
                         </ul>
                       </div>
@@ -2660,7 +2660,7 @@ export default function Profile({
                           ⚠️ 2. AI-Generated Content Disclaimer
                         </h4>
                         <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          HelpYou AI harnesses advanced artificial intelligence, including Google Gemini AI APIs, to deliver instant step-by-step problem breakdowns, quizzes, and real-time study assistance.
+                          AP Exam App harnesses advanced artificial intelligence, including Google Gemini AI APIs, to deliver instant step-by-step problem breakdowns, quizzes, and real-time study assistance.
                         </p>
                         <ul className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4 space-y-1.5 list-disc">
                           <li>
@@ -2678,7 +2678,7 @@ export default function Profile({
                           ⚕️ 2.1. No Professional Advice
                         </h4>
                         <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          The content provided by HelpYou AI, specifically in subjects like Biology and Chemistry, is strictly for academic and educational purposes. It does not constitute professional, medical, health, or safety advice. Never use AI-generated answers for real-world chemical handling or medical self-diagnosis.
+                          The content provided by AP Exam App, specifically in subjects like Biology and Chemistry, is strictly for academic and educational purposes. It does not constitute professional, medical, health, or safety advice. Never use AI-generated answers for real-world chemical handling or medical self-diagnosis.
                         </p>
                       </div>
 
@@ -2695,7 +2695,7 @@ export default function Profile({
                             <span className="font-bold text-zinc-800">Cancellation Policy:</span> To avoid future charges, you must cancel your subscription via your device's respective distribution store (Google Play Billing or Apple App Store Subscription Settings) at least 24 hours prior to the next scheduled renewal date.
                           </li>
                           <li>
-                            <span className="font-bold text-zinc-800">Chargeback Policy:</span> We enforce a zero-tolerance policy against fraudulent disputes. Initiation of unauthorized chargebacks or payment disputes will result in the immediate and permanent termination of your HelpYou AI account and the deletion of your historical study data.
+                            <span className="font-bold text-zinc-800">Chargeback Policy:</span> We enforce a zero-tolerance policy against fraudulent disputes. Initiation of unauthorized chargebacks or payment disputes will result in the immediate and permanent termination of your AP Exam App account and the deletion of your historical study data.
                           </li>
                         </ul>
                       </div>
@@ -2709,7 +2709,7 @@ export default function Profile({
                           Subject to these terms, you are granted a non-exclusive, non-transferable, and revocable license to access our educational services for personal, non-commercial use.
                         </p>
                         <ul className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-8 space-y-1.5 list-disc">
-                          <li>You are strictly prohibited from reverse engineering, decompiling, scraping, or attempting to extract the underlying source code of HelpYou AI.</li>
+                          <li>You are strictly prohibited from reverse engineering, decompiling, scraping, or attempting to extract the underlying source code of AP Exam App.</li>
                           <li>You agree not to use automated bots, custom scripts, or high-volume scrapers to query our backend AI, which places an unfair burden on platform resources and shared API rate limits.</li>
                           <li>Any detected infrastructure abuse, scanner spamming, or server overloading will result in immediate suspension without refund.</li>
                         </ul>
@@ -2721,7 +2721,7 @@ export default function Profile({
                           👑 5. Proprietary Rights
                         </h4>
                         <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          The HelpYou AI brand name, custom logos, visual designs, scanner interfaces, and proprietary tutoring algorithms are the sole property of the Company and are fully protected under global copyright, trademark, and intellectual property laws.
+                          The AP Exam App brand name, custom logos, visual designs, scanner interfaces, and proprietary tutoring algorithms are the sole property of the Company and are fully protected under global copyright, trademark, and intellectual property laws.
                         </p>
                       </div>
 
@@ -2731,8 +2731,8 @@ export default function Profile({
                           🛑 6. Limitation of Liability
                         </h4>
                         <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
-                          <li>To the maximum extent permitted by applicable law, HelpYou AI and its creators shall not be liable for any indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, loss of study progress, academic grades, or data) arising from the use of or inability to use the service.</li>
-                          <li>The total aggregate liability of the company for any and all claims arising under or related to these Terms shall not exceed the total amount actually paid by you to HelpYou AI in the three (3) months preceding the claim, or $100 USD, whichever is greater.</li>
+                          <li>To the maximum extent permitted by applicable law, AP Exam App and its creators shall not be liable for any indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, loss of study progress, academic grades, or data) arising from the use of or inability to use the service.</li>
+                          <li>The total aggregate liability of the company for any and all claims arising under or related to these Terms shall not exceed the total amount actually paid by you to AP Exam App in the three (3) months preceding the claim, or $100 USD, whichever is greater.</li>
                         </ul>
                       </div>
 
@@ -2742,7 +2742,7 @@ export default function Profile({
                           🛡️ 7. Indemnification
                         </h4>
                         <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          You agree to indemnify, defend, and hold harmless HelpYou AI, its creator, affiliates, and partners from and against any and all claims, liabilities, damages, losses, or expenses (including reasonable attorneys' fees) arising out of or in any way connected with your violation of these Terms or your misuse of the Service.
+                          You agree to indemnify, defend, and hold harmless AP Exam App, its creator, affiliates, and partners from and against any and all claims, liabilities, damages, losses, or expenses (including reasonable attorneys' fees) arising out of or in any way connected with your violation of these Terms or your misuse of the Service.
                         </p>
                       </div>
 
@@ -2764,7 +2764,7 @@ export default function Profile({
                         <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
                           <li>These Terms and any dispute or claim arising out of or in connection with them shall be governed by and construed in accordance with the laws of India.</li>
                           <li>Any legal actions, suits, or judicial proceedings arising under or related to these Terms shall be resolved exclusively in the competent courts located in India.</li>
-                          <li><span className="font-bold text-zinc-800">Class Action Waiver:</span> You agree that any dispute resolution proceedings will be conducted only on an individual basis and not in a class, consolidated, or representative action. You expressly waive any right to file or participate in a class-action lawsuit against HelpYou AI or its creators.</li>
+                          <li><span className="font-bold text-zinc-800">Class Action Waiver:</span> You agree that any dispute resolution proceedings will be conducted only on an individual basis and not in a class, consolidated, or representative action. You expressly waive any right to file or participate in a class-action lawsuit against AP Exam App or its creators.</li>
                         </ul>
                       </div>
 
@@ -2848,7 +2848,7 @@ export default function Profile({
 
               {/* Header Title */}
               <h3 className="text-lg font-black text-zinc-900 tracking-tight">
-                {isOptimizing ? "Optimizing HelpYou AI..." : "⚡ 100% Fully Optimized!"}
+                {isOptimizing ? "Optimizing AP Exam App..." : "⚡ 100% Fully Optimized!"}
               </h3>
               <p className="text-[11px] font-bold text-zinc-500 mt-1 max-w-xs leading-relaxed">
                 {optimizationStepText}

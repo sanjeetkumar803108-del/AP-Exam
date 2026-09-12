@@ -551,7 +551,7 @@ export default function APNotes({ onBack }: APNotesProps) {
         doc.setTextColor(badgeColor[0], badgeColor[1], badgeColor[2]);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8.5);
-        doc.text(`HELPYOU AI  |  ${subject.subjectName.toUpperCase()} OFFICIAL STUDY GUIDE`, margin, 24);
+        doc.text(`AP EXAM APP  |  ${subject.subjectName.toUpperCase()} OFFICIAL STUDY GUIDE`, margin, 24);
 
         doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
@@ -574,7 +574,7 @@ export default function APNotes({ onBack }: APNotesProps) {
         doc.setFontSize(8);
         doc.setTextColor(100, 116, 139);
         doc.text(`${subject.subjectName} - Unit ${unit.unitNumber}: ${sanitizePdfText(unit.title)}`, margin, 18);
-        doc.text('HelpYou AI Official Notes', pageWidth - margin, 18, { align: 'right' });
+        doc.text('AP Exam App Official Notes', pageWidth - margin, 18, { align: 'right' });
 
         currentY = 46;
       }
@@ -1418,7 +1418,7 @@ export default function APNotes({ onBack }: APNotesProps) {
       const doc = await buildUnitPdfDocument(unitToExport, subjectToExport);
       const safeSubj = subjectToExport.shortCode.replace(/\s+/g, '_');
       const safeTitle = sanitizePdfText(unitToExport.title).replace(/[^a-zA-Z0-9]/g, '_');
-      const fileName = `${safeSubj}_Unit_${unitToExport.unitNumber}_${safeTitle}_HelpYou_AI.pdf`;
+      const fileName = `${safeSubj}_Unit_${unitToExport.unitNumber}_${safeTitle}_AP_Exam.pdf`;
       const pdfBlob = doc.output('blob');
       const pdfDataUri = doc.output('datauristring');
       const pageCount = doc.internal.pages.length - 1;

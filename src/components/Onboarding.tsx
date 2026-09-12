@@ -84,7 +84,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   const comparisonData = [
     {
       topicIcon: <Sparkles className="w-2.5 h-2.5 text-indigo-500" />,
-      helpyou: {
+      apexam: {
         title: "Best AI Tutor",
         desc: "Latest Gemini Model",
         icon: <GraduationCap className="w-3.5 h-3.5 text-indigo-600" />,
@@ -98,7 +98,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     },
     {
       topicIcon: <ShieldCheck className="w-2.5 h-2.5 text-indigo-500" />,
-      helpyou: {
+      apexam: {
         title: "100% Ad-Free",
         desc: "Zero Distractions",
         icon: <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />,
@@ -112,7 +112,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     },
     {
       topicIcon: <Globe className="w-2.5 h-2.5 text-indigo-500" />,
-      helpyou: {
+      apexam: {
         title: "Deep Search AI",
         desc: "Real-time Web Search",
         icon: <Search className="w-3.5 h-3.5 text-indigo-600" />,
@@ -126,7 +126,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     },
     {
       topicIcon: <Sparkles className="w-2.5 h-2.5 text-indigo-500" />,
-      helpyou: {
+      apexam: {
         title: "Grammar & Flow",
         desc: "Polishes your writing",
         icon: <Sparkles className="w-3.5 h-3.5 text-indigo-600" />,
@@ -140,7 +140,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     },
     {
       topicIcon: <Database className="w-2.5 h-2.5 text-indigo-500" />,
-      helpyou: {
+      apexam: {
         title: "The Mistake Vault",
         desc: "analyzes errors",
         icon: <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />,
@@ -176,7 +176,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         {/* Header Section */}
         <div className="w-full shrink-0 flex flex-col gap-3">
           
-          {/* Top Bar with HELPYOU AI Logo and Skip button */}
+          {/* Top Bar with AP EXAM Logo and Skip button */}
           <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-1.5">
               {/* Back chevron if page > 0 */}
@@ -278,7 +278,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                       <div className="flex items-center gap-1">
                         <Sparkles className="w-3 h-3 text-indigo-600 fill-indigo-100" />
                         <span className="text-[9px] font-black tracking-wider text-zinc-800 uppercase">
-                          HelpYou AI Solver
+                          AP Exam Solver
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
@@ -514,7 +514,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                     LEARN with Premium Tools
                   </h2>
                   <p className="text-[11px] font-semibold text-zinc-500 max-w-[280px] mx-auto leading-tight">
-                    How HelpYou AI compares to standard learning and school apps:
+                    How AP Exam App compares to standard learning and school apps:
                   </p>
                 </div>
 
@@ -527,7 +527,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                       <div className="w-3.5 h-3.5 bg-white text-indigo-600 rounded-full flex items-center justify-center shrink-0">
                         <Check className="w-2 h-2 stroke-[3]" />
                       </div>
-                      <span className="text-[8px] font-black tracking-wider uppercase">HelpYou AI</span>
+                      <span className="text-[8px] font-black tracking-wider uppercase">AP Exam</span>
                     </div>
 
                     <div className="w-5 h-5 rounded-full bg-white border border-indigo-200 flex items-center justify-center shrink-0 z-20">
@@ -547,17 +547,17 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                     {comparisonData.map((row, index) => (
                       <div key={index} className="flex items-center justify-between gap-1 relative w-full">
                         
-                        {/* HelpYou AI Column */}
+                        {/* AP Exam Column */}
                         <div className="flex-1 bg-[#EEEDFC]/75 border border-indigo-100/60 p-1.5 rounded-lg flex items-center gap-1 h-[32px]">
                           <div className="w-5 h-5 bg-white rounded-md flex items-center justify-center shadow-sm text-indigo-600 shrink-0">
-                            {row.helpyou.icon}
+                            {row.apexam.icon}
                           </div>
                           <div className="flex flex-col text-left justify-center min-w-0">
                             <p className="text-[8px] font-extrabold text-indigo-950 leading-tight truncate">
-                              {row.helpyou.title}
+                              {row.apexam.title}
                             </p>
                             <p className="text-[7px] font-bold text-indigo-600/95 leading-none truncate">
-                              {row.helpyou.desc}
+                              {row.apexam.desc}
                             </p>
                           </div>
                         </div>
