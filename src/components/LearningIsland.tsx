@@ -166,29 +166,47 @@ const MOUNTAIN_BIOME_ATMOSPHERES: Record<number, MountainBiomeAtmosphere> = {
 const STORAGE_KEY = 'learning_island_multi_unit_progress_v2';
 
 /**
- * Shuffles and balances question options across A, B, C, D so each option has an equal 25% chance
- * and no two consecutive questions share the same correct option.
+ * Fast, deterministic string hashing algorithm (djb2).
+ * Returns the exact same 32-bit integer on every device, browser, and user session.
  */
-export function shuffleAndBalanceQuestQuestions(questions: QuizQuestion[]): QuizQuestion[] {
+function hashSeedString(str: string): number {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+/**
+ * Universal Deterministic Option Balancer:
+ * Guarantees that EVERY user across ALL devices gets the EXACT SAME common, standardized quiz offline,
+ * while balancing correct answers across options A, B, C, D with an equal 25% chance (no "all-A" cheat).
+ * ZERO Math.random() is used to ensure universal consistency.
+ */
+export function shuffleAndBalanceQuestQuestions(
+  questions: QuizQuestion[],
+  levelKey: string = 'lvl'
+): QuizQuestion[] {
   if (!Array.isArray(questions) || questions.length === 0) return questions;
 
-  const count = questions.length;
-  const targetPositions: number[] = [];
-  const counts = [0, 0, 0, 0];
-  let lastPos = -1;
+  const baseSeed = hashSeedString(levelKey);
 
-  for (let i = 0; i < count; i++) {
-    const validPositions = [0, 1, 2, 3].filter(p => p !== lastPos);
-    validPositions.sort((a, b) => counts[a] - counts[b] + (Math.random() - 0.5));
-    const chosen = validPositions[0];
-    targetPositions.push(chosen);
-    counts[chosen]++;
-    lastPos = chosen;
-  }
+  // Six balanced permutations of options across questions in a level
+  const balancedPermutations = [
+    [1, 3, 0, 2], // Q1: B, Q2: D, Q3: A, Q4: C
+    [2, 0, 3, 1], // Q1: C, Q2: A, Q3: D, Q4: B
+    [3, 1, 2, 0], // Q1: D, Q2: B, Q3: C, Q4: A
+    [0, 2, 1, 3], // Q1: A, Q2: C, Q3: B, Q4: D
+    [1, 0, 3, 2], // Q1: B, Q2: A, Q3: D, Q4: C
+    [2, 3, 0, 1]  // Q1: C, Q2: D, Q3: A, Q4: B
+  ];
+  const perm = balancedPermutations[baseSeed % balancedPermutations.length];
 
   return questions.map((q, idx) => {
     if (!q.options || q.options.length < 4) return q;
 
+    const qSeed = hashSeedString(`${levelKey}_q${idx}_${q.id || 'q'}`);
     const safeCorrectIdx =
       typeof q.correctIndex === 'number' && q.correctIndex >= 0 && q.correctIndex < q.options.length
         ? q.correctIndex
@@ -197,13 +215,16 @@ export function shuffleAndBalanceQuestQuestions(questions: QuizQuestion[]): Quiz
     const correctText = q.options[safeCorrectIdx];
     const distractorTexts = q.options.filter((_, i) => i !== safeCorrectIdx);
 
-    // Shuffle distractors with Fisher-Yates
-    for (let d = distractorTexts.length - 1; d > 0; d--) {
-      const rand = Math.floor(Math.random() * (d + 1));
-      [distractorTexts[d], distractorTexts[rand]] = [distractorTexts[rand], distractorTexts[d]];
+    // Deterministic distractor shuffle using qSeed (Knuth-Fisher-Yates)
+    const shuffledDistractors = [...distractorTexts];
+    for (let d = shuffledDistractors.length - 1; d > 0; d--) {
+      const stepSeed = (qSeed * 17 + d * 31) % (d + 1);
+      [shuffledDistractors[d], shuffledDistractors[stepSeed]] = [shuffledDistractors[stepSeed], shuffledDistractors[d]];
     }
 
-    const targetPos = targetPositions[idx];
+    // Pick target position from the balanced level sequence (25% distribution, no adjacent duplicate)
+    const targetPos = perm[idx % perm.length];
+
     const newOptions: string[] = [];
     let distractorIdx = 0;
 
@@ -211,7 +232,7 @@ export function shuffleAndBalanceQuestQuestions(questions: QuizQuestion[]): Quiz
       if (p === targetPos) {
         newOptions.push(correctText);
       } else {
-        newOptions.push(distractorTexts[distractorIdx++]);
+        newOptions.push(shuffledDistractors[distractorIdx++]);
       }
     }
 
@@ -342,7 +363,16 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
   // Build units definition for current selected subject
   const currentUnits: UnitDefinition[] = useMemo(() => {
     if (selectedSubject.id === 'ap-calculus-ab') {
-      return ALL_CALC_AB_UNIT_DEFINITIONS;
+      return ALL_CALC_AB_UNIT_DEFINITIONS.map(u => ({
+        ...u,
+        levels: u.levels.map(lvl => ({
+          ...lvl,
+          questions: shuffleAndBalanceQuestQuestions(
+            lvl.questions,
+            lvl.uniqueKey || `calc-u${lvl.unitIndex}-l${lvl.levelNumber}`
+          )
+        }))
+      }));
     }
     // Dynamic generation for other subjects using their curriculum units
     return selectedSubject.units.map((u, uIdx) => {
@@ -355,6 +385,7 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
         const lid = unitNum * 100 + l;
         const diff: 'Easy' | 'Medium' | 'Hard' | 'Boss' =
           l === levelsCount ? 'Boss' : l > 6 ? 'Hard' : l > 3 ? 'Medium' : 'Easy';
+        const levelKey = `${selectedSubject.id}-u${unitNum}-l${l}`;
 
         unitLevels.push({
           id: lid,
@@ -406,7 +437,7 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
               explanation: 'Checking boundary conditions and units is the most reliable strategy to eliminate AP test traps.',
               distractorTip: 'Double-check all unit conversions and sign changes!'
             }
-          ])
+          ], levelKey)
         });
       }
 
@@ -809,22 +840,16 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
       lastPlayedLevelId: lvl.id
     }));
     setSelectedLevel(null);
-    const balancedQuestions = shuffleAndBalanceQuestQuestions(lvl.questions);
-    setActiveQuizLevel({
-      ...lvl,
-      questions: balancedQuestions
-    });
+    // All questions are pre-balanced deterministically and standardized across all devices and users
+    setActiveQuizLevel(lvl);
     setCurrentQuestionIndex(0);
     setSelectedOptionIndex(null);
     setIsAnswerSubmitted(false);
-      setShowAIExplanation(false);
-      setIsAILoading(false);
-      setAiExplanationText(null);
-    setCorrectAnswersCount(0);
-    setIsQuizCompleted(false);
     setShowAIExplanation(false);
     setIsAILoading(false);
     setAiExplanationText(null);
+    setCorrectAnswersCount(0);
+    setIsQuizCompleted(false);
     if (quizScrollContainerRef.current) {
       quizScrollContainerRef.current.scrollTop = 0;
     }
