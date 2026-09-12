@@ -20,7 +20,7 @@ import {
 } from 'firebase/auth';
 import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
-import appLogo from '../assets/logo.svg';
+import appLogo from '../assets/logo.png';
 import DeveloperLoginModal from './DeveloperPortal/DeveloperLoginModal';
 
 // React Native web-compatibility components & helpers
@@ -573,9 +573,9 @@ export default function Login({ onClose, onLoginSuccess, hideClose = false }: { 
           className="mb-4 animate-fade-in"
         />
         
-        <h1 className="text-4xl font-bold text-zinc-800 mb-2 tracking-tight">HelpYou AI</h1>
+        <h1 className="text-4xl font-bold text-zinc-800 mb-2 tracking-tight">AP Exam</h1>
         <p className="text-zinc-500 text-xs font-bold tracking-widest uppercase mb-10">
-          Your Digital Study Assistant
+          Ultimate Study App
         </p>
 
         <form onSubmit={handleAuth} className="w-full max-w-sm flex flex-col space-y-5">

@@ -190,7 +190,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 <div className="w-2 h-2 rounded-full bg-indigo-600 shadow-[0_0_6px_#4f46e5]" />
               )}
               <span className="text-xs font-black tracking-widest text-indigo-950/80 uppercase leading-none">
-                HELPYOU AI
+                AP EXAM
               </span>
             </div>
 
