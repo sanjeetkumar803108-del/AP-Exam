@@ -945,17 +945,17 @@ Please structure your response into these 4 clear sections:
   const categories = ['All', 'STEM & Math', 'Science', 'Social Sciences', 'Humanities'];
 
   return (
-    <div className="h-full w-full flex flex-col bg-[#1c110a] text-zinc-950 relative overflow-hidden font-sans select-none">
+    <div className="h-full w-full flex flex-col bg-white text-zinc-950 relative overflow-hidden font-sans select-none">
       {/* Top Header Bar - Authentic Pirate Treasure Map Header */}
       {!activeQuizLevel && (
-        <header className="px-4 py-3 flex items-center justify-between bg-[#1c110a]/90 backdrop-blur-md border-b border-[#3b2513]/70 shrink-0 z-40 shadow-md">
+        <header className="px-4 py-3 flex items-center justify-between bg-white/95 backdrop-blur-md border-b border-zinc-200/80 shrink-0 z-40 shadow-xs">
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
                 triggerVibration(10);
                 onBack();
               }}
-              className="w-9 h-9 rounded-full flex items-center justify-center bg-black/45 hover:bg-black/60 text-[#fde68a] border border-white/10 active:scale-95 transition-all cursor-pointer shadow-md"
+              className="w-9 h-9 rounded-full flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border border-zinc-200 active:scale-95 transition-all cursor-pointer shadow-xs"
               title="Back to Dashboard"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -964,10 +964,10 @@ Please structure your response into these 4 clear sections:
             <div className="flex items-center gap-2">
               <span className="text-xl">🗺️</span>
               <div>
-                <h1 className="text-base sm:text-lg font-black text-[#fef3c7] tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] leading-tight">
+                <h1 className="text-base sm:text-lg font-black text-zinc-900 tracking-tight leading-tight">
                   Treasure Map
                 </h1>
-                <p className="text-[10px] text-amber-200/70 font-bold hidden sm:block">
+                <p className="text-[10px] text-zinc-500 font-bold hidden sm:block">
                   Learning Island • {selectedSubject.name}
                 </p>
               </div>
@@ -977,8 +977,8 @@ Please structure your response into these 4 clear sections:
           {/* Action Controls: Coin Counter & Subject Selector */}
           <div className="flex items-center gap-2">
             {/* Coins Badge matching screenshot */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/50 border border-amber-500/30 text-amber-300 text-xs font-black shadow-md">
-              <span className="text-amber-400">🪙</span>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-black shadow-xs">
+              <span className="text-amber-500">🪙</span>
               <span>0</span>
             </div>
 
@@ -988,11 +988,11 @@ Please structure your response into these 4 clear sections:
                 triggerVibration(10);
                 setShowSubjectModal(true);
               }}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-black/40 hover:bg-black/60 border border-white/10 text-amber-100 active:scale-95 transition-all cursor-pointer shadow-md text-xs font-bold"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-800 active:scale-95 transition-all cursor-pointer shadow-xs text-xs font-bold"
             >
               <span className="text-sm">{selectedSubject.icon}</span>
               <span className="truncate max-w-[80px] sm:max-w-[120px]">{selectedSubject.shortCode}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-amber-300/80" />
+              <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
             </button>
           </div>
         </header>
@@ -1048,8 +1048,8 @@ Please structure your response into these 4 clear sections:
       {/* 5. FLOATING PIRATE COMPASS QUICK-JUMP UNIT DOCK (Bottom Bar)               */}
       {/* ========================================================================= */}
       {!activeQuizLevel && (
-        <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-30 max-w-[95vw] sm:max-w-2xl bg-[#2b170c]/95 backdrop-blur-md border border-[#5c3719] rounded-2xl p-1.5 shadow-[0_10px_25px_rgba(0,0,0,0.5)] flex items-center gap-1.5 overflow-x-auto">
-          <div className="px-2.5 py-1 flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-amber-200/80 border-r border-[#5c3719] shrink-0">
+        <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-30 max-w-[95vw] sm:max-w-2xl bg-zinc-900/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-1.5 shadow-[0_10px_25px_rgba(0,0,0,0.3)] flex items-center gap-1.5 overflow-x-auto">
+          <div className="px-2.5 py-1 flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-amber-400 border-r border-zinc-700/60 shrink-0">
             <Compass className="w-3.5 h-3.5 text-amber-400 animate-spin-slow" />
             <span>Map Units:</span>
           </div>
@@ -1063,8 +1063,8 @@ Please structure your response into these 4 clear sections:
                   onClick={() => handleJumpToUnit(unit.unitIndex)}
                   className={`px-2.5 py-1 rounded-xl text-xs font-black whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 active:scale-95 ${
                     isActive
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-md ring-2 ring-amber-400/60'
-                      : 'bg-black/40 hover:bg-black/60 text-amber-100/80 border border-white/10'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md ring-2 ring-amber-400/60'
+                      : 'bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50'
                   }`}
                 >
                   <span>{unit.biome.icon}</span>

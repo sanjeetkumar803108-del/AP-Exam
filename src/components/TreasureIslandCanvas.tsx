@@ -3,13 +3,8 @@ import { motion } from 'motion/react';
 import { Check, Star, Lock } from 'lucide-react';
 import {
   CompassRose,
-  SeaMonster,
-  PalmDoodle,
   OceanWaves,
   RedXMark,
-  PalmTree2D,
-  FacetedRock2D,
-  SteppingStone,
   ExplorerMascot
 } from './TreasureMapAssets';
 import { UnitQuestLevel, UnitBiomeTheme } from '../data/quiz/apCalculusUnitsData';
@@ -78,7 +73,7 @@ export const TreasureIslandCanvas: React.FC<TreasureIslandCanvasProps> = ({
         className="absolute inset-0 pointer-events-none rounded-2xl overflow-hidden"
         style={{
           background: `radial-gradient(ellipse 110% 100% at 50% 50%, #f4e8d3 0%, #ecdcc5 45%, #e2d1b7 85%, #c9b596 100%)`,
-          boxShadow: 'inset 0 0 40px rgba(92, 58, 26, 0.35), 0 10px 30px rgba(0, 0, 0, 0.6)'
+          boxShadow: 'inset 0 0 40px rgba(92, 58, 26, 0.35), 0 12px 36px -8px rgba(92, 58, 26, 0.25), 0 0 0 1px rgba(92, 58, 26, 0.15)'
         }}
       >
         {/* Subtle Antique Paper Grain / Fiber Texture */}
@@ -120,196 +115,30 @@ export const TreasureIslandCanvas: React.FC<TreasureIslandCanvasProps> = ({
       <div className="absolute top-0 bottom-0 right-0 w-2.5 pointer-events-none bg-gradient-to-l from-[#3b2513]/40 via-[#694220]/20 to-transparent" />
 
       {/* ========================================================================= */}
-      {/* 2. 2D VECTOR ISLANDS, LAGOONS, RIVERS, FORESTS & ROCKS (SVG LAYER)        */}
+      {/* 2. VINTAGE CARTOGRAPHY MARKS & OCEAN WAVES (CLEAN MAP DESIGN)             */}
       {/* ========================================================================= */}
       <svg
         className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible"
         viewBox={`0 0 100 ${safeHeight}`}
         preserveAspectRatio="none"
       >
-        <defs>
-          {/* Gradients for authentic tropical island shading */}
-          <linearGradient id="sand-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f3dfb0" />
-            <stop offset="60%" stopColor="#e8cf9c" />
-            <stop offset="100%" stopColor="#d8b980" />
-          </linearGradient>
-
-          <linearGradient id="jungle-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#4ade80" />
-            <stop offset="50%" stopColor="#22c55e" />
-            <stop offset="100%" stopColor="#15803d" />
-          </linearGradient>
-
-          <linearGradient id="river-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#38bdf8" />
-            <stop offset="60%" stopColor="#06b6d4" />
-            <stop offset="100%" stopColor="#0284c7" />
-          </linearGradient>
-        </defs>
-
-        {/* --------------------------------------------------------------------- */}
-        {/* RENDER ISLAND CLUSTERS FOR EACH UNIT                                  */}
-        {/* --------------------------------------------------------------------- */}
-        {safeSlabs.map((slab, uIdx) => {
-          if (!slab) return null;
-          // Calculate center of this unit on the vertical map
-          const centerY = (slab.startY + slab.endY) / 2;
-          const isBaseUnit = slab.unitIndex === 1;
-          const isTopUnit = slab.unitIndex === safeSlabs.length;
-
-          return (
-            <g key={slab.unitIndex}>
-              {/* Natural Landmass Drop-Shadow (GPU-safe, zero offscreen memory allocation) */}
-              <path
-                d={`M 14,${centerY + 146} 
-                   C 4,${centerY + 96} 2,${centerY - 24} 18,${centerY - 84} 
-                   C 32,${centerY - 124} 55,${centerY - 104} 74,${centerY - 134} 
-                   C 92,${centerY - 164} 98,${centerY - 84} 88,${centerY - 4} 
-                   C 80,${centerY + 66} 94,${centerY + 126} 80,${centerY + 166} 
-                   C 66,${centerY + 206} 28,${centerY + 186} 14,${centerY + 146} Z`}
-                fill="#38210d"
-                opacity="0.22"
-              />
-
-              {/* ISLAND A (Main Tropical Landmass for this Unit) */}
-              {/* 1. Sandy Shoreline */}
-              <path
-                d={`M 14,${centerY + 140} 
-                   C 4,${centerY + 90} 2,${centerY - 30} 18,${centerY - 90} 
-                   C 32,${centerY - 130} 55,${centerY - 110} 74,${centerY - 140} 
-                   C 92,${centerY - 170} 98,${centerY - 90} 88,${centerY - 10} 
-                   C 80,${centerY + 60} 94,${centerY + 120} 80,${centerY + 160} 
-                   C 66,${centerY + 200} 28,${centerY + 180} 14,${centerY + 140} Z`}
-                fill="url(#sand-gradient)"
-                stroke="#d4b578"
-                strokeWidth="0.8"
-                vectorEffect="non-scaling-stroke"
-              />
-
-              {/* 2. Shallow coastal water / foam rim */}
-              <path
-                d={`M 16,${centerY + 135} 
-                   C 7,${centerY + 88} 5,${centerY - 25} 20,${centerY - 85} 
-                   C 33,${centerY - 122} 54,${centerY - 105} 72,${centerY - 132} 
-                   C 88,${centerY - 162} 94,${centerY - 88} 85,${centerY - 12} 
-                   C 77,${centerY + 55} 90,${centerY + 115} 77,${centerY + 152} 
-                   C 64,${centerY + 190} 30,${centerY + 172} 16,${centerY + 135} Z`}
-                fill="none"
-                stroke="#fffbeb"
-                strokeWidth="0.6"
-                opacity="0.6"
-                vectorEffect="non-scaling-stroke"
-              />
-
-              {/* 3. Lush Green Jungle Plateau */}
-              <path
-                d={`M 22,${centerY + 110} 
-                   C 14,${centerY + 60} 12,${centerY - 15} 25,${centerY - 65} 
-                   C 37,${centerY - 95} 56,${centerY - 85} 70,${centerY - 105} 
-                   C 82,${centerY - 125} 86,${centerY - 65} 78,${centerY - 5} 
-                   C 70,${centerY + 45} 80,${centerY + 95} 70,${centerY + 125} 
-                   C 58,${centerY + 155} 32,${centerY + 140} 22,${centerY + 110} Z`}
-                fill="url(#jungle-gradient)"
-                stroke="#15803d"
-                strokeWidth="0.6"
-                vectorEffect="non-scaling-stroke"
-              />
-
-              {/* 4. Turquoise River / Lagoon / Pond Inlet cutting into the Island */}
-              <path
-                d={`M 88,${centerY - 10} 
-                   C 78,${centerY + 5} 64,${centerY + 15} 58,${centerY + 40} 
-                   C 52,${centerY + 65} 44,${centerY + 75} 38,${centerY + 65} 
-                   C 32,${centerY + 55} 36,${centerY + 35} 42,${centerY + 25} 
-                   C 48,${centerY + 15} 58,${centerY - 10} 66,${centerY - 25} 
-                   C 74,${centerY - 40} 82,${centerY - 35} 88,${centerY - 10} Z`}
-                fill="url(#river-gradient)"
-                stroke="#0284c7"
-                strokeWidth="0.8"
-                vectorEffect="non-scaling-stroke"
-              />
-
-              {/* Inner water shimmer ripple */}
-              <path
-                d={`M 75,${centerY - 5} C 65,${centerY + 8} 56,${centerY + 30} 46,${centerY + 45}`}
-                stroke="#bae6fd"
-                strokeWidth="1.2"
-                strokeLinecap="round"
-                fill="none"
-                opacity="0.8"
-                vectorEffect="non-scaling-stroke"
-              />
-
-              {/* 5. Stepping Stone Islets between Units */}
-              {!isTopUnit && (
-                <g>
-                  {/* Stepping stone 1 */}
-                  <ellipse cx="48" cy={slab.endY - 60} rx="5" ry="3" fill="#d8b980" />
-                  <ellipse cx="48" cy={slab.endY - 61} rx="3.5" ry="2" fill="#64748b" />
-                  {/* Stepping stone 2 */}
-                  <ellipse cx="58" cy={slab.endY - 110} rx="4.5" ry="2.8" fill="#d8b980" />
-                  <ellipse cx="58" cy={slab.endY - 111} rx="3" ry="1.8" fill="#475569" />
-                </g>
-              )}
-            </g>
-          );
-        })}
-
-        {/* --------------------------------------------------------------------- */}
-        {/* VINTAGE CARTOGRAPHY DOODLES IN SEPIA INK                             */}
-        {/* --------------------------------------------------------------------- */}
-        {/* 1. Compass Rose at the bottom-left ocean */}
+        {/* 1. Compass Rose at the bottom-left of map */}
         <CompassRose x={22} y={safeHeight - 120} scale={0.88} />
 
-        {/* 2. Loch Ness Sea Serpent swimming in the water */}
-        <SeaMonster x={12} y={safeHeight - 480} scale={0.85} />
-
-        {/* 3. Palm Tree Doodles on the parchment dune */}
-        <PalmDoodle x={16} y={safeHeight - 880} scale={0.9} />
-
-        {/* 4. Ocean Wave Ripples across open water */}
+        {/* 2. Ocean Wave Ripples across open map */}
         <OceanWaves x={76} y={safeHeight - 340} count={2} />
         <OceanWaves x={78} y={safeHeight - 650} count={3} />
         <OceanWaves x={15} y={safeHeight - 1250} count={2} />
         <OceanWaves x={78} y={safeHeight - 1650} count={2} />
 
-        {/* 5. Red "X" Marks the Spot at the Topmost Level / Final Summit */}
+        {/* 3. Red "X" Marks the Spot at the Topmost Level / Final Summit */}
         {finalCoord && (
           <RedXMark x={finalCoord.xPercent + 10} y={finalCoord.yPx - 28} scale={1.1} />
         )}
       </svg>
 
       {/* ========================================================================= */}
-      {/* 3. 2D TREES & FACETED ROCKS PLACED AROUND THE ISLANDS                     */}
-      {/* ========================================================================= */}
-      <svg
-        className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible"
-        viewBox={`0 0 100 ${safeHeight}`}
-        preserveAspectRatio="none"
-      >
-        {safeSlabs.map(slab => {
-          if (!slab) return null;
-          const centerY = (slab.startY + slab.endY) / 2;
-          return (
-            <g key={`decor-${slab.unitIndex}`}>
-              {/* Palm trees on sandy cove */}
-              <PalmTree2D x={26} y={centerY + 55} scale={0.82} rotation={-8} />
-              <PalmTree2D x={32} y={centerY + 45} scale={0.68} rotation={6} />
-              <PalmTree2D x={78} y={centerY - 80} scale={0.78} rotation={10} />
-              <PalmTree2D x={82} y={centerY - 95} scale={0.65} rotation={-5} />
-
-              {/* Faceted 3D Boulders on the rocky ridges */}
-              <FacetedRock2D x={64} y={centerY - 45} scale={0.9} />
-              <FacetedRock2D x={56} y={centerY - 35} scale={0.65} />
-              <FacetedRock2D x={28} y={centerY - 10} scale={0.7} />
-            </g>
-          );
-        })}
-      </svg>
-
-      {/* ========================================================================= */}
-      {/* 4. DASHED PIRATE TRAIL WINDING ACROSS ISLANDS & STEPPING STONES           */}
+      {/* 3. DASHED PIRATE TRAIL WINDING ACROSS LEVELS                             */}
       {/* ========================================================================= */}
       <svg
         className="absolute inset-0 w-full h-full pointer-events-none z-15 overflow-visible"
