@@ -35,34 +35,39 @@ interface UnitSlab {
 }
 
 interface TreasureIslandCanvasProps {
-  totalMapHeight: number;
-  levelCoordinates: LevelCoord[];
-  unitSlabs: UnitSlab[];
-  activeLevelCoord: LevelCoord | null;
-  isLevelUnlocked: (lvl: UnitQuestLevel) => boolean;
-  completedLevels: Record<number, { stars: number; score: number }>;
-  onNodeClick: (lvl: UnitQuestLevel) => void;
+  totalMapHeight?: number;
+  levelCoordinates?: LevelCoord[];
+  unitSlabs?: UnitSlab[];
+  activeLevelCoord?: LevelCoord | null;
+  isLevelUnlocked?: (lvl: UnitQuestLevel) => boolean;
+  completedLevels?: Record<number, { stars: number; score: number }>;
+  onNodeClick?: (lvl: UnitQuestLevel) => void;
 }
 
 export const TreasureIslandCanvas: React.FC<TreasureIslandCanvasProps> = ({
-  totalMapHeight,
-  levelCoordinates,
-  unitSlabs,
-  activeLevelCoord,
-  isLevelUnlocked,
-  completedLevels,
-  onNodeClick
+  totalMapHeight = 2400,
+  levelCoordinates = [],
+  unitSlabs = [],
+  activeLevelCoord = null,
+  isLevelUnlocked = () => true,
+  completedLevels = {},
+  onNodeClick = () => {}
 }) => {
+  const safeCoords = Array.isArray(levelCoordinates) ? levelCoordinates : [];
+  const safeSlabs = Array.isArray(unitSlabs) ? unitSlabs : [];
+  const safeCompleted = completedLevels && typeof completedLevels === 'object' ? completedLevels : {};
+  const safeHeight = typeof totalMapHeight === 'number' && !isNaN(totalMapHeight) && totalMapHeight > 500 ? totalMapHeight : 2400;
+
   // Identify the highest/final level coordinate to place the Red "X"
-  const finalCoord = levelCoordinates[levelCoordinates.length - 1];
-  const firstCoord = levelCoordinates[0];
+  const finalCoord = safeCoords.length > 0 ? safeCoords[safeCoords.length - 1] : null;
+  const firstCoord = safeCoords.length > 0 ? safeCoords[0] : null;
 
   return (
     <div
       className="relative w-full max-w-md shrink-0 select-none"
       style={{
-        height: `${totalMapHeight}px`,
-        minHeight: `${totalMapHeight}px`
+        height: `${safeHeight}px`,
+        minHeight: `${safeHeight}px`
       }}
     >
       {/* ========================================================================= */}
@@ -119,7 +124,7 @@ export const TreasureIslandCanvas: React.FC<TreasureIslandCanvasProps> = ({
       {/* ========================================================================= */}
       <svg
         className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible"
-        viewBox={`0 0 100 ${totalMapHeight}`}
+        viewBox={`0 0 100 ${safeHeight}`}
         preserveAspectRatio="none"
       >
         <defs>
@@ -150,11 +155,12 @@ export const TreasureIslandCanvas: React.FC<TreasureIslandCanvasProps> = ({
         {/* --------------------------------------------------------------------- */}
         {/* RENDER ISLAND CLUSTERS FOR EACH UNIT                                  */}
         {/* --------------------------------------------------------------------- */}
-        {unitSlabs.map((slab, uIdx) => {
+        {safeSlabs.map((slab, uIdx) => {
+          if (!slab) return null;
           // Calculate center of this unit on the vertical map
           const centerY = (slab.startY + slab.endY) / 2;
           const isBaseUnit = slab.unitIndex === 1;
-          const isTopUnit = slab.unitIndex === unitSlabs.length;
+          const isTopUnit = slab.unitIndex === safeSlabs.length;
 
           return (
             <g key={slab.unitIndex} filter="url(#island-shadow)">
@@ -246,19 +252,19 @@ export const TreasureIslandCanvas: React.FC<TreasureIslandCanvasProps> = ({
         {/* VINTAGE CARTOGRAPHY DOODLES IN SEPIA INK                             */}
         {/* --------------------------------------------------------------------- */}
         {/* 1. Compass Rose at the bottom-left ocean */}
-        <CompassRose x={22} y={totalMapHeight - 120} scale={0.88} />
+        <CompassRose x={22} y={safeHeight - 120} scale={0.88} />
 
         {/* 2. Loch Ness Sea Serpent swimming in the water */}
-        <SeaMonster x={12} y={totalMapHeight - 480} scale={0.85} />
+        <SeaMonster x={12} y={safeHeight - 480} scale={0.85} />
 
         {/* 3. Palm Tree Doodles on the parchment dune */}
-        <PalmDoodle x={16} y={totalMapHeight - 880} scale={0.9} />
+        <PalmDoodle x={16} y={safeHeight - 880} scale={0.9} />
 
         {/* 4. Ocean Wave Ripples across open water */}
-        <OceanWaves x={76} y={totalMapHeight - 340} count={2} />
-        <OceanWaves x={78} y={totalMapHeight - 650} count={3} />
-        <OceanWaves x={15} y={totalMapHeight - 1250} count={2} />
-        <OceanWaves x={78} y={totalMapHeight - 1650} count={2} />
+        <OceanWaves x={76} y={safeHeight - 340} count={2} />
+        <OceanWaves x={78} y={safeHeight - 650} count={3} />
+        <OceanWaves x={15} y={safeHeight - 1250} count={2} />
+        <OceanWaves x={78} y={safeHeight - 1650} count={2} />
 
         {/* 5. Red "X" Marks the Spot at the Topmost Level / Final Summit */}
         {finalCoord && (
@@ -271,10 +277,11 @@ export const TreasureIslandCanvas: React.FC<TreasureIslandCanvasProps> = ({
       {/* ========================================================================= */}
       <svg
         className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible"
-        viewBox={`0 0 100 ${totalMapHeight}`}
+        viewBox={`0 0 100 ${safeHeight}`}
         preserveAspectRatio="none"
       >
-        {unitSlabs.map(slab => {
+        {safeSlabs.map(slab => {
+          if (!slab) return null;
           const centerY = (slab.startY + slab.endY) / 2;
           return (
             <g key={`decor-${slab.unitIndex}`}>
@@ -298,11 +305,12 @@ export const TreasureIslandCanvas: React.FC<TreasureIslandCanvasProps> = ({
       {/* ========================================================================= */}
       <svg
         className="absolute inset-0 w-full h-full pointer-events-none z-15 overflow-visible"
-        viewBox={`0 0 100 ${totalMapHeight}`}
+        viewBox={`0 0 100 ${safeHeight}`}
         preserveAspectRatio="none"
       >
-        {levelCoordinates.slice(0, -1).map((curr, i) => {
-          const next = levelCoordinates[i + 1];
+        {safeCoords.slice(0, -1).map((curr, i) => {
+          const next = safeCoords[i + 1];
+          if (!curr || !next) return null;
           const dx = next.xPercent - curr.xPercent;
           const dy = next.yPx - curr.yPx;
 
@@ -361,11 +369,12 @@ export const TreasureIslandCanvas: React.FC<TreasureIslandCanvasProps> = ({
       {/* ========================================================================= */}
       {/* 5. INTERACTIVE LEVEL NODES (TREASURE COINS & ADVENTURER MASCOT)           */}
       {/* ========================================================================= */}
-      {levelCoordinates.map(coord => {
+      {safeCoords.map(coord => {
+        if (!coord || !coord.level) return null;
         const lvl = coord.level;
-        const unlocked = isLevelUnlocked(lvl);
+        const unlocked = typeof isLevelUnlocked === 'function' ? isLevelUnlocked(lvl) : true;
         const isCurrentActive = activeLevelCoord?.id === lvl.id;
-        const completion = completedLevels[lvl.id];
+        const completion = safeCompleted[lvl.id];
         const isCompleted = !!completion;
         const stars = completion?.stars || 0;
 

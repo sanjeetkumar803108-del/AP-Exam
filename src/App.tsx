@@ -1026,7 +1026,12 @@ export default function App() {
               </ErrorBoundary>
             )}
             {activeTool === 'testprep' && (
-              <ErrorBoundary>
+              <ErrorBoundary 
+                featureName="Test Prep"
+                fallbackMessage="Unable to load Test Prep. Tap below to auto-repair or return to dashboard."
+                onReset={() => setActiveTool(null)}
+                cacheKeysToPurgeOnCrash={['ap_test_prep_history']}
+              >
                 <TestPrep 
                   onBack={() => setActiveTool(null)} 
                   isVip={isVip}
@@ -1039,7 +1044,7 @@ export default function App() {
               </ErrorBoundary>
             )}
             {activeTool === 'apsamplepapers' && (
-              <ErrorBoundary>
+              <ErrorBoundary featureName="AP Sample Papers" onReset={() => setActiveTool(null)}>
                 <APSamplePapers 
                   onBack={() => setActiveTool(null)} 
                   isVip={isVip}
@@ -1048,7 +1053,12 @@ export default function App() {
             )}
             {activeTool === 'learningisland' && (
               <div className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
-                <ErrorBoundary>
+                <ErrorBoundary 
+                  featureName="Learning Island"
+                  fallbackMessage="Unable to load Learning Island. Tap below to auto-repair or return to dashboard."
+                  onReset={() => setActiveTool(null)}
+                  cacheKeysToPurgeOnCrash={['learning_island_progress_', 'learning_island_selected_subject_id']}
+                >
                   <LearningIsland onBack={() => setActiveTool(null)} />
                 </ErrorBoundary>
               </div>

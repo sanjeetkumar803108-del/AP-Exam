@@ -289,7 +289,13 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
 
   // History & PDF Preview States
   const [historyList, setHistoryList] = useState<APTestPrepHistoryItem[]>(() => {
-    return safeJsonParse<APTestPrepHistoryItem[]>(safeGetItem('ap_test_prep_history'), []);
+    try {
+      const parsed = safeJsonParse<APTestPrepHistoryItem[]>(safeGetItem('ap_test_prep_history'), []);
+      if (Array.isArray(parsed)) {
+        return parsed.filter(item => item && typeof item === 'object' && item.id);
+      }
+    } catch (_) {}
+    return [];
   });
   const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
   const [previewPdfUri, setPreviewPdfUri] = useState<string | null>(null);
@@ -438,7 +444,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   // Selected Unit Object
   const selectedUnit = useMemo(() => {
     if (selectedUnitId === 'all') return null;
-    return selectedSubject.units.find(u => u.id === selectedUnitId) || null;
+    const units = Array.isArray(selectedSubject?.units) ? selectedSubject.units : [];
+    return units.find(u => u && u.id === selectedUnitId) || null;
   }, [selectedSubject, selectedUnitId]);
 
   // Timer Alarm Sound & Audio Controls
@@ -787,9 +794,11 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     triggerVibration(20);
 
     // Offline Resilience: If student is offline, recover from saved history or provide clear guidance
+    const safeHistoryList = Array.isArray(historyList) ? historyList.filter(Boolean) : [];
+
     if (!window.navigator.onLine) {
-      const cachedHistory = historyList.find(
-        item => (item.subjectId === selectedSubject.id || item.subjectName === selectedSubject.name) &&
+      const cachedHistory = safeHistoryList.find(
+        item => item && (item.subjectId === selectedSubject.id || item.subjectName === selectedSubject.name) &&
                 item.questionType === questionType &&
                 (questionType === 'objective' ? (item.objectiveQuestions && item.objectiveQuestions.length > 0) : (item.subjectiveQuestions && item.subjectiveQuestions.length > 0))
       );
@@ -847,13 +856,13 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     const sessionAvoid = sessionAvoidPromptsRef.current[selectedSubject.id] || [];
     
     // Also pull history items for this subject across all units to avoid topic repetition
-    const historyAvoid = historyList
-      .filter(item => item.subjectId === selectedSubject.id || item.subjectName === selectedSubject.name)
+    const historyAvoid = safeHistoryList
+      .filter(item => item && (item.subjectId === selectedSubject.id || item.subjectName === selectedSubject.name))
       .flatMap(item => {
-        if (item.questionType === 'objective' && item.objectiveQuestions) {
-          return item.objectiveQuestions.map(q => (q.question || '').slice(0, 140));
-        } else if (item.subjectiveQuestions) {
-          return item.subjectiveQuestions.map(q => (q.prompt || q.title || '').slice(0, 140));
+        if (item.questionType === 'objective' && Array.isArray(item.objectiveQuestions)) {
+          return item.objectiveQuestions.map(q => (q?.question || '').slice(0, 140));
+        } else if (Array.isArray(item.subjectiveQuestions)) {
+          return item.subjectiveQuestions.map(q => (q?.prompt || q?.title || '').slice(0, 140));
         }
         return [];
       });
@@ -3781,7 +3790,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
 
                 {/* Modal List */}
                 <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-                  {historyList.length === 0 ? (
+                  {(!Array.isArray(historyList) || historyList.length === 0) ? (
                     <div className="text-center py-12 flex flex-col items-center justify-center">
                       <div className="w-12 h-12 rounded-2xl bg-zinc-100 text-zinc-400 flex items-center justify-center mb-3">
                         <Clock className="w-6 h-6" />
@@ -3792,7 +3801,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                       </p>
                     </div>
                   ) : (
-                    historyList.map(item => (
+                    historyList.filter(item => item && item.id).map(item => (
                       <div
                         key={item.id}
                         className="p-3.5 rounded-2xl border border-zinc-200 bg-white hover:border-indigo-200 transition-all shadow-xs flex flex-col gap-2.5"

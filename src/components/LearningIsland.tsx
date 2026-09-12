@@ -339,57 +339,79 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
 
   // Default unlocked levels: Level 1 of EVERY unit is ALWAYS unlocked!
   const defaultUnlocked = useMemo(() => {
-    return currentUnits.map(u => u.levels[0]?.id).filter((id): id is number => typeof id === 'number');
+    return (currentUnits || [])
+      .map(u => u.levels?.[0]?.id)
+      .filter((id): id is number => typeof id === 'number');
   }, [currentUnits]);
 
-  // Persistent Progress State per Subject
+  // Persistent Progress State per Subject with Strict Fallback Protection
   const [progress, setProgress] = useState<UserLevelProgress>(() => {
-    const key = `learning_island_progress_${selectedSubject.id}`;
-    let saved = safeGetItem(key);
-    if (!saved && selectedSubject.id === 'ap-calculus-ab') {
-      saved = safeGetItem(STORAGE_KEY);
-    }
-    if (saved) {
-      const parsed = safeJsonParse(saved, null);
-      if (parsed && Array.isArray(parsed.unlockedLevels)) {
-        const initialDefaultUnlocked = currentUnits.map(u => u.levels[0]?.id).filter((id): id is number => typeof id === 'number');
-        const combined = Array.from(new Set([...parsed.unlockedLevels, ...initialDefaultUnlocked]));
-        return {
-          ...parsed,
-          unlockedLevels: combined,
-          lastPlayedUnitIndex: parsed.lastPlayedUnitIndex || 1,
-          lastPlayedLevelId: parsed.lastPlayedLevelId
-        };
-      }
-    }
-    const initialDefaultUnlocked = currentUnits.map(u => u.levels[0]?.id).filter((id): id is number => typeof id === 'number');
-    return {
+    const initialDefaultUnlocked = (currentUnits || [])
+      .map(u => u.levels?.[0]?.id)
+      .filter((id): id is number => typeof id === 'number');
+
+    const defaultState: UserLevelProgress = {
       unlockedLevels: initialDefaultUnlocked,
       completedLevels: {},
       lastPlayedUnitIndex: 1,
       lastPlayedLevelId: undefined
     };
+
+    try {
+      const key = `learning_island_progress_${selectedSubject?.id || 'ap-calculus-ab'}`;
+      let saved = safeGetItem(key);
+      if (!saved && selectedSubject?.id === 'ap-calculus-ab') {
+        saved = safeGetItem(STORAGE_KEY);
+      }
+      if (saved) {
+        const parsed = safeJsonParse<any>(saved, null);
+        if (parsed && typeof parsed === 'object') {
+          const rawUnlocked = Array.isArray(parsed.unlockedLevels) ? parsed.unlockedLevels : [];
+          const combined = Array.from(new Set([...rawUnlocked, ...initialDefaultUnlocked]));
+          const safeCompleted = (parsed.completedLevels && typeof parsed.completedLevels === 'object' && !Array.isArray(parsed.completedLevels))
+            ? parsed.completedLevels
+            : {};
+          return {
+            unlockedLevels: combined.length > 0 ? combined : initialDefaultUnlocked,
+            completedLevels: safeCompleted,
+            lastPlayedUnitIndex: typeof parsed.lastPlayedUnitIndex === 'number' ? parsed.lastPlayedUnitIndex : 1,
+            lastPlayedLevelId: typeof parsed.lastPlayedLevelId === 'number' ? parsed.lastPlayedLevelId : undefined
+          };
+        }
+      }
+    } catch (err) {
+      console.warn('[LearningIsland] Corrupted progress recovered with defaults:', err);
+    }
+    return defaultState;
   });
 
   // Load progress when subject changes
   useEffect(() => {
-    const key = `learning_island_progress_${selectedSubject.id}`;
-    let saved = safeGetItem(key);
-    if (!saved && selectedSubject.id === 'ap-calculus-ab') {
-      saved = safeGetItem(STORAGE_KEY);
-    }
-    if (saved) {
-      const parsed = safeJsonParse(saved, null);
-      if (parsed && Array.isArray(parsed.unlockedLevels)) {
-        const combined = Array.from(new Set([...parsed.unlockedLevels, ...defaultUnlocked]));
-        setProgress({
-          ...parsed,
-          unlockedLevels: combined,
-          lastPlayedUnitIndex: parsed.lastPlayedUnitIndex || 1,
-          lastPlayedLevelId: parsed.lastPlayedLevelId
-        });
-        return;
+    try {
+      const key = `learning_island_progress_${selectedSubject?.id || 'ap-calculus-ab'}`;
+      let saved = safeGetItem(key);
+      if (!saved && selectedSubject?.id === 'ap-calculus-ab') {
+        saved = safeGetItem(STORAGE_KEY);
       }
+      if (saved) {
+        const parsed = safeJsonParse<any>(saved, null);
+        if (parsed && typeof parsed === 'object') {
+          const rawUnlocked = Array.isArray(parsed.unlockedLevels) ? parsed.unlockedLevels : [];
+          const combined = Array.from(new Set([...rawUnlocked, ...defaultUnlocked]));
+          const safeCompleted = (parsed.completedLevels && typeof parsed.completedLevels === 'object' && !Array.isArray(parsed.completedLevels))
+            ? parsed.completedLevels
+            : {};
+          setProgress({
+            unlockedLevels: combined.length > 0 ? combined : defaultUnlocked,
+            completedLevels: safeCompleted,
+            lastPlayedUnitIndex: typeof parsed.lastPlayedUnitIndex === 'number' ? parsed.lastPlayedUnitIndex : 1,
+            lastPlayedLevelId: typeof parsed.lastPlayedLevelId === 'number' ? parsed.lastPlayedLevelId : undefined
+          });
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('[LearningIsland] Progress change error:', err);
     }
     setProgress({
       unlockedLevels: defaultUnlocked,
@@ -397,7 +419,7 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
       lastPlayedUnitIndex: 1,
       lastPlayedLevelId: undefined
     });
-  }, [selectedSubject.id, defaultUnlocked]);
+  }, [selectedSubject?.id, defaultUnlocked]);
 
   // Save progress on update
   useEffect(() => {
@@ -508,21 +530,23 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
   // Check if a level is unlocked
   // RULE: Level 1 of ANY unit is ALWAYS unlocked!
   const isLevelUnlocked = (lvl: UnitQuestLevel): boolean => {
+    if (!lvl) return false;
     if (lvl.levelNumber === 1) return true; // Always unlocked!
-    return progress.unlockedLevels.includes(lvl.id);
+    const unlocked = Array.isArray(progress?.unlockedLevels) ? progress.unlockedLevels : [];
+    return unlocked.includes(lvl.id);
   };
 
   // Find the exact active level coordinate to center the map on mount
   // RULE: The map must open directly at the unit and level the user is currently playing!
-  // e.g. If user unlocked Level 2 of Unit 1, open directly at Unit 1 Level 2!
   const activeLevelCoord = useMemo(() => {
-    if (levelCoordinates.length === 0) return null;
+    if (!levelCoordinates || levelCoordinates.length === 0) return null;
+    const completed = (progress && progress.completedLevels) || {};
 
     // Step 1: Identify target active unit
-    let targetUnitIndex = progress.lastPlayedUnitIndex || 1;
+    let targetUnitIndex = progress?.lastPlayedUnitIndex || 1;
 
     // If lastPlayedLevelId is specified, check what unit it belongs to
-    if (progress.lastPlayedLevelId) {
+    if (progress?.lastPlayedLevelId) {
       const directMatch = levelCoordinates.find(c => c.id === progress.lastPlayedLevelId);
       if (directMatch) {
         targetUnitIndex = directMatch.unitIndex;
@@ -532,7 +556,7 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
     // If still not defined, look for any unit with completed levels or unlocked levels > 1
     if (!targetUnitIndex) {
       const playedUnits = levelCoordinates
-        .filter(c => progress.completedLevels[c.id] || (c.levelNumber > 1 && isLevelUnlocked(c.level)))
+        .filter(c => completed[c.id] || (c.levelNumber > 1 && isLevelUnlocked(c.level)))
         .map(c => c.unitIndex);
       targetUnitIndex = playedUnits.length > 0 ? Math.max(...playedUnits) : 1;
     }
@@ -541,15 +565,15 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
     const unitCoords = levelCoordinates.filter(c => c.unitIndex === targetUnitIndex);
     if (unitCoords.length > 0) {
       // 1. If user was directly on a level that is NOT completed yet, that is the active level:
-      if (progress.lastPlayedLevelId) {
+      if (progress?.lastPlayedLevelId) {
         const directCoord = unitCoords.find(c => c.id === progress.lastPlayedLevelId);
-        if (directCoord && !progress.completedLevels[directCoord.id] && isLevelUnlocked(directCoord.level)) {
+        if (directCoord && !completed[directCoord.id] && isLevelUnlocked(directCoord.level)) {
           return directCoord;
         }
       }
 
       // 2. Find first unlocked level in this unit that has NOT been completed yet (e.g. Level 2!)
-      const nextUncompleted = unitCoords.find(c => isLevelUnlocked(c.level) && !progress.completedLevels[c.id]);
+      const nextUncompleted = unitCoords.find(c => isLevelUnlocked(c.level) && !completed[c.id]);
       if (nextUncompleted) {
         return nextUncompleted;
       }
@@ -564,11 +588,11 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
     }
 
     // Fallback: search globally
-    const globalNext = levelCoordinates.find(c => isLevelUnlocked(c.level) && !progress.completedLevels[c.id]);
+    const globalNext = levelCoordinates.find(c => isLevelUnlocked(c.level) && !completed[c.id]);
     if (globalNext) return globalNext;
 
-    return levelCoordinates[0];
-  }, [levelCoordinates, progress.lastPlayedUnitIndex, progress.lastPlayedLevelId, progress.unlockedLevels, progress.completedLevels]);
+    return levelCoordinates[0] || null;
+  }, [levelCoordinates, progress?.lastPlayedUnitIndex, progress?.lastPlayedLevelId, progress?.unlockedLevels, progress?.completedLevels]);
 
   const [isInitialPositioned, setIsInitialPositioned] = useState<boolean>(false);
 
