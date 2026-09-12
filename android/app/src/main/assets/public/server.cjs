@@ -3364,9 +3364,9 @@ function shuffleAndBalanceTestPrepQuestions(questions) {
     if (rawOptions.length < 4) return q;
     const rawAns = String(q.correctAnswer || "").trim();
     let currentCorrectIdx = -1;
-    const letterMatch = rawAns.match(/^[A-Da-d][\)\.:\s]/i) || rawAns.match(/^[A-Da-d]$/);
-    if (letterMatch) {
-      const matchedLetter = (letterMatch[1] || letterMatch[0]).charAt(0).toUpperCase();
+    const letterMatch = rawAns.match(/^Option\s+([A-Da-d])/i) || rawAns.match(/^([A-Da-d])[\)\.:\s]/) || rawAns.match(/^([A-Da-d])$/);
+    if (letterMatch && letterMatch[1]) {
+      const matchedLetter = letterMatch[1].toUpperCase();
       const lIdx = MCQ_LETTERS.indexOf(matchedLetter);
       if (lIdx >= 0 && lIdx < 4) currentCorrectIdx = lIdx;
     }
@@ -3602,7 +3602,11 @@ CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
    - Before outputting options, you MUST solve the question step-by-step to arrive at the definite, mathematically and scientifically verified answer.
    - EXACTLY ONE OF THE 4 OPTIONS (A, B, C, or D) MUST BE 100% CORRECT. Under no circumstances should all 4 options be wrong, and under no circumstances should the true answer be missing from the options list!
    - "correctAnswer" MUST BE VERBATIM IDENTICAL: The "correctAnswer" property MUST be an exact character-for-character match to the corresponding option in the "options" array.
-5. STEP-BY-STEP AP EXPLANATION & DISTRACTOR BREAKDOWN:
+3. EQUAL 25% OPTION DISTRIBUTION (CRITICAL - NO OPTION A BIAS):
+   - You MUST distribute the correct answer uniformly across options (A, B, C, and D) with equal ~25% probability across the batch!
+   - Under NO circumstances should Option A always be the correct answer!
+   - Ensure an authentic, varied distribution across A, B, C, and D throughout the question set (e.g. Q1 correct is B, Q2 correct is D, Q3 correct is A, Q4 correct is C).
+4. STEP-BY-STEP AP EXPLANATION & DISTRACTOR BREAKDOWN:
    Explain WHY the correct option is right with structured step-by-step logic using double newlines ('\\n\\n'):
    - Step 1: Core formula, theorem, or contextual definition.
    - Step 2: Clear calculation or deductive justification proving the correct answer.
@@ -3666,13 +3670,13 @@ Return ONLY a valid JSON array of objects with this exact structure:
     "diagramSvg": "<svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg'>...</svg>",
     "diagramType": "piecewise_graph",
     "options": [
-      "A) Option 1",
-      "B) Option 2",
-      "C) Option 3",
-      "D) Option 4"
+      "A) Distractor 1",
+      "B) Verified correct answer",
+      "C) Distractor 2",
+      "D) Distractor 3"
     ],
-    "correctAnswer": "A) Option 1",
-    "explanation": "Detailed College Board explanation breaking down why A is correct and why B, C, D are common traps.",
+    "correctAnswer": "B) Verified correct answer",
+    "explanation": "Detailed College Board explanation breaking down why B is correct and why A, C, D are common traps.",
     "skill": "Relevant AP Unit / Skill Tag"
   }
 ]`;

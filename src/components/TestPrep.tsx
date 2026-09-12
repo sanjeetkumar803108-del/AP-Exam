@@ -194,6 +194,96 @@ export function isOptionCorrectAnswer(
   return false;
 }
 
+/**
+ * Shuffles and balances objective question options across A, B, C, and D so each option has an equal 25% chance
+ * and no two consecutive questions share the same correct option letter.
+ */
+export function shuffleAndBalanceObjectiveQuestions(questions: APObjectiveQuestion[]): APObjectiveQuestion[] {
+  if (!Array.isArray(questions) || questions.length === 0) return questions;
+
+  const letters = ['A', 'B', 'C', 'D'];
+  const count = questions.length;
+
+  // Generate balanced target positions across A (0), B (1), C (2), D (3)
+  const targetPositions: number[] = [];
+  const counts = [0, 0, 0, 0];
+  let lastPos = -1;
+
+  for (let i = 0; i < count; i++) {
+    const validPositions = [0, 1, 2, 3].filter(p => p !== lastPos);
+    validPositions.sort((a, b) => counts[a] - counts[b] + (Math.random() - 0.5));
+    const chosen = validPositions[0];
+    targetPositions.push(chosen);
+    counts[chosen]++;
+    lastPos = chosen;
+  }
+
+  return questions.map((q, idx) => {
+    if (!q.options || q.options.length < 4) return q;
+
+    // Detect current correct index
+    let currentCorrectIdx = -1;
+    for (let optIdx = 0; optIdx < q.options.length; optIdx++) {
+      if (isOptionCorrectAnswer(q.options[optIdx], q.correctAnswer, q.options)) {
+        currentCorrectIdx = optIdx;
+        break;
+      }
+    }
+
+    if (currentCorrectIdx === -1) {
+      currentCorrectIdx = 0;
+    }
+
+    // Strip existing letter prefixes like "A) ", "B. "
+    const cleanContents = q.options.slice(0, 4).map(opt =>
+      opt.replace(/^[A-Da-d][\)\.:\s]\s*/, '').trim()
+    );
+
+    const correctContent = cleanContents[currentCorrectIdx];
+    const distractorContents = cleanContents.filter((_, i) => i !== currentCorrectIdx);
+
+    // Shuffle distractors with Fisher-Yates
+    for (let d = distractorContents.length - 1; d > 0; d--) {
+      const rand = Math.floor(Math.random() * (d + 1));
+      [distractorContents[d], distractorContents[rand]] = [distractorContents[rand], distractorContents[d]];
+    }
+
+    // Place correct option at balanced targetPos
+    const targetPos = targetPositions[idx];
+    const reorderedContents: string[] = [];
+    let distractorIdx = 0;
+
+    for (let p = 0; p < 4; p++) {
+      if (p === targetPos) {
+        reorderedContents.push(correctContent);
+      } else {
+        reorderedContents.push(distractorContents[distractorIdx++]);
+      }
+    }
+
+    const newOptions = reorderedContents.map((text, p) => `${letters[p]}) ${text}`);
+    const newCorrectAnswer = newOptions[targetPos];
+
+    // Update explanation if it mentions previous correct letter
+    let newExplanation = q.explanation || '';
+    const oldLetter = letters[currentCorrectIdx];
+    const newLetter = letters[targetPos];
+    if (oldLetter && oldLetter !== newLetter) {
+      newExplanation = newExplanation
+        .replace(new RegExp(`\\bOption\\s+${oldLetter}\\b`, 'gi'), `Option ${newLetter}`)
+        .replace(new RegExp(`\\b${oldLetter}\\s+is\\s+correct\\b`, 'gi'), `${newLetter} is correct`)
+        .replace(new RegExp(`\\(${oldLetter}\\)\\s+is\\s+correct\\b`, 'gi'), `(${newLetter}) is correct`);
+    }
+
+    return {
+      ...q,
+      options: newOptions,
+      correctAnswer: newCorrectAnswer,
+      explanation: newExplanation
+    };
+  });
+}
+
 export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateToTab }: TestPrepProps) {
   // Active User Academic Profile & Grade Detection
   const [userGrade, setUserGrade] = useState<string>(() => {
@@ -804,12 +894,13 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
       );
       if (cachedHistory) {
         if (questionType === 'objective' && cachedHistory.objectiveQuestions) {
-          setObjectiveQuestions(cachedHistory.objectiveQuestions);
+          const balancedCached = shuffleAndBalanceObjectiveQuestions(cachedHistory.objectiveQuestions);
+          setObjectiveQuestions(balancedCached);
           setCurrentObjIndex(0);
           setSelectedAnswers({});
           setShowExplanation({});
           setIsExamCompleted(false);
-          const allocatedTime = getApExamDurationSeconds(selectedSubject.id, 'objective', cachedHistory.objectiveQuestions.length);
+          const allocatedTime = getApExamDurationSeconds(selectedSubject.id, 'objective', balancedCached.length);
           setTotalAllocatedSeconds(allocatedTime);
           setTimeRemainingSeconds(allocatedTime);
           setIsTimerActive(false);
@@ -896,10 +987,11 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
       }
 
       if (questionType === 'objective') {
-        const questionsList: APObjectiveQuestion[] = Array.isArray(data.questions) ? data.questions : [];
-        if (questionsList.length === 0) {
+        const rawList: APObjectiveQuestion[] = Array.isArray(data.questions) ? data.questions : [];
+        if (rawList.length === 0) {
           throw new Error('Received empty question set from server.');
         }
+        const questionsList = shuffleAndBalanceObjectiveQuestions(rawList);
         setObjectiveQuestions(questionsList);
         setCurrentObjIndex(0);
         setSelectedAnswers({});
@@ -1852,7 +1944,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     setIsTimerActive(false);
 
     if (item.questionType === 'objective' && item.objectiveQuestions && item.objectiveQuestions.length > 0) {
-      setObjectiveQuestions(item.objectiveQuestions);
+      const balancedLoaded = shuffleAndBalanceObjectiveQuestions(item.objectiveQuestions);
+      setObjectiveQuestions(balancedLoaded);
       setCurrentObjIndex(0);
       setSelectedAnswers({});
       setShowExplanation({});

@@ -165,6 +165,75 @@ const MOUNTAIN_BIOME_ATMOSPHERES: Record<number, MountainBiomeAtmosphere> = {
 
 const STORAGE_KEY = 'learning_island_multi_unit_progress_v2';
 
+/**
+ * Shuffles and balances question options across A, B, C, D so each option has an equal 25% chance
+ * and no two consecutive questions share the same correct option.
+ */
+export function shuffleAndBalanceQuestQuestions(questions: QuizQuestion[]): QuizQuestion[] {
+  if (!Array.isArray(questions) || questions.length === 0) return questions;
+
+  const count = questions.length;
+  const targetPositions: number[] = [];
+  const counts = [0, 0, 0, 0];
+  let lastPos = -1;
+
+  for (let i = 0; i < count; i++) {
+    const validPositions = [0, 1, 2, 3].filter(p => p !== lastPos);
+    validPositions.sort((a, b) => counts[a] - counts[b] + (Math.random() - 0.5));
+    const chosen = validPositions[0];
+    targetPositions.push(chosen);
+    counts[chosen]++;
+    lastPos = chosen;
+  }
+
+  return questions.map((q, idx) => {
+    if (!q.options || q.options.length < 4) return q;
+
+    const safeCorrectIdx =
+      typeof q.correctIndex === 'number' && q.correctIndex >= 0 && q.correctIndex < q.options.length
+        ? q.correctIndex
+        : 0;
+
+    const correctText = q.options[safeCorrectIdx];
+    const distractorTexts = q.options.filter((_, i) => i !== safeCorrectIdx);
+
+    // Shuffle distractors with Fisher-Yates
+    for (let d = distractorTexts.length - 1; d > 0; d--) {
+      const rand = Math.floor(Math.random() * (d + 1));
+      [distractorTexts[d], distractorTexts[rand]] = [distractorTexts[rand], distractorTexts[d]];
+    }
+
+    const targetPos = targetPositions[idx];
+    const newOptions: string[] = [];
+    let distractorIdx = 0;
+
+    for (let p = 0; p < 4; p++) {
+      if (p === targetPos) {
+        newOptions.push(correctText);
+      } else {
+        newOptions.push(distractorTexts[distractorIdx++]);
+      }
+    }
+
+    const oldLetter = String.fromCharCode(65 + safeCorrectIdx);
+    const newLetter = String.fromCharCode(65 + targetPos);
+
+    let newExplanation = q.explanation || '';
+    if (oldLetter !== newLetter) {
+      newExplanation = newExplanation
+        .replace(new RegExp(`\\bOption\\s+${oldLetter}\\b`, 'gi'), `Option ${newLetter}`)
+        .replace(new RegExp(`\\b${oldLetter}\\s+is\\s+correct\\b`, 'gi'), `${newLetter} is correct`)
+        .replace(new RegExp(`\\(${oldLetter}\\)\\s+is\\s+correct\\b`, 'gi'), `(${newLetter}) is correct`);
+    }
+
+    return {
+      ...q,
+      options: newOptions,
+      correctIndex: targetPos,
+      explanation: newExplanation
+    };
+  });
+}
 
 // Helper to generate a rich, structured local pedagogical AI explanation fallback
 function generateLocalAIExplanation(
@@ -297,7 +366,7 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
           subtitle: `Foundational AP Exam Practice • ${selectedSubject.shortCode}`,
           difficulty: diff,
           rewardCoins: 30,
-          questions: [
+          questions: shuffleAndBalanceQuestQuestions([
             {
               id: `gen-u${unitNum}-l${l}-q1`,
               stem: `In **${selectedSubject.name}** (${u.title}), which principle is fundamental to mastering **Level ${l}**?`,
@@ -337,7 +406,7 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
               explanation: 'Checking boundary conditions and units is the most reliable strategy to eliminate AP test traps.',
               distractorTip: 'Double-check all unit conversions and sign changes!'
             }
-          ]
+          ])
         });
       }
 
@@ -740,7 +809,11 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
       lastPlayedLevelId: lvl.id
     }));
     setSelectedLevel(null);
-    setActiveQuizLevel(lvl);
+    const balancedQuestions = shuffleAndBalanceQuestQuestions(lvl.questions);
+    setActiveQuizLevel({
+      ...lvl,
+      questions: balancedQuestions
+    });
     setCurrentQuestionIndex(0);
     setSelectedOptionIndex(null);
     setIsAnswerSubmitted(false);
