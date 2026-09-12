@@ -570,7 +570,7 @@ export default function Login({ onClose, onLoginSuccess, hideClose = false }: { 
         <Image 
           source={require('../assets/logo.png')} 
           style={{ width: 96, height: 96, resizeMode: 'contain' }}
-          className="mb-4 animate-fade-in"
+          className="mb-4 rounded-2xl shadow-lg animate-fade-in"
         />
         
         <h1 className="text-4xl font-bold text-zinc-800 mb-2 tracking-tight">AP Exam</h1>

@@ -8,6 +8,7 @@ import {
 import { triggerVibration } from '../utils/vibrate';
 import { safeSetItem } from '../utils/storage';
 import { auth } from '../lib/firebase';
+import appLogo from '../assets/logo.png';
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -187,7 +188,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   <ArrowLeft className="w-4 h-4 text-zinc-600" />
                 </button>
               ) : (
-                <div className="w-2 h-2 rounded-full bg-indigo-600 shadow-[0_0_6px_#4f46e5]" />
+                <img src={appLogo} alt="AP Exam" className="w-5 h-5 rounded object-contain" />
               )}
               <span className="text-xs font-black tracking-widest text-indigo-950/80 uppercase leading-none">
                 AP EXAM
