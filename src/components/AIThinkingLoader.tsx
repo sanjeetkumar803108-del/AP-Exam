@@ -166,14 +166,12 @@ export default function AIThinkingLoader({
       >
         {/* Subtle Ambient Depth Glow */}
         <div
-          className={`absolute -top-24 -left-24 w-56 h-56 rounded-full blur-3xl pointer-events-none ${
-            effectiveVariant === 'radar' ? 'bg-emerald-500/10' : 'bg-purple-500/10'
-          }`}
+          className="absolute -top-24 -left-24 w-56 h-56 rounded-full blur-3xl pointer-events-none"
+          style={{ background: 'rgba(37, 99, 235, 0.10)' }}
         />
         <div
-          className={`absolute -bottom-24 -right-24 w-56 h-56 rounded-full blur-3xl pointer-events-none ${
-            effectiveVariant === 'radar' ? 'bg-teal-500/10' : 'bg-cyan-500/10'
-          }`}
+          className="absolute -bottom-24 -right-24 w-56 h-56 rounded-full blur-3xl pointer-events-none"
+          style={{ background: 'rgba(202, 170, 95, 0.10)' }}
         />
 
         {/* Top Header: Category Tag + Live Timer */}
@@ -181,16 +179,15 @@ export default function AIThinkingLoader({
           <div className="flex items-center gap-2">
             <span className="relative flex h-2 w-2">
               <span
-                className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                  effectiveVariant === 'radar' ? 'bg-emerald-400' : 'bg-purple-400'
-                }`}
+                className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                style={{ background: effectiveVariant === 'radar' ? '#3b82f6' : '#2563eb' }}
               />
               <span
-                className={`relative inline-flex rounded-full h-2 w-2 ${
-                  effectiveVariant === 'radar'
-                    ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]'
-                    : 'bg-purple-600 shadow-[0_0_8px_#9333ea]'
-                }`}
+                className="relative inline-flex rounded-full h-2 w-2"
+                style={{
+                  background: effectiveVariant === 'radar' ? '#3b82f6' : '#2563eb',
+                  boxShadow: effectiveVariant === 'radar' ? '0 0 8px #3b82f6' : '0 0 8px #2563eb'
+                }}
               />
             </span>
             <span className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300">
@@ -210,31 +207,31 @@ export default function AIThinkingLoader({
         <div className="relative z-10 flex items-center justify-center py-2">
           {effectiveVariant === 'radar' ? (
             /* ================= REAL BIG RADAR LOADING ANIMATION ================= */
-            <div className="relative w-56 h-56 sm:w-64 sm:h-64 rounded-full border-4 border-emerald-500/35 flex items-center justify-center overflow-hidden bg-gradient-to-b from-[#04150d] via-[#020e08] to-[#010805] shadow-[0_0_40px_rgba(16,185,129,0.25)] ring-4 ring-emerald-500/10 shrink-0">
+            <div className="relative w-56 h-56 sm:w-64 sm:h-64 rounded-full flex items-center justify-center overflow-hidden shrink-0" style={{ borderWidth: 4, borderStyle: 'solid', borderColor: 'rgba(59,130,246,0.35)', background: 'linear-gradient(to bottom, #071428, #050e1e, #030912)', boxShadow: '0 0 40px rgba(37,99,235,0.25)', outline: '4px solid rgba(59,130,246,0.10)' }}>
               {/* Cardinal Azimuth Degrees */}
-              <span className="absolute top-2 text-[8px] font-mono font-bold text-emerald-400/90 tracking-wider select-none">
+              <span className="absolute top-2 text-[8px] font-mono font-bold tracking-wider select-none" style={{ color: 'rgba(59,130,246,0.9)' }}>
                 000° N
               </span>
-              <span className="absolute bottom-2 text-[8px] font-mono font-bold text-emerald-400/90 tracking-wider select-none">
+              <span className="absolute bottom-2 text-[8px] font-mono font-bold tracking-wider select-none" style={{ color: 'rgba(59,130,246,0.9)' }}>
                 180° S
               </span>
-              <span className="absolute left-2 text-[8px] font-mono font-bold text-emerald-400/90 tracking-wider select-none">
+              <span className="absolute left-2 text-[8px] font-mono font-bold tracking-wider select-none" style={{ color: 'rgba(59,130,246,0.9)' }}>
                 270° W
               </span>
-              <span className="absolute right-2 text-[8px] font-mono font-bold text-emerald-400/90 tracking-wider select-none">
+              <span className="absolute right-2 text-[8px] font-mono font-bold tracking-wider select-none" style={{ color: 'rgba(59,130,246,0.9)' }}>
                 090° E
               </span>
 
               {/* Concentric Distance Rings */}
-              <div className="absolute inset-5 sm:inset-6 rounded-full border border-emerald-500/25 pointer-events-none" />
-              <div className="absolute inset-12 sm:inset-14 rounded-full border border-emerald-500/25 border-dashed pointer-events-none" />
-              <div className="absolute inset-20 sm:inset-22 rounded-full border border-emerald-500/20 pointer-events-none" />
+              <div className="absolute inset-5 sm:inset-6 rounded-full pointer-events-none" style={{ border: '1px solid rgba(59,130,246,0.25)' }} />
+              <div className="absolute inset-12 sm:inset-14 rounded-full border-dashed pointer-events-none" style={{ border: '1px dashed rgba(59,130,246,0.25)' }} />
+              <div className="absolute inset-20 sm:inset-22 rounded-full pointer-events-none" style={{ border: '1px solid rgba(59,130,246,0.20)' }} />
 
               {/* 4-Quadrant Crosshairs */}
-              <div className="absolute w-full h-[1px] bg-emerald-500/30 pointer-events-none" />
-              <div className="absolute h-full w-[1px] bg-emerald-500/30 pointer-events-none" />
-              <div className="absolute w-full h-[1px] bg-emerald-500/15 rotate-45 pointer-events-none" />
-              <div className="absolute w-full h-[1px] bg-emerald-500/15 -rotate-45 pointer-events-none" />
+              <div className="absolute w-full h-[1px] pointer-events-none" style={{ background: 'rgba(59,130,246,0.30)' }} />
+              <div className="absolute h-full w-[1px] pointer-events-none" style={{ background: 'rgba(59,130,246,0.30)' }} />
+              <div className="absolute w-full h-[1px] rotate-45 pointer-events-none" style={{ background: 'rgba(59,130,246,0.15)' }} />
+              <div className="absolute w-full h-[1px] -rotate-45 pointer-events-none" style={{ background: 'rgba(59,130,246,0.15)' }} />
 
               {/* 360° SWEEP BEAM CONE */}
               <motion.div
@@ -243,40 +240,40 @@ export default function AIThinkingLoader({
                 className="absolute inset-0 rounded-full pointer-events-none origin-center"
                 style={{
                   background:
-                    'conic-gradient(from 0deg, rgba(16, 185, 129, 0.65) 0deg, rgba(16, 185, 129, 0.25) 35deg, rgba(16, 185, 129, 0.05) 70deg, transparent 85deg, transparent 360deg)'
+                    'conic-gradient(from 0deg, rgba(37,99,235,0.65) 0deg, rgba(37,99,235,0.25) 35deg, rgba(37,99,235,0.05) 70deg, transparent 85deg, transparent 360deg)'
                 }}
               />
 
               {/* Radar Target Blips (Interactive Pings) */}
-              <div className="absolute top-[28%] right-[26%] w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981] animate-pulse" />
-              <div className="absolute bottom-[30%] left-[32%] w-1.5 h-1.5 rounded-full bg-teal-300 shadow-[0_0_6px_#2dd4bf] animate-ping" />
-              <div className="absolute top-[42%] left-[24%] w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#10b981]" />
+              <div className="absolute top-[28%] right-[26%] w-2 h-2 rounded-full animate-pulse" style={{ background: '#caaa5f', boxShadow: '0 0 8px #caaa5f' }} />
+              <div className="absolute bottom-[30%] left-[32%] w-1.5 h-1.5 rounded-full animate-ping" style={{ background: '#d4a843', boxShadow: '0 0 6px #d4a843' }} />
+              <div className="absolute top-[42%] left-[24%] w-1.5 h-1.5 rounded-full" style={{ background: '#caaa5f', boxShadow: '0 0 6px #caaa5f' }} />
 
               {/* Radar Origin Center Transmitter */}
-              <div className="relative z-10 w-5 h-5 rounded-full bg-emerald-500/30 border border-emerald-400 flex items-center justify-center shadow-[0_0_15px_#10b981]">
+              <div className="relative z-10 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'rgba(37,99,235,0.30)', border: '1px solid #3b82f6', boxShadow: '0 0 15px #2563eb' }}>
                 <div className="w-2 h-2 rounded-full bg-white animate-ping" />
               </div>
             </div>
           ) : (
             /* ================= APP SIGNATURE DUAL-RING LOADER ================= */
             <div className="relative w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center">
-              {/* Outer Ring: Purple Clockwise */}
+              {/* Outer Ring: Navy Blue Clockwise */}
               <motion.div
                 className="absolute w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[5px] border-zinc-100 dark:border-zinc-800"
                 style={{
-                  borderTopColor: '#9333ea',
-                  filter: 'drop-shadow(0 0 10px rgba(147, 51, 234, 0.55))'
+                  borderTopColor: '#2563eb',
+                  filter: 'drop-shadow(0 0 10px rgba(37, 99, 235, 0.55))'
                 }}
                 animate={{ rotate: 360 }}
                 transition={{ repeat: Infinity, duration: 1.2, ease: 'linear' }}
               />
 
-              {/* Inner Ring: Cyan Counter-Clockwise */}
+              {/* Inner Ring: Golden Counter-Clockwise */}
               <motion.div
                 className="absolute w-14 h-14 sm:w-16 sm:h-16 rounded-full border-[4px] border-zinc-100 dark:border-zinc-800"
                 style={{
-                  borderBottomColor: '#06b6d4',
-                  filter: 'drop-shadow(0 0 8px rgba(6, 182, 212, 0.55))'
+                  borderBottomColor: '#caaa5f',
+                  filter: 'drop-shadow(0 0 8px rgba(202, 170, 95, 0.55))'
                 }}
                 animate={{ rotate: -360 }}
                 transition={{ repeat: Infinity, duration: 0.9, ease: 'linear' }}
@@ -284,7 +281,11 @@ export default function AIThinkingLoader({
 
               {/* Breathing Glowing AI Core */}
               <motion.div
-                className="absolute w-4 h-4 rounded-full bg-gradient-to-tr from-purple-600 to-cyan-500 shadow-[0_0_14px_rgba(147,51,234,0.7)]"
+                className="absolute w-4 h-4 rounded-full"
+                style={{
+                  background: 'linear-gradient(to top right, #1e3a5f, #caaa5f)',
+                  boxShadow: '0 0 14px rgba(37, 99, 235, 0.7)'
+                }}
                 animate={{ scale: [0.85, 1.2, 0.85] }}
                 transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
               />
@@ -327,11 +328,13 @@ export default function AIThinkingLoader({
         <div className="relative z-10 space-y-2 pt-1">
           <div className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-2 overflow-hidden border border-zinc-200/60 dark:border-zinc-700/60">
             <motion.div
-              className={`h-full ${
-                effectiveVariant === 'radar'
-                  ? 'bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-400 shadow-[0_0_10px_#10b981]'
-                  : 'bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 shadow-[0_0_10px_rgba(147,51,234,0.5)]'
-              }`}
+              className="h-full"
+              style={{
+                background: effectiveVariant === 'radar'
+                  ? 'linear-gradient(to right, #1e3a5f, #2563eb, #3b82f6)'
+                  : 'linear-gradient(to right, #1e3a5f, #2563eb, #caaa5f)',
+                boxShadow: '0 0 10px rgba(37, 99, 235, 0.5)'
+              }}
               animate={{ width: `${progressPercent}%` }}
               transition={{ duration: 0.4, ease: 'easeInOut' }}
             />
