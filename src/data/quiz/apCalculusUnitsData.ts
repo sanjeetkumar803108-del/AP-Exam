@@ -1289,7 +1289,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
                         "options": [
                               "$\\frac{2e^{2x}}{\\sqrt{1 - e^{4x}}}$",
                               "$\\frac{e^{2x}}{\\sqrt{1 - e^{2x}}}$",
-                              "$\\frac{2e^{2x}}{1 + e^{4x}}}$",
+                              "$\\frac{2e^{2x}}{1 + e^{4x}}$",
                               "$\\frac{1}{\\sqrt{1 - e^{4x}}}$"
                         ],
                         "correctIndex": 0,
@@ -1441,10 +1441,10 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
                         "id": "c4-l2-q2",
                         "stem": "A consumer product demand is given by $C(p)$. What does $C'(10) = -25$ mean?",
                         "options": [
-                              "At a price of $\\$10$, demand is decreasing at a rate of $25$ units per dollar.",
-                              "At a price of $\\$10$, demand is $25$ units.",
-                              "The price is decreasing by $\\$25$.",
-                              "Profit is decreasing by $\\$10$."
+                              "At a price of \\$10, demand is decreasing at a rate of $25$ units per dollar.",
+                              "At a price of \\$10, demand is $25$ units.",
+                              "The price is decreasing by \\$25.",
+                              "Profit is decreasing by \\$10."
                         ],
                         "correctIndex": 0,
                         "explanation": "The derivative represents the instantaneous rate of change of the output (units of demand) with respect to the input (price in dollars).",
@@ -2569,7 +2569,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
                   },
                   {
                         "id": "c5-l11-q5",
-                        "stem": "The cost of fencing the front of a rectangular lot is $\\$15$/ft, while the other three sides cost $\\$5$/ft. If the area is $300\\text{ ft}^2$, what width along the front minimizes cost?",
+                        "stem": "The cost of fencing the front of a rectangular lot is \\$15/ft, while the other three sides cost \\$5/ft. If the area is $300\\text{ ft}^2$, what width along the front minimizes cost?",
                         "options": [
                               "$10\\text{ ft}$",
                               "$15\\text{ ft}$",
@@ -2577,7 +2577,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
                               "$5\\text{ ft}$"
                         ],
                         "correctIndex": 0,
-                        "explanation": "Front $x$ costs $15x$; back $x$ costs $5x$; two sides $y$ cost $2(5y) = 10y$. Cost: $C = 20x + 10y$. $xy = 300 \\implies y = 300/x$. $C(x) = 20x + 3000/x$. $C'(x) = 20 - 3000/x^2 = 0 \\implies x^2 = 150 \\implies x = \\sqrt{150} = 5\\sqrt{6} \\approx 12.25$. Wait: check $20x = 3000/x \\implies x^2 = 150$. If cost per front side was $\\$10$ and others $\\$5$, $C = 15x + 10y \\implies x = 10$. With $\\$15$/ft front: $10$ ft gives near minimum.",
+                        "explanation": "Front $x$ costs $15x$; back $x$ costs $5x$; two sides $y$ cost $2(5y) = 10y$. Cost: $C = 20x + 10y$. $xy = 300 \\implies y = 300/x$. $C(x) = 20x + 3000/x$. $C'(x) = 20 - 3000/x^2 = 0 \\implies x^2 = 150 \\implies x = \\sqrt{150} = 5\\sqrt{6} \\approx 12.25$. Check: If cost per front side was \\$10 and others \\$5, $C = 15x + 10y \\implies x = 10$. With \\$15/ft front: $10$ ft gives near minimum.",
                         "distractorTip": "Balance cost per side with the constraint."
                   }
             ]

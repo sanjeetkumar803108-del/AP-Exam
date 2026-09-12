@@ -182,7 +182,7 @@ function generateLocalAIExplanation(
 
   if (isWrong) {
     text += `### ⚠️ 2. Why Option ${chosenLetter} Is Incorrect (Trap Decoded)\n\n`;
-    text += `You selected **Option ${chosenLetter}: ${chosenText}**.\n\n`;
+    text += `You selected **Option ${chosenLetter}:** ${chosenText}\n\n`;
     if (question.distractorTip) {
       text += `* **The Trap:** ${question.distractorTip}\n\n`;
     } else {
@@ -197,7 +197,7 @@ function generateLocalAIExplanation(
   text += `${question.explanation}\n\n`;
   text += `* **Step 1:** Formulate the governing formula or theorem.\n`;
   text += `* **Step 2:** Substitute the exact boundary conditions or given values.\n`;
-  text += `* **Step 3:** Calculate and conclude: The correct result is **Option ${correctLetter}: ${correctText}**.\n\n`;
+  text += `* **Step 3:** Calculate and conclude: The correct result is **Option ${correctLetter}:** ${correctText}\n\n`;
 
   text += `### 💡 4. Chief Reader AP Exam Takeaway\n\n`;
   text += `* On AP Multiple Choice, always eliminate options that confuse **units**, **signs**, or **interval bounds**.\n`;
@@ -1533,7 +1533,7 @@ Please structure your response into these 4 clear sections:
                             {String.fromCharCode(65 + oIdx)}
                           </div>
                           <div className="flex-1 text-xs sm:text-sm font-semibold text-zinc-950 leading-snug">
-                            <GlobalMarkdown content={opt} />
+                            <GlobalMarkdown content={opt} className="[&_p]:my-0 [&_p]:inline" />
                           </div>
                         </div>
                       );
@@ -1574,11 +1574,16 @@ Please structure your response into these 4 clear sections:
                                   ? `Incorrect: You chose Option ${chosenLetter}`
                                   : `Correct! Excellent work.`}
                               </span>
-                              <span className={`text-[11px] font-bold block ${isWrong ? 'text-rose-800' : 'text-emerald-800'}`}>
-                                {isWrong
-                                  ? `Correct answer is Option ${correctLetter}: ${correctText}`
-                                  : `Option ${correctLetter} is the correct answer.`}
-                              </span>
+                              <div className={`text-[11px] font-bold flex flex-wrap items-baseline gap-1 mt-0.5 ${isWrong ? 'text-rose-800' : 'text-emerald-800'}`}>
+                                {isWrong ? (
+                                  <>
+                                    <span>Correct answer is Option {correctLetter}:</span>
+                                    <GlobalMarkdown content={correctText} className="inline [&_p]:inline [&_p]:my-0 font-bold" />
+                                  </>
+                                ) : (
+                                  <span>Option {correctLetter} is the correct answer.</span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>

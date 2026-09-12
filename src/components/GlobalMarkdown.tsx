@@ -153,6 +153,10 @@ export function cleanMarkdownMath(content: string): string {
     }
     math = math.replace(/([^\\])\\\s*\\hline/g, '$1\\\\ \\hline');
     math = math.replace(/(?<!\\)%/g, '\\%');
+    // Heal escaped dollar symbols inside math mode to valid KaTeX text dollar (\text{\$})
+    math = math.replace(/(?<!\\text\{)\\\$/g, '\\text{\\$}');
+    // Repair accidental extra trailing closing braces after frac or sqrt
+    math = math.replace(/(\\frac\{[^{}]*\}\{[^{}]*\})\}/g, '$1');
 
     const idx = mathBlocks.length;
     mathBlocks.push(math);
