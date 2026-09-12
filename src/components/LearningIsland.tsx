@@ -909,16 +909,11 @@ Please structure your response into these 4 clear sections:
           <div className="flex items-center gap-2">
             <span className="text-xl">🏝️</span>
             <div>
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-sm sm:text-base font-extrabold text-zinc-950 tracking-tight flex items-center gap-1.5">
-                  Learning Island
-                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
-                    Continuous Adventure Map
-                  </span>
-                </h1>
-              </div>
-              <p className="text-[11px] text-zinc-600 font-semibold hidden sm:block">
-                All Units Linked Sequentially • Level 1 Unlocked on Every Unit
+              <h1 className="text-base sm:text-lg font-black text-zinc-950 tracking-tight">
+                Learning Island
+              </h1>
+              <p className="text-[11px] text-zinc-500 font-bold hidden sm:block">
+                Curriculum Quest Map • Level 1 Unlocked on Every Unit
               </p>
             </div>
           </div>
