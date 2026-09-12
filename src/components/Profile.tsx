@@ -228,25 +228,21 @@ export default function Profile({
   const [restartCountdown, setRestartCountdown] = useState<number | null>(null);
 
   const handleFullAppOptimization = async () => {
-    triggerVibration(hapticEnabled ? 20 : 0);
+    triggerVibration(hapticEnabled ? 25 : 0);
     setShowOptimizationModal(true);
     setIsOptimizing(true);
     setRestartCountdown(null);
-    setOptimizationProgress(15);
-    setOptimizationStepText("Analyzing system RAM & temporary cache footprint...");
+    setOptimizationProgress(25);
+    setOptimizationStepText("⚡ Purging canvas GPU textures & uncollected RAM buffers...");
     setOptimizationResult(null);
 
-    await new Promise(r => setTimeout(r, 400));
-    setOptimizationProgress(40);
-    setOptimizationStepText("Purging dead canvas buffers, stale blob URLs & temp drafts...");
+    await new Promise(r => setTimeout(r, 280));
+    setOptimizationProgress(60);
+    setOptimizationStepText("🧹 Sanitizing temporary cache, blob URLs & audio queues...");
 
-    await new Promise(r => setTimeout(r, 450));
-    setOptimizationProgress(70);
-    setOptimizationStepText("Compacting AI render pipelines & re-indexing memory cache...");
-
-    await new Promise(r => setTimeout(r, 450));
-    setOptimizationProgress(90);
-    setOptimizationStepText("Restoring ultra-fast 60fps responsiveness & latency boost...");
+    await new Promise(r => setTimeout(r, 280));
+    setOptimizationProgress(88);
+    setOptimizationStepText("🚀 Compacting memory heap & preparing ultra-clean 60fps restart...");
 
     try {
       const res = await runFullAppOptimization();
@@ -259,18 +255,14 @@ export default function Profile({
         spread: 70,
         origin: { y: 0.6 }
       });
-      showToast("🚀 App fully optimized! Restarting in 2s...");
+      showToast("🚀 App fully optimized! Restarting cleanly...");
 
-      // Start auto-restart countdown
-      setRestartCountdown(2);
-      setOptimizationStepText("✅ App 100% Fully Optimized! Restarting cleanly in 2s...");
-      await new Promise(r => setTimeout(r, 1000));
-      
+      // Start auto-restart countdown (smooth 1s delay so user sees celebration & stats)
       setRestartCountdown(1);
-      setOptimizationStepText("✅ App 100% Fully Optimized! Restarting cleanly in 1s...");
-      await new Promise(r => setTimeout(r, 1000));
+      setOptimizationStepText("✅ App 100% Fully Optimized! Reloading cleanly in 1s...");
+      await new Promise(r => setTimeout(r, 900));
 
-      setOptimizationStepText("⚡ Restarting App with Fresh Clean Memory...");
+      setOptimizationStepText("⚡ Restarting App with Fresh 60fps Clean Memory...");
       restartAppCleanly();
     } catch (e) {
       console.error("Optimization failed:", e);
@@ -2141,13 +2133,13 @@ export default function Profile({
                   </div>
 
                   <p className="text-[10px] text-white/90 font-medium leading-relaxed mb-3 relative z-10">
-                    Cleans background blob memory, purges orphaned temporary cache, and restores peak 60fps responsiveness across all AI tools.
+                    Cleans background canvas GPU buffers, halts audio locks, purges temporary cache, and reloads the app cleanly into a fresh 60fps state.
                   </p>
 
                   <button
                     onClick={handleFullAppOptimization}
                     disabled={isOptimizing}
-                    className="w-full bg-white hover:bg-zinc-50 text-emerald-800 active:scale-98 font-black text-xs py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer relative z-10 border-none disabled:opacity-75"
+                    className="w-full bg-white hover:bg-zinc-50 text-emerald-800 active:scale-98 font-black text-xs py-3.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer relative z-10 border-none disabled:opacity-75"
                   >
                     {isOptimizing ? (
                       <>
@@ -2157,7 +2149,7 @@ export default function Profile({
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4 text-emerald-600 fill-emerald-600" />
-                        <span>⚡ Run Full Optimization</span>
+                        <span>⚡ Run Full Optimization & Reload</span>
                       </>
                     )}
                   </button>

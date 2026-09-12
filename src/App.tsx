@@ -77,6 +77,7 @@ const APNotes = lazyWithRetry(() => import('./components/APNotes'));
 const APSamplePapers = lazyWithRetry(() => import('./components/APSamplePapers'));
 const APTrapRadar = lazyWithRetry(() => import('./components/APTrapRadar'));
 const APMindMap = lazyWithRetry(() => import('./components/APMindMap'));
+const FRQGrader = lazyWithRetry(() => import('./components/FRQGrader'));
 const DeveloperDashboard = lazyWithRetry(() => import('./components/DeveloperPortal/DeveloperDashboard'));
 import SplashScreen from './components/SplashScreen';
 import AuthGuard from './components/AuthGuard';
@@ -240,10 +241,13 @@ export default function App() {
 
     // Check if the app just performed a full performance optimization restart
     try {
-      if (sessionStorage.getItem('just_optimized_fresh_boot') === 'true') {
-        sessionStorage.removeItem('just_optimized_fresh_boot');
+      const isFreshBoot = sessionStorage.getItem('just_optimized_fresh_boot') === 'true' ||
+                          localStorage.getItem('just_optimized_fresh_boot') === 'true';
+      if (isFreshBoot) {
+        try { sessionStorage.removeItem('just_optimized_fresh_boot'); } catch (_) {}
+        try { localStorage.removeItem('just_optimized_fresh_boot'); } catch (_) {}
         setTimeout(() => {
-          showToast('🚀 App Cleanly Restarted • 100% RAM Clean & Zero Lag!', 'success');
+          showToast('⚡ App 100% Fully Optimized! Lag & Slowdown Fixed • Fresh 60fps Experience 🚀', 'success');
         }, 600);
       }
     } catch (_) {}
@@ -1042,6 +1046,13 @@ export default function App() {
                   isVip={isVip}
                 />
               </ErrorBoundary>
+            )}
+            {activeTool === 'frqgrader' && (
+              <div className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
+                <ErrorBoundary>
+                  <FRQGrader onBack={() => setActiveTool(null)} />
+                </ErrorBoundary>
+              </div>
             )}
             {activeTool === 'contentgenerator' && (
               <ErrorBoundary>

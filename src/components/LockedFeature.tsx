@@ -22,33 +22,45 @@ export default function LockedFeature({
   const [loggedIn, setLoggedIn] = useState(() => isUserLoggedIn());
   const [coins, setCoins] = useState(() => getCoins());
   const [isPro, setIsPro] = useState(() => isProUser());
+  const [hasUnlocked, setHasUnlocked] = useState(() => {
+    return isProUser() || (getCoins() >= cost);
+  });
 
   // Listen to authentication changes
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setLoggedIn(!!user);
-      setCoins(getCoins(user?.uid));
-      setIsPro(isProUser());
+      const userCoins = getCoins(user?.uid);
+      setCoins(userCoins);
+      const pro = isProUser();
+      setIsPro(pro);
+      if (pro || userCoins >= cost) {
+        setHasUnlocked(true);
+      }
     });
     return () => unsubscribe();
-  }, []);
+  }, [cost]);
 
   // Listen to global coin updates
   useEffect(() => {
     const handleCoinsUpdate = (e: Event) => {
       const customEvent = e as CustomEvent;
       if (typeof customEvent.detail === 'number') {
-        setCoins(customEvent.detail);
-        setIsPro(isProUser());
+        const newCoins = customEvent.detail;
+        setCoins(newCoins);
+        const pro = isProUser();
+        setIsPro(pro);
+        if (pro || newCoins >= cost) {
+          setHasUnlocked(true);
+        }
       }
     };
     window.addEventListener('study-coins-updated', handleCoinsUpdate);
     return () => window.removeEventListener('study-coins-updated', handleCoinsUpdate);
-  }, []);
+  }, [cost]);
 
-  const hasAccess = isPro || (loggedIn && coins >= cost);
-
-  if (hasAccess) {
+  // Keep access granted once unlocked during this view session so generation results remain visible
+  if (hasUnlocked || isPro) {
     return <>{children}</>;
   }
 

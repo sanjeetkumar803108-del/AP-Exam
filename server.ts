@@ -1929,6 +1929,306 @@ app.post("/api/scan-essay", upload.single("image"), async (req, res) => {
   }
 });
 
+app.post("/api/grade-frq", upload.single("image"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No image provided. Please capture or upload an FRQ answer photo." });
+    }
+
+    const imagePart = {
+      inlineData: {
+        mimeType: req.file.mimetype,
+        data: req.file.buffer.toString("base64"),
+      },
+    };
+
+    const systemPrompt = `You are a Senior College Board AP Chief Reader, Lead Exam Table Leader, and Master Academic Auditor.
+Your job is to rigorously evaluate uploaded photos for AP Free Response Questions (FRQ) and STEM problem solving with the authoritative, compassionate, yet exacting standards of an official AP exam table leader.
+
+=======================================================
+MANDATORY PRE-EVALUATION COGNITIVE PROTOCOL (READ & CLASSIFY FIRST!)
+=======================================================
+Before awarding ANY scores or generating rubrics, you must execute a strict 3-step cognitive classification:
+
+STEP 1: OPTICAL INSPECTION (Read everything physically in the image):
+- Carefully transcribe all text, formulas, equations, problem statements, diagrams, or handwriting physically present.
+- Identify the physical medium:
+  * "printed_book_or_test_paper" (printed typography from an AP textbook, test booklet, past exam sheet, or worksheet)
+  * "notebook_page" (lined or blank paper containing student handwriting)
+  * "hybrid_exam_sheet" (printed question on top with student handwriting written below)
+  * "digital_screen_or_graphic" (screenshot of app UI, website, or digital graphic)
+  * "non_educational_object" (photo of person, room, food, pet, furniture, vehicle, or blank paper)
+
+STEP 2: SEMANTIC COMPREHENSION & IMAGE CATEGORIZATION:
+Classify the uploaded image into EXACTLY ONE of the following 4 distinct categories:
+
+-------------------------------------------------------
+CATEGORY 1: "subjective_frq_question" (Textbook / Exam Problem Prompt)
+-------------------------------------------------------
+- WHAT IT IS: A printed (or written) academic question/problem statement from a textbook, workbook, past AP exam paper, or test sheet (WITHOUT student handwritten solution).
+- CHARACTERISTICS: Clear problem context (e.g. differential equations, integrals, mechanics, chemical equilibria, cell biology, macroeconomic graphs) with sub-parts like (a), (b), (c) or a multi-step STEM prompt.
+- ABSOLUTELY NO MULTIPLE-CHOICE OPTIONS (no options A, B, C, D).
+- ACTION: ACCEPT IMMEDIATELY! This is an authentic exam question.
+- SET:
+  "verificationVerdict": "GENUINE_EXAM_QUESTION",
+  "submissionMode": "question_prompt",
+  "questionType": "subjective_frq_question",
+  "detectedContentType": "printed_frq_question",
+  "isValidAcademicAnswer": true,
+  "hasStudentHandwriting": false,
+  "predictedAPScaleLabel": "Official AP Rubric & Model Solution Benchmark"
+- EVALUATION PROTOCOL:
+  * Transcribe the full question statement cleanly in "questionStatement" with KaTeX math ($...$).
+  * Identify the AP course and CED Unit/Topic.
+  * Provide the official College Board AP Scoring Rubric breakdown across parts (a), (b), (c) in "evaluationSteps".
+  * In each step's "criteria", state the official rubric requirement to earn the point.
+  * In each step's "workEvaluated", provide the COMPLETE OFFICIAL MODEL SOLUTION with step-by-step mathematical working and KaTeX equations.
+  * In each step's "feedback", provide AP Chief Reader guidance on common pitfalls, notation rules, and exam day tips.
+  * Set totalPointsPossible to standard AP points (typically 6, 7, or 9 pts), and set totalPointsEarned to 0 (since this is a question prompt awaiting student work).
+
+-------------------------------------------------------
+CATEGORY 2: "subjective_frq_solution" OR "question_and_answer" (Student's Handwritten Work)
+-------------------------------------------------------
+- WHAT IT IS: An authentic handwritten response or calculation written by a student solving an academic problem.
+- ACTION: ACCEPT IMMEDIATELY! Grade the student's solution.
+- SET:
+  "verificationVerdict": "GENUINE_EXAM_ANSWER",
+  "submissionMode": "student_answer",
+  "questionType": "subjective_frq_solution",
+  "detectedContentType": "handwritten_student_work",
+  "isValidAcademicAnswer": true,
+  "hasStudentHandwriting": true
+- EVALUATION PROTOCOL:
+  * Transcribe student work verbatim in "transcribedHandwriting" with KaTeX math.
+  * Grade each step against College Board rubrics. Award earned points (0 to pointsPossible) based on "NO WORK, NO CREDIT" rule.
+
+-------------------------------------------------------
+CATEGORY 3: "mcq_or_objective_question" (Multiple Choice Question)
+-------------------------------------------------------
+- WHAT IT IS: Any question having multiple-choice options (A, B, C, D), circled letters, bubble sheets, matching, or objective tick-boxes.
+- ACTION: REJECT IMMEDIATELY! College Board FRQ Grader is STRICTLY and EXCLUSIVELY for subjective Free Response Questions.
+- SET:
+  "verificationVerdict": "REJECT_MCQ_NOT_ALLOWED",
+  "submissionMode": "mcq_question",
+  "questionType": "mcq_or_objective_question",
+  "detectedContentType": "mcq_or_objective_question",
+  "isValidAcademicAnswer": false,
+  "errorCode": "MCQ_DETECTED",
+  "errorMessage": "Multiple Choice Question (MCQ) detected. The FRQ Grader strictly evaluates subjective Free Response Questions only.",
+  "detectionReason": "The uploaded photo depicts a multiple-choice question with options (A, B, C, D) rather than a subjective free-response problem.",
+  "suggestion": "For multiple-choice questions, please use the Quiz / Practice Mode. The FRQ Grader is reserved for subjective questions and handwritten solutions."
+
+-------------------------------------------------------
+CATEGORY 4: "non_academic" (Bakwaas Cheez / Non-Educational / Irrelevant)
+-------------------------------------------------------
+- WHAT IT IS: App icons, logos, badges, digital UI screens, selfies, room photos, food, pets, vehicles, blank paper, or random non-academic notes.
+- ACTION: REJECT IMMEDIATELY!
+- SET:
+  "verificationVerdict": "REJECT_NOT_AN_ANSWER",
+  "submissionMode": "non_academic",
+  "questionType": "non_academic",
+  "detectedContentType": "app_logo_or_graphic" | "random_object" | "blank_or_unreadable",
+  "isValidAcademicAnswer": false,
+  "errorCode": "NO_ACADEMIC_CONTENT",
+  "errorMessage": "No valid academic question or student answer was found in this photo.",
+  "detectionReason": "The uploaded image contains non-educational graphics, logos, or objects rather than academic exam materials.",
+  "suggestion": "Please take a clear photo of an academic textbook question or your handwritten answer sheet."
+
+=======================================================
+CRITICAL KATEX & LATEX MATH FORMATTING DIRECTIVE:
+=======================================================
+- All mathematical expressions, formulas, variables ($x$, $y$, $t$), derivatives, integrals, limits, equations, and units MUST be wrapped in KaTeX math delimiters ($...$ for inline or $$...$$ for display).
+- Use standard clean KaTeX commands:
+  $\\frac{dy}{dx}$, $\\int f(x)\\,dx$, $\\lim_{x \\to a}$, $\\sqrt{x^2+1}$, $\\approx$, $\\le$, $\\ge$, $\\cdot$, $\\pi$, $\\theta$.
+- Use \\text{...} for units inside math mode, e.g. $\\text{m/s}^2$.
+- NEVER use raw bare backslashes outside of dollar signs ($).
+- Return ONLY valid raw JSON without introductory text or markdown backticks.
+
+Response JSON Schema:
+{
+  "opticalInspection": {
+    "visibleTextSummary": "Summary of all text/symbols physically visible in image",
+    "imageMedium": "printed_book_or_test_paper" | "notebook_page" | "hybrid_exam_sheet" | "digital_screen_or_graphic" | "non_educational_object",
+    "questionType": "subjective_frq_question" | "subjective_frq_solution" | "mcq_or_objective_question" | "non_academic",
+    "isHandwrittenExamSolution": boolean,
+    "verdict": "GENUINE_EXAM_QUESTION" | "GENUINE_EXAM_ANSWER" | "REJECT_MCQ_NOT_ALLOWED" | "REJECT_NOT_AN_ANSWER",
+    "verdictReason": "Clear explanation of classification"
+  },
+  "verificationVerdict": "GENUINE_EXAM_QUESTION" | "GENUINE_EXAM_ANSWER" | "REJECT_MCQ_NOT_ALLOWED" | "REJECT_NOT_AN_ANSWER",
+  "submissionMode": "question_prompt" | "student_answer" | "question_and_answer" | "mcq_question" | "non_academic",
+  "questionType": "subjective_frq_question" | "subjective_frq_solution" | "mcq_or_objective_question" | "non_academic",
+  "isValidAcademicAnswer": boolean,
+  "detectedContentType": "printed_frq_question" | "handwritten_student_work" | "mcq_or_objective_question" | "app_logo_or_graphic" | "random_object" | "blank_or_unreadable",
+  "hasStudentHandwriting": boolean,
+  "errorCode": "MCQ_DETECTED" | "NO_ACADEMIC_CONTENT" | "NO_STUDENT_WORK_DETECTED" (if rejected),
+  "errorMessage": "Clear message if rejected",
+  "detectionReason": "Detailed explanation of what was detected",
+  "suggestion": "Actionable next step",
+  
+  // Populated when isValidAcademicAnswer is true:
+  "subjectDetected": "AP Course Name (e.g. AP Calculus AB, AP Physics 1)",
+  "questionStatement": "Transcribed question text with KaTeX math ($...$)",
+  "questionTopic": "Official AP CED Topic Name",
+  "transcribedHandwriting": "Transcribed student work with KaTeX math (if student answer)",
+  "totalPointsEarned": 0, // Points earned if student answer; 0 if question prompt
+  "totalPointsPossible": 9,
+  "predictedAPScale": 5,
+  "predictedAPScaleLabel": "AP Score 5" | "Official AP Rubric & Model Solution Benchmark",
+  "evaluationSteps": [
+    {
+      "stepTitle": "Part (a): Tangent Line Slope (2 Points)",
+      "pointsEarned": 2,
+      "pointsPossible": 2,
+      "criteria": "Official College Board scoring criteria with KaTeX math",
+      "workEvaluated": "Official Model Solution or Student Work Evaluated with KaTeX math",
+      "feedback": "Chief Reader feedback and exam day guidance with KaTeX math",
+      "status": "full"
+    }
+  ],
+  "chiefReaderSummary": "High-level Chief Reader diagnostic summary and exam strategy",
+  "keyStrengths": [
+    "Key conceptual technique required or demonstrated"
+  ],
+  "keyMissedOpportunities": [
+    "Common student pitfall or trap on this question type"
+  ],
+  "howToGetFullPoints": [
+    "Actionable exam day tip to secure maximum points"
+  ]
+}`;
+
+    const response = await safeGenerateContent({
+      model: "gemini-3.5-flash-lite",
+      contents: [
+        {
+          parts: [
+            imagePart,
+            { text: systemPrompt }
+          ]
+        }
+      ],
+      config: {
+        responseMimeType: "application/json"
+      },
+      generationConfig: {
+        responseMimeType: "application/json"
+      }
+    });
+
+    const rawText = response.text || "{}";
+    let parsed: any;
+    try {
+      parsed = JSON.parse(repairJsonString(rawText));
+    } catch (parseErr) {
+      console.warn("[/api/grade-frq] Direct JSON parse failed, extracting bracketed JSON:", parseErr);
+      const match = rawText.match(/\{[\s\S]*\}/);
+      if (match) {
+        parsed = JSON.parse(repairJsonString(match[0]));
+      } else {
+        throw new Error("Invalid grading format received from AI evaluation engine.");
+      }
+    }
+
+    // FAIL-SAFE DEFENSE IN DEPTH: Programmatic gatekeeper to guarantee strict subjective-only FRQ handling
+    const isMCQ = 
+      parsed.detectedContentType === 'mcq_or_objective_question' ||
+      parsed.detectedContentType === 'mcq_or_objective_test' ||
+      parsed.submissionMode === 'mcq_question' ||
+      parsed.questionType === 'mcq_or_objective_question' ||
+      parsed.opticalInspection?.questionType === 'mcq_or_objective_question' ||
+      parsed.verificationVerdict === 'REJECT_MCQ_NOT_ALLOWED' ||
+      parsed.errorCode === 'MCQ_DETECTED';
+
+    if (isMCQ) {
+      parsed.isValidAcademicAnswer = false;
+      parsed.hasStudentHandwriting = false;
+      parsed.totalPointsEarned = 0;
+      parsed.totalPointsPossible = 0;
+      parsed.predictedAPScale = 0;
+      parsed.predictedAPScaleLabel = "Not Scored (MCQ)";
+      parsed.evaluationSteps = [];
+      parsed.parts = [];
+      parsed.errorCode = "MCQ_DETECTED";
+      parsed.errorMessage = "Multiple Choice Question (MCQ) detected. The FRQ Grader strictly evaluates subjective Free Response Questions only.";
+      parsed.detectionReason = parsed.detectionReason || "The uploaded image contains multiple choice questions or options (A, B, C, D) rather than subjective problem solving.";
+      parsed.suggestion = "For multiple-choice questions, please use the Quiz / Practice feature. The FRQ Grader is exclusively for subjective free-response questions and solutions.";
+    }
+
+    // Check if this is a genuine academic subjective question (from textbook/worksheet) OR a student answer
+    const isQuestionPrompt =
+      !isMCQ &&
+      (parsed.submissionMode === 'question_prompt' ||
+       parsed.questionType === 'subjective_frq_question' ||
+       parsed.detectedContentType === 'printed_frq_question' ||
+       parsed.verificationVerdict === 'GENUINE_EXAM_QUESTION');
+
+    const isStudentAnswer =
+      !isMCQ &&
+      (parsed.submissionMode === 'student_answer' ||
+       parsed.submissionMode === 'question_and_answer' ||
+       parsed.questionType === 'subjective_frq_solution' ||
+       parsed.detectedContentType === 'handwritten_student_work' ||
+       parsed.verificationVerdict === 'GENUINE_EXAM_ANSWER');
+
+    const isAcademicSubjective = !isMCQ && (isQuestionPrompt || isStudentAnswer) && parsed.isValidAcademicAnswer !== false;
+
+    if (isAcademicSubjective) {
+      parsed.isValidAcademicAnswer = true;
+      if (isQuestionPrompt) {
+        parsed.submissionMode = 'question_prompt';
+        if (!parsed.predictedAPScaleLabel) {
+          parsed.predictedAPScaleLabel = "Official AP Rubric & Model Solution Benchmark";
+        }
+      } else {
+        parsed.submissionMode = parsed.submissionMode || 'student_answer';
+      }
+
+      // Ensure evaluationSteps and parts are backward & forward compatible
+      if (parsed.evaluationSteps && Array.isArray(parsed.evaluationSteps)) {
+        parsed.parts = parsed.evaluationSteps.map((s: any) => ({
+          ...s,
+          part: s.stepTitle || s.part || "Evaluation Step"
+        }));
+      } else if (parsed.parts && Array.isArray(parsed.parts)) {
+        parsed.evaluationSteps = parsed.parts.map((p: any) => ({
+          ...p,
+          stepTitle: p.part || p.stepTitle || "Evaluation Step"
+        }));
+      }
+    } else if (!isMCQ) {
+      // Non-academic or unreadable capture
+      parsed.isValidAcademicAnswer = false;
+      parsed.hasStudentHandwriting = false;
+      parsed.totalPointsEarned = 0;
+      parsed.totalPointsPossible = 0;
+      parsed.predictedAPScale = 0;
+      parsed.predictedAPScaleLabel = "Not Scored";
+      parsed.evaluationSteps = [];
+      parsed.parts = [];
+      if (!parsed.errorCode) {
+        parsed.errorCode = "NO_ACADEMIC_CONTENT";
+      }
+      if (!parsed.errorMessage) {
+        parsed.errorMessage = "No valid academic question or student answer was found in this photo.";
+      }
+      if (!parsed.detectionReason) {
+        parsed.detectionReason = parsed.opticalInspection?.verdictReason || 
+          (parsed.detectedContentType === "app_logo_or_graphic"
+            ? "The uploaded image contains app logos, graphics, or UI elements rather than academic question or answer materials."
+            : "The image does not contain an authentic academic question or student solution.");
+      }
+      if (!parsed.suggestion) {
+        parsed.suggestion = "Please take a clear photo of an academic textbook problem or your handwritten answer sheet.";
+      }
+    }
+
+    res.json(parsed);
+  } catch (error: any) {
+    console.error("[/api/grade-frq] Error:", error);
+    res.status(500).json({ error: error.message || "Failed to grade FRQ response" });
+  }
+});
+
 app.post("/api/scan-images", upload.array("images", 5), async (req, res) => {
   try {
     const files = req.files as Express.Multer.File[];

@@ -282,7 +282,8 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
   const [previewPdfName, setPreviewPdfName] = useState<string>('AP_Trap_Radar_Practice.pdf');
   const [isPdfDownloaded, setIsPdfDownloaded] = useState<boolean>(false);
   const [explainingMistakeId, setExplainingMistakeId] = useState<string | number | null>(null);
-  const [activeAiDoctorModal, setActiveAiDoctorModal] = useState<{ question: string; wrongInput: string; fix: AIMistakeFix } | null>(null);
+  const [inlineAiDoctorFixes, setInlineAiDoctorFixes] = useState<Record<string | number, AIMistakeFix>>({});
+  const [collapsedInlineFixes, setCollapsedInlineFixes] = useState<Record<string | number, boolean>>({});
 
   // Custom Scan Mode State
   const [customQuestionText, setCustomQuestionText] = useState('');
@@ -784,20 +785,23 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
           trapType: q.userTrippedTrap || q.traps?.find(t => !t.isCorrect)?.trapType || 'College Board Distractor Trap'
         })
       });
-
       if (!response.ok) throw new Error('Failed to fetch AI explanation');
       const data = await response.json();
       if (data.aiFix) {
+        setInlineAiDoctorFixes(prev => ({
+          ...prev,
+          [q.id]: data.aiFix
+        }));
+        setCollapsedInlineFixes(prev => ({
+          ...prev,
+          [q.id]: false
+        }));
         setVault(prev => {
           const updated = prev.map(item => item.id === q.id ? { ...item, aiFix: data.aiFix } : item);
           safeSetItem('ap_trap_radar_vault', JSON.stringify(updated));
           return updated;
         });
-        setActiveAiDoctorModal({
-          question: q.prompt,
-          wrongInput: q.userSelectedOption || q.userTrippedTrap || 'Distractor Trap',
-          fix: data.aiFix
-        });
+        showToast('AI Mistake Doctor diagnosis ready below!', 'success');
       }
     } catch (err) {
       console.error('Error fetching AI mistake fix:', err);
@@ -2488,42 +2492,93 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                               <motion.div
                                 initial={{ opacity: 0, y: 8 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="p-4 rounded-2xl bg-gradient-to-br from-red-50 to-amber-50 border border-red-200 text-xs space-y-2.5 shadow-sm"
+                                className="p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-red-50 to-amber-50 border border-red-200 text-xs shadow-sm"
                               >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-base">🤖</span>
-                                    <span className="font-black text-red-950">AI Mistake Diagnosis & Fix</span>
-                                  </div>
-                                  <span className="text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full">
-                                    Saved to My Mistake Vault
-                                  </span>
-                                </div>
+                                {(() => {
+                                  const currentAiFix = inlineAiDoctorFixes[activeQuestion.id] || activeQuestion.aiFix;
+                                  const isCollapsed = Boolean(collapsedInlineFixes[activeQuestion.id]);
 
-                                <div className="text-zinc-800 space-y-1.5 leading-relaxed">
-                                  <p>
-                                    <strong>🪤 Trap Triggered:</strong>{' '}
-                                    <span className="text-red-700 font-semibold">
-                                      {activeQuestion.traps?.find(t => t.option === selectedOption.charAt(0))?.trapType || 'Psychometric Distractor'}
-                                    </span>
-                                  </p>
-                                  <p>
-                                    <strong>🎯 Why You Picked This:</strong>{' '}
-                                    {activeQuestion.traps?.find(t => t.option === selectedOption.charAt(0))?.trapDescription || 'Selected an appealing distractor based on standard misconceptions.'}
-                                  </p>
-                                  <p className="text-emerald-950 font-semibold">
-                                    <strong>⚡ Step-by-Step Fix:</strong> {activeQuestion.disarmStrategy}
-                                  </p>
-                                </div>
+                                  if (currentAiFix) {
+                                    return (
+                                      <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-base">🩺</span>
+                                            <span className="font-black text-amber-950 text-xs">AI Mistake Doctor & Cure (Deep Autopsy)</span>
+                                          </div>
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              setCollapsedInlineFixes(prev => ({
+                                                ...prev,
+                                                [activeQuestion.id]: !prev[activeQuestion.id]
+                                              }));
+                                              triggerVibration(10);
+                                            }}
+                                            className="text-[11px] font-bold text-amber-800 hover:text-amber-950 bg-amber-100/80 hover:bg-amber-200/90 px-2.5 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                                          >
+                                            {isCollapsed ? 'Show Diagnosis ▼' : 'Hide ▲'}
+                                          </button>
+                                        </div>
 
-                                <button
-                                  onClick={() => handleExplainMistakeWithAi(activeQuestion)}
-                                  disabled={explainingMistakeId === activeQuestion.id}
-                                  className="w-full py-2 px-3 rounded-xl bg-white border border-amber-300 hover:bg-amber-50 text-amber-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-                                >
-                                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                                  <span>{explainingMistakeId === activeQuestion.id ? 'Analyzing Mistake...' : '💬 Ask AI Mistake Doctor to Deeply Explain My Error'}</span>
-                                </button>
+                                        {!isCollapsed && (
+                                          <div className="space-y-3 pt-1">
+                                            {/* Why You Fell For This Trap */}
+                                            <div className="p-3.5 rounded-2xl bg-red-50/95 border border-red-200/90 space-y-1.5 shadow-2xs">
+                                              <div className="flex items-center gap-1.5 font-bold text-red-800 text-[11px]">
+                                                <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                                                <span>Why You Fell For This Trap:</span>
+                                              </div>
+                                              <div className="text-zinc-800 leading-relaxed text-xs">
+                                                <GlobalMarkdown>{currentAiFix.why_it_happened}</GlobalMarkdown>
+                                              </div>
+                                            </div>
+
+                                            {/* The Exact CED Fix */}
+                                            <div className="p-3.5 rounded-2xl bg-emerald-50/95 border border-emerald-200/90 space-y-1.5 shadow-2xs">
+                                              <div className="flex items-center gap-1.5 font-bold text-emerald-900 text-[11px]">
+                                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                                                <span>The Exact CED Fix:</span>
+                                              </div>
+                                              <div className="text-zinc-800 leading-relaxed text-xs">
+                                                <GlobalMarkdown>{currentAiFix.the_fix}</GlobalMarkdown>
+                                              </div>
+                                            </div>
+
+                                            {/* Score-5 Memory Trick */}
+                                            {currentAiFix.pro_memory_trick && (
+                                              <div className="p-3.5 rounded-2xl bg-amber-50/95 border border-amber-300/90 space-y-1.5 shadow-2xs">
+                                                <div className="flex items-center gap-1.5 font-bold text-amber-900 text-[11px]">
+                                                  <Zap className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                                  <span>Score-5 Memory Trick:</span>
+                                                </div>
+                                                <div className="text-amber-950 font-semibold leading-relaxed text-xs">
+                                                  <GlobalMarkdown>{currentAiFix.pro_memory_trick}</GlobalMarkdown>
+                                                </div>
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  }
+
+                                  return (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleExplainMistakeWithAi(activeQuestion)}
+                                      disabled={explainingMistakeId === activeQuestion.id}
+                                      className="w-full py-2.5 px-3 rounded-xl bg-white border border-amber-300 hover:bg-amber-50 text-amber-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs disabled:opacity-60"
+                                    >
+                                      <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                      <span>
+                                        {explainingMistakeId === activeQuestion.id
+                                          ? 'Analyzing Mistake with AI Doctor...'
+                                          : '💬 Ask AI Mistake Doctor to Deeply Explain My Error'}
+                                      </span>
+                                    </button>
+                                  );
+                                })()}
                               </motion.div>
                             )}
 
@@ -3473,90 +3528,6 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                   </button>
                 </div>
               )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {/* AI Mistake Doctor Modal */}
-      <AnimatePresence>
-        {activeAiDoctorModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
-            onClick={() => setActiveAiDoctorModal(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              onClick={e => e.stopPropagation()}
-              className="bg-white rounded-3xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl border border-amber-200 overflow-hidden"
-            >
-              <div className="px-5 py-4 border-b border-zinc-200 flex items-center justify-between bg-amber-50/80">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">🤖</span>
-                  <div>
-                    <h3 className="text-sm font-black text-zinc-900">AI Mistake Doctor & Cure</h3>
-                    <p className="text-[11px] text-zinc-500 font-medium">Psychometric Distractor Autopsy</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setActiveAiDoctorModal(null)}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-200 transition-colors cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="p-5 space-y-4 overflow-y-auto text-xs text-zinc-800 leading-relaxed">
-                <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-1">
-                  <span className="font-bold text-zinc-500 uppercase text-[10px]">Question Prompt:</span>
-                  <div className="font-medium text-zinc-900">
-                    <GlobalMarkdown>{activeAiDoctorModal.question}</GlobalMarkdown>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-red-800">
-                    <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
-                    <span>Why You Fell For This Trap:</span>
-                  </div>
-                  <div className="text-zinc-800">
-                    <GlobalMarkdown>{activeAiDoctorModal.fix.why_it_happened}</GlobalMarkdown>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-emerald-900">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
-                    <span>The Exact CED Fix:</span>
-                  </div>
-                  <div className="text-zinc-800">
-                    <GlobalMarkdown>{activeAiDoctorModal.fix.the_fix}</GlobalMarkdown>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300 space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-amber-900">
-                    <Zap className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Score-5 Memory Trick:</span>
-                  </div>
-                  <div className="text-amber-950 font-semibold">
-                    <GlobalMarkdown>{activeAiDoctorModal.fix.pro_memory_trick}</GlobalMarkdown>
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-5 py-3 border-t border-zinc-200 bg-zinc-50 flex justify-end">
-                <button
-                  onClick={() => setActiveAiDoctorModal(null)}
-                  className="px-4 py-2 rounded-xl bg-zinc-900 text-white font-bold text-xs hover:bg-zinc-800 cursor-pointer"
-                >
-                  Understood & Saved
-                </button>
-              </div>
             </motion.div>
           </motion.div>
         )}

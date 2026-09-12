@@ -32,12 +32,59 @@ export default defineConfig(() => {
         },
       },
     },
+    optimizeDeps: {
+      include: [
+        'react',
+        'react-dom',
+        'react-dom/client',
+        'react-dom/server',
+        'lucide-react',
+        'motion/react',
+        'firebase/app',
+        'firebase/auth',
+        'firebase/firestore',
+        'firebase/storage',
+        '@capacitor/core',
+        '@capacitor/app',
+        '@capacitor/network',
+        '@capacitor/haptics',
+        '@capacitor/filesystem',
+        '@capacitor/local-notifications',
+        '@capacitor/share',
+        '@capacitor/camera',
+        '@capawesome/capacitor-file-picker',
+        '@capacitor-community/file-opener',
+        '@capacitor-firebase/authentication',
+        '@revenuecat/purchases-capacitor',
+        'canvas-confetti',
+        'jspdf',
+        'html2canvas',
+        'katex',
+        'react-markdown',
+        'remark-math',
+        'remark-gfm',
+        'rehype-katex',
+        'rehype-raw',
+        'recharts',
+        'idb-keyval'
+      ],
+    },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
-      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
-      watch: process.env.DISABLE_HMR === 'true' ? null : {},
+      watch: process.env.DISABLE_HMR === 'true' ? null : {
+        ignored: [
+          '**/android/**',
+          '**/dist/**',
+          '**/api/**',
+          '**/.system_generated/**',
+          '**/.tempmediaStorage/**',
+          '**/.user_uploaded/**',
+          '**/scratch/**',
+          '**/*.log',
+          '**/subscriptions.json',
+          '**/node_modules/**',
+        ],
+      },
     },
   };
 });

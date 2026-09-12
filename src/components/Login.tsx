@@ -145,24 +145,6 @@ export default function Login({ onClose, onLoginSuccess, hideClose = false }: { 
   };
 
   useEffect(() => {
-    // On mount: if Firebase still has a cached/persisted user (stale session after logout),
-    // immediately sign them out so the Login page is shown clean without auto-routing.
-    const clearStaleSession = async () => {
-      try {
-        if (auth.currentUser) {
-          console.log('[Login Mount] Stale Firebase session detected, clearing it...');
-          if (Capacitor.isNativePlatform()) {
-            try { await FirebaseAuthentication.signOut(); } catch (_) {}
-          }
-          await signOut(auth);
-          console.log('[Login Mount] Stale session cleared.');
-        }
-      } catch (e) {
-        console.warn('[Login Mount] Error clearing stale session:', e);
-      }
-    };
-    clearStaleSession();
-
     // 1. Check for pending redirect sign-in result from Google OAuth
     //    Only honour this if user actually triggered a redirect sign-in
     getRedirectResult(auth)
