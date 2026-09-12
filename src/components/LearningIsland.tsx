@@ -43,6 +43,7 @@ import {
   getDefaultUnlockedLevelIds
 } from '../data/quiz/apCalculusUnitsData';
 import { TreasureIslandCanvas } from './TreasureIslandCanvas';
+import { getApiUrl } from '../utils/api';
 
 interface LearningIslandProps {
   onBack: () => void;
@@ -831,11 +832,15 @@ Please structure your response into these 4 clear sections:
           : `The student chose the correct answer (Option ${correctLetter}). Please provide a brief concept summary and step-by-step solution to reinforce their understanding.`
       };
 
-      const res = await fetch('/api/ap-tutor-explain', {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+      const res = await fetch(getApiUrl('/api/ap-tutor-explain'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      }).finally(() => clearTimeout(timeoutId));
 
       if (res.ok) {
         const data = await res.json();
@@ -855,7 +860,7 @@ Please structure your response into these 4 clear sections:
       );
       setAiExplanationText(localExpl);
     } catch (err) {
-      console.warn("AI Tutor fetch failed, using local breakdown:", err);
+      console.warn("AI Tutor fetch failed or timed out, using instant local breakdown:", err);
       const localExpl = generateLocalAIExplanation(
         currentQ,
         selectedOptionIndex,
