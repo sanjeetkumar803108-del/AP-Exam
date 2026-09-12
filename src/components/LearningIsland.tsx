@@ -44,6 +44,7 @@ import {
 } from '../data/quiz/apCalculusUnitsData';
 import { TreasureIslandCanvas } from './TreasureIslandCanvas';
 import { getApiUrl } from '../utils/api';
+import { getStudyXP, getStudyLevel, addStudyXP } from '../utils/gamification';
 
 interface LearningIslandProps {
   onBack: () => void;
@@ -248,6 +249,21 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
   const [aiExplanationText, setAiExplanationText] = useState<string | null>(null);
   const aiExplanationRef = useRef<HTMLDivElement>(null);
   const quizScrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // User Profile Gamification Study XP State
+  const [studyXP, setStudyXP] = useState<number>(getStudyXP);
+
+  useEffect(() => {
+    const handleXpUpdate = () => {
+      setStudyXP(getStudyXP());
+    };
+    window.addEventListener('study-xp-updated', handleXpUpdate);
+    window.addEventListener('study-daily-xp-updated', handleXpUpdate);
+    return () => {
+      window.removeEventListener('study-xp-updated', handleXpUpdate);
+      window.removeEventListener('study-daily-xp-updated', handleXpUpdate);
+    };
+  }, []);
 
   // Map Scroll Reference
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -895,6 +911,14 @@ Please structure your response into these 4 clear sections:
       const scoreRatio = correctAnswersCount / totalQ;
       const stars = scoreRatio >= 1 ? 3 : scoreRatio >= 0.66 ? 2 : isPassed ? 1 : 0;
 
+      // Award 10 Study XP points to user profile on quiz completion
+      try {
+        addStudyXP(10, `Learning Island Unit ${activeQuizLevel.unitIndex} Level ${activeQuizLevel.levelNumber} Quiz Completed`);
+        setStudyXP(getStudyXP());
+      } catch (e) {
+        console.warn('Failed to add study XP:', e);
+      }
+
       // Confetti only if user passed with at least 1 correct answer (clean old particles first)
       if (isPassed) {
         try {
@@ -979,13 +1003,21 @@ Please structure your response into these 4 clear sections:
             </div>
           </div>
 
-          {/* Action Controls: Coin Counter & Subject Selector */}
+          {/* Action Controls: User Profile Study XP Points Badge & Subject Selector */}
           <div className="flex items-center gap-2">
-            {/* Coins Badge matching screenshot */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-black shadow-xs">
-              <span className="text-amber-500">🪙</span>
-              <span>0</span>
-            </div>
+            {/* User Profile XP Badge */}
+            {(() => {
+              const lvlDetails = getStudyLevel(studyXP);
+              return (
+                <div
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-50 border border-purple-200/90 text-purple-900 text-xs font-black shadow-xs cursor-default select-none"
+                  title={`Level ${lvlDetails.currentLevel.level}: ${lvlDetails.currentLevel.title} (${studyXP} XP)`}
+                >
+                  <span className="text-sm">{lvlDetails.currentLevel.badge}</span>
+                  <span>{studyXP} XP</span>
+                </div>
+              );
+            })()}
 
             {/* Subject Dropdown Button */}
             <button
@@ -1518,6 +1550,15 @@ Please structure your response into these 4 clear sections:
                       <p className="text-xs font-semibold text-zinc-700 leading-snug pt-1">
                         {remarkSubtitle}
                       </p>
+                    </div>
+
+                    {/* XP Awarded Banner */}
+                    <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-50 border border-purple-200/90 rounded-2xl p-3 my-2.5 flex items-center justify-center gap-2.5 text-purple-950 shadow-2xs">
+                      <span className="text-xl">⚡</span>
+                      <div className="text-left">
+                        <span className="text-xs font-black block text-purple-900">+10 Study XP Earned!</span>
+                        <span className="text-[10px] font-bold text-purple-600 block">Total: {getStudyXP()} XP • {getStudyLevel(getStudyXP()).currentLevel.title}</span>
+                      </div>
                     </div>
 
                     {/* Action Buttons */}
