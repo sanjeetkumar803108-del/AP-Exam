@@ -917,7 +917,7 @@ export default function App() {
             >
               {!networkStatus.connected ? (
                 <>
-                  <WifiOff className="w-3.5 h-3.5 animate-pulse" />
+                  <WifiOff className="w-3.5 h-3.5" />
                   <span>Currently Offline</span>
                 </>
               ) : (

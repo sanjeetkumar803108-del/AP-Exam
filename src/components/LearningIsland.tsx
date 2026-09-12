@@ -745,7 +745,6 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
     if (!currentQ || selectedOptionIndex === null) return;
     triggerVibration(15);
     setShowAIExplanation(true);
-    setIsAILoading(true);
 
     const isWrong = selectedOptionIndex !== currentQ.correctIndex;
     const chosenLetter = String.fromCharCode(65 + selectedOptionIndex);
@@ -757,6 +756,21 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
     setTimeout(() => {
       aiExplanationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 150);
+
+    // Instant 0ms Offline AI Breakdown: never lag or wait for failed network calls when offline
+    if (typeof window !== 'undefined' && !window.navigator.onLine) {
+      setIsAILoading(false);
+      const localExpl = generateLocalAIExplanation(
+        currentQ,
+        selectedOptionIndex,
+        selectedSubject.name,
+        `Unit ${activeQuizLevel?.unitIndex}: ${activeQuizLevel?.name}`
+      );
+      setAiExplanationText(localExpl);
+      return;
+    }
+
+    setIsAILoading(true);
 
     try {
       const payload = {
@@ -892,14 +906,17 @@ Please structure your response into these 4 clear sections:
 
   return (
     <div className="h-full w-full flex flex-col bg-[#FAF8F5] light-surface text-zinc-950 relative overflow-hidden font-sans select-none">
-      {/* Dynamic Subtle Mountain Biome Atmospheric Glow (Mountain Climb Feel) */}
-      <div
-        className="fixed inset-0 pointer-events-none z-0 transition-opacity duration-500 opacity-70"
-        style={{
-          background: `radial-gradient(ellipse 90% 60% at 50% 15%, ${activeAtmosphere.ambientTint} 0%, transparent 75%)`
-        }}
-      />
+      {/* Dynamic Subtle Mountain Biome Atmospheric Glow (Mountain Climb Feel) - Only rendered when on map */}
+      {!activeQuizLevel && (
+        <div
+          className="fixed inset-0 pointer-events-none z-0 transition-opacity duration-500 opacity-70"
+          style={{
+            background: `radial-gradient(ellipse 90% 60% at 50% 15%, ${activeAtmosphere.ambientTint} 0%, transparent 75%)`
+          }}
+        />
+      )}
       {/* Top Header Bar - PERMANENTLY FIXED & SHRINK-0 (CANNOT SCROLL AWAY) */}
+      {!activeQuizLevel && (
       <header className="px-4 sm:px-6 py-3 flex items-center justify-between border-b border-zinc-200/90 bg-white shrink-0 z-40 shadow-xs">
         <div className="flex items-center gap-3">
           <button
@@ -947,10 +964,11 @@ Please structure your response into these 4 clear sections:
           </button>
         </div>
       </header>
+      )}
 
       {/* Floating Locked Alert Notice */}
       <AnimatePresence>
-        {lockedNotice && (
+        {!activeQuizLevel && lockedNotice && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -967,29 +985,31 @@ Please structure your response into these 4 clear sections:
       {/* 2.5D CONTINUOUS MULTI-UNIT MAP CANVAS                                     */}
       {/* ========================================================================= */}
       {/* Floating Mountain Altitude HUD Pill */}
-      <div className="sticky top-14 z-30 pointer-events-none flex justify-center px-4 mb-[-36px]">
-        <motion.div
-          key={activeUnitInView}
-          initial={{ opacity: 0, y: -6, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.3 }}
-          className="pointer-events-auto flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/98 border border-zinc-200/90 shadow-md text-zinc-950 transition-all"
-        >
-          <span className="text-base shrink-0">{activeAtmosphere.icon}</span>
-          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-800 shrink-0">
-            Unit {activeUnitInView} • Elev. {activeAtmosphere.elevationLabel}
-          </span>
-          <span className="text-zinc-300">•</span>
-          <span className="text-[11px] font-black text-zinc-900 truncate max-w-[150px] sm:max-w-xs">
-            {activeAtmosphere.zoneTitle}
-          </span>
-        </motion.div>
-      </div>
+      {!activeQuizLevel && (
+        <div className="sticky top-14 z-30 pointer-events-none flex justify-center px-4 mb-[-36px]">
+          <motion.div
+            key={activeUnitInView}
+            initial={{ opacity: 0, y: -6, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="pointer-events-auto flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/98 border border-zinc-200/90 shadow-md text-zinc-950 transition-all"
+          >
+            <span className="text-base shrink-0">{activeAtmosphere.icon}</span>
+            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-800 shrink-0">
+              Unit {activeUnitInView} • Elev. {activeAtmosphere.elevationLabel}
+            </span>
+            <span className="text-zinc-300">•</span>
+            <span className="text-[11px] font-black text-zinc-900 truncate max-w-[150px] sm:max-w-xs">
+              {activeAtmosphere.zoneTitle}
+            </span>
+          </motion.div>
+        </div>
+      )}
 
       <main
         ref={mapContainerRef}
         onScroll={handleScroll}
-        className={`flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden flex flex-col items-center pt-8 px-3 relative z-10 momentum-scroll ${activeQuizLevel ? 'invisible pointer-events-none' : ''}`}
+        className={`flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden flex flex-col items-center pt-8 px-3 relative z-10 momentum-scroll ${activeQuizLevel ? 'hidden' : ''}`}
         style={{
           WebkitOverflowScrolling: 'touch',
           paddingBottom: 'max(9.5rem, calc(env(safe-area-inset-bottom) + 7.5rem))',
@@ -1353,32 +1373,34 @@ Please structure your response into these 4 clear sections:
       {/* ========================================================================= */}
       {/* 5. FLOATING 2.5D QUICK-JUMP UNIT DOCK (Bottom Bar)                        */}
       {/* ========================================================================= */}
-      <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-30 max-w-[95vw] sm:max-w-2xl bg-white/95 backdrop-blur-md border border-zinc-300/90 rounded-2xl p-1.5 shadow-[0_10px_25px_rgba(0,0,0,0.12)] flex items-center gap-1.5 overflow-x-auto">
-        <div className="px-2 py-1 flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-zinc-500 border-r border-zinc-200 shrink-0">
-          <Navigation className="w-3 h-3 text-indigo-600" />
-          <span>Jump:</span>
-        </div>
+      {!activeQuizLevel && (
+        <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-30 max-w-[95vw] sm:max-w-2xl bg-white/95 backdrop-blur-md border border-zinc-300/90 rounded-2xl p-1.5 shadow-[0_10px_25px_rgba(0,0,0,0.12)] flex items-center gap-1.5 overflow-x-auto">
+          <div className="px-2 py-1 flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-zinc-500 border-r border-zinc-200 shrink-0">
+            <Navigation className="w-3 h-3 text-indigo-600" />
+            <span>Jump:</span>
+          </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
-          {currentUnits.map(unit => {
-            const isActive = activeUnitInView === unit.unitIndex;
-            return (
-              <button
-                key={unit.unitIndex}
-                onClick={() => handleJumpToUnit(unit.unitIndex)}
-                className={`px-2.5 py-1 rounded-xl text-xs font-black whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 active:scale-95 ${
-                  isActive
-                    ? 'bg-zinc-900 text-white shadow-sm ring-2 ring-indigo-400/50'
-                    : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border border-zinc-200'
-                }`}
-              >
-                <span>{unit.biome.icon}</span>
-                <span>U{unit.unitIndex}</span>
-              </button>
-            );
-          })}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {currentUnits.map(unit => {
+              const isActive = activeUnitInView === unit.unitIndex;
+              return (
+                <button
+                  key={unit.unitIndex}
+                  onClick={() => handleJumpToUnit(unit.unitIndex)}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-black whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 active:scale-95 ${
+                    isActive
+                      ? 'bg-zinc-900 text-white shadow-sm ring-2 ring-indigo-400/50'
+                      : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border border-zinc-200'
+                  }`}
+                >
+                  <span>{unit.biome.icon}</span>
+                  <span>U{unit.unitIndex}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ========================================================================= */}
       {/* 6. LEVEL PREVIEW / DETAIL MODAL                                           */}
@@ -1457,7 +1479,7 @@ Please structure your response into these 4 clear sections:
       </AnimatePresence>
 
       {/* ========================================================================= */}
-      {/* 7. FULLSCREEN ACTIVE QUIZ GAMEPLAY SCREEN                                 */}
+      {/* 7. FULLSCREEN ACTIVE QUIZ GAMEPLAY & IN-PLACE SCORECARD SCREEN            */}
       {/* ========================================================================= */}
       <AnimatePresence>
         {activeQuizLevel && (
@@ -1465,16 +1487,18 @@ Please structure your response into these 4 clear sections:
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-white light-surface flex flex-col h-[100dvh] max-h-[100dvh] overflow-hidden"
+            className="absolute inset-0 z-[100] bg-white light-surface flex flex-col h-full max-h-full overflow-hidden"
           >
             {/* Quiz Top Header */}
             <header className="px-4 py-3 border-b border-zinc-200 flex items-center justify-between bg-white shrink-0 z-20">
               <button
                 onClick={() => {
                   triggerVibration(10);
+                  setIsQuizCompleted(false);
                   setActiveQuizLevel(null);
                 }}
-                className="w-9 h-9 rounded-xl flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border border-zinc-200 active:scale-95 transition-all"
+                className="w-9 h-9 rounded-xl flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border border-zinc-200 active:scale-95 transition-all cursor-pointer shadow-2xs"
+                title="Exit Quiz"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1489,497 +1513,421 @@ Please structure your response into these 4 clear sections:
               </div>
 
               <div className="text-xs font-black text-zinc-900 bg-zinc-100 px-2.5 py-1 rounded-xl border border-zinc-200">
-                {currentQuestionIndex + 1} / {activeQuizLevel.questions.length}
+                {isQuizCompleted ? 'Complete' : `${currentQuestionIndex + 1} / ${activeQuizLevel.questions.length}`}
               </div>
             </header>
 
-            {/* Quiz Content Body */}
-            <div
-              ref={quizScrollContainerRef}
-              className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 max-w-2xl mx-auto w-full flex flex-col momentum-scroll"
-            >
-              {currentQ && (
-                <div className="flex-1 flex flex-col">
-                  {/* Question Stem Card */}
-                  <div className="bg-zinc-50 border border-zinc-200/90 rounded-2xl p-4 sm:p-5 mb-4 shadow-2xs">
-                    <div className="text-[11px] font-black uppercase text-amber-900 mb-2">
-                      Question {currentQuestionIndex + 1} of {activeQuizLevel.questions.length}
+            {/* Quiz Content Body OR In-Place Completion Screen (Prevents dual-layer GPU compositing crash) */}
+            {!isQuizCompleted ? (
+              <div
+                ref={quizScrollContainerRef}
+                className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 max-w-2xl mx-auto w-full flex flex-col momentum-scroll"
+              >
+                {currentQ && (
+                  <div className="flex-1 flex flex-col">
+                    {/* Question Stem Card */}
+                    <div className="bg-zinc-50 border border-zinc-200/90 rounded-2xl p-4 sm:p-5 mb-4 shadow-2xs">
+                      <div className="text-[11px] font-black uppercase text-amber-900 mb-2">
+                        Question {currentQuestionIndex + 1} of {activeQuizLevel.questions.length}
+                      </div>
+                      <div className="text-sm sm:text-base font-bold text-zinc-950 leading-relaxed">
+                        <GlobalMarkdown content={currentQ.stem} />
+                      </div>
                     </div>
-                    <div className="text-sm sm:text-base font-bold text-zinc-950 leading-relaxed">
-                      <GlobalMarkdown content={currentQ.stem} />
-                    </div>
-                  </div>
 
-                  {/* Multiple Choice Options */}
-                  <div className="space-y-2.5 mb-4">
-                    {currentQ.options.map((opt, oIdx) => {
-                      const isSelected = selectedOptionIndex === oIdx;
-                      const isCorrect = oIdx === currentQ.correctIndex;
+                    {/* Multiple Choice Options */}
+                    <div className="space-y-2.5 mb-4">
+                      {currentQ.options.map((opt, oIdx) => {
+                        const isSelected = selectedOptionIndex === oIdx;
+                        const isCorrect = oIdx === currentQ.correctIndex;
 
-                      let optClasses =
-                        'bg-white border-zinc-200/90 text-zinc-950 hover:border-amber-400 hover:bg-amber-50/20';
+                        let optClasses =
+                          'bg-white border-zinc-200/90 text-zinc-950 hover:border-amber-400 hover:bg-amber-50/20';
 
-                      if (isAnswerSubmitted) {
-                        if (isCorrect) {
-                          optClasses = 'bg-emerald-50 border-emerald-500 text-emerald-950 ring-2 ring-emerald-200';
-                        } else if (isSelected && !isCorrect) {
-                          optClasses = 'bg-rose-50 border-rose-500 text-rose-950 ring-2 ring-rose-200';
+                        if (isAnswerSubmitted) {
+                          if (isCorrect) {
+                            optClasses = 'bg-emerald-50 border-emerald-500 text-emerald-950 ring-2 ring-emerald-200';
+                          } else if (isSelected && !isCorrect) {
+                            optClasses = 'bg-rose-50 border-rose-500 text-rose-950 ring-2 ring-rose-200';
+                          }
+                        } else if (isSelected) {
+                          optClasses = 'bg-amber-50 border-amber-500 text-zinc-950 ring-2 ring-amber-200';
                         }
-                      } else if (isSelected) {
-                        optClasses = 'bg-amber-50 border-amber-500 text-zinc-950 ring-2 ring-amber-200';
-                      }
 
-                      return (
-                        <div
-                          key={oIdx}
-                          onClick={() => handleSelectOption(oIdx)}
-                          className={`p-3.5 rounded-2xl border-2 flex items-start gap-3 cursor-pointer transition-all duration-150 ${optClasses}`}
-                        >
+                        return (
                           <div
-                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shrink-0 mt-0.5 ${
-                              isAnswerSubmitted
-                                ? isCorrect
-                                  ? 'bg-emerald-600 text-white'
-                                  : isSelected
-                                  ? 'bg-rose-600 text-white'
-                                  : 'bg-zinc-100 text-zinc-600'
-                                : isSelected
-                                ? 'bg-amber-500 text-white'
-                                : 'bg-zinc-100 text-zinc-700'
-                            }`}
+                            key={oIdx}
+                            onClick={() => handleSelectOption(oIdx)}
+                            className={`p-3.5 rounded-2xl border-2 flex items-start gap-3 cursor-pointer transition-all duration-150 ${optClasses}`}
                           >
-                            {String.fromCharCode(65 + oIdx)}
-                          </div>
-                          <div className="flex-1 text-xs sm:text-sm font-semibold text-zinc-950 leading-snug">
-                            <GlobalMarkdown content={opt} className="[&_p]:my-0 [&_p]:inline" />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* ========================================================================= */}
-                  {/* ANSWER SUBMITTED SECTION: RESULT BANNER + ASK AI + EXPLANATION            */}
-                  {/* ========================================================================= */}
-                  {isAnswerSubmitted && (() => {
-                    const isWrong = selectedOptionIndex !== currentQ.correctIndex;
-                    const chosenLetter = String.fromCharCode(65 + (selectedOptionIndex ?? 0));
-                    const correctLetter = String.fromCharCode(65 + currentQ.correctIndex);
-                    const chosenText = selectedOptionIndex !== null ? currentQ.options[selectedOptionIndex] : '';
-                    const correctText = currentQ.options[currentQ.correctIndex];
-
-                    return (
-                      <div className="space-y-3 mb-4">
-                        {/* 1. Answer Result Banner */}
-                        <div
-                          className={`p-3.5 rounded-2xl border-2 flex items-center justify-between shadow-xs ${
-                            isWrong
-                              ? 'bg-rose-50 border-rose-300 text-rose-950'
-                              : 'bg-emerald-50 border-emerald-400 text-emerald-950'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
                             <div
-                              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black text-white shrink-0 shadow-xs ${
-                                isWrong ? 'bg-rose-600' : 'bg-emerald-600'
+                              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shrink-0 mt-0.5 ${
+                                isAnswerSubmitted
+                                  ? isCorrect
+                                    ? 'bg-emerald-600 text-white'
+                                    : isSelected
+                                    ? 'bg-rose-600 text-white'
+                                    : 'bg-zinc-100 text-zinc-600'
+                                  : isSelected
+                                  ? 'bg-amber-500 text-white'
+                                  : 'bg-zinc-100 text-zinc-700'
                               }`}
                             >
-                              {isWrong ? '✕' : '✓'}
+                              {String.fromCharCode(65 + oIdx)}
                             </div>
-                            <div>
-                              <span className="text-xs font-black block">
-                                {isWrong
-                                  ? `Incorrect: You chose Option ${chosenLetter}`
-                                  : `Correct! Excellent work.`}
-                              </span>
-                              <div className={`text-[11px] font-bold flex flex-wrap items-baseline gap-1 mt-0.5 ${isWrong ? 'text-rose-800' : 'text-emerald-800'}`}>
-                                {isWrong ? (
-                                  <>
-                                    <span>Correct answer is Option {correctLetter}:</span>
-                                    <GlobalMarkdown content={correctText} className="inline [&_p]:inline [&_p]:my-0 font-bold" />
-                                  </>
-                                ) : (
-                                  <span>Option {correctLetter} is the correct answer.</span>
-                                )}
+                            <div className="flex-1 text-xs sm:text-sm font-semibold text-zinc-950 leading-snug">
+                              <GlobalMarkdown content={opt} className="[&_p]:my-0 [&_p]:inline" />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* ========================================================================= */}
+                    {/* ANSWER SUBMITTED SECTION: RESULT BANNER + ASK AI + EXPLANATION            */}
+                    {/* ========================================================================= */}
+                    {isAnswerSubmitted && (() => {
+                      const isWrong = selectedOptionIndex !== currentQ.correctIndex;
+                      const chosenLetter = String.fromCharCode(65 + (selectedOptionIndex ?? 0));
+                      const correctLetter = String.fromCharCode(65 + currentQ.correctIndex);
+                      const correctText = currentQ.options[currentQ.correctIndex];
+
+                      return (
+                        <div className="space-y-3 mb-4">
+                          {/* 1. Answer Result Banner */}
+                          <div
+                            className={`p-3.5 rounded-2xl border-2 flex items-center justify-between shadow-xs ${
+                              isWrong
+                                ? 'bg-rose-50 border-rose-300 text-rose-950'
+                                : 'bg-emerald-50 border-emerald-400 text-emerald-950'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black text-white shrink-0 shadow-xs ${
+                                  isWrong ? 'bg-rose-600' : 'bg-emerald-600'
+                                }`}
+                              >
+                                {isWrong ? '✕' : '✓'}
+                              </div>
+                              <div>
+                                <span className="text-xs font-black block">
+                                  {isWrong
+                                    ? `Incorrect: You chose Option ${chosenLetter}`
+                                    : `Correct! Excellent work.`}
+                                </span>
+                                <div className={`text-[11px] font-bold flex flex-wrap items-baseline gap-1 mt-0.5 ${isWrong ? 'text-rose-800' : 'text-emerald-800'}`}>
+                                  {isWrong ? (
+                                    <>
+                                      <span>Correct answer is Option {correctLetter}:</span>
+                                      <GlobalMarkdown content={correctText} className="inline [&_p]:inline [&_p]:my-0 font-bold" />
+                                    </>
+                                  ) : (
+                                    <span>Option {correctLetter} is the correct answer.</span>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* 2. PROMINENT ASK AI BUTTON */}
-                        <button
-                          type="button"
-                          onClick={handleAskAI}
-                          disabled={isAILoading}
-                          className={`w-full py-3.5 px-4 rounded-2xl text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_5px_0_#312e81] active:translate-y-1 active:shadow-none ${
-                            isWrong
-                              ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-purple-600 ring-2 ring-indigo-300'
-                              : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500'
-                          }`}
-                        >
-                          <Bot className="w-5 h-5 text-yellow-300 shrink-0" />
-                          <span>
-                            {isAILoading ? 'AI is Thinking...' : 'Ask AI'}
-                          </span>
-                          <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
-                        </button>
+                          {/* 2. PROMINENT ASK AI BUTTON */}
+                          <button
+                            type="button"
+                            onClick={handleAskAI}
+                            disabled={isAILoading}
+                            className={`w-full py-3.5 px-4 rounded-2xl text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_5px_0_#312e81] active:translate-y-1 active:shadow-none ${
+                              isWrong
+                                ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-purple-600 ring-2 ring-indigo-300'
+                                : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500'
+                            }`}
+                          >
+                            <Bot className="w-5 h-5 text-yellow-300 shrink-0" />
+                            <span>
+                              {isAILoading ? 'AI is Thinking...' : 'Ask AI'}
+                            </span>
+                            <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
+                          </button>
 
-                        {/* 3. AI ANSWER BOX */}
-                        <AnimatePresence>
-                          {showAIExplanation && (
-                            <motion.div
-                              ref={aiExplanationRef}
-                              initial={{ opacity: 0, y: 15 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              className="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-indigo-50/90 via-purple-50/40 to-white border-2 border-indigo-400 shadow-md space-y-3 light-surface relative"
-                            >
-                              {isAILoading ? (
-                                /* Unique Sleek AI is Thinking State */
-                                <div className="py-6 px-3 flex flex-col items-center justify-center text-center relative">
-                                  {/* Close Button at top-right */}
-                                  <button
-                                    type="button"
-                                    onClick={() => setShowAIExplanation(false)}
-                                    className="absolute top-0 right-0 w-7 h-7 rounded-lg bg-indigo-100/70 hover:bg-indigo-200 flex items-center justify-center text-zinc-600 cursor-pointer transition-colors"
-                                    title="Close"
-                                  >
-                                    <X className="w-3.5 h-3.5" />
-                                  </button>
-
-                                  {/* Unique Multi-Ring Glowing Orb Animation */}
-                                  <div className="relative w-20 h-20 flex items-center justify-center my-3">
-                                    {/* Ambient Pulse Glow */}
-                                    <motion.div
-                                      animate={{ scale: [1, 1.45, 1], opacity: [0.35, 0, 0.35] }}
-                                      transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-                                      className="absolute inset-0 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 blur-sm"
-                                    />
-
-                                    {/* Outer Dashed Orbit Ring (Clockwise) */}
-                                    <motion.div
-                                      animate={{ rotate: 360 }}
-                                      transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-                                      className="absolute inset-0 rounded-full border-2 border-dashed border-indigo-400/60"
-                                    />
-
-                                    {/* Orbiting Golden Satellite Particle */}
-                                    <motion.div
-                                      animate={{ rotate: 360 }}
-                                      transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
-                                      className="absolute inset-[-4px] flex items-start justify-center"
-                                    >
-                                      <div className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_10px_#fbbf24]" />
-                                    </motion.div>
-
-                                    {/* Inner Gradient Orbit Ring (Counter-Clockwise) */}
-                                    <motion.div
-                                      animate={{ rotate: -360 }}
-                                      transition={{ duration: 3.2, repeat: Infinity, ease: 'linear' }}
-                                      className="absolute inset-1.5 rounded-full border-2 border-t-purple-500 border-r-pink-500 border-b-transparent border-l-transparent"
-                                    />
-
-                                    {/* Central AI Bot Core */}
-                                    <motion.div
-                                      animate={{ scale: [1, 1.08, 1], y: [0, -2, 0] }}
-                                      transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-                                      className="relative w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30"
-                                    >
-                                      <Bot className="w-6 h-6 text-yellow-300 drop-shadow-[0_0_6px_rgba(253,224,71,0.8)]" />
-                                      <motion.div
-                                        animate={{ opacity: [0.4, 1, 0.4], scale: [0.8, 1.2, 0.8] }}
-                                        transition={{ duration: 1.4, repeat: Infinity }}
-                                        className="absolute -top-1 -right-1"
-                                      >
-                                        <Sparkles className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-                                      </motion.div>
-                                    </motion.div>
-                                  </div>
-
-                                  {/* Clean Text: ONLY "AI is Thinking..." with Shimmer & Animated Wave Dots */}
-                                  <div className="flex items-center gap-2 mt-2">
-                                    <h3 className="text-base sm:text-lg font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent tracking-wide">
-                                      AI is Thinking
-                                    </h3>
-                                    <div className="flex items-center gap-1 pt-1">
-                                      <motion.span
-                                        animate={{ opacity: [0.2, 1, 0.2], y: [0, -4, 0] }}
-                                        transition={{ duration: 1.2, repeat: Infinity, delay: 0 }}
-                                        className="w-1.5 h-1.5 rounded-full bg-purple-600"
-                                      />
-                                      <motion.span
-                                        animate={{ opacity: [0.2, 1, 0.2], y: [0, -4, 0] }}
-                                        transition={{ duration: 1.2, repeat: Infinity, delay: 0.2 }}
-                                        className="w-1.5 h-1.5 rounded-full bg-indigo-600"
-                                      />
-                                      <motion.span
-                                        animate={{ opacity: [0.2, 1, 0.2], y: [0, -4, 0] }}
-                                        transition={{ duration: 1.2, repeat: Infinity, delay: 0.4 }}
-                                        className="w-1.5 h-1.5 rounded-full bg-pink-500"
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                              ) : (
-                                <>
-                                  {/* Clean Header Bar when Loaded */}
-                                  <div className="flex items-center justify-between pb-2 border-b border-indigo-200/80">
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-xs">
-                                        <Bot className="w-4 h-4 text-yellow-300" />
-                                      </div>
-                                      <h4 className="text-xs sm:text-sm font-black text-indigo-950">AI Explanation</h4>
-                                    </div>
+                          {/* 3. AI ANSWER BOX */}
+                          <AnimatePresence>
+                            {showAIExplanation && (
+                              <motion.div
+                                ref={aiExplanationRef}
+                                initial={{ opacity: 0, y: 15 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-indigo-50/90 via-purple-50/40 to-white border-2 border-indigo-400 shadow-md space-y-3 light-surface relative"
+                              >
+                                {isAILoading ? (
+                                  /* Clean, GPU-friendly AI Thinking indicator */
+                                  <div className="py-6 px-3 flex flex-col items-center justify-center text-center relative">
                                     <button
                                       type="button"
                                       onClick={() => setShowAIExplanation(false)}
-                                      className="w-7 h-7 rounded-lg bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-600 cursor-pointer transition-colors"
-                                      title="Close AI Breakdown"
+                                      className="absolute top-0 right-0 w-7 h-7 rounded-lg bg-indigo-100/70 hover:bg-indigo-200 flex items-center justify-center text-zinc-600 cursor-pointer transition-colors"
+                                      title="Close"
                                     >
                                       <X className="w-3.5 h-3.5" />
                                     </button>
+
+                                    <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 text-white flex items-center justify-center shadow-lg my-2">
+                                      <Bot className="w-7 h-7 text-yellow-300 drop-shadow-sm" />
+                                      <Sparkles className="w-3.5 h-3.5 text-amber-300 fill-amber-300 absolute -top-1 -right-1" />
+                                    </div>
+
+                                    <div className="flex items-center gap-2 mt-2">
+                                      <h3 className="text-sm sm:text-base font-black text-indigo-950">
+                                        AI is Preparing Explanation...
+                                      </h3>
+                                    </div>
                                   </div>
+                                ) : (
+                                  <>
+                                    <div className="flex items-center justify-between pb-2 border-b border-indigo-200/80">
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-xs">
+                                          <Bot className="w-4 h-4 text-yellow-300" />
+                                        </div>
+                                        <h4 className="text-xs sm:text-sm font-black text-indigo-950">AI Concept Breakdown</h4>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => setShowAIExplanation(false)}
+                                        className="w-7 h-7 rounded-lg bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-600 cursor-pointer transition-colors"
+                                        title="Close AI Breakdown"
+                                      >
+                                        <X className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
 
-                                  {/* AI Generated Markdown Explanation with KaTeX */}
-                                  <div className="text-xs sm:text-sm text-zinc-950 font-medium leading-relaxed space-y-3 pt-1">
-                                    <GlobalMarkdown content={aiExplanationText || ''} />
-                                  </div>
+                                    <div className="text-xs sm:text-sm text-zinc-950 font-medium leading-relaxed space-y-3 pt-1">
+                                      <GlobalMarkdown content={aiExplanationText || ''} className="text-zinc-950 font-medium" />
+                                    </div>
 
-                                  {/* AI Footer Bar */}
-                                  <div className="pt-2 border-t border-indigo-200/60 flex items-center justify-between">
-                                    <span className="text-[10px] font-bold text-indigo-900 flex items-center gap-1">
-                                      <Sparkles className="w-3 h-3 text-amber-500" />
-                                      AP Exam Concept Guidance
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={() => setShowAIExplanation(false)}
-                                      className="text-[11px] font-black text-indigo-700 hover:text-indigo-900 hover:underline cursor-pointer"
-                                    >
-                                      Got it, thanks! 👍
-                                    </button>
-                                  </div>
-                                </>
-                              )}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                                    <div className="pt-2 border-t border-indigo-200/60 flex items-center justify-between">
+                                      <span className="text-[10px] font-bold text-indigo-900 flex items-center gap-1">
+                                        <Sparkles className="w-3 h-3 text-amber-500" />
+                                        AP Exam Concept Guidance
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => setShowAIExplanation(false)}
+                                        className="text-[11px] font-black text-indigo-700 hover:text-indigo-900 hover:underline cursor-pointer"
+                                      >
+                                        Got it, thanks! 👍
+                                      </button>
+                                    </div>
+                                  </>
+                                )}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
 
-                        {/* 4. COLLEGE BOARD STANDARD STEP-BY-STEP EXPLANATION (COLLAPSIBLE / ACCORDION) */}
-                        <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 space-y-2">
-                          <div className="flex items-center gap-1.5 font-black text-zinc-950 uppercase tracking-wider text-xs">
-                            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                            <span>College Board Step-by-Step Explanation</span>
-                          </div>
-                          <div className="text-xs sm:text-sm font-medium text-zinc-900 leading-relaxed">
-                            <GlobalMarkdown content={currentQ.explanation} />
-                          </div>
-
-                          {currentQ.distractorTip && (
-                            <div className="text-[11px] font-semibold text-rose-900 bg-rose-50 border border-rose-200 p-2.5 rounded-xl mt-2 leading-relaxed">
-                              <GlobalMarkdown content={currentQ.distractorTip} />
+                          {/* 4. COLLEGE BOARD STANDARD STEP-BY-STEP EXPLANATION */}
+                          <div className="bg-zinc-50 border-2 border-zinc-200/90 rounded-2xl p-4 space-y-2 text-zinc-950">
+                            <div className="flex items-center gap-1.5 font-black text-zinc-950 uppercase tracking-wider text-xs">
+                              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                              <span>College Board Step-by-Step Explanation</span>
                             </div>
-                          )}
+                            <div className="text-xs sm:text-sm font-medium text-zinc-950 leading-relaxed">
+                              <GlobalMarkdown content={currentQ.explanation} className="text-zinc-950 font-medium" />
+                            </div>
+
+                            {currentQ.distractorTip && (
+                              <div className="text-[11px] font-semibold text-rose-950 bg-rose-50 border-2 border-rose-200/90 p-2.5 rounded-xl mt-2 leading-relaxed">
+                                <GlobalMarkdown content={currentQ.distractorTip} className="text-rose-950 font-semibold" />
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
-            </div>
-
-            {/* Quiz Bottom Action Bar */}
-            <footer className="p-3.5 sm:p-4 border-t border-zinc-200 bg-white shrink-0 z-20 pb-[max(0.875rem,env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.04)]">
-              <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
-                <button
-                  onClick={() => {
-                    triggerVibration(10);
-                    setActiveQuizLevel(null);
-                  }}
-                  className="px-4 py-3 rounded-xl border border-zinc-300 text-xs font-bold text-zinc-700 hover:bg-zinc-100 active:scale-95 transition-all"
-                >
-                  Quit Level
-                </button>
-
-                {!isAnswerSubmitted ? (
-                  <button
-                    onClick={handleSubmitAnswer}
-                    disabled={selectedOptionIndex === null}
-                    className="flex-1 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-sm shadow-sm active:scale-98 transition-all cursor-pointer"
-                  >
-                    Check Answer
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleNextQuestion}
-                    className="flex-1 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm shadow-sm active:scale-98 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <span>
-                      {currentQuestionIndex + 1 < activeQuizLevel.questions.length
-                        ? 'Next Question'
-                        : 'Finish Level'}
-                    </span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
+                      );
+                    })()}
+                  </div>
                 )}
               </div>
-            </footer>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            ) : (() => {
+              const totalQ = activeQuizLevel.questions.length;
+              const isPassed = correctAnswersCount > 0;
+              const nextId = activeQuizLevel.id + 1;
+              const nextLvl = allLevels.find(l => l.id === nextId && l.unitIndex === activeQuizLevel.unitIndex);
 
-      {/* ========================================================================= */}
-      {/* 8. LEVEL COMPLETED / SCORE CARD MODAL (WITH REMARKS & RETRY BUTTON)        */}
-      {/* ========================================================================= */}
-      <AnimatePresence>
-        {isQuizCompleted && activeQuizLevel && (() => {
-          const totalQ = activeQuizLevel.questions.length;
-          const isPassed = correctAnswersCount > 0;
-          const nextId = activeQuizLevel.id + 1;
-          const nextLvl = allLevels.find(l => l.id === nextId && l.unitIndex === activeQuizLevel.unitIndex);
-          const canAdvance = isPassed && nextLvl && isLevelUnlocked(nextLvl);
+              // Dynamic Performance Remarks
+              let remarkBadge = 'bg-emerald-100 text-emerald-900 border-emerald-300';
+              let remarkTitle = 'Outstanding Mastery!';
+              let remarkSubtitle = 'Flawless execution! You mastered every College Board concept on this level.';
+              let headerIcon = '🏆';
+              let iconBg = 'from-yellow-300 via-amber-400 to-amber-500';
 
-          // Dynamic Performance Remarks
-          let remarkBadge = 'bg-emerald-100 text-emerald-900 border-emerald-300';
-          let remarkTitle = 'Outstanding Mastery!';
-          let remarkSubtitle = 'Flawless execution! You mastered every College Board concept on this level.';
-          let headerIcon = '🏆';
-          let iconBg = 'from-yellow-300 via-amber-400 to-amber-500';
+              if (correctAnswersCount === 0) {
+                remarkBadge = 'bg-rose-100 text-rose-900 border-rose-300';
+                remarkTitle = 'Level Not Cleared';
+                remarkSubtitle = 'You scored 0. You must get at least 1 question correct to unlock the next level!';
+                headerIcon = '❌';
+                iconBg = 'from-rose-400 via-rose-500 to-red-600';
+              } else if (correctAnswersCount === 1) {
+                remarkBadge = 'bg-amber-100 text-amber-950 border-amber-300';
+                remarkTitle = 'Needs Serious Improvement';
+                remarkSubtitle = 'You cleared the bare minimum, but missed critical concepts. Review the AI step-by-step breakdown!';
+                headerIcon = '⚠️';
+                iconBg = 'from-amber-300 via-yellow-400 to-amber-500';
+              } else if (correctAnswersCount === 2) {
+                remarkBadge = 'bg-blue-100 text-blue-950 border-blue-300';
+                remarkTitle = 'Good Progress';
+                remarkSubtitle = 'Solid performance! Watch out for tricky College Board trap distractors to achieve 100%.';
+                headerIcon = '👍';
+                iconBg = 'from-blue-400 via-indigo-500 to-blue-600';
+              }
 
-          if (correctAnswersCount === 0) {
-            remarkBadge = 'bg-rose-100 text-rose-900 border-rose-300';
-            remarkTitle = 'Level Not Cleared';
-            remarkSubtitle = 'You scored 0. You must get at least 1 question correct to unlock the next level!';
-            headerIcon = '❌';
-            iconBg = 'from-rose-400 via-rose-500 to-red-600';
-          } else if (correctAnswersCount === 1) {
-            remarkBadge = 'bg-amber-100 text-amber-950 border-amber-300';
-            remarkTitle = 'Needs Serious Improvement';
-            remarkSubtitle = 'You cleared the bare minimum, but missed critical concepts. Review the AI step-by-step breakdown!';
-            headerIcon = '⚠️';
-            iconBg = 'from-amber-300 via-yellow-400 to-amber-500';
-          } else if (correctAnswersCount === 2) {
-            remarkBadge = 'bg-blue-100 text-blue-950 border-blue-300';
-            remarkTitle = 'Good Progress';
-            remarkSubtitle = 'Solid performance! Watch out for tricky College Board trap distractors to achieve 100%.';
-            headerIcon = '👍';
-            iconBg = 'from-blue-400 via-indigo-500 to-blue-600';
-          }
-
-          return (
-            <div className="fixed inset-0 z-[120] bg-black/80 flex items-center justify-center p-4 overflow-y-auto">
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="w-full max-w-sm bg-white rounded-3xl p-5 sm:p-6 border border-zinc-200 shadow-2xl text-center relative overflow-hidden light-surface my-auto"
-              >
-                {/* Header Icon Circle */}
-                <div className={`w-20 h-20 rounded-full bg-gradient-to-tr ${iconBg} border-4 border-white shadow-xl mx-auto flex items-center justify-center text-3xl mb-3`}>
-                  {headerIcon}
-                </div>
-
-                {/* Remark Badge */}
-                <div className="inline-block mb-1.5">
-                  <span className={`text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full border shadow-2xs ${remarkBadge}`}>
-                    {remarkTitle}
-                  </span>
-                </div>
-
-                <h2 className="text-xl font-black text-zinc-950">
-                  {isPassed ? 'Level Completed!' : 'Level Failed!'}
-                </h2>
-                <p className="text-xs text-zinc-600 font-semibold mt-0.5">
-                  Unit {activeQuizLevel.unitIndex} • Level {activeQuizLevel.levelNumber}: {activeQuizLevel.name}
-                </p>
-
-                {/* Stars Display */}
-                <div className="flex items-center justify-center gap-2 py-3">
-                  {Array.from({ length: 3 }).map((_, idx) => {
-                    const ratio = correctAnswersCount / totalQ;
-                    const earned =
-                      (idx === 0 && ratio >= 0.33) ||
-                      (idx === 1 && ratio >= 0.66) ||
-                      (idx === 2 && ratio >= 1);
-                    return (
-                      <motion.div
-                        key={idx}
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.15 * idx }}
-                      >
-                        <Star
-                          className={`w-9 h-9 ${
-                            earned ? 'fill-yellow-400 text-yellow-400 drop-shadow-sm' : 'fill-zinc-200 text-zinc-200'
-                          }`}
-                        />
-                      </motion.div>
-                    );
-                  })}
-                </div>
-
-                {/* Score & Detailed Performance Box */}
-                <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-3.5 my-3 text-center space-y-1">
-                  <span className="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">Final Score</span>
-                  <span className="text-xl font-black text-zinc-950 block">
-                    {correctAnswersCount} / {totalQ} Correct
-                  </span>
-                  <p className="text-xs font-semibold text-zinc-700 leading-snug pt-1">
-                    {remarkSubtitle}
-                  </p>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="space-y-2 pt-1">
-                  {/* Advance Button (Only if passed and next level exists) */}
-                  {isPassed && nextLvl ? (
-                    <button
-                      onClick={() => {
-                        handleStartQuiz(nextLvl);
-                      }}
-                      className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-sm shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
-                    >
-                      <span>Continue to Level {nextLvl.levelNumber}</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  ) : !isPassed ? (
-                    <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs font-bold text-center">
-                      🔒 Next level is locked until you score at least 1/3!
-                    </div>
-                  ) : null}
-
-                  {/* PROMINENT RETRY QUIZ BUTTON */}
-                  <button
-                    onClick={() => {
-                      triggerVibration(15);
-                      handleStartQuiz(activeQuizLevel);
-                    }}
-                    className={`w-full py-3 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${
-                      !isPassed
-                        ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-md'
-                        : 'bg-amber-50 hover:bg-amber-100 text-amber-950 border-2 border-amber-300 shadow-2xs'
-                    }`}
+              return (
+                <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 max-w-sm mx-auto w-full flex flex-col items-center justify-center my-auto momentum-scroll">
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="w-full bg-white rounded-3xl p-5 sm:p-6 border border-zinc-200 shadow-xl text-center relative overflow-hidden light-surface"
                   >
-                    <RotateCcw className="w-4 h-4" />
-                    <span>{isPassed ? 'Retry Quiz for 3 Stars' : 'Retry Quiz Now'}</span>
-                  </button>
+                    {/* Header Icon Circle */}
+                    <div className={`w-20 h-20 rounded-full bg-gradient-to-tr ${iconBg} border-4 border-white shadow-xl mx-auto flex items-center justify-center text-3xl mb-3`}>
+                      {headerIcon}
+                    </div>
 
-                  {/* Return to Map Button */}
+                    {/* Remark Badge */}
+                    <div className="inline-block mb-1.5">
+                      <span className={`text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full border shadow-2xs ${remarkBadge}`}>
+                        {remarkTitle}
+                      </span>
+                    </div>
+
+                    <h2 className="text-xl font-black text-zinc-950">
+                      {isPassed ? 'Level Completed!' : 'Level Failed!'}
+                    </h2>
+                    <p className="text-xs text-zinc-600 font-semibold mt-0.5">
+                      Unit {activeQuizLevel.unitIndex} • Level {activeQuizLevel.levelNumber}: {activeQuizLevel.name}
+                    </p>
+
+                    {/* Stars Display */}
+                    <div className="flex items-center justify-center gap-2 py-3">
+                      {Array.from({ length: 3 }).map((_, idx) => {
+                        const ratio = correctAnswersCount / totalQ;
+                        const earned =
+                          (idx === 0 && ratio >= 0.33) ||
+                          (idx === 1 && ratio >= 0.66) ||
+                          (idx === 2 && ratio >= 1);
+                        return (
+                          <div key={idx}>
+                            <Star
+                              className={`w-9 h-9 ${
+                                earned ? 'fill-yellow-400 text-yellow-400 drop-shadow-sm' : 'fill-zinc-200 text-zinc-200'
+                              }`}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Score & Detailed Performance Box */}
+                    <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-3.5 my-3 text-center space-y-1">
+                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">Final Score</span>
+                      <span className="text-xl font-black text-zinc-950 block">
+                        {correctAnswersCount} / {totalQ} Correct
+                      </span>
+                      <p className="text-xs font-semibold text-zinc-700 leading-snug pt-1">
+                        {remarkSubtitle}
+                      </p>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="space-y-2 pt-1">
+                      {/* Advance Button (Only if passed and next level exists) */}
+                      {isPassed && nextLvl ? (
+                        <button
+                          onClick={() => {
+                            handleStartQuiz(nextLvl);
+                          }}
+                          className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-sm shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                        >
+                          <span>Continue to Level {nextLvl.levelNumber}</span>
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      ) : !isPassed ? (
+                        <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs font-bold text-center">
+                          🔒 Next level is locked until you score at least 1/3!
+                        </div>
+                      ) : null}
+
+                      {/* PROMINENT RETRY QUIZ BUTTON */}
+                      <button
+                        onClick={() => {
+                          triggerVibration(15);
+                          handleStartQuiz(activeQuizLevel);
+                        }}
+                        className={`w-full py-3 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${
+                          !isPassed
+                            ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-md'
+                            : 'bg-amber-50 hover:bg-amber-100 text-amber-950 border-2 border-amber-300 shadow-2xs'
+                        }`}
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                        <span>{isPassed ? 'Retry Quiz for 3 Stars' : 'Retry Quiz Now'}</span>
+                      </button>
+
+                      {/* Return to Map Button */}
+                      <button
+                        onClick={() => {
+                          triggerVibration(10);
+                          setIsQuizCompleted(false);
+                          setActiveQuizLevel(null);
+                        }}
+                        className="w-full py-2.5 rounded-2xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold text-xs transition-all cursor-pointer"
+                      >
+                        Return to Island Map
+                      </button>
+                    </div>
+                  </motion.div>
+                </div>
+              );
+            })()}
+
+            {/* Quiz Bottom Action Bar (Only shown during active question gameplay) */}
+            {!isQuizCompleted && (
+              <footer className="p-3.5 sm:p-4 border-t border-zinc-200 bg-white shrink-0 z-20 pb-[max(0.875rem,env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.04)]">
+                <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
                   <button
                     onClick={() => {
                       triggerVibration(10);
                       setIsQuizCompleted(false);
                       setActiveQuizLevel(null);
                     }}
-                    className="w-full py-2.5 rounded-2xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold text-xs transition-all cursor-pointer"
+                    className="px-4 py-3 rounded-xl border border-zinc-300 text-xs font-bold text-zinc-700 hover:bg-zinc-100 active:scale-95 transition-all"
                   >
-                    Return to Island Map
+                    Quit Level
                   </button>
+
+                  {!isAnswerSubmitted ? (
+                    <button
+                      onClick={handleSubmitAnswer}
+                      disabled={selectedOptionIndex === null}
+                      className="flex-1 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-sm shadow-sm active:scale-98 transition-all cursor-pointer"
+                    >
+                      Check Answer
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleNextQuestion}
+                      className="flex-1 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm shadow-sm active:scale-98 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <span>
+                        {currentQuestionIndex + 1 < activeQuizLevel.questions.length
+                          ? 'Next Question'
+                          : 'Finish Level'}
+                      </span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
-              </motion.div>
-            </div>
-          );
-        })()}
+              </footer>
+            )}
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* ========================================================================= */}
