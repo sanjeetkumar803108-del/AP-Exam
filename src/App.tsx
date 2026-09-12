@@ -1047,10 +1047,12 @@ export default function App() {
               </ErrorBoundary>
             )}
             {activeTool === 'learningisland' && (
+              <div className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
                 <ErrorBoundary>
                   <LearningIsland onBack={() => setActiveTool(null)} />
                 </ErrorBoundary>
-              )}
+              </div>
+            )}
 
               {activeTool === 'trapradar' && (
               <ErrorBoundary>

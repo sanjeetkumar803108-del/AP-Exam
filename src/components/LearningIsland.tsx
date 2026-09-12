@@ -622,20 +622,28 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
     return () => {
       try {
         confetti.reset();
+        if (scrollRaf.current !== null) {
+          cancelAnimationFrame(scrollRaf.current);
+        }
       } catch (_) {}
     };
   }, []);
 
-  // Scroll listener to update activeUnitInView for the floating dock
+  // Scroll listener to update activeUnitInView for the floating dock (rAF-throttled to 60fps/120fps)
+  const scrollRaf = useRef<number | null>(null);
   const handleScroll = () => {
-    if (!mapContainerRef.current) return;
-    const scrollY = mapContainerRef.current.scrollTop + mapContainerRef.current.clientHeight / 2;
+    if (scrollRaf.current !== null) return;
+    scrollRaf.current = requestAnimationFrame(() => {
+      scrollRaf.current = null;
+      if (!mapContainerRef.current) return;
+      const scrollY = mapContainerRef.current.scrollTop + mapContainerRef.current.clientHeight / 2;
 
-    // Find which unit slab matches this scroll position
-    const currentSlab = unitSlabs.find(s => scrollY <= s.startY && scrollY >= s.endY);
-    if (currentSlab && currentSlab.unitIndex !== activeUnitInView) {
-      setActiveUnitInView(currentSlab.unitIndex);
-    }
+      // Find which unit slab matches this scroll position
+      const currentSlab = unitSlabs.find(s => scrollY <= s.startY && scrollY >= s.endY);
+      if (currentSlab && currentSlab.unitIndex !== activeUnitInView) {
+        setActiveUnitInView(currentSlab.unitIndex);
+      }
+    });
   };
 
   // Jump to specific unit and remember it as active
@@ -883,17 +891,16 @@ Please structure your response into these 4 clear sections:
   const categories = ['All', 'STEM & Math', 'Science', 'Social Sciences', 'Humanities'];
 
   return (
-    <div className="min-h-full flex flex-col bg-[#FAF8F5] light-surface text-zinc-950 relative overflow-hidden font-sans select-none">
+    <div className="h-full w-full flex flex-col bg-[#FAF8F5] light-surface text-zinc-950 relative overflow-hidden font-sans select-none">
       {/* Dynamic Subtle Mountain Biome Atmospheric Glow (Mountain Climb Feel) */}
       <div
-        className="fixed inset-0 pointer-events-none z-0 transition-all duration-700 ease-out opacity-80"
+        className="fixed inset-0 pointer-events-none z-0 transition-opacity duration-500 opacity-70"
         style={{
-          background: `radial-gradient(ellipse 90% 60% at 50% 15%, ${activeAtmosphere.ambientTint} 0%, transparent 75%),
-                       radial-gradient(ellipse 70% 50% at 50% 85%, ${activeAtmosphere.ambientTint} 0%, transparent 75%)`
+          background: `radial-gradient(ellipse 90% 60% at 50% 15%, ${activeAtmosphere.ambientTint} 0%, transparent 75%)`
         }}
       />
-      {/* Top Header Bar */}
-      <header className="px-4 sm:px-6 py-3 flex items-center justify-between border-b border-zinc-200/90 bg-white/98 sticky top-0 z-40 shadow-xs">
+      {/* Top Header Bar - PERMANENTLY FIXED & SHRINK-0 (CANNOT SCROLL AWAY) */}
+      <header className="px-4 sm:px-6 py-3 flex items-center justify-between border-b border-zinc-200/90 bg-white shrink-0 z-40 shadow-xs">
         <div className="flex items-center gap-3">
           <button
             onClick={() => {
@@ -982,33 +989,40 @@ Please structure your response into these 4 clear sections:
       <main
         ref={mapContainerRef}
         onScroll={handleScroll}
-        className={`flex-1 w-full overflow-y-auto overflow-x-hidden flex flex-col items-center pt-8 px-3 relative z-10 ${activeQuizLevel ? 'invisible pointer-events-none' : ''}`}
+        className={`flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden flex flex-col items-center pt-8 px-3 relative z-10 momentum-scroll ${activeQuizLevel ? 'invisible pointer-events-none' : ''}`}
         style={{
           WebkitOverflowScrolling: 'touch',
           paddingBottom: 'max(9.5rem, calc(env(safe-area-inset-bottom) + 7.5rem))',
           opacity: isInitialPositioned ? 1 : 0,
           transition: 'opacity 0.15s ease-out',
-          // Continuous Mountain Climb Multi-Stop Biome Gradient:
-          // Top 0% (Unit 8 Apex Celestial Purple) down to 100% (Unit 1 Soft Sand & Sea Mist)
-          background: `linear-gradient(180deg,
-            #f5f3ff 0%,     /* Unit 8 Summit: Celestial Soft Purple */
-            #ede9fe 9%,     /* Unit 8: Starlight Violet */
-            #f0f9ff 18%,    /* Unit 7: Alpine Heights */
-            #e0f2fe 28%,    /* Unit 6: Glacial Ice Snowline */
-            #eff6ff 38%,    /* Unit 5: Gilded Timberline Crags */
-            #fff7ed 48%,    /* Unit 4: Subtle Warm Canyon Glow */
-            #ffedd5 56%,    /* Unit 4: Sun-drenched Terracotta */
-            #fef3c7 64%,    /* Unit 3: Amber Foothills */
-            #f0fdf4 74%,    /* Unit 2: Lush Pine Valley */
-            #ecfdf5 84%,    /* Unit 2: Valley Stream */
-            #f0fdfa 92%,    /* Unit 1: Sea Mist */
-            #fbf7ee 100%    /* Unit 1 Base: Soft Sand & Sea Shore */
-          )`
+          willChange: 'scroll-position',
+          contain: 'layout'
         }}
       >
-        {/* Subtle Topographic Mountain Contour Grid Texture */}
+        {/* Continuous Mountain Climb Multi-Stop Biome Gradient Background */}
         <div 
-          className="absolute inset-0 pointer-events-none opacity-40 mix-blend-multiply"
+          className="absolute inset-0 pointer-events-none -z-10"
+          style={{
+            background: `linear-gradient(180deg,
+              #f5f3ff 0%,     /* Unit 8 Summit: Celestial Soft Purple */
+              #ede9fe 9%,     /* Unit 8: Starlight Violet */
+              #f0f9ff 18%,    /* Unit 7: Alpine Heights */
+              #e0f2fe 28%,    /* Unit 6: Glacial Ice Snowline */
+              #eff6ff 38%,    /* Unit 5: Gilded Timberline Crags */
+              #fff7ed 48%,    /* Unit 4: Subtle Warm Canyon Glow */
+              #ffedd5 56%,    /* Unit 4: Sun-drenched Terracotta */
+              #fef3c7 64%,    /* Unit 3: Amber Foothills */
+              #f0fdf4 74%,    /* Unit 2: Lush Pine Valley */
+              #ecfdf5 84%,    /* Unit 2: Valley Stream */
+              #f0fdfa 92%,    /* Unit 1: Sea Mist */
+              #fbf7ee 100%    /* Unit 1 Base: Soft Sand & Sea Shore */
+            )`
+          }}
+        />
+
+        {/* Crisp Topographic Mountain Grid Texture - Zero Blend-Mode Overhead */}
+        <div 
+          className="absolute inset-0 pointer-events-none opacity-20 -z-10"
           style={{
             backgroundImage: `radial-gradient(#94a3b8 1px, transparent 1px)`,
             backgroundSize: '24px 24px'
@@ -1030,10 +1044,13 @@ Please structure your response into these 4 clear sections:
             return (
               <div
                 key={slab.unitIndex}
-                className="absolute left-1/2 -translate-x-1/2 w-[94%] pointer-events-none z-0 rounded-3xl transition-all duration-300"
+                className="absolute left-1/2 -translate-x-1/2 w-[94%] pointer-events-none z-0 rounded-3xl transition-opacity duration-300"
                 style={{
                   top: `${slab.endY}px`,
-                  height: `${slab.height}px`
+                  height: `${slab.height}px`,
+                  contain: 'paint layout',
+                  contentVisibility: 'auto',
+                  containIntrinsicSize: `auto ${slab.height}px`
                 }}
               >
                 {/* Mid-Mountain Warm Canyon Elevation Marker for Unit 4 */}
@@ -1070,15 +1087,6 @@ Please structure your response into these 4 clear sections:
                       Lvl 1 Unlocked
                     </div>
                   </div>
-
-                  {/* 2.5D Environmental Grid Pattern */}
-                  <div
-                    className="absolute inset-0 opacity-10 pointer-events-none"
-                    style={{
-                      backgroundImage: `radial-gradient(${slab.biome.accentColor} 1.5px, transparent 1.5px)`,
-                      backgroundSize: '24px 24px'
-                    }}
-                  />
                 </div>
               </div>
             );
@@ -1091,6 +1099,10 @@ Please structure your response into these 4 clear sections:
             className="absolute inset-0 w-full h-full pointer-events-none z-10"
             viewBox={`0 0 100 ${totalMapHeight}`}
             preserveAspectRatio="none"
+            style={{
+              willChange: 'transform',
+              transform: 'translateZ(0)'
+            }}
           >
             {levelCoordinates.slice(0, -1).map((curr, i) => {
               const next = levelCoordinates[i + 1];
