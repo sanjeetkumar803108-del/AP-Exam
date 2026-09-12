@@ -785,6 +785,49 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   // API Call to Generate Questions
   const handleGenerateQuestions = async () => {
     triggerVibration(20);
+
+    // Offline Resilience: If student is offline, recover from saved history or provide clear guidance
+    if (!window.navigator.onLine) {
+      const cachedHistory = historyList.find(
+        item => (item.subjectId === selectedSubject.id || item.subjectName === selectedSubject.name) &&
+                item.questionType === questionType &&
+                (questionType === 'objective' ? (item.objectiveQuestions && item.objectiveQuestions.length > 0) : (item.subjectiveQuestions && item.subjectiveQuestions.length > 0))
+      );
+      if (cachedHistory) {
+        if (questionType === 'objective' && cachedHistory.objectiveQuestions) {
+          setObjectiveQuestions(cachedHistory.objectiveQuestions);
+          setCurrentObjIndex(0);
+          setSelectedAnswers({});
+          setShowExplanation({});
+          setIsExamCompleted(false);
+          const allocatedTime = getApExamDurationSeconds(selectedSubject.id, 'objective', cachedHistory.objectiveQuestions.length);
+          setTotalAllocatedSeconds(allocatedTime);
+          setTimeRemainingSeconds(allocatedTime);
+          setIsTimerActive(false);
+          setStep('practice');
+          showToast("Loaded saved offline practice test from History.", "info");
+          return;
+        } else if (questionType === 'subjective' && cachedHistory.subjectiveQuestions) {
+          setSubjectiveQuestions(cachedHistory.subjectiveQuestions);
+          setCurrentSubIndex(0);
+          setStudentAnswers({});
+          setShowRubric({});
+          setEvaluations({});
+          setAttachedImages({});
+          setShowPlusMenuIndex(null);
+          const allocatedTime = getApExamDurationSeconds(selectedSubject.id, 'subjective', cachedHistory.subjectiveQuestions.length);
+          setTotalAllocatedSeconds(allocatedTime);
+          setTimeRemainingSeconds(allocatedTime);
+          setIsTimerActive(false);
+          setStep('practice');
+          showToast("Loaded saved offline practice test from History.", "info");
+          return;
+        }
+      }
+      setError("You are currently offline. Please reconnect to the internet to generate new AI exam questions, or select a previously saved test from History.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setLoadingMsg(
@@ -1143,6 +1186,31 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     const explanation = 'explanation' in q ? q.explanation : undefined;
     const modelAnswer = 'modelAnswer' in q ? q.modelAnswer : undefined;
     const scoringRubric = 'scoringRubric' in q ? q.scoringRubric : undefined;
+
+    // Instant 0ms Offline Fallback for AI Tutor
+    if (!window.navigator.onLine) {
+      if (mode === 'hints') {
+        const hintText = (scoringRubric && scoringRubric.length > 0)
+          ? `💡 **AP Exam Key Scoring Criteria:**\n\n${scoringRubric.map((r, i) => `• ${r}`).join('\n')}`
+          : (explanation || `💡 **Key Concept Review:** Carefully identify the College Board AP command verbs and formulate your thesis/calculation based on ${selectedSubject.name} course guidelines.`);
+        setInlineAiExplanations(prev => ({
+          ...prev,
+          [qKey]: { loading: false, text: hintText, mode }
+        }));
+        triggerVibration([15, 30]);
+        return;
+      } else {
+        const solText = modelAnswer
+          ? `🎓 **Official College Board Model Solution:**\n\n${modelAnswer}`
+          : (explanation || `🎓 **Detailed Solution Breakdown:**\n\n${'correctAnswer' in q ? `**Correct Answer:** ${q.correctAnswer}\n\n` : ''}${qText}`);
+        setInlineAiExplanations(prev => ({
+          ...prev,
+          [qKey]: { loading: false, text: solText, mode }
+        }));
+        triggerVibration([15, 30]);
+        return;
+      }
+    }
 
     setInlineAiExplanations(prev => ({
       ...prev,

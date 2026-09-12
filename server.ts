@@ -3657,7 +3657,7 @@ ${batchArchetypePlan}
 CRITICAL CODE, MATH & LATEX FORMATTING:
 - FOR COMPUTER SCIENCE / PROGRAMMING (AP Computer Science A, AP Computer Science Principles):
   * Always format code snippets inside standard Markdown fenced code blocks (\`\`\`java ... \`\`\`).
-  * In code blocks and programming expressions, ALWAYS use standard programming operators: `<=`, `>=`, `!=`, `==`, `&&`, `||`, `<`, `>`. NEVER substitute LaTeX symbols like \\leqslant, \\le, \\ge, \\times into code!
+  * In code blocks and programming expressions, ALWAYS use standard programming operators: '<=', '>=', '!=', '==', '&&', '||', '<', '>'. NEVER substitute LaTeX symbols like \\leqslant, \\le, \\ge, \\times into code!
   * For inline variable names, methods, or keywords in question text (e.g. \`reverseString("APCS")\`, \`true\`, \`false\`, \`StackOverflowError\`), ALWAYS use Markdown backticks (\`code\`) and NEVER raw LaTeX like \\texttt{...}.
 - FOR MATHEMATICS & SCIENCE (AP Calculus, AP Physics, AP Chemistry, AP Statistics):
   * Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for block.
@@ -3901,7 +3901,7 @@ ${batchArchetypePlan}
 CRITICAL CODE, MATH & LATEX FORMATTING:
 - FOR COMPUTER SCIENCE / PROGRAMMING (AP Computer Science A, AP Computer Science Principles):
   * Always format code snippets inside standard Markdown fenced code blocks (\`\`\`java ... \`\`\`).
-  * In code blocks and programming expressions, ALWAYS use standard programming operators: `<=`, `>=`, `!=`, `==`, `&&`, `||`, `<`, `>`. NEVER substitute LaTeX symbols like \\leqslant, \\le, \\ge, \\times into code!
+  * In code blocks and programming expressions, ALWAYS use standard programming operators: '<=', '>=', '!=', '==', '&&', '||', '<', '>'. NEVER substitute LaTeX symbols like \\leqslant, \\le, \\ge, \\times into code!
   * For inline variable names, methods, or keywords in question text (e.g. \`reverseString("APCS")\`, \`true\`, \`false\`, \`StackOverflowError\`), ALWAYS use Markdown backticks (\`code\`) and NEVER raw LaTeX like \\texttt{...}.
 - FOR MATHEMATICS & SCIENCE (AP Calculus, AP Physics, AP Chemistry, AP Statistics):
   * Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for block.
