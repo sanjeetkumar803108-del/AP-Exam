@@ -391,6 +391,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   const [previewPdfUri, setPreviewPdfUri] = useState<string | null>(null);
   const [previewPdfName, setPreviewPdfName] = useState<string>('AP_Practice_Set.pdf');
   const [isPdfDownloaded, setIsPdfDownloaded] = useState<boolean>(false);
+  const [isSharingPdf, setIsSharingPdf] = useState<boolean>(false);
   const [fullscreenSvg, setFullscreenSvg] = useState<{ svg: string; title: string } | null>(null);
   const [svgZoom, setSvgZoom] = useState<number>(1);
 
@@ -1403,7 +1404,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   const handleExportPDF = async (
     customQuestions?: { type: 'objective'; items: APObjectiveQuestion[] } | { type: 'subjective'; items: APSubjectiveQuestion[] },
     customSubject?: { name: string; shortCode: string },
-    customUnitTitle?: string
+    customUnitTitle?: string,
+    options?: { skipPreview?: boolean }
   ) => {
     triggerVibration(15);
     try {
@@ -1889,10 +1891,12 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
       const pdfBlob = doc.output('blob');
       const blobUrl = URL.createObjectURL(pdfBlob);
 
-      // Instantly open preview reader!
-      setIsPdfDownloaded(false);
-      setPreviewPdfUri(blobUrl);
-      setPreviewPdfName(filename);
+      // Open preview reader only if not skipping preview (e.g. direct share)
+      if (!options?.skipPreview) {
+        setIsPdfDownloaded(false);
+        setPreviewPdfUri(blobUrl);
+        setPreviewPdfName(filename);
+      }
       return { blob: pdfBlob, filename };
     } catch (err: any) {
       console.error("PDF Export Error:", err);
@@ -1905,15 +1909,20 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     customSubject?: { name: string; shortCode: string },
     customUnitTitle?: string
   ) => {
+    if (isSharingPdf) return;
+    setIsSharingPdf(true);
     triggerVibration(15);
+    showToast("Preparing Questions & Answers PDF...", "info");
     try {
-      const res = await handleExportPDF(customQuestions, customSubject, customUnitTitle);
+      const res = await handleExportPDF(customQuestions, customSubject, customUnitTitle, { skipPreview: true });
       if (res && res.blob && res.filename) {
         await sharePDFMobile(res.blob, res.filename);
       }
     } catch (err: any) {
       console.error("Exam PDF Share Error:", err);
       showToast("Failed to share exam PDF: " + (err.message || err), "error");
+    } finally {
+      setIsSharingPdf(false);
     }
   };
 
@@ -1962,20 +1971,6 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
 
     setShowHistoryModal(false);
     setStep('practice');
-  };
-
-  // Preview & Export PDF from History item
-  const handlePreviewHistoryPdf = (item: APTestPrepHistoryItem) => {
-    triggerVibration(15);
-    const qs = item.questionType === 'objective'
-      ? { type: 'objective' as const, items: item.objectiveQuestions || [] }
-      : { type: 'subjective' as const, items: item.subjectiveQuestions || [] };
-
-    handleExportPDF(
-      qs,
-      { name: item.subjectName, shortCode: item.shortCode },
-      item.unitTitle
-    );
   };
 
   // Delete an item from History
@@ -2078,6 +2073,23 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                   </span>
                 </button>
               )}
+
+              {/* Share Questions & Answers PDF Button */}
+              <button
+                type="button"
+                disabled={isSharingPdf}
+                onClick={() => handleShareExamPDF()}
+                className="h-8 px-2.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 active:scale-95 flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer shadow-xs disabled:opacity-50 shrink-0"
+                title="Share Questions & Complete Answers as PDF"
+                aria-label="Share PDF"
+              >
+                {isSharingPdf ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600" />
+                ) : (
+                  <Share2 className="w-3.5 h-3.5 text-indigo-600" />
+                )}
+                <span className="hidden xs:inline">{isSharingPdf ? 'Sharing...' : 'Share PDF'}</span>
+              </button>
 
               {/* Emergency Stop Sound Button if alarm ringing */}
               {isAlarmPlaying && (
@@ -2857,11 +2869,17 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                 {/* Prominent Share Action (Available during practice) */}
                 <div className="pt-2">
                   <button
+                    type="button"
+                    disabled={isSharingPdf}
                     onClick={() => handleShareExamPDF()}
-                    className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 active:scale-[0.99] transition-all hover:brightness-105 cursor-pointer"
+                    className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 active:scale-[0.99] transition-all hover:brightness-105 cursor-pointer disabled:opacity-50"
                   >
-                    <Share2 className="w-4 h-4 text-purple-200" />
-                    <span>Share Exam Questions (PDF)</span>
+                    {isSharingPdf ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-purple-200" />
+                    ) : (
+                      <Share2 className="w-4 h-4 text-purple-200" />
+                    )}
+                    <span>{isSharingPdf ? 'Preparing PDF...' : 'Share Questions & Answers (PDF)'}</span>
                   </button>
                 </div>
               </>
@@ -3428,11 +3446,17 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                       {/* Prominent Share Action (Available during practice) */}
                       <div className="pt-2 pb-2">
                         <button
+                          type="button"
+                          disabled={isSharingPdf}
                           onClick={() => handleShareExamPDF()}
-                          className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 active:scale-[0.99] transition-all hover:brightness-105 cursor-pointer"
+                          className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 active:scale-[0.99] transition-all hover:brightness-105 cursor-pointer disabled:opacity-50"
                         >
-                          <Share2 className="w-4 h-4 text-purple-200" />
-                          <span>Share Exam Questions (PDF)</span>
+                          {isSharingPdf ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-purple-200" />
+                          ) : (
+                            <Share2 className="w-4 h-4 text-purple-200" />
+                          )}
+                          <span>{isSharingPdf ? 'Preparing PDF...' : 'Share Questions & Answers (PDF)'}</span>
                         </button>
                       </div>
                     </div>
@@ -3978,21 +4002,14 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                           </button>
                         </div>
 
-                        <div className="flex items-center gap-2 pt-1 border-t border-zinc-100">
+                        <div className="pt-1 border-t border-zinc-100">
                           <button
+                            type="button"
                             onClick={() => handleResumeHistory(item)}
-                            className="flex-1 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                            className="w-full py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
                           >
                             <span>Practice Questions</span>
-                            <ArrowRight className="w-3 h-3" />
-                          </button>
-                          <button
-                            onClick={() => handlePreviewHistoryPdf(item)}
-                            className="py-2 px-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                            title="Share Exam PDF"
-                          >
-                            <FileText className="w-3.5 h-3.5 text-indigo-600" />
-                            <span>Preview PDF</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
