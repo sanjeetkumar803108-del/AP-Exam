@@ -765,11 +765,26 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
   };
 
   // Next Question or Finish Quiz
-    // Ask AI Explanation Handler
+  // Ask AI Explanation Handler
   const handleAskAI = async () => {
     if (!currentQ || selectedOptionIndex === null) return;
     triggerVibration(15);
+
+    // Toggle close if already open
+    if (showAIExplanation) {
+      setShowAIExplanation(false);
+      return;
+    }
+
     setShowAIExplanation(true);
+
+    // If explanation already exists for this question, scroll into view immediately
+    if (aiExplanationText) {
+      setTimeout(() => {
+        aiExplanationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 150);
+      return;
+    }
 
     const isWrong = selectedOptionIndex !== currentQ.correctIndex;
     const chosenLetter = String.fromCharCode(65 + selectedOptionIndex);
@@ -1302,12 +1317,16 @@ Please structure your response into these 4 clear sections:
                           >
                             <Bot className="w-5 h-5 text-yellow-300 shrink-0" />
                             <span>
-                              {isAILoading ? 'AI is Thinking...' : 'Ask AI'}
+                              {isAILoading
+                                ? 'AI is Thinking...'
+                                : showAIExplanation
+                                ? 'Hide AI Explanation & Solution'
+                                : 'Ask AI for Full Explanation & Steps'}
                             </span>
                             <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
                           </button>
 
-                          {/* 3. AI ANSWER BOX */}
+                          {/* 3. AI ANSWER BOX & COLLEGE BOARD STEP-BY-STEP EXPLANATION */}
                           <AnimatePresence>
                             {showAIExplanation && (
                               <motion.div
@@ -1315,89 +1334,91 @@ Please structure your response into these 4 clear sections:
                                 initial={{ opacity: 0, y: 15 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                className="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-indigo-50/90 via-purple-50/40 to-white border-2 border-indigo-400 shadow-md space-y-3 light-surface relative"
+                                className="space-y-3"
                               >
-                                {isAILoading ? (
-                                  /* Clean, GPU-friendly AI Thinking indicator */
-                                  <div className="py-6 px-3 flex flex-col items-center justify-center text-center relative">
-                                    <button
-                                      type="button"
-                                      onClick={() => setShowAIExplanation(false)}
-                                      className="absolute top-0 right-0 w-7 h-7 rounded-lg bg-indigo-100/70 hover:bg-indigo-200 flex items-center justify-center text-zinc-600 cursor-pointer transition-colors"
-                                      title="Close"
-                                    >
-                                      <X className="w-3.5 h-3.5" />
-                                    </button>
-
-                                    <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 text-white flex items-center justify-center shadow-lg my-2">
-                                      <Bot className="w-7 h-7 text-yellow-300 drop-shadow-sm" />
-                                      <Sparkles className="w-3.5 h-3.5 text-amber-300 fill-amber-300 absolute -top-1 -right-1" />
-                                    </div>
-
-                                    <div className="flex items-center gap-2 mt-2">
-                                      <h3 className="text-sm sm:text-base font-black text-indigo-950">
-                                        AI is Preparing Explanation...
-                                      </h3>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <>
-                                    <div className="flex items-center justify-between pb-2 border-b border-indigo-200/80">
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-xs">
-                                          <Bot className="w-4 h-4 text-yellow-300" />
-                                        </div>
-                                        <h4 className="text-xs sm:text-sm font-black text-indigo-950">AI Concept Breakdown</h4>
-                                      </div>
+                                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-indigo-50/90 via-purple-50/40 to-white border-2 border-indigo-400 shadow-md space-y-3 light-surface relative">
+                                  {isAILoading ? (
+                                    /* Clean, GPU-friendly AI Thinking indicator */
+                                    <div className="py-6 px-3 flex flex-col items-center justify-center text-center relative">
                                       <button
                                         type="button"
                                         onClick={() => setShowAIExplanation(false)}
-                                        className="w-7 h-7 rounded-lg bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-600 cursor-pointer transition-colors"
-                                        title="Close AI Breakdown"
+                                        className="absolute top-0 right-0 w-7 h-7 rounded-lg bg-indigo-100/70 hover:bg-indigo-200 flex items-center justify-center text-zinc-600 cursor-pointer transition-colors"
+                                        title="Close"
                                       >
                                         <X className="w-3.5 h-3.5" />
                                       </button>
-                                    </div>
 
-                                    <div className="text-xs sm:text-sm text-zinc-950 font-medium leading-relaxed space-y-3 pt-1">
-                                      <GlobalMarkdown content={aiExplanationText || ''} className="text-zinc-950 font-medium" />
-                                    </div>
+                                      <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 text-white flex items-center justify-center shadow-lg my-2">
+                                        <Bot className="w-7 h-7 text-yellow-300 drop-shadow-sm" />
+                                        <Sparkles className="w-3.5 h-3.5 text-amber-300 fill-amber-300 absolute -top-1 -right-1" />
+                                      </div>
 
-                                    <div className="pt-2 border-t border-indigo-200/60 flex items-center justify-between">
-                                      <span className="text-[10px] font-bold text-indigo-900 flex items-center gap-1">
-                                        <Sparkles className="w-3 h-3 text-amber-500" />
-                                        AP Exam Concept Guidance
-                                      </span>
-                                      <button
-                                        type="button"
-                                        onClick={() => setShowAIExplanation(false)}
-                                        className="text-[11px] font-black text-indigo-700 hover:text-indigo-900 hover:underline cursor-pointer"
-                                      >
-                                        Got it, thanks! 👍
-                                      </button>
+                                      <div className="flex items-center gap-2 mt-2">
+                                        <h3 className="text-sm sm:text-base font-black text-indigo-950">
+                                          AI is Preparing Explanation...
+                                        </h3>
+                                      </div>
                                     </div>
-                                  </>
-                                )}
+                                  ) : (
+                                    <>
+                                      <div className="flex items-center justify-between pb-2 border-b border-indigo-200/80">
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-xs">
+                                            <Bot className="w-4 h-4 text-yellow-300" />
+                                          </div>
+                                          <h4 className="text-xs sm:text-sm font-black text-indigo-950">AI Concept Breakdown</h4>
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={() => setShowAIExplanation(false)}
+                                          className="w-7 h-7 rounded-lg bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-600 cursor-pointer transition-colors"
+                                          title="Close AI Breakdown"
+                                        >
+                                          <X className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+
+                                      <div className="text-xs sm:text-sm text-zinc-950 font-medium leading-relaxed space-y-3 pt-1">
+                                        <GlobalMarkdown content={aiExplanationText || ''} className="text-zinc-950 font-medium" />
+                                      </div>
+
+                                      <div className="pt-2 border-t border-indigo-200/60 flex items-center justify-between">
+                                        <span className="text-[10px] font-bold text-indigo-900 flex items-center gap-1">
+                                          <Sparkles className="w-3 h-3 text-amber-500" />
+                                          AP Exam Concept Guidance
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={() => setShowAIExplanation(false)}
+                                          className="text-[11px] font-black text-indigo-700 hover:text-indigo-900 hover:underline cursor-pointer"
+                                        >
+                                          Got it, thanks! 👍
+                                        </button>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+
+                                {/* 4. COLLEGE BOARD STANDARD STEP-BY-STEP EXPLANATION (Only shown inside showAIExplanation) */}
+                                <div className="bg-zinc-50 border-2 border-zinc-200/90 rounded-2xl p-4 space-y-2 text-zinc-950">
+                                  <div className="flex items-center gap-1.5 font-black text-zinc-950 uppercase tracking-wider text-xs">
+                                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                                    <span>College Board Step-by-Step Explanation</span>
+                                  </div>
+                                  <div className="text-xs sm:text-sm font-medium text-zinc-950 leading-relaxed">
+                                    <GlobalMarkdown content={currentQ.explanation} className="text-zinc-950 font-medium" />
+                                  </div>
+
+                                  {currentQ.distractorTip && (
+                                    <div className="text-[11px] font-semibold text-rose-950 bg-rose-50 border-2 border-rose-200/90 p-2.5 rounded-xl mt-2 leading-relaxed">
+                                      <GlobalMarkdown content={currentQ.distractorTip} className="text-rose-950 font-semibold" />
+                                    </div>
+                                  )}
+                                </div>
                               </motion.div>
                             )}
                           </AnimatePresence>
-
-                          {/* 4. COLLEGE BOARD STANDARD STEP-BY-STEP EXPLANATION */}
-                          <div className="bg-zinc-50 border-2 border-zinc-200/90 rounded-2xl p-4 space-y-2 text-zinc-950">
-                            <div className="flex items-center gap-1.5 font-black text-zinc-950 uppercase tracking-wider text-xs">
-                              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                              <span>College Board Step-by-Step Explanation</span>
-                            </div>
-                            <div className="text-xs sm:text-sm font-medium text-zinc-950 leading-relaxed">
-                              <GlobalMarkdown content={currentQ.explanation} className="text-zinc-950 font-medium" />
-                            </div>
-
-                            {currentQ.distractorTip && (
-                              <div className="text-[11px] font-semibold text-rose-950 bg-rose-50 border-2 border-rose-200/90 p-2.5 rounded-xl mt-2 leading-relaxed">
-                                <GlobalMarkdown content={currentQ.distractorTip} className="text-rose-950 font-semibold" />
-                              </div>
-                            )}
-                          </div>
                         </div>
                       );
                     })()}

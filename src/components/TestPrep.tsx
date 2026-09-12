@@ -1184,8 +1184,10 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     const targetData = explicitData || askAiModalData;
     if (!targetData) return;
     const { question: q, type } = targetData;
-    triggerVibration(15);
     setAskAiModalData(null);
+    if (type === 'objective') {
+      setShowExplanation(prev => ({ ...prev, [currentObjIndex]: true }));
+    }
 
     const qKey = type === 'objective' ? `obj_${currentObjIndex}` : `sub_${currentSubIndex}`;
     const qText = 'question' in q ? q.question : q.prompt;
@@ -2529,7 +2531,6 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                               onClick={() => {
                                 triggerVibration(15);
                                 setSelectedAnswers(prev => ({ ...prev, [currentObjIndex]: opt }));
-                                setShowExplanation(prev => ({ ...prev, [currentObjIndex]: true }));
                               }}
                               className={`p-3.5 rounded-2xl border text-left text-xs transition-all flex items-center justify-between gap-3 ${btnStyle}`}
                             >
@@ -2547,17 +2548,62 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                         })}
                       </div>
 
-                      {/* Explanation Section */}
+                      {/* Ask AI Action Banner (Shown after answering, keeping full solution hidden until user taps Ask AI) */}
+                      {isAnswered && !isRevealed && !inlineAiExplanations[`obj_${currentObjIndex}`] && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mt-3 p-3.5 rounded-2xl bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-50 border border-purple-200/90 flex items-center justify-between gap-3 shadow-2xs"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                              <Sparkles className="w-4 h-4 text-yellow-300" />
+                            </div>
+                            <div className="min-w-0">
+                              <span className="text-xs font-black text-purple-950 block truncate">
+                                Ask AI for Full Explanation & Steps
+                              </span>
+                              <span className="text-[10px] text-purple-700 font-medium block">
+                                Tap Ask AI to reveal College Board solution breakdown
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              triggerVibration(15);
+                              setShowExplanation(prev => ({ ...prev, [currentObjIndex]: true }));
+                              handleOpenAITutor(q, 'objective');
+                            }}
+                            className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-black flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer shrink-0"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                            <span>Ask AI</span>
+                          </button>
+                        </motion.div>
+                      )}
+
+                      {/* Explanation Section (Only visible after user taps Ask AI) */}
                       {isRevealed && (
                         <motion.div
                           initial={{ opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
                           className="mt-3 p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex flex-col gap-2"
                         >
-                          <span className="text-xs font-black uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
-                            <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                            College Board AP Explanation
-                          </span>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-black uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
+                              <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                              College Board AP Explanation
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setShowExplanation(prev => ({ ...prev, [currentObjIndex]: false }))}
+                              className="text-[10px] font-bold text-indigo-600 hover:text-indigo-900 px-2 py-0.5 rounded-lg hover:bg-indigo-100/60 transition-colors cursor-pointer"
+                              title="Hide Explanation"
+                            >
+                              Hide
+                            </button>
+                          </div>
                           <div className="text-xs text-zinc-700 leading-relaxed">
                             <GlobalMarkdown>{q.explanation}</GlobalMarkdown>
                           </div>
