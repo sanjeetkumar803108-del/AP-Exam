@@ -42,6 +42,7 @@ import {
   ALL_CALC_AB_UNIT_DEFINITIONS,
   getDefaultUnlockedLevelIds
 } from '../data/quiz/apCalculusUnitsData';
+import { TreasureIslandCanvas } from './TreasureIslandCanvas';
 
 interface LearningIslandProps {
   onBack: () => void;
@@ -905,65 +906,57 @@ Please structure your response into these 4 clear sections:
   const categories = ['All', 'STEM & Math', 'Science', 'Social Sciences', 'Humanities'];
 
   return (
-    <div className="h-full w-full flex flex-col bg-[#FAF8F5] light-surface text-zinc-950 relative overflow-hidden font-sans select-none">
-      {/* Dynamic Subtle Mountain Biome Atmospheric Glow (Mountain Climb Feel) - Only rendered when on map */}
+    <div className="h-full w-full flex flex-col bg-[#1c110a] text-zinc-950 relative overflow-hidden font-sans select-none">
+      {/* Top Header Bar - Authentic Pirate Treasure Map Header */}
       {!activeQuizLevel && (
-        <div
-          className="fixed inset-0 pointer-events-none z-0 transition-opacity duration-500 opacity-70"
-          style={{
-            background: `radial-gradient(ellipse 90% 60% at 50% 15%, ${activeAtmosphere.ambientTint} 0%, transparent 75%)`
-          }}
-        />
-      )}
-      {/* Top Header Bar - PERMANENTLY FIXED & SHRINK-0 (CANNOT SCROLL AWAY) */}
-      {!activeQuizLevel && (
-      <header className="px-4 sm:px-6 py-3 flex items-center justify-between border-b border-zinc-200/90 bg-white shrink-0 z-40 shadow-xs">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              triggerVibration(10);
-              onBack();
-            }}
-            className="w-9 h-9 rounded-xl flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 text-zinc-700 hover:text-zinc-950 border border-zinc-200 active:scale-95 transition-all cursor-pointer shadow-2xs"
-            title="Back to Dashboard"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
+        <header className="px-4 py-3 flex items-center justify-between bg-[#1c110a]/90 backdrop-blur-md border-b border-[#3b2513]/70 shrink-0 z-40 shadow-md">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                triggerVibration(10);
+                onBack();
+              }}
+              className="w-9 h-9 rounded-full flex items-center justify-center bg-black/45 hover:bg-black/60 text-[#fde68a] border border-white/10 active:scale-95 transition-all cursor-pointer shadow-md"
+              title="Back to Dashboard"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🏝️</span>
-            <div>
-              <h1 className="text-base sm:text-lg font-black text-zinc-950 tracking-tight">
-                Learning Island
-              </h1>
-              <p className="text-[11px] text-zinc-500 font-bold hidden sm:block">
-                Curriculum Quest Map • Level 1 Unlocked on Every Unit
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Controls: Subject Selector */}
-        <div className="flex items-center gap-2">
-          {/* Subject Dropdown Button */}
-          <button
-            onClick={() => {
-              triggerVibration(10);
-              setShowSubjectModal(true);
-            }}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/90 text-zinc-900 active:scale-95 transition-all cursor-pointer shadow-2xs"
-          >
-            <span className="text-base">{selectedSubject.icon}</span>
-            <div className="text-left hidden xs:block">
-              <div className="text-[10px] font-bold text-zinc-500 uppercase leading-none">Subject</div>
-              <div className="text-xs font-black text-zinc-950 truncate max-w-[110px] sm:max-w-[150px]">
-                {selectedSubject.shortCode}
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🗺️</span>
+              <div>
+                <h1 className="text-base sm:text-lg font-black text-[#fef3c7] tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] leading-tight">
+                  Treasure Map
+                </h1>
+                <p className="text-[10px] text-amber-200/70 font-bold hidden sm:block">
+                  Learning Island • {selectedSubject.name}
+                </p>
               </div>
             </div>
-            <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
-          </button>
-        </div>
-      </header>
+          </div>
+
+          {/* Action Controls: Coin Counter & Subject Selector */}
+          <div className="flex items-center gap-2">
+            {/* Coins Badge matching screenshot */}
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/50 border border-amber-500/30 text-amber-300 text-xs font-black shadow-md">
+              <span className="text-amber-400">🪙</span>
+              <span>0</span>
+            </div>
+
+            {/* Subject Dropdown Button */}
+            <button
+              onClick={() => {
+                triggerVibration(10);
+                setShowSubjectModal(true);
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-black/40 hover:bg-black/60 border border-white/10 text-amber-100 active:scale-95 transition-all cursor-pointer shadow-md text-xs font-bold"
+            >
+              <span className="text-sm">{selectedSubject.icon}</span>
+              <span className="truncate max-w-[80px] sm:max-w-[120px]">{selectedSubject.shortCode}</span>
+              <ChevronDown className="w-3.5 h-3.5 text-amber-300/80" />
+            </button>
+          </div>
+        </header>
       )}
 
       {/* Floating Locked Alert Notice */}
@@ -982,29 +975,8 @@ Please structure your response into these 4 clear sections:
       </AnimatePresence>
 
       {/* ========================================================================= */}
-      {/* 2.5D CONTINUOUS MULTI-UNIT MAP CANVAS                                     */}
+      {/* 2D VINTAGE TREASURE MAP CANVAS CONTAINER                                 */}
       {/* ========================================================================= */}
-      {/* Floating Mountain Altitude HUD Pill */}
-      {!activeQuizLevel && (
-        <div className="sticky top-14 z-30 pointer-events-none flex justify-center px-4 mb-[-36px]">
-          <motion.div
-            key={activeUnitInView}
-            initial={{ opacity: 0, y: -6, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.3 }}
-            className="pointer-events-auto flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/98 border border-zinc-200/90 shadow-md text-zinc-950 transition-all"
-          >
-            <span className="text-base shrink-0">{activeAtmosphere.icon}</span>
-            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-800 shrink-0">
-              Unit {activeUnitInView} • Elev. {activeAtmosphere.elevationLabel}
-            </span>
-            <span className="text-zinc-300">•</span>
-            <span className="text-[11px] font-black text-zinc-900 truncate max-w-[150px] sm:max-w-xs">
-              {activeAtmosphere.zoneTitle}
-            </span>
-          </motion.div>
-        </div>
-      )}
 
       <main
         ref={mapContainerRef}
@@ -1019,365 +991,28 @@ Please structure your response into these 4 clear sections:
           contain: 'layout'
         }}
       >
-        {/* Continuous Mountain Climb Multi-Stop Biome Gradient Background */}
-        <div 
-          className="absolute inset-0 pointer-events-none -z-10"
-          style={{
-            background: `linear-gradient(180deg,
-              #f5f3ff 0%,     /* Unit 8 Summit: Celestial Soft Purple */
-              #ede9fe 9%,     /* Unit 8: Starlight Violet */
-              #f0f9ff 18%,    /* Unit 7: Alpine Heights */
-              #e0f2fe 28%,    /* Unit 6: Glacial Ice Snowline */
-              #eff6ff 38%,    /* Unit 5: Gilded Timberline Crags */
-              #fff7ed 48%,    /* Unit 4: Subtle Warm Canyon Glow */
-              #ffedd5 56%,    /* Unit 4: Sun-drenched Terracotta */
-              #fef3c7 64%,    /* Unit 3: Amber Foothills */
-              #f0fdf4 74%,    /* Unit 2: Lush Pine Valley */
-              #ecfdf5 84%,    /* Unit 2: Valley Stream */
-              #f0fdfa 92%,    /* Unit 1: Sea Mist */
-              #fbf7ee 100%    /* Unit 1 Base: Soft Sand & Sea Shore */
-            )`
-          }}
+        <TreasureIslandCanvas
+          totalMapHeight={totalMapHeight}
+          levelCoordinates={levelCoordinates}
+          unitSlabs={unitSlabs}
+          activeLevelCoord={activeLevelCoord}
+          isLevelUnlocked={isLevelUnlocked}
+          completedLevels={progress.completedLevels}
+          onNodeClick={handleLevelNodeClick}
         />
-
-        {/* Crisp Topographic Mountain Grid Texture - Zero Blend-Mode Overhead */}
-        <div 
-          className="absolute inset-0 pointer-events-none opacity-20 -z-10"
-          style={{
-            backgroundImage: `radial-gradient(#94a3b8 1px, transparent 1px)`,
-            backgroundSize: '24px 24px'
-          }}
-        />
-        {/* Continuous Adventure Canvas Container (Consistent medium size across all units for mobile) */}
-        <div
-          className="relative w-full max-w-md shrink-0"
-          style={{
-            height: `${totalMapHeight}px`,
-            minHeight: `${totalMapHeight}px`
-          }}
-        >
-          {/* ========================================================================= */}
-          {/* 1. FLOATING 2.5D BIOME ISLAND SLABS (One per Unit)                        */}
-          {/* ========================================================================= */}
-          {unitSlabs.map(slab => {
-            const isCurrent = activeUnitInView === slab.unitIndex;
-            return (
-              <div
-                key={slab.unitIndex}
-                className="absolute left-1/2 -translate-x-1/2 w-[94%] pointer-events-none z-0 rounded-3xl transition-opacity duration-300"
-                style={{
-                  top: `${slab.endY}px`,
-                  height: `${slab.height}px`,
-                  contain: 'paint layout',
-                  contentVisibility: 'auto',
-                  containIntrinsicSize: `auto ${slab.height}px`
-                }}
-              >
-                {/* Mid-Mountain Warm Canyon Elevation Marker for Unit 4 */}
-                {slab.unitIndex === 4 && (
-                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-10 pointer-events-none flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-50 to-orange-50 border border-orange-300/80 shadow-xs text-orange-950 text-[10px] font-black uppercase tracking-wider">
-                    <span>🏜️</span>
-                    <span>Mid-Mountain Plateau • Elev. 4,200m (Warm Canyon Glow)</span>
-                  </div>
-                )}
-
-                {/* 2.5D Island Slab Base with 3D Drop Depth */}
-                <div
-                  className={`w-full h-full rounded-3xl bg-gradient-to-b ${slab.biome.groundGradient} border-2 ${slab.biome.cardBorder} border-b-[12px] shadow-[0_20px_35px_rgba(0,0,0,0.08)] relative overflow-hidden`}
-                >
-                  {/* Subtle Top Inner Highlight */}
-                  <div className="absolute inset-x-0 top-0 h-4 bg-white/40 rounded-t-3xl" />
-
-                  {/* Biome Identification Header Plate */}
-                  <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-auto">
-                    <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-2xl border border-zinc-200/80 shadow-xs">
-                      <span className="text-lg">{slab.biome.icon}</span>
-                      <div>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-zinc-900 block leading-tight">
-                          Unit {slab.unitIndex} • {slab.biome.name}
-                        </span>
-                        <span className="text-[11px] font-extrabold text-zinc-950 block truncate max-w-[210px] sm:max-w-xs">
-                          {slab.title}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="bg-white px-2.5 py-1 rounded-xl border border-zinc-200 text-[10px] font-black text-emerald-800 flex items-center gap-1 shadow-2xs">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      Lvl 1 Unlocked
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-
-          {/* ========================================================================= */}
-          {/* 2. CONTINUOUS WINDING DASHED TRAIL SVG PATH                               */}
-          {/* ========================================================================= */}
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none z-10"
-            viewBox={`0 0 100 ${totalMapHeight}`}
-            preserveAspectRatio="none"
-            style={{
-              willChange: 'transform',
-              transform: 'translateZ(0)'
-            }}
-          >
-            {levelCoordinates.slice(0, -1).map((curr, i) => {
-              const next = levelCoordinates[i + 1];
-              const isTransition = curr.unitIndex !== next.unitIndex;
-              const dx = next.xPercent - curr.xPercent;
-              const dy = next.yPx - curr.yPx;
-
-              // Intelligent adaptive deep-curvature winding path (Duolingo/Candy Crush style)
-              let cp1X: number;
-              let cp1Y: number;
-              let cp2X: number;
-              let cp2Y: number;
-
-              if (Math.abs(dx) < 22) {
-                // Nodes on same side: dramatic outward C-bow to completely eliminate straight lines
-                const bowSide = (curr.xPercent + next.xPercent) / 2 >= 50 ? 1 : -1;
-                const lateralBow = 26;
-                cp1X = Math.max(10, Math.min(90, curr.xPercent + bowSide * lateralBow));
-                cp1Y = curr.yPx + dy * 0.28;
-                cp2X = Math.max(10, Math.min(90, next.xPercent + bowSide * lateralBow));
-                cp2Y = curr.yPx + dy * 0.72;
-              } else {
-                // Nodes crossing sides: sweeping, looping S-curve
-                const sign = dx > 0 ? 1 : -1;
-                const sweepAmount = 26;
-                cp1X = Math.max(10, Math.min(90, curr.xPercent + sign * sweepAmount));
-                cp1Y = curr.yPx + dy * 0.32;
-                cp2X = Math.max(10, Math.min(90, next.xPercent - sign * sweepAmount));
-                cp2Y = curr.yPx + dy * 0.68;
-              }
-
-              const pathD = `M ${curr.xPercent} ${curr.yPx} C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${next.xPercent} ${next.yPx}`;
-              const shadowD = `M ${curr.xPercent} ${curr.yPx + 5} C ${cp1X} ${cp1Y + 5}, ${cp2X} ${cp2Y + 5}, ${next.xPercent} ${next.yPx + 5}`;
-
-              return (
-                <g key={i}>
-                  {/* Ambient ground track shadow */}
-                  <path
-                    d={shadowD}
-                    fill="none"
-                    stroke="#451a03"
-                    strokeWidth={isTransition ? '8' : '6'}
-                    strokeOpacity="0.14"
-                    strokeLinecap="round"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                  {/* Outer road border track */}
-                  <path
-                    d={pathD}
-                    fill="none"
-                    stroke={isTransition ? '#8B5CF6' : curr.biome.trailColor}
-                    strokeWidth={isTransition ? '6' : '5'}
-                    strokeOpacity="0.3"
-                    strokeLinecap="round"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                  {/* Vibrant dashed road track */}
-                  <path
-                    d={pathD}
-                    fill="none"
-                    stroke={isTransition ? '#A855F7' : curr.biome.trailColor}
-                    strokeWidth={isTransition ? '4' : '3.5'}
-                    strokeDasharray="6 8"
-                    strokeLinecap="round"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                  {/* Center subtle glowing accent */}
-                  <path
-                    d={pathD}
-                    fill="none"
-                    stroke="#ffffff"
-                    strokeWidth="1.5"
-                    strokeDasharray="2 12"
-                    strokeLinecap="round"
-                    strokeOpacity="0.8"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                </g>
-              );
-            })}
-          </svg>
-
-
-
-          {/* ========================================================================= */}
-          {/* 4. 2.5D INTERACTIVE LEVEL PEDESTAL NODES                                  */}
-          {/* ========================================================================= */}
-          {levelCoordinates.map(coord => {
-            const lvl = coord.level;
-            const unlocked = isLevelUnlocked(lvl);
-            const isCurrentActive = activeLevelCoord?.id === lvl.id;
-            const completion = progress.completedLevels[lvl.id];
-            const isCompleted = !!completion;
-            const stars = completion?.stars || 0;
-            const isBoss = lvl.difficulty === 'Boss';
-            const isUnitLevel1 = lvl.levelNumber === 1;
-
-            // 3D tactile node styling
-            let nodeBg =
-              'bg-gradient-to-b from-zinc-200 via-zinc-300 to-zinc-400 border-4 border-zinc-100 shadow-[0_7px_0_#9ca3af]';
-
-            if (isCompleted) {
-              nodeBg =
-                'bg-gradient-to-b from-emerald-400 via-emerald-500 to-teal-600 border-4 border-white shadow-[0_7px_0_#065f46,0_12px_18px_rgba(16,185,129,0.35)]';
-            } else if (unlocked) {
-              if (isBoss) {
-                nodeBg =
-                  'bg-gradient-to-b from-rose-500 via-red-600 to-amber-600 border-4 border-white shadow-[0_7px_0_#9f1239,0_14px_20px_rgba(244,63,94,0.4)]';
-              } else if (isUnitLevel1) {
-                nodeBg =
-                  'bg-gradient-to-b from-cyan-400 via-sky-500 to-blue-600 border-4 border-white shadow-[0_7px_0_#0369a1,0_14px_20px_rgba(14,165,233,0.4)]';
-              } else {
-                nodeBg =
-                  'bg-gradient-to-b from-amber-400 via-amber-500 to-yellow-600 border-4 border-white shadow-[0_7px_0_#b45309,0_12px_18px_rgba(245,158,11,0.35)]';
-              }
-            }
-
-            return (
-              <div
-                key={lvl.id}
-                className="absolute z-20 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center cursor-pointer transition-transform active:scale-95"
-                style={{
-                  left: `${coord.xPercent}%`,
-                  top: `${coord.yPx}px`
-                }}
-                onClick={() => handleLevelNodeClick(lvl)}
-              >
-                {/* 2.5D Mascot standing on active level */}
-                {isCurrentActive && (
-                  <motion.div
-                    animate={{ y: [0, -7, 0] }}
-                    transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-                    className="absolute -top-12 z-30 flex items-center justify-center pointer-events-none"
-                  >
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-300 border-2 border-white shadow-lg flex items-center justify-center text-2xl ring-4 ring-amber-500/30">
-                      🤠
-                    </div>
-                    {/* 2.5D Mascot Drop Shadow */}
-                    <div className="w-6 h-2 bg-black/20 rounded-full blur-[1px] absolute -bottom-1" />
-                  </motion.div>
-                )}
-
-                {/* 3D Tactile Pedestal Node */}
-                <div
-                  className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-black relative transition-all duration-200 hover:scale-105 active:scale-95 ${nodeBg}`}
-                >
-                  {/* Top Gloss Highlight */}
-                  <div className="absolute inset-x-2 top-1.5 h-3 bg-white/40 rounded-full blur-[0.5px]" />
-
-                  {/* Pulsing Beacon Ring for Active/Unlocked Nodes */}
-                  {isCurrentActive && (
-                    <span className="absolute -inset-2.5 rounded-full border-2 border-amber-400 animate-ping opacity-60 pointer-events-none" />
-                  )}
-
-                  {/* Level Content Icon/Number */}
-                  {isCompleted ? (
-                    <CheckCircle2 className="w-7 h-7 text-white drop-shadow-md" />
-                  ) : unlocked ? (
-                    isBoss ? (
-                      <span className="text-xl filter drop-shadow">👑</span>
-                    ) : (
-                      <span className="text-lg font-black tracking-tight text-white drop-shadow-md">
-                        {lvl.levelNumber}
-                      </span>
-                    )
-                  ) : (
-                    <Lock className="w-5 h-5 text-zinc-500 drop-shadow-xs" />
-                  )}
-
-                  {/* Stars for completed levels */}
-                  {isCompleted && stars > 0 && (
-                    <div className="absolute -bottom-2 flex items-center gap-0.5 bg-zinc-950/80 px-1.5 py-0.5 rounded-full border border-amber-400 shadow-xs">
-                      {Array.from({ length: 3 }).map((_, sIdx) => (
-                        <Star
-                          key={sIdx}
-                          className={`w-2.5 h-2.5 ${
-                            sIdx < stars ? 'fill-yellow-400 text-yellow-400' : 'fill-zinc-600 text-zinc-600'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Level Title & Topic Pill */}
-                <div className="mt-2.5 flex flex-col items-center text-center max-w-[140px] pointer-events-none">
-                  <span
-                    className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border shadow-2xs whitespace-nowrap ${
-                      isCompleted
-                        ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
-                        : unlocked
-                        ? isBoss
-                          ? 'bg-rose-100 text-rose-900 border-rose-300'
-                          : isUnitLevel1
-                          ? 'bg-sky-100 text-sky-900 border-sky-300'
-                          : 'bg-amber-100 text-amber-900 border-amber-300'
-                        : 'bg-zinc-100 text-zinc-500 border-zinc-200'
-                    }`}
-                  >
-                    U{lvl.unitIndex} • Lvl {lvl.levelNumber}
-                  </span>
-                  <span className="text-[11px] font-extrabold text-zinc-900 line-clamp-1 mt-0.5 leading-snug drop-shadow-xs">
-                    {lvl.name}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Map Base Start Dock: Mountain Origin & Coastal Sea Mist */}
-          <div
-            className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center text-center z-20 pointer-events-none w-auto max-w-[92vw]"
-            style={{ top: `${totalMapHeight - 130}px` }}
-          >
-            <div className="w-11 h-11 rounded-2xl bg-teal-100/95 border-2 border-teal-300 shadow-sm flex items-center justify-center text-2xl mb-1.5 ring-2 ring-teal-400/30">
-              🏖️
-            </div>
-            <div className="bg-gradient-to-r from-teal-50 via-cyan-50 to-teal-50 border-2 border-teal-400/90 px-4 py-2 rounded-2xl shadow-sm flex flex-col items-center text-center">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs">🌊</span>
-                <span className="text-[11px] font-black uppercase tracking-wider text-teal-950 whitespace-nowrap">
-                  Coastal Shore Basecamp
-                </span>
-              </div>
-              <span className="text-[10px] font-bold text-teal-800 tracking-wide mt-0.5 whitespace-nowrap">
-                Elev. 0m • Sea Mist & Soft Sand (Unit 1 Start)
-              </span>
-            </div>
-          </div>
-
-          {/* Apex Citadel Finish Flag at Very Top: Celestial Summit */}
-          <div
-            className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center text-center z-20 pointer-events-none"
-            style={{ top: '24px' }}
-          >
-            <div className="relative">
-              <span className="text-3xl animate-bounce block">👑</span>
-              <span className="absolute -top-1 -right-1 text-xs">✨</span>
-            </div>
-            <span className="text-[11px] font-black uppercase tracking-wider text-purple-950 bg-purple-50 border border-purple-300 px-4 py-1.5 rounded-full shadow-md mt-1 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-purple-600 animate-spin" />
-              <span>Summit Pinnacle • Elev. 8,848m (Celestial Apex Citadel)</span>
-            </span>
-          </div>
-        </div>
       </main>
 
       {/* ========================================================================= */}
       {/* 5. FLOATING 2.5D QUICK-JUMP UNIT DOCK (Bottom Bar)                        */}
       {/* ========================================================================= */}
+      {/* ========================================================================= */}
+      {/* 5. FLOATING PIRATE COMPASS QUICK-JUMP UNIT DOCK (Bottom Bar)               */}
+      {/* ========================================================================= */}
       {!activeQuizLevel && (
-        <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-30 max-w-[95vw] sm:max-w-2xl bg-white/95 backdrop-blur-md border border-zinc-300/90 rounded-2xl p-1.5 shadow-[0_10px_25px_rgba(0,0,0,0.12)] flex items-center gap-1.5 overflow-x-auto">
-          <div className="px-2 py-1 flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-zinc-500 border-r border-zinc-200 shrink-0">
-            <Navigation className="w-3 h-3 text-indigo-600" />
-            <span>Jump:</span>
+        <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-30 max-w-[95vw] sm:max-w-2xl bg-[#2b170c]/95 backdrop-blur-md border border-[#5c3719] rounded-2xl p-1.5 shadow-[0_10px_25px_rgba(0,0,0,0.5)] flex items-center gap-1.5 overflow-x-auto">
+          <div className="px-2.5 py-1 flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-amber-200/80 border-r border-[#5c3719] shrink-0">
+            <Compass className="w-3.5 h-3.5 text-amber-400 animate-spin-slow" />
+            <span>Map Units:</span>
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
@@ -1389,8 +1024,8 @@ Please structure your response into these 4 clear sections:
                   onClick={() => handleJumpToUnit(unit.unitIndex)}
                   className={`px-2.5 py-1 rounded-xl text-xs font-black whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 active:scale-95 ${
                     isActive
-                      ? 'bg-zinc-900 text-white shadow-sm ring-2 ring-indigo-400/50'
-                      : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border border-zinc-200'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-md ring-2 ring-amber-400/60'
+                      : 'bg-black/40 hover:bg-black/60 text-amber-100/80 border border-white/10'
                   }`}
                 >
                   <span>{unit.biome.icon}</span>
