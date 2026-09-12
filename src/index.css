@@ -216,6 +216,20 @@ sub {
   color: inherit !important;
 }
 
+/* KaTeX Math Fallback and System Font Safeguard (prevents blank/invisible math on Android) */
+.katex {
+  font-display: swap !important;
+}
+.katex .mathnormal, .katex .mathit {
+  font-family: KaTeX_Math, 'KaTeX_Main', 'Times New Roman', 'Cambria Math', 'Noto Serif', serif, sans-serif !important;
+  font-style: italic !important;
+  color: inherit !important;
+}
+.katex .mord, .katex .mbin, .katex .mrel, .katex .mopen, .katex .mclose, .katex .mpunct {
+  font-family: KaTeX_Main, 'KaTeX_Math', 'Times New Roman', 'Noto Serif', serif, sans-serif !important;
+  color: inherit !important;
+}
+
 /* Dark Mode Overrides */
 .dark, .dark .bg-\[\#FAF9F6\], .dark .bg-\[\#faf9f6\] {
   background-color: #09090b !important;
