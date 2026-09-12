@@ -146,10 +146,6 @@ export const TreasureIslandCanvas: React.FC<TreasureIslandCanvasProps> = ({
             <stop offset="60%" stopColor="#06b6d4" />
             <stop offset="100%" stopColor="#0284c7" />
           </linearGradient>
-
-          <filter id="island-shadow" x="-10%" y="-10%" width="120%" height="130%">
-            <feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="#38210d" floodOpacity="0.28" />
-          </filter>
         </defs>
 
         {/* --------------------------------------------------------------------- */}
@@ -163,7 +159,19 @@ export const TreasureIslandCanvas: React.FC<TreasureIslandCanvasProps> = ({
           const isTopUnit = slab.unitIndex === safeSlabs.length;
 
           return (
-            <g key={slab.unitIndex} filter="url(#island-shadow)">
+            <g key={slab.unitIndex}>
+              {/* Natural Landmass Drop-Shadow (GPU-safe, zero offscreen memory allocation) */}
+              <path
+                d={`M 14,${centerY + 146} 
+                   C 4,${centerY + 96} 2,${centerY - 24} 18,${centerY - 84} 
+                   C 32,${centerY - 124} 55,${centerY - 104} 74,${centerY - 134} 
+                   C 92,${centerY - 164} 98,${centerY - 84} 88,${centerY - 4} 
+                   C 80,${centerY + 66} 94,${centerY + 126} 80,${centerY + 166} 
+                   C 66,${centerY + 206} 28,${centerY + 186} 14,${centerY + 146} Z`}
+                fill="#38210d"
+                opacity="0.22"
+              />
+
               {/* ISLAND A (Main Tropical Landmass for this Unit) */}
               {/* 1. Sandy Shoreline */}
               <path

@@ -23,6 +23,8 @@ public class MainActivity extends BridgeActivity {
             settings.setMediaPlaybackRequiresUserGesture(false);
             settings.setAllowFileAccess(true);
             settings.setAllowContentAccess(true);
+            settings.setDomStorageEnabled(true);
+            settings.setDatabaseEnabled(true);
         }
     }
 }

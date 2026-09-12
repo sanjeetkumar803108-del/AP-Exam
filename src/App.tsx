@@ -107,6 +107,8 @@ function FullPageSkeleton() {
   );
 }
 
+let isRevenueCatConfigured = false;
+
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState('notes');
@@ -222,11 +224,12 @@ export default function App() {
     });
 
     // Initialize RevenueCat ONLY if a valid non-placeholder API key is set
-    if (Capacitor.isNativePlatform()) {
+    if (Capacitor.isNativePlatform() && !isRevenueCatConfigured) {
       try {
         const rcKey = (import.meta.env.VITE_REVENUECAT_API_KEY as string) || '';
         if (rcKey && !rcKey.includes('YOUR_REVENUECAT') && rcKey.length > 10) {
           Purchases.configure({ apiKey: rcKey });
+          isRevenueCatConfigured = true;
         } else {
           console.log('[App] RevenueCat configuration skipped (placeholder API key).');
         }
@@ -244,27 +247,6 @@ export default function App() {
         }, 600);
       }
     } catch (_) {}
-  }, []);
-
-  // Idle-time prefetch of high-yield AP features to guarantee instant, 0ms loading and eliminate chunk fetch errors
-  useEffect(() => {
-    const prefetchModules = () => {
-      try {
-        import('./components/APNotes').catch(() => {});
-        import('./components/APMindMap').catch(() => {});
-        import('./components/APTrapRadar').catch(() => {});
-        import('./components/TestPrep').catch(() => {});
-        import('./components/APSamplePapers').catch(() => {});
-      } catch (_) {}
-    };
-
-    if (typeof window !== 'undefined') {
-      if ('requestIdleCallback' in window) {
-        (window as any).requestIdleCallback(prefetchModules, { timeout: 3500 });
-      } else {
-        setTimeout(prefetchModules, 2000);
-      }
-    }
   }, []);
 
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -396,16 +378,6 @@ export default function App() {
     }
   }, [mobileToast]);
 
-  // Schedule EXACTLY 2 engaging daily study & homework notifications (5:00 PM & 7:30 PM)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setupDailyLocalNotifications(true).catch(err => {
-        console.warn('[Notifications Startup] Schedule notice:', err);
-      });
-    }, 1800);
-    return () => clearTimeout(timer);
-  }, []);
-
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
@@ -420,20 +392,11 @@ export default function App() {
       if (currentUser) {
         refillDailyCoins();
         
-        // Dynamic configuration & login to prevent subscription aliasing/wrong email issue
-        if (Capacitor.isNativePlatform()) {
-          const apiKey = (import.meta.env.VITE_REVENUECAT_API_KEY as string) || '';
-          if (apiKey && !apiKey.includes('YOUR_REVENUECAT') && apiKey.length > 10) {
-            Purchases.configure({ apiKey, appUserID: currentUser.uid })
-              .then(() => {
-                Purchases.logIn({ appUserID: currentUser.uid }).catch(err => {
-                  console.warn('RevenueCat logIn error on auth state change:', err);
-                });
-              })
-              .catch(err => {
-                console.warn('RevenueCat configure error on auth state change:', err);
-              });
-          }
+        // Sync user with RevenueCat if already configured (never re-call configure)
+        if (Capacitor.isNativePlatform() && isRevenueCatConfigured) {
+          Purchases.logIn({ appUserID: currentUser.uid }).catch(err => {
+            console.warn('RevenueCat logIn notice on auth state change:', err);
+          });
         }
         
         // 1. Initially set to specific user cached state or false (prevent leak from other sessions)
@@ -600,7 +563,7 @@ export default function App() {
         setAuthLoading(false);
         
         // Log out from RevenueCat
-        if (Capacitor.isNativePlatform()) {
+        if (Capacitor.isNativePlatform() && isRevenueCatConfigured) {
           Purchases.logOut().catch(err => {
             console.warn('RevenueCat logOut error on logout:', err);
           });
