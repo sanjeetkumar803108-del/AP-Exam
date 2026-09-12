@@ -33,6 +33,7 @@ export interface AchievementBadge {
   requiredXP: number;
   unlocked: boolean;
   claimed: boolean;
+  specialReward?: string;
 }
 
 export const STUDY_LEVELS: StudyLevel[] = [
@@ -41,17 +42,19 @@ export const STUDY_LEVELS: StudyLevel[] = [
   { level: 3, title: "Knowledge Seeker", badge: "🔍", minXP: 500, maxXP: 1000, color: "from-purple-500 to-indigo-500" },
   { level: 4, title: "AI Prodigy", badge: "⚡", minXP: 1000, maxXP: 2000, color: "from-amber-500 to-orange-500" },
   { level: 5, title: "Study Monk", badge: "🧘", minXP: 2000, maxXP: 3500, color: "from-rose-500 to-pink-500" },
-  { level: 6, title: "Exam Conqueror", badge: "🏆", minXP: 3500, maxXP: 6000, color: "from-cyan-500 to-blue-600" },
-  { level: 7, title: "Grandmaster Genius", badge: "🌟", minXP: 6000, maxXP: 10000, color: "from-violet-600 to-fuchsia-600" }
+  { level: 6, title: "Master Scholar", badge: "⚔️", minXP: 3500, maxXP: 6000, color: "from-cyan-500 to-blue-600" },
+  { level: 7, title: "Exam Conqueror", badge: "🏆", minXP: 6000, maxXP: 10000, color: "from-violet-600 to-fuchsia-600" },
+  { level: 8, title: "Grandmaster", badge: "👑", minXP: 10000, maxXP: 25000, color: "from-amber-500 via-yellow-400 to-amber-600" }
 ];
 
 export const ALL_BADGES: AchievementBadge[] = [
-  { id: 'first_step', title: 'First Step', icon: '🚀', description: 'Begin your AI study journey', requiredXP: 50, unlocked: false, claimed: false },
+  { id: 'first_step', title: 'First Step', icon: '🚀', description: 'Begin your AI study journey', requiredXP: 60, unlocked: false, claimed: false },
   { id: 'math_wizard', title: 'Math Wizard', icon: '🧮', description: 'Solve equations with AI Calculator', requiredXP: 250, unlocked: false, claimed: false },
   { id: 'streak_warrior', title: 'Streak Warrior', icon: '🔥', description: 'Maintain high study discipline', requiredXP: 600, unlocked: false, claimed: false },
   { id: 'pdf_compiler', title: 'PDF Master', icon: '📄', description: 'Generate study documents & formula sheets', requiredXP: 1200, unlocked: false, claimed: false },
   { id: 'ai_tutor_fan', title: 'AI Prodigy', icon: '🧠', description: 'Master complex academic topics', requiredXP: 2500, unlocked: false, claimed: false },
-  { id: 'grandmaster', title: 'Grandmaster', icon: '👑', description: 'Achieve legendary study mastery', requiredXP: 5000, unlocked: false, claimed: false }
+  { id: 'master', title: 'Master', icon: '⚔️', description: 'Achieve exceptional study mastery', requiredXP: 5000, unlocked: false, claimed: false },
+  { id: 'grandmaster', title: 'Grandmaster', icon: '👑', description: 'Ascend to legendary 10,000 XP mastery & unlock exclusive honors', requiredXP: 10000, unlocked: false, claimed: false, specialReward: 'Surprise Email' }
 ];
 
 /**

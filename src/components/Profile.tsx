@@ -1756,35 +1756,51 @@ export default function Profile({
               </h3>
 
               <div className="grid grid-cols-3 gap-2.5">
-                {achievementBadges.map((badge) => (
-                  <div
-                    key={badge.id}
-                    className={`p-3 rounded-2xl border text-center flex flex-col items-center justify-between gap-1.5 transition-all ${
-                      badge.unlocked
-                        ? 'bg-amber-50/50 border-amber-200 shadow-xs'
-                        : 'bg-zinc-50/30 border-zinc-200/40 opacity-50'
-                    }`}
-                  >
-                    <span className="text-2xl">{badge.icon}</span>
-                    <div>
-                      <span className={`text-[10px] font-black block truncate ${badge.unlocked ? 'text-zinc-900' : 'text-zinc-400'}`}>
-                        {badge.title}
-                      </span>
-                      <span className="text-[8px] font-bold text-zinc-400 block">
-                        {badge.requiredXP} XP
-                      </span>
+                {achievementBadges.map((badge) => {
+                  const isGrandmaster = badge.id === 'grandmaster';
+                  return (
+                    <div
+                      key={badge.id}
+                      className={`rounded-2xl border text-center flex flex-col items-center justify-between gap-1.5 transition-all ${
+                        isGrandmaster
+                          ? 'col-span-3 p-3.5 bg-gradient-to-r from-amber-50/80 via-yellow-50/60 to-amber-50/80 border-amber-300/80 shadow-xs'
+                          : badge.unlocked
+                            ? 'p-3 bg-amber-50/50 border-amber-200 shadow-xs'
+                            : 'p-3 bg-zinc-50/30 border-zinc-200/40 opacity-50'
+                      }`}
+                    >
+                      <span className={isGrandmaster ? 'text-3xl' : 'text-2xl'}>{badge.icon}</span>
+                      <div className="flex flex-col items-center">
+                        <span
+                          className={`text-[10px] font-black block truncate ${
+                            badge.unlocked ? 'text-zinc-900' : isGrandmaster ? 'text-amber-900' : 'text-zinc-400'
+                          }`}
+                        >
+                          {badge.title}
+                        </span>
+                        <span className="text-[8px] font-bold text-zinc-400 block">
+                          {badge.requiredXP.toLocaleString()} XP
+                        </span>
+                        {/* Surprise Email text displayed ONLY on Grandmaster badge */}
+                        {badge.specialReward && (
+                          <div className="mt-1 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 text-[8px] font-black uppercase tracking-wider shadow-2xs">
+                            <span>🎁</span>
+                            <span>{badge.specialReward}</span>
+                          </div>
+                        )}
+                      </div>
+                      {badge.unlocked ? (
+                        <span className="text-[8px] font-black uppercase text-amber-600 bg-amber-100/80 px-1.5 py-0.5 rounded">
+                          Unlocked
+                        </span>
+                      ) : (
+                        <span className="text-[8px] font-bold text-zinc-400 flex items-center gap-0.5">
+                          <Lock className="w-2.5 h-2.5" /> Locked
+                        </span>
+                      )}
                     </div>
-                    {badge.unlocked ? (
-                      <span className="text-[8px] font-black uppercase text-amber-600 bg-amber-100/80 px-1.5 py-0.5 rounded">
-                        Unlocked
-                      </span>
-                    ) : (
-                      <span className="text-[8px] font-bold text-zinc-400 flex items-center gap-0.5">
-                        <Lock className="w-2.5 h-2.5" /> Locked
-                      </span>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
