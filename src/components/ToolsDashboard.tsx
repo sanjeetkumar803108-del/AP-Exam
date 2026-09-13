@@ -520,99 +520,14 @@ function ToolsDashboard({
           </button>
         </div>
       </div>
-      {/* Home Feature Cards: Arranged with Most Unique Flagship Features First */}
+      {/* Home Feature Cards: Arranged in User's Exact Custom Order */}
       <div className="flex-1 flex flex-col justify-center my-auto pb-10 gap-4">
 
-        {/* Section Header: Flagship Innovations */}
-        <div className="flex items-center justify-between px-1 pt-1">
-          <div className="flex items-center gap-1.5">
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-            </span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-amber-600">
-              Exclusive AP Arsenal
-            </span>
-          </div>
-          <span className="text-[9px] font-extrabold text-zinc-400 uppercase tracking-wider bg-zinc-100 px-2 py-0.5 rounded-full">
-            Chief Reader Tested
-          </span>
-        </div>
-
-        {/* 1. TOP #1 UNIQUE: AP Trap Radar™ */}
+        {/* 1. 1v1 AP Quiz Battle Google Gemini Animated Hero Card */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
-          whileHover={{ scale: 1.015, y: -2 }}
-          whileTap={{ scale: 0.985 }}
-          onClick={() => handleSelectTool('trapradar')}
-          className="relative overflow-hidden bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 shadow-xl rounded-[2.5rem] p-7 cursor-pointer flex items-center justify-between transition-all select-none group text-white border border-amber-400"
-        >
-          <div className="absolute right-[-20px] top-[-20px] opacity-15 pointer-events-none">
-            <span className="text-8xl">🪤</span>
-          </div>
-          <div className="flex items-center gap-4 sm:gap-5 z-10">
-            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-3xl shrink-0 group-hover:scale-105 transition-transform duration-300 shadow-inner">
-              🪤
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-                  AP Trap Radar™
-                </h2>
-                <span className="bg-white/25 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">
-                  #1 UNIQUE
-                </span>
-              </div>
-              <p className="text-xs font-bold text-white/90 mt-0.5">
-                Bust Distractor Traps &amp; Scoring Secrets
-              </p>
-            </div>
-          </div>
-          <div className="w-12 h-12 rounded-full bg-white text-amber-600 group-hover:scale-110 flex items-center justify-center shrink-0 transition-all shadow-md z-10">
-            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
-          </div>
-        </motion.div>
-
-        {/* 2. TOP #2 UNIQUE: AP FRQ Grader™ */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.05, ease: "easeOut" }}
-          whileHover={{ scale: 1.015, y: -2 }}
-          whileTap={{ scale: 0.985 }}
-          onClick={() => handleSelectTool('frqgrader')}
-          className="relative overflow-hidden bg-white border border-emerald-200/90 shadow-md rounded-[2.5rem] p-7 cursor-pointer flex items-center justify-between transition-all select-none group hover:border-emerald-400 hover:shadow-lg"
-        >
-          <div className="flex items-center gap-4 sm:gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-3xl shrink-0 group-hover:bg-gradient-to-br group-hover:from-emerald-500 group-hover:to-teal-600 group-hover:text-white transition-all duration-300 shadow-xs">
-              📝
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
-                  AP FRQ Grader™
-                </h2>
-                <span className="bg-emerald-100 text-emerald-800 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">
-                  Camera AI
-                </span>
-              </div>
-              <p className="text-xs font-semibold text-emerald-600 mt-0.5">
-                Handwriting Photo &amp; Rubric Check
-              </p>
-            </div>
-          </div>
-          <div className="w-12 h-12 rounded-full bg-zinc-100 group-hover:bg-emerald-500 group-hover:text-white flex items-center justify-center text-zinc-700 shrink-0 transition-colors shadow-sm">
-            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
-          </div>
-        </motion.div>
-
-        {/* 3. TOP #3 UNIQUE: 1v1 AP Quiz Battle Google Gemini Animated Hero Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.1, ease: "easeOut" }}
           whileHover={{ scale: 1.015, y: -2 }}
           whileTap={{ scale: 0.985 }}
           onClick={() => handleSelectTool('quizbattle')}
@@ -657,7 +572,73 @@ function ToolsDashboard({
           </div>
         </motion.div>
 
-        {/* 4. TOP #4 UNIQUE: Learning Island™ */}
+        {/* 2. AP FRQ Grader™ */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.05, ease: "easeOut" }}
+          whileHover={{ scale: 1.015, y: -2 }}
+          whileTap={{ scale: 0.985 }}
+          onClick={() => handleSelectTool('frqgrader')}
+          className="relative overflow-hidden bg-white border border-emerald-200/90 shadow-md rounded-[2.5rem] p-7 cursor-pointer flex items-center justify-between transition-all select-none group hover:border-emerald-400 hover:shadow-lg"
+        >
+          <div className="flex items-center gap-4 sm:gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-3xl shrink-0 group-hover:bg-gradient-to-br group-hover:from-emerald-500 group-hover:to-teal-600 group-hover:text-white transition-all duration-300 shadow-xs">
+              📝
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
+                  AP FRQ Grader™
+                </h2>
+                <span className="bg-emerald-100 text-emerald-800 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">
+                  Camera AI
+                </span>
+              </div>
+              <p className="text-xs font-semibold text-emerald-600 mt-0.5">
+                Handwriting Photo &amp; Rubric Check
+              </p>
+            </div>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-zinc-100 group-hover:bg-emerald-500 group-hover:text-white flex items-center justify-center text-zinc-700 shrink-0 transition-colors shadow-sm">
+            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
+          </div>
+        </motion.div>
+
+        {/* 3. AP Trap Radar™ */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.1, ease: "easeOut" }}
+          whileHover={{ scale: 1.015, y: -2 }}
+          whileTap={{ scale: 0.985 }}
+          onClick={() => handleSelectTool('trapradar')}
+          className="relative overflow-hidden bg-white border border-amber-200/90 shadow-md rounded-[2.5rem] p-7 cursor-pointer flex items-center justify-between transition-all select-none group hover:border-amber-400 hover:shadow-lg"
+        >
+          <div className="flex items-center gap-4 sm:gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-3xl shrink-0 group-hover:bg-gradient-to-br group-hover:from-amber-500 group-hover:to-orange-500 group-hover:text-white transition-all duration-300 shadow-xs">
+              🪤
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
+                  AP Trap Radar™
+                </h2>
+                <span className="bg-amber-100 text-amber-800 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">
+                  Ex-Chief Reader
+                </span>
+              </div>
+              <p className="text-xs font-semibold text-amber-600 mt-0.5">
+                Bust Distractor Traps &amp; Scoring Secrets
+              </p>
+            </div>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-zinc-100 group-hover:bg-amber-500 group-hover:text-white flex items-center justify-center text-zinc-700 shrink-0 transition-colors shadow-sm">
+            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
+          </div>
+        </motion.div>
+
+        {/* 4. Learning Island™ */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -690,74 +671,11 @@ function ToolsDashboard({
           </div>
         </motion.div>
 
-        {/* Section Header: Study & Practice Suite */}
-        <div className="flex items-center gap-1.5 px-1 pt-3">
-          <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
-            Comprehensive Study &amp; Practice
-          </span>
-        </div>
-
-        {/* 5. Mind Map Revision */}
+        {/* 5. Test Prep */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.2, ease: "easeOut" }}
-          whileHover={{ scale: 1.02, y: -2, boxShadow: "0 14px 30px -5px rgba(0, 0, 0, 0.08)" }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => handleSelectTool('mindmap')}
-          className="relative overflow-hidden bg-white border border-teal-200/90 shadow-md rounded-[2.5rem] p-7 cursor-pointer flex items-center justify-between transition-all select-none group hover:border-teal-400 hover:shadow-lg"
-        >
-          <div className="flex items-center gap-4 sm:gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center text-3xl shrink-0 group-hover:bg-gradient-to-br group-hover:from-teal-500 group-hover:to-cyan-600 group-hover:text-white transition-all duration-300">
-              🧠
-            </div>
-            <div>
-              <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
-                Mind Map Revision
-              </h2>
-              <p className="text-xs font-semibold text-teal-600 mt-0.5">
-                Visual Concept Trees
-              </p>
-            </div>
-          </div>
-          <div className="w-12 h-12 rounded-full bg-zinc-100 group-hover:bg-teal-500 group-hover:text-white flex items-center justify-center text-zinc-700 shrink-0 transition-colors shadow-sm">
-            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
-          </div>
-        </motion.div>
-
-        {/* 6. AP Sample Papers Set */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.25, ease: "easeOut" }}
-          whileHover={{ scale: 1.02, y: -2, boxShadow: "0 14px 30px -5px rgba(0, 0, 0, 0.08)" }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => handleSelectTool('apsamplepapers')}
-          className="relative overflow-hidden bg-white border border-zinc-200/90 shadow-md rounded-[2.5rem] p-7 cursor-pointer flex items-center justify-between transition-all select-none group hover:border-emerald-300 hover:shadow-lg"
-        >
-          <div className="flex items-center gap-4 sm:gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-3xl shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
-              📑
-            </div>
-            <div>
-              <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
-                AP Sample Papers Set
-              </h2>
-              <p className="text-xs font-semibold text-emerald-600 mt-0.5">
-                Official Mock Tests
-              </p>
-            </div>
-          </div>
-          <div className="w-12 h-12 rounded-full bg-zinc-100 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center text-zinc-700 shrink-0 transition-colors shadow-sm">
-            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
-          </div>
-        </motion.div>
-
-        {/* 7. Test Prep */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.3, ease: "easeOut" }}
           whileHover={{ scale: 1.02, y: -2, boxShadow: "0 14px 30px -5px rgba(0, 0, 0, 0.08)" }}
           whileTap={{ scale: 0.98 }}
           onClick={() => handleSelectTool('testprep')}
@@ -781,11 +699,11 @@ function ToolsDashboard({
           </div>
         </motion.div>
 
-        {/* 8. AP Notes */}
+        {/* 6. AP Notes */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.35, ease: "easeOut" }}
+          transition={{ duration: 0.35, delay: 0.25, ease: "easeOut" }}
           whileHover={{ scale: 1.02, y: -2, boxShadow: "0 14px 30px -5px rgba(0, 0, 0, 0.08)" }}
           whileTap={{ scale: 0.98 }}
           onClick={() => handleSelectTool('apnotes')}
@@ -805,6 +723,64 @@ function ToolsDashboard({
             </div>
           </div>
           <div className="w-12 h-12 rounded-full bg-zinc-100 group-hover:bg-purple-600 group-hover:text-white flex items-center justify-center text-zinc-700 shrink-0 transition-colors shadow-sm">
+            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
+          </div>
+        </motion.div>
+
+        {/* 7. AP Sample Papers Set */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.3, ease: "easeOut" }}
+          whileHover={{ scale: 1.02, y: -2, boxShadow: "0 14px 30px -5px rgba(0, 0, 0, 0.08)" }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => handleSelectTool('apsamplepapers')}
+          className="relative overflow-hidden bg-white border border-zinc-200/90 shadow-md rounded-[2.5rem] p-7 cursor-pointer flex items-center justify-between transition-all select-none group hover:border-emerald-300 hover:shadow-lg"
+        >
+          <div className="flex items-center gap-4 sm:gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-3xl shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
+              📑
+            </div>
+            <div>
+              <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
+                AP Sample Papers Set
+              </h2>
+              <p className="text-xs font-semibold text-emerald-600 mt-0.5">
+                Official Mock Tests
+              </p>
+            </div>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-zinc-100 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center text-zinc-700 shrink-0 transition-colors shadow-sm">
+            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
+          </div>
+        </motion.div>
+
+        {/* 8. Mind Map Revision */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.35, ease: "easeOut" }}
+          whileHover={{ scale: 1.02, y: -2, boxShadow: "0 14px 30px -5px rgba(0, 0, 0, 0.08)" }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => handleSelectTool('mindmap')}
+          className="relative overflow-hidden bg-white border border-teal-200/90 shadow-md rounded-[2.5rem] p-7 cursor-pointer flex items-center justify-between transition-all select-none group hover:border-teal-400 hover:shadow-lg"
+        >
+          <div className="flex items-center gap-4 sm:gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center text-3xl shrink-0 group-hover:bg-gradient-to-br group-hover:from-teal-500 group-hover:to-cyan-600 group-hover:text-white transition-all duration-300">
+              🧠
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
+                  Mind Map Revision
+                </h2>
+              </div>
+              <p className="text-xs font-semibold text-teal-600 mt-0.5">
+                Visual Concept Trees
+              </p>
+            </div>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-zinc-100 group-hover:bg-teal-500 group-hover:text-white flex items-center justify-center text-zinc-700 shrink-0 transition-colors shadow-sm">
             <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
           </div>
         </motion.div>
