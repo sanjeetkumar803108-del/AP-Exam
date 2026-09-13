@@ -398,11 +398,6 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
         oppScoreRef.current = opp.score || 0;
         setOpponentAnswerStatus(opp.hasAnswered ? 'answered' : 'thinking');
         oppStatusRef.current = opp.hasAnswered ? 'answered' : 'thinking';
-
-        // If both players have answered, trigger round reveal immediately!
-        if (opp.hasAnswered && userStatusRef.current === 'answered' && !roundRevealedRef.current) {
-          triggerRoundReveal();
-        }
       }
 
       // 1. Room Finished
@@ -413,26 +408,21 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
         return;
       }
 
-      // 2. Synchronized Round Reveal
+      // 2. Synchronized Round Reveal from Server
       if (room.roundStatus === 'revealed') {
         if (!roundRevealedRef.current) {
           setRoundRevealed(true);
           roundRevealedRef.current = true;
           playSound(() => battleAudio.playOpponentAction());
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
         }
       }
 
-      // 3. Synchronized Round Progression
+      // 3. Synchronized Round Progression from Server
       if (room.roundStatus === 'playing') {
-        // Synchronize remaining seconds with server roundStartTime
-        if (room.roundStartTime) {
-          const currQ = questions[currentQIndexRef.current] || room.questions?.[room.currentQ];
-          const maxRoundSec = currQ?.timeLimit || 30;
-          const elapsed = Math.floor((Date.now() - room.roundStartTime) / 1000);
-          const remaining = Math.max(0, maxRoundSec - elapsed);
-          setTimeLeft(remaining);
-        }
-
         // Check if server advanced to next question
         if (typeof room.currentQ === 'number' && room.currentQ !== currentQIndexRef.current) {
           const nextIdx = room.currentQ;
@@ -483,7 +473,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // 10. Start Synchronized Question Round
   const startQuestionRound = (qIdx: number) => {
-    const activeQ = questions[qIdx];
+    const activeQ = questionsRef.current[qIdx] || questions[qIdx];
     const initialTimeLimit = activeQ?.timeLimit || 30;
     setTimeLeft(initialTimeLimit);
     setUserSelectedOption(null);
@@ -499,16 +489,11 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     if (opponentTimeoutRef.current) clearTimeout(opponentTimeoutRef.current);
     if (roundAdvanceTimeoutRef.current) clearTimeout(roundAdvanceTimeoutRef.current);
 
-    // Notify server of new round ready
-    if (liveRoomIdRef.current) {
-      battleSync.updatePlayerAction(liveRoomIdRef.current, myId, userScoreRef.current, false, false);
-    }
-
-    // 15s Countdown clock
+    // 30s Countdown clock
     timerRef.current = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
-          clearInterval(timerRef.current!);
+          if (timerRef.current) clearInterval(timerRef.current);
           handleRoundTimeout();
           return 0;
         }
@@ -545,7 +530,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           });
         }
 
-        // If user already answered, trigger round reveal!
+        // ONLY FOR GHOST BOT: If user already answered, trigger local reveal
         if (userStatusRef.current === 'answered' && !roundRevealedRef.current) {
           triggerRoundReveal();
         }
@@ -557,7 +542,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   const handleSelectOption = async (optionIndex: number) => {
     if (userAnswerStatus === 'answered' || phase !== 'BATTLE' || roundRevealedRef.current) return;
 
-    const currQ = questions[currentQIndex];
+    const currQ = questionsRef.current[currentQIndexRef.current] || questions[currentQIndex];
     if (!currQ) return;
 
     const isCorrect = optionIndex === currQ.correctIndex;
@@ -579,14 +564,16 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       playSound(() => battleAudio.playWrong());
     }
 
-    const isLastQ = currentQIndex + 1 === questions.length;
-    if (liveRoomIdRef.current) {
+    const isLastQ = currentQIndexRef.current + 1 === questionsRef.current.length;
+    if (liveRoomIdRef.current && isRealOpponentRef.current) {
       battleSync.updatePlayerAction(liveRoomIdRef.current, myId, newScore, true, isLastQ);
     }
 
-    // If opponent has already answered (whether Real or Ghost), trigger round reveal immediately!
-    if (oppStatusRef.current === 'answered' && !roundRevealedRef.current) {
-      triggerRoundReveal();
+    // ONLY for Ghost Bot practice mode: trigger local round reveal
+    if (!isRealOpponentRef.current) {
+      if (oppStatusRef.current === 'answered' && !roundRevealedRef.current) {
+        triggerRoundReveal();
+      }
     }
   };
 
@@ -604,7 +591,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     }, 2000);
   };
 
-  // 13. Round Timeout (15s expired)
+  // 13. Round Timeout (30s expired without answer)
   const handleRoundTimeout = async () => {
     if (userStatusRef.current === 'idle') {
       setUserAnswerStatus('answered');
@@ -612,12 +599,13 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       playSound(() => battleAudio.playWrong());
       triggerVibration(40);
 
-      const isLastQ = currentQIndex + 1 === questions.length;
-      if (liveRoomIdRef.current) {
+      const isLastQ = currentQIndexRef.current + 1 === questionsRef.current.length;
+      if (liveRoomIdRef.current && isRealOpponentRef.current) {
         battleSync.updatePlayerAction(liveRoomIdRef.current, myId, userScoreRef.current, true, isLastQ);
       }
     }
 
+    // ONLY for Ghost Bot matches: trigger local round reveal
     if (!isRealOpponentRef.current) {
       if (oppStatusRef.current === 'thinking') {
         setOpponentAnswerStatus('answered');
@@ -627,8 +615,9 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     }
   };
 
-  // 14. Advance Question (for Ghost matches)
+  // 14. Advance Question (for Ghost Bot matches only)
   const advanceNextQuestion = () => {
+    if (isRealOpponentRef.current) return; // In real battles, server controls question progression!
     const nextIdx = currentQIndexRef.current + 1;
     if (nextIdx < questionsRef.current.length) {
       setCurrentQIndex(nextIdx);

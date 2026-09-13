@@ -6090,12 +6090,16 @@ app.post("/api/battle/action", (req, res) => {
       room.updatedAt = now;
     }
     if ((room.status === "battle" || room.status === "countdown") && room.roundStatus === "playing") {
+      if (room.status === "countdown") {
+        room.status = "battle";
+      }
       const p1Answered = room.player1.hasAnswered;
-      const p2Answered = room.player2?.hasAnswered;
+      const p2Answered = room.player2 ? room.player2.hasAnswered : false;
       if (p1Answered && p2Answered) {
         room.roundStatus = "revealed";
         room.revealStartTime = now;
         room.updatedAt = now;
+        console.log(`[Battle Arena] Both players answered round ${room.currentQ} in room ${roomId}. Synchronized reveal triggered!`);
       }
     }
     if (room.player1.finished && room.player2?.finished) {
