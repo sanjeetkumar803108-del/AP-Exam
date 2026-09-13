@@ -6028,11 +6028,11 @@ const waitingQueue = new Map<string, { player: BattlePlayer; subjectId: string; 
 const activeBattleRooms = new Map<string, ServerRoom>();
 const playerToRoomMap = new Map<string, string>();
 
-// Clean up stale queue tickets (> 8000ms inactive) & old rooms (> 15m)
+// Clean up stale queue tickets (> 35000ms inactive) & old rooms (> 15m)
 function purgeStaleTickets() {
   const now = Date.now();
   for (const [qId, ticket] of waitingQueue.entries()) {
-    if (now - ticket.lastSeen > 8000) {
+    if (now - ticket.lastSeen > 35000) {
       waitingQueue.delete(qId);
     }
   }
@@ -6043,7 +6043,7 @@ function purgeStaleTickets() {
   }
 }
 
-// 1. Enter queue & match ONLY with players ACTIVELY ON RADAR right now
+// 1. Enter queue & match with players actively on radar (same subject prioritized, then flexible pairing)
 app.post("/api/battle/match", (req, res) => {
   try {
     const { playerId, playerName, playerAvatar, subjectId, questions } = req.body;
@@ -6054,9 +6054,25 @@ app.post("/api/battle/match", (req, res) => {
     const now = Date.now();
     purgeStaleTickets();
 
-    // Clear prior queue/room state for this player
+    // Do NOT delete playerToRoomMap if this player is already mapped to an active room
+    const existingRoomId = playerToRoomMap.get(playerId);
+    if (existingRoomId) {
+      const existingRoom = activeBattleRooms.get(existingRoomId);
+      if (existingRoom && (existingRoom.status === 'countdown' || existingRoom.status === 'battle')) {
+        const opponent = existingRoom.player1.id === playerId ? existingRoom.player2 : existingRoom.player1;
+        const isP1 = existingRoom.player1.id === playerId;
+        return res.json({
+          status: "matched",
+          roomId: existingRoom.id,
+          isPlayer1: isP1,
+          opponent,
+          questions: existingRoom.questions,
+          subjectId: existingRoom.subjectId
+        });
+      }
+    }
+
     waitingQueue.delete(playerId);
-    playerToRoomMap.delete(playerId);
 
     const myPlayer: BattlePlayer = {
       id: playerId,
@@ -6068,19 +6084,31 @@ app.post("/api/battle/match", (req, res) => {
       lastSeen: now
     };
 
-    // Check if another real player is ACTIVELY searching on radar right now (< 2000ms)
+    // Priority 1: Match with same subject actively searching (< 30000ms)
     let foundOpponent: { qId: string; ticket: { player: BattlePlayer; subjectId: string; questions: any[]; timestamp: number; lastSeen: number } } | null = null;
-
-    // STRICT SAME-SUBJECT MATCHMAKING: Never match across different subjects!
     const myNormSubject = normalizeBattleSubject(subjectId);
+
     for (const [qId, ticket] of waitingQueue.entries()) {
       if (
         ticket.player.id !== playerId && 
-        (now - ticket.lastSeen <= 8000) && 
+        (now - ticket.lastSeen <= 30000) && 
         normalizeBattleSubject(ticket.subjectId) === myNormSubject
       ) {
         foundOpponent = { qId, ticket };
         break;
+      }
+    }
+
+    // Priority 2 (Flexible Quick Match): If no exact subject match, pair with ANY active real player on radar!
+    if (!foundOpponent) {
+      for (const [qId, ticket] of waitingQueue.entries()) {
+        if (
+          ticket.player.id !== playerId && 
+          (now - ticket.lastSeen <= 30000)
+        ) {
+          foundOpponent = { qId, ticket };
+          break;
+        }
       }
     }
 
@@ -6151,7 +6179,7 @@ app.post("/api/battle/poll-match", (req, res) => {
     const now = Date.now();
     purgeStaleTickets();
 
-    // Check if matched into room
+    // Check if already matched into room
     const roomId = playerToRoomMap.get(playerId);
     if (roomId) {
       const room = activeBattleRooms.get(roomId);
@@ -6175,52 +6203,73 @@ app.post("/api/battle/poll-match", (req, res) => {
     if (myTicket) {
       myTicket.lastSeen = now;
 
-      // Proactive pairing: ONLY match if both players chose the EXACT SAME SUBJECT!
+      // Priority 1: Proactive pairing with same subject
+      let foundOpponent: { qId: string; ticket: { player: BattlePlayer; subjectId: string; questions: any[]; timestamp: number; lastSeen: number } } | null = null;
       const myNormSubject = normalizeBattleSubject(myTicket.subjectId);
+
       for (const [qId, otherTicket] of waitingQueue.entries()) {
         if (
           qId !== playerId && 
           otherTicket.player.id !== playerId && 
-          (now - otherTicket.lastSeen <= 8000) &&
+          (now - otherTicket.lastSeen <= 30000) &&
           normalizeBattleSubject(otherTicket.subjectId) === myNormSubject
         ) {
-          waitingQueue.delete(playerId);
-          waitingQueue.delete(qId);
-
-          const newRoomId = `room_${now}_${Math.random().toString(36).substring(2, 6)}`;
-          const battleQuestions = (otherTicket.questions && otherTicket.questions.length > 0)
-            ? otherTicket.questions
-            : (myTicket.questions && myTicket.questions.length > 0 ? myTicket.questions : []);
-
-          const newRoom: ServerRoom = {
-            id: newRoomId,
-            subjectId: otherTicket.subjectId || myTicket.subjectId,
-            status: 'countdown',
-            player1: otherTicket.player,
-            player2: myTicket.player,
-            questions: battleQuestions,
-            currentQ: 0,
-            roundStatus: 'playing',
-            roundStartTime: now + 3000,
-            countdownStart: now,
-            updatedAt: now
-          };
-
-          activeBattleRooms.set(newRoomId, newRoom);
-          playerToRoomMap.set(otherTicket.player.id, newRoomId);
-          playerToRoomMap.set(playerId, newRoomId);
-
-          console.log(`[Battle Matchmaker] PROACTIVE MATCH: ${otherTicket.player.name} vs ${myTicket.player.name} in room ${newRoomId}`);
-
-          return res.json({
-            status: "matched",
-            roomId: newRoomId,
-            isPlayer1: false,
-            opponent: otherTicket.player,
-            questions: newRoom.questions,
-            subjectId: newRoom.subjectId
-          });
+          foundOpponent = { qId, ticket: otherTicket };
+          break;
         }
+      }
+
+      // Priority 2: Proactive pairing with ANY other active real player on radar
+      if (!foundOpponent) {
+        for (const [qId, otherTicket] of waitingQueue.entries()) {
+          if (
+            qId !== playerId && 
+            otherTicket.player.id !== playerId && 
+            (now - otherTicket.lastSeen <= 30000)
+          ) {
+            foundOpponent = { qId, ticket: otherTicket };
+            break;
+          }
+        }
+      }
+
+      if (foundOpponent) {
+        waitingQueue.delete(playerId);
+        waitingQueue.delete(foundOpponent.qId);
+
+        const newRoomId = `room_${now}_${Math.random().toString(36).substring(2, 6)}`;
+        const battleQuestions = (foundOpponent.ticket.questions && foundOpponent.ticket.questions.length > 0)
+          ? foundOpponent.ticket.questions
+          : (myTicket.questions && myTicket.questions.length > 0 ? myTicket.questions : []);
+
+        const newRoom: ServerRoom = {
+          id: newRoomId,
+          subjectId: foundOpponent.ticket.subjectId || myTicket.subjectId,
+          status: 'countdown',
+          player1: foundOpponent.ticket.player,
+          player2: myTicket.player,
+          questions: battleQuestions,
+          currentQ: 0,
+          roundStatus: 'playing',
+          roundStartTime: now + 3000,
+          countdownStart: now,
+          updatedAt: now
+        };
+
+        activeBattleRooms.set(newRoomId, newRoom);
+        playerToRoomMap.set(foundOpponent.ticket.player.id, newRoomId);
+        playerToRoomMap.set(playerId, newRoomId);
+
+        console.log(`[Battle Matchmaker] PROACTIVE MATCH: ${foundOpponent.ticket.player.name} vs ${myTicket.player.name} in room ${newRoomId}`);
+
+        return res.json({
+          status: "matched",
+          roomId: newRoomId,
+          isPlayer1: false,
+          opponent: foundOpponent.ticket.player,
+          questions: newRoom.questions,
+          subjectId: newRoom.subjectId
+        });
       }
     }
 
@@ -6236,26 +6285,25 @@ app.post("/api/battle/cancel", (req, res) => {
     const { playerId, roomId } = req.body;
     if (playerId) {
       waitingQueue.delete(playerId);
-      const targetRoomId = roomId || playerToRoomMap.get(playerId);
-      if (targetRoomId) {
-        const room = activeBattleRooms.get(targetRoomId);
+
+      // ONLY destroy/forfeit an active room if roomId was explicitly provided or if room is in 'battle'
+      if (roomId) {
+        const room = activeBattleRooms.get(roomId);
         if (room) {
           if (room.status === 'waiting' && room.player1.id === playerId) {
-            // Host cancelled before anyone joined -> immediately destroy abandoned room
-            activeBattleRooms.delete(targetRoomId);
-            console.log(`[Battle Matchmaker] Waiting room ${targetRoomId} deleted because host cancelled.`);
+            activeBattleRooms.delete(roomId);
+            console.log(`[Battle Matchmaker] Waiting room ${roomId} deleted because host cancelled.`);
           } else if (room.status === 'countdown' || room.status === 'battle') {
-            // Player forfeited active battle -> mark finished so remaining opponent wins cleanly
             const leaver = room.player1.id === playerId ? room.player1 : (room.player2?.id === playerId ? room.player2 : null);
             if (leaver) leaver.finished = true;
             room.status = 'finished';
             room.updatedAt = Date.now();
-            console.log(`[Battle Matchmaker] Player ${playerId} forfeited match in room ${targetRoomId}.`);
+            console.log(`[Battle Matchmaker] Player ${playerId} forfeited match in room ${roomId}.`);
           }
         }
         playerToRoomMap.delete(playerId);
       }
-      console.log(`[Battle Matchmaker] Player ${playerId} cleanly left queue/room.`);
+      console.log(`[Battle Matchmaker] Player ${playerId} cleanly cancelled.`);
     }
     res.json({ success: true });
   } catch {

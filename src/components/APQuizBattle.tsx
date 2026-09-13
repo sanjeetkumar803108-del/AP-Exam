@@ -167,13 +167,14 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   };
 
   // Centralized cleanup: clears all timeouts, polling, and leaves server queue
-  const cleanupAllBattleState = () => {
+  // Local cleanup: clears all timeouts and polling intervals without deleting server queue ticket
+  const cleanupLocalBattleTimers = () => {
     battleFinishedRef.current = false;
     try { (confetti as any).reset?.(); } catch {}
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (opponentTimeoutRef.current) clearTimeout(opponentTimeoutRef.current);
-    if (roundAdvanceTimeoutRef.current) clearTimeout(roundAdvanceTimeoutRef.current);
-    if (searchCountdownIntervalRef.current) clearInterval(searchCountdownIntervalRef.current);
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    if (opponentTimeoutRef.current) { clearTimeout(opponentTimeoutRef.current); opponentTimeoutRef.current = null; }
+    if (roundAdvanceTimeoutRef.current) { clearTimeout(roundAdvanceTimeoutRef.current); roundAdvanceTimeoutRef.current = null; }
+    if (searchCountdownIntervalRef.current) { clearInterval(searchCountdownIntervalRef.current); searchCountdownIntervalRef.current = null; }
     if (stopPollingRef.current) {
       stopPollingRef.current();
       stopPollingRef.current = null;
@@ -182,6 +183,11 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       roomUnsubRef.current();
       roomUnsubRef.current = null;
     }
+  };
+
+  // Full exit cleanup: cleans local state and tells server player cancelled/left
+  const leaveServerQueueAndReset = () => {
+    cleanupLocalBattleTimers();
     battleSync.leaveQueue(myId, liveRoomIdRef.current || undefined);
   };
 
@@ -194,13 +200,9 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     matchedQuestions: BattleQuestion[],
     matchedSubjectId?: string
   ) => {
-    if (searchCountdownIntervalRef.current) clearInterval(searchCountdownIntervalRef.current);
-    if (stopPollingRef.current) {
-      stopPollingRef.current();
-      stopPollingRef.current = null;
-    }
+    cleanupLocalBattleTimers();
 
-    const effectiveSubject = matchedSubjectId || matchedQuestions?.[0]?.subjectId;
+    const effectiveSubject = matchedSubjectId || matchedQuestions?.[0]?.subjectId || selectedSubjectId;
     if (effectiveSubject) {
       setSelectedSubjectId(effectiveSubject);
     }
@@ -210,17 +212,22 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     setLiveRoomId(roomId);
     liveRoomIdRef.current = roomId;
     setOpponent(matchedOpponent);
-    setQuestions(matchedQuestions);
-    questionsRef.current = matchedQuestions;
+
+    const safeQuestions = (matchedQuestions && matchedQuestions.length > 0)
+      ? matchedQuestions
+      : getBattleQuestions(effectiveSubject, 5);
+
+    setQuestions(safeQuestions);
+    questionsRef.current = safeQuestions;
 
     subscribeToLiveBattle(roomId);
     setPhase('COUNTDOWN');
     setCountdownNum(3);
   };
 
-  // 2. Start Quick Match (15 seconds search)
+  // 2. Start Quick Match (30 seconds search, fast pairing)
   const startQuickMatch = async () => {
-    cleanupAllBattleState();
+    cleanupLocalBattleTimers();
     triggerVibration(25);
     playSound(() => battleAudio.playBattleStart());
 
@@ -228,7 +235,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     setIsRealOpponent(false);
     isRealOpponentRef.current = false;
     setJoinError(null);
-    setSearchSecondsLeft(15);
+    setSearchSecondsLeft(30);
 
     const initialQs = getBattleQuestions(selectedSubjectId, 5);
     setQuestions(initialQs);
@@ -259,13 +266,17 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     });
     stopPollingRef.current = stopPoll;
 
-    // 15-SECOND SEARCH COUNTDOWN
+    // 30-SECOND SEARCH COUNTDOWN
     searchCountdownIntervalRef.current = setInterval(() => {
       setSearchSecondsLeft(prev => {
         if (prev <= 1) {
-          clearInterval(searchCountdownIntervalRef.current!);
-          // 15 seconds expired without finding another active real player -> pair with practice rival
-          handleSearchTimeout(initialQs);
+          if (searchCountdownIntervalRef.current) {
+            clearInterval(searchCountdownIntervalRef.current);
+            searchCountdownIntervalRef.current = null;
+          }
+          setTimeout(() => {
+            handleSearchTimeout(initialQs);
+          }, 0);
           return 0;
         }
         return prev - 1;
@@ -273,9 +284,9 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     }, 1000);
   };
 
-  // 3. Fallback to Ghost practice rival after 15 full seconds of searching
-  const handleSearchTimeout = async (fallbackQs: BattleQuestion[]) => {
-    cleanupAllBattleState();
+  // 3. Fallback to Ghost practice rival after 30 full seconds of searching
+  const handleSearchTimeout = (fallbackQs: BattleQuestion[]) => {
+    cleanupLocalBattleTimers();
 
     const ghost = getRandomGhostPlayer(selectedSubjectId);
     setIsRealOpponent(false);
@@ -291,7 +302,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // 4. Friend Room: Create Room
   const handleHostFriendRoom = async () => {
-    cleanupAllBattleState();
+    cleanupLocalBattleTimers();
     triggerVibration(20);
     playSound(() => battleAudio.playBattleStart());
 
@@ -337,7 +348,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   // 5. Friend Room: Join Room
   const handleJoinFriendRoom = async () => {
     if (joinInputCode.trim().length < 4) return;
-    cleanupAllBattleState();
+    cleanupLocalBattleTimers();
     triggerVibration(20);
     setJoinError(null);
 
@@ -435,7 +446,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // 7. Cancel Matchmaking
   const handleCancelMatchmaking = () => {
-    cleanupAllBattleState();
+    leaveServerQueueAndReset();
     setPhase('LOBBY');
   };
 
@@ -689,7 +700,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   // Cleanup strictly on unmount
   useEffect(() => {
     return () => {
-      cleanupAllBattleState();
+      leaveServerQueueAndReset();
     };
   }, []);
 
@@ -709,7 +720,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
         <div className="flex items-center justify-between">
           <button
             onClick={() => {
-              cleanupAllBattleState();
+              leaveServerQueueAndReset();
               triggerVibration(15);
               onBack();
             }}
@@ -1024,6 +1035,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // ================= RENDER: MATCHMAKING RADAR =================
   if (phase === 'MATCHMAKING') {
+    const isFriendHostWaiting = !!liveRoomId && liveRoomId.startsWith('room_AP-');
     return (
       <div className="w-full h-full min-h-screen bg-zinc-950 text-white flex flex-col justify-between items-center p-6 select-none font-sans">
         <div className="w-full flex items-center justify-between max-w-md">
@@ -1033,7 +1045,9 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Searching Arena</span>
+          <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+            {isFriendHostWaiting ? 'Private Room' : 'Searching Arena'}
+          </span>
           <div className="w-10"></div>
         </div>
 
@@ -1055,15 +1069,37 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             </div>
           </div>
 
-          <h2 className="text-xl font-extrabold text-white mb-1">Finding Opponent...</h2>
-          <p className="text-xs text-zinc-400 mb-4">Searching online AP scholars worldwide</p>
+          <h2 className="text-xl font-extrabold text-white mb-1">
+            {isFriendHostWaiting ? 'Waiting for Friend...' : 'Finding Opponent...'}
+          </h2>
+          <p className="text-xs text-zinc-400 mb-4">
+            {isFriendHostWaiting
+              ? `Share Room Code with your friend to start!`
+              : `Searching active AP scholars in ${activeSubject.name}`}
+          </p>
 
-          <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-full">
-            <Clock className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-xs font-mono font-bold text-zinc-300">
-              {searchSecondsLeft}s remaining
-            </span>
-          </div>
+          {!isFriendHostWaiting ? (
+            <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-full mb-4">
+              <Clock className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-xs font-mono font-bold text-zinc-300">
+                {searchSecondsLeft}s remaining
+              </span>
+            </div>
+          ) : (
+            <div className="bg-indigo-950/60 border border-indigo-500/40 px-5 py-3 rounded-2xl mb-4 flex items-center gap-3">
+              <span className="text-xs text-indigo-300 font-bold uppercase tracking-wider">Room Code:</span>
+              <span className="text-base font-mono font-black text-white tracking-widest">{roomCode}</span>
+            </div>
+          )}
+
+          {!isFriendHostWaiting && (
+            <button
+              onClick={() => handleSearchTimeout(questionsRef.current.length > 0 ? questionsRef.current : getBattleQuestions(selectedSubjectId, 5))}
+              className="px-4 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 text-xs font-bold transition-all cursor-pointer mb-2 active:scale-95"
+            >
+              ⚡ Practice vs AI Bot Now
+            </button>
+          )}
         </div>
 
         <button
@@ -1138,7 +1174,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           <div className="flex items-center justify-between">
             <button
               onClick={() => {
-                cleanupAllBattleState();
+                leaveServerQueueAndReset();
                 triggerVibration(15);
                 setPhase('LOBBY');
               }}
@@ -1354,7 +1390,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       <div className="flex items-center justify-between max-w-md w-full mx-auto">
         <button
           onClick={() => {
-            cleanupAllBattleState();
+            leaveServerQueueAndReset();
             triggerVibration(15);
             onBack();
           }}
@@ -1462,7 +1498,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
         <button
           onClick={() => {
-            cleanupAllBattleState();
+            leaveServerQueueAndReset();
             triggerVibration(10);
             setPhase('LOBBY');
           }}
