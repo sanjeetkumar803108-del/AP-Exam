@@ -2318,25 +2318,14 @@ export default function Profile({
                     <div className="absolute right-[-15px] top-[-15px] opacity-10">
                       <Crown className="w-20 h-20 rotate-12" />
                     </div>
-                    <div className="flex justify-between items-center gap-2">
-                      <div>
-                        <span className="bg-white/20 text-[8px] uppercase font-black tracking-widest px-2 py-0.5 rounded-full text-white">
-                          Active Plan
-                        </span>
-                        <h4 className="text-sm font-black mt-1 flex items-center gap-1">
-                          AP Exam Pro <Crown className="w-3 h-3 text-yellow-200 fill-yellow-200" />
-                        </h4>
-                        <p className="text-[9px] text-white/80 font-bold leading-normal mt-0.5">Unlimited scans & speech</p>
-                      </div>
-                      <button 
-                        onClick={() => {
-                          triggerVibration(15);
-                          setActiveModal('manage_sub');
-                        }}
-                        className="bg-white text-amber-700 hover:bg-zinc-50 px-3 py-1.5 rounded-xl text-[10px] font-black shadow-sm transition-all active:scale-95 shrink-0"
-                      >
-                        Manage
-                      </button>
+                    <div>
+                      <span className="bg-white/20 text-[8px] uppercase font-black tracking-widest px-2 py-0.5 rounded-full text-white">
+                        Active Plan
+                      </span>
+                      <h4 className="text-sm font-black mt-1 flex items-center gap-1">
+                        AP Exam Pro <Crown className="w-3 h-3 text-yellow-200 fill-yellow-200" />
+                      </h4>
+                      <p className="text-[9px] text-white/80 font-bold leading-normal mt-0.5">Unlimited scans & speech</p>
                     </div>
                   </div>
                 ) : (
