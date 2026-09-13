@@ -858,7 +858,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 text-white font-extrabold text-sm uppercase tracking-wider shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 cursor-pointer transition-all"
           >
             <Radio className="w-4 h-4 text-emerald-300 animate-pulse" />
-            <span>Find Real Player (15s Radar)</span>
+            <span>Find Real Player</span>
           </motion.button>
 
           {/* Action 2: Friend Room */}
@@ -1173,13 +1173,6 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                   <span>Server Connected ({serverLatency}ms)</span>
                 </div>
               )}
-
-              <button
-                onClick={() => handleSearchTimeout(questionsRef.current.length > 0 ? questionsRef.current : getBattleQuestions(selectedSubjectId, 5))}
-                className="px-4 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 text-xs font-bold transition-all cursor-pointer mb-2 active:scale-95"
-              >
-                ⚡ Practice vs AI Bot Now
-              </button>
             </>
           )}
         </div>
