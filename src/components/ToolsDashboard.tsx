@@ -587,14 +587,9 @@ function ToolsDashboard({
               📝
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
-                  AP FRQ Grader™
-                </h2>
-                <span className="bg-emerald-100 text-emerald-800 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">
-                  Camera AI
-                </span>
-              </div>
+              <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
+                AP FRQ Grader™
+              </h2>
               <p className="text-xs font-semibold text-emerald-600 mt-0.5">
                 Handwriting Photo &amp; Rubric Check
               </p>
@@ -620,14 +615,9 @@ function ToolsDashboard({
               🪤
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
-                  AP Trap Radar™
-                </h2>
-                <span className="bg-amber-100 text-amber-800 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">
-                  Ex-Chief Reader
-                </span>
-              </div>
+              <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
+                AP Trap Radar™
+              </h2>
               <p className="text-xs font-semibold text-amber-600 mt-0.5">
                 Bust Distractor Traps &amp; Scoring Secrets
               </p>
@@ -653,14 +643,9 @@ function ToolsDashboard({
               🏝️
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
-                  Learning Island™
-                </h2>
-                <span className="bg-amber-100 text-amber-800 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">
-                  Gamified
-                </span>
-              </div>
+              <h2 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight">
+                Learning Island™
+              </h2>
               <p className="text-xs font-semibold text-amber-700 mt-0.5">
                 Gamified AP Quest Roadmaps
               </p>

@@ -282,29 +282,21 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
                 {[
                   { 
                     icon: "🪤", 
-                    badge: "#1 UNIQUE", 
-                    badgeColor: "bg-amber-100 text-amber-800",
                     title: "AP Trap Radar™ (Chief Reader Tech)", 
                     desc: "Bust hidden traps" 
                   },
                   { 
                     icon: "📝", 
-                    badge: "CAMERA AI", 
-                    badgeColor: "bg-emerald-100 text-emerald-800",
                     title: "Handwritten FRQ & Essay Grader", 
                     desc: "Instant rubric grading" 
                   },
                   { 
                     icon: "⚔️", 
-                    badge: "LIVE PVP", 
-                    badgeColor: "bg-blue-100 text-blue-800",
                     title: "1v1 Live Multiplayer AP Battles", 
                     desc: "Live peer battles" 
                   },
                   { 
                     icon: "🏝️", 
-                    badge: "FULL ACCESS", 
-                    badgeColor: "bg-purple-100 text-purple-800",
                     title: "Learning Island™ & Visual Mind Maps", 
                     desc: "Visual study maps" 
                   }
@@ -314,12 +306,7 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
                       {f.icon}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <h4 className="font-black text-zinc-900 text-[11px] leading-tight truncate">{f.title}</h4>
-                        <span className={`text-[7.5px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider shrink-0 ${f.badgeColor}`}>
-                          {f.badge}
-                        </span>
-                      </div>
+                      <h4 className="font-black text-zinc-900 text-[11px] leading-tight truncate">{f.title}</h4>
                       <p className="text-[9.5px] text-zinc-500 font-semibold mt-0.5 leading-tight">{f.desc}</p>
                     </div>
                   </div>
