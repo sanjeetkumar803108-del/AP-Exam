@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   ArrowLeft, Swords, Users, Copy, Check, Share2, 
   Trophy, Zap, Clock, RotateCcw, 
-  ChevronRight, Award, Volume2, VolumeX, Radio, ShieldCheck, Loader2, Sparkles,
+  ChevronRight, Award, Radio, ShieldCheck, Loader2, Sparkles,
   Target, ChevronDown, Search, X
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -811,15 +811,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             <span className="text-xs font-bold text-emerald-400 tracking-wide uppercase">Live Battle Arena</span>
           </div>
 
-          <button
-            onClick={() => {
-              triggerVibration(10);
-              setSoundEnabled(!soundEnabled);
-            }}
-            className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300 hover:text-white active:scale-95 transition-all cursor-pointer"
-          >
-            {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-zinc-500" />}
-          </button>
+          <div className="w-10" />
         </div>
 
         <div className="max-w-md w-full mx-auto my-auto flex flex-col gap-6 py-4">
@@ -1498,12 +1490,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
               </span>
             </div>
 
-            <button
-              onClick={() => setSoundEnabled(!soundEnabled)}
-              className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer"
-            >
-              {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-zinc-600" />}
-            </button>
+            <div className="w-9" />
           </div>
 
           {/* Versus Scoreboard */}
