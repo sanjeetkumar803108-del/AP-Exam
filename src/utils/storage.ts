@@ -32,13 +32,30 @@ export const safeRemoveItem = (key: string): void => {
 };
 
 export const safeClearAll = (): void => {
+  // Preserve published sample papers, downloaded PDF cache, and device identity across logouts
+  const preservedKeys = [
+    'ap_sample_papers_cache',
+    'ap_sample_papers_vault',
+    'study_unique_device_id'
+  ];
+  const preservedData: Record<string, string> = {};
+  
   try {
+    for (const key of preservedKeys) {
+      const val = window.localStorage.getItem(key);
+      if (val !== null) preservedData[key] = val;
+    }
     window.localStorage.clear();
+    for (const [key, val] of Object.entries(preservedData)) {
+      window.localStorage.setItem(key, val);
+    }
   } catch (e) {
     console.warn('localStorage clear failed');
   }
   for (const key in memoryStorage) {
-    delete memoryStorage[key];
+    if (!preservedKeys.includes(key)) {
+      delete memoryStorage[key];
+    }
   }
 };
 

@@ -6607,6 +6607,110 @@ app.get("/api/battle/room/:roomId", (req, res) => {
   }
 });
 
+// ================= AP SAMPLE PAPERS VAULT (CLOUD PERSISTENCE) =================
+const PRIMARY_PAPERS_FILE = path.join(process.cwd(), "data", "sample_papers_vault.json");
+const TMP_PAPERS_FILE = path.join("/tmp", "sample_papers_vault.json");
+let samplePapersVault: any[] = [];
+
+function loadSamplePapersFromDisk() {
+  const papersMap = new Map<string, any>();
+
+  // 1. Check primary persistent file
+  try {
+    if (fs.existsSync(PRIMARY_PAPERS_FILE)) {
+      const raw = fs.readFileSync(PRIMARY_PAPERS_FILE, "utf-8");
+      const list = JSON.parse(raw);
+      if (Array.isArray(list)) list.forEach(p => papersMap.set(p.id, p));
+    }
+  } catch (err) {
+    console.warn("[SamplePaperVault] Primary load notice:", err);
+  }
+
+  // 2. Check /tmp fallback (for serverless environments)
+  try {
+    if (fs.existsSync(TMP_PAPERS_FILE)) {
+      const raw = fs.readFileSync(TMP_PAPERS_FILE, "utf-8");
+      const list = JSON.parse(raw);
+      if (Array.isArray(list)) list.forEach(p => papersMap.set(p.id, p));
+    }
+  } catch (err) {
+    console.warn("[SamplePaperVault] Tmp load notice:", err);
+  }
+
+  samplePapersVault = Array.from(papersMap.values()).sort(
+    (a, b) => (b.uploadedAt || 0) - (a.uploadedAt || 0)
+  );
+  console.log(`[SamplePaperVault] Total loaded papers from disk: ${samplePapersVault.length}`);
+}
+
+function saveSamplePapersToDisk() {
+  const json = JSON.stringify(samplePapersVault, null, 2);
+
+  // Try saving to primary workspace data directory
+  try {
+    const dir = path.dirname(PRIMARY_PAPERS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(PRIMARY_PAPERS_FILE, json, "utf-8");
+  } catch (primaryErr) {
+    // If read-only filesystem (e.g. Vercel Lambda), write to /tmp
+    try {
+      fs.writeFileSync(TMP_PAPERS_FILE, json, "utf-8");
+    } catch (tmpErr) {
+      console.warn("[SamplePaperVault] Write notice:", tmpErr);
+    }
+  }
+}
+
+loadSamplePapersFromDisk();
+
+app.get("/api/sample-papers", (req, res) => {
+  try {
+    res.json({ success: true, count: samplePapersVault.length, papers: samplePapersVault });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/sample-papers", (req, res) => {
+  try {
+    const newPaper = req.body;
+    if (!newPaper || !newPaper.title) {
+      return res.status(400).json({ error: "Missing paper data" });
+    }
+
+    const existingIndex = samplePapersVault.findIndex(
+      p => p.id === newPaper.id || (
+        p.title?.trim().toLowerCase() === newPaper.title?.trim().toLowerCase() &&
+        p.subjectId === newPaper.subjectId
+      )
+    );
+
+    if (existingIndex >= 0) {
+      samplePapersVault[existingIndex] = { ...samplePapersVault[existingIndex], ...newPaper };
+    } else {
+      samplePapersVault.unshift(newPaper);
+    }
+
+    saveSamplePapersToDisk();
+    console.log(`[SamplePaperVault] Paper '${newPaper.title}' saved. Total papers in vault: ${samplePapersVault.length}`);
+    res.json({ success: true, count: samplePapersVault.length, paper: newPaper });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/api/sample-papers/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+    samplePapersVault = samplePapersVault.filter(p => p.id !== id);
+    saveSamplePapersToDisk();
+    console.log(`[SamplePaperVault] Deleted paper ${id}. Remaining: ${samplePapersVault.length}`);
+    res.json({ success: true, count: samplePapersVault.length });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 async function startServer() {
   const distPath = path.join(process.cwd(), "dist");

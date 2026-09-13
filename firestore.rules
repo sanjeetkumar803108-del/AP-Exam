@@ -72,5 +72,11 @@ service cloud.firestore {
         (resource != null && resource.data.userId == request.auth.uid)
       );
     }
+
+    // 8. AP Sample Papers Collection Rules (Publicly readable by all students, writable by authenticated users)
+    match /ap_sample_papers/{paperId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
   }
 }
