@@ -456,6 +456,17 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
         oppStatusRef.current = opp.hasAnswered ? 'answered' : 'thinking';
       }
 
+      // 0. Synchronized Countdown & Immediate Battle Transition
+      if (phaseRef.current === 'COUNTDOWN') {
+        if (room.status === 'battle' || (room.countdownStart && Date.now() - room.countdownStart >= 3000)) {
+          initBattleArena();
+        } else if (room.countdownStart) {
+          const elapsed = Date.now() - room.countdownStart;
+          const remainingSecs = Math.max(1, Math.min(3, Math.ceil((3000 - elapsed) / 1000)));
+          setCountdownNum(remainingSecs);
+        }
+      }
+
       // 1. Room Finished
       if (room.status === 'finished') {
         if (!battleFinishedRef.current) {
@@ -479,6 +490,15 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
       // 3. Synchronized Round Progression from Server
       if (room.roundStatus === 'playing') {
+        // Sync time with server round clock
+        if (room.roundStartTime && phaseRef.current === 'BATTLE') {
+          const currQ = questionsRef.current[room.currentQ] || questions[room.currentQ];
+          const maxTime = currQ?.timeLimit || 30;
+          const elapsedSec = Math.floor((Date.now() - room.roundStartTime) / 1000);
+          const remain = Math.max(0, maxTime - elapsedSec);
+          setTimeLeft(prev => Math.abs(prev - remain) > 1 ? remain : prev);
+        }
+
         // Check if server advanced to next question
         if (typeof room.currentQ === 'number' && room.currentQ !== currentQIndexRef.current) {
           const nextIdx = room.currentQ;
@@ -499,25 +519,33 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // ================= BATTLE ROUND SYNCHRONIZATION =================
 
-  // 8. 3-2-1 Countdown
+  // 8. 3-2-1 Countdown (Locked to server clock, with local ticker fallback)
   useEffect(() => {
     if (phase === 'COUNTDOWN') {
       triggerVibration(20);
       playSound(() => battleAudio.playTick());
       if (countdownNum > 1) {
-        const t = setTimeout(() => setCountdownNum(prev => prev - 1), 900);
+        const t = setTimeout(() => {
+          if (phaseRef.current === 'COUNTDOWN') {
+            setCountdownNum(prev => Math.max(1, prev - 1));
+          }
+        }, 900);
         return () => clearTimeout(t);
       } else {
         const t = setTimeout(() => {
-          initBattleArena();
+          if (phaseRef.current === 'COUNTDOWN') {
+            initBattleArena();
+          }
         }, 900);
         return () => clearTimeout(t);
       }
     }
   }, [phase, countdownNum]);
 
-  // 9. Initialize Arena
+  // 9. Initialize Arena (Guaranteed single execution)
   const initBattleArena = () => {
+    if (phaseRef.current === 'BATTLE') return;
+    phaseRef.current = 'BATTLE';
     setUserScore(0);
     userScoreRef.current = 0;
     setOpponentScore(0);
@@ -1558,9 +1586,29 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           {/* Synchronized Round Status Banner */}
           <div className="w-full">
             {roundRevealed ? (
-              <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Round Complete! Preparing next question...</span>
+              <div className={`flex items-center justify-center gap-2 py-2 px-4 rounded-xl border text-xs font-bold transition-all ${
+                userSelectedOption === currentQ?.correctIndex
+                  ? 'bg-emerald-950/80 border-emerald-500 text-emerald-300 shadow-md shadow-emerald-900/30'
+                  : userSelectedOption !== null
+                  ? 'bg-rose-950/80 border-rose-500 text-rose-300'
+                  : 'bg-zinc-900/90 border-zinc-750 text-amber-300'
+              }`}>
+                {userSelectedOption === currentQ?.correctIndex ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>CORRECT ANSWER! (+10 PTS)</span>
+                  </>
+                ) : userSelectedOption !== null ? (
+                  <>
+                    <X className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                    <span>INCORRECT • CORRECT ANSWER SHOWN IN GREEN</span>
+                  </>
+                ) : (
+                  <>
+                    <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>TIME EXPIRED • CORRECT ANSWER HIGHLIGHTED BELOW</span>
+                  </>
+                )}
               </div>
             ) : (userAnswerStatus === 'answered' && opponentAnswerStatus === 'answered') ? (
               <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 text-xs font-semibold animate-pulse">
@@ -1631,7 +1679,18 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                   </div>
 
                   {roundRevealed && isCorrectAnswer && (
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0 ml-2" />
+                    <div className="flex items-center gap-1 shrink-0 ml-2">
+                      <span className="text-[10px] font-black uppercase text-emerald-300 px-2 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/30">
+                        Correct
+                      </span>
+                      <Check className="w-4 h-4 text-emerald-400" />
+                    </div>
+                  )}
+
+                  {roundRevealed && isSelected && !isCorrectAnswer && (
+                    <span className="text-[10px] font-black uppercase text-rose-300 px-2 py-0.5 rounded-md bg-rose-500/20 border border-rose-500/30 shrink-0 ml-2">
+                      Your Choice
+                    </span>
                   )}
                 </button>
               );
