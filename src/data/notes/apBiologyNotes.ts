@@ -66,17 +66,17 @@ export const AP_BIOLOGY_NOTES: APUnitNote[] = [
   * In an open container, pressure potential $\\Psi_p = 0$.
   * **Solute Potential**:
     $$\\Psi_s = -iCRT$$
-    *(Where $i$ = ionization constant [$1.0$ for sucrose, $2.0$ for $NaCl$], $C$ = molar concentration in M, $R = 0.0831\\text{ L}\\cdot\\text{bar}/(\\text{mol}\\cdot\\text{K})$, and $T = \\text{temp in Kelvin} = ^\\circ\\text{C} + 273$). Adding solute ALWAYS makes $\\Psi_s$ more negative!*`
+    *(Where $i$ = ionization constant [$1.0$ for sucrose, $2.0$ for $NaCl$], $C$ = molar concentration in M, $R = 0.0831\\text{ L}\\cdot\\text{bar}/(\\text{mol}\\cdot\\text{K})$, and $T = \\text{temp in Kelvin} = {^{\\circ}\\text{C}} + 273$). Adding solute ALWAYS makes $\\Psi_s$ more negative!*`
       },
       {
         heading: '3. Protein Folding Hierarchy & Nucleic Acid Directionality (CED 1.4 & 1.5)',
         content: `Structural organization of life's informational polymers:
 
 * **The 4 Levels of Protein Structure**:
-  * **Primary ($1^\\circ$)**: Linear sequence of amino acids held by covalent peptide bonds formed via dehydration synthesis.
-  * **Secondary ($2^\\circ$)**: Localized alpha-helices and beta-pleated sheets stabilized exclusively by **hydrogen bonds between polypeptide backbone** atoms.
-  * **Tertiary ($3^\\circ$)**: 3D globular shape dictated by **R-group (side-chain) interactions**: hydrophobic clustering, ionic bonds, hydrogen bonds, and covalent disulfide bridges (cysteine).
-  * **Quaternary ($4^\\circ$)**: Association of two or more distinct polypeptide chains (e.g. hemoglobin has 4 subunits).
+  * **Primary ($1^{\\circ}$)**: Linear sequence of amino acids held by covalent peptide bonds formed via dehydration synthesis.
+  * **Secondary ($2^{\\circ}$)**: Localized alpha-helices and beta-pleated sheets stabilized exclusively by **hydrogen bonds between polypeptide backbone** atoms.
+  * **Tertiary ($3^{\\circ}$)**: 3D globular shape dictated by **R-group (side-chain) interactions**: hydrophobic clustering, ionic bonds, hydrogen bonds, and covalent disulfide bridges (cysteine).
+  * **Quaternary ($4^{\\circ}$)**: Association of two or more distinct polypeptide chains (e.g. hemoglobin has 4 subunits).
 * **Nucleic Acid Directionality ($5'$ to $3'$)**:
   * DNA and RNA strands have intrinsic polarity: a **$5'$ phosphate group** and a **$3'$ hydroxyl ($-OH$) group**.
   * New nucleotides can **ONLY be added to the free $3'$ end** via phosphodiester bond formation during replication and transcription!`
@@ -86,7 +86,7 @@ export const AP_BIOLOGY_NOTES: APUnitNote[] = [
       {
         title: 'Water Potential Calculation in Plant Tissue',
         topicRef: 'CED 1.1 Properties of Water & Osmosis',
-        question: 'A plant cell with an internal solute potential $\\Psi_s = -4.5\\text{ bars}$ and pressure potential $\\Psi_p = +1.5\\text{ bars}$ is placed in an open beaker of $0.15\\text{ M}$ sucrose solution at $27^\\circ\\text{C}$. Determine (a) the water potential of the cell, (b) the water potential of the beaker solution, and (c) the net direction of water movement.',
+        question: 'A plant cell with an internal solute potential $\\Psi_s = -4.5\\text{ bars}$ and pressure potential $\\Psi_p = +1.5\\text{ bars}$ is placed in an open beaker of $0.15\\text{ M}$ sucrose solution at $27^{\\circ}\\text{C}$. Determine (a) the water potential of the cell, (b) the water potential of the beaker solution, and (c) the net direction of water movement.',
         solutionSteps: [
           'Step 1: Calculate cell water potential: $\\Psi_{\\text{cell}} = \\Psi_s + \\Psi_p = -4.5 + 1.5 = -3.0\\text{ bars}$.',
           'Step 2: Convert temperature to Kelvin: $T = 27 + 273 = 300\\text{ K}$.',
@@ -117,7 +117,7 @@ export const AP_BIOLOGY_NOTES: APUnitNote[] = [
     cramSheet: [
       'Water potential: $\\Psi = \\Psi_p + \\Psi_s$; $\\Psi_s = -iCRT$. Water flows from high $\\Psi$ to low $\\Psi$.',
       'Open container has $\\Psi_p = 0$; pure water at atmospheric pressure has $\\Psi = 0$.',
-      'Nucleic acid directionality: Synthesized $5\' \\rightarrow 3\'$ (phosphate at $5\'$, hydroxyl at $3\'$).',
+      'Nucleic acid directionality: Synthesized $5\' \\rightarrow 3\'$ (phosphate at $5\'$, hydroxyl at $3\'$).'.replace(/\\'/g, "'"),
       'Protein directionality: N-terminus (amino) to C-terminus (carboxyl).'
     ]
   },
@@ -604,8 +604,8 @@ export const AP_BIOLOGY_NOTES: APUnitNote[] = [
         heading: '1. Eukaryotic Pre-mRNA Post-Transcriptional Processing',
         content: `Before pre-mRNA leaves the nucleus for ribosomal translation, it undergoes three critical modifications:
 
-1. **$5\'$ Cap Addition**: A modified guanine nucleotide ($7$-methylguanosine) is added to the $5\'$ end. Protects against exonuclease enzymatic degradation and assists ribosomal binding.
-2. **$3\'$ Poly-A Tail Addition**: An enzyme adds $100\\text{–}200$ adenine nucleotides to the $3\'$ end. Facilitates nuclear export and stabilizes the transcript.
+1. **$5'$ Cap Addition**: A modified guanine nucleotide ($7$-methylguanosine) is added to the $5'$ end. Protects against exonuclease enzymatic degradation and assists ribosomal binding.
+2. **$3'$ Poly-A Tail Addition**: An enzyme adds $100\\text{–}200$ adenine nucleotides to the $3'$ end. Facilitates nuclear export and stabilizes the transcript.
 3. **RNA Splicing via Spliceosomes**:
    - **Introns** (non-coding intervening sequences) are excised and degraded.
    - **Exons** (expressed coding sequences) are spliced together.
@@ -663,7 +663,7 @@ export const AP_BIOLOGY_NOTES: APUnitNote[] = [
       'Central Dogma: $\\text{DNA} \\rightarrow \\text{mRNA} \\rightarrow \\text{Protein}$.',
       'Eukaryotic pre-mRNA processing: $5\'$ cap, $3\'$ poly-A tail, excision of introns, splicing of exons.',
       'Alternative splicing allows one gene to code for multiple distinct proteins.',
-      'PCR (Polymerase Chain Reaction) steps: Denaturation ($95^\\circ\\text{C}$), Annealing ($55^\\circ\\text{C}$), Extension ($72^\\circ\\text{C}$).'
+      'PCR (Polymerase Chain Reaction) steps: Denaturation ($95^{\\circ}\\text{C}$), Annealing ($55^{\\circ}\\text{C}$), Extension ($72^{\\circ}\\text{C}$).'
     ]
   },
 

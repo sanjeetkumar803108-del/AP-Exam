@@ -33,12 +33,24 @@ export function cleanMarkdownMath(content: string): string {
   text = text.replace(/\x08(eta|egin|ar|ig|oldsymbol|inom|ot|ullet|f|mod)/g, '\\b$1');
   // \x0A = newline (\n)
   text = text.replace(/\x0A(eq|abla|otin|atural|earrow|warrow)/g, '\\n$1');
+  // \x0B = vertical tab (\v)
+  text = text.replace(/\x0B(ec|dots|dash)/g, '\\v$1');
+
+  // 1.5. Protect currency symbols & parenthetical price lists (e.g. "($AirA, FlyB)", "($100, $100)")
+  // so remarkMath doesn't treat dollar signs on prices as math delimiters
+  text = text.replace(/\$([A-Z][a-zA-Z0-9_]*\s*,\s*[A-Z][a-zA-Z0-9_]*)/g, '($1');
+  text = text.replace(/(^|[\s(])\$(\d+(?:\.\d+)?)(?![0-9a-zA-Z^_\\{])/g, '$1\\$$2');
 
   // 2. Fix broken/clipped arrow tokens (e.g. "ightarrow" -> "\rightarrow")
   text = text.replace(/(^|[\s$(=_])ightarrow([\s$_^0-9A-Za-z])/g, '$1\\rightarrow$2');
   text = text.replace(/(^|[\s$(=_])rac\{/g, '$1\\frac{');
   text = text.replace(/(^|[\s$(=_])ext\{/g, '$1\\text{');
   text = text.replace(/(^|[\s$(=_])heta([\s$_^0-9A-Za-z])/g, '$1\\theta$2');
+  // Fix accent single quotes like 5\' or 3\' inside math/prose
+  text = text.replace(/([0-9a-zA-Z])\\'/g, "$1'");
+  // Fix bare degrees like ^\circ or ^\circ C
+  text = text.replace(/(?<![0-9a-zA-Z\)\}])\^\s*\\?circ/g, '^{\\circ}');
+  text = text.replace(/(\d+)\^\\?circ(?![a-zA-Z{])/g, '$1^{\\circ}');
 
   // 3. Heal pseudo-code limits and common mathematical notations
   // Convert full limit equation like lim_{x->-inf} (3x-1)/sqrt(4x^2+5) = 3/(-sqrt(4)) = -3/2
@@ -153,6 +165,14 @@ export function cleanMarkdownMath(content: string): string {
     }
     math = math.replace(/([^\\])\\\s*\\hline/g, '$1\\\\ \\hline');
     math = math.replace(/(?<!\\)%/g, '\\%');
+    // Normalize double-escaped LaTeX commands (\\cmd -> \cmd) inside math mode
+    math = math.replace(/\\\\([a-zA-Z]+)/g, (_m, cmd) => '\\' + cmd);
+    // Heal bare symbols that lost backslashes
+    math = math.replace(/(?<=[\s$])Sigma\s+ec\{/g, '\\Sigma \\vec{');
+    math = math.replace(/(?<=[\s$])Sigma\s*\\vec\{/g, '\\Sigma \\vec{');
+    math = math.replace(/(?<=[\s$])Sigma\s*\\tau/g, '\\Sigma \\tau');
+    math = math.replace(/(?<=[\s$])Sigma\s*m\s*r\^2/g, '\\Sigma m r^2');
+    math = math.replace(/(?<=[\s$])quad\b/g, '\\quad');
     // Heal escaped dollar symbols inside math mode to valid KaTeX text dollar (\text{\$})
     math = math.replace(/(?<!\\text\{)\\\$/g, '\\text{\\$}');
     // Repair accidental extra trailing closing braces after frac or sqrt

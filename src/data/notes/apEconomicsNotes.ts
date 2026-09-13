@@ -387,14 +387,14 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
       {
         title: 'Solving a $2 \\times 2$ Oligopoly Game Theory Payoff Matrix',
         topicRef: 'CED Micro 4.4 Oligopoly and Game Theory',
-        question: 'Two airlines (AirA and FlyB) decide whether to set High or Low ticket prices. Profits ($AirA, FlyB): Both High = ($100, $100); AirA High & FlyB Low = ($20, $150); AirA Low & FlyB High = ($150, $20); Both Low = ($50, $50). (a) Does AirA have a dominant strategy? (b) Identify the Nash Equilibrium.',
+        question: 'Two airlines (AirA and FlyB) decide whether to set High or Low ticket prices. Profits (AirA, FlyB): Both High = (\\$100, \\$100); AirA High & FlyB Low = (\\$20, \\$150); AirA Low & FlyB High = (\\$150, \\$20); Both Low = (\\$50, \\$50). (a) Does AirA have a dominant strategy? (b) Identify the Nash Equilibrium.',
         solutionSteps: [
-          'Step 1: Determine AirA’s dominant strategy: If FlyB chooses High, AirA prefers Low ($150 > $100). If FlyB chooses Low, AirA prefers Low ($50 > $20). Regardless of FlyB, AirA always chooses **Low**.',
-          'Step 2: Determine FlyB’s dominant strategy: By symmetry, if AirA chooses High, FlyB chooses Low ($150 > $100); if AirA chooses Low, FlyB chooses Low ($50 > $20). FlyB always chooses **Low**.',
+          'Step 1: Determine AirA’s dominant strategy: If FlyB chooses High, AirA prefers Low (\\$150 > \\$100). If FlyB chooses Low, AirA prefers Low (\\$50 > \\$20). Regardless of FlyB, AirA always chooses **Low**.',
+          'Step 2: Determine FlyB’s dominant strategy: By symmetry, if AirA chooses High, FlyB chooses Low (\\$150 > \\$100); if AirA chooses Low, FlyB chooses Low (\\$50 > \\$20). FlyB always chooses **Low**.',
           'Step 3: Combine strategies: Both firms have a dominant strategy to choose Low.',
-          'Step 4: Find Nash Equilibrium: At (Low, Low), neither firm can unilaterally switch to High without losing money ($50 \\rightarrow $20).'
+          'Step 4: Find Nash Equilibrium: At (Low, Low), neither firm can unilaterally switch to High without losing money (\\$50 \\rightarrow \\$20).'
         ],
-        finalAnswer: '(a) Yes, AirA’s dominant strategy is to price Low. (b) Nash Equilibrium is (AirA Low, FlyB Low) with payoffs ($50, $50).',
+        finalAnswer: '(a) Yes, AirA’s dominant strategy is to price Low. (b) Nash Equilibrium is (AirA Low, FlyB Low) with payoffs (\\$50, \\$50).',
         apScoringTip: 'To prove a dominant strategy on an FRQ, you MUST test both possible actions of the opponent explicitly!'
       }
     ],

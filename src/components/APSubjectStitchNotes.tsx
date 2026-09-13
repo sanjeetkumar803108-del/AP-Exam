@@ -655,7 +655,7 @@ export default function APSubjectStitchNotes({
                         </span>
                       </div>
                       <div className="p-3 rounded-xl border font-mono text-xs overflow-x-auto" style={{ backgroundColor: `${theme.primaryBg}30`, borderColor: `${theme.primary}30`, color: theme.primary }}>
-                        <GlobalMarkdown>{`$$${f.latex}$$`}</GlobalMarkdown>
+                        <GlobalMarkdown>{`$$\n${(f.latex || '').trim().replace(/^(\$\$|\$)/, '').replace(/(\$\$|\$)$/, '').trim()}\n$$`}</GlobalMarkdown>
                       </div>
                       <div className="text-xs text-[#434653] leading-relaxed font-sans">
                         <GlobalMarkdown>{f.explanation}</GlobalMarkdown>

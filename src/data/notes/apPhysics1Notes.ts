@@ -499,30 +499,30 @@ $$\\vec{J} = \\Delta\\vec{p} = \\vec{F}_{\\text{avg}} \\Delta t = \\int_{t_i}^{t
       {
         name: 'Rotational Second Law of Motion',
         conditions: 'Rigid body rotating about a fixed axis of rotation.',
-        conclusion: 'Angular acceleration is proportional to net external torque and inversely proportional to moment of inertia: $\alpha = \frac{\Sigma\tau}{I}$.',
-        apTip: 'Moment of inertia $I = \Sigma m r^2$ depends not just on total mass, but on HOW FAR mass is distributed from the axis. Mass located farther from the pivot increases $I$ quadratically!'
+        conclusion: 'Angular acceleration is proportional to net external torque and inversely proportional to moment of inertia: $\\alpha = \\frac{\\Sigma\\tau}{I}$.',
+        apTip: 'Moment of inertia $I = \\Sigma m r^2$ depends not just on total mass, but on HOW FAR mass is distributed from the axis. Mass located farther from the pivot increases $I$ quadratically!'
       },
       {
         name: 'Static Equilibrium Conditions',
         conditions: 'Any rigid body at complete rest without translational or rotational motion.',
-        conclusion: 'Two simultaneous vector conditions must be satisfied: $\Sigma\vec{F} = 0$ (translational balance) and $\Sigma\vec{\tau} = 0$ (rotational balance about ANY chosen pivot point).',
+        conclusion: 'Two simultaneous vector conditions must be satisfied: $\\Sigma\\vec{F} = 0$ (translational balance) and $\\Sigma\\vec{\\tau} = 0$ (rotational balance about ANY chosen pivot point).',
         apTip: 'Always choose the pivot point at the location of an unknown or unasked force (e.g. hinge pin) to produce zero torque ($r=0$), eliminating it from the equation!'
       }
     ],
     formulas: [
       {
         name: 'Torque Formula',
-        latex: '\tau = r F \sin\theta = r_\perp F',
+        latex: '\\tau = r F \\sin\\theta = r_\\perp F',
         explanation: 'Magnitude of torque produced by force $F$ applied at distance $r$ from the pivot with angle $\theta$ between the position and force vectors.'
       },
       {
         name: 'Rotational Newton 2nd Law',
-        latex: '\Sigma\tau = I\alpha',
+        latex: '\\Sigma\\tau = I\\alpha',
         explanation: 'Net external torque equals rotational inertia multiplied by angular acceleration.'
       },
       {
         name: 'Linear to Angular Bridge Relations',
-        latex: 's = r\theta, \quad v = r\omega, \quad a_t = r\alpha',
+        latex: 's = r\\theta, \\quad v = r\\omega, \\quad a_t = r\\alpha',
         explanation: 'Tangential displacement, velocity, and tangential acceleration as functions of radius and angular quantities.'
       }
     ],
@@ -533,34 +533,34 @@ $$\\vec{J} = \\Delta\\vec{p} = \\vec{F}_{\\text{avg}} \\Delta t = \\int_{t_i}^{t
 
 | Linear Concept | Linear Symbol | Rotational Analogue | Rotational Symbol | Bridging Formula |
 | :--- | :--- | :--- | :--- | :--- |
-| **Displacement** | $x$ or $s$ | **Angular Displacement** | $\theta$ | $s = r\theta$ |
-| **Velocity** | $v$ | **Angular Velocity** | $\omega$ | $v = r\omega$ |
-| **Acceleration** | $a$ | **Angular Acceleration** | $\alpha$ | $a_t = r\alpha$ |
-| **Inertia / Mass** | $m$ | **Rotational Inertia** | $I$ | $I = \Sigma m r^2$ |
-| **Cause of Motion** | Force ($F$) | **Torque** | $\tau$ | $\tau = r F \sin\theta$ |
-| **Newton 2nd Law** | $\Sigma F = ma$ | **Rotational Newton 2nd** | $\Sigma\tau = I\alpha$ | - |`
+| **Displacement** | $x$ or $s$ | **Angular Displacement** | $\\theta$ | $s = r\\theta$ |
+| **Velocity** | $v$ | **Angular Velocity** | $\\omega$ | $v = r\\omega$ |
+| **Acceleration** | $a$ | **Angular Acceleration** | $\\alpha$ | $a_t = r\\alpha$ |
+| **Inertia / Mass** | $m$ | **Rotational Inertia** | $I$ | $I = \\Sigma m r^2$ |
+| **Cause of Motion** | Force ($F$) | **Torque** | $\\tau$ | $\\tau = r F \\sin\\theta$ |
+| **Newton 2nd Law** | $\\Sigma F = ma$ | **Rotational Newton 2nd** | $\\Sigma\\tau = I\\alpha$ | - |`
       },
       {
         heading: '2. Static Equilibrium & Strategic Pivot Protocols (CED 5.2)',
         content: `For any extended rigid body to remain in complete static equilibrium, two simultaneous vector conditions must be satisfied:
 
-$$\Sigma \vec{F} = 0 \quad \text{and} \quad \Sigma \vec{\tau}_{\text{pivot}} = 0$$
+$$\\Sigma \\vec{F} = 0 \\quad \\text{and} \\quad \\Sigma \\vec{\\tau}_{\\text{pivot}} = 0$$
 
-* **Strategic Pivot Choice**: You can calculate torque about **ANY** pivot point. Always place the pivot at the location of an **unknown, unasked force** (such as a hinge pin or wall contact). Since distance $r = 0$, that force produces zero torque ($\tau = 0\cdot F = 0$), eliminating it from your torque balance equation!
-* **Lever Arm Concept**: Torque can be written as $\tau = r F \sin\theta$ or $\tau = F \cdot r_\perp$, where $r_\perp$ is the perpendicular lever arm from the pivot to the line of action of the force.`
+* **Strategic Pivot Choice**: You can calculate torque about **ANY** pivot point. Always place the pivot at the location of an **unknown, unasked force** (such as a hinge pin or wall contact). Since distance $r = 0$, that force produces zero torque ($\\tau = 0\\cdot F = 0$), eliminating it from your torque balance equation!
+* **Lever Arm Concept**: Torque can be written as $\\tau = r F \\sin\\theta$ or $\\tau = F \\cdot r_\\perp$, where $r_\\perp$ is the perpendicular lever arm from the pivot to the line of action of the force.`
       },
       {
         heading: '3. Rotational Inertia ($I$) & Mass Distribution (CED 5.3)',
-        content: `Rotational inertia ($I = \Sigma m r^2$) measures an object's resistance to changes in rotational motion:
+        content: `Rotational inertia ($I = \\Sigma m r^2$) measures an object's resistance to changes in rotational motion:
 
 | Geometry | Rotation Axis | Formula ($I$) | Conceptual Note |
 | :--- | :--- | :--- | :--- |
 | **Thin Hoop / Ring** | Central cylindrical axis | $I = M R^2$ | All mass located at maximum radius $R$ |
-| **Solid Cylinder / Disk** | Central cylindrical axis | $I = \frac{1}{2} M R^2$ | Mass distributed uniformly from center to rim |
-| **Solid Sphere** | Any central diameter | $I = \frac{2}{5} M R^2$ | Mass concentrated more tightly toward center |
-| **Thin Spherical Shell** | Any central diameter | $I = \frac{2}{3} M R^2$ | Mass restricted strictly to outer shell |
-| **Thin Rod** | Perpendicular through center | $I = \frac{1}{12} M L^2$ | Easy to spin about center |
-| **Thin Rod** | Perpendicular through end | $I = \frac{1}{3} M L^2$ | 4x harder to rotate from end than center! |
+| **Solid Cylinder / Disk** | Central cylindrical axis | $I = \\frac{1}{2} M R^2$ | Mass distributed uniformly from center to rim |
+| **Solid Sphere** | Any central diameter | $I = \\frac{2}{5} M R^2$ | Mass concentrated more tightly toward center |
+| **Thin Spherical Shell** | Any central diameter | $I = \\frac{2}{3} M R^2$ | Mass restricted strictly to outer shell |
+| **Thin Rod** | Perpendicular through center | $I = \\frac{1}{12} M L^2$ | Easy to spin about center |
+| **Thin Rod** | Perpendicular through end | $I = \\frac{1}{3} M L^2$ | 4x harder to rotate from end than center! |
 
 * **AP Exam Rule**: An object with smaller rotational inertia ($I$) accelerates faster down an incline because less potential energy must be converted into rotational kinetic energy!`
       }
