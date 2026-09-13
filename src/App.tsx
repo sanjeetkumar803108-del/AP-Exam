@@ -423,6 +423,7 @@ export default function App() {
       }
       setUser(currentUser);
       if (currentUser) {
+        setSessionRevokedNotice(null);
         refillDailyCoins();
         
         // Sync user with RevenueCat if already configured (never re-call configure)

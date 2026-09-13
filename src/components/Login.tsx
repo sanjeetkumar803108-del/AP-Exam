@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { X, UserPlus, LogIn, Chrome, LogOut, Loader2, Eye, EyeOff, Check, ShieldAlert } from 'lucide-react';
 import { auth, googleProvider, db } from '../lib/firebase';
 import { safeClearAll, safeSetItem, safeGetItem } from '../utils/storage';
-import { claimUserSession } from '../utils/sessionManager';
+import { claimUserSession, releaseUserSession } from '../utils/sessionManager';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { 
   createUserWithEmailAndPassword, 
@@ -77,8 +77,14 @@ export default function Login({
   hideClose?: boolean,
   sessionRevokedMessage?: string | null
 }) {
-  const [isSignUp, setIsSignUp] = useState(true);
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
+
+  useEffect(() => {
+    if (sessionRevokedMessage) {
+      setIsSignUp(false);
+    }
+  }, [sessionRevokedMessage]);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -531,6 +537,10 @@ export default function Login({
 
   const handleSignOut = async () => {
     try {
+      const currentUid = auth.currentUser?.uid;
+      if (currentUid) {
+        await releaseUserSession(currentUid);
+      }
       if (Capacitor.isNativePlatform()) {
         try {
           await FirebaseAuthentication.signOut();

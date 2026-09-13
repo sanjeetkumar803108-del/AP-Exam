@@ -6,6 +6,8 @@ import { Capacitor } from '@capacitor/core';
 const SESSION_TOKEN_KEY = 'study_active_session_token';
 const DEVICE_ID_KEY = 'study_unique_device_id';
 
+let lastClaimTimestamp = 0;
+
 /**
  * Retrieves or generates a persistent device hardware/browser ID for this client.
  */
@@ -82,6 +84,7 @@ export async function claimUserSession(userId: string): Promise<string> {
   if (!userId) return '';
   const token = generateSessionToken();
   setLocalSessionToken(token);
+  lastClaimTimestamp = Date.now();
 
   try {
     const userRef = doc(db, 'users', userId);
@@ -100,15 +103,37 @@ export async function claimUserSession(userId: string): Promise<string> {
 }
 
 /**
+ * Releases the active session in Firestore (e.g. on manual logout).
+ */
+export async function releaseUserSession(userId: string): Promise<void> {
+  clearLocalSessionToken();
+  lastClaimTimestamp = 0;
+  if (!userId) return;
+  try {
+    const userRef = doc(db, 'users', userId);
+    await setDoc(userRef, {
+      activeSessionId: '',
+      lastSessionLogoutAt: new Date().toISOString()
+    }, { merge: true });
+    console.log(`[SingleSession] Cleanly released session in Firestore for ${userId}`);
+  } catch (err) {
+    console.warn('[SingleSession] Failed to release session in Firestore:', err);
+  }
+}
+
+/**
  * Real-time listener for remote session revocation.
- * If another device logs in, activeSessionId in Firestore will change,
- * triggering onRevoked() callback immediately.
+ * Guarantees that:
+ * 1. Initial snapshot during login does NOT cause false kickout while write propagates.
+ * 2. Only triggers revocation if this client's token was already established in Firestore
+ *    AND another device writes a different non-empty activeSessionId.
  */
 export function subscribeToSessionRevocation(
   userId: string,
   onRevoked: (remoteTime?: string) => void
 ): Unsubscribe {
   const userRef = doc(db, 'users', userId);
+  let isSessionEstablished = false;
 
   return onSnapshot(userRef, (snapshot) => {
     if (!snapshot.exists()) return;
@@ -117,8 +142,30 @@ export function subscribeToSessionRevocation(
     const remoteSessionId = data?.activeSessionId;
     const localSessionId = getLocalSessionToken();
 
-    // If Firestore has an active session and it differs from our local session token:
-    if (remoteSessionId && localSessionId && remoteSessionId !== localSessionId) {
+    // 1. If local session token is empty, this client hasn't established an active login yet
+    if (!localSessionId) {
+      return;
+    }
+
+    // 2. If remote matches local, our active session is officially established and confirmed in Firestore
+    if (remoteSessionId && remoteSessionId === localSessionId) {
+      isSessionEstablished = true;
+      return;
+    }
+
+    // 3. Grace window right after claiming: if we just claimed a session within the last 5 seconds,
+    // wait for our write to sync to Firestore instead of falsely kicking ourselves out
+    if (Date.now() - lastClaimTimestamp < 5000) {
+      if (remoteSessionId === localSessionId) {
+        isSessionEstablished = true;
+      }
+      return;
+    }
+
+    // 4. Remote takeover detected:
+    // If another device claimed a session while this app was open or active,
+    // activeSessionId in Firestore will now point to that other device's token.
+    if (remoteSessionId && remoteSessionId !== localSessionId) {
       console.warn(`[SingleSession] REVOKED! Remote: ${remoteSessionId} vs Local: ${localSessionId}`);
       onRevoked(data?.lastSessionLoginAt);
     }
@@ -126,3 +173,4 @@ export function subscribeToSessionRevocation(
     console.warn('[SingleSession] Firestore snapshot notice:', err?.message || err);
   });
 }
+

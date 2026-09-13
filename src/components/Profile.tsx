@@ -43,6 +43,7 @@ import {
 } from '../utils/gamification';
 import LevelReactorRing from './LevelReactorRing';
 import { runFullAppOptimization, restartAppCleanly, OptimizationResult } from '../utils/optimizer';
+import { releaseUserSession } from '../utils/sessionManager';
 import { showToast } from '../utils/toast';
 import { clearGoogleCredentialState } from '../utils/clearGoogleCredential';
 
@@ -1251,6 +1252,10 @@ export default function Profile({
 
   const handleLogout = async () => {
     triggerVibration(15);
+    const uid = auth.currentUser?.uid || user?.uid;
+    if (uid) {
+      await releaseUserSession(uid);
+    }
     // Sync any unsynced focus time to Firestore before logging out
     await syncUsageToFirestore();
     setIsVip(false);
