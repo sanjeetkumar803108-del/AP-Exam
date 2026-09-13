@@ -21,57 +21,57 @@ export interface LocalizedPlanPricing {
 export const localizedPricingMap: Record<string, LocalizedPlanPricing> = {
   'United States': {
     symbol: '$',
-    monthlyOriginal: '$19.99',
-    monthlyDiscounted: '$9.99',
-    yearlyOriginal: '$239.88',
+    monthlyOriginal: '$49.99',
+    monthlyDiscounted: '$14.99',
+    yearlyOriginal: '$599.88',
     yearlyDiscounted: '$99.99',
-    monthlySavings: '50% OFF',
-    yearlySavings: 'SAVE 58%',
+    monthlySavings: '70% OFF',
+    yearlySavings: 'SAVE 83%',
   },
   'United Kingdom': {
     symbol: '£',
-    monthlyOriginal: '£15.99',
-    monthlyDiscounted: '£7.99',
-    yearlyOriginal: '£191.88',
+    monthlyOriginal: '£39.99',
+    monthlyDiscounted: '£11.99',
+    yearlyOriginal: '£479.88',
     yearlyDiscounted: '£79.99',
-    monthlySavings: '50% OFF',
-    yearlySavings: 'SAVE 58%',
+    monthlySavings: '70% OFF',
+    yearlySavings: 'SAVE 83%',
   },
   'Canada': {
     symbol: 'CA$',
-    monthlyOriginal: 'CA$26.99',
-    monthlyDiscounted: 'CA$13.99',
-    yearlyOriginal: 'CA$323.88',
+    monthlyOriginal: 'CA$69.99',
+    monthlyDiscounted: 'CA$19.99',
+    yearlyOriginal: 'CA$839.88',
     yearlyDiscounted: 'CA$139.99',
-    monthlySavings: '48% OFF',
-    yearlySavings: 'SAVE 57%',
+    monthlySavings: '71% OFF',
+    yearlySavings: 'SAVE 83%',
   },
   'Australia': {
     symbol: 'AU$',
-    monthlyOriginal: 'AU$29.99',
-    monthlyDiscounted: 'AU$14.99',
-    yearlyOriginal: 'AU$359.88',
+    monthlyOriginal: 'AU$74.99',
+    monthlyDiscounted: 'AU$22.99',
+    yearlyOriginal: 'AU$899.88',
     yearlyDiscounted: 'AU$149.99',
-    monthlySavings: '50% OFF',
-    yearlySavings: 'SAVE 58%',
+    monthlySavings: '69% OFF',
+    yearlySavings: 'SAVE 83%',
   },
   'Others / International': {
     symbol: '$',
-    monthlyOriginal: '$19.99',
-    monthlyDiscounted: '$9.99',
-    yearlyOriginal: '$239.88',
+    monthlyOriginal: '$49.99',
+    monthlyDiscounted: '$14.99',
+    yearlyOriginal: '$599.88',
     yearlyDiscounted: '$99.99',
-    monthlySavings: '50% OFF',
-    yearlySavings: 'SAVE 58%',
+    monthlySavings: '70% OFF',
+    yearlySavings: 'SAVE 83%',
   },
 };
 
 export const pricingMap: Record<string, string> = {
-  'United States': '$9.99',
-  'United Kingdom': '£7.99',
-  'Canada': 'CA$13.99',
-  'Australia': 'AU$14.99',
-  'Others / International': '$9.99',
+  'United States': '$14.99',
+  'United Kingdom': '£11.99',
+  'Canada': 'CA$19.99',
+  'Australia': 'AU$22.99',
+  'Others / International': '$14.99',
 };
 
 interface PaywallModalProps {
@@ -326,6 +326,11 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
                     </h3>
                     <p className="text-[9px] text-zinc-500 font-semibold mt-0.5">Billed monthly</p>
                   </div>
+
+                  {/* Catchy Value Hook for Monthly */}
+                  <div className="mt-2.5 pt-2 border-t border-zinc-100 flex items-center gap-1 text-[8.5px] font-black text-amber-800 bg-amber-50/80 px-2 py-1 rounded-lg">
+                    <span>☕ Price of 3 coffees • &lt;50¢/day</span>
+                  </div>
                 </button>
 
                 {/* Yearly Tier */}
@@ -360,7 +365,14 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
                         {convertedYearlyPrice}
                       </span>
                     </h3>
-                    <p className="text-[9px] text-zinc-500 font-semibold mt-0.5">Billed annually</p>
+                    <p className="text-[9px] text-zinc-500 font-semibold mt-0.5">
+                      Billed annually (~{pricing.symbol}{(parseFloat(pricing.yearlyDiscounted.replace(/[^0-9.]/g, '')) / 12).toFixed(2)}/mo)
+                    </p>
+                  </div>
+
+                  {/* Catchy Value Hook for Yearly */}
+                  <div className="mt-2.5 pt-2 border-t border-zinc-100 flex items-center gap-1 text-[8.5px] font-black text-emerald-800 bg-emerald-50 px-2 py-1 rounded-lg">
+                    <span>🎓 Cost of 2 hrs with a real tutor</span>
                   </div>
                 </button>
               </div>
