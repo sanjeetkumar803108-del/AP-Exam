@@ -1191,55 +1191,255 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     );
   }
 
-  // ================= RENDER: 3-2-1 COUNTDOWN =================
+  // ================= RENDER: 3-2-1 COUNTDOWN & ELECTRIC VERSUS SHOWDOWN =================
   if (phase === 'COUNTDOWN') {
     return (
-      <div className="w-full h-full min-h-screen bg-zinc-950 text-white flex flex-col justify-center items-center p-6 select-none font-sans">
-        <div className="max-w-md w-full flex flex-col items-center text-center">
-          {/* Versus Header with Student Banners */}
-          <div className="flex items-center justify-between w-full mb-12">
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="w-16 h-16 rounded-2xl bg-indigo-600 flex items-center justify-center text-2xl font-black border-2 border-indigo-400 shadow-lg shadow-indigo-600/30">
-                {myAvatar}
+      <div className="w-full h-full min-h-screen bg-[#07090E] text-white flex flex-col justify-between items-center p-5 select-none font-sans relative overflow-hidden">
+        {/* Background Electric Ambience */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Cyan Glow Top Left for User */}
+          <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-indigo-600/20 blur-[100px]" />
+          {/* Rose Glow Bottom Right for Opponent */}
+          <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-rose-600/20 blur-[100px]" />
+          {/* Golden Electric Aura in the center */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-cyan-500/15 blur-[90px]" />
+          
+          {/* Lightning screen flash effect */}
+          <div className="absolute inset-0 bg-cyan-400/10 lightning-screen-flash pointer-events-none" />
+          
+          {/* Electric Grid Lines */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293715_1px,transparent_1px),linear-gradient(to_bottom,#1f293715_1px,transparent_1px)] bg-[size:2.5rem_2.5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-60" />
+        </div>
+
+        {/* Top Header Subject Banner */}
+        <motion.div 
+          initial={{ y: -30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className="relative z-10 w-full flex justify-center pt-2"
+        >
+          <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900/90 border border-indigo-500/30 text-xs font-black tracking-wider uppercase text-indigo-300 shadow-lg shadow-indigo-500/10 backdrop-blur-md">
+            <Zap className="w-3.5 h-3.5 text-amber-400 animate-pulse fill-amber-400" />
+            <span>{activeSubject.name}</span>
+            <span className="text-zinc-500 font-normal">•</span>
+            <span className="text-emerald-400 font-bold">1V1 LIVE DUEL</span>
+          </div>
+        </motion.div>
+
+        {/* Main Showdown Arena */}
+        <div className="relative z-10 w-full max-w-sm flex-1 flex flex-col justify-center items-center gap-3.5 my-auto py-2">
+          
+          {/* 1. PLAYER 1 (YOU) BANNER CARD */}
+          <motion.div
+            initial={{ x: -80, opacity: 0, scale: 0.9 }}
+            animate={{ x: 0, opacity: 1, scale: 1 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
+            className="w-full p-4 rounded-3xl bg-gradient-to-r from-indigo-950/90 via-zinc-900/95 to-zinc-900/90 border-2 border-indigo-500/50 shadow-[0_0_30px_rgba(99,102,241,0.25)] flex items-center justify-between gap-4 backdrop-blur-xl relative overflow-hidden"
+          >
+            {/* Ambient edge glow */}
+            <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-400 via-cyan-400 to-indigo-600" />
+
+            <div className="flex items-center gap-3.5 min-w-0 pl-1">
+              {/* Avatar with energetic pulsing glow */}
+              <div className="relative shrink-0">
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                  className="absolute inset-0 rounded-2xl bg-indigo-500/40 blur-md"
+                />
+                <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-cyan-500 flex items-center justify-center text-2xl font-black text-white border-2 border-indigo-300/60 shadow-lg shadow-indigo-600/40">
+                  {myAvatar}
+                </div>
               </div>
-              <span className="text-xs font-bold text-zinc-300 truncate max-w-[110px]">{myName}</span>
-              <span className="text-[10px] text-indigo-400 font-medium px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20">
-                AP Scholar
-              </span>
+
+              {/* User Name & Banner */}
+              <div className="min-w-0 flex flex-col gap-1 text-left">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">YOU</span>
+                  <span className="w-1 h-1 rounded-full bg-emerald-400" />
+                </div>
+                <h3 className="text-base sm:text-lg font-black text-white tracking-wide truncate leading-tight">
+                  {myName}
+                </h3>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-400/30 text-[10px] font-extrabold text-indigo-300 w-fit">
+                  <Sparkles className="w-2.5 h-2.5 text-cyan-300" />
+                  <span>AP SCHOLAR</span>
+                </div>
+              </div>
             </div>
 
-            <div className="flex flex-col items-center">
-              <span className="text-2xl font-black text-rose-500 italic">VS</span>
-              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">
-                {activeSubject.name}
+            {/* Battle Ready Status */}
+            <div className="shrink-0 flex flex-col items-end">
+              <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                READY
               </span>
             </div>
+          </motion.div>
 
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="w-16 h-16 rounded-2xl bg-rose-600 flex items-center justify-center text-2xl font-black border-2 border-rose-400 shadow-lg shadow-rose-600/30">
-                {getOpponentAvatar()}
-              </div>
-              <span className="text-xs font-bold text-zinc-300 truncate max-w-[110px]">{opponent?.name || 'Rival'}</span>
-              <span className="text-[10px] text-rose-300 font-medium px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 truncate max-w-[130px]">
-                {getOpponentTagline()}
+          {/* 2. THE MASSIVE ELECTRIC "VS" SHOWDOWN ZONE */}
+          <div className="relative w-full py-4 flex flex-col items-center justify-center select-none">
+            
+            {/* Concentric Electric Shockwaves */}
+            <motion.div
+              animate={{ scale: [0.7, 1.4, 2], opacity: [0.9, 0.4, 0] }}
+              transition={{ repeat: Infinity, duration: 1.1, ease: "easeOut" }}
+              className="absolute w-36 h-36 rounded-full border-2 border-cyan-400/60 blur-xs pointer-events-none"
+            />
+            <motion.div
+              animate={{ scale: [0.8, 1.6, 2.3], opacity: [0.8, 0.3, 0] }}
+              transition={{ repeat: Infinity, duration: 1.3, ease: "easeOut", delay: 0.25 }}
+              className="absolute w-40 h-40 rounded-full border-2 border-fuchsia-500/50 blur-xs pointer-events-none"
+            />
+            <motion.div
+              animate={{ scale: [0.9, 1.8, 2.6], opacity: [0.6, 0.2, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "easeOut", delay: 0.5 }}
+              className="absolute w-44 h-44 rounded-full border border-amber-400/40 blur-xs pointer-events-none"
+            />
+
+            {/* Crackling Electric Lightning SVG Lines */}
+            <svg className="absolute w-72 h-36 pointer-events-none overflow-visible -top-2" viewBox="0 0 280 140">
+              <defs>
+                <filter id="electricGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              {/* Electric Bolt 1: Cyan High Voltage */}
+              <path
+                d="M 15 70 L 65 45 L 95 75 L 140 35 L 185 85 L 225 45 L 265 70"
+                stroke="#38bdf8"
+                strokeWidth="3.5"
+                fill="none"
+                filter="url(#electricGlow)"
+                className="electric-lightning-arc"
+              />
+              {/* Electric Bolt 2: Gold High Voltage */}
+              <path
+                d="M 25 78 L 75 35 L 115 80 L 155 30 L 195 75 L 245 52"
+                stroke="#facc15"
+                strokeWidth="2.5"
+                fill="none"
+                filter="url(#electricGlow)"
+                className="electric-lightning-arc"
+              />
+              {/* Electric Bolt 3: Hot Magenta Lightning */}
+              <path
+                d="M 35 62 L 85 85 L 130 50 L 175 90 L 215 55 L 255 78"
+                stroke="#f43f5e"
+                strokeWidth="2"
+                fill="none"
+                filter="url(#electricGlow)"
+                className="electric-lightning-arc"
+              />
+            </svg>
+
+            {/* Floating Sparks & Lightning Bolts */}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+              className="absolute w-44 h-44 pointer-events-none flex items-center justify-between"
+            >
+              <Zap className="w-6 h-6 text-amber-300 drop-shadow-[0_0_12px_#fde047] fill-amber-300 animate-pulse" />
+              <Zap className="w-6 h-6 text-cyan-300 drop-shadow-[0_0_12px_#38bdf8] fill-cyan-300 animate-pulse" />
+            </motion.div>
+
+            {/* THE GIGANTIC ELECTRIC "VS" TEXT */}
+            <motion.div
+              key="electric-vs"
+              initial={{ scale: 0, rotate: -25 }}
+              animate={{ scale: [1, 1.08, 1], rotate: 0 }}
+              transition={{ 
+                scale: { repeat: Infinity, duration: 1.2, ease: "easeInOut" },
+                rotate: { type: "spring", stiffness: 300, damping: 15 }
+              }}
+              className="relative z-10 flex items-center justify-center cursor-default"
+            >
+              <span className="text-7xl sm:text-8xl font-black italic tracking-tighter electric-vs-text select-none">
+                VS
               </span>
+            </motion.div>
+
+            {/* Electric Sub-Aura Tag */}
+            <div className="relative z-10 -mt-1 flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-black/60 border border-amber-400/40 text-[9px] font-black uppercase tracking-widest text-amber-300 shadow-md">
+              <Zap className="w-2.5 h-2.5 fill-amber-300 text-amber-300 animate-bounce" />
+              <span>HIGH VOLTAGE CLASH</span>
+              <Zap className="w-2.5 h-2.5 fill-amber-300 text-amber-300 animate-bounce" />
             </div>
           </div>
 
+          {/* 3. PLAYER 2 (OPPONENT) BANNER CARD */}
           <motion.div
-            key={countdownNum}
-            initial={{ scale: 0.3, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 1.5, opacity: 0 }}
-            className="text-8xl font-black text-white tracking-tighter my-6"
+            initial={{ x: 80, opacity: 0, scale: 0.9 }}
+            animate={{ x: 0, opacity: 1, scale: 1 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
+            className="w-full p-4 rounded-3xl bg-gradient-to-r from-zinc-900/90 via-zinc-900/95 to-rose-950/90 border-2 border-rose-500/50 shadow-[0_0_30px_rgba(244,63,94,0.25)] flex items-center justify-between gap-4 backdrop-blur-xl relative overflow-hidden"
           >
-            {countdownNum}
+            {/* Ambient edge glow */}
+            <div className="absolute top-0 right-0 bottom-0 w-1.5 bg-gradient-to-b from-rose-400 via-amber-400 to-rose-600" />
+
+            <div className="min-w-0 flex flex-col gap-1 text-left pl-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-black uppercase tracking-widest text-rose-400">OPPONENT</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-white tracking-wide truncate leading-tight">
+                {opponent?.name || 'AP Rival'}
+              </h3>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/15 border border-rose-400/30 text-[10px] font-extrabold text-rose-300 w-fit truncate max-w-[190px]">
+                <Trophy className="w-2.5 h-2.5 text-rose-400 shrink-0" />
+                <span className="truncate">{getOpponentTagline()}</span>
+              </div>
+            </div>
+
+            {/* Opponent Avatar */}
+            <div className="relative shrink-0">
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.4 }}
+                className="absolute inset-0 rounded-2xl bg-rose-500/40 blur-md"
+              />
+              <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-700 via-rose-600 to-amber-500 flex items-center justify-center text-2xl font-black text-white border-2 border-rose-300/60 shadow-lg shadow-rose-600/40">
+                {getOpponentAvatar()}
+              </div>
+            </div>
           </motion.div>
 
-          <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest animate-pulse">
-            Match Starting...
-          </span>
         </div>
+
+        {/* Bottom: Match Countdown & Launch Indicator */}
+        <motion.div
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className="relative z-10 w-full max-w-sm flex flex-col items-center gap-2 pb-2 text-center"
+        >
+          {/* Animated Countdown Circle / Box */}
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-zinc-400">
+              MATCH COMMENCING IN
+            </span>
+            <motion.div
+              key={countdownNum}
+              initial={{ scale: 0.2, opacity: 0, rotate: -20 }}
+              animate={{ scale: 1, opacity: 1, rotate: 0 }}
+              exit={{ scale: 1.6, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-cyan-400 flex items-center justify-center text-2xl font-black text-white shadow-lg shadow-cyan-500/30 border border-white/40"
+            >
+              {countdownNum}
+            </motion.div>
+          </div>
+
+          <div className="flex items-center gap-2 text-[10px] font-bold text-cyan-300 tracking-wider uppercase animate-pulse">
+            <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
+            <span>5 QUESTIONS • REAL-TIME SYNCHRONIZED • FASTEST WINS</span>
+            <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
+          </div>
+        </motion.div>
       </div>
     );
   }
