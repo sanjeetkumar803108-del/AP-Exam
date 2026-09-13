@@ -85,7 +85,25 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   const [roomCode, setRoomCode] = useState<string>(() => `AP-${Math.floor(1000 + Math.random() * 9000)}`);
   const [joinInputCode, setJoinInputCode] = useState<string>('');
   const [copied, setCopied] = useState<boolean>(false);
+  const [copiedWaitingCode, setCopiedWaitingCode] = useState<boolean>(false);
   const [joinError, setJoinError] = useState<string | null>(null);
+
+  // Server Diagnostics & Latency
+  const [serverLatency, setServerLatency] = useState<number | null>(null);
+  const [serverConnected, setServerConnected] = useState<boolean>(true);
+  const [isFriendRoomHost, setIsFriendRoomHost] = useState<boolean>(false);
+
+  // Check connection to battle server on mount
+  useEffect(() => {
+    let active = true;
+    battleSync.checkConnection().then(res => {
+      if (active) {
+        setServerConnected(res.ok);
+        if (res.ok) setServerLatency(res.latencyMs);
+      }
+    });
+    return () => { active = false; };
+  }, []);
 
   // Matchmaking Search Countdown (Strict 15 seconds)
   const [searchSecondsLeft, setSearchSecondsLeft] = useState<number>(15);
@@ -309,8 +327,9 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     setPhase('MATCHMAKING');
     setIsRealOpponent(true);
     isRealOpponentRef.current = true;
+    setIsFriendRoomHost(true);
     setJoinError(null);
-    setSearchSecondsLeft(60);
+    setSearchSecondsLeft(90);
 
     const initialQs = getBattleQuestions(selectedSubjectId, 5);
     setQuestions(initialQs);
@@ -328,11 +347,15 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
     const res = await battleSync.createFriendRoom(roomCode, myProfile, selectedSubjectId, initialQs);
     if (!res.success || !res.roomId) {
-      setJoinError('Could not create room. Please try again.');
+      setJoinError('Could not create room. Please check internet connection.');
       setPhase('LOBBY');
+      setIsFriendRoomHost(false);
       return;
     }
 
+    if (res.code) {
+      setRoomCode(res.code);
+    }
     const roomId = res.roomId;
     setLiveRoomId(roomId);
     liveRoomIdRef.current = roomId;
@@ -347,7 +370,11 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // 5. Friend Room: Join Room
   const handleJoinFriendRoom = async () => {
-    if (joinInputCode.trim().length < 4) return;
+    const raw = joinInputCode.trim();
+    if (raw.length < 3) {
+      setJoinError('Please enter the 4-digit code (e.g. 1234)');
+      return;
+    }
     cleanupLocalBattleTimers();
     triggerVibration(20);
     setJoinError(null);
@@ -362,10 +389,10 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       currentQ: 0
     };
 
-    const res = await battleSync.joinFriendRoom(joinInputCode.trim(), myProfile);
+    const res = await battleSync.joinFriendRoom(raw, myProfile);
     if (!res.success || !res.roomId || !res.opponent) {
       triggerVibration(50);
-      setJoinError('Invalid Room Code or Room already in progress!');
+      setJoinError(res.error || 'Invalid Room Code or Room already in progress!');
       return;
     }
 
@@ -378,6 +405,31 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       res.questions || getBattleQuestions(hostSubject, 5),
       hostSubject
     );
+  };
+
+  // Copy & Share helpers for waiting room
+  const handleCopyWaitingCode = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedWaitingCode(true);
+      triggerVibration(15);
+      setTimeout(() => setCopiedWaitingCode(false), 2000);
+    } catch {}
+  };
+
+  const handleShareWaitingCode = async (code: string) => {
+    const shareText = `⚔️ Join my 1v1 AP Quiz Battle! Code: ${code} on https://ap-exam-five.vercel.app`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'AP Exam 1v1 Battle',
+          text: shareText,
+          url: 'https://ap-exam-five.vercel.app'
+        });
+        return;
+      } catch {}
+    }
+    handleCopyWaitingCode(code);
   };
 
   // 6. Real-Time Room Updates during Battle (Server-driven Sync)
@@ -436,6 +488,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // 7. Cancel Matchmaking
   const handleCancelMatchmaking = () => {
+    setIsFriendRoomHost(false);
     leaveServerQueueAndReset();
     setPhase('LOBBY');
   };
@@ -846,13 +899,16 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                 type="text"
                 value={joinInputCode}
                 onChange={(e) => setJoinInputCode(e.target.value.toUpperCase())}
-                placeholder="Enter 6-digit code..."
-                maxLength={8}
-                className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono uppercase text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleJoinFriendRoom();
+                }}
+                placeholder="Enter 4-digit code (e.g. 1234)..."
+                maxLength={12}
+                className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono uppercase text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500"
               />
               <button
                 onClick={handleJoinFriendRoom}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-bold text-white transition-all cursor-pointer"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 rounded-xl text-xs font-bold text-white transition-all cursor-pointer shadow-xs"
               >
                 Join
               </button>
@@ -1035,7 +1091,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             <ArrowLeft className="w-5 h-5" />
           </button>
           <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
-            {isFriendHostWaiting ? 'Private Room' : 'Searching Arena'}
+            {isFriendHostWaiting || isFriendRoomHost ? 'Private Room' : 'Searching Arena'}
           </span>
           <div className="w-10"></div>
         </div>
@@ -1059,35 +1115,72 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           </div>
 
           <h2 className="text-xl font-extrabold text-white mb-1">
-            {isFriendHostWaiting ? 'Waiting for Friend...' : 'Finding Opponent...'}
+            {isFriendHostWaiting || isFriendRoomHost ? 'Waiting for Friend...' : 'Finding Opponent...'}
           </h2>
           <p className="text-xs text-zinc-400 mb-4">
-            {isFriendHostWaiting
+            {isFriendHostWaiting || isFriendRoomHost
               ? `Share Room Code with your friend to start!`
               : `Searching active AP scholars in ${activeSubject.name}`}
           </p>
 
-          {!isFriendHostWaiting ? (
-            <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-full mb-4">
-              <Clock className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-xs font-mono font-bold text-zinc-300">
-                {searchSecondsLeft}s remaining
-              </span>
+          {(isFriendHostWaiting || isFriendRoomHost) ? (
+            <div className="flex flex-col items-center gap-3 mb-4 w-full">
+              <div className="bg-indigo-950/70 border border-indigo-500/50 px-5 py-3 rounded-2xl flex items-center justify-between w-full shadow-inner">
+                <span className="text-xs text-indigo-300 font-bold uppercase tracking-wider">Room Code:</span>
+                <span className="text-lg font-mono font-black text-white tracking-widest">{roomCode}</span>
+              </div>
+
+              <div className="flex items-center gap-2 w-full">
+                <button
+                  type="button"
+                  onClick={() => handleCopyWaitingCode(roomCode)}
+                  className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md"
+                >
+                  {copiedWaitingCode ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedWaitingCode ? 'Copied!' : 'Copy Code'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleShareWaitingCode(roomCode)}
+                  className="flex-1 py-2.5 rounded-xl bg-zinc-850 hover:bg-zinc-800 border border-zinc-750 active:scale-95 text-zinc-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <Share2 className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Share</span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 text-[11px] text-zinc-400 mt-1">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                </span>
+                <span>Waiting for friend to enter code...</span>
+              </div>
             </div>
           ) : (
-            <div className="bg-indigo-950/60 border border-indigo-500/40 px-5 py-3 rounded-2xl mb-4 flex items-center gap-3">
-              <span className="text-xs text-indigo-300 font-bold uppercase tracking-wider">Room Code:</span>
-              <span className="text-base font-mono font-black text-white tracking-widest">{roomCode}</span>
-            </div>
-          )}
+            <>
+              <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-full mb-3">
+                <Clock className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-xs font-mono font-bold text-zinc-300">
+                  {searchSecondsLeft}s remaining
+                </span>
+              </div>
 
-          {!isFriendHostWaiting && (
-            <button
-              onClick={() => handleSearchTimeout(questionsRef.current.length > 0 ? questionsRef.current : getBattleQuestions(selectedSubjectId, 5))}
-              className="px-4 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 text-xs font-bold transition-all cursor-pointer mb-2 active:scale-95"
-            >
-              ⚡ Practice vs AI Bot Now
-            </button>
+              {serverLatency !== null && (
+                <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 mb-4 font-mono font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Server Connected ({serverLatency}ms)</span>
+                </div>
+              )}
+
+              <button
+                onClick={() => handleSearchTimeout(questionsRef.current.length > 0 ? questionsRef.current : getBattleQuestions(selectedSubjectId, 5))}
+                className="px-4 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 text-xs font-bold transition-all cursor-pointer mb-2 active:scale-95"
+              >
+                ⚡ Practice vs AI Bot Now
+              </button>
+            </>
           )}
         </div>
 

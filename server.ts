@@ -6028,20 +6028,71 @@ const waitingQueue = new Map<string, { player: BattlePlayer; subjectId: string; 
 const activeBattleRooms = new Map<string, ServerRoom>();
 const playerToRoomMap = new Map<string, string>();
 
-// Clean up stale queue tickets (> 35000ms inactive) & old rooms (> 15m)
+// Clean up stale queue tickets (> 6000ms inactive) & old finished rooms (> 120s)
 function purgeStaleTickets() {
   const now = Date.now();
   for (const [qId, ticket] of waitingQueue.entries()) {
-    if (now - ticket.lastSeen > 35000) {
+    if (now - ticket.lastSeen > 6000) {
       waitingQueue.delete(qId);
     }
   }
   for (const [roomId, room] of activeBattleRooms.entries()) {
-    if (now - room.updatedAt > 900000) {
+    if (room.status === 'finished' && now - room.updatedAt > 120000) {
+      activeBattleRooms.delete(roomId);
+    } else if (now - room.updatedAt > 900000) {
       activeBattleRooms.delete(roomId);
     }
   }
 }
+
+// Resilient room lookup supporting any variation (digits, AP- prefix, room_ prefix, lower/upper)
+function findBattleRoom(roomIdOrCode?: string): { room: ServerRoom | undefined; key: string | undefined } {
+  if (!roomIdOrCode) return { room: undefined, key: undefined };
+  
+  // 1. Direct match
+  if (activeBattleRooms.has(roomIdOrCode)) {
+    return { room: activeBattleRooms.get(roomIdOrCode), key: roomIdOrCode };
+  }
+
+  const raw = String(roomIdOrCode).trim().toUpperCase();
+  if (activeBattleRooms.has(raw)) {
+    return { room: activeBattleRooms.get(raw), key: raw };
+  }
+
+  // 2. room_ prefix variations
+  const withRoom = raw.startsWith('ROOM_') ? raw : `room_${raw}`;
+  if (activeBattleRooms.has(withRoom)) {
+    return { room: activeBattleRooms.get(withRoom), key: withRoom };
+  }
+
+  // 3. Clean alphanumeric variation
+  const clean = raw.replace(/[^A-Z0-9]/g, '');
+  if (clean) {
+    if (activeBattleRooms.has(`room_${clean}`)) return { room: activeBattleRooms.get(`room_${clean}`), key: `room_${clean}` };
+    if (activeBattleRooms.has(`room_AP-${clean}`)) return { room: activeBattleRooms.get(`room_AP-${clean}`), key: `room_AP-${clean}` };
+    if (activeBattleRooms.has(clean)) return { room: activeBattleRooms.get(clean), key: clean };
+  }
+
+  // 4. Numeric-only variation (e.g., user typed 4821 instead of AP-4821)
+  const digits = raw.replace(/\D/g, '');
+  if (digits) {
+    if (activeBattleRooms.has(`room_${digits}`)) return { room: activeBattleRooms.get(`room_${digits}`), key: `room_${digits}` };
+    if (activeBattleRooms.has(`room_AP-${digits}`)) return { room: activeBattleRooms.get(`room_AP-${digits}`), key: `room_AP-${digits}` };
+    if (activeBattleRooms.has(`room_AP${digits}`)) return { room: activeBattleRooms.get(`room_AP${digits}`), key: `room_AP${digits}` };
+  }
+
+  return { room: undefined, key: undefined };
+}
+
+// 0. Live Battle Health & Ping Check
+app.get("/api/battle/ping", (req, res) => {
+  res.json({
+    status: "ok",
+    timestamp: Date.now(),
+    activeQueueSize: waitingQueue.size,
+    activeRoomCount: activeBattleRooms.size
+  });
+});
 
 // 1. Enter queue & match with players actively on radar (same subject prioritized, then flexible pairing)
 app.post("/api/battle/match", (req, res) => {
@@ -6054,7 +6105,7 @@ app.post("/api/battle/match", (req, res) => {
     const now = Date.now();
     purgeStaleTickets();
 
-    // Do NOT delete playerToRoomMap if this player is already mapped to an active room
+    // Check if player is already mapped to an active room
     const existingRoomId = playerToRoomMap.get(playerId);
     if (existingRoomId) {
       const existingRoom = activeBattleRooms.get(existingRoomId);
@@ -6069,6 +6120,9 @@ app.post("/api/battle/match", (req, res) => {
           questions: existingRoom.questions,
           subjectId: existingRoom.subjectId
         });
+      } else {
+        // Clean up stale or finished room mapping
+        playerToRoomMap.delete(playerId);
       }
     }
 
@@ -6084,14 +6138,14 @@ app.post("/api/battle/match", (req, res) => {
       lastSeen: now
     };
 
-    // Priority 1: Match with same subject actively searching (< 30000ms)
+    // Priority 1: Match with same subject actively searching (active heartbeat <= 6000ms)
     let foundOpponent: { qId: string; ticket: { player: BattlePlayer; subjectId: string; questions: any[]; timestamp: number; lastSeen: number } } | null = null;
     const myNormSubject = normalizeBattleSubject(subjectId);
 
     for (const [qId, ticket] of waitingQueue.entries()) {
       if (
         ticket.player.id !== playerId && 
-        (now - ticket.lastSeen <= 30000) && 
+        (now - ticket.lastSeen <= 6000) && 
         normalizeBattleSubject(ticket.subjectId) === myNormSubject
       ) {
         foundOpponent = { qId, ticket };
@@ -6104,7 +6158,7 @@ app.post("/api/battle/match", (req, res) => {
       for (const [qId, ticket] of waitingQueue.entries()) {
         if (
           ticket.player.id !== playerId && 
-          (now - ticket.lastSeen <= 30000)
+          (now - ticket.lastSeen <= 6000)
         ) {
           foundOpponent = { qId, ticket };
           break;
@@ -6113,6 +6167,25 @@ app.post("/api/battle/match", (req, res) => {
     }
 
     if (foundOpponent) {
+      // Mutual Pairing Race Condition Guard: Check if opponent already formed a room with us
+      const oppExistingRoomId = playerToRoomMap.get(foundOpponent.ticket.player.id);
+      if (oppExistingRoomId) {
+        const oppRoom = activeBattleRooms.get(oppExistingRoomId);
+        if (oppRoom && (oppRoom.status === 'countdown' || oppRoom.status === 'battle')) {
+          playerToRoomMap.set(playerId, oppExistingRoomId);
+          waitingQueue.delete(playerId);
+          waitingQueue.delete(foundOpponent.qId);
+          return res.json({
+            status: "matched",
+            roomId: oppExistingRoomId,
+            isPlayer1: oppRoom.player1.id === playerId,
+            opponent: oppRoom.player1.id === playerId ? oppRoom.player2 : oppRoom.player1,
+            questions: oppRoom.questions,
+            subjectId: oppRoom.subjectId
+          });
+        }
+      }
+
       // Both are actively on radar right now! Match them!
       waitingQueue.delete(foundOpponent.qId);
       waitingQueue.delete(playerId);
@@ -6195,6 +6268,8 @@ app.post("/api/battle/poll-match", (req, res) => {
           questions: room.questions,
           subjectId: room.subjectId
         });
+      } else {
+        playerToRoomMap.delete(playerId);
       }
     }
 
@@ -6211,7 +6286,7 @@ app.post("/api/battle/poll-match", (req, res) => {
         if (
           qId !== playerId && 
           otherTicket.player.id !== playerId && 
-          (now - otherTicket.lastSeen <= 30000) &&
+          (now - otherTicket.lastSeen <= 6000) &&
           normalizeBattleSubject(otherTicket.subjectId) === myNormSubject
         ) {
           foundOpponent = { qId, ticket: otherTicket };
@@ -6225,7 +6300,7 @@ app.post("/api/battle/poll-match", (req, res) => {
           if (
             qId !== playerId && 
             otherTicket.player.id !== playerId && 
-            (now - otherTicket.lastSeen <= 30000)
+            (now - otherTicket.lastSeen <= 6000)
           ) {
             foundOpponent = { qId, ticket: otherTicket };
             break;
@@ -6234,6 +6309,25 @@ app.post("/api/battle/poll-match", (req, res) => {
       }
 
       if (foundOpponent) {
+        // Mutual Pairing Race Condition Guard
+        const oppExistingRoomId = playerToRoomMap.get(foundOpponent.ticket.player.id);
+        if (oppExistingRoomId) {
+          const oppRoom = activeBattleRooms.get(oppExistingRoomId);
+          if (oppRoom && (oppRoom.status === 'countdown' || oppRoom.status === 'battle')) {
+            playerToRoomMap.set(playerId, oppExistingRoomId);
+            waitingQueue.delete(playerId);
+            waitingQueue.delete(foundOpponent.qId);
+            return res.json({
+              status: "matched",
+              roomId: oppExistingRoomId,
+              isPlayer1: oppRoom.player1.id === playerId,
+              opponent: oppRoom.player1.id === playerId ? oppRoom.player2 : oppRoom.player1,
+              questions: oppRoom.questions,
+              subjectId: oppRoom.subjectId
+            });
+          }
+        }
+
         waitingQueue.delete(playerId);
         waitingQueue.delete(foundOpponent.qId);
 
@@ -6286,19 +6380,18 @@ app.post("/api/battle/cancel", (req, res) => {
     if (playerId) {
       waitingQueue.delete(playerId);
 
-      // ONLY destroy/forfeit an active room if roomId was explicitly provided or if room is in 'battle'
       if (roomId) {
-        const room = activeBattleRooms.get(roomId);
-        if (room) {
+        const { room, key } = findBattleRoom(roomId);
+        if (room && key) {
           if (room.status === 'waiting' && room.player1.id === playerId) {
-            activeBattleRooms.delete(roomId);
-            console.log(`[Battle Matchmaker] Waiting room ${roomId} deleted because host cancelled.`);
+            activeBattleRooms.delete(key);
+            console.log(`[Battle Matchmaker] Waiting room ${key} deleted because host cancelled.`);
           } else if (room.status === 'countdown' || room.status === 'battle') {
             const leaver = room.player1.id === playerId ? room.player1 : (room.player2?.id === playerId ? room.player2 : null);
             if (leaver) leaver.finished = true;
             room.status = 'finished';
             room.updatedAt = Date.now();
-            console.log(`[Battle Matchmaker] Player ${playerId} forfeited match in room ${roomId}.`);
+            console.log(`[Battle Matchmaker] Player ${playerId} forfeited match in room ${key}.`);
           }
         }
         playerToRoomMap.delete(playerId);
@@ -6316,12 +6409,15 @@ app.post("/api/battle/room/create", (req, res) => {
   try {
     const { roomCode, player, subjectId, questions } = req.body;
     const now = Date.now();
-    const code = (roomCode || `AP-${Math.floor(1000 + Math.random() * 9000)}`).toUpperCase();
-    const roomId = `room_${code}`;
+    const raw = String(roomCode || `AP-${Math.floor(1000 + Math.random() * 9000)}`).trim().toUpperCase();
+    const digits = raw.replace(/\D/g, '');
+    const cleanCode = digits.length >= 4 ? digits : raw.replace(/[^A-Z0-9]/g, '');
+    const displayCode = digits.length >= 4 ? `AP-${digits.slice(-4)}` : `AP-${cleanCode}`;
+    const roomId = `room_${displayCode}`;
 
     const newRoom: ServerRoom = {
       id: roomId,
-      code,
+      code: displayCode,
       subjectId,
       status: 'waiting',
       player1: {
@@ -6341,10 +6437,19 @@ app.post("/api/battle/room/create", (req, res) => {
       updatedAt: now
     };
 
+    // Store under multiple keys for resilient multi-device lookup
     activeBattleRooms.set(roomId, newRoom);
+    if (digits) {
+      activeBattleRooms.set(`room_${digits}`, newRoom);
+      activeBattleRooms.set(`room_AP-${digits}`, newRoom);
+    }
+    if (cleanCode && cleanCode !== digits) {
+      activeBattleRooms.set(`room_${cleanCode}`, newRoom);
+    }
+
     playerToRoomMap.set(player.id, roomId);
 
-    res.json({ success: true, roomId, code });
+    res.json({ success: true, roomId, code: displayCode });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -6354,12 +6459,10 @@ app.post("/api/battle/room/create", (req, res) => {
 app.post("/api/battle/room/join", (req, res) => {
   try {
     const { roomCode, player } = req.body;
-    const code = (roomCode || "").toUpperCase().trim();
-    const roomId = `room_${code}`;
+    const { room, key } = findBattleRoom(roomCode);
 
-    const room = activeBattleRooms.get(roomId);
-    if (!room) {
-      return res.status(404).json({ error: "Room not found. Check the code!" });
+    if (!room || !key) {
+      return res.status(404).json({ error: "Room not found. Check the 4-digit code!" });
     }
     if (room.player1.id === player.id) {
       return res.status(400).json({ error: "You are the host of this room!" });
@@ -6383,11 +6486,11 @@ app.post("/api/battle/room/join", (req, res) => {
     room.roundStartTime = now + 3000;
     room.updatedAt = now;
 
-    playerToRoomMap.set(player.id, roomId);
+    playerToRoomMap.set(player.id, room.id);
 
     res.json({
       success: true,
-      roomId,
+      roomId: room.id,
       room,
       opponent: room.player1,
       questions: room.questions,
@@ -6402,7 +6505,7 @@ app.post("/api/battle/room/join", (req, res) => {
 app.post("/api/battle/action", (req, res) => {
   try {
     const { roomId, playerId, score, hasAnswered, finished } = req.body;
-    const room = activeBattleRooms.get(roomId);
+    const { room } = findBattleRoom(roomId);
     if (!room) {
       return res.status(404).json({ error: "Room not found" });
     }
@@ -6430,7 +6533,7 @@ app.post("/api/battle/action", (req, res) => {
         room.roundStatus = 'revealed';
         room.revealStartTime = now;
         room.updatedAt = now;
-        console.log(`[Battle Arena] Both players answered round ${room.currentQ} in room ${roomId}. Synchronized reveal triggered!`);
+        console.log(`[Battle Arena] Both players answered round ${room.currentQ} in room ${room.id}. Synchronized reveal triggered!`);
       }
     }
 
@@ -6449,7 +6552,7 @@ app.post("/api/battle/action", (req, res) => {
 app.get("/api/battle/room/:roomId", (req, res) => {
   try {
     const { roomId } = req.params;
-    const room = activeBattleRooms.get(roomId);
+    const { room } = findBattleRoom(roomId);
     if (!room) {
       return res.status(404).json({ error: "Room not found" });
     }

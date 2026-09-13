@@ -1,4 +1,4 @@
-import { getApiUrl } from '../utils/api';
+import { getBattleApiUrl } from '../utils/api';
 import { BattleQuestion } from '../data/quizBattleBank';
 
 export interface PlayerProfile {
@@ -28,7 +28,43 @@ export interface BattleRoom {
   updatedAt: number;
 }
 
+// Clean helper to extract and normalize room code
+export const normalizeBattleCode = (rawCode: string): string => {
+  if (!rawCode) return '';
+  const trimmed = rawCode.trim().toUpperCase();
+  const digits = trimmed.replace(/\D/g, '');
+  if (digits.length >= 4) {
+    return `AP-${digits.slice(-4)}`;
+  }
+  const cleanAlpha = trimmed.replace(/[^A-Z0-9]/g, '');
+  if (cleanAlpha.length >= 4) {
+    return cleanAlpha.startsWith('AP') ? cleanAlpha : `AP-${cleanAlpha}`;
+  }
+  return trimmed;
+};
+
 export class BattleSyncService {
+  /**
+   * 0. Ping server to check connectivity and round-trip latency
+   */
+  async checkConnection(): Promise<{ ok: boolean; latencyMs: number }> {
+    const t0 = performance.now();
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+      const res = await fetch(getBattleApiUrl('/api/battle/ping'), {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      const latencyMs = Math.round(performance.now() - t0);
+      return { ok: res.ok, latencyMs };
+    } catch {
+      return { ok: false, latencyMs: -1 };
+    }
+  }
+
   /**
    * 1. Try to find a match or enter queue on the live server
    */
@@ -40,9 +76,13 @@ export class BattleSyncService {
     questions: BattleQuestion[]
   ): Promise<{ status: 'matched' | 'waiting'; roomId?: string; isPlayer1?: boolean; opponent?: PlayerProfile; questions?: BattleQuestion[]; subjectId?: string }> {
     try {
-      const res = await fetch(getApiUrl('/api/battle/match'), {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      const res = await fetch(getBattleApiUrl('/api/battle/match'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           playerId,
           playerName,
@@ -51,6 +91,7 @@ export class BattleSyncService {
           questions
         })
       });
+      clearTimeout(timeoutId);
 
       if (!res.ok) {
         throw new Error(`Matchmaking HTTP error ${res.status}`);
@@ -75,11 +116,16 @@ export class BattleSyncService {
     const poll = async () => {
       if (!active) return;
       try {
-        const res = await fetch(getApiUrl('/api/battle/poll-match'), {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+        const res = await fetch(getBattleApiUrl('/api/battle/poll-match'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
           body: JSON.stringify({ playerId })
         });
+        clearTimeout(timeoutId);
 
         if (res.ok) {
           const data = await res.json();
@@ -99,7 +145,7 @@ export class BattleSyncService {
           }
         }
       } catch (err) {
-        console.warn('Queue poll error:', err);
+        // Suppress transient poll blips
       }
 
       if (active) {
@@ -107,7 +153,7 @@ export class BattleSyncService {
       }
     };
 
-    setTimeout(poll, 250);
+    setTimeout(poll, 200);
 
     return () => {
       active = false;
@@ -119,7 +165,7 @@ export class BattleSyncService {
    */
   async leaveQueue(playerId: string, roomId?: string): Promise<void> {
     try {
-      await fetch(getApiUrl('/api/battle/cancel'), {
+      await fetch(getBattleApiUrl('/api/battle/cancel'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playerId, roomId })
@@ -128,20 +174,21 @@ export class BattleSyncService {
   }
 
   /**
-   * 4. Create a private room with 6-digit Code
+   * 4. Create a private room with flexible Code
    */
   async createFriendRoom(
     code: string,
     player: PlayerProfile,
     subjectId: string,
     questions: BattleQuestion[]
-  ): Promise<{ success: boolean; roomId?: string }> {
+  ): Promise<{ success: boolean; roomId?: string; code?: string }> {
     try {
-      const res = await fetch(getApiUrl('/api/battle/room/create'), {
+      const formattedCode = normalizeBattleCode(code);
+      const res = await fetch(getBattleApiUrl('/api/battle/room/create'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          roomCode: code,
+          roomCode: formattedCode,
           player,
           subjectId,
           questions
@@ -150,7 +197,7 @@ export class BattleSyncService {
 
       if (!res.ok) return { success: false };
       const data = await res.json();
-      return { success: true, roomId: data.roomId };
+      return { success: true, roomId: data.roomId, code: data.code || formattedCode };
     } catch (err) {
       console.warn('Create friend room failed:', err);
       return { success: false };
@@ -158,23 +205,28 @@ export class BattleSyncService {
   }
 
   /**
-   * 5. Join a private room with 6-digit Code
+   * 5. Join a private room with flexible Code (handles digits only, AP- prefix, spaces)
    */
   async joinFriendRoom(
     code: string,
     player: PlayerProfile
-  ): Promise<{ success: boolean; roomId?: string; opponent?: PlayerProfile; questions?: BattleQuestion[]; subjectId?: string }> {
+  ): Promise<{ success: boolean; roomId?: string; opponent?: PlayerProfile; questions?: BattleQuestion[]; subjectId?: string; error?: string }> {
     try {
-      const res = await fetch(getApiUrl('/api/battle/room/join'), {
+      const cleanInput = code.trim().toUpperCase();
+      const res = await fetch(getBattleApiUrl('/api/battle/room/join'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          roomCode: code,
+          roomCode: cleanInput,
           player
         })
       });
 
-      if (!res.ok) return { success: false };
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        return { success: false, error: errData.error || 'Room not found' };
+      }
+
       const data = await res.json();
       const opp: PlayerProfile = {
         id: data.opponent.id,
@@ -193,9 +245,9 @@ export class BattleSyncService {
         questions: data.questions,
         subjectId: data.subjectId || data.room?.subjectId
       };
-    } catch (err) {
+    } catch (err: any) {
       console.warn('Join friend room failed:', err);
-      return { success: false };
+      return { success: false, error: 'Network connection failed' };
     }
   }
 
@@ -210,7 +262,7 @@ export class BattleSyncService {
     finished: boolean = false
   ): Promise<void> {
     try {
-      await fetch(getApiUrl('/api/battle/action'), {
+      await fetch(getBattleApiUrl('/api/battle/action'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -239,7 +291,14 @@ export class BattleSyncService {
     const poll = async () => {
       if (!active) return;
       try {
-        const res = await fetch(getApiUrl(`/api/battle/room/${roomId}`));
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+        const res = await fetch(getBattleApiUrl(`/api/battle/room/${encodeURIComponent(roomId)}`), {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
         if (res.ok) {
           const data = await res.json();
           const room: BattleRoom = data.room;
@@ -274,3 +333,4 @@ export class BattleSyncService {
 }
 
 export const battleSync = new BattleSyncService();
+
