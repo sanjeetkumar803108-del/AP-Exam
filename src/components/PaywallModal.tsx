@@ -238,11 +238,11 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="bg-[#FAF9F6] w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden relative shadow-2xl border border-zinc-200"
+          className="bg-[#FAF9F6] w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden relative shadow-2xl border border-zinc-200 max-h-[95vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header/Banner */}
-          <div className="bg-gradient-to-br from-amber-400 via-orange-500 to-red-600 p-6 text-white relative overflow-hidden">
+          <div className="bg-gradient-to-br from-amber-400 via-orange-500 to-red-600 p-5 sm:p-6 text-white relative overflow-hidden shrink-0">
             <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
               <div className="absolute top-4 left-4 w-24 h-24 bg-white rounded-full blur-3xl animate-pulse" />
               <div className="absolute bottom-4 right-4 w-32 h-32 bg-yellow-200 rounded-full blur-3xl animate-pulse" />
@@ -255,38 +255,76 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
               <X className="w-4 h-4" />
             </button>
 
-            <div className="flex justify-center mb-3">
-              <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md">
-                <Crown className="w-10 h-10 text-white" />
+            <div className="flex justify-center mb-2.5">
+              <div className="p-2.5 bg-white/20 rounded-2xl backdrop-blur-md">
+                <Crown className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
               </div>
             </div>
 
-            <h2 className="text-2xl font-black text-center leading-tight mb-1">
+            <h2 className="text-xl sm:text-2xl font-black text-center leading-tight mb-1">
               Unlock AP Exam Pro
             </h2>
-            <p className="text-center text-white/90 font-bold text-xs">
-              {featureName ? `Upgrade to use ${featureName} without limits!` : "Never run out of study juice."}
+            <p className="text-center text-white/90 font-bold text-xs max-w-[300px] mx-auto">
+              {featureName?.includes('Flash') 
+                ? "Unlock Unlimited AI Study Power & Score 5 on Test Day!" 
+                : (featureName ? `Upgrade to unlock ${featureName} & all PRO tools!` : "Unlock Unlimited AI Study Power & Score 5 on Test Day!")}
             </p>
           </div>
 
-          {/* Features List */}
-          <div className="p-5 space-y-5">
-            <div className="grid grid-cols-1 gap-2">
-              {[
-                { icon: <Zap className="w-4 h-4 text-amber-500" />, title: "Unlimited Scans & Solutions", desc: "No daily limit on homework problems" },
-                { icon: <Sparkles className="w-4 h-4 text-purple-500" />, title: "Deep AI Reasoning Engine", desc: "Advanced step-by-step guidance on any topic" },
-                { icon: <Check className="w-4 h-4 text-green-500" />, title: "Real-time Priority Response", desc: "Supercharged speed for premium users" }
-              ].map((f, i) => (
-                <div key={i} className="flex items-start gap-3 p-2 bg-white border border-zinc-100/80 rounded-2xl">
-                  <div className="p-1.5 bg-zinc-50 shadow-sm rounded-lg mt-0.5 shrink-0">
-                    {f.icon}
+          {/* Unique Flagship Features List */}
+          <div className="p-4 sm:p-5 space-y-4 overflow-y-auto">
+            <div className="space-y-2">
+              <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block text-center">
+                ✨ Exclusive AP Superpowers Unlocked
+              </span>
+              
+              <div className="grid grid-cols-1 gap-2">
+                {[
+                  { 
+                    icon: "🪤", 
+                    badge: "#1 UNIQUE", 
+                    badgeColor: "bg-amber-100 text-amber-800",
+                    title: "AP Trap Radar™ (Chief Reader Tech)", 
+                    desc: "Bust hidden College Board distractors & tricky psychometric traps" 
+                  },
+                  { 
+                    icon: "📝", 
+                    badge: "CAMERA AI", 
+                    badgeColor: "bg-emerald-100 text-emerald-800",
+                    title: "Handwritten FRQ & Essay Grader", 
+                    desc: "Snap notebook photos for instant official rubric checks & point breakdowns" 
+                  },
+                  { 
+                    icon: "⚔️", 
+                    badge: "LIVE PVP", 
+                    badgeColor: "bg-blue-100 text-blue-800",
+                    title: "1v1 Live Multiplayer AP Battles", 
+                    desc: "Unlimited speed duels with peers, national leaderboards & streak boosts" 
+                  },
+                  { 
+                    icon: "🏝️", 
+                    badge: "FULL ACCESS", 
+                    badgeColor: "bg-purple-100 text-purple-800",
+                    title: "Learning Island™ & Visual Mind Maps", 
+                    desc: "Gamified quest roadmaps, concept hierarchy trees & high-yield guides" 
+                  }
+                ].map((f, i) => (
+                  <div key={i} className="flex items-center gap-3 p-2.5 bg-white border border-zinc-200/80 rounded-2xl shadow-xs">
+                    <div className="w-8 h-8 rounded-xl bg-zinc-50 border border-zinc-150 flex items-center justify-center text-lg shrink-0 shadow-2xs">
+                      {f.icon}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="font-black text-zinc-900 text-[11px] leading-tight truncate">{f.title}</h4>
+                        <span className={`text-[7.5px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider shrink-0 ${f.badgeColor}`}>
+                          {f.badge}
+                        </span>
+                      </div>
+                      <p className="text-[9.5px] text-zinc-500 font-semibold mt-0.5 leading-tight">{f.desc}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-extrabold text-zinc-900 text-[11px] leading-tight">{f.title}</h4>
-                    <p className="text-[10px] text-zinc-500 font-semibold mt-0.5">{f.desc}</p>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {/* Pricing Tiers Selection (Monthly vs Yearly) */}
