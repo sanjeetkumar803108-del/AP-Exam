@@ -6138,7 +6138,7 @@ app.post("/api/battle/match", (req, res) => {
       lastSeen: now
     };
 
-    // Priority 1: Match with same subject actively searching (active heartbeat <= 6000ms)
+    // Strict Same-Subject Match: ONLY match with players actively searching the EXACT same subject!
     let foundOpponent: { qId: string; ticket: { player: BattlePlayer; subjectId: string; questions: any[]; timestamp: number; lastSeen: number } } | null = null;
     const myNormSubject = normalizeBattleSubject(subjectId);
 
@@ -6150,19 +6150,6 @@ app.post("/api/battle/match", (req, res) => {
       ) {
         foundOpponent = { qId, ticket };
         break;
-      }
-    }
-
-    // Priority 2 (Flexible Quick Match): If no exact subject match, pair with ANY active real player on radar!
-    if (!foundOpponent) {
-      for (const [qId, ticket] of waitingQueue.entries()) {
-        if (
-          ticket.player.id !== playerId && 
-          (now - ticket.lastSeen <= 6000)
-        ) {
-          foundOpponent = { qId, ticket };
-          break;
-        }
       }
     }
 
@@ -6278,7 +6265,7 @@ app.post("/api/battle/poll-match", (req, res) => {
     if (myTicket) {
       myTicket.lastSeen = now;
 
-      // Priority 1: Proactive pairing with same subject
+      // Strict Same-Subject Match: ONLY match with players actively searching the EXACT same subject!
       let foundOpponent: { qId: string; ticket: { player: BattlePlayer; subjectId: string; questions: any[]; timestamp: number; lastSeen: number } } | null = null;
       const myNormSubject = normalizeBattleSubject(myTicket.subjectId);
 
@@ -6291,20 +6278,6 @@ app.post("/api/battle/poll-match", (req, res) => {
         ) {
           foundOpponent = { qId, ticket: otherTicket };
           break;
-        }
-      }
-
-      // Priority 2: Proactive pairing with ANY other active real player on radar
-      if (!foundOpponent) {
-        for (const [qId, otherTicket] of waitingQueue.entries()) {
-          if (
-            qId !== playerId && 
-            otherTicket.player.id !== playerId && 
-            (now - otherTicket.lastSeen <= 6000)
-          ) {
-            foundOpponent = { qId, ticket: otherTicket };
-            break;
-          }
         }
       }
 

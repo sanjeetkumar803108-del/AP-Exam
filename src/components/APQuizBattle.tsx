@@ -93,16 +93,20 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   const [serverConnected, setServerConnected] = useState<boolean>(true);
   const [isFriendRoomHost, setIsFriendRoomHost] = useState<boolean>(false);
 
-  // Check connection to battle server on mount
+  // Check connection to battle server on mount & clear any dangling previous queue
   useEffect(() => {
     let active = true;
+    battleSync.leaveQueue(myId).catch(() => {});
     battleSync.checkConnection().then(res => {
       if (active) {
         setServerConnected(res.ok);
         if (res.ok) setServerLatency(res.latencyMs);
       }
     });
-    return () => { active = false; };
+    return () => { 
+      active = false;
+      battleSync.leaveQueue(myId, liveRoomIdRef.current || undefined).catch(() => {});
+    };
   }, []);
 
   // Matchmaking Search Countdown (Strict 15 seconds)

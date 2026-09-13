@@ -5875,14 +5875,6 @@ app.post("/api/battle/match", (req, res) => {
         break;
       }
     }
-    if (!foundOpponent) {
-      for (const [qId, ticket] of waitingQueue.entries()) {
-        if (ticket.player.id !== playerId && now - ticket.lastSeen <= 6e3) {
-          foundOpponent = { qId, ticket };
-          break;
-        }
-      }
-    }
     if (foundOpponent) {
       const oppExistingRoomId = playerToRoomMap.get(foundOpponent.ticket.player.id);
       if (oppExistingRoomId) {
@@ -5980,14 +5972,6 @@ app.post("/api/battle/poll-match", (req, res) => {
         if (qId !== playerId && otherTicket.player.id !== playerId && now - otherTicket.lastSeen <= 6e3 && normalizeBattleSubject(otherTicket.subjectId) === myNormSubject) {
           foundOpponent = { qId, ticket: otherTicket };
           break;
-        }
-      }
-      if (!foundOpponent) {
-        for (const [qId, otherTicket] of waitingQueue.entries()) {
-          if (qId !== playerId && otherTicket.player.id !== playerId && now - otherTicket.lastSeen <= 6e3) {
-            foundOpponent = { qId, ticket: otherTicket };
-            break;
-          }
         }
       }
       if (foundOpponent) {
