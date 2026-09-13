@@ -4,7 +4,7 @@ import { getApiUrl } from './utils/api';
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, ReactNode, useEffect, lazy, Suspense, useCallback } from 'react';
+import { useState, ReactNode, useEffect, lazy, Suspense, useCallback, useRef } from 'react';
 import { LayoutDashboard, Camera, BookOpen, Headphones, UserCircle, Sparkles, Home, Moon, Sun, X, Wifi, WifiOff } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import LockedFeature from './components/LockedFeature';
@@ -13,6 +13,12 @@ import { billingService } from './services/BillingService';
 import { auth, db } from './lib/firebase';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { collection, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, getDocs } from 'firebase/firestore';
+import { 
+  subscribeToSessionRevocation, 
+  claimUserSession, 
+  getLocalSessionToken, 
+  clearLocalSessionToken 
+} from './utils/sessionManager';
 import { triggerVibration } from './utils/vibrate';
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
@@ -275,6 +281,8 @@ export default function App() {
   const [iapHasTrial, setIapHasTrial] = useState(true);
   const [paywallFeature, setPaywallFeature] = useState<string | undefined>(undefined);
   const [mobileToast, setMobileToast] = useState<string | null>(null);
+  const [sessionRevokedNotice, setSessionRevokedNotice] = useState<string | null>(null);
+  const sessionRevokeUnsubRef = useRef<(() => void) | null>(null);
   
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     return safeGetItem('study_dark_mode') === 'true';
@@ -380,6 +388,37 @@ export default function App() {
           setUser(null);
           signOut(auth).catch(err => console.warn('Sign out on unverified error:', err));
           return;
+        }
+
+        // Clean up any previous session watcher
+        if (sessionRevokeUnsubRef.current) {
+          sessionRevokeUnsubRef.current();
+          sessionRevokeUnsubRef.current = null;
+        }
+
+        // 1. Ensure local active session token exists, claim if missing
+        const currentLocalToken = getLocalSessionToken();
+        if (!currentLocalToken) {
+          claimUserSession(currentUser.uid).catch(console.warn);
+        }
+
+        // 2. Real-time Single Device Session Watchdog
+        sessionRevokeUnsubRef.current = subscribeToSessionRevocation(currentUser.uid, () => {
+          console.warn('[SingleSession] Active session taken over by another device. Terminating local session.');
+          if (sessionRevokeUnsubRef.current) {
+            sessionRevokeUnsubRef.current();
+            sessionRevokeUnsubRef.current = null;
+          }
+          clearLocalSessionToken();
+          setUser(null);
+          signOut(auth).catch(console.warn);
+          setSessionRevokedNotice('Your account was just logged in on another device. For subscription integrity, only 1 active device is permitted at a time.');
+          setMobileToast('⚠️ Logged out: Account active on another device');
+        });
+      } else {
+        if (sessionRevokeUnsubRef.current) {
+          sessionRevokeUnsubRef.current();
+          sessionRevokeUnsubRef.current = null;
         }
       }
       setUser(currentUser);
@@ -564,7 +603,13 @@ export default function App() {
         }
       }
     });
-    return () => unsubscribeAuth();
+    return () => {
+      unsubscribeAuth();
+      if (sessionRevokeUnsubRef.current) {
+        sessionRevokeUnsubRef.current();
+        sessionRevokeUnsubRef.current = null;
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -883,6 +928,7 @@ export default function App() {
         showOnboarding={showOnboarding}
         showAcademicSetup={showAcademicSetup}
         isDarkMode={isDarkMode}
+        sessionRevokedMessage={sessionRevokedNotice}
         setShowOnboarding={setShowOnboarding}
         setShowAcademicSetup={setShowAcademicSetup}
         fallbackSkeleton={<FullPageSkeleton />}

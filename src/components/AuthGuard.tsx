@@ -13,6 +13,7 @@ interface AuthGuardProps {
   showOnboarding: boolean;
   showAcademicSetup: boolean;
   isDarkMode: boolean;
+  sessionRevokedMessage?: string | null;
   setShowOnboarding: (show: boolean) => void;
   setShowAcademicSetup: (show: boolean) => void;
   children: React.ReactNode;
@@ -31,6 +32,7 @@ export default function AuthGuard({
   showOnboarding,
   showAcademicSetup,
   isDarkMode,
+  sessionRevokedMessage = null,
   setShowOnboarding,
   setShowAcademicSetup,
   children,
@@ -82,6 +84,7 @@ export default function AuthGuard({
           <Suspense fallback={fallbackSkeleton}>
             <Login 
               onClose={() => {}} 
+              sessionRevokedMessage={sessionRevokedMessage}
               onLoginSuccess={(target) => {
                 if (target === 'developer') {
                   window.dispatchEvent(new CustomEvent('developer-auth-changed', { detail: { authenticated: true } }));

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { X, UserPlus, LogIn, Chrome, LogOut, Loader2, Eye, EyeOff, Check } from 'lucide-react';
+import { X, UserPlus, LogIn, Chrome, LogOut, Loader2, Eye, EyeOff, Check, ShieldAlert } from 'lucide-react';
 import { auth, googleProvider, db } from '../lib/firebase';
 import { safeClearAll, safeSetItem, safeGetItem } from '../utils/storage';
+import { claimUserSession } from '../utils/sessionManager';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { 
   createUserWithEmailAndPassword, 
@@ -65,7 +66,17 @@ const Alert = {
 };
 
 
-export default function Login({ onClose, onLoginSuccess, hideClose = false }: { onClose: () => void, onLoginSuccess: (target?: 'main' | 'setup' | 'onboarding' | 'developer') => void, hideClose?: boolean }) {
+export default function Login({ 
+  onClose, 
+  onLoginSuccess, 
+  hideClose = false,
+  sessionRevokedMessage = null
+}: { 
+  onClose: () => void, 
+  onLoginSuccess: (target?: 'main' | 'setup' | 'onboarding' | 'developer') => void, 
+  hideClose?: boolean,
+  sessionRevokedMessage?: string | null
+}) {
   const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -89,6 +100,9 @@ export default function Login({ onClose, onLoginSuccess, hideClose = false }: { 
     if (isRoutingRef.current) return;
     isRoutingRef.current = true;
     try {
+      // Claim single active session for this device
+      await claimUserSession(currentUser.uid);
+
       const userDocRef = doc(db, 'users', currentUser.uid);
       const userDocSnap = await getDoc(userDocRef);
       if (userDocSnap.exists()) {
@@ -556,9 +570,27 @@ export default function Login({ onClose, onLoginSuccess, hideClose = false }: { 
         />
         
         <h1 className="text-4xl font-bold text-zinc-800 mb-2 tracking-tight">AP Exam</h1>
-        <p className="text-zinc-500 text-xs font-bold tracking-widest uppercase mb-10">
+        <p className="text-zinc-500 text-xs font-bold tracking-widest uppercase mb-8">
           Ultimate Study App
         </p>
+
+        {sessionRevokedMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="w-full max-w-sm mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 shadow-xs"
+          >
+            <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="text-xs font-black text-amber-900 uppercase tracking-wide">
+                Signed Out on This Device
+              </h4>
+              <p className="text-xs text-amber-700 mt-0.5 leading-relaxed font-medium">
+                {sessionRevokedMessage}
+              </p>
+            </div>
+          </motion.div>
+        )}
 
         <form onSubmit={handleAuth} className="w-full max-w-sm flex flex-col space-y-5">
           <div className="flex flex-col">
