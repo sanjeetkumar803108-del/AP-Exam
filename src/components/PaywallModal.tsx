@@ -285,28 +285,28 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
                     badge: "#1 UNIQUE", 
                     badgeColor: "bg-amber-100 text-amber-800",
                     title: "AP Trap Radar™ (Chief Reader Tech)", 
-                    desc: "Bust hidden College Board distractors & tricky psychometric traps" 
+                    desc: "Bust hidden traps" 
                   },
                   { 
                     icon: "📝", 
                     badge: "CAMERA AI", 
                     badgeColor: "bg-emerald-100 text-emerald-800",
                     title: "Handwritten FRQ & Essay Grader", 
-                    desc: "Snap notebook photos for instant official rubric checks & point breakdowns" 
+                    desc: "Instant rubric grading" 
                   },
                   { 
                     icon: "⚔️", 
                     badge: "LIVE PVP", 
                     badgeColor: "bg-blue-100 text-blue-800",
                     title: "1v1 Live Multiplayer AP Battles", 
-                    desc: "Unlimited speed duels with peers, national leaderboards & streak boosts" 
+                    desc: "Live peer battles" 
                   },
                   { 
                     icon: "🏝️", 
                     badge: "FULL ACCESS", 
                     badgeColor: "bg-purple-100 text-purple-800",
                     title: "Learning Island™ & Visual Mind Maps", 
-                    desc: "Gamified quest roadmaps, concept hierarchy trees & high-yield guides" 
+                    desc: "Visual study maps" 
                   }
                 ].map((f, i) => (
                   <div key={i} className="flex items-center gap-3 p-2.5 bg-white border border-zinc-200/80 rounded-2xl shadow-xs">
