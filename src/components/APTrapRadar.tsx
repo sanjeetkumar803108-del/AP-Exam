@@ -1385,9 +1385,17 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                   <div>
                     <label className="text-[11px] font-bold text-zinc-600 uppercase tracking-wider block mb-1.5 flex items-center justify-between">
                       <span>Target AP Subject</span>
-                      <span className="text-[10px] text-amber-700 font-bold bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          triggerVibration(10);
+                          setSubjectSearchQuery('');
+                          setShowSubjectModal(true);
+                        }}
+                        className="text-[10px] text-amber-700 font-bold bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded border border-amber-200 cursor-pointer transition-colors"
+                      >
                         Tap to Change
-                      </span>
+                      </button>
                     </label>
                     <button
                       type="button"
@@ -3598,14 +3606,20 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       {/* ================= PREMIUM IN-APP SUBJECT SELECTION BOTTOM SHEET / MODAL ================= */}
       <AnimatePresence>
         {showSubjectModal && (
-          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 backdrop-blur-sm animate-fade-in">
+          <div 
+            onClick={() => setShowSubjectModal(false)}
+            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 backdrop-blur-sm animate-fade-in"
+          >
             <motion.div
-              initial={{ opacity: 0, y: 50, scale: 0.96 }}
+              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, y: 70, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 50, scale: 0.96 }}
-              transition={{ duration: 0.2 }}
-              className="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[88vh]"
+              exit={{ opacity: 0, y: 70, scale: 0.97 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              className="w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[88vh]"
             >
+              {/* Drag handle for mobile slide down */}
+              <div className="w-12 h-1.5 bg-zinc-300 rounded-full mx-auto mt-3 sm:hidden" />
               {/* Modal Header */}
               <div className="p-4 sm:p-5 border-b border-zinc-100 flex items-center justify-between bg-gradient-to-r from-amber-50/70 via-orange-50/40 to-white shrink-0">
                 <div className="flex items-center gap-3">

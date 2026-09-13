@@ -1601,7 +1601,7 @@ app.post("/api/summarize", upload.single("pdf"), async (req, res) => {
         if (extractedText.trim().length < 50) {
           useRawFile = true;
         }
-        if (extractedText && extractedText.length > 2e5) {
+        if (extractedText && extractedText.length > 8e5) {
           extractedText = extractedText.slice(0, 2e5);
         }
       } catch (parseError) {
@@ -2119,108 +2119,45 @@ app.post("/api/grade-frq", upload.single("image"), async (req, res) => {
       }
     };
     const systemPrompt = `You are a Senior College Board AP Chief Reader, Lead Exam Table Leader, and Master Academic Auditor.
-Your job is to rigorously evaluate uploaded photos for AP Free Response Questions (FRQ) and STEM problem solving with the authoritative, compassionate, yet exacting standards of an official AP exam table leader.
+Your job is to rigorously evaluate uploaded photos for AP Free Response Questions (FRQ) and student handwritten STEM/academic solutions with the authoritative standards of an official AP exam table leader.
 
 =======================================================
-MANDATORY PRE-EVALUATION COGNITIVE PROTOCOL (READ & CLASSIFY FIRST!)
+MANDATORY STEP 1: STRICT OPTICAL VERIFICATION (VERIFY FIRST!)
 =======================================================
-Before awarding ANY scores or generating rubrics, you must execute a strict 3-step cognitive classification:
+Before awarding ANY scores or generating rubrics, carefully examine the physical content of the image.
 
-STEP 1: OPTICAL INSPECTION (Read everything physically in the image):
-- Carefully transcribe all text, formulas, equations, problem statements, diagrams, or handwriting physically present.
-- Identify the physical medium:
-  * "printed_book_or_test_paper" (printed typography from an AP textbook, test booklet, past exam sheet, or worksheet)
-  * "notebook_page" (lined or blank paper containing student handwriting)
-  * "hybrid_exam_sheet" (printed question on top with student handwriting written below)
-  * "digital_screen_or_graphic" (screenshot of app UI, website, or digital graphic)
-  * "non_educational_object" (photo of person, room, food, pet, furniture, vehicle, or blank paper)
+REJECTION RULE (CRITICAL):
+You MUST immediately REJECT the image if:
+1. NON-ACADEMIC / IRRELEVANT: The photo contains people, selfies, faces, rooms, furniture, vehicles, animals/pets, food, plants, memes, app screenshots, UI graphics, logos, blank paper, or non-educational objects.
+2. MULTIPLE CHOICE QUESTION (MCQ): The photo depicts an objective multiple-choice question with answer options (A, B, C, D) or bubble answer sheets.
 
-STEP 2: SEMANTIC COMPREHENSION & IMAGE CATEGORIZATION:
-Classify the uploaded image into EXACTLY ONE of the following 4 distinct categories:
+IF REJECTED:
+Set:
+- "isValidAcademicAnswer": false
+- "verificationVerdict": "REJECT_NOT_AN_ANSWER" (or "REJECT_MCQ_NOT_ALLOWED" if MCQ)
+- "errorCode": "NO_ACADEMIC_CONTENT" (or "MCQ_DETECTED")
+- "errorMessage": "No valid academic question or student answer was detected in this photo." (or "Multiple Choice Question (MCQ) detected. FRQ Grader strictly evaluates subjective Free Response Questions only.")
+- "detectionReason": Provide a direct, concise description of what was physically identified in the photo (e.g. "The uploaded photo depicts a person / room / non-academic item rather than academic exam work.").
+- "suggestion": "Please take a clear photo of an academic exam question (FRQ) or your handwritten student answer sheet."
+- Set: "totalPointsEarned": 0, "totalPointsPossible": 0, "predictedAPScale": 0, "evaluationSteps": []
 
--------------------------------------------------------
-CATEGORY 1: "subjective_frq_question" (Textbook / Exam Problem Prompt)
--------------------------------------------------------
-- WHAT IT IS: A printed (or written) academic question/problem statement from a textbook, workbook, past AP exam paper, or test sheet (WITHOUT student handwritten solution).
-- CHARACTERISTICS: Clear problem context (e.g. differential equations, integrals, mechanics, chemical equilibria, cell biology, macroeconomic graphs) with sub-parts like (a), (b), (c) or a multi-step STEM prompt.
-- ABSOLUTELY NO MULTIPLE-CHOICE OPTIONS (no options A, B, C, D).
-- ACTION: ACCEPT IMMEDIATELY! This is an authentic exam question.
-- SET:
-  "verificationVerdict": "GENUINE_EXAM_QUESTION",
-  "submissionMode": "question_prompt",
-  "questionType": "subjective_frq_question",
-  "detectedContentType": "printed_frq_question",
-  "isValidAcademicAnswer": true,
-  "hasStudentHandwriting": false,
-  "predictedAPScaleLabel": "Official AP Rubric & Model Solution Benchmark"
-- EVALUATION PROTOCOL:
-  * Transcribe the full question statement cleanly in "questionStatement" with KaTeX math ($...$).
-  * Identify the AP course and CED Unit/Topic.
-  * Provide the official College Board AP Scoring Rubric breakdown across parts (a), (b), (c) in "evaluationSteps".
-  * In each step's "criteria", state the official rubric requirement to earn the point.
-  * In each step's "workEvaluated", provide the COMPLETE OFFICIAL MODEL SOLUTION with step-by-step mathematical working and KaTeX equations.
-  * In each step's "feedback", provide AP Chief Reader guidance on common pitfalls, notation rules, and exam day tips.
-  * Set totalPointsPossible to standard AP points (typically 6, 7, or 9 pts), and set totalPointsEarned to 0 (since this is a question prompt awaiting student work).
-
--------------------------------------------------------
-CATEGORY 2: "subjective_frq_solution" OR "question_and_answer" (Student's Handwritten Work)
--------------------------------------------------------
-- WHAT IT IS: An authentic handwritten response or calculation written by a student solving an academic problem.
-- ACTION: ACCEPT IMMEDIATELY! Grade the student's solution.
-- SET:
-  "verificationVerdict": "GENUINE_EXAM_ANSWER",
-  "submissionMode": "student_answer",
-  "questionType": "subjective_frq_solution",
-  "detectedContentType": "handwritten_student_work",
-  "isValidAcademicAnswer": true,
-  "hasStudentHandwriting": true
-- EVALUATION PROTOCOL:
-  * Transcribe student work verbatim in "transcribedHandwriting" with KaTeX math.
-  * Grade each step against College Board rubrics. Award earned points (0 to pointsPossible) based on "NO WORK, NO CREDIT" rule.
-
--------------------------------------------------------
-CATEGORY 3: "mcq_or_objective_question" (Multiple Choice Question)
--------------------------------------------------------
-- WHAT IT IS: Any question having multiple-choice options (A, B, C, D), circled letters, bubble sheets, matching, or objective tick-boxes.
-- ACTION: REJECT IMMEDIATELY! College Board FRQ Grader is STRICTLY and EXCLUSIVELY for subjective Free Response Questions.
-- SET:
-  "verificationVerdict": "REJECT_MCQ_NOT_ALLOWED",
-  "submissionMode": "mcq_question",
-  "questionType": "mcq_or_objective_question",
-  "detectedContentType": "mcq_or_objective_question",
-  "isValidAcademicAnswer": false,
-  "errorCode": "MCQ_DETECTED",
-  "errorMessage": "Multiple Choice Question (MCQ) detected. The FRQ Grader strictly evaluates subjective Free Response Questions only.",
-  "detectionReason": "The uploaded photo depicts a multiple-choice question with options (A, B, C, D) rather than a subjective free-response problem.",
-  "suggestion": "For multiple-choice questions, please use the Quiz / Practice Mode. The FRQ Grader is reserved for subjective questions and handwritten solutions."
-
--------------------------------------------------------
-CATEGORY 4: "non_academic" (Bakwaas Cheez / Non-Educational / Irrelevant)
--------------------------------------------------------
-- WHAT IT IS: App icons, logos, badges, digital UI screens, selfies, room photos, food, pets, vehicles, blank paper, or random non-academic notes.
-- ACTION: REJECT IMMEDIATELY!
-- SET:
-  "verificationVerdict": "REJECT_NOT_AN_ANSWER",
-  "submissionMode": "non_academic",
-  "questionType": "non_academic",
-  "detectedContentType": "app_logo_or_graphic" | "random_object" | "blank_or_unreadable",
-  "isValidAcademicAnswer": false,
-  "errorCode": "NO_ACADEMIC_CONTENT",
-  "errorMessage": "No valid academic question or student answer was found in this photo.",
-  "detectionReason": "The uploaded image contains non-educational graphics, logos, or objects rather than academic exam materials.",
-  "suggestion": "Please take a clear photo of an academic textbook question or your handwritten answer sheet."
+ACCEPTANCE CRITERIA:
+Accept the image ONLY if it contains:
+1. "subjective_frq_solution": An authentic handwritten (or typed) student response solving an academic problem with equations, formulas, calculations, or explanatory text.
+2. "subjective_frq_question": A genuine printed or written academic exam problem statement from a textbook, workbook, or past AP exam paper (without student answer).
+3. "question_and_answer": A printed question with student's handwritten work below it.
 
 =======================================================
-CRITICAL KATEX & LATEX MATH FORMATTING DIRECTIVE:
+EVALUATION PROTOCOL FOR VALID SUBMISSIONS:
 =======================================================
+- Grade strictly according to official College Board AP Scoring Guidelines with the "NO WORK, NO CREDIT" rule.
 - All mathematical expressions, formulas, variables ($x$, $y$, $t$), derivatives, integrals, limits, equations, and units MUST be wrapped in KaTeX math delimiters ($...$ for inline or $$...$$ for display).
-- Use standard clean KaTeX commands:
-  $\\frac{dy}{dx}$, $\\int f(x)\\,dx$, $\\lim_{x \\to a}$, $\\sqrt{x^2+1}$, $\\approx$, $\\le$, $\\ge$, $\\cdot$, $\\pi$, $\\theta$.
-- Use \\text{...} for units inside math mode, e.g. $\\text{m/s}^2$.
-- NEVER use raw bare backslashes outside of dollar signs ($).
-- Return ONLY valid raw JSON without introductory text or markdown backticks.
+- Break down grading into official rubric parts/steps: Part (a), Part (b), etc.
+- Award pointsEarned (0 to pointsPossible) for each step with clear rubric criteria, student work evaluated, and reader feedback.
+- If it is a question prompt (textbook question without student work): award 0 points earned, show total points possible, provide full model solutions for each step, and Chief Reader advice.
+- Provide professional, concise Chief Reader diagnostic commentary without boilerplate or filler text.
 
-Response JSON Schema:
+Return ONLY valid raw JSON conforming strictly to this schema:
 {
   "opticalInspection": {
     "visibleTextSummary": "Summary of all text/symbols physically visible in image",
@@ -2236,7 +2173,7 @@ Response JSON Schema:
   "isValidAcademicAnswer": boolean,
   "detectedContentType": "printed_frq_question" | "handwritten_student_work" | "mcq_or_objective_question" | "app_logo_or_graphic" | "random_object" | "blank_or_unreadable",
   "hasStudentHandwriting": boolean,
-  "errorCode": "MCQ_DETECTED" | "NO_ACADEMIC_CONTENT" | "NO_STUDENT_WORK_DETECTED" (if rejected),
+  "errorCode": "MCQ_DETECTED" | "NO_ACADEMIC_CONTENT" | "NO_STUDENT_WORK_DETECTED",
   "errorMessage": "Clear message if rejected",
   "detectionReason": "Detailed explanation of what was detected",
   "suggestion": "Actionable next step",
@@ -2246,24 +2183,24 @@ Response JSON Schema:
   "questionStatement": "Transcribed question text with KaTeX math ($...$)",
   "questionTopic": "Official AP CED Topic Name",
   "transcribedHandwriting": "Transcribed student work with KaTeX math (if student answer)",
-  "totalPointsEarned": 0, // Points earned if student answer; 0 if question prompt
+  "totalPointsEarned": 0,
   "totalPointsPossible": 9,
   "predictedAPScale": 5,
   "predictedAPScaleLabel": "AP Score 5" | "Official AP Rubric & Model Solution Benchmark",
   "evaluationSteps": [
     {
-      "stepTitle": "Part (a): Tangent Line Slope (2 Points)",
+      "stepTitle": "Part (a): Derivative / Equation (2 Points)",
       "pointsEarned": 2,
       "pointsPossible": 2,
       "criteria": "Official College Board scoring criteria with KaTeX math",
       "workEvaluated": "Official Model Solution or Student Work Evaluated with KaTeX math",
-      "feedback": "Chief Reader feedback and exam day guidance with KaTeX math",
-      "status": "full"
+      "feedback": "Chief Reader feedback with KaTeX math",
+      "status": "full" | "partial" | "zero"
     }
   ],
   "chiefReaderSummary": "High-level Chief Reader diagnostic summary and exam strategy",
   "keyStrengths": [
-    "Key conceptual technique required or demonstrated"
+    "Key conceptual technique demonstrated"
   ],
   "keyMissedOpportunities": [
     "Common student pitfall or trap on this question type"
@@ -2273,7 +2210,7 @@ Response JSON Schema:
   ]
 }`;
     const response = await safeGenerateContent({
-      model: "gemini-3.5-flash-lite",
+      model: "gemini-2.5-flash",
       contents: [
         {
           parts: [
@@ -2303,6 +2240,7 @@ Response JSON Schema:
       }
     }
     const isMCQ = parsed.detectedContentType === "mcq_or_objective_question" || parsed.detectedContentType === "mcq_or_objective_test" || parsed.submissionMode === "mcq_question" || parsed.questionType === "mcq_or_objective_question" || parsed.opticalInspection?.questionType === "mcq_or_objective_question" || parsed.verificationVerdict === "REJECT_MCQ_NOT_ALLOWED" || parsed.errorCode === "MCQ_DETECTED";
+    const isNonAcademic = parsed.detectedContentType === "app_logo_or_graphic" || parsed.detectedContentType === "random_object" || parsed.detectedContentType === "blank_or_unreadable" || parsed.submissionMode === "non_academic" || parsed.questionType === "non_academic" || parsed.opticalInspection?.questionType === "non_academic" || parsed.verificationVerdict === "REJECT_NOT_AN_ANSWER" || parsed.errorCode === "NO_ACADEMIC_CONTENT";
     if (isMCQ) {
       parsed.isValidAcademicAnswer = false;
       parsed.hasStudentHandwriting = false;
@@ -2316,12 +2254,22 @@ Response JSON Schema:
       parsed.errorMessage = "Multiple Choice Question (MCQ) detected. The FRQ Grader strictly evaluates subjective Free Response Questions only.";
       parsed.detectionReason = parsed.detectionReason || "The uploaded image contains multiple choice questions or options (A, B, C, D) rather than subjective problem solving.";
       parsed.suggestion = "For multiple-choice questions, please use the Quiz / Practice feature. The FRQ Grader is exclusively for subjective free-response questions and solutions.";
-    }
-    const isQuestionPrompt = !isMCQ && (parsed.submissionMode === "question_prompt" || parsed.questionType === "subjective_frq_question" || parsed.detectedContentType === "printed_frq_question" || parsed.verificationVerdict === "GENUINE_EXAM_QUESTION");
-    const isStudentAnswer = !isMCQ && (parsed.submissionMode === "student_answer" || parsed.submissionMode === "question_and_answer" || parsed.questionType === "subjective_frq_solution" || parsed.detectedContentType === "handwritten_student_work" || parsed.verificationVerdict === "GENUINE_EXAM_ANSWER");
-    const isAcademicSubjective = !isMCQ && (isQuestionPrompt || isStudentAnswer) && parsed.isValidAcademicAnswer !== false;
-    if (isAcademicSubjective) {
+    } else if (isNonAcademic || parsed.isValidAcademicAnswer === false) {
+      parsed.isValidAcademicAnswer = false;
+      parsed.hasStudentHandwriting = false;
+      parsed.totalPointsEarned = 0;
+      parsed.totalPointsPossible = 0;
+      parsed.predictedAPScale = 0;
+      parsed.predictedAPScaleLabel = "Not Scored";
+      parsed.evaluationSteps = [];
+      parsed.parts = [];
+      parsed.errorCode = parsed.errorCode || "NO_ACADEMIC_CONTENT";
+      parsed.errorMessage = parsed.errorMessage || "No valid academic question or student answer was detected in this photo.";
+      parsed.detectionReason = parsed.detectionReason || parsed.opticalInspection?.verdictReason || "The image does not contain an authentic academic exam question or student solution.";
+      parsed.suggestion = parsed.suggestion || "Please take a clear photo of an academic exam question (FRQ) or your handwritten student answer sheet.";
+    } else {
       parsed.isValidAcademicAnswer = true;
+      const isQuestionPrompt = parsed.submissionMode === "question_prompt" || parsed.questionType === "subjective_frq_question" || parsed.detectedContentType === "printed_frq_question" || parsed.verificationVerdict === "GENUINE_EXAM_QUESTION";
       if (isQuestionPrompt) {
         parsed.submissionMode = "question_prompt";
         if (!parsed.predictedAPScaleLabel) {
@@ -2340,27 +2288,6 @@ Response JSON Schema:
           ...p,
           stepTitle: p.part || p.stepTitle || "Evaluation Step"
         }));
-      }
-    } else if (!isMCQ) {
-      parsed.isValidAcademicAnswer = false;
-      parsed.hasStudentHandwriting = false;
-      parsed.totalPointsEarned = 0;
-      parsed.totalPointsPossible = 0;
-      parsed.predictedAPScale = 0;
-      parsed.predictedAPScaleLabel = "Not Scored";
-      parsed.evaluationSteps = [];
-      parsed.parts = [];
-      if (!parsed.errorCode) {
-        parsed.errorCode = "NO_ACADEMIC_CONTENT";
-      }
-      if (!parsed.errorMessage) {
-        parsed.errorMessage = "No valid academic question or student answer was found in this photo.";
-      }
-      if (!parsed.detectionReason) {
-        parsed.detectionReason = parsed.opticalInspection?.verdictReason || (parsed.detectedContentType === "app_logo_or_graphic" ? "The uploaded image contains app logos, graphics, or UI elements rather than academic question or answer materials." : "The image does not contain an authentic academic question or student solution.");
-      }
-      if (!parsed.suggestion) {
-        parsed.suggestion = "Please take a clear photo of an academic textbook problem or your handwritten answer sheet.";
       }
     }
     res.json(parsed);
@@ -5844,6 +5771,355 @@ app.post("/api/verify-subscription", (req, res) => {
 });
 app.get("/api/time", (req, res) => {
   res.json({ timestamp: Date.now() });
+});
+function normalizeBattleSubject(subId) {
+  if (!subId) return "ap-calculus-ab";
+  let s = subId.trim().toLowerCase();
+  if (s === "ap-physics-1") return "ap-physics";
+  return s;
+}
+var waitingQueue = /* @__PURE__ */ new Map();
+var activeBattleRooms = /* @__PURE__ */ new Map();
+var playerToRoomMap = /* @__PURE__ */ new Map();
+function purgeStaleTickets() {
+  const now = Date.now();
+  for (const [qId, ticket] of waitingQueue.entries()) {
+    if (now - ticket.lastSeen > 8e3) {
+      waitingQueue.delete(qId);
+    }
+  }
+  for (const [roomId, room] of activeBattleRooms.entries()) {
+    if (now - room.updatedAt > 9e5) {
+      activeBattleRooms.delete(roomId);
+    }
+  }
+}
+app.post("/api/battle/match", (req, res) => {
+  try {
+    const { playerId, playerName, playerAvatar, subjectId, questions } = req.body;
+    if (!playerId || !subjectId) {
+      return res.status(400).json({ error: "Missing playerId or subjectId" });
+    }
+    const now = Date.now();
+    purgeStaleTickets();
+    waitingQueue.delete(playerId);
+    playerToRoomMap.delete(playerId);
+    const myPlayer = {
+      id: playerId,
+      name: playerName || "Student",
+      avatar: playerAvatar || "U",
+      score: 0,
+      hasAnswered: false,
+      currentQ: 0,
+      lastSeen: now
+    };
+    let foundOpponent = null;
+    const myNormSubject = normalizeBattleSubject(subjectId);
+    for (const [qId, ticket] of waitingQueue.entries()) {
+      if (ticket.player.id !== playerId && now - ticket.lastSeen <= 8e3 && normalizeBattleSubject(ticket.subjectId) === myNormSubject) {
+        foundOpponent = { qId, ticket };
+        break;
+      }
+    }
+    if (foundOpponent) {
+      waitingQueue.delete(foundOpponent.qId);
+      waitingQueue.delete(playerId);
+      const roomId = `room_${now}_${Math.random().toString(36).substring(2, 6)}`;
+      const battleQuestions = foundOpponent.ticket.questions && foundOpponent.ticket.questions.length > 0 ? foundOpponent.ticket.questions : questions && questions.length > 0 ? questions : [];
+      const newRoom = {
+        id: roomId,
+        subjectId: foundOpponent.ticket.subjectId || subjectId,
+        status: "countdown",
+        player1: foundOpponent.ticket.player,
+        player2: myPlayer,
+        questions: battleQuestions,
+        currentQ: 0,
+        roundStatus: "playing",
+        roundStartTime: now + 3e3,
+        countdownStart: now,
+        updatedAt: now
+      };
+      activeBattleRooms.set(roomId, newRoom);
+      playerToRoomMap.set(foundOpponent.ticket.player.id, roomId);
+      playerToRoomMap.set(playerId, roomId);
+      console.log(`[Battle Matchmaker] MATCHED REAL PLAYERS! ${foundOpponent.ticket.player.name} vs ${myPlayer.name} in room ${roomId}`);
+      return res.json({
+        status: "matched",
+        roomId,
+        isPlayer1: false,
+        opponent: foundOpponent.ticket.player,
+        questions: newRoom.questions,
+        subjectId: newRoom.subjectId
+      });
+    }
+    waitingQueue.set(playerId, {
+      player: myPlayer,
+      subjectId,
+      questions: questions || [],
+      timestamp: now,
+      lastSeen: now
+    });
+    console.log(`[Battle Matchmaker] ${myPlayer.name} entered radar. Active queue: ${waitingQueue.size}`);
+    return res.json({ status: "waiting" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+app.post("/api/battle/poll-match", (req, res) => {
+  try {
+    const { playerId } = req.body;
+    if (!playerId) {
+      return res.status(400).json({ error: "Missing playerId" });
+    }
+    const now = Date.now();
+    purgeStaleTickets();
+    const roomId = playerToRoomMap.get(playerId);
+    if (roomId) {
+      const room = activeBattleRooms.get(roomId);
+      if (room && (room.status === "countdown" || room.status === "battle")) {
+        waitingQueue.delete(playerId);
+        const opponent = room.player1.id === playerId ? room.player2 : room.player1;
+        const isP1 = room.player1.id === playerId;
+        return res.json({
+          status: "matched",
+          roomId: room.id,
+          isPlayer1: isP1,
+          opponent,
+          questions: room.questions,
+          subjectId: room.subjectId
+        });
+      }
+    }
+    const myTicket = waitingQueue.get(playerId);
+    if (myTicket) {
+      myTicket.lastSeen = now;
+      const myNormSubject = normalizeBattleSubject(myTicket.subjectId);
+      for (const [qId, otherTicket] of waitingQueue.entries()) {
+        if (qId !== playerId && otherTicket.player.id !== playerId && now - otherTicket.lastSeen <= 8e3 && normalizeBattleSubject(otherTicket.subjectId) === myNormSubject) {
+          waitingQueue.delete(playerId);
+          waitingQueue.delete(qId);
+          const newRoomId = `room_${now}_${Math.random().toString(36).substring(2, 6)}`;
+          const battleQuestions = otherTicket.questions && otherTicket.questions.length > 0 ? otherTicket.questions : myTicket.questions && myTicket.questions.length > 0 ? myTicket.questions : [];
+          const newRoom = {
+            id: newRoomId,
+            subjectId: otherTicket.subjectId || myTicket.subjectId,
+            status: "countdown",
+            player1: otherTicket.player,
+            player2: myTicket.player,
+            questions: battleQuestions,
+            currentQ: 0,
+            roundStatus: "playing",
+            roundStartTime: now + 3e3,
+            countdownStart: now,
+            updatedAt: now
+          };
+          activeBattleRooms.set(newRoomId, newRoom);
+          playerToRoomMap.set(otherTicket.player.id, newRoomId);
+          playerToRoomMap.set(playerId, newRoomId);
+          console.log(`[Battle Matchmaker] PROACTIVE MATCH: ${otherTicket.player.name} vs ${myTicket.player.name} in room ${newRoomId}`);
+          return res.json({
+            status: "matched",
+            roomId: newRoomId,
+            isPlayer1: false,
+            opponent: otherTicket.player,
+            questions: newRoom.questions,
+            subjectId: newRoom.subjectId
+          });
+        }
+      }
+    }
+    return res.json({ status: "waiting" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+app.post("/api/battle/cancel", (req, res) => {
+  try {
+    const { playerId, roomId } = req.body;
+    if (playerId) {
+      waitingQueue.delete(playerId);
+      const targetRoomId = roomId || playerToRoomMap.get(playerId);
+      if (targetRoomId) {
+        const room = activeBattleRooms.get(targetRoomId);
+        if (room) {
+          if (room.status === "waiting" && room.player1.id === playerId) {
+            activeBattleRooms.delete(targetRoomId);
+            console.log(`[Battle Matchmaker] Waiting room ${targetRoomId} deleted because host cancelled.`);
+          } else if (room.status === "countdown" || room.status === "battle") {
+            const leaver = room.player1.id === playerId ? room.player1 : room.player2?.id === playerId ? room.player2 : null;
+            if (leaver) leaver.finished = true;
+            room.status = "finished";
+            room.updatedAt = Date.now();
+            console.log(`[Battle Matchmaker] Player ${playerId} forfeited match in room ${targetRoomId}.`);
+          }
+        }
+        playerToRoomMap.delete(playerId);
+      }
+      console.log(`[Battle Matchmaker] Player ${playerId} cleanly left queue/room.`);
+    }
+    res.json({ success: true });
+  } catch {
+    res.json({ success: true });
+  }
+});
+app.post("/api/battle/room/create", (req, res) => {
+  try {
+    const { roomCode, player, subjectId, questions } = req.body;
+    const now = Date.now();
+    const code = (roomCode || `AP-${Math.floor(1e3 + Math.random() * 9e3)}`).toUpperCase();
+    const roomId = `room_${code}`;
+    const newRoom = {
+      id: roomId,
+      code,
+      subjectId,
+      status: "waiting",
+      player1: {
+        id: player.id,
+        name: player.name,
+        avatar: player.avatar,
+        score: 0,
+        hasAnswered: false,
+        currentQ: 0,
+        lastSeen: now
+      },
+      player2: null,
+      questions: questions || [],
+      currentQ: 0,
+      roundStatus: "playing",
+      roundStartTime: now + 3e3,
+      updatedAt: now
+    };
+    activeBattleRooms.set(roomId, newRoom);
+    playerToRoomMap.set(player.id, roomId);
+    res.json({ success: true, roomId, code });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+app.post("/api/battle/room/join", (req, res) => {
+  try {
+    const { roomCode, player } = req.body;
+    const code = (roomCode || "").toUpperCase().trim();
+    const roomId = `room_${code}`;
+    const room = activeBattleRooms.get(roomId);
+    if (!room) {
+      return res.status(404).json({ error: "Room not found. Check the code!" });
+    }
+    if (room.player1.id === player.id) {
+      return res.status(400).json({ error: "You are the host of this room!" });
+    }
+    if (room.status !== "waiting") {
+      return res.status(400).json({ error: "Room already in progress or full!" });
+    }
+    const now = Date.now();
+    room.player2 = {
+      id: player.id,
+      name: player.name,
+      avatar: player.avatar,
+      score: 0,
+      hasAnswered: false,
+      currentQ: 0,
+      lastSeen: now
+    };
+    room.status = "countdown";
+    room.countdownStart = now;
+    room.roundStartTime = now + 3e3;
+    room.updatedAt = now;
+    playerToRoomMap.set(player.id, roomId);
+    res.json({
+      success: true,
+      roomId,
+      room,
+      opponent: room.player1,
+      questions: room.questions,
+      subjectId: room.subjectId
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+app.post("/api/battle/action", (req, res) => {
+  try {
+    const { roomId, playerId, score, hasAnswered, finished } = req.body;
+    const room = activeBattleRooms.get(roomId);
+    if (!room) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+    const now = Date.now();
+    const target = room.player1.id === playerId ? room.player1 : room.player2?.id === playerId ? room.player2 : null;
+    if (target) {
+      if (typeof score === "number") target.score = score;
+      if (typeof hasAnswered === "boolean") target.hasAnswered = hasAnswered;
+      if (typeof finished === "boolean") target.finished = finished;
+      target.lastSeen = now;
+      room.updatedAt = now;
+    }
+    if ((room.status === "battle" || room.status === "countdown") && room.roundStatus === "playing") {
+      const p1Answered = room.player1.hasAnswered;
+      const p2Answered = room.player2?.hasAnswered;
+      if (p1Answered && p2Answered) {
+        room.roundStatus = "revealed";
+        room.revealStartTime = now;
+        room.updatedAt = now;
+      }
+    }
+    if (room.player1.finished && room.player2?.finished) {
+      room.status = "finished";
+      room.updatedAt = now;
+    }
+    res.json({ success: true, room });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+app.get("/api/battle/room/:roomId", (req, res) => {
+  try {
+    const { roomId } = req.params;
+    const room = activeBattleRooms.get(roomId);
+    if (!room) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+    const now = Date.now();
+    if (room.status === "countdown" && room.countdownStart) {
+      if (now - room.countdownStart >= 3e3) {
+        room.status = "battle";
+        room.roundStatus = "playing";
+        room.roundStartTime = now;
+        room.updatedAt = now;
+      }
+    }
+    if (room.status === "battle" && room.roundStatus === "revealed" && room.revealStartTime) {
+      if (now - room.revealStartTime >= 2e3) {
+        const nextQ = room.currentQ + 1;
+        if (nextQ < (room.questions?.length || 5)) {
+          room.currentQ = nextQ;
+          room.roundStatus = "playing";
+          room.roundStartTime = now;
+          room.player1.hasAnswered = false;
+          if (room.player2) room.player2.hasAnswered = false;
+          room.revealStartTime = void 0;
+          room.updatedAt = now;
+        } else {
+          room.status = "finished";
+          room.updatedAt = now;
+        }
+      }
+    }
+    if (room.status === "battle" && room.roundStatus === "playing") {
+      const currQ = room.questions?.[room.currentQ];
+      const qDurationMs = (currQ?.timeLimit || 30) * 1e3 + 500;
+      if (now - room.roundStartTime >= qDurationMs) {
+        room.roundStatus = "revealed";
+        room.revealStartTime = now;
+        room.player1.hasAnswered = true;
+        if (room.player2) room.player2.hasAnswered = true;
+        room.updatedAt = now;
+      }
+    }
+    res.json({ room });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 async function startServer() {
   const distPath = path.join(process.cwd(), "dist");

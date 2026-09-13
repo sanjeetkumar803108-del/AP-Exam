@@ -156,7 +156,12 @@ export function cleanMarkdownMath(content: string): string {
     // Heal escaped dollar symbols inside math mode to valid KaTeX text dollar (\text{\$})
     math = math.replace(/(?<!\\text\{)\\\$/g, '\\text{\\$}');
     // Repair accidental extra trailing closing braces after frac or sqrt
-    math = math.replace(/(\\frac\{[^{}]*\}\{[^{}]*\})\}/g, '$1');
+    // Repair accidental extra trailing closing braces only if closing braces exceed opening braces
+    const openBraces = (math.match(/\{/g) || []).length;
+    const closeBraces = (math.match(/\}/g) || []).length;
+    if (closeBraces > openBraces) {
+      math = math.replace(/(\\frac\{[^{}]*\}\{[^{}]*\})\}/g, '$1');
+    }
 
     const idx = mathBlocks.length;
     mathBlocks.push(math);
@@ -245,6 +250,83 @@ export function cleanMarkdownMath(content: string): string {
     ce = ce.replace(/([A-Za-z\)])(\d+)/g, '$1<sub>$2</sub>');
     return ce;
   });
+
+  return text;
+}
+
+
+/**
+ * Normalizes quiz questions, options, and explanations so any math expressions
+ * (whether formatted in standard LaTeX or bare commands like \lim, \frac, \int)
+ * render with crystal-clear KaTeX typography.
+ */
+export function prepareQuizMath(input: any): string {
+  if (!input) return '';
+  let text = String(input);
+
+  // 1. Fix double-escaped backslashes (e.g. \\frac -> \frac, \\lim -> \lim)
+  text = text.replace(/\\\\([a-zA-Z]+)/g, '\\$1');
+
+  // 2. Convert pseudo-math limits like "lim (x -> 0) [sin(5x) / (2x)]"
+  text = text.replace(/\blim\s*\(\s*x\s*(?:->|\\to)\s*([0-9a-zA-Z\-+]+)\s*\)\s*\[([^\]]+)\]/gi, (_m, target, expr) => {
+    let cleanExpr = expr.replace(/\s*\/\s*/g, '}{');
+    return `$\\lim_{x \\to ${target}} \\frac{${cleanExpr}}$`;
+  });
+
+  // 3. Convert "integral from a to b of f(x) dx"
+  text = text.replace(/\bintegral\s+from\s+([0-9a-zA-Z\-+]+)\s+to\s+([0-9a-zA-Z\-+]+)\s+of\s+([^\s,?.!]+(?:\s+[^\s,?.!]+)*\s+dx)/gi, (_m, a, b, integrand) => {
+    return `$\\int_{${a}}^{${b}} ${integrand}$`;
+  });
+
+  // 4. Convert standalone chemical formulas outside math mode: e.g. (SF6), (H2O), (CO2), (O2)
+  text = text.replace(/(?<!\\text\{|\\|\$|[a-zA-Z0-9])(SF6|H2O|CO2|O2|CH4|NH3|NaCl|CaCO3|H2SO4|HCl)(?![\\$a-zA-Z0-9])/g, (_m, formula) => {
+    const formatted = formula.replace(/([A-Z][a-z]*)(\d+)?/g, (_x: string, elem: string, count: string) => {
+      return `\\text{${elem}}` + (count ? `_{${count}}` : '');
+    });
+    return `$${formatted}$`;
+  });
+
+  // 5. Common genetics alleles outside math
+  text = text.replace(/(?<!\\|\$|[a-zA-Z0-9])(p\^2|q\^2|2pq)(?![\\$a-zA-Z0-9])/g, (term) => `$${term}$`);
+
+  // 6. Auto-wrap bare LaTeX commands not enclosed in $...$
+  const latexCommands = [
+    'frac', 'sqrt', 'lim', 'int', 'iint', 'iiint', 'oint', 'sum', 'prod',
+    'sin', 'cos', 'tan', 'cot', 'sec', 'csc', 'arcsin', 'arccos', 'arctan',
+    'ln', 'log', 'exp', 'infty', 'theta', 'alpha', 'beta', 'gamma', 'delta',
+    'epsilon', 'lambda', 'mu', 'pi', 'sigma', 'tau', 'phi', 'omega',
+    'Delta', 'Sigma', 'Omega', 'to', 'rightarrow', 'leftarrow', 'times',
+    'div', 'pm', 'mp', 'le', 'ge', 'ne', 'approx', 'equiv', 'cdot',
+    'partial', 'nabla', 'forall', 'exists', 'in', 'notin', 'subset', 'subseteq'
+  ];
+
+  if (!text.includes('$')) {
+    const hasMathCommand = new RegExp(`\\\\(?:${latexCommands.join('|')})\\b`).test(text);
+    if (hasMathCommand) {
+      const words = text.split(/\s+/);
+      const isShortFormula = words.length <= 8 && !/^[A-Z][a-z]+ [a-z]+ [a-z]+/.test(text);
+      if (isShortFormula) {
+        text = `$${text.trim()}$`;
+      } else {
+        text = text.replace(/(\\\\(?:lim|int|frac|sqrt|sum|prod)\\b[^\s,?.!]+(?:\s+[^\s,?.!]+)*)/g, (match) => {
+          return `$${match.trim()}$`;
+        });
+      }
+    }
+  }
+
+  // 7. Wrap standalone fractions like "-3/4", "5/2", "T / 2", "1/cos(x)", "T / 4" in options if short
+  if (!text.includes('$') && /^[-+]?\s*([a-zA-Z0-9]+)\s*\/\s*([a-zA-Z0-9()]+)$/.test(text.trim())) {
+    text = text.trim().replace(/^([-+]?)\s*([a-zA-Z0-9]+)\s*\/\s*([a-zA-Z0-9()]+)$/, (_m, sign, num, den) => {
+      return `$${sign}\\frac{${num}}{${den}}$`;
+    });
+  }
+
+  // 8. Balance unclosed single dollar signs if any
+  const dollarCount = (text.match(/(?<!\\)\$/g) || []).length;
+  if (dollarCount % 2 !== 0) {
+    text = text + '$';
+  }
 
   return text;
 }

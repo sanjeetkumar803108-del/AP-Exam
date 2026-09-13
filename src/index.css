@@ -518,3 +518,91 @@ sub {
 }
 
 
+
+
+
+/* =========================================================================
+   GOOGLE GEMINI ANIMATED COSMIC GRADIENT (BLUE, RED, WHITE, PURPLE)
+   ========================================================================= */
+@keyframes gemini-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes gemini-glow-pulse {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(0.99);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes gemini-orb-1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate(35px, -15px) scale(1.25);
+    opacity: 0.85;
+  }
+}
+
+@keyframes gemini-orb-2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-35px, 15px) scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+@keyframes gemini-sparkle {
+  0%, 100% {
+    opacity: 0.25;
+    transform: scale(0.9) rotate(0deg);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.15) rotate(180deg);
+  }
+}
+
+.gemini-animated-border {
+  background: linear-gradient(
+    115deg,
+    #1d4ed8 0%,
+    #ef4444 24%,
+    #ffffff 48%,
+    #3b82f6 70%,
+    #f43f5e 88%,
+    #1d4ed8 100%
+  );
+  background-size: 300% 300%;
+  animation: gemini-shift 6s ease infinite;
+}
+
+.gemini-glow-backdrop {
+  background: linear-gradient(
+    115deg,
+    rgba(29, 78, 216, 0.7) 0%,
+    rgba(239, 68, 68, 0.7) 32%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(59, 130, 246, 0.7) 72%,
+    rgba(244, 63, 94, 0.7) 100%
+  );
+  background-size: 300% 300%;
+  animation: gemini-shift 6s ease infinite, gemini-glow-pulse 4s ease-in-out infinite;
+}

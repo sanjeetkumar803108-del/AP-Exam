@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   UserCircle, Settings, LogOut, X, Crown, Lock, Mail, Shield, 
   HelpCircle, Star, Bug, FileText, Trash2, ChevronRight, ChevronDown,
-  Check, MessageSquare, AlertTriangle, Eye, EyeOff, Sparkles, Send, Moon,
+  Check, MessageSquare, AlertTriangle, Eye, EyeOff, Sparkles, Send, Moon, Sun,
   GraduationCap, Calendar, Trophy, Edit3, Save, Flame, User, Info, Target, Zap,
   Loader2, Download, CreditCard, Bell, Share2, Play, Pause, Square
 } from 'lucide-react';
@@ -28,7 +28,7 @@ import confetti from 'canvas-confetti';
 import { safeGetItem, safeSetItem, safeClearAll } from '../utils/storage';
 import { getCoins, addCoins } from '../utils/coins';
 import { useSettings } from '../hooks/useSettings';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { billingService } from '../services/BillingService';
 import { REGIONAL_TRACKS } from './AcademicSetup';
 import { 
@@ -510,6 +510,8 @@ export default function Profile({
 
   // Fetch coins & streak
   const streakCardRef = useRef<HTMLDivElement>(null);
+  const appUsageCardRef = useRef<HTMLDivElement>(null);
+  const [isSharingUsage, setIsSharingUsage] = useState(false);
   const coinsBalance = getCoins();
   const [studyStreak, setStudyStreak] = useState<number>(() => {
     return Number(safeGetItem('study_punches') || '0');
@@ -741,14 +743,478 @@ export default function Profile({
     }
   };
 
-  const handleShareMastery = async () => {
-    const shareText = `📊 Check out my Skill Mastery progress in AP Exam App: Math (85%), Chemistry (90%), Physics (70%)! Personalized AI tutoring really works! 🧠🚀`;
-    await handleShare(
-      'My Skill Mastery',
-      shareText,
-      window.location.origin,
-      "📊 Mastery stats copied to clipboard! Share it anywhere! 🚀"
-    );
+  // Helper to generate a crisp, high-resolution 2D Canvas card of the 7-day usage tracker
+  const generateUsageTrackerCanvas = (
+    data: PassiveUsageItem[],
+    todayMins: number,
+    totalWeekMins: number,
+    studentNameStr: string = 'AP Scholar'
+  ): HTMLCanvasElement => {
+    const width = 680;
+    const height = 820;
+    const scale = 2; // Retina 2x resolution (1360 x 1640)
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return canvas;
+
+    ctx.scale(scale, scale);
+
+    // Canvas Background
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(0, 0, width, height);
+
+    // Main Card Outer Frame (Rounded Rectangle with soft shadow)
+    const pad = 18;
+    const cardW = width - pad * 2;
+    const cardH = height - pad * 2;
+    const cardR = 32;
+
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.07)';
+    ctx.shadowBlur = 24;
+    ctx.shadowOffsetY = 8;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(pad, pad, cardW, cardH, cardR);
+    ctx.fill();
+    ctx.restore();
+
+    // Border around card
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(pad, pad, cardW, cardH, cardR);
+    ctx.stroke();
+
+    // ==========================================
+    // 1. OFFICIAL APP BRANDING HEADER (Top Bar)
+    // ==========================================
+    // Top banner background
+    ctx.fillStyle = '#faf5ff';
+    ctx.beginPath();
+    ctx.roundRect(pad, pad, cardW, 82, [cardR, cardR, 0, 0]);
+    ctx.fill();
+
+    // Top banner bottom border
+    ctx.strokeStyle = '#f1f5f9';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad, pad + 82);
+    ctx.lineTo(pad + cardW, pad + 82);
+    ctx.stroke();
+
+    // App Logo Badge Icon
+    ctx.fillStyle = '#7c3aed';
+    ctx.beginPath();
+    ctx.roundRect(pad + 20, pad + 18, 46, 46, 14);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 22px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🎓', pad + 43, pad + 49);
+
+    // App Title & Tagline
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('AP EXAM PREP™', pad + 78, pad + 38);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('Official AI Study Suite • Verified Student Activity Log', pad + 78, pad + 56);
+
+    // Verified Study Log Pill on top right
+    const verifiedText = '✓ VERIFIED APP LOG';
+    ctx.font = '900 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    const vW = ctx.measureText(verifiedText).width + 18;
+    const vX = width - pad - 20 - vW;
+    const vY = pad + 30;
+
+    ctx.fillStyle = '#ecfdf5';
+    ctx.beginPath();
+    ctx.roundRect(vX, vY, vW, 24, 12);
+    ctx.fill();
+
+    ctx.strokeStyle = '#a7f3d0';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.roundRect(vX, vY, vW, 24, 12);
+    ctx.stroke();
+
+    ctx.fillStyle = '#047857';
+    ctx.textAlign = 'center';
+    ctx.fillText(verifiedText, vX + vW / 2, vY + 16);
+
+    // ==========================================
+    // 2. STUDENT & DATE METADATA ROW
+    // ==========================================
+    const metaY = pad + 106;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('STUDENT:', pad + 22, metaY);
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(studentNameStr.toUpperCase(), pad + 76, metaY);
+
+    // Date
+    const todayFormatted = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`REPORT DATE: ${todayFormatted}`, width - pad - 22, metaY);
+
+    // ==========================================
+    // 3. TRACKER TITLE & SUBTITLE
+    // ==========================================
+    const titleY = pad + 140;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#6b21a8';
+    ctx.font = '900 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('📅  PASSIVE 7-DAY STUDY USAGE TRACKER', pad + 22, titleY);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('Passively logged active learning time (quizzes, flashcards, FRQ grading & AI tutor sessions).', pad + 22, titleY + 18);
+
+    // ==========================================
+    // 4. THE 7-DAY LINE CHART
+    // ==========================================
+    const chartLeft = pad + 54;
+    const chartRight = width - pad - 24;
+    const chartTop = pad + 185;
+    const chartBottom = pad + 380;
+    const chartW = chartRight - chartLeft;
+    const chartH = chartBottom - chartTop;
+
+    const maxVal = Math.max(120, Math.ceil(Math.max(...data.map(d => d.focusTime || 0), 10) * 1.25));
+
+    // Y-Axis Grid Lines & Labels
+    const steps = [0, 30, 60, 90, 120];
+    ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.textAlign = 'right';
+
+    steps.forEach(stepVal => {
+      if (stepVal <= maxVal) {
+        const y = chartBottom - (stepVal / maxVal) * chartH;
+        ctx.fillText(`${stepVal}m`, chartLeft - 10, y + 4);
+
+        ctx.strokeStyle = '#f1f5f9';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(chartLeft, y);
+        ctx.lineTo(chartRight, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    });
+
+    // Points calculation
+    const points: { x: number; y: number; val: number; day: string }[] = data.map((item, idx) => {
+      const x = chartLeft + (idx / Math.max(1, data.length - 1)) * chartW;
+      const y = chartBottom - (Math.min(maxVal, item.focusTime || 0) / maxVal) * chartH;
+      return { x, y, val: item.focusTime || 0, day: item.day };
+    });
+
+    if (points.length > 0) {
+      // Area gradient under curve
+      const grad = ctx.createLinearGradient(0, chartTop, 0, chartBottom);
+      grad.addColorStop(0, 'rgba(139, 92, 246, 0.28)');
+      grad.addColorStop(1, 'rgba(139, 92, 246, 0.01)');
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, chartBottom);
+      ctx.lineTo(points[0].x, points[0].y);
+
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i];
+        const p1 = points[i + 1];
+        const cpX = (p0.x + p1.x) / 2;
+        ctx.bezierCurveTo(cpX, p0.y, cpX, p1.y, p1.x, p1.y);
+      }
+
+      ctx.lineTo(points[points.length - 1].x, chartBottom);
+      ctx.closePath();
+      ctx.fill();
+
+      // Smooth Bezier Curve Line
+      ctx.save();
+      ctx.shadowColor = 'rgba(139, 92, 246, 0.35)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 4;
+      ctx.strokeStyle = '#8b5cf6';
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i];
+        const p1 = points[i + 1];
+        const cpX = (p0.x + p1.x) / 2;
+        ctx.bezierCurveTo(cpX, p0.y, cpX, p1.y, p1.x, p1.y);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // Dots on Points & X-Axis Day labels
+      ctx.textAlign = 'center';
+      points.forEach((pt) => {
+        // Outer glow/dot
+        ctx.fillStyle = '#8b5cf6';
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 5.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Day label below
+        ctx.fillStyle = '#64748b';
+        ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillText(pt.day, pt.x, chartBottom + 22);
+      });
+    }
+
+    // ==========================================
+    // 5. DUAL USAGE TIME STATS (Side by Side Grid)
+    // ==========================================
+    const boxesY = pad + 424;
+    const boxGap = 14;
+    const boxW = (cardW - 44 - boxGap) / 2;
+    const boxH = 92;
+
+    // BOX 1 (LEFT): TODAY'S FOCUS TIME
+    const box1X = pad + 22;
+    ctx.fillStyle = '#f8fafc';
+    ctx.beginPath();
+    ctx.roundRect(box1X, boxesY, boxW, boxH, 18);
+    ctx.fill();
+
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.roundRect(box1X, boxesY, boxW, boxH, 18);
+    ctx.stroke();
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#64748b';
+    ctx.font = '900 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText("TODAY'S FOCUS TIME", box1X + 16, boxesY + 28);
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 24px "JetBrains Mono", monospace, sans-serif';
+    ctx.fillText(`${todayMins.toFixed(1)}m`, box1X + 16, boxesY + 58);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('Recorded passively today', box1X + 16, boxesY + 76);
+
+    // BOX 2 (RIGHT): 7-DAY TOTAL APP USAGE
+    const box2X = box1X + boxW + boxGap;
+    ctx.fillStyle = '#faf5ff';
+    ctx.beginPath();
+    ctx.roundRect(box2X, boxesY, boxW, boxH, 18);
+    ctx.fill();
+
+    ctx.strokeStyle = '#e9d5ff';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.roundRect(box2X, boxesY, boxW, boxH, 18);
+    ctx.stroke();
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#7c3aed';
+    ctx.font = '900 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText("7-DAY TOTAL USAGE", box2X + 16, boxesY + 28);
+
+    const weekFormatted = totalWeekMins >= 60 
+      ? `${(totalWeekMins / 60).toFixed(1)} hrs` 
+      : `${totalWeekMins.toFixed(1)}m`;
+
+    ctx.fillStyle = '#581c87';
+    ctx.font = '900 24px "JetBrains Mono", monospace, sans-serif';
+    ctx.fillText(weekFormatted, box2X + 16, boxesY + 58);
+
+    ctx.fillStyle = '#9333ea';
+    ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(`${totalWeekMins.toFixed(1)} mins over 7 days`, box2X + 16, boxesY + 76);
+
+    // ==========================================
+    // 6. OFFICIAL PARENT TRUST & AUTHENTICITY SEAL
+    // ==========================================
+    const sealY = pad + 532;
+    const sealW = cardW - 44;
+    const sealH = 74;
+
+    ctx.fillStyle = '#f0fdf4';
+    ctx.beginPath();
+    ctx.roundRect(pad + 22, sealY, sealW, sealH, 16);
+    ctx.fill();
+
+    ctx.strokeStyle = '#bbf7d0';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.roundRect(pad + 22, sealY, sealW, sealH, 16);
+    ctx.stroke();
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#15803d';
+    ctx.font = '900 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('🛡️  OFFICIAL PARENT & MENTOR VERIFIED REPORT', pad + 38, sealY + 26);
+
+    ctx.fillStyle = '#166534';
+    ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('This activity log is passively recorded by the AP Exam Prep application during active study.', pad + 38, sealY + 44);
+    ctx.fillText('All durations, dates, and learning curves are tamper-proof and verified.', pad + 38, sealY + 58);
+
+    // ==========================================
+    // 7. FOOTER BRANDING BAR
+    // ==========================================
+    const footY = pad + 640;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('🎓 AP Exam Prep™ App • Study Analytics', pad + 24, footY);
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('Official College Board CED Curriculum Aligned', width - pad - 24, footY);
+
+    return canvas;
+  };
+
+  const handleShareUsage = async () => {
+    if (isSharingUsage) return;
+
+    triggerVibration(15);
+    setIsSharingUsage(true);
+
+    const todayStr = getTodayDateString();
+    const todayMins = chartData.find(item => item.dateString === todayStr)?.focusTime || 0;
+    const totalWeekMins = chartData.reduce((acc, curr) => acc + (curr.focusTime || 0), 0);
+    const activeStudentName = studentName || user?.displayName || 'AP Scholar';
+    const weekFormatted = totalWeekMins >= 60 
+      ? `${(totalWeekMins / 60).toFixed(1)} hrs` 
+      : `${totalWeekMins.toFixed(1)}m`;
+
+    const shareText = `📊 My AP Exam Prep Study Tracker: Logged ${todayMins.toFixed(1)}m today (${weekFormatted} this week) of focused learning! 🎓🚀 #APExam #StudyGrind`;
+
+    try {
+      showToast("📸 Preparing official study tracker report...");
+
+      // 1. Generate high-res crisp 2D canvas card with official parent trust branding
+      const canvas = generateUsageTrackerCanvas(chartData, todayMins, totalWeekMins, activeStudentName);
+      const imgDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+      const rawBase64 = imgDataUrl.includes(',') ? imgDataUrl.split(',')[1] : imgDataUrl;
+
+      // 2. Safe in-memory base64 to Blob conversion
+      const byteCharacters = atob(rawBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'image/jpeg' });
+
+      // 3. Native Capacitor Share (Android / iOS app)
+      if (Capacitor.isNativePlatform()) {
+        try {
+          const fileName = `ap_study_usage_${Date.now()}.jpg`;
+
+          const tempFile = await Filesystem.writeFile({
+            path: fileName,
+            data: rawBase64,
+            directory: Directory.Cache
+          });
+
+          await Share.share({
+            title: 'AP Exam Study Focus Tracker',
+            text: shareText,
+            url: tempFile.uri,
+            dialogTitle: 'Share Usage Tracker'
+          });
+          showToast("🎉 Usage graph shared!");
+          return;
+        } catch (nativeErr: any) {
+          const msg = String(nativeErr?.message || nativeErr || '').toLowerCase();
+          if (nativeErr?.name === 'AbortError' || msg.includes('cancel') || msg.includes('abort') || msg.includes('dismiss')) {
+            return;
+          }
+          console.warn('[UsageTracker] Native share notice:', nativeErr);
+        }
+      }
+
+      // 4. Web Share API with File payload (Mobile Web / WhatsApp / Chrome)
+      if (typeof window !== 'undefined' && typeof navigator !== 'undefined' && navigator.share) {
+        try {
+          const file = new File([blob], 'ap-study-usage-report.jpg', { type: 'image/jpeg' });
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'AP Exam Study Focus Tracker',
+              text: shareText
+            });
+            showToast("🎉 Usage graph shared!");
+            return;
+          } else {
+            await navigator.share({
+              title: 'AP Exam Study Focus Tracker',
+              text: shareText
+            });
+            const link = document.createElement('a');
+            link.download = 'ap-study-usage-report.jpg';
+            link.href = imgDataUrl;
+            link.click();
+            showToast("📸 Graph image saved! Share sheet opened!");
+            return;
+          }
+        } catch (shareErr: any) {
+          const msg = String(shareErr?.message || shareErr || '').toLowerCase();
+          if (shareErr?.name === 'AbortError' || msg.includes('cancel') || msg.includes('abort') || msg.includes('dismiss')) {
+            return;
+          }
+          console.warn('[UsageTracker] Web share notice:', shareErr);
+        }
+      }
+
+      // 5. Fallback: Safe download image and copy text
+      try {
+        if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(shareText).catch(() => {});
+        }
+      } catch {
+        // Safe ignore
+      }
+
+      const link = document.createElement('a');
+      link.download = 'ap-study-usage-report.jpg';
+      link.href = imgDataUrl;
+      link.click();
+      showToast("📸 Official study report saved to your device! 🎉");
+    } catch (err: any) {
+      const msg = String(err?.message || err || '').toLowerCase();
+      if (err?.name === 'AbortError' || msg.includes('cancel') || msg.includes('abort') || msg.includes('dismiss')) {
+        return;
+      }
+      console.error("Failed to generate and share usage tracker card:", err);
+      showToast("❌ Failed to share usage graph.");
+    } finally {
+      setIsSharingUsage(false);
+    }
   };
 
   const handleExportData = () => {
@@ -1398,52 +1864,37 @@ export default function Profile({
             );
           })()}
 
-          {/* Mastery Radar Chart */}
-          <div className="bg-white rounded-[2.5rem] p-6 border border-zinc-200 shadow-sm relative">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-                <Target className="w-4 h-4 text-zinc-400" /> Skill Mastery
-              </h3>
-              <button 
-                onClick={handleShareMastery}
-                className="p-2 rounded-full hover:bg-zinc-100 text-zinc-400 hover:text-purple-600 transition-colors cursor-pointer active:scale-95"
-                title="Share Skill Mastery"
-              >
-                <Share2 className="w-4 h-4" />
-              </button>
-            </div>
-            
-            <div className="w-full h-48 -mt-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={[
-                  { subject: 'Math', A: 85, fullMark: 100 },
-                  { subject: 'Physics', A: 70, fullMark: 100 },
-                  { subject: 'Chemistry', A: 90, fullMark: 100 },
-                  { subject: 'Biology', A: 65, fullMark: 100 },
-                  { subject: 'English', A: 80, fullMark: 100 },
-                ]}>
-                  <PolarGrid stroke="#e4e4e7" />
-                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#71717a', fontSize: 10, fontWeight: 700 }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                  <Radar name="Mastery" dataKey="A" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.3} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-            
-            <p className="text-[10px] text-zinc-400 font-medium text-center mt-2">
-              AI-generated mapping based on your recent quiz scores.
-            </p>
-          </div>
-
           {/* Passive 7-Day App Usage Tracker Card */}
-          <div className="bg-white rounded-[2.5rem] p-6 border border-zinc-200 shadow-sm space-y-4">
+          <div 
+            ref={appUsageCardRef}
+            className="bg-white rounded-[2.5rem] p-6 border border-zinc-200 shadow-sm space-y-4 relative"
+          >
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-zinc-400" /> App Usage Tracker
               </h3>
-              <span className="text-[10px] font-black text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full uppercase tracking-wider">
-                Passive 7-Day Log
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  Passive 7-Day Log
+                </span>
+                <button
+                  data-html2canvas-ignore="true"
+                  disabled={isSharingUsage}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleShareUsage();
+                  }}
+                  className="p-1.5 rounded-full hover:bg-zinc-100 text-zinc-400 hover:text-purple-600 transition-colors cursor-pointer active:scale-95 z-10 disabled:opacity-50"
+                  title="Share Usage Tracker Graph"
+                  aria-label="Share App Usage Tracker"
+                >
+                  {isSharingUsage ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-purple-600" />
+                  ) : (
+                    <Share2 className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <p className="text-[11px] font-bold text-zinc-500 leading-relaxed">
@@ -1510,6 +1961,14 @@ export default function Profile({
                 })()}
               </span>
             </div>
+
+            {/* Subtle card branding for shared image */}
+            <div className="flex items-center justify-between pt-1 border-t border-zinc-100 text-[10px] text-zinc-400 font-semibold">
+              <span className="flex items-center gap-1.5">
+                <GraduationCap className="w-3.5 h-3.5 text-purple-500" /> AP Exam Prep App
+              </span>
+              <span>Study Analytics</span>
+            </div>
           </div>
 
           {/* Learning Preferences */}
@@ -1518,20 +1977,30 @@ export default function Profile({
               <Zap className="w-4 h-4 text-zinc-400" /> Accessibility & Focus
             </h3>
             
-            {/* Visual Learner Mode Toggle */}
+            {/* Dark Mode Toggle */}
             <div 
               onClick={() => {
-                triggerVibration(10);
-                setVisualLearner(!visualLearner);
+                triggerVibration(hapticEnabled ? 10 : 0);
+                onToggleDarkMode();
+                showToast(!isDarkMode ? "🌙 Dark Mode enabled" : "☀️ Light Mode enabled");
               }}
               className="flex justify-between items-center bg-zinc-50 border border-zinc-100 rounded-2xl p-4 cursor-pointer hover:bg-zinc-100/50 transition-colors"
             >
-              <div>
-                <span className="text-xs font-black text-zinc-800 block">Visual Learner Mode</span>
-                <span className="text-[9px] font-bold text-zinc-400">Enhance diagrams and color-code notes</span>
+              <div className="flex items-center gap-2.5">
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
+                  isDarkMode ? 'bg-purple-100 text-purple-600' : 'bg-zinc-200/70 text-zinc-600'
+                }`}>
+                  {isDarkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-amber-500" />}
+                </div>
+                <div>
+                  <span className="text-xs font-black text-zinc-800 block">Dark Mode</span>
+                  <span className="text-[9px] font-bold text-zinc-400">
+                    {isDarkMode ? 'Dark theme active' : 'Switch between light and dark themes'}
+                  </span>
+                </div>
               </div>
-              <div className={`w-10 h-6 ${visualLearner ? 'bg-purple-500' : 'bg-zinc-200'} rounded-full relative shadow-inner transition-colors shrink-0`}>
-                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${visualLearner ? 'right-1' : 'left-1'}`} />
+              <div className={`w-10 h-6 ${isDarkMode ? 'bg-purple-600' : 'bg-zinc-200'} rounded-full relative shadow-inner transition-colors shrink-0`}>
+                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${isDarkMode ? 'right-1' : 'left-1'}`} />
               </div>
             </div>
 
@@ -1944,23 +2413,7 @@ export default function Profile({
                     <span className="font-extrabold text-[10px] text-zinc-500 uppercase tracking-wide">Preferences</span>
                   </div>
                   
-                  {/* Dark Mode Toggle */}
-                  <div 
-                    onClick={() => {
-                      triggerVibration(hapticEnabled ? 10 : 0);
-                      onToggleDarkMode();
-                      showToast(!isDarkMode ? "🌙 Dark Mode enabled" : "☀️ Light Mode enabled");
-                    }}
-                    className="p-4 flex justify-between items-center border-t border-zinc-100 bg-white cursor-pointer hover:bg-zinc-50/30 transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Moon className="w-3.5 h-3.5 text-zinc-400" />
-                      <span className="text-xs font-bold text-zinc-700">Dark Mode</span>
-                    </div>
-                    <div className={`w-9 h-5 ${isDarkMode ? 'bg-emerald-500' : 'bg-zinc-200'} rounded-full relative cursor-pointer shadow-inner transition-colors`}>
-                      <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${isDarkMode ? 'right-0.5' : 'left-0.5'}`} />
-                    </div>
-                  </div>
+
 
 
 

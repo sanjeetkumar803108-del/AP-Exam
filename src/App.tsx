@@ -24,29 +24,10 @@ import { showToast } from './utils/toast';
 import { setupDailyLocalNotifications } from './utils/notifications';
 import confetti from 'canvas-confetti';
 
-function retryImport<T>(fn: () => Promise<T>, retriesLeft = 3, interval = 500): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    fn()
-      .then(resolve)
-      .catch((error) => {
-        if (retriesLeft <= 0) {
-          console.error("[ChunkLoader] Dynamic asset import failed after retries:", error);
-          // Never trigger window.location.reload() on chunk failures — it restarts the entire app!
-          return reject(error);
-        }
-        setTimeout(() => {
-          retryImport(fn, retriesLeft - 1, Math.round(interval * 1.5)).then(resolve, reject);
-        }, interval);
-      });
-  });
-}
+import { resilientLazy, resetAllLazyChunks } from './utils/resilientLazy';
+const lazyWithRetry = resilientLazy;
 
-function lazyWithRetry<T extends React.ComponentType<any>>(
-  factory: () => Promise<{ default: T }>
-): React.LazyExoticComponent<T> {
-  return lazy(() => retryImport(factory));
-}
-
+const APQuizBattle = lazyWithRetry(() => import('./components/APQuizBattle'));
 const LearningIsland = lazyWithRetry(() => import('./components/LearningIsland'));
 const ToolsDashboard = lazyWithRetry(() => import('./components/ToolsDashboard'));
 const MagicScanner = lazyWithRetry(() => import('./components/MagicScanner'));
@@ -149,6 +130,15 @@ export default function App() {
         const nowOnline = isConnected;
 
         if (wasOffline && nowOnline) {
+          console.log('[App] Network reconnected! Auto-refreshing failed chunks and syncing state...');
+          resetAllLazyChunks();
+          try {
+            window.dispatchEvent(new CustomEvent('app-force-refresh'));
+          } catch (_) {}
+          setTimeout(() => {
+            handleForceSync().catch(err => console.warn('[App] Auto-sync notice on reconnect:', err));
+          }, 100);
+
           // Connection restored: switch to 'Back Online' green status and schedule automatic dismissal
           setTimeout(() => {
             if (active) {
@@ -639,21 +629,43 @@ export default function App() {
 
   // Manual force sync handler for Pull-to-Refresh
   const handleForceSync = async () => {
-    if (!user) return;
+    console.log('[ForceSync] Running manual pull-to-refresh sync...');
+    try { triggerVibration(15); } catch (_) {}
+
+    // 1. Invalidate and refresh all dynamic lazy chunks
+    resetAllLazyChunks();
+
+    // 2. Dispatch global app-force-refresh event across all active views and error boundaries
     try {
-      const q = query(
-        collection(db, 'pocket_items'),
-        where('userId', '==', user.uid),
-        orderBy('createdAt', 'desc')
-      );
-      const snapshot = await getDocs(q);
-      const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setPocketItems(fetched);
-      safeSetItem(`stale_pocket_items_${user.uid}`, JSON.stringify(fetched));
-      console.log('[ForceSync] Successfully force-synced pocket items:', fetched.length);
-    } catch (err) {
-      console.error('[ForceSync] Error during manual force-sync of pocket items:', err);
-      throw err;
+      window.dispatchEvent(new CustomEvent('app-force-refresh'));
+    } catch (_) {}
+
+    // 3. Refresh connection status
+    if (typeof navigator !== 'undefined' && navigator.onLine) {
+      setNetworkStatus(prev => ({
+        ...prev,
+        connected: true,
+        isRestored: true,
+        visible: false
+      }));
+    }
+
+    // 4. Fetch cloud pocket items if authenticated
+    if (user) {
+      try {
+        const q = query(
+          collection(db, 'pocket_items'),
+          where('userId', '==', user.uid),
+          orderBy('createdAt', 'desc')
+        );
+        const snapshot = await getDocs(q);
+        const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setPocketItems(fetched);
+        safeSetItem(`stale_pocket_items_${user.uid}`, JSON.stringify(fetched));
+        console.log('[ForceSync] Successfully force-synced pocket items:', fetched.length);
+      } catch (err) {
+        console.warn('[ForceSync] Cloud pocket items sync notice (offline or network delay):', err);
+      }
     }
   };
 
@@ -808,8 +820,15 @@ export default function App() {
       setActiveTab('notes');
       setActiveTool(null);
     };
+    const handleCloseActiveTool = () => {
+      setActiveTool(null);
+    };
     window.addEventListener('navigate-to-home', handleNavToHome);
-    return () => window.removeEventListener('navigate-to-home', handleNavToHome);
+    window.addEventListener('close-active-tool', handleCloseActiveTool);
+    return () => {
+      window.removeEventListener('navigate-to-home', handleNavToHome);
+      window.removeEventListener('close-active-tool', handleCloseActiveTool);
+    };
   }, []);
 
   const handleOpenVipFromDashboard = useCallback(() => {
@@ -825,8 +844,9 @@ export default function App() {
   }, []);
 
   const handleSelectToolFromDashboard = useCallback((tool: string) => {
-    if (tool === 'tab:scanner') {
-      setActiveTab('scanner');
+    if (tool === 'tab:scanner' || tool === 'tab:frqgrader' || tool === 'frqgrader') {
+      setActiveTab('frqgrader');
+      setActiveTool(null);
     } else if (tool === 'tab:aitutor') {
       setActiveTab('aitutor');
     } else {
@@ -896,20 +916,10 @@ export default function App() {
             </motion.div>
           )}
         </AnimatePresence>
-      {activeTab !== 'scanner' && activeTab !== 'aitutor' && activeTab !== 'notes' && activeTab !== 'profile' && activeTool === null && (
+      {activeTab !== 'scanner' && activeTab !== 'frqgrader' && activeTab !== 'aitutor' && activeTab !== 'notes' && activeTab !== 'profile' && activeTool === null && (
         <header className="px-6 py-5 bg-white border-b border-zinc-200/60 z-10 flex justify-between items-center">
           <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-amber-500 bg-clip-text text-transparent">AP Exam</h1>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                triggerVibration(10);
-                toggleDarkMode();
-              }}
-              className="w-10 h-10 rounded-full flex items-center justify-center bg-zinc-100 text-zinc-600 hover:text-zinc-900 transition-colors shadow-sm border border-zinc-200/40"
-              title={isDarkMode ? "Light Mode" : "Dark Mode"}
-            >
-              {isDarkMode ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5" />}
-            </button>
             <button 
               onClick={() => {
                 triggerVibration(15);
@@ -929,13 +939,13 @@ export default function App() {
         </header>
       )}
       
-      <main className={`w-full ${(Capacitor.isNativePlatform() || activeTool !== null) ? 'max-w-none' : 'max-w-md mx-auto landscape:max-w-none'} flex-1 min-h-0 relative z-0 ${(activeTab === 'scanner' || activeTab === 'aitutor' || activeTab === 'teacher' || activeTool !== null) ? 'overflow-hidden flex flex-col h-full' : 'overflow-y-auto pb-20'} bg-[#FAF9F6]`}>
-        {/* Scanner Tab */}
-        <div className={activeTab === 'scanner' ? 'h-full flex flex-col' : 'hidden'}>
-          <ErrorBoundary>
+      <main className={`w-full ${(Capacitor.isNativePlatform() || activeTool !== null) ? 'max-w-none' : 'max-w-md mx-auto landscape:max-w-none'} flex-1 min-h-0 relative z-0 ${(activeTab === 'frqgrader' || activeTab === 'scanner' || activeTab === 'aitutor' || activeTab === 'teacher' || activeTool !== null) ? 'overflow-hidden flex flex-col h-full' : 'overflow-y-auto pb-20'} bg-[#FAF9F6]`}>
+        {/* FRQ Grader Tab (Replaces legacy Scan second section) */}
+        <div className={activeTab === 'frqgrader' ? 'h-full flex flex-col' : 'hidden'}>
+          <ErrorBoundary featureName="FRQ Grader" onClose={() => setActiveTab('notes')}>
             <Suspense fallback={<FullPageSkeleton />}>
-              <MagicScanner isVip={isVip} isFocused={activeTab === 'scanner'} onNavigateToTab={(tab) => {
-                setActiveTab(tab);
+              <FRQGrader onBack={() => {
+                setActiveTab('notes');
                 setActiveTool(null);
               }} />
             </Suspense>
@@ -944,7 +954,7 @@ export default function App() {
 
         {/* AI Tutor Tab */}
         <div className={activeTab === 'aitutor' ? 'h-full flex flex-col' : 'hidden'}>
-          <ErrorBoundary>
+          <ErrorBoundary featureName="AI Tutor" onClose={() => setActiveTab('notes')}>
             <Suspense fallback={<FullPageSkeleton />}>
               <AITutor isVip={isVip} isActive={activeTab === 'aitutor'} />
             </Suspense>
@@ -954,7 +964,7 @@ export default function App() {
         {/* Home/Notes Tab */}
         <div className={activeTab === 'notes' ? 'h-full flex flex-col' : 'hidden'}>
           <div className={activeTool === null ? "h-full flex flex-col" : "hidden"}>
-            <ErrorBoundary>
+            <ErrorBoundary featureName="Home Dashboard" onRetry={() => resetAllLazyChunks()}>
               <Suspense fallback={<FullPageSkeleton />}>
                 <ToolsDashboard 
                   isVip={isVip} 
@@ -971,10 +981,10 @@ export default function App() {
             </ErrorBoundary>
           </div>
           {/* Active Tool Rendering wrapped in ErrorBoundary to catch Suspense chunk rejections */}
-          <ErrorBoundary fallbackMessage="Unable to load this feature right now. Tap below to return to Dashboard.">
+          <ErrorBoundary featureName={activeTool ? `Tool: ${activeTool}` : "Tool Feature"} onClose={() => setActiveTool(null)} onReset={() => setActiveTool(null)}>
             <Suspense fallback={<FullPageSkeleton />}>
             {activeTool === 'apnotes' && (
-              <ErrorBoundary>
+              <ErrorBoundary featureName="AP Notes" onClose={() => setActiveTool(null)}>
                 <APNotes 
                   onBack={() => setActiveTool(null)} 
                   onNavigateToTab={(tab) => {
@@ -986,7 +996,7 @@ export default function App() {
               </ErrorBoundary>
             )}
             {activeTool === 'essaygrader' && (
-              <ErrorBoundary>
+              <ErrorBoundary featureName="Essay Grader" onClose={() => setActiveTool(null)}>
                 <LockedFeature cost={1} featureName="AI Essay Grader" onBack={() => setActiveTool(null)} onEarnCoins={() => setActiveTool('coinpage')}>
                   <EssayGrader onBack={() => setActiveTool(null)} />
                 </LockedFeature>
@@ -996,7 +1006,8 @@ export default function App() {
               <ErrorBoundary 
                 featureName="Test Prep"
                 fallbackMessage="Unable to load Test Prep. Tap below to auto-repair or return to dashboard."
-                onReset={() => setActiveTool(null)}
+                onClose={() => setActiveTool(null)}
+                onRetry={() => resetAllLazyChunks()}
                 cacheKeysToPurgeOnCrash={['ap_test_prep_history']}
               >
                 <TestPrep 
@@ -1011,19 +1022,36 @@ export default function App() {
               </ErrorBoundary>
             )}
             {activeTool === 'apsamplepapers' && (
-              <ErrorBoundary featureName="AP Sample Papers" onReset={() => setActiveTool(null)}>
+              <ErrorBoundary featureName="AP Sample Papers" onClose={() => setActiveTool(null)} onRetry={() => resetAllLazyChunks()}>
                 <APSamplePapers 
                   onBack={() => setActiveTool(null)} 
                   isVip={isVip}
                 />
               </ErrorBoundary>
             )}
+                        {activeTool === 'quizbattle' && (
+              <div className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
+                <ErrorBoundary 
+                  featureName="1v1 Quiz Battle"
+                  fallbackMessage="Unable to load 1v1 Battle Arena. Tap below to return."
+                  onClose={() => setActiveTool(null)}
+                  onRetry={() => resetAllLazyChunks()}
+                >
+                  <APQuizBattle 
+                    onBack={() => setActiveTool(null)} 
+                    user={user} 
+                    isVip={isVip} 
+                  />
+                </ErrorBoundary>
+              </div>
+            )}
             {activeTool === 'learningisland' && (
               <div className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
                 <ErrorBoundary 
                   featureName="Learning Island"
                   fallbackMessage="Unable to load Learning Island. Tap below to auto-repair or return to dashboard."
-                  onReset={() => setActiveTool(null)}
+                  onClose={() => setActiveTool(null)}
+                  onRetry={() => resetAllLazyChunks()}
                   cacheKeysToPurgeOnCrash={['learning_island_progress_', 'learning_island_selected_subject_id']}
                 >
                   <LearningIsland onBack={() => setActiveTool(null)} />
@@ -1032,7 +1060,7 @@ export default function App() {
             )}
 
               {activeTool === 'trapradar' && (
-              <ErrorBoundary>
+              <ErrorBoundary featureName="Trap Radar" onClose={() => setActiveTool(null)}>
                 <APTrapRadar 
                   onBack={() => setActiveTool(null)} 
                   isVip={isVip}
@@ -1040,7 +1068,7 @@ export default function App() {
               </ErrorBoundary>
             )}
             {activeTool === 'mindmap' && (
-              <ErrorBoundary>
+              <ErrorBoundary featureName="Mind Map" onClose={() => setActiveTool(null)}>
                 <APMindMap 
                   onBack={() => setActiveTool(null)} 
                   isVip={isVip}
@@ -1049,27 +1077,27 @@ export default function App() {
             )}
             {activeTool === 'frqgrader' && (
               <div className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
-                <ErrorBoundary>
+                <ErrorBoundary featureName="FRQ Grader" onClose={() => setActiveTool(null)}>
                   <FRQGrader onBack={() => setActiveTool(null)} />
                 </ErrorBoundary>
               </div>
             )}
             {activeTool === 'contentgenerator' && (
-              <ErrorBoundary>
+              <ErrorBoundary featureName="Content Generator" onClose={() => setActiveTool(null)}>
                 <LockedFeature cost={1} featureName="AI Study Content Generator" onBack={() => setActiveTool(null)} onEarnCoins={() => setActiveTool('coinpage')}>
                   <ContentGenerator onBack={() => setActiveTool(null)} />
                 </LockedFeature>
               </ErrorBoundary>
             )}
             {activeTool === 'grammar' && (
-              <ErrorBoundary>
+              <ErrorBoundary featureName="Grammar Enhancer" onClose={() => setActiveTool(null)}>
                 <LockedFeature cost={1} featureName="AI Grammar Enhancer" onBack={() => setActiveTool(null)} onEarnCoins={() => setActiveTool('coinpage')}>
                   <GrammarEnhancer onBack={() => setActiveTool(null)} />
                 </LockedFeature>
               </ErrorBoundary>
             )}
             {activeTool === 'summariser' && (
-              <ErrorBoundary>
+              <ErrorBoundary featureName="Summariser" onClose={() => setActiveTool(null)}>
                 <LockedFeature cost={1} featureName="AI Text Summarizer" onBack={() => setActiveTool(null)} onEarnCoins={() => setActiveTool('coinpage')}>
                   <Summariser onBack={() => setActiveTool(null)} />
                 </LockedFeature>
@@ -1077,7 +1105,7 @@ export default function App() {
             )}
 
             {activeTool === 'calculator' && (
-              <ErrorBoundary>
+              <ErrorBoundary featureName="Calculator" onClose={() => setActiveTool(null)}>
                 <Calculator 
                   onBack={() => setActiveTool(null)} 
                   onNavigateToTab={(tab) => {
@@ -1088,7 +1116,7 @@ export default function App() {
               </ErrorBoundary>
             )}
             {activeTool === 'questiongenerator' && (
-              <ErrorBoundary>
+              <ErrorBoundary featureName="Question Generator" onClose={() => setActiveTool(null)}>
                 <LockedFeature cost={2} featureName="AI Question Generator" onBack={() => setActiveTool(null)} onEarnCoins={() => setActiveTool('coinpage')}>
                   <QuestionGenerator 
                     onBack={() => setActiveTool(null)} 
@@ -1101,28 +1129,28 @@ export default function App() {
               </ErrorBoundary>
             )}
             {activeTool === 'dailytrivia' && (
-              <ErrorBoundary>
+              <ErrorBoundary featureName="Daily Trivia" onClose={() => setActiveTool(null)}>
                 <DailyTrivia onBack={() => setActiveTool(null)} />
               </ErrorBoundary>
             )}
             {activeTool === 'livetutorsearch' && (
-              <ErrorBoundary>
+              <ErrorBoundary featureName="Live Tutor Search" onClose={() => setActiveTool(null)}>
                 <LiveTutorSearch onBack={() => setActiveTool(null)} />
               </ErrorBoundary>
             )}
             {activeTool === 'mistakevault' && (
-              <ErrorBoundary>
+              <ErrorBoundary featureName="Mistake Vault" onClose={() => setActiveTool(null)}>
                 <MistakeVault onBack={() => setActiveTool(null)} />
               </ErrorBoundary>
             )}
             {activeTool === 'coinpage' && (
-              <ErrorBoundary>
+              <ErrorBoundary featureName="Coin Page" onClose={() => setActiveTool(null)}>
                 <CoinPage 
                   isVip={isVip}
                   onClose={() => setActiveTool(null)} 
                   onSelectTool={(tool) => {
-                    if (tool === 'tab:scanner') {
-                      setActiveTab('scanner');
+                    if (tool === 'tab:scanner' || tool === 'tab:frqgrader' || tool === 'frqgrader') {
+                      setActiveTab('frqgrader');
                       setActiveTool(null);
                     } else if (tool === 'tab:aitutor') {
                       setActiveTab('aitutor');
@@ -1135,7 +1163,7 @@ export default function App() {
               </ErrorBoundary>
             )}
             {activeTool === 'streakpage' && (
-              <ErrorBoundary>
+              <ErrorBoundary featureName="Streak Details" onClose={() => setActiveTool(null)}>
                 <StreakDetailsPage onBack={() => setActiveTool(null)} />
               </ErrorBoundary>
             )}
@@ -1145,7 +1173,7 @@ export default function App() {
 
         {/* Profile Tab */}
         <div className={activeTab === 'profile' ? 'h-full flex flex-col' : 'hidden'}>
-          <ErrorBoundary>
+          <ErrorBoundary featureName="Profile" onClose={() => setActiveTab('notes')}>
             <Suspense fallback={<FullPageSkeleton />}>
               <Profile 
                 user={user}
@@ -1182,9 +1210,12 @@ export default function App() {
             />
             <NavItem 
               icon={<Camera className="w-5 h-5" />} 
-              label="Scan" 
-              isActive={activeTab === 'scanner'} 
-              onClick={() => setActiveTab('scanner')} 
+              label="FRQ Grader" 
+              isActive={activeTab === 'frqgrader'} 
+              onClick={() => {
+                setActiveTab('frqgrader');
+                setActiveTool(null);
+              }} 
               isLightTheme={!isDarkMode}
             />
             <NavItem 
@@ -1211,7 +1242,7 @@ export default function App() {
         )}
         {showOnboarding && (
           <Suspense fallback={<FullPageSkeleton />}>
-            <ErrorBoundary>
+            <ErrorBoundary featureName="Onboarding" onClose={() => setShowOnboarding(false)}>
               <Onboarding 
                 key="onboarding" 
                 onComplete={() => {
@@ -1281,7 +1312,7 @@ export default function App() {
             className="absolute inset-0 z-[70] bg-white"
           >
             <Suspense fallback={<FullPageSkeleton />}>
-              <ErrorBoundary>
+              <ErrorBoundary featureName="Academic Setup" onClose={() => setShowAcademicSetup(false)}>
                 <AcademicSetup 
                   userId={user.uid}
                   onComplete={() => setShowAcademicSetup(false)} 
