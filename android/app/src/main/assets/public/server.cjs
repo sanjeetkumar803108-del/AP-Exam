@@ -5811,6 +5811,16 @@ function normalizeBattleSubject(subId) {
   if (s === "ap-physics-1") return "ap-physics";
   return s;
 }
+function normalizeGrade(grade) {
+  if (!grade) return "9th Grade";
+  const g = String(grade).toLowerCase();
+  if (g.includes("9") || g.includes("freshman")) return "9th Grade";
+  if (g.includes("10") || g.includes("sophomore")) return "10th Grade";
+  if (g.includes("11") || g.includes("junior")) return "11th Grade";
+  if (g.includes("12") || g.includes("senior")) return "12th Grade";
+  if (g.includes("college")) return "College";
+  return "9th Grade";
+}
 var waitingQueue = /* @__PURE__ */ new Map();
 var activeBattleRooms = /* @__PURE__ */ new Map();
 var playerToRoomMap = /* @__PURE__ */ new Map();
@@ -5866,7 +5876,7 @@ app.get("/api/battle/ping", (req, res) => {
 });
 app.post("/api/battle/match", (req, res) => {
   try {
-    const { playerId, playerName, playerAvatar, subjectId, questions } = req.body;
+    const { playerId, playerName, playerAvatar, subjectId, questions, gradeLevel } = req.body;
     if (!playerId || !subjectId) {
       return res.status(400).json({ error: "Missing playerId or subjectId" });
     }
@@ -5891,6 +5901,7 @@ app.post("/api/battle/match", (req, res) => {
       }
     }
     waitingQueue.delete(playerId);
+    const myNormGrade = normalizeGrade(gradeLevel);
     const myPlayer = {
       id: playerId,
       name: playerName || "Student",
@@ -5898,12 +5909,15 @@ app.post("/api/battle/match", (req, res) => {
       score: 0,
       hasAnswered: false,
       currentQ: 0,
-      lastSeen: now
+      lastSeen: now,
+      gradeLevel: myNormGrade,
+      tagline: `${myNormGrade} \u2022 AP Scholar`
     };
     let foundOpponent = null;
     const myNormSubject = normalizeBattleSubject(subjectId);
     for (const [qId, ticket] of waitingQueue.entries()) {
-      if (ticket.player.id !== playerId && now - ticket.lastSeen <= 6e3 && normalizeBattleSubject(ticket.subjectId) === myNormSubject) {
+      const oppGrade = normalizeGrade(ticket.gradeLevel || ticket.player.gradeLevel);
+      if (ticket.player.id !== playerId && now - ticket.lastSeen <= 6e3 && normalizeBattleSubject(ticket.subjectId) === myNormSubject && oppGrade === myNormGrade) {
         foundOpponent = { qId, ticket };
         break;
       }
@@ -5961,9 +5975,10 @@ app.post("/api/battle/match", (req, res) => {
       subjectId,
       questions: questions || [],
       timestamp: now,
-      lastSeen: now
+      lastSeen: now,
+      gradeLevel: myNormGrade
     });
-    console.log(`[Battle Matchmaker] ${myPlayer.name} entered radar. Active queue: ${waitingQueue.size}`);
+    console.log(`[Battle Matchmaker] ${myPlayer.name} (${myNormGrade}) entered radar. Active queue: ${waitingQueue.size}`);
     return res.json({ status: "waiting" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -6001,8 +6016,10 @@ app.post("/api/battle/poll-match", (req, res) => {
       myTicket.lastSeen = now;
       let foundOpponent = null;
       const myNormSubject = normalizeBattleSubject(myTicket.subjectId);
+      const myNormGrade = normalizeGrade(myTicket.gradeLevel || myTicket.player.gradeLevel);
       for (const [qId, otherTicket] of waitingQueue.entries()) {
-        if (qId !== playerId && otherTicket.player.id !== playerId && now - otherTicket.lastSeen <= 6e3 && normalizeBattleSubject(otherTicket.subjectId) === myNormSubject) {
+        const otherGrade = normalizeGrade(otherTicket.gradeLevel || otherTicket.player.gradeLevel);
+        if (qId !== playerId && otherTicket.player.id !== playerId && now - otherTicket.lastSeen <= 6e3 && normalizeBattleSubject(otherTicket.subjectId) === myNormSubject && otherGrade === myNormGrade) {
           foundOpponent = { qId, ticket: otherTicket };
           break;
         }

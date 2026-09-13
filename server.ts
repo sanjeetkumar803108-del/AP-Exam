@@ -5996,6 +5996,16 @@ function normalizeBattleSubject(subId?: string): string {
   return s;
 }
 
+function normalizeGrade(grade?: string): string {
+  if (!grade) return '9th Grade';
+  const g = String(grade).toLowerCase();
+  if (g.includes('9') || g.includes('freshman')) return '9th Grade';
+  if (g.includes('10') || g.includes('sophomore')) return '10th Grade';
+  if (g.includes('11') || g.includes('junior')) return '11th Grade';
+  if (g.includes('12') || g.includes('senior')) return '12th Grade';
+  if (g.includes('college')) return 'College';
+  return '9th Grade';
+}
 
 interface BattlePlayer {
   id: string;
@@ -6006,6 +6016,8 @@ interface BattlePlayer {
   currentQ: number;
   lastSeen: number;
   finished?: boolean;
+  gradeLevel?: string;
+  tagline?: string;
 }
 
 interface ServerRoom {
@@ -6024,7 +6036,7 @@ interface ServerRoom {
   updatedAt: number;
 }
 
-const waitingQueue = new Map<string, { player: BattlePlayer; subjectId: string; questions: any[]; timestamp: number; lastSeen: number }>();
+const waitingQueue = new Map<string, { player: BattlePlayer; subjectId: string; questions: any[]; timestamp: number; lastSeen: number; gradeLevel?: string }>();
 const activeBattleRooms = new Map<string, ServerRoom>();
 const playerToRoomMap = new Map<string, string>();
 
@@ -6097,7 +6109,7 @@ app.get("/api/battle/ping", (req, res) => {
 // 1. Enter queue & match with players actively on radar (same subject prioritized, then flexible pairing)
 app.post("/api/battle/match", (req, res) => {
   try {
-    const { playerId, playerName, playerAvatar, subjectId, questions } = req.body;
+    const { playerId, playerName, playerAvatar, subjectId, questions, gradeLevel } = req.body;
     if (!playerId || !subjectId) {
       return res.status(400).json({ error: "Missing playerId or subjectId" });
     }
@@ -6128,6 +6140,7 @@ app.post("/api/battle/match", (req, res) => {
 
     waitingQueue.delete(playerId);
 
+    const myNormGrade = normalizeGrade(gradeLevel);
     const myPlayer: BattlePlayer = {
       id: playerId,
       name: playerName || "Student",
@@ -6135,18 +6148,22 @@ app.post("/api/battle/match", (req, res) => {
       score: 0,
       hasAnswered: false,
       currentQ: 0,
-      lastSeen: now
+      lastSeen: now,
+      gradeLevel: myNormGrade,
+      tagline: `${myNormGrade} • AP Scholar`
     };
 
-    // Strict Same-Subject Match: ONLY match with players actively searching the EXACT same subject!
-    let foundOpponent: { qId: string; ticket: { player: BattlePlayer; subjectId: string; questions: any[]; timestamp: number; lastSeen: number } } | null = null;
+    // Strict Same-Subject & Same-Grade Match: ONLY match with peers in the SAME subject and SAME grade!
+    let foundOpponent: { qId: string; ticket: { player: BattlePlayer; subjectId: string; questions: any[]; timestamp: number; lastSeen: number; gradeLevel?: string } } | null = null;
     const myNormSubject = normalizeBattleSubject(subjectId);
 
     for (const [qId, ticket] of waitingQueue.entries()) {
+      const oppGrade = normalizeGrade(ticket.gradeLevel || ticket.player.gradeLevel);
       if (
         ticket.player.id !== playerId && 
         (now - ticket.lastSeen <= 6000) && 
-        normalizeBattleSubject(ticket.subjectId) === myNormSubject
+        normalizeBattleSubject(ticket.subjectId) === myNormSubject &&
+        oppGrade === myNormGrade
       ) {
         foundOpponent = { qId, ticket };
         break;
@@ -6218,10 +6235,11 @@ app.post("/api/battle/match", (req, res) => {
       subjectId,
       questions: questions || [],
       timestamp: now,
-      lastSeen: now
+      lastSeen: now,
+      gradeLevel: myNormGrade
     });
 
-    console.log(`[Battle Matchmaker] ${myPlayer.name} entered radar. Active queue: ${waitingQueue.size}`);
+    console.log(`[Battle Matchmaker] ${myPlayer.name} (${myNormGrade}) entered radar. Active queue: ${waitingQueue.size}`);
     return res.json({ status: "waiting" });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -6265,16 +6283,19 @@ app.post("/api/battle/poll-match", (req, res) => {
     if (myTicket) {
       myTicket.lastSeen = now;
 
-      // Strict Same-Subject Match: ONLY match with players actively searching the EXACT same subject!
-      let foundOpponent: { qId: string; ticket: { player: BattlePlayer; subjectId: string; questions: any[]; timestamp: number; lastSeen: number } } | null = null;
+      // Strict Same-Subject & Same-Grade Match: ONLY match with peers in the SAME subject and SAME grade!
+      let foundOpponent: { qId: string; ticket: { player: BattlePlayer; subjectId: string; questions: any[]; timestamp: number; lastSeen: number; gradeLevel?: string } } | null = null;
       const myNormSubject = normalizeBattleSubject(myTicket.subjectId);
+      const myNormGrade = normalizeGrade(myTicket.gradeLevel || myTicket.player.gradeLevel);
 
       for (const [qId, otherTicket] of waitingQueue.entries()) {
+        const otherGrade = normalizeGrade(otherTicket.gradeLevel || otherTicket.player.gradeLevel);
         if (
           qId !== playerId && 
           otherTicket.player.id !== playerId && 
           (now - otherTicket.lastSeen <= 6000) &&
-          normalizeBattleSubject(otherTicket.subjectId) === myNormSubject
+          normalizeBattleSubject(otherTicket.subjectId) === myNormSubject &&
+          otherGrade === myNormGrade
         ) {
           foundOpponent = { qId, ticket: otherTicket };
           break;

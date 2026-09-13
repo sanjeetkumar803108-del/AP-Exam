@@ -9,6 +9,17 @@ export interface BattleQuestion {
   timeLimit: number; // 30s (Easy), 45s (Medium), 60s (Hard)
 }
 
+export function normalizeGrade(grade?: string): string {
+  if (!grade) return '9th Grade';
+  const g = String(grade).toLowerCase();
+  if (g.includes('9') || g.includes('freshman')) return '9th Grade';
+  if (g.includes('10') || g.includes('sophomore')) return '10th Grade';
+  if (g.includes('11') || g.includes('junior')) return '11th Grade';
+  if (g.includes('12') || g.includes('senior')) return '12th Grade';
+  if (g.includes('college')) return 'College';
+  return '9th Grade';
+}
+
 export interface GhostPlayer {
   id: string;
   name: string;
@@ -17,6 +28,7 @@ export interface GhostPlayer {
   level: number;
   apScoreTarget: number;
   tagline: string;
+  gradeLevel?: string;
   timings: number[];
   accuracy: boolean[];
 }
@@ -39,93 +51,204 @@ export const AP_BATTLE_SUBJECTS = [
 ];
 
 export const GHOST_PROFILES: GhostPlayer[] = [
+  // --- 9TH GRADE (FRESHMAN) PEERS ---
   {
-    id: 'ghost_rohan',
-    name: 'Rohan M.',
-    avatar: 'R',
-    rating: 1540,
-    level: 7,
-    apScoreTarget: 5,
-    tagline: 'MIT Aspirant - Level 7',
-    timings: [6500, 8800, 7100, 9200, 7300],
+    id: 'ghost_aryan_9',
+    name: 'Aryan Sharma',
+    avatar: 'A',
+    rating: 1440,
+    level: 5,
+    apScoreTarget: 4,
+    gradeLevel: '9th Grade',
+    tagline: '9th Grade • Freshman AP Explorer',
+    timings: [6500, 8200, 7100, 9200, 7300],
     accuracy: [true, false, true, false, false]
   },
   {
-    id: 'ghost_sophia',
-    name: 'Sophia Chen',
-    avatar: 'S',
-    rating: 1610,
-    level: 9,
+    id: 'ghost_maya_9',
+    name: 'Maya Lin',
+    avatar: 'M',
+    rating: 1480,
+    level: 5,
     apScoreTarget: 5,
-    tagline: 'Stanford Early Action - AP Scholar',
-    timings: [5800, 7900, 6200, 8500, 6800],
-    accuracy: [false, true, false, true, false]
+    gradeLevel: '9th Grade',
+    tagline: '9th Grade • Honors Freshman Scholar',
+    timings: [6000, 7800, 6500, 8300, 6900],
+    accuracy: [false, true, true, false, false]
   },
   {
-    id: 'ghost_marcus',
+    id: 'ghost_lucas_9',
+    name: 'Lucas Green',
+    avatar: 'L',
+    rating: 1390,
+    level: 4,
+    apScoreTarget: 4,
+    gradeLevel: '9th Grade',
+    tagline: '9th Grade • Freshman Speedrunner',
+    timings: [5600, 6900, 6100, 8500, 6700],
+    accuracy: [true, false, false, true, false]
+  },
+  {
+    id: 'ghost_chloe_9',
+    name: 'Chloe Bennett',
+    avatar: 'C',
+    rating: 1460,
+    level: 5,
+    apScoreTarget: 5,
+    gradeLevel: '9th Grade',
+    tagline: '9th Grade • STEM Freshman Ace',
+    timings: [6300, 8000, 7200, 9100, 7000],
+    accuracy: [false, false, true, true, false]
+  },
+
+  // --- 10TH GRADE (SOPHOMORE) PEERS ---
+  {
+    id: 'ghost_marcus_10',
     name: 'Marcus Vance',
     avatar: 'M',
     rating: 1480,
     level: 6,
     apScoreTarget: 4,
-    tagline: 'Physics & Calc Grind - Level 6',
+    gradeLevel: '10th Grade',
+    tagline: '10th Grade • Sophomore AP Grind',
     timings: [7200, 9100, 8800, 10900, 7400],
     accuracy: [true, false, false, false, true]
   },
   {
-    id: 'ghost_aanya',
-    name: 'Aanya Patel',
-    avatar: 'A',
-    rating: 1590,
-    level: 8,
-    apScoreTarget: 5,
-    tagline: 'AP Scholar with Distinction',
-    timings: [6100, 8300, 7600, 9900, 7000],
-    accuracy: [false, false, true, false, false]
-  },
-  {
-    id: 'ghost_ethan',
+    id: 'ghost_ethan_10',
     name: 'Ethan Brooks',
     avatar: 'E',
     rating: 1420,
     level: 5,
     apScoreTarget: 4,
-    tagline: 'Speedrunner - Level 5 Scholar',
+    gradeLevel: '10th Grade',
+    tagline: '10th Grade • Sophomore Scholar',
     timings: [5500, 6200, 5900, 7800, 6100],
     accuracy: [false, false, false, true, false]
   },
   {
-    id: 'ghost_priya',
-    name: 'Priya Nair',
-    avatar: 'P',
-    rating: 1640,
+    id: 'ghost_zara_10',
+    name: 'Zara Khan',
+    avatar: 'Z',
+    rating: 1530,
+    level: 6,
+    apScoreTarget: 5,
+    gradeLevel: '10th Grade',
+    tagline: '10th Grade • World History & Calc Ace',
+    timings: [6400, 7600, 7100, 8700, 6900],
+    accuracy: [true, false, true, false, true]
+  },
+  {
+    id: 'ghost_oliver_10',
+    name: 'Oliver Davis',
+    avatar: 'O',
+    rating: 1510,
+    level: 6,
+    apScoreTarget: 5,
+    gradeLevel: '10th Grade',
+    tagline: '10th Grade • Sophomore Honors',
+    timings: [6100, 7900, 6700, 8300, 7200],
+    accuracy: [false, true, false, true, false]
+  },
+
+  // --- 11TH GRADE (JUNIOR) PEERS ---
+  {
+    id: 'ghost_rohan_11',
+    name: 'Rohan M.',
+    avatar: 'R',
+    rating: 1540,
+    level: 7,
+    apScoreTarget: 5,
+    gradeLevel: '11th Grade',
+    tagline: '11th Grade • Junior AP Scholar',
+    timings: [6500, 8800, 7100, 9200, 7300],
+    accuracy: [true, false, true, false, false]
+  },
+  {
+    id: 'ghost_sophia_11',
+    name: 'Sophia Chen',
+    avatar: 'S',
+    rating: 1610,
     level: 9,
     apScoreTarget: 5,
-    tagline: 'National Merit Finalist',
-    timings: [6300, 7100, 6500, 8400, 6900],
-    accuracy: [true, false, false, true, false]
+    gradeLevel: '11th Grade',
+    tagline: '11th Grade • Stanford Early Action',
+    timings: [5800, 7900, 6200, 8500, 6800],
+    accuracy: [false, true, false, true, false]
   },
   {
-    id: 'ghost_lucas',
-    name: 'Lucas Rossi',
+    id: 'ghost_aanya_11',
+    name: 'Aanya Patel',
+    avatar: 'A',
+    rating: 1590,
+    level: 8,
+    apScoreTarget: 5,
+    gradeLevel: '11th Grade',
+    tagline: '11th Grade • AP Scholar with Distinction',
+    timings: [6100, 8300, 7600, 9900, 7000],
+    accuracy: [false, false, true, false, false]
+  },
+  {
+    id: 'ghost_liam_11',
+    name: 'Liam Taylor',
     avatar: 'L',
-    rating: 1510,
-    level: 7,
-    apScoreTarget: 4,
-    tagline: 'Cornell Hopeful - AP Scholar',
-    timings: [6900, 8700, 7200, 9400, 7600],
-    accuracy: [false, true, false, false, false]
+    rating: 1560,
+    level: 8,
+    apScoreTarget: 5,
+    gradeLevel: '11th Grade',
+    tagline: '11th Grade • Junior STEM Specialist',
+    timings: [6300, 7900, 6800, 8800, 7100],
+    accuracy: [true, true, false, false, false]
   },
+
+  // --- 12TH GRADE (SENIOR) PEERS ---
   {
-    id: 'ghost_hannah',
+    id: 'ghost_hannah_12',
     name: 'Hannah Kim',
     avatar: 'H',
     rating: 1670,
     level: 10,
     apScoreTarget: 5,
-    tagline: 'Ivy League Bound - Top 10%',
+    gradeLevel: '12th Grade',
+    tagline: '12th Grade • Ivy League Bound',
     timings: [5900, 6700, 6100, 8200, 6600],
     accuracy: [false, false, false, false, true]
+  },
+  {
+    id: 'ghost_priya_12',
+    name: 'Priya Nair',
+    avatar: 'P',
+    rating: 1640,
+    level: 9,
+    apScoreTarget: 5,
+    gradeLevel: '12th Grade',
+    tagline: '12th Grade • National Merit Finalist',
+    timings: [6300, 7100, 6500, 8400, 6900],
+    accuracy: [true, false, false, true, false]
+  },
+  {
+    id: 'ghost_lucas_12',
+    name: 'Lucas Rossi',
+    avatar: 'L',
+    rating: 1510,
+    level: 7,
+    apScoreTarget: 4,
+    gradeLevel: '12th Grade',
+    tagline: '12th Grade • Cornell Hopeful Senior',
+    timings: [6900, 8700, 7200, 9400, 7600],
+    accuracy: [false, true, false, false, false]
+  },
+  {
+    id: 'ghost_noah_12',
+    name: 'Noah Walker',
+    avatar: 'N',
+    rating: 1680,
+    level: 10,
+    apScoreTarget: 5,
+    gradeLevel: '12th Grade',
+    tagline: '12th Grade • Senior AP Capstone Ace',
+    timings: [5700, 6500, 6200, 7900, 6400],
+    accuracy: [false, true, true, false, false]
   }
 ];
 
@@ -3556,8 +3679,21 @@ export function getBattleQuestions(subjectId: string, count: number = 5): Battle
   return pool.slice(0, Math.min(count, pool.length));
 }
 
-// Selects an authentic ghost opponent with realistic human response timings
-export function getRandomGhostPlayer(subjectId: string): GhostPlayer {
-  const randomIndex = Math.floor(Math.random() * GHOST_PROFILES.length);
-  return GHOST_PROFILES[randomIndex];
+// Selects an authentic ghost opponent strictly matching the student's grade level
+export function getRandomGhostPlayer(subjectId?: string, userGrade?: string): GhostPlayer {
+  const normGrade = normalizeGrade(userGrade);
+  const matchingGhosts = GHOST_PROFILES.filter(
+    g => normalizeGrade(g.gradeLevel) === normGrade
+  );
+
+  const pool = matchingGhosts.length > 0 ? matchingGhosts : GHOST_PROFILES;
+  const picked = pool[Math.floor(Math.random() * pool.length)];
+
+  return {
+    ...picked,
+    gradeLevel: normGrade,
+    tagline: picked.tagline.includes(normGrade)
+      ? picked.tagline
+      : `${normGrade} • ${picked.tagline}`
+  };
 }

@@ -10,6 +10,8 @@ export interface PlayerProfile {
   hasAnswered: boolean;
   currentQ: number;
   finished?: boolean;
+  gradeLevel?: string;
+  tagline?: string;
 }
 
 export interface BattleRoom {
@@ -73,7 +75,8 @@ export class BattleSyncService {
     playerName: string,
     playerAvatar: string,
     subjectId: string,
-    questions: BattleQuestion[]
+    questions: BattleQuestion[],
+    gradeLevel?: string
   ): Promise<{ status: 'matched' | 'waiting'; roomId?: string; isPlayer1?: boolean; opponent?: PlayerProfile; questions?: BattleQuestion[]; subjectId?: string }> {
     try {
       const controller = new AbortController();
@@ -88,7 +91,8 @@ export class BattleSyncService {
           playerName,
           playerAvatar,
           subjectId,
-          questions
+          questions,
+          gradeLevel
         })
       });
       clearTimeout(timeoutId);

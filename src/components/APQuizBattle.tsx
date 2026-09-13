@@ -16,7 +16,8 @@ import {
   BattleQuestion, 
   GhostPlayer, 
   getBattleQuestions, 
-  getRandomGhostPlayer 
+  getRandomGhostPlayer,
+  normalizeGrade
 } from '../data/quizBattleBank';
 import { battleSync, PlayerProfile, BattleRoom } from '../services/battleSync';
 import GlobalMarkdown, { prepareQuizMath } from './GlobalMarkdown';
@@ -36,6 +37,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   ).current;
 
   const myProfileData = getUserProfileData();
+  const myGrade = normalizeGrade(myProfileData?.gradeLevel);
   const rawName = (
     user?.displayName || 
     (user?.email ? user.email.split('@')[0] : '') || 
@@ -177,15 +179,16 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // Opponent Student Banner / Tagline Badge (Authentic Student Status)
   const getOpponentTagline = () => {
-    if (!opponent) return 'AP Scholar';
+    if (!opponent) return `${myGrade} • AP Scholar`;
+    const oppGrade = (opponent as any).gradeLevel || myGrade;
     if ((opponent as any).tagline) {
       const tag = String((opponent as any).tagline).replace(/[^ -~]/g, ' - ').replace(/Rival/gi, 'Scholar');
       if (tag.toLowerCase().includes('real online') || tag.toLowerCase().includes('bot')) {
-        return 'AP Scholar';
+        return `${oppGrade} • AP Scholar`;
       }
-      return tag;
+      return tag.includes(oppGrade) ? tag : `${oppGrade} • ${tag}`;
     }
-    return 'AP Scholar';
+    return `${oppGrade} • AP Scholar`;
   };
 
   // Centralized cleanup: clears all timeouts, polling, and leaves server queue
@@ -269,7 +272,8 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       myName,
       myAvatar,
       selectedSubjectId,
-      initialQs
+      initialQs,
+      myGrade
     );
 
     if (matchResult.status === 'matched' && matchResult.roomId && matchResult.opponent) {
@@ -310,7 +314,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   const handleSearchTimeout = (fallbackQs: BattleQuestion[]) => {
     cleanupLocalBattleTimers();
 
-    const ghost = getRandomGhostPlayer(selectedSubjectId);
+    const ghost = getRandomGhostPlayer(selectedSubjectId, myGrade);
     setIsRealOpponent(false);
     isRealOpponentRef.current = false;
     setLiveRoomId(null);
@@ -346,7 +350,9 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       isRealPlayer: true,
       score: 0,
       hasAnswered: false,
-      currentQ: 0
+      currentQ: 0,
+      gradeLevel: myGrade,
+      tagline: `${myGrade} • AP Scholar`
     };
 
     const res = await battleSync.createFriendRoom(roomCode, myProfile, selectedSubjectId, initialQs);
@@ -874,6 +880,20 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             </button>
           </div>
 
+          {/* Grade Matchmaking Tier Indicator */}
+          <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-indigo-950/40 border border-indigo-500/20 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-sm">🎯</span>
+              <span className="text-zinc-300 font-medium">Matchmaking Tier:</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-extrabold text-indigo-300 bg-indigo-900/60 px-2.5 py-0.5 rounded-md border border-indigo-400/30 text-[11px]">
+                {myGrade} Opponents Only
+              </span>
+            </div>
+          </div>
+
           {/* Action 1: Quick Match */}
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -1139,12 +1159,12 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           </div>
 
           <h2 className="text-xl font-extrabold text-white mb-1">
-            {isFriendHostWaiting || isFriendRoomHost ? 'Waiting for Friend...' : 'Finding Opponent...'}
+            {isFriendHostWaiting || isFriendRoomHost ? 'Waiting for Friend...' : `Finding ${myGrade} Opponent...`}
           </h2>
           <p className="text-xs text-zinc-400 mb-4">
             {isFriendHostWaiting || isFriendRoomHost
               ? `Share Room Code with your friend to start!`
-              : `Searching active AP scholars in ${activeSubject.name}`}
+              : `Searching active ${myGrade} scholars in ${activeSubject.name}`}
           </p>
 
           {(isFriendHostWaiting || isFriendRoomHost) ? (
@@ -1277,13 +1297,16 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">YOU</span>
                   <span className="w-1 h-1 rounded-full bg-emerald-400" />
+                  <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                    {myGrade.toUpperCase()}
+                  </span>
                 </div>
                 <h3 className="text-base sm:text-lg font-black text-white tracking-wide truncate leading-tight">
                   {myName}
                 </h3>
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-400/30 text-[10px] font-extrabold text-indigo-300 w-fit">
                   <Sparkles className="w-2.5 h-2.5 text-cyan-300" />
-                  <span>AP SCHOLAR</span>
+                  <span>{myGrade.toUpperCase()} SCHOLAR</span>
                 </div>
               </div>
             </div>
@@ -1405,6 +1428,9 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
               <div className="flex items-center gap-1.5">
                 <span className="text-[10px] font-black uppercase tracking-widest text-rose-400">OPPONENT</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
+                <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-400/30">
+                  {((opponent as any)?.gradeLevel || myGrade).toUpperCase()}
+                </span>
               </div>
               <h3 className="text-base sm:text-lg font-black text-white tracking-wide truncate leading-tight">
                 {opponent?.name || 'AP Rival'}
