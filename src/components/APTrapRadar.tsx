@@ -52,6 +52,7 @@ import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
 import { FileText, Download, Share2, HelpCircle } from 'lucide-react';
 import { takeNativePhoto, pickNativeFiles } from '../utils/mobilePicker';
 import { Capacitor } from '@capacitor/core';
+import { formatAiAnswerText } from '../utils/apRadarFormatter';
 
 export interface TrapRadarHistoryItem {
   id: string;
@@ -1854,21 +1855,35 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                   className="pt-3 border-t border-zinc-200 space-y-3 text-xs"
                                 >
                                   {/* Scoring Criteria */}
-                                  <div className="p-3 rounded-xl bg-emerald-50/90 border border-emerald-200 text-emerald-950">
-                                    <div className="font-bold text-emerald-900 mb-1 flex items-center gap-1.5">
-                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
-                                      <span>Official Scoring Standard ({part.points} Pt):</span>
+                                  <div className="p-3.5 rounded-2xl bg-emerald-50/90 border border-emerald-200/90 text-emerald-950 shadow-2xs space-y-1.5">
+                                    <div className="font-bold text-emerald-900 mb-1 flex items-center justify-between">
+                                      <div className="flex items-center gap-1.5">
+                                        <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                                        <span>Official Scoring Standard ({part.points} Pt):</span>
+                                      </div>
+                                      <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100/90 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                                        Rubric Criteria
+                                      </span>
                                     </div>
-                                    <GlobalMarkdown>{part.scoringCriteria}</GlobalMarkdown>
+                                    <div className="text-zinc-800 leading-relaxed text-xs">
+                                      <GlobalMarkdown>{formatAiAnswerText(part.scoringCriteria)}</GlobalMarkdown>
+                                    </div>
                                   </div>
 
                                   {/* Model Answer */}
-                                  <div className="p-3 rounded-xl bg-blue-50/90 border border-blue-200 text-blue-950">
-                                    <div className="font-bold text-blue-900 mb-1 flex items-center gap-1.5">
-                                      <Award className="w-3.5 h-3.5 text-blue-700" />
-                                      <span>Full-Credit Exemplary Model Answer:</span>
+                                  <div className="p-3.5 rounded-2xl bg-blue-50/90 border border-blue-200/90 text-blue-950 shadow-2xs space-y-2">
+                                    <div className="font-bold text-blue-900 mb-1 flex items-center justify-between">
+                                      <div className="flex items-center gap-1.5">
+                                        <Award className="w-4 h-4 text-blue-700 shrink-0" />
+                                        <span>Full-Credit Exemplary Model Answer:</span>
+                                      </div>
+                                      <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-100/90 text-blue-800 px-2 py-0.5 rounded-full border border-blue-200/60">
+                                        Step-by-Step
+                                      </span>
                                     </div>
-                                    <GlobalMarkdown>{part.modelAnswer}</GlobalMarkdown>
+                                    <div className="text-zinc-900 leading-relaxed text-xs space-y-2">
+                                      <GlobalMarkdown>{formatAiAnswerText(part.modelAnswer)}</GlobalMarkdown>
+                                    </div>
                                   </div>
 
                                   {/* FRQ Traps Autopsy */}
@@ -1881,7 +1896,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                       {part.frqTraps.map((ft, ftIdx) => (
                                         <div
                                           key={ftIdx}
-                                          className="p-3 rounded-xl bg-amber-50/90 border border-amber-300 space-y-1.5"
+                                          className="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-300/90 space-y-2 shadow-2xs"
                                         >
                                           <div className="flex items-center justify-between">
                                             <span className="font-bold text-amber-950 text-xs">
@@ -1893,12 +1908,14 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                               </span>
                                             )}
                                           </div>
-                                          <p className="text-zinc-700 text-xs">
-                                            <strong>Point Deduction Risk:</strong> {ft.howStudentsLosePoints}
-                                          </p>
-                                          <p className="text-emerald-950 font-semibold text-xs">
-                                            <strong>🎯 Full-Credit Disarm Fix:</strong> {ft.fullCreditFix}
-                                          </p>
+                                          <div className="text-zinc-700 text-xs leading-relaxed">
+                                            <strong className="text-zinc-900">Point Deduction Risk:</strong>{' '}
+                                            <GlobalMarkdown>{formatAiAnswerText(ft.howStudentsLosePoints)}</GlobalMarkdown>
+                                          </div>
+                                          <div className="text-emerald-950 font-semibold text-xs leading-relaxed">
+                                            <strong className="text-emerald-900">🎯 Full-Credit Disarm Fix:</strong>{' '}
+                                            <GlobalMarkdown>{formatAiAnswerText(ft.fullCreditFix)}</GlobalMarkdown>
+                                          </div>
                                         </div>
                                       ))}
                                     </div>
@@ -2154,10 +2171,11 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
                                 {/* Formatted Markdown Evaluation */}
                                 <div className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-sans prose-invert max-w-none">
-                                  <GlobalMarkdown>{frqAiFeedback[String(activeQuestion.id || currentIndex)]}</GlobalMarkdown>
+                                  <GlobalMarkdown>{formatAiAnswerText(frqAiFeedback[String(activeQuestion.id || currentIndex)])}</GlobalMarkdown>
                                 </div>
                               </motion.div>
                             )}
+
                             {/* Chief Reader 5-Second Disarm Secret Banner */}
                             {activeQuestion.disarmStrategy && (
                               <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs space-y-1.5 shadow-xs">
@@ -2166,7 +2184,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                   <span>Chief Reader's 5-Second FRQ Scoring Secret:</span>
                                 </div>
                                 <div className="leading-relaxed text-zinc-800">
-                                  <GlobalMarkdown>{activeQuestion.disarmStrategy}</GlobalMarkdown>
+                                  <GlobalMarkdown>{formatAiAnswerText(activeQuestion.disarmStrategy)}</GlobalMarkdown>
                                 </div>
                               </div>
                             )}
@@ -2364,7 +2382,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                 </div>
                               ) : (
                                 <div className="text-zinc-800 space-y-2">
-                                  <GlobalMarkdown>{inlineAi.text || ''}</GlobalMarkdown>
+                                  <GlobalMarkdown>{formatAiAnswerText(inlineAi.text || '')}</GlobalMarkdown>
                                 </div>
                               )}
                             </div>
@@ -2538,7 +2556,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                                 <span>Why You Fell For This Trap:</span>
                                               </div>
                                               <div className="text-zinc-800 leading-relaxed text-xs">
-                                                <GlobalMarkdown>{currentAiFix.why_it_happened}</GlobalMarkdown>
+                                                <GlobalMarkdown>{formatAiAnswerText(currentAiFix.why_it_happened)}</GlobalMarkdown>
                                               </div>
                                             </div>
 
@@ -2549,7 +2567,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                                 <span>The Exact CED Fix:</span>
                                               </div>
                                               <div className="text-zinc-800 leading-relaxed text-xs">
-                                                <GlobalMarkdown>{currentAiFix.the_fix}</GlobalMarkdown>
+                                                <GlobalMarkdown>{formatAiAnswerText(currentAiFix.the_fix)}</GlobalMarkdown>
                                               </div>
                                             </div>
 
@@ -2561,7 +2579,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                                   <span>Score-5 Memory Trick:</span>
                                                 </div>
                                                 <div className="text-amber-950 font-semibold leading-relaxed text-xs">
-                                                  <GlobalMarkdown>{currentAiFix.pro_memory_trick}</GlobalMarkdown>
+                                                  <GlobalMarkdown>{formatAiAnswerText(currentAiFix.pro_memory_trick)}</GlobalMarkdown>
                                                 </div>
                                               </div>
                                             )}
@@ -2598,7 +2616,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                   <span>Examiner's 5-Second Disarm Secret:</span>
                                 </div>
                                 <div className="leading-relaxed text-zinc-800">
-                                  <GlobalMarkdown>{activeQuestion.disarmStrategy}</GlobalMarkdown>
+                                  <GlobalMarkdown>{formatAiAnswerText(activeQuestion.disarmStrategy)}</GlobalMarkdown>
                                 </div>
                               </div>
                             )}
@@ -2755,7 +2773,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                 </div>
                               ) : (
                                 <div className="text-zinc-800 space-y-2">
-                                  <GlobalMarkdown>{inlineAi.text || ''}</GlobalMarkdown>
+                                  <GlobalMarkdown>{formatAiAnswerText(inlineAi.text || '')}</GlobalMarkdown>
                                 </div>
                               )}
                             </div>

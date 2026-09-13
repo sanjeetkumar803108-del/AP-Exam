@@ -22,6 +22,15 @@ export function cleanMarkdownMath(content: string): string {
   if (!content) return '';
   let text = String(content);
 
+  // 0. Unescape literal escaped newlines (e.g. ".\nStep 2" or "\\n")
+  // Protect LaTeX commands starting with \n (e.g. \neq, \nabla, \notin, \natural, \nearrow, \nwarrow)
+  text = text.replace(/\\r\\n/g, '\n\n');
+  text = text.replace(/\\n(?!(?:eq|abla|otin|atural|earrow|warrow)\b)/g, '\n\n');
+
+  // Format Step and Part headers with generous spacing
+  text = text.replace(/(?:^|\n|\s*)\b(Step\s*\d+(?:\s*\[[^\]]+\])?(?:\s*[:\-])?)\s*/gi, '\n\n**$1**\n\n');
+  text = text.replace(/(?:^|\n|\s*)\bPart\b\s*(\([A-Za-z0-9]+\)|[A-Da-d0-9]+)(?:\s*\[[^\]]+\])?(?:\s*[:\-])?\s*/gi, '\n\n**Part $1:**\n\n');
+
   // 1. Repair escaped or eaten control characters in LaTeX math formulas using exact ASCII hex codes:
   // \x0D = carriage return (\r)
   text = text.replace(/\x0D(ightarrow|ho|ight|angle|eal|m|oot|ceil|floor)/g, '\\r$1');
@@ -368,16 +377,16 @@ const defaultComponents = {
     <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-200 mt-2 mb-1 tracking-tight leading-snug break-words" {...props} />
   ),
   p: ({ node, ...props }: any) => (
-    <p className="text-xs sm:text-[13px] text-zinc-950 dark:text-zinc-100 font-medium leading-relaxed my-2 break-words" {...props} />
+    <p className="text-xs sm:text-[13px] text-zinc-950 dark:text-zinc-100 font-medium leading-relaxed my-2.5 break-words" {...props} />
   ),
   ul: ({ node, ...props }: any) => (
-    <ul className="list-disc pl-4 space-y-1 my-2 text-xs sm:text-[13px] text-zinc-950 dark:text-zinc-100 font-medium leading-relaxed" {...props} />
+    <ul className="list-disc pl-4 space-y-2 my-2.5 text-xs sm:text-[13px] text-zinc-950 dark:text-zinc-100 font-medium leading-relaxed" {...props} />
   ),
   ol: ({ node, ...props }: any) => (
-    <ol className="list-decimal pl-4 space-y-1 my-2 text-xs sm:text-[13px] text-zinc-950 dark:text-zinc-100 font-medium leading-relaxed" {...props} />
+    <ol className="list-decimal pl-4 space-y-2 my-2.5 text-xs sm:text-[13px] text-zinc-950 dark:text-zinc-100 font-medium leading-relaxed" {...props} />
   ),
   li: ({ node, ...props }: any) => (
-    <li className="leading-relaxed text-zinc-950 dark:text-zinc-100 font-medium" {...props} />
+    <li className="leading-relaxed text-zinc-950 dark:text-zinc-100 font-medium my-1" {...props} />
   ),
   sub: ({ node, ...props }: any) => (
     <sub className="text-[0.8em] font-bold align-sub" {...props} />
