@@ -744,7 +744,7 @@ export default function Login({
           By continuing, you agree to our{' '}
           <button
             type="button"
-            onClick={() => window.open('https://docs.google.com/document/d/1BVo4XSvzxUPW_Bmn703ncimO5skWtxtx0NSPcKgB9NQ/edit?usp=drivesdk', '_blank')}
+            onClick={() => window.open('/privacy.html', '_blank')}
             className="text-teal-600 underline font-semibold hover:text-teal-700 transition-colors cursor-pointer inline-block"
           >
             Privacy Policy
@@ -752,7 +752,7 @@ export default function Login({
           and{' '}
           <button
             type="button"
-            onClick={() => window.open('https://docs.google.com/document/d/1yWNiI1j7waXE5PBGcFfQORJCE9Aaezy-AvgWIJRjGVg/edit?usp=drivesdk', '_blank')}
+            onClick={() => window.open('/terms.html', '_blank')}
             className="text-teal-600 underline font-semibold hover:text-teal-700 transition-colors cursor-pointer inline-block"
           >
             Terms of Service

@@ -2914,149 +2914,121 @@ export default function Profile({
                 {/* 10. Privacy Policy */}
                 {activeModal === 'privacy' && (
                   <div className="space-y-5 text-left py-1 text-zinc-700">
-                    <p className="text-xs font-semibold leading-relaxed text-zinc-500">
-                      At AP Exam App, we are committed to safeguarding your personal information and ensuring full transparency. This Privacy Policy outlines our comprehensive data handling practices.
+                    <div className="flex items-center justify-between pb-2 border-b border-zinc-100">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                        🛡️ US Legal &amp; AI Privacy Standard
+                      </span>
+                      <a
+                        href="/privacy.html"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[11px] font-bold text-blue-600 hover:text-blue-700 underline"
+                      >
+                        Open Full Web Page ↗
+                      </a>
+                    </div>
+
+                    <p className="text-xs font-semibold leading-relaxed text-zinc-600">
+                      At AP Exam App, student privacy and total algorithmic transparency are our highest priorities. We operate under strict compliance with US Federal and State privacy laws, including COPPA, FERPA principles, and CCPA/CPRA.
                     </p>
-                    <p className="text-xs font-semibold leading-relaxed text-zinc-700 bg-emerald-50/50 border border-emerald-100/50 rounded-xl p-3 mt-2">
-                      🌟 100% Ad-Free Guarantee: AP Exam App is a completely ad-free learning environment. We do not sell your data, track you for marketing purposes, or display third-party advertisements.
-                    </p>
+
+                    <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-2xl p-3.5">
+                      <h5 className="text-xs font-black text-emerald-950 flex items-center gap-1.5 uppercase tracking-wide">
+                        🌟 100% Ad-Free &amp; Zero Data Selling Pledge
+                      </h5>
+                      <p className="text-[11px] leading-relaxed text-emerald-900 mt-1 font-medium">
+                        We do <strong>NOT</strong> sell your personal data, we do <strong>NOT</strong> license student information to third-party data brokers, and we do <strong>NOT</strong> serve third-party behavioral advertisements.
+                      </p>
+                    </div>
 
                     <div className="space-y-4">
-                      {/* Section 1: Data We Collect */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          📊 1. Data We Collect
+                      {/* Section 1: AI Data Handling & Model Training */}
+                      <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-3.5 space-y-2">
+                        <h4 className="text-xs font-black text-blue-950 flex items-center gap-1.5 uppercase tracking-wide">
+                          🤖 1. AI Data Handling &amp; Zero-Training Guarantee
                         </h4>
-                        <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
+                        <p className="text-[11px] leading-relaxed text-blue-900 font-medium">
+                          AP Exam App utilizes high-performance enterprise <strong>Google Gemini AI APIs</strong> to provide real-time step-by-step explanations, handwriting scoring, and distractor trap analysis.
+                        </p>
+                        <ul className="text-[11px] leading-relaxed text-zinc-700 pl-4 space-y-1.5 list-disc">
                           <li>
-                            <span className="font-bold text-zinc-800">Account Data:</span> We collect your email address and basic profile information solely for authentication, account management, and synchronization across devices.
+                            <strong className="text-zinc-900">Zero Model Training:</strong> Under our enterprise API terms, <strong>your prompts, uploaded homework images, student handwriting photos, and voice transcripts are NEVER used by Google or AP Exam App to train, retrain, fine-tune, or improve public AI models</strong>.
                           </li>
                           <li>
-                            <span className="font-bold text-zinc-800">Image & Camera Data:</span> All user-uploaded images in chats or other features are strictly temporary. They are automatically and permanently deleted from our servers within 1 hour of upload to ensure maximum privacy.
+                            <strong className="text-zinc-900">Ephemeral In-Memory Inference:</strong> Student queries and scans are processed strictly in-memory during real-time streaming. Once the explanation finishes, the active inference session is immediately closed.
                           </li>
                           <li>
-                            <span className="font-bold text-zinc-800">Generated Content & History:</span> Any generated content such as PDFs, notes, and study summaries are not downloaded directly to your local device storage. Instead, they are securely saved in the 'History' section of your account on our cloud servers. This allows you to access your study history seamlessly across any device. If you choose to permanently delete your account, all associated generated data and history will be automatically and completely removed from our servers.
+                            <strong className="text-zinc-900">Automatic 1-Hour Photo Purge:</strong> Images of handwritten FRQs or textbook questions captured via your camera are temporarily buffered in secure memory and <strong>automatically and permanently purged within 1 hour</strong>. We do not archive student handwriting or build photo repositories.
+                          </li>
+                          <li>
+                            <strong className="text-zinc-900">No Biometric Voiceprints:</strong> Voice Tutor audio is converted to transient text in memory and immediately discarded. We never generate or store biometric voiceprints or vocal templates.
                           </li>
                         </ul>
                       </div>
 
-                      {/* Section 2: Third-Party Services & Backend AI */}
+                      {/* Section 2: Data We Collect */}
                       <div>
                         <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          🤖 2. Third-Party Services & Backend AI
+                          📊 2. Direct Account Data &amp; Cloud Storage
                         </h4>
                         <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
                           <li>
-                            <span className="font-bold text-zinc-800">Artificial Intelligence:</span> AP Exam App utilizes high-performance Google Gemini AI APIs to generate step-by-step answers, process image data, and deliver dynamic tutoring. Prompts and images sent to the AI service do not contain personally identifiable information (PII) and are never used to train public models.
+                            <span className="font-bold text-zinc-800">Account Profile:</span> Email address and display name collected via Firebase Auth / Google Sign-In solely for account management and cross-device sync.
                           </li>
                           <li>
-                            <span className="font-bold text-zinc-800">Payment Processors:</span> We utilize trusted payment gateways (such as Google Play Billing and Stripe) to securely process premium Pro Subscriptions. We do not store or have access to your credit card details or sensitive billing credentials.
+                            <span className="font-bold text-zinc-800">Study History &amp; Mistake Vault:</span> Saved review notes, quiz battle history, and coin records are securely stored in Google Cloud Firestore protected by AES-256 encryption at rest.
                           </li>
                           <li>
-                            <span className="font-bold text-zinc-800">Database:</span> Secure cloud backend services are used to safely store persistent user data, such as your customized notes, quiz history, coins, and profile preferences.
+                            <span className="font-bold text-zinc-800">Single Active Device ID:</span> We store an active session token to protect your account against credential sharing across multiple devices.
                           </li>
                         </ul>
                       </div>
 
-                      {/* Section 3: App Analytics & Performance */}
+                      {/* Section 3: Third-Party Infrastructure */}
                       <div>
                         <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          📊 3. App Analytics & Performance
+                          🔒 3. Enterprise Infrastructure Partners
                         </h4>
                         <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
                           <li>
-                            <span className="font-bold text-zinc-800">Analytics:</span> Basic anonymous app usage statistics are gathered solely to identify software bugs, track layout efficiency, and refine the educational experience.
+                            <span className="font-bold text-zinc-800">Google Cloud &amp; Firebase:</span> SOC 2 certified cloud database, TLS 1.3 encrypted data transit, and secure authentication.
+                          </li>
+                          <li>
+                            <span className="font-bold text-zinc-800">Google Play Billing / Apple StoreKit:</span> In-app subscription processing. <em>We never see or store your credit card numbers.</em>
                           </li>
                         </ul>
                       </div>
 
-                      {/* Section 4: Data Deletion & User Rights */}
+                      {/* Section 4: COPPA & FERPA */}
                       <div>
                         <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          🗑️ 4. Data Deletion & Your Rights
+                          👶 4. Children's Privacy (COPPA) &amp; FERPA
                         </h4>
                         <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          You maintain full ownership of your data. You have the right to request complete account deletion at any time. To trigger manual data removal, you can click "Delete Account" in settings or contact our support desk directly at:
+                          AP Exam App is designed strictly for individuals aged <strong>13 and older</strong>. We do not knowingly collect personal data from children under 13. If any account belonging to a child under 13 is identified, it will be immediately purged. Student-created study data is handled in strict alignment with FERPA educational confidentiality principles.
+                        </p>
+                      </div>
+
+                      {/* Section 5: State Privacy Rights */}
+                      <div>
+                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
+                          🐻 5. US State Privacy Rights (CCPA / CPRA)
+                        </h4>
+                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
+                          Residents of California and other US states have the right to request access to their personal data, request permanent deletion, and exercise their rights free from discrimination. We do not sell or share personal data with advertisers or data brokers.
+                        </p>
+                      </div>
+
+                      {/* Section 6: Data Deletion */}
+                      <div>
+                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
+                          🗑️ 6. Instant Account Deletion
+                        </h4>
+                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
+                          You retain full ownership of your data. You can permanently delete your entire account and all cloud records instantly via Profile Settings &gt; "Delete Account", or by contacting our privacy desk at:
                         </p>
                         <p className="text-[11px] font-black text-purple-600 pl-4 mt-1">
                           helpyou.ai.support@gmail.com
-                        </p>
-                      </div>
-
-                      {/* Section 5: Data Security */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          🔒 5. Commitment to Security
-                        </h4>
-                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          We employ industry-leading physical, technical, and administrative controls to protect your data. All communication is routed over secure HTTPS channels, and our cloud databases are protected by strict access control rules to keep your virtual study space safe and private.
-                        </p>
-                      </div>
-
-                      {/* Section 6: European Union Compliance (GDPR) */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          🇪🇺 6. European Union Compliance (GDPR)
-                        </h4>
-                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          For users residing in the European Economic Area (EEA), we comply fully with the General Data Protection Regulation (GDPR). Our legal bases for processing your data include:
-                        </p>
-                        <ul className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-8 space-y-1.5 list-disc">
-                          <li>Fulfilling our contractual obligations to provide educational tools and virtual tutoring services.</li>
-                          <li>Managing and validating your premium Pro Subscriptions.</li>
-                          <li>Fulfilling legitimate business interests, such as optimizing app performance, fixing bugs, and providing support.</li>
-                        </ul>
-                        <p className="text-[11px] leading-relaxed mt-1.5 text-zinc-600 pl-4">
-                          Under the GDPR, you have the following rights which can be exercised by emailing our support desk:
-                        </p>
-                        <ul className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-8 space-y-1.5 list-disc">
-                          <li><span className="font-semibold text-zinc-800">Right of Access:</span> Request a complete export of your personal data.</li>
-                          <li><span className="font-semibold text-zinc-800">Right to Rectification:</span> Request correction of any inaccurate profile information.</li>
-                          <li><span className="font-semibold text-zinc-800">Right to Erasure (Forget Me):</span> Request deletion of all stored account records.</li>
-                          <li><span className="font-semibold text-zinc-800">Right to Data Portability:</span> Request transfer of your data to another provider in a structured, machine-readable format.</li>
-                        </ul>
-                      </div>
-
-                      {/* Section 7: California Privacy Rights (CCPA) */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          🐻 7. California Privacy Rights (CCPA)
-                        </h4>
-                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          In accordance with the California Consumer Privacy Act (CCPA), we provide California residents with specific disclosures regarding their personal information:
-                        </p>
-                        <ul className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-8 space-y-1.5 list-disc">
-                          <li>We do <span className="font-extrabold text-zinc-900">NOT</span> sell, rent, or trade your personal data to any third parties.</li>
-                          <li>You have the right to request disclosure of the categories and specific pieces of personal information we have collected.</li>
-                          <li>You have the right to request deletion of your data and are guaranteed non-discriminatory treatment, meaning we will never deny services, alter quality levels, or charge different prices for exercising your CCPA rights.</li>
-                        </ul>
-                      </div>
-
-                      {/* Section 8: Children's Privacy (COPPA) */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          👶 8. Children's Privacy (COPPA)
-                        </h4>
-                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          Our services are strictly not intended for children under the age of 13. In accordance with the Children's Online Privacy Protection Act (COPPA), we do not knowingly or intentionally collect personal information from individuals under 13. If we discover that any user under the age of 13 has registered or submitted personal data, we will immediately and permanently purge those records from our servers.
-                        </p>
-                      </div>
-
-                      {/* Section 9: Cookies & Tracking Technologies */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          🍪 9. Cookies & Tracking Technologies
-                        </h4>
-                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          To deliver a high-quality user experience, AP Exam App utilizes multiple categories of cookies and identifiers:
-                        </p>
-                        <ul className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-8 space-y-1.5 list-disc">
-                          <li><span className="font-semibold text-zinc-800">Essential Cookies:</span> Necessary for securing authentication sessions and accessing paid capabilities.</li>
-                          <li><span className="font-semibold text-zinc-800">Functionality Cookies:</span> Remember your educational track, grade preferences, study notes, and dark mode state.</li>
-                          <li><span className="font-semibold text-zinc-800">Statistics & Analytics:</span> Anonymous session tracking to log application bugs and speed bottlenecks.</li>
-                        </ul>
-                        <p className="text-[11px] leading-relaxed mt-1.5 text-zinc-600 pl-4">
-                          You can easily restrict, disable, or manage essential and analytical cookies through your device settings.
                         </p>
                       </div>
                     </div>
@@ -3065,7 +3037,7 @@ export default function Profile({
                       onClick={() => { triggerVibration(10); setActiveModal(null); }}
                       className="w-full bg-zinc-950 hover:bg-zinc-900 text-white font-extrabold text-xs py-3.5 rounded-2xl cursor-pointer transition-all mt-6 shadow-md"
                     >
-                      I Understand & Agree
+                      I Understand &amp; Agree
                     </button>
                   </div>
                 )}
@@ -3073,148 +3045,137 @@ export default function Profile({
                 {/* 11. Terms of Service */}
                 {activeModal === 'terms' && (
                   <div className="space-y-5 text-left py-1 text-zinc-700">
-                    <p className="text-xs font-semibold leading-relaxed text-zinc-500">
-                      Welcome to AP Exam App. Please review these Terms of Use carefully before using our application. By accessing our services, you agree to be fully bound by these terms.
-                    </p>
+                    <div className="flex items-center justify-between pb-2 border-b border-zinc-100">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
+                        ⚖️ US Legal Jurisdiction
+                      </span>
+                      <a
+                        href="/terms.html"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[11px] font-bold text-blue-600 hover:text-blue-700 underline"
+                      >
+                        Open Full Web Page ↗
+                      </a>
+                    </div>
+
+                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5">
+                      <h5 className="text-xs font-black text-amber-900 flex items-center gap-1.5 uppercase tracking-wide">
+                        🏛️ College Board® Non-Affiliation Disclaimer
+                      </h5>
+                      <p className="text-[11px] leading-relaxed text-amber-900 mt-1 font-medium">
+                        <strong>AP® and Advanced Placement®</strong> are registered trademarks of the <strong>College Board</strong>, which is not affiliated with, does not sponsor, and was not involved in the creation or endorsement of this application.
+                      </p>
+                    </div>
 
                     <div className="space-y-4">
-                      {/* Section 1: Acceptance & Eligibility */}
+                      {/* Section 1: Agreement & Eligibility */}
                       <div>
                         <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          📝 1. Acceptance & Eligibility
+                          📝 1. Binding Agreement &amp; Eligibility (13+)
                         </h4>
                         <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
                           <li>
-                            <span className="font-bold text-zinc-800">Binding Agreement:</span> By installing, registering, or using any part of the AP Exam App application, you acknowledge that you have read, understood, and agree to be bound by these Terms of Use.
+                            <span className="font-bold text-zinc-800">Binding Contract:</span> By downloading, registering, or using AP Exam App, you enter into a legally binding agreement under the laws of the State of Delaware, United States.
                           </li>
                           <li>
-                            <span className="font-bold text-zinc-800">Age Restrictions:</span> AP Exam App is strictly designed and permitted only for individuals aged 13 or older. We do not knowingly permit younger children to access our virtual learning systems.
+                            <span className="font-bold text-zinc-800">Age Requirement:</span> You must be at least 13 years old. If you are between 13 and 17, your parent or legal guardian must review and agree to these Terms on your behalf.
                           </li>
                         </ul>
                       </div>
 
-                      {/* Section 2: AI-Generated Content Disclaimer */}
+                      {/* Section 2: AI Educational Disclaimers */}
                       <div>
                         <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          ⚠️ 2. AI-Generated Content Disclaimer
-                        </h4>
-                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          AP Exam App harnesses advanced artificial intelligence, including Google Gemini AI APIs, to deliver instant step-by-step problem breakdowns, quizzes, and real-time study assistance.
-                        </p>
-                        <ul className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4 space-y-1.5 list-disc">
-                          <li>
-                            All tutoring content, answers, and study notes are generated dynamically and provided on an <span className="font-black text-zinc-800">"as is" and "as available" basis</span> for personal learning and informational purposes only.
-                          </li>
-                          <li>
-                            While our underlying models are highly optimized, we do not guarantee 100% academic accuracy, thoroughness, or completeness. Users accept all generated explanations at their own risk.
-                          </li>
-                        </ul>
-                      </div>
-
-                      {/* Section 2.1: No Professional Advice */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          ⚕️ 2.1. No Professional Advice
-                        </h4>
-                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          The content provided by AP Exam App, specifically in subjects like Biology and Chemistry, is strictly for academic and educational purposes. It does not constitute professional, medical, health, or safety advice. Never use AI-generated answers for real-world chemical handling or medical self-diagnosis.
-                        </p>
-                      </div>
-
-                      {/* Section 3: Subscriptions, Billing & Cancellation */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          💎 3. Subscriptions, Billing & Cancellation
+                          ⚠️ 2. AI Study Aid &amp; Academic Integrity
                         </h4>
                         <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
                           <li>
-                            <span className="font-bold text-zinc-800">Auto-Renewal:</span> Premium Pro Subscriptions (available in Monthly and Yearly cycles) automatically renew at the prevailing tier price unless cancelled.
+                            <span className="font-bold text-zinc-800">Supplemental Learning Aid:</span> All AI explanations, rubric checks, and study notes are generated dynamically for personal educational study only.
                           </li>
                           <li>
-                            <span className="font-bold text-zinc-800">Cancellation Policy:</span> To avoid future charges, you must cancel your subscription via your device's respective distribution store (Google Play Billing or Apple App Store Subscription Settings) at least 24 hours prior to the next scheduled renewal date.
+                            <span className="font-bold text-zinc-800">No Score Guarantee:</span> We do not guarantee specific AP scores (e.g. 5, 4, 3) or college credit awards.
                           </li>
                           <li>
-                            <span className="font-bold text-zinc-800">Chargeback Policy:</span> We enforce a zero-tolerance policy against fraudulent disputes. Initiation of unauthorized chargebacks or payment disputes will result in the immediate and permanent termination of your AP Exam App account and the deletion of your historical study data.
+                            <span className="font-bold text-zinc-800">Honor Code Compliance:</span> You agree not to use this app during live school exams or formal testing where unauthorized digital assistance is prohibited.
                           </li>
                         </ul>
                       </div>
 
-                      {/* Section 4: Acceptable Use & Abuse Prevention */}
+                      {/* Section 3: Subscriptions & Cancellation */}
                       <div>
                         <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          🛡️ 4. Acceptable Use & Abuse Prevention
-                        </h4>
-                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          Subject to these terms, you are granted a non-exclusive, non-transferable, and revocable license to access our educational services for personal, non-commercial use.
-                        </p>
-                        <ul className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-8 space-y-1.5 list-disc">
-                          <li>You are strictly prohibited from reverse engineering, decompiling, scraping, or attempting to extract the underlying source code of AP Exam App.</li>
-                          <li>You agree not to use automated bots, custom scripts, or high-volume scrapers to query our backend AI, which places an unfair burden on platform resources and shared API rate limits.</li>
-                          <li>Any detected infrastructure abuse, scanner spamming, or server overloading will result in immediate suspension without refund.</li>
-                        </ul>
-                      </div>
-
-                      {/* Section 5: Proprietary Rights */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          👑 5. Proprietary Rights
-                        </h4>
-                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          The AP Exam App brand name, custom logos, visual designs, scanner interfaces, and proprietary tutoring algorithms are the sole property of the Company and are fully protected under global copyright, trademark, and intellectual property laws.
-                        </p>
-                      </div>
-
-                      {/* Section 6: Limitation of Liability */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          🛑 6. Limitation of Liability
+                          💎 3. Subscriptions &amp; Cancellation (California ARL)
                         </h4>
                         <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
-                          <li>To the maximum extent permitted by applicable law, AP Exam App and its creators shall not be liable for any indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, loss of study progress, academic grades, or data) arising from the use of or inability to use the service.</li>
-                          <li>The total aggregate liability of the company for any and all claims arising under or related to these Terms shall not exceed the total amount actually paid by you to AP Exam App in the three (3) months preceding the claim, or $100 USD, whichever is greater.</li>
+                          <li>
+                            <span className="font-bold text-zinc-800">Auto-Renewal:</span> In accordance with the California Automatic Renewal Law, subscriptions automatically renew at the end of each period ($14.99/mo or $99.99/yr) unless cancelled at least 24 hours prior to billing.
+                          </li>
+                          <li>
+                            <span className="font-bold text-zinc-800">Managing Subscriptions:</span> Subscriptions must be cancelled directly via your Google Play Store or Apple ID account settings.
+                          </li>
+                          <li>
+                            <span className="font-bold text-zinc-800">Store Refund Policies:</span> All in-app purchases are handled by Google Play / Apple and are governed by their respective refund policies.
+                          </li>
                         </ul>
                       </div>
 
-                      {/* Section 7: Indemnification */}
+                      {/* Section 4: Single Active Device Policy */}
                       <div>
                         <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          🛡️ 7. Indemnification
+                          📱 4. Single Active Device Policy
                         </h4>
                         <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          You agree to indemnify, defend, and hold harmless AP Exam App, its creator, affiliates, and partners from and against any and all claims, liabilities, damages, losses, or expenses (including reasonable attorneys' fees) arising out of or in any way connected with your violation of these Terms or your misuse of the Service.
+                          Each account is licensed for <strong>one active mobile device at a time</strong>. Logging in on a second device will automatically sign out any prior session to safeguard your account against unauthorized sharing.
                         </p>
                       </div>
 
-                      {/* Section 8: Termination */}
+                      {/* Section 5: Acceptable Use & DMCA */}
                       <div>
                         <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          🚫 8. Termination
+                          🛡️ 5. Acceptable Use &amp; DMCA Copyright Agent
                         </h4>
                         <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          We reserve the right, at our sole discretion, to suspend or terminate your account and revoke your access to the Service at any time, with or without notice, and without any liability, especially in cases of structural abuse, payment fraudulent chargebacks, or violations of these Terms.
+                          You agree not to decompile, reverse engineer, or deploy automated bots against our AI infrastructure. Pursuant to 17 U.S.C. § 512, copyright infringement notices should be directed to our designated DMCA agent at:
+                        </p>
+                        <p className="text-[11px] font-black text-purple-600 pl-4 mt-1">
+                          helpyou.ai.support@gmail.com
                         </p>
                       </div>
 
-                      {/* Section 9: Governing Law & Class Action Waiver */}
+                      {/* Section 6: Warranty Disclaimers & Liability */}
                       <div>
                         <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          ⚖️ 9. Governing Law & Class Action Waiver
+                          🛑 6. Disclaimer of Warranties &amp; Liability Cap
+                        </h4>
+                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
+                          The Service is provided on an "AS IS" and "AS AVAILABLE" basis without warranty of any kind. Under no circumstances shall AP Exam App or its creators be liable for indirect, incidental, or consequential damages. Maximum aggregate liability is strictly capped at $100 USD or amounts paid in the preceding 12 months.
+                        </p>
+                      </div>
+
+                      {/* Section 7: Binding Arbitration & Class Action Waiver */}
+                      <div>
+                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
+                          ⚖️ 7. Mandatory Binding Arbitration &amp; Class Action Waiver
                         </h4>
                         <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
-                          <li>These Terms and any dispute or claim arising out of or in connection with them shall be governed by and construed in accordance with the laws of India.</li>
-                          <li>Any legal actions, suits, or judicial proceedings arising under or related to these Terms shall be resolved exclusively in the competent courts located in India.</li>
-                          <li><span className="font-bold text-zinc-800">Class Action Waiver:</span> You agree that any dispute resolution proceedings will be conducted only on an individual basis and not in a class, consolidated, or representative action. You expressly waive any right to file or participate in a class-action lawsuit against AP Exam App or its creators.</li>
+                          <li>
+                            <span className="font-bold text-zinc-800">Delaware Governing Law:</span> These Terms are governed by the laws of the State of Delaware and the US Federal Arbitration Act.
+                          </li>
+                          <li>
+                            <span className="font-bold text-zinc-800">AAA Arbitration:</span> Any disputes shall be resolved through individual binding arbitration under American Arbitration Association (AAA) Consumer Rules rather than court litigation.
+                          </li>
+                          <li>
+                            <span className="font-bold text-zinc-800">Class Action Waiver:</span> YOU EXPRESSLY AGREE TO WAIVE ANY RIGHT TO PARTICIPATE IN A CLASS ACTION, MASS LITIGATION, OR REPRESENTATIVE PROCEEDING AGAINST AP EXAM APP.
+                          </li>
                         </ul>
                       </div>
 
-                      {/* Section 10: Contact Us */}
+                      {/* Section 8: Legal Support */}
                       <div>
                         <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          📬 10. Contact Us
+                          📬 8. Legal Notices &amp; Inquiries
                         </h4>
-                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          If you have any questions, concerns, or legal queries regarding these Terms of Use, please reach out to our legal and support helpdesk directly at:
-                        </p>
                         <p className="text-[11px] font-black text-purple-600 pl-4 mt-1">
                           helpyou.ai.support@gmail.com
                         </p>
@@ -3225,7 +3186,7 @@ export default function Profile({
                       onClick={() => { triggerVibration(10); setActiveModal(null); }}
                       className="w-full bg-zinc-950 hover:bg-zinc-900 text-white font-extrabold text-xs py-3.5 rounded-2xl cursor-pointer transition-all mt-6 shadow-md"
                     >
-                      I Accept Terms & Conditions
+                      I Accept Terms &amp; Conditions
                     </button>
                   </div>
                 )}
