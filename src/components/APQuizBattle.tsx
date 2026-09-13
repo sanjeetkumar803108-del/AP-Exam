@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { triggerVibration } from '../utils/vibrate';
-import { addCoins } from '../utils/coins';
+import { addStudyXP } from '../utils/gamification';
 import { getUserProfileData } from '../utils/profile';
 import { battleAudio } from '../utils/quizBattleAudio';
 import { 
@@ -755,19 +755,19 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
         });
       } catch {}
 
-      addCoins(25, '1v1 Battle Victory');
+      // Winner receives 10 XP points (no study coins)
+      addStudyXP(10, '1v1 Battle Victory', true);
     } else if (isTie) {
       // DRAW: Balanced draw chime, strictly NO confetti!
       playSound(() => battleAudio.playDraw());
       triggerVibration(25);
       try { (confetti as any).reset?.(); } catch {}
-      addCoins(10, '1v1 Battle Draw');
     } else {
       // DEFEAT / LOSS: Gentle defeat chime, strictly NO confetti!
+      // Loser receives 0 XP points (no study coins)
       playSound(() => battleAudio.playDefeat());
       triggerVibration(35);
       try { (confetti as any).reset?.(); } catch {}
-      addCoins(10, '1v1 Battle Consolation');
     }
   };
 
@@ -1796,17 +1796,12 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           </div>
         </div>
 
-        {/* Rewards Earned */}
-        <div className="inline-flex items-center gap-4 bg-zinc-900 border border-zinc-800 px-5 py-3 rounded-2xl mb-6 shadow-md">
-          <div className="flex items-center gap-1.5 text-xs font-black text-amber-400">
-            <Award className="w-4 h-4" />
-            <span>+{isUserWinner ? 25 : 10} Study Coins</span>
-          </div>
-          <div className="h-3 w-px bg-zinc-700"></div>
-          <div className="flex items-center gap-1.5 text-xs font-black text-indigo-400">
-            <Zap className="w-4 h-4" />
-            <span>+{isUserWinner ? 150 : 60} XP</span>
-          </div>
+        {/* Rewards Earned (10 XP for Winner, 0 XP for Loser, Study Coins Removed) */}
+        <div className="inline-flex items-center gap-2 bg-zinc-900/90 border border-zinc-800 px-5 py-2.5 rounded-2xl mb-6 shadow-md">
+          <Zap className={`w-4 h-4 ${isUserWinner ? 'text-amber-400 fill-amber-400 animate-pulse' : 'text-zinc-500'}`} />
+          <span className={`text-xs font-black tracking-wider uppercase ${isUserWinner ? 'text-amber-300' : 'text-zinc-400'}`}>
+            {isUserWinner ? '+10 XP Points' : '+0 XP Points'}
+          </span>
         </div>
       </div>
 
