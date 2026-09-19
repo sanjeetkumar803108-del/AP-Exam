@@ -428,7 +428,7 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
                 🛡️ 3 Days Free, then auto-renews. Cancel anytime.
               </p>
               
-              <div className="mt-3 flex items-center justify-center gap-4 text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
+              <div className="mt-3 flex items-center justify-center gap-3 text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
                 <button 
                   type="button"
                   onClick={handleRestorePurchases}
@@ -437,6 +437,24 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
                 >
                   {isRestoring ? "Restoring..." : "Restore Purchases"}
                 </button>
+                <span>•</span>
+                <a 
+                  href="/terms.html" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-zinc-600 transition-colors underline"
+                >
+                  Terms of Use
+                </a>
+                <span>•</span>
+                <a 
+                  href="/privacy.html" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-zinc-600 transition-colors underline"
+                >
+                  Privacy Policy
+                </a>
               </div>
             </div>
           </div>

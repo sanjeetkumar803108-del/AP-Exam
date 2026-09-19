@@ -41,13 +41,13 @@ import { triggerVibration } from '../utils/vibrate';
 import { showToast } from '../utils/toast';
 import { getApiUrl } from '../utils/api';
 import { TOP_10_AP_SUBJECTS, APSubject } from '../utils/apCurriculum';
-import GlobalMarkdown from './GlobalMarkdown';
+import GlobalMarkdown, { prepareQuizMath } from './GlobalMarkdown';
 import { safeGetItem, safeSetItem, safeJsonParse } from '../utils/storage';
+import { getUserHistory, saveUserHistory } from '../utils/userHistory';
+import { getUserProfileData } from '../utils/profile';
 import { saveMistakeToVault } from '../utils/mistakes';
-import { jsPDF } from 'jspdf';
 import SafePdfViewer from './SafePdfViewer';
-import { sanitizePdfText, formatMathForPdf } from '../utils/pdfSanitizer';
-import { drawTextWithElevatedPowers, drawRichTextWithTables } from '../utils/pdfTableDrawer';
+import { generateTrapRadarPDF } from '../utils/apQuestionPaperPdfExporter';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
 import { FileText, Download, Share2, HelpCircle } from 'lucide-react';
 import { takeNativePhoto, pickNativeFiles } from '../utils/mobilePicker';
@@ -120,9 +120,63 @@ export interface TrapQuestion {
 
 function cleanOptionText(text: string | undefined, optionLetter: string): string {
   if (!text) return '';
-  const regex = new RegExp(`^\\s*${optionLetter}\\s*[:.)-]\\s*`, 'i');
+  const regex = new RegExp(`^\\s*(?:Option|Choice)?\\s*${optionLetter}\\s*[:.)-]\\s*`, 'i');
   return text.replace(regex, '').trim();
 }
+
+const darkEvaluationMarkdownComponents = {
+  h1: ({ node, ...props }: any) => (
+    <h1 className="text-base sm:text-lg font-black text-white mt-4 mb-2 tracking-tight leading-snug break-words border-b border-indigo-500/20 pb-1" {...props} />
+  ),
+  h2: ({ node, ...props }: any) => (
+    <h2 className="text-sm sm:text-base font-bold text-white mt-3.5 mb-1.5 tracking-tight leading-snug break-words flex items-center gap-2" {...props} />
+  ),
+  h3: ({ node, ...props }: any) => (
+    <h3 className="text-xs sm:text-sm font-bold text-indigo-200 mt-3 mb-1 tracking-tight leading-snug break-words" {...props} />
+  ),
+  h4: ({ node, ...props }: any) => (
+    <h4 className="text-xs font-bold text-indigo-200 mt-2 mb-1 tracking-tight leading-snug break-words" {...props} />
+  ),
+  p: ({ node, ...props }: any) => (
+    <p className="text-xs sm:text-[13.5px] text-zinc-100 font-medium leading-relaxed my-3 break-words" {...props} />
+  ),
+  ul: ({ node, ...props }: any) => (
+    <ul className="list-disc pl-4 space-y-3 my-3 text-xs sm:text-[13.5px] text-zinc-100 font-medium leading-relaxed marker:text-indigo-400" {...props} />
+  ),
+  ol: ({ node, ...props }: any) => (
+    <ol className="list-decimal pl-4 space-y-3 my-3 text-xs sm:text-[13.5px] text-zinc-100 font-medium leading-relaxed marker:text-indigo-400" {...props} />
+  ),
+  li: ({ node, ...props }: any) => (
+    <li className="leading-relaxed text-zinc-100 font-medium my-2 pb-1" {...props} />
+  ),
+  strong: ({ node, ...props }: any) => (
+    <strong className="font-bold text-amber-300" {...props} />
+  ),
+  b: ({ node, ...props }: any) => (
+    <strong className="font-bold text-amber-300" {...props} />
+  ),
+  blockquote: ({ node, ...props }: any) => (
+    <blockquote className="border-l-4 border-indigo-400 pl-3.5 my-2.5 text-indigo-100 italic text-xs sm:text-sm bg-indigo-950/60 py-2 rounded-r-xl" {...props} />
+  ),
+  code: ({ node, inline, className, children, ...props }: any) => {
+    const isInline = !className && !String(children).includes('\n');
+    if (isInline) {
+      return (
+        <code
+          className="px-1.5 py-0.5 mx-0.5 rounded-md bg-indigo-950/90 text-indigo-200 font-mono text-[12px] font-semibold border border-indigo-700/60 break-words shadow-xs"
+          {...props}
+        >
+          {children}
+        </code>
+      );
+    }
+    return (
+      <code className={`font-mono text-xs text-zinc-100 ${className || ''}`} {...props}>
+        {children}
+      </code>
+    );
+  },
+};
 
 const TRAP_ARCHETYPES = [
   {
@@ -298,7 +352,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
   // Trap Vault State
   const [vault, setVault] = useState<TrapQuestion[]>(() => {
-    return safeJsonParse<TrapQuestion[]>(safeGetItem('ap_trap_radar_vault'), []);
+    return getUserHistory<TrapQuestion[]>('ap_trap_radar_vault', []);
   });
 
   // Score Tracking for current session
@@ -309,10 +363,19 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
   // Trap Radar History State
   const [radarHistory, setRadarHistory] = useState<TrapRadarHistoryItem[]>(() => {
-    return safeJsonParse<TrapRadarHistoryItem[]>(safeGetItem('ap_trap_radar_history'), []);
+    return getUserHistory<TrapRadarHistoryItem[]>('ap_trap_radar_history', []);
   });
   const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
   const [historyFilter, setHistoryFilter] = useState<'all' | 'challenge' | 'scan'>('all');
+
+  useEffect(() => {
+    const handleAccountChange = () => {
+      setRadarHistory(getUserHistory<TrapRadarHistoryItem[]>('ap_trap_radar_history', []));
+      setVault(getUserHistory<TrapQuestion[]>('ap_trap_radar_vault', []));
+    };
+    window.addEventListener('user_account_changed', handleAccountChange);
+    return () => window.removeEventListener('user_account_changed', handleAccountChange);
+  }, []);
 
   const filteredHistory = useMemo(() => {
     if (historyFilter === 'all') return radarHistory;
@@ -322,7 +385,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
   const saveToHistory = (item: TrapRadarHistoryItem) => {
     setRadarHistory(prev => {
       const updated = [item, ...prev.filter(h => h.id !== item.id)].slice(0, 50);
-      safeSetItem('ap_trap_radar_history', JSON.stringify(updated));
+      saveUserHistory('ap_trap_radar_history', updated);
       return updated;
     });
   };
@@ -331,7 +394,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     triggerVibration(10);
     setRadarHistory(prev => {
       const updated = prev.filter(h => h.id !== id);
-      safeSetItem('ap_trap_radar_history', JSON.stringify(updated));
+      saveUserHistory('ap_trap_radar_history', updated);
       return updated;
     });
     showToast('Removed from history', 'info');
@@ -340,7 +403,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
   const clearAllHistory = () => {
     triggerVibration(15);
     setRadarHistory([]);
-    safeSetItem('ap_trap_radar_history', JSON.stringify([]));
+    saveUserHistory('ap_trap_radar_history', []);
     showToast('Radar history cleared', 'info');
   };
 
@@ -402,6 +465,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     }));
 
     try {
+      const _radarProfile = getUserProfileData();
       const response = await fetch(getApiUrl('/api/ap-tutor-explain'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -417,6 +481,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
           disarmStrategy: targetQ.disarmStrategy,
           modelAnswer: targetQ.parts?.map(p => `Part ${p.partLabel}: ${p.modelAnswer}`).join('\n\n'),
           scoringRubric: targetQ.parts?.map(p => `Part ${p.partLabel} (${p.points} Pts): ${p.scoringCriteria}`).join('\n'),
+          gradeLevel: _radarProfile.gradeLevel,
           mode
         })
       });
@@ -574,6 +639,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     setIsRadarRevealed(false);
 
     try {
+      const _radarChallengeProfile = getUserProfileData();
       const response = await fetch(getApiUrl('/api/ap-trap-radar'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -582,6 +648,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
           subject: selectedSubject.name,
           unit: selectedUnit,
           count: questionCount,
+          gradeLevel: _radarChallengeProfile.gradeLevel,
           format: questionFormat
         })
       });
@@ -654,12 +721,15 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
         const scoringRubric = activeQuestion.parts?.map(p => `${p.partLabel} (${p.points} Pts): ${p.scoringCriteria}`) || [];
         const modelAnswer = activeQuestion.parts?.map(p => `${p.partLabel}: ${p.modelAnswer}`).join('\n\n') || activeQuestion.disarmStrategy || '';
 
+        const radarPoints = (activeQuestion as any).totalPoints || activeQuestion.parts?.reduce((sum, p) => sum + (p.points || 0), 0) || 6;
+        const _radarEvalProfile = getUserProfileData();
         const payload = {
           questionText,
           userAnswer: draftText || 'Student submitted handwritten calculation work in attached photo.',
           image: images[0] || '',
           subject: selectedSubject?.name || 'AP High School Exam Standard',
-          userGrade: 'AP High School Exam Standard',
+          userGrade: _radarEvalProfile.gradeLevel,
+          totalPoints: radarPoints,
           scoringRubric,
           modelAnswer
         };
@@ -725,7 +795,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     setVault(prev => {
       if (prev.some(item => item.id === q.id || item.prompt === q.prompt)) return prev;
       const updated = [q, ...prev];
-      safeSetItem('ap_trap_radar_vault', JSON.stringify(updated));
+      saveUserHistory('ap_trap_radar_vault', updated);
       return updated;
     });
   };
@@ -733,7 +803,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
   const removeFromVault = (qId: number | string) => {
     setVault(prev => {
       const updated = prev.filter(item => item.id !== qId);
-      safeSetItem('ap_trap_radar_vault', JSON.stringify(updated));
+      saveUserHistory('ap_trap_radar_vault', updated);
       return updated;
     });
     showToast('Removed from Trap Vault', 'info');
@@ -775,6 +845,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     setExplainingMistakeId(q.id);
     triggerVibration(15);
     try {
+      const _radarMistakeProfile = getUserProfileData();
       const response = await fetch(getApiUrl('/api/ap-trap-radar'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -783,7 +854,8 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
           questionPrompt: q.prompt,
           wrongInput: q.userSelectedOption || q.userTrippedTrap || 'Distractor Trap Selected',
           correctConcept: q.correctAnswer || (q.parts ? q.parts.map(p => `${p.partLabel}: ${p.scoringCriteria}`).join('; ') : 'CED Requirement'),
-          trapType: q.userTrippedTrap || q.traps?.find(t => !t.isCorrect)?.trapType || 'College Board Distractor Trap'
+          trapType: q.userTrippedTrap || q.traps?.find(t => !t.isCorrect)?.trapType || 'College Board Distractor Trap',
+          gradeLevel: _radarMistakeProfile.gradeLevel
         })
       });
       if (!response.ok) throw new Error('Failed to fetch AI explanation');
@@ -824,254 +896,22 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       triggerVibration(15);
       showToast('Generating College Board Practice PDF...', 'info');
 
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 15;
-      const contentWidth = pageWidth - margin * 2;
-      let y = margin;
-
-      const checkPageBreak = (neededHeight: number) => {
-        if (y + neededHeight > pageHeight - margin) {
-          doc.addPage();
-          y = margin;
-          return true;
-        }
-        return false;
-      };
-
-      // Header Banner
-      doc.setFillColor(30, 41, 59);
-      doc.rect(margin, y, contentWidth, 22, 'F');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(14);
-      doc.setTextColor(255, 255, 255);
-      const cleanSubj = sanitizePdfText(selectedSubject.name);
-      const displayTitle = cleanSubj.startsWith('AP ') ? `${cleanSubj} - AP TRAP RADAR` : `AP ${cleanSubj} - AP TRAP RADAR`;
-      doc.text(displayTitle, margin + 6, y + 10);
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(203, 213, 225);
       const effFormat = listToExport[0]?.format || questionFormat;
-      const formatLabel = effFormat === 'subjective' ? 'Section II (Free Response Trap Simulation)' : 'Section I (Multiple Choice Distractor Gauntlet)';
-      doc.text(`${sanitizePdfText(selectedUnit)} | ${formatLabel} | ${listToExport.length} Questions`, margin + 6, y + 17);
-      y += 28;
-
-      // Section: Practice Questions
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.setTextColor(15, 23, 42);
-      doc.text('SECTION: PRACTICE QUESTIONS & STIMULI', margin, y);
-      y += 6;
-      doc.setDrawColor(203, 213, 225);
-      doc.line(margin, y, margin + contentWidth, y);
-      y += 6;
-
-      listToExport.forEach((q, idx) => {
-        checkPageBreak(35);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10);
-        doc.setTextColor(180, 83, 9);
-        doc.text(`Question ${idx + 1} ${q.skill ? `[${sanitizePdfText(q.skill)}]` : ''}`, margin, y);
-        y += 5;
-
-        // Stimulus (with rich table and math support)
-        if (q.stimulus && q.stimulus.trim().length > 0) {
-          checkPageBreak(25);
-          if (q.stimulus.includes('|')) {
-            y = drawRichTextWithTables(doc, q.stimulus.trim(), margin + 2, y, contentWidth - 4, {
-              fontName: 'helvetica',
-              fontStyle: 'normal',
-              fontSize: 8.5,
-              textColor: [51, 65, 85],
-              checkPageBreak
-            });
-            y += 4;
-          } else {
-            doc.setFillColor(248, 250, 252);
-            doc.setDrawColor(226, 232, 240);
-            const cleanStim = sanitizePdfText(formatMathForPdf(q.stimulus));
-            const stimLines = doc.splitTextToSize(cleanStim, contentWidth - 8);
-            const boxHeight = stimLines.length * 4.5 + 6;
-            doc.rect(margin, y, contentWidth, boxHeight, 'FD');
-            doc.setFont('helvetica', 'italic');
-            doc.setFontSize(8.5);
-            doc.setTextColor(51, 65, 85);
-            stimLines.forEach((sL: string, si: number) => {
-              drawTextWithElevatedPowers(doc, sL, margin + 4, y + 5 + si * 4.5, 8.5);
-            });
-            y += boxHeight + 4;
-          }
-        }
-
-        // Prompt
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9.5);
-        doc.setTextColor(15, 23, 42);
-        const cleanPrompt = sanitizePdfText(formatMathForPdf(q.prompt));
-        const promptLines = doc.splitTextToSize(cleanPrompt, contentWidth);
-        checkPageBreak(promptLines.length * 5 + 4);
-        promptLines.forEach((pL: string) => {
-          drawTextWithElevatedPowers(doc, pL, margin, y, 9.5);
-          y += 5;
-        });
-        y += 3;
-
-        // Options (for MCQ)
-        if (q.options && q.options.length > 0) {
-          q.options.forEach(opt => {
-            const cleanOpt = sanitizePdfText(formatMathForPdf(opt));
-            const optLines = doc.splitTextToSize(cleanOpt, contentWidth - 6);
-            checkPageBreak(optLines.length * 4.5 + 2);
-            optLines.forEach((oL: string) => {
-              drawTextWithElevatedPowers(doc, oL, margin + 4, y, 8.5);
-              y += 4.5;
-            });
-            y += 2;
-          });
-        }
-
-        // Parts (for FRQ)
-        if (q.parts && q.parts.length > 0) {
-          q.parts.forEach(part => {
-            checkPageBreak(18);
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(9);
-            doc.setTextColor(30, 41, 59);
-            doc.text(`Part ${sanitizePdfText(part.partLabel)} (${part.points} Point${part.points > 1 ? 's' : ''}):`, margin + 4, y);
-            y += 4.5;
-            doc.setFont('helvetica', 'normal');
-            const cleanTask = sanitizePdfText(formatMathForPdf(part.task));
-            const taskLines = doc.splitTextToSize(cleanTask, contentWidth - 8);
-            taskLines.forEach((tL: string) => {
-              drawTextWithElevatedPowers(doc, tL, margin + 6, y, 8.5);
-              y += 4.5;
-            });
-            y += 3;
-          });
-        }
-        y += 5;
+      const res = await generateTrapRadarPDF({
+        subject: selectedSubject,
+        unitTitle: selectedUnit || 'All Topics',
+        questionFormat: effFormat,
+        questions: listToExport as any,
       });
 
-      // Answer Key & Distractor Autopsy Section on New Page
-      doc.addPage();
-      y = margin;
-      doc.setFillColor(15, 23, 42);
-      doc.rect(margin, y, contentWidth, 14, 'F');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.setTextColor(255, 255, 255);
-      doc.text('EXAMINER DISTRACTOR AUTOPSY & SCORING RUBRICS', margin + 6, y + 9);
-      y += 20;
+      if (!res) return;
 
-      listToExport.forEach((q, idx) => {
-        checkPageBreak(45);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10);
-        doc.setTextColor(15, 23, 42);
-        doc.text(`Question ${idx + 1} Autopsy & Disarm Guide`, margin, y);
-        y += 5;
-
-        if (q.correctAnswer) {
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(9);
-          doc.setTextColor(16, 185, 129);
-          const cleanAns = sanitizePdfText(formatMathForPdf(q.correctAnswer));
-          drawTextWithElevatedPowers(doc, `Target Answer: ${cleanAns}`, margin, y, 9);
-          y += 5;
-        }
-
-        // MCQ Traps breakdown
-        if (q.traps && q.traps.length > 0) {
-          q.traps.forEach(t => {
-            checkPageBreak(16);
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(8.5);
-            doc.setTextColor(t.isCorrect ? 16 : 185, t.isCorrect ? 185 : 83, t.isCorrect ? 129 : 9);
-            doc.text(`[Option ${t.option}] ${sanitizePdfText(t.trapType)} ${t.vulnerabilityRate ? `(${t.vulnerabilityRate})` : ''}`, margin + 3, y);
-            y += 4;
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(71, 85, 105);
-            const cleanDesc = sanitizePdfText(formatMathForPdf(t.trapDescription));
-            const descLines = doc.splitTextToSize(cleanDesc, contentWidth - 8);
-            descLines.forEach((dL: string) => {
-              drawTextWithElevatedPowers(doc, dL, margin + 6, y, 8);
-              y += 4;
-            });
-            y += 2;
-          });
-        }
-
-        // FRQ Rubric & Pitfalls
-        if (q.parts && q.parts.length > 0) {
-          q.parts.forEach(part => {
-            checkPageBreak(25);
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(8.5);
-            doc.setTextColor(30, 41, 59);
-            doc.text(`Part ${sanitizePdfText(part.partLabel)} Model Answer & Scoring:`, margin + 3, y);
-            y += 4;
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(16, 185, 129);
-            const cleanModel = sanitizePdfText(formatMathForPdf(part.modelAnswer));
-            const modelLines = doc.splitTextToSize(`Model Answer:\n${cleanModel}`, contentWidth - 8);
-            checkPageBreak(Math.min(modelLines.length * 4.2 + 4, 60));
-            modelLines.forEach((mL: string) => {
-              checkPageBreak(5);
-              drawTextWithElevatedPowers(doc, mL, margin + 6, y, 8);
-              y += 4;
-            });
-            y += 2;
-
-            if (part.frqTraps && part.frqTraps.length > 0) {
-              part.frqTraps.forEach(ft => {
-                doc.setFont('helvetica', 'bold');
-                doc.setTextColor(185, 83, 9);
-                doc.text(`Pitfall: ${sanitizePdfText(ft.trapName)} (${sanitizePdfText(ft.vulnerabilityRate || '')})`, margin + 6, y);
-                y += 4;
-                doc.setFont('helvetica', 'normal');
-                doc.setTextColor(71, 85, 105);
-                const trapDescClean = sanitizePdfText(formatMathForPdf(`Lost Points: ${ft.howStudentsLosePoints} | Fix: ${ft.fullCreditFix}`));
-                const trapDesc = doc.splitTextToSize(trapDescClean, contentWidth - 10);
-                trapDesc.forEach((tdL: string) => {
-                  drawTextWithElevatedPowers(doc, tdL, margin + 8, y, 8);
-                  y += 4;
-                });
-                y += 2;
-              });
-            }
-          });
-        }
-
-        // 5-Second Disarm Secret
-        if (q.disarmStrategy) {
-          checkPageBreak(16);
-          doc.setFillColor(236, 253, 245);
-          doc.setDrawColor(167, 243, 208);
-          const cleanDisarm = sanitizePdfText(formatMathForPdf(q.disarmStrategy));
-          const disarmLines = doc.splitTextToSize(`5-Second Disarm Secret: ${cleanDisarm}`, contentWidth - 8);
-          const dHeight = disarmLines.length * 4 + 6;
-          doc.rect(margin, y, contentWidth, dHeight, 'FD');
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(8);
-          doc.setTextColor(6, 95, 70);
-          disarmLines.forEach((dsL: string, di: number) => {
-            drawTextWithElevatedPowers(doc, dsL, margin + 4, y + 4.5 + di * 4, 8);
-          });
-          y += dHeight + 4;
-        }
-        y += 4;
-      });
-
-      const filename = `AP_${selectedSubject.shortCode || selectedSubject.name.replace(/\s+/g, '_')}_TrapRadar_${effFormat.toUpperCase()}.pdf`;
-      const pdfBlob = doc.output('blob');
-      const blobUrl = URL.createObjectURL(pdfBlob);
       setIsPdfDownloaded(false);
-      setPreviewPdfUri(blobUrl);
-      setPreviewPdfName(filename);
+      setPreviewPdfUri(res.blobUrl);
+      setPreviewPdfName(res.filename);
 
       showToast('PDF ready for viewing and sharing!', 'success');
-      return { blob: pdfBlob, filename };
+      return { blob: res.blob, filename: res.filename };
     } catch (err: any) {
       console.error('Failed to generate Trap Radar PDF:', err);
       showToast('PDF creation failed: ' + (err.message || err), 'error');
@@ -1106,7 +946,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     const isGreeting = /^(hi|hello|hey|yo|hola|namaste|test|testing|sup|ok|okay|asdf|asdfgh)[\s!.]*$/i.test(trimmed);
     if (attachedImages.length === 0 && (trimmed.length < 15 || isGreeting)) {
       triggerVibration(50);
-      setScanInputError(`Input "${trimmed}" is not a valid AP question. Please enter an actual AP exam question stem, stimulus, or choices (A, B, C, D) so the Trap Radar can dissect the distractors.`);
+      setScanInputError(`Input "${trimmed}" is not a valid AP question. Please enter or upload an actual AP exam question stem, stimulus, Free-Response prompt (FRQ), or multiple-choice options (A, B, C, D).`);
       showToast('Please enter an actual AP question stem to scan!', 'warning');
       return;
     }
@@ -1116,13 +956,15 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     setScannedResult(null);
 
     try {
+      const _scanProfile = getUserProfileData();
       const response = await fetch(getApiUrl('/api/ap-trap-radar'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'analyze_custom',
           customQuestion: trimmed,
-          images: attachedImages
+          images: attachedImages,
+          gradeLevel: _scanProfile.gradeLevel
         })
       });
 
@@ -2109,7 +1951,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                               <motion.div
                                 initial={{ opacity: 0, y: 12 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-zinc-950 text-white border border-indigo-500/30 shadow-xl space-y-4"
+                                className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-zinc-950 text-white border border-indigo-500/30 shadow-xl space-y-4 ap-dark-eval-surface"
                               >
                                 <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3 flex-wrap">
                                   <div className="flex items-center gap-2.5">
@@ -2117,13 +1959,15 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                       <Sparkles className="w-4 h-4" />
                                     </div>
                                     <div>
-                                      <h4 className="text-xs sm:text-sm font-black text-white tracking-tight flex items-center gap-2">
+                                      <h4 className="text-xs sm:text-sm font-black !text-white tracking-tight flex items-center gap-2">
                                         AI Chief Reader Evaluation
-                                        <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">
+                                        <span className="text-[10px] font-bold !text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">
                                           Verified AP Scoring
                                         </span>
                                       </h4>
-                                      <p className="text-[10px] text-zinc-400 font-medium">Point-by-point rubric analysis of your submitted work</p>
+                                      <p className="text-[11px] !text-indigo-200 font-semibold" style={{ color: '#c7d2fe' }}>
+                                        Point-by-point rubric analysis of your submitted work
+                                      </p>
                                     </div>
                                   </div>
                                   <button
@@ -2141,13 +1985,15 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
                                 {/* Submitted Work Summary */}
                                 <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
-                                  <span className="text-[10px] font-black uppercase tracking-wider text-indigo-300 block">
+                                  <span className="text-[10px] font-black uppercase tracking-wider !text-indigo-300 block" style={{ color: '#a5b4fc' }}>
                                     Your Submitted Response:
                                   </span>
                                   {userFrqDraft[String(activeQuestion.id || currentIndex)] && (
-                                    <p className="text-xs text-zinc-300 whitespace-pre-wrap font-mono bg-black/30 p-2.5 rounded-xl border border-white/5">
-                                      {userFrqDraft[String(activeQuestion.id || currentIndex)]}
-                                    </p>
+                                    <div className="p-3 rounded-xl bg-slate-900 border border-indigo-500/30 shadow-inner">
+                                      <p className="text-xs !text-zinc-100 font-mono font-semibold whitespace-pre-wrap selection:bg-purple-500" style={{ color: '#f4f4f5' }}>
+                                        {userFrqDraft[String(activeQuestion.id || currentIndex)]}
+                                      </p>
+                                    </div>
                                   )}
                                   {(frqAttachedImages[String(activeQuestion.id || currentIndex)] || []).length > 0 && (
                                     <div className="flex items-center gap-2 flex-wrap pt-1">
@@ -2170,8 +2016,10 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                 </div>
 
                                 {/* Formatted Markdown Evaluation */}
-                                <div className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-sans prose-invert max-w-none">
-                                  <GlobalMarkdown>{formatAiAnswerText(frqAiFeedback[String(activeQuestion.id || currentIndex)])}</GlobalMarkdown>
+                                <div className="text-xs sm:text-sm text-zinc-100 leading-relaxed font-sans max-w-none ap-dark-eval-surface [&_*]:!text-zinc-100 [&_h1]:!text-white [&_h2]:!text-white [&_h3]:!text-indigo-200 [&_h4]:!text-indigo-200 [&_strong]:!text-amber-300 [&_b]:!text-amber-300 [&_p]:!text-zinc-100 [&_li]:!text-zinc-100 [&_.katex]:!text-white [&_.katex_*]:!text-white [&_.katex-html]:!text-white [&_code]:!text-indigo-200 [&_code]:!bg-indigo-950/80">
+                                  <GlobalMarkdown components={darkEvaluationMarkdownComponents}>
+                                    {formatAiAnswerText(frqAiFeedback[String(activeQuestion.id || currentIndex)])}
+                                  </GlobalMarkdown>
                                 </div>
                               </motion.div>
                             )}
@@ -2386,6 +2234,15 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                 </div>
                               )}
                             </div>
+
+                            {/* AI Safety Disclaimer */}
+                            {!inlineAi.loading && !inlineAi.error && (
+                              <div className="text-center pt-2 pb-1 px-4 border-t border-zinc-100 dark:border-zinc-800/40">
+                                <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium select-none tracking-tight">
+                                  AP Exam AI can make mistakes. Please double check important information.
+                                </p>
+                              </div>
+                            )}
                           </motion.div>
                         );
                       })()}
@@ -2396,10 +2253,16 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                     /* ========================================================================= */
                     <div className="space-y-2.5 pt-2">
                       {activeQuestion.options && activeQuestion.options.map((optionText, idx) => {
-                        const letter = optionText.trim().charAt(0).toUpperCase();
-                        const isSelected = selectedOption === optionText;
+                        const matchLetter = optionText.trim().match(/^[A-Da-d](?=[\)\.:\s])/);
+                        const letter = matchLetter ? matchLetter[0].toUpperCase() : String.fromCharCode(65 + idx);
+                        const cleanText = cleanOptionText(optionText, letter);
+                        const isSelected = selectedOption === optionText || selectedOption === cleanText;
                         const trapInfo = activeQuestion.traps?.find(t => t.option === letter);
-                        const isCorrect = trapInfo ? trapInfo.isCorrect : optionText === activeQuestion.correctAnswer;
+                        const isCorrect = trapInfo ? trapInfo.isCorrect : (
+                          optionText === activeQuestion.correctAnswer ||
+                          cleanText === activeQuestion.correctAnswer ||
+                          (activeQuestion.correctAnswer && activeQuestion.correctAnswer.startsWith(letter))
+                        );
 
                         let borderColor = 'border-zinc-200';
                         let bgColor = 'bg-white hover:bg-zinc-50';
@@ -2444,7 +2307,14 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                               </span>
 
                               <div className="flex-1 text-xs sm:text-sm font-semibold text-zinc-900 min-w-0">
-                                <GlobalMarkdown>{optionText}</GlobalMarkdown>
+                                <GlobalMarkdown
+                                  className="inline-block w-full [&_.katex]:text-inherit [&_p]:m-0 [&_p]:inline text-xs sm:text-sm font-semibold"
+                                  components={{
+                                    p: ({ node, ...props }: any) => <span className="inline break-words" {...props} />
+                                  }}
+                                >
+                                  {prepareQuizMath(cleanText)}
+                                </GlobalMarkdown>
                               </div>
 
                               {/* Result Indicator Icon */}
@@ -2583,6 +2453,13 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                                 </div>
                                               </div>
                                             )}
+
+                                            {/* AI Safety Disclaimer */}
+                                            <div className="text-center pt-1.5 pb-0.5 px-3">
+                                              <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium select-none tracking-tight">
+                                                AP Exam AI can make mistakes. Please double check important information.
+                                              </p>
+                                            </div>
                                           </div>
                                         )}
                                       </div>
@@ -2777,6 +2654,15 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                 </div>
                               )}
                             </div>
+
+                            {/* AI Safety Disclaimer */}
+                            {!inlineAi.loading && !inlineAi.error && (
+                              <div className="text-center pt-2 pb-1 px-4 border-t border-zinc-100 dark:border-zinc-800/40">
+                                <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium select-none tracking-tight">
+                                  AP Exam AI can make mistakes. Please double check important information.
+                                </p>
+                              </div>
+                            )}
                           </motion.div>
                         );
                       })()}
@@ -2827,15 +2713,20 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
               />
 
               <div className="space-y-2.5">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-1.5">
                   <label className="text-[11px] font-bold text-zinc-600 uppercase tracking-wider block">
                     Question Stem, Stimulus & Options (Or Attach Image)
                   </label>
-                  {attachedImages.length > 0 && (
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full">
-                      {attachedImages.length} Image{attachedImages.length > 1 ? 's' : ''} Attached
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
+                      MCQ & FRQ / Handwritten Supported
                     </span>
-                  )}
+                    {attachedImages.length > 0 && (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full">
+                        {attachedImages.length} Image{attachedImages.length > 1 ? 's' : ''} Attached
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Attached Images Thumbnail Bar */}
@@ -2936,7 +2827,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                       setCustomQuestionText(e.target.value);
                       if (scanInputError) setScanInputError(null);
                     }}
-                    placeholder="Example:&#10;Which of the following best describes the effect of an increase in government spending during a recession?&#10;A) Interest rates fall and investment increases&#10;B) Aggregate demand shifts right and price level rises&#10;C) ...&#10;&#10;Or snap a photo using the + button above!"
+                    placeholder="Example AP Multiple-Choice (MCQ):&#10;Which of the following best describes the effect of an increase in government spending during a recession?&#10;A) Interest rates fall...&#10;B) Aggregate demand shifts right...&#10;&#10;Or paste an AP Free-Response Question (FRQ) / snap a photo of any textbook, worksheet, or handwritten homework using the + button above!"
                     className="w-full bg-transparent p-4 text-xs font-mono text-zinc-900 focus:outline-none transition-colors resize-y"
                   />
                 </div>
@@ -3063,11 +2954,12 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                 <div className="space-y-3 pt-1">
                   <h4 className="text-xs font-black uppercase text-zinc-700 tracking-wider flex items-center gap-2">
                     <ShieldAlert className="w-4 h-4 text-amber-500" />
-                    <span>Option-By-Option Trap Analysis:</span>
+                    <span>{scannedResult.traps?.some((t: any) => /part/i.test(t.option)) ? 'Subpart-By-Subpart Rubric & Trap Analysis:' : 'Option-By-Option Trap Analysis:'}</span>
                   </h4>
                   {scannedResult.traps?.map((trap: any, i: number) => {
-                    const optionLetter = String(trap.option || String.fromCharCode(65 + i)).trim().toUpperCase();
-                    const cleanText = cleanOptionText(trap.text || `Option ${optionLetter}`, optionLetter);
+                    const isPart = /^part\s+/i.test(trap.option || '');
+                    const optionLabel = isPart ? trap.option : String(trap.option || String.fromCharCode(65 + i)).trim().toUpperCase();
+                    const cleanText = cleanOptionText(trap.text || `Option ${optionLabel}`, optionLabel);
 
                     return (
                       <div
@@ -3081,10 +2973,12 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                         {/* Header: Option Badge + Trap Classification + Vulnerability */}
                         <div className="flex items-center justify-between gap-2 flex-wrap pb-2.5 border-b border-zinc-200/70">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`w-7 h-7 rounded-xl flex items-center justify-center font-black text-xs shrink-0 shadow-xs ${
+                            <span className={`h-7 rounded-xl flex items-center justify-center font-black text-xs shrink-0 shadow-xs ${
+                              isPart ? 'px-2.5 min-w-7' : 'w-7'
+                            } ${
                               trap.isCorrect ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-white'
                             }`}>
-                              {optionLetter}
+                              {optionLabel}
                             </span>
                             <span className={`text-[10px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-lg border shadow-2xs ${
                               trap.isCorrect
@@ -3103,7 +2997,14 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
                         {/* Full Option Choice Text (Guaranteed Full Width, Never Squeezed) */}
                         <div className="w-full text-xs sm:text-sm font-semibold text-zinc-900 leading-relaxed bg-zinc-50/80 p-3 rounded-xl border border-zinc-200/80">
-                          <GlobalMarkdown>{cleanText}</GlobalMarkdown>
+                          <GlobalMarkdown
+                            className="inline-block w-full [&_.katex]:text-inherit [&_p]:m-0 [&_p]:inline text-xs sm:text-sm font-semibold"
+                            components={{
+                              p: ({ node, ...props }: any) => <span className="inline break-words" {...props} />
+                            }}
+                          >
+                            {prepareQuizMath(cleanText)}
+                          </GlobalMarkdown>
                         </div>
 
                         {/* Diagnostic Breakdown Card */}
@@ -3144,6 +3045,13 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                       </div>
                     );
                   })}
+                </div>
+
+                {/* AI Safety Disclaimer */}
+                <div className="text-center pt-3 pb-1 px-4">
+                  <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium select-none tracking-tight">
+                    AP Exam AI can make mistakes. Please double check important information.
+                  </p>
                 </div>
               </motion.div>
             )}
@@ -3229,7 +3137,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                     <button
                       onClick={() => {
                         setVault([]);
-                        safeSetItem('ap_trap_radar_vault', JSON.stringify([]));
+                        saveUserHistory('ap_trap_radar_vault', []);
                         showToast('Cleared Trap Vault', 'info');
                       }}
                       className="px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold cursor-pointer border border-zinc-200"
@@ -3326,9 +3234,9 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                           {q.userSelectedOption && (
                             <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-950 flex items-start gap-2">
                               <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                              <div>
+                              <div className="min-w-0 flex-1">
                                 <span className="font-bold block text-[11px] uppercase tracking-wider text-red-700">You Picked (Trap):</span>
-                                <span>{q.userSelectedOption}</span>
+                                <GlobalMarkdown className="inline-block w-full [&_.katex]:text-inherit [&_p]:m-0 [&_p]:inline text-xs" components={{ p: ({ node, ...props }: any) => <span className="inline break-words" {...props} /> }}>{prepareQuizMath(cleanOptionText(q.userSelectedOption, ''))}</GlobalMarkdown>
                               </div>
                             </div>
                           )}
@@ -3336,9 +3244,9 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                           {q.correctAnswer && (
                             <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 flex items-start gap-2">
                               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                              <div>
+                              <div className="min-w-0 flex-1">
                                 <span className="font-bold block text-[11px] uppercase tracking-wider text-emerald-700">Verified Target:</span>
-                                <span>{q.correctAnswer}</span>
+                                <GlobalMarkdown className="inline-block w-full [&_.katex]:text-inherit [&_p]:m-0 [&_p]:inline text-xs" components={{ p: ({ node, ...props }: any) => <span className="inline break-words" {...props} /> }}>{prepareQuizMath(cleanOptionText(q.correctAnswer, ''))}</GlobalMarkdown>
                               </div>
                             </div>
                           )}
@@ -3603,9 +3511,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
               <button
                 onClick={async () => {
                   try {
-                    const res = await fetch(previewPdfUri);
-                    const blob = await res.blob();
-                    await sharePDFMobile(blob, previewPdfName);
+                    await sharePDFMobile(previewPdfUri, previewPdfName);
                   } catch (e) {
                     console.error('PDF share error:', e);
                     showToast('Share failed', 'error');

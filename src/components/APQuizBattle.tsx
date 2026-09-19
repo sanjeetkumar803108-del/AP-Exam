@@ -11,6 +11,7 @@ import { triggerVibration } from '../utils/vibrate';
 import { addStudyXP } from '../utils/gamification';
 import { getUserProfileData } from '../utils/profile';
 import { battleAudio } from '../utils/quizBattleAudio';
+import { safeGetItem, safeSetItem } from '../utils/storage';
 import { 
   AP_BATTLE_SUBJECTS, 
   BattleQuestion, 
@@ -161,11 +162,71 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   const roomUnsubRef = useRef<(() => void) | null>(null);
   const battleFinishedRef = useRef<boolean>(false);
 
+  // Mutable callback refs to completely prevent stale closure traps during room polling & timers
+  const advanceToQuestionRef = useRef<(targetIdx: number) => void>(() => {});
+  const triggerRoundRevealRef = useRef<() => void>(() => {});
+  const startQuestionRoundRef = useRef<(qIdx: number) => void>(() => {});
+  const finishBattleRef = useRef<() => void>(() => {});
+  const initBattleArenaRef = useRef<() => void>(() => {});
+
   const playSound = (soundFn: () => void) => {
     if (soundEnabled) {
       try { soundFn(); } catch {}
     }
   };
+
+  // --- DYNAMIC AI QUESTION GENERATION & ZERO-REPEAT HISTORY ENGINE ---
+  const SEEN_QUESTIONS_KEY = 'ap_battle_seen_stems';
+
+  const getSeenStems = (): string[] => {
+    try {
+      const raw = safeGetItem(SEEN_QUESTIONS_KEY);
+      if (raw) {
+        const list = JSON.parse(raw);
+        if (Array.isArray(list)) return list;
+      }
+    } catch (e) {}
+    return [];
+  };
+
+  const recordSeenStems = (newQuestions: BattleQuestion[]) => {
+    try {
+      const current = getSeenStems();
+      const newStems = (newQuestions || []).map(q => q.stem?.trim()).filter(Boolean);
+      const combined = Array.from(new Set([...current, ...newStems]));
+      const trimmed = combined.slice(-300);
+      safeSetItem(SEEN_QUESTIONS_KEY, JSON.stringify(trimmed));
+    } catch (e) {}
+  };
+
+  const preloadedQuestionsRef = useRef<Record<string, BattleQuestion[]>>({});
+  const isGeneratingAiRef = useRef<boolean>(false);
+
+  const prefetchAiQuestions = async (subjId: string) => {
+    if (isGeneratingAiRef.current) return;
+    isGeneratingAiRef.current = true;
+    try {
+      const seen = getSeenStems();
+      const qs = await battleSync.generateBattleQuestions(subjId, myGrade, seen);
+      if (qs && qs.length >= 5) {
+        preloadedQuestionsRef.current[subjId] = qs;
+      }
+    } catch (e) {
+      console.warn('[APQuizBattle] prefetch error:', e);
+    } finally {
+      isGeneratingAiRef.current = false;
+    }
+  };
+
+  useEffect(() => {
+    prefetchAiQuestions(selectedSubjectId);
+  }, [selectedSubjectId]);
+
+  useEffect(() => {
+    if (phase === 'VICTORY') {
+      prefetchAiQuestions(selectedSubjectId);
+    }
+  }, [phase, selectedSubjectId]);
 
   // Safe Opponent Avatar without any broken unicode or question marks
   const getOpponentAvatar = () => {
@@ -240,8 +301,9 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
     const safeQuestions = (matchedQuestions && matchedQuestions.length > 0)
       ? matchedQuestions
-      : getBattleQuestions(effectiveSubject, 5);
+      : getBattleQuestions(effectiveSubject, 5, getSeenStems());
 
+    recordSeenStems(safeQuestions);
     setQuestions(safeQuestions);
     questionsRef.current = safeQuestions;
 
@@ -262,7 +324,17 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     setJoinError(null);
     setSearchSecondsLeft(30);
 
-    const initialQs = getBattleQuestions(selectedSubjectId, 5);
+    // Fetch brand new AI questions (using pre-generated cache or real-time AI generation)
+    let initialQs = preloadedQuestionsRef.current[selectedSubjectId];
+    if (!initialQs || initialQs.length < 5) {
+      const seen = getSeenStems();
+      initialQs = await battleSync.generateBattleQuestions(selectedSubjectId, myGrade, seen);
+    } else {
+      delete preloadedQuestionsRef.current[selectedSubjectId];
+      prefetchAiQuestions(selectedSubjectId);
+    }
+
+    recordSeenStems(initialQs);
     setQuestions(initialQs);
     questionsRef.current = initialQs;
 
@@ -286,10 +358,20 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       return;
     }
 
-    // Actively poll server every 350ms (heartbeat keeps player alive on radar)
-    const stopPoll = battleSync.startQueuePolling(myId, (roomId, matchedOpponent, matchedQuestions, isPlayer1, matchedSubj) => {
-      handleMatchedWithRealPlayer(roomId, matchedOpponent, matchedQuestions, matchedSubj);
-    });
+    // Actively poll server every 350ms (heartbeat keeps player alive on radar with self-healing)
+    const stopPoll = battleSync.startQueuePolling(
+      myId, 
+      (roomId, matchedOpponent, matchedQuestions, isPlayer1, matchedSubj) => {
+        handleMatchedWithRealPlayer(roomId, matchedOpponent, matchedQuestions, matchedSubj);
+      },
+      {
+        playerName: myName,
+        playerAvatar: myAvatar,
+        subjectId: selectedSubjectId,
+        gradeLevel: myGrade,
+        questions: initialQs
+      }
+    );
     stopPollingRef.current = stopPoll;
 
     // 30-SECOND SEARCH COUNTDOWN
@@ -319,8 +401,12 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     isRealOpponentRef.current = false;
     setLiveRoomId(null);
     liveRoomIdRef.current = null;
-    setQuestions(fallbackQs);
-    questionsRef.current = fallbackQs;
+    const finalQs = (fallbackQs && fallbackQs.length >= 5)
+      ? fallbackQs
+      : getBattleQuestions(selectedSubjectId, 5, getSeenStems());
+    recordSeenStems(finalQs);
+    setQuestions(finalQs);
+    questionsRef.current = finalQs;
     setOpponent(ghost);
     setPhase('COUNTDOWN');
     setCountdownNum(3);
@@ -339,7 +425,17 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     setJoinError(null);
     setSearchSecondsLeft(90);
 
-    const initialQs = getBattleQuestions(selectedSubjectId, 5);
+    // Get brand new AI questions for friend room
+    let initialQs = preloadedQuestionsRef.current[selectedSubjectId];
+    if (!initialQs || initialQs.length < 5) {
+      const seen = getSeenStems();
+      initialQs = await battleSync.generateBattleQuestions(selectedSubjectId, myGrade, seen);
+    } else {
+      delete preloadedQuestionsRef.current[selectedSubjectId];
+      prefetchAiQuestions(selectedSubjectId);
+    }
+
+    recordSeenStems(initialQs);
     setQuestions(initialQs);
     questionsRef.current = initialQs;
 
@@ -412,7 +508,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     handleMatchedWithRealPlayer(
       res.roomId,
       res.opponent,
-      res.questions || getBattleQuestions(hostSubject, 5),
+      res.questions || getBattleQuestions(hostSubject, 5, getSeenStems()),
       hostSubject
     );
   };
@@ -454,18 +550,38 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
         setSelectedSubjectId(room.subjectId);
       }
 
-      // Opponent score & answered status updates
-      if (opp) {
+      // Opponent score & answered status updates (only while round is actively playing)
+      if (opp && !roundRevealedRef.current) {
         setOpponentScore(opp.score || 0);
         oppScoreRef.current = opp.score || 0;
-        setOpponentAnswerStatus(opp.hasAnswered ? 'answered' : 'thinking');
-        oppStatusRef.current = opp.hasAnswered ? 'answered' : 'thinking';
+        const newOppStatus = opp.hasAnswered ? 'answered' : 'thinking';
+        setOpponentAnswerStatus(newOppStatus);
+        oppStatusRef.current = newOppStatus;
+
+        // Auto-reveal immediately when both players have answered!
+        if (userStatusRef.current === 'answered' && newOppStatus === 'answered') {
+          triggerRoundRevealRef.current();
+        }
+      }
+
+      // Authoritative Questions Synchronization from Server Room
+      if (room.questions && room.questions.length >= 5) {
+        if (!questionsRef.current.length || questionsRef.current[0]?.stem !== room.questions[0]?.stem) {
+          setQuestions(room.questions);
+          questionsRef.current = room.questions;
+        }
+      }
+
+      // Self-healing answer sync: If I have locked in my answer locally, ensure the server actually recorded it
+      const myProfileInRoom = room.player1?.id === myId ? room.player1 : (room.player2?.id === myId ? room.player2 : null);
+      if (myProfileInRoom && userStatusRef.current === 'answered' && !myProfileInRoom.hasAnswered && !roundRevealedRef.current) {
+        battleSync.updatePlayerAction(roomId, myId, userScoreRef.current, true, false, currentQIndexRef.current);
       }
 
       // 0. Synchronized Countdown & Immediate Battle Transition
       if (phaseRef.current === 'COUNTDOWN') {
         if (room.status === 'battle' || (room.countdownStart && Date.now() - room.countdownStart >= 3000)) {
-          initBattleArena();
+          initBattleArenaRef.current();
         } else if (room.countdownStart) {
           const elapsed = Date.now() - room.countdownStart;
           const remainingSecs = Math.max(1, Math.min(3, Math.ceil((3000 - elapsed) / 1000)));
@@ -475,42 +591,43 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
       // 1. Room Finished
       if (room.status === 'finished') {
+        const totalQ = questionsRef.current.length || questions.length || 5;
+        // If user is actively playing the final question and has not answered yet, do not prematurely abort their question!
+        if (currentQIndexRef.current === totalQ - 1 && userStatusRef.current === 'idle' && !roundRevealedRef.current) {
+          return;
+        }
         if (!battleFinishedRef.current) {
-          finishBattle();
+          finishBattleRef.current();
         }
         return;
       }
 
       // 2. Synchronized Round Reveal from Server
-      if (room.roundStatus === 'revealed') {
+      // Only accept reveal if server is on current or future round (reject stale packets from previous rounds)
+      if (room.roundStatus === 'revealed' && room.currentQ >= currentQIndexRef.current) {
         if (!roundRevealedRef.current) {
-          setRoundRevealed(true);
-          roundRevealedRef.current = true;
-          playSound(() => battleAudio.playOpponentAction());
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          }
+          triggerRoundRevealRef.current();
         }
       }
 
-      // 3. Synchronized Round Progression from Server
-      if (room.roundStatus === 'playing') {
-        // Sync time with server round clock
-        if (room.roundStartTime && phaseRef.current === 'BATTLE') {
+      // 3. Synchronize question progression from server with self-healing watchdog
+      if (typeof room.currentQ === 'number') {
+        if (room.currentQ > currentQIndexRef.current) {
+          advanceToQuestionRef.current(room.currentQ);
+        } else if (room.roundStatus === 'playing' && room.currentQ === currentQIndexRef.current && roundRevealedRef.current) {
+          // Self-healing watchdog: Server is actively playing this round, but client is stuck on reveal banner!
+          advanceToQuestionRef.current(room.currentQ);
+        }
+      }
+
+      // 4. Synchronize remaining round time with server round clock
+      if (room.roundStatus === 'playing' && room.currentQ === currentQIndexRef.current) {
+        if (room.roundStartTime && phaseRef.current === 'BATTLE' && !roundRevealedRef.current && userStatusRef.current !== 'answered') {
           const currQ = questionsRef.current[room.currentQ] || questions[room.currentQ];
           const maxTime = currQ?.timeLimit || 30;
           const elapsedSec = Math.floor((Date.now() - room.roundStartTime) / 1000);
           const remain = Math.max(0, maxTime - elapsedSec);
           setTimeLeft(prev => Math.abs(prev - remain) > 1 ? remain : prev);
-        }
-
-        // Check if server advanced to next question
-        if (typeof room.currentQ === 'number' && room.currentQ !== currentQIndexRef.current) {
-          const nextIdx = room.currentQ;
-          setCurrentQIndex(nextIdx);
-          currentQIndexRef.current = nextIdx;
-          startQuestionRound(nextIdx);
         }
       }
     });
@@ -623,7 +740,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
         // ONLY FOR GHOST BOT: If user already answered, trigger local reveal
         if (userStatusRef.current === 'answered' && !roundRevealedRef.current) {
-          triggerRoundReveal();
+          triggerRoundRevealRef.current();
         }
       }, delay);
     }
@@ -655,68 +772,104 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       playSound(() => battleAudio.playWrong());
     }
 
-    const isLastQ = currentQIndexRef.current + 1 === questionsRef.current.length;
     if (liveRoomIdRef.current && isRealOpponentRef.current) {
-      battleSync.updatePlayerAction(liveRoomIdRef.current, myId, newScore, true, isLastQ);
+      battleSync.updatePlayerAction(liveRoomIdRef.current, myId, newScore, true, false, currentQIndexRef.current);
     }
 
-    // ONLY for Ghost Bot practice mode: trigger local round reveal
-    if (!isRealOpponentRef.current) {
-      if (oppStatusRef.current === 'answered' && !roundRevealedRef.current) {
-        triggerRoundReveal();
-      }
+    // Auto-reveal if both players have answered (works for both Real Opponent AND Bot!)
+    if (oppStatusRef.current === 'answered' && !roundRevealedRef.current) {
+      triggerRoundRevealRef.current();
     }
   };
 
-  // 12. Round Reveal (for Ghost Bot matches)
+  // 12. Round Reveal (Universal for both real opponent AND Ghost bot)
   const triggerRoundReveal = () => {
     if (roundRevealedRef.current) return;
     setRoundRevealed(true);
     roundRevealedRef.current = true;
+    playSound(() => battleAudio.playOpponentAction());
 
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (opponentTimeoutRef.current) clearTimeout(opponentTimeoutRef.current);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (opponentTimeoutRef.current) {
+      clearTimeout(opponentTimeoutRef.current);
+      opponentTimeoutRef.current = null;
+    }
+    if (roundAdvanceTimeoutRef.current) {
+      clearTimeout(roundAdvanceTimeoutRef.current);
+      roundAdvanceTimeoutRef.current = null;
+    }
 
+    // Progression after reveal window:
+    // Universal 2.2s Reveal Window for BOTH Bot and Real Live Opponent!
+    // NEVER gets stuck at 0s!
     roundAdvanceTimeoutRef.current = setTimeout(() => {
-      advanceNextQuestion();
-    }, 2000);
+      advanceToQuestionRef.current(currentQIndexRef.current + 1);
+    }, 2200);
   };
 
-  // 13. Round Timeout (30s expired without answer)
+  // 13. Round Timeout (Time expired without answer)
   const handleRoundTimeout = async () => {
     if (userStatusRef.current === 'idle') {
       setUserAnswerStatus('answered');
       userStatusRef.current = 'answered';
       playSound(() => battleAudio.playWrong());
       triggerVibration(40);
-
-      const isLastQ = currentQIndexRef.current + 1 === questionsRef.current.length;
-      if (liveRoomIdRef.current && isRealOpponentRef.current) {
-        battleSync.updatePlayerAction(liveRoomIdRef.current, myId, userScoreRef.current, true, isLastQ);
-      }
     }
 
-    // ONLY for Ghost Bot matches: trigger local round reveal
-    if (!isRealOpponentRef.current) {
-      if (oppStatusRef.current === 'thinking') {
-        setOpponentAnswerStatus('answered');
-        oppStatusRef.current = 'answered';
-      }
-      triggerRoundReveal();
+    if (liveRoomIdRef.current && isRealOpponentRef.current) {
+      battleSync.updatePlayerAction(liveRoomIdRef.current, myId, userScoreRef.current, true, false, currentQIndexRef.current);
+    }
+
+    if (oppStatusRef.current === 'thinking') {
+      setOpponentAnswerStatus('answered');
+      oppStatusRef.current = 'answered';
+    }
+
+    // Auto-reveal and auto-advance once timer reaches 0s! Never freeze!
+    if (!roundRevealedRef.current) {
+      triggerRoundRevealRef.current();
     }
   };
 
-  // 14. Advance Question (for Ghost Bot matches only)
-  const advanceNextQuestion = () => {
-    if (isRealOpponentRef.current) return; // In real battles, server controls question progression!
-    const nextIdx = currentQIndexRef.current + 1;
-    if (nextIdx < questionsRef.current.length) {
-      setCurrentQIndex(nextIdx);
-      currentQIndexRef.current = nextIdx;
-      startQuestionRound(nextIdx);
+  // 14. Advance Question (Guaranteed progression for both real opponent and bot with strict deduplication)
+  const advanceToQuestion = (targetIdx: number) => {
+    // Strictly prevent jumping backwards
+    if (targetIdx < currentQIndexRef.current && phaseRef.current === 'BATTLE') {
+      return;
+    }
+    // Prevent redundant calls if already idling on targetIdx and round is not stuck revealed
+    if (targetIdx === currentQIndexRef.current && phaseRef.current === 'BATTLE' && !roundRevealedRef.current && userStatusRef.current === 'idle') {
+      return;
+    }
+
+    if (roundAdvanceTimeoutRef.current) {
+      clearTimeout(roundAdvanceTimeoutRef.current);
+      roundAdvanceTimeoutRef.current = null;
+    }
+
+    // Unconditionally clear reveal and answer states to guarantee UI never gets stuck
+    setRoundRevealed(false);
+    roundRevealedRef.current = false;
+    setUserSelectedOption(null);
+    setUserAnswerStatus('idle');
+    userStatusRef.current = 'idle';
+
+    const totalQuestions = questionsRef.current.length || questions.length || 5;
+    if (targetIdx < totalQuestions) {
+      setCurrentQIndex(targetIdx);
+      currentQIndexRef.current = targetIdx;
+      startQuestionRoundRef.current(targetIdx);
+
+      // Notify live server that this client has advanced to targetIdx
+      if (liveRoomIdRef.current && isRealOpponentRef.current) {
+        battleSync.updatePlayerAction(liveRoomIdRef.current, myId, userScoreRef.current, false, false, targetIdx);
+      }
     } else {
       if (!battleFinishedRef.current) {
-        finishBattle();
+        finishBattleRef.current();
       }
     }
   };
@@ -742,6 +895,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     }
 
     setPhase('VICTORY');
+    prefetchAiQuestions(selectedSubjectId);
 
     const finalUser = userScoreRef.current;
     const finalOpp = oppScoreRef.current;
@@ -777,6 +931,13 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     }
   };
 
+  // Keep callback refs synchronized on every render to eliminate stale closures
+  advanceToQuestionRef.current = advanceToQuestion;
+  triggerRoundRevealRef.current = triggerRoundReveal;
+  startQuestionRoundRef.current = startQuestionRound;
+  finishBattleRef.current = finishBattle;
+  initBattleArenaRef.current = initBattleArena;
+
   // Cleanup strictly on unmount
   useEffect(() => {
     return () => {
@@ -784,7 +945,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     };
   }, []);
 
-  const currentQ = questions[currentQIndex];
+  const currentQ = questionsRef.current[currentQIndex] || questions[currentQIndex];
   // Dynamically resolve active subject: prioritize current/room question's subject, fallback to selectedSubjectId
   const qSubjectId = currentQ?.subjectId || questions[0]?.subjectId;
   const activeSubject = AP_BATTLE_SUBJECTS.find(s => 
@@ -889,7 +1050,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span className="font-extrabold text-indigo-300 bg-indigo-900/60 px-2.5 py-0.5 rounded-md border border-indigo-400/30 text-[11px]">
-                {myGrade} Opponents Only
+                {myGrade} • Live AP Peers
               </span>
             </div>
           </div>
@@ -1159,12 +1320,12 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           </div>
 
           <h2 className="text-xl font-extrabold text-white mb-1">
-            {isFriendHostWaiting || isFriendRoomHost ? 'Waiting for Friend...' : `Finding ${myGrade} Opponent...`}
+            {isFriendHostWaiting || isFriendRoomHost ? 'Waiting for Friend...' : 'Finding Real AP Opponent...'}
           </h2>
           <p className="text-xs text-zinc-400 mb-4">
             {isFriendHostWaiting || isFriendRoomHost
               ? `Share Room Code with your friend to start!`
-              : `Searching active ${myGrade} scholars in ${activeSubject.name}`}
+              : `Scanning active AP scholars in ${activeSubject.name} (Prioritizing ${myGrade})`}
           </p>
 
           {(isFriendHostWaiting || isFriendRoomHost) ? (
@@ -1680,14 +1841,19 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                       {String.fromCharCode(65 + idx)}
                     </span>
                     <div className="leading-normal text-xs sm:text-sm font-medium text-left flex-1 min-w-0 overflow-x-auto overflow-y-hidden scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1">
-                      <GlobalMarkdown
-                        className="inline-block w-full [&_.katex]:text-inherit [&_p]:m-0 [&_p]:inline [&_p]:text-inherit text-xs sm:text-sm font-medium"
-                        components={{
-                          p: ({ node, ...props }: any) => <span className="inline break-words" {...props} />
-                        }}
-                      >
-                        {prepareQuizMath(optionText)}
-                      </GlobalMarkdown>
+                      {(() => {
+                        const cleanOptText = optionText.replace(new RegExp(`^\\s*(?:Option|Choice)?\\s*${String.fromCharCode(65 + idx)}\\s*[:.)-]\\s*`, 'i'), '').trim();
+                        return (
+                          <GlobalMarkdown
+                            className="inline-block w-full [&_.katex]:text-inherit [&_p]:m-0 [&_p]:inline [&_p]:text-inherit text-xs sm:text-sm font-medium"
+                            components={{
+                              p: ({ node, ...props }: any) => <span className="inline break-words" {...props} />
+                            }}
+                          >
+                            {prepareQuizMath(cleanOptText)}
+                          </GlobalMarkdown>
+                        );
+                      })()}
                     </div>
                   </div>
 

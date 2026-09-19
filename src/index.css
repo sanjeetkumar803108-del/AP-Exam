@@ -126,77 +126,32 @@
 
 /* ----------------------------------------------------
    GLOBAL HIGH-CONTRAST LIGHT SURFACE & KATEX SYSTEM
-   Guarantees that ANY white/light container (including
-   quiz option buttons, selected/correct cards, explanations,
-   badges, question cards, and KaTeX formulas) ALWAYS has
-   pitch-black, bold, high-contrast text, math, subscripts & superscripts.
+   Guarantees that ANY component EXPLICITLY marked as
+   light-surface or data-theme="light" (e.g. quiz option cards,
+   light modal sheets, or light study aids) ALWAYS has
+   pitch-black, bold, high-contrast text and KaTeX math.
 ---------------------------------------------------- */
 .light-surface,
-.dark .light-surface,
+.light-surface *,
 [data-theme="light"],
-.dark [data-theme="light"],
-.bg-white,
-.bg-zinc-50,
-.bg-emerald-50, .dark .bg-emerald-50,
-.bg-rose-50, .dark .bg-rose-50,
-.bg-amber-50, .dark .bg-amber-50,
-.bg-amber-100, .dark .bg-amber-100 {
+[data-theme="light"] * {
+  color: #09090b;
+}
+
+.light-surface h1, .light-surface h2, .light-surface h3, .light-surface h4,
+.light-surface p, .light-surface span, .light-surface div, .light-surface li,
+.light-surface strong, .light-surface em, .light-surface .markdown-body *,
+[data-theme="light"] h1, [data-theme="light"] h2, [data-theme="light"] h3, [data-theme="light"] h4,
+[data-theme="light"] p, [data-theme="light"] span, [data-theme="light"] div, [data-theme="light"] li,
+[data-theme="light"] strong, [data-theme="light"] em, [data-theme="light"] .markdown-body * {
   color: #09090b !important;
 }
 
-/* Ensure all text & markdown inside ANY light card is pitch-black and high-contrast */
-.light-surface h1, .dark .light-surface h1,
-.light-surface h2, .dark .light-surface h2,
-.light-surface h3, .dark .light-surface h3,
-.light-surface h4, .dark .light-surface h4,
-.light-surface p, .dark .light-surface p,
-.bg-white p, .dark .bg-white p,
-.bg-zinc-50 p, .dark .bg-zinc-50 p,
-.bg-emerald-50 p, .dark .bg-emerald-50 p,
-.bg-rose-50 p, .dark .bg-rose-50 p,
-.bg-amber-50 p, .dark .bg-amber-50 p,
-.bg-amber-100 p, .dark .bg-amber-100 p,
-.light-surface li, .dark .light-surface li,
-.light-surface div, .dark .light-surface div,
-.light-surface strong, .dark .light-surface strong,
-.light-surface em, .dark .light-surface em,
-.light-surface .markdown-body, .dark .light-surface .markdown-body,
-.bg-white .markdown-body, .dark .bg-white .markdown-body,
-.bg-zinc-50 .markdown-body, .dark .bg-zinc-50 .markdown-body,
-.bg-emerald-50 .markdown-body, .dark .bg-emerald-50 .markdown-body,
-.bg-rose-50 .markdown-body, .dark .bg-rose-50 .markdown-body,
-.bg-amber-50 .markdown-body, .dark .bg-amber-50 .markdown-body,
-.light-surface .markdown-body p, .dark .light-surface .markdown-body p,
-.bg-white .markdown-body p, .dark .bg-white .markdown-body p,
-.bg-zinc-50 .markdown-body p, .dark .bg-zinc-50 .markdown-body p,
-.bg-emerald-50 .markdown-body p, .dark .bg-emerald-50 .markdown-body p,
-.bg-rose-50 .markdown-body p, .dark .bg-rose-50 .markdown-body p,
-.bg-amber-50 .markdown-body p, .dark .bg-amber-50 .markdown-body p,
-.light-surface .markdown-body span, .dark .light-surface .markdown-body span,
-.bg-white .markdown-body span, .dark .bg-white .markdown-body span,
-.bg-zinc-50 .markdown-body span, .dark .bg-zinc-50 .markdown-body span,
-.bg-emerald-50 .markdown-body span, .dark .bg-emerald-50 .markdown-body span,
-.bg-rose-50 .markdown-body span, .dark .bg-rose-50 .markdown-body span,
-.bg-amber-50 .markdown-body span, .dark .bg-amber-50 .markdown-body span,
-.bg-amber-100 .markdown-body span, .dark .bg-amber-100 .markdown-body span {
-  color: #09090b !important;
-}
-
-/* Explicit KaTeX Math High Contrast inside light surfaces & option cards */
-.light-surface .katex, .dark .light-surface .katex,
-.bg-white .katex, .dark .bg-white .katex,
-.bg-zinc-50 .katex, .dark .bg-zinc-50 .katex,
-.bg-emerald-50 .katex, .dark .bg-emerald-50 .katex,
-.bg-rose-50 .katex, .dark .bg-rose-50 .katex,
-.bg-amber-50 .katex, .dark .bg-amber-50 .katex,
-.bg-amber-100 .katex, .dark .bg-amber-100 .katex,
-.light-surface .katex *, .dark .light-surface .katex *,
-.bg-white .katex *, .dark .bg-white .katex *,
-.bg-zinc-50 .katex *, .dark .bg-zinc-50 .katex *,
-.bg-emerald-50 .katex *, .dark .bg-emerald-50 .katex *,
-.bg-rose-50 .katex *, .dark .bg-rose-50 .katex *,
-.bg-amber-50 .katex *, .dark .bg-amber-50 .katex *,
-.bg-amber-100 .katex *, .dark .bg-amber-100 .katex * {
+/* Explicit KaTeX Math High Contrast inside light surfaces */
+.light-surface .katex,
+.light-surface .katex *,
+[data-theme="light"] .katex,
+[data-theme="light"] .katex * {
   color: #09090b !important;
   opacity: 1 !important;
 }
@@ -213,6 +168,79 @@ sup {
 }
 sub {
   bottom: -0.25em !important;
+}
+
+/* ----------------------------------------------------
+   AI CHIEF READER EVALUATION HIGH CONTRAST DARK SURFACE
+   Guarantees that evaluation text, rubrics, and KaTeX
+   formulas are 100% luminous, crisp, and high-contrast (#f4f4f5 / #ffffff / #fde047)
+   regardless of whether the app is running in light or dark mode.
+---------------------------------------------------- */
+.ap-dark-eval-surface,
+.ap-dark-eval-surface *,
+.ap-dark-eval-surface p,
+.ap-dark-eval-surface span,
+.ap-dark-eval-surface div,
+.ap-dark-eval-surface li,
+.ap-dark-eval-surface ul,
+.ap-dark-eval-surface ol,
+.ap-dark-eval-surface .markdown-body,
+.ap-dark-eval-surface .markdown-body p,
+.ap-dark-eval-surface .markdown-body li,
+.ap-dark-eval-surface .markdown-body span,
+.ap-dark-eval-surface .markdown-body div,
+.ap-dark-eval-surface .markdown-body ul,
+.ap-dark-eval-surface .markdown-body ol {
+  color: #f4f4f5 !important;
+}
+
+.ap-dark-eval-surface h1,
+.ap-dark-eval-surface h2,
+.ap-dark-eval-surface .text-white,
+.ap-dark-eval-surface .markdown-body h1,
+.ap-dark-eval-surface .markdown-body h2 {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+.ap-dark-eval-surface h3,
+.ap-dark-eval-surface h4,
+.ap-dark-eval-surface .text-indigo-200,
+.ap-dark-eval-surface .markdown-body h3,
+.ap-dark-eval-surface .markdown-body h4 {
+  color: #c7d2fe !important;
+  font-weight: 700 !important;
+}
+
+.ap-dark-eval-surface .text-indigo-300 {
+  color: #a5b4fc !important;
+}
+
+.ap-dark-eval-surface .text-emerald-300 {
+  color: #6ee7b7 !important;
+}
+
+.ap-dark-eval-surface strong,
+.ap-dark-eval-surface b,
+.ap-dark-eval-surface .text-amber-300,
+.ap-dark-eval-surface .markdown-body strong,
+.ap-dark-eval-surface .markdown-body b {
+  color: #fde047 !important;
+  font-weight: 800 !important;
+}
+
+.ap-dark-eval-surface code,
+.ap-dark-eval-surface .markdown-body code {
+  background-color: rgba(30, 27, 75, 0.85) !important;
+  color: #c7d2fe !important;
+  border: 1px solid rgba(99, 102, 241, 0.45) !important;
+}
+
+.ap-dark-eval-surface .katex,
+.ap-dark-eval-surface .katex *,
+.ap-dark-eval-surface .katex-html {
+  color: #ffffff !important;
+  opacity: 1 !important;
 }
 
 .katex .vlist-t, .katex .vlist-r, .katex .vlist {
@@ -316,21 +344,16 @@ sub {
   background-color: #27272a !important;
 }
 
-.dark :not(.light-surface):not(.light-surface *):not([data-theme="light"]):not([data-theme="light"] *) > .text-zinc-950,
-.dark :not(.light-surface):not(.light-surface *):not([data-theme="light"]):not([data-theme="light"] *) > .text-zinc-900,
-.dark :not(.light-surface):not(.light-surface *):not([data-theme="light"]):not([data-theme="light"] *) > .text-zinc-850,
-.dark :not(.light-surface):not(.light-surface *):not([data-theme="light"]):not([data-theme="light"] *) > .text-zinc-800,
-.dark :not(.light-surface):not(.light-surface *):not([data-theme="light"]):not([data-theme="light"] *) > .text-zinc-750,
-.dark :not(.light-surface):not(.light-surface *):not([data-theme="light"]):not([data-theme="light"] *) > .text-zinc-700,
-.dark :not(.light-surface):not(.light-surface *):not([data-theme="light"]):not([data-theme="light"] *) > .text-zinc-650,
-.dark :not(.light-surface):not(.light-surface *):not([data-theme="light"]):not([data-theme="light"] *) > .text-zinc-600 {
-  color: #f4f4f5;
+.dark :is(.text-zinc-950, .text-zinc-900, .text-zinc-850, .text-zinc-800, .text-zinc-750, .text-zinc-700):not(.light-surface *):not([data-theme="light"] *) {
+  color: #f4f4f5 !important;
 }
 
-.dark :not(.light-surface):not(.light-surface *):not([data-theme="light"]):not([data-theme="light"] *) > .text-zinc-500,
-.dark :not(.light-surface):not(.light-surface *):not([data-theme="light"]):not([data-theme="light"] *) > .text-zinc-450,
-.dark :not(.light-surface):not(.light-surface *):not([data-theme="light"]):not([data-theme="light"] *) > .text-zinc-400 {
-  color: #a1a1aa;
+.dark :is(.text-zinc-650, .text-zinc-600):not(.light-surface *):not([data-theme="light"] *) {
+  color: #e4e4e7 !important;
+}
+
+.dark :is(.text-zinc-500, .text-zinc-450, .text-zinc-400):not(.light-surface *):not([data-theme="light"] *) {
+  color: #d4d4d8 !important;
 }
 
 .dark input, 
@@ -343,28 +366,59 @@ sub {
 
 .dark input::placeholder,
 .dark textarea::placeholder {
-  color: #52525b !important;
+  color: #71717a !important;
 }
 
 .dark .bg-blue-50 {
   background-color: rgba(59, 130, 246, 0.15) !important;
 }
-.dark .text-blue-600 {
+.dark .text-blue-600, .dark .text-blue-500 {
   color: #60a5fa !important;
 }
 
 .dark .bg-purple-50 {
   background-color: rgba(147, 51, 234, 0.15) !important;
 }
-.dark .text-purple-600 {
+.dark .bg-purple-100 {
+  background-color: rgba(147, 51, 234, 0.25) !important;
+}
+.dark .text-purple-600, .dark .text-purple-700, .dark .text-purple-500 {
   color: #c084fc !important;
 }
 
-.dark .bg-green-50 {
+.dark .bg-green-50, .dark .bg-emerald-50 {
   background-color: rgba(16, 185, 129, 0.15) !important;
 }
-.dark .text-green-600 {
+.dark .text-green-600, .dark .text-emerald-600, .dark .text-emerald-700 {
   color: #34d399 !important;
+}
+
+.dark .bg-teal-50 {
+  background-color: rgba(20, 184, 166, 0.15) !important;
+}
+.dark .text-teal-600, .dark .text-teal-700 {
+  color: #2dd4bf !important;
+}
+
+.dark .bg-amber-50, .dark .bg-amber-100 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+}
+.dark .text-amber-600, .dark .text-amber-700, .dark .text-amber-800 {
+  color: #fbbf24 !important;
+}
+
+.dark .bg-orange-50 {
+  background-color: rgba(249, 115, 22, 0.15) !important;
+}
+.dark .text-orange-500, .dark .text-orange-600 {
+  color: #fb923c !important;
+}
+
+.dark .bg-indigo-50 {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+}
+.dark .text-indigo-600, .dark .text-indigo-700 {
+  color: #818cf8 !important;
 }
 
 .dark .bg-rose-50, .dark .bg-red-50 {
@@ -372,6 +426,19 @@ sub {
 }
 .dark .text-rose-600, .dark .text-red-600 {
   color: #fb7185 !important;
+}
+
+.dark .border-emerald-100, .dark .border-emerald-200, .dark .border-emerald-200\/90 {
+  border-color: rgba(16, 185, 129, 0.35) !important;
+}
+.dark .border-amber-100, .dark .border-amber-200, .dark .border-amber-200\/90, .dark .border-amber-300 {
+  border-color: rgba(245, 158, 11, 0.35) !important;
+}
+.dark .border-teal-100, .dark .border-teal-200, .dark .border-teal-200\/90 {
+  border-color: rgba(20, 184, 166, 0.35) !important;
+}
+.dark .border-indigo-100, .dark .border-purple-200, .dark .border-purple-200\/70 {
+  border-color: rgba(147, 51, 234, 0.35) !important;
 }
 
 .dark .markdown-body th {

@@ -17,14 +17,13 @@ import { Capacitor } from '@capacitor/core';
 import GlobalMarkdown from './GlobalMarkdown';
 import AdvancedLoader from './AdvancedLoader';
 import AIThinkingLoader from './AIThinkingLoader';
-import jsPDF from 'jspdf';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
 import { showToast } from '../utils/toast';
-import { sanitizePdfText, parseSolutionStepsForPdf } from '../utils/pdfSanitizer';
-import { drawRichTextWithTables } from '../utils/pdfTableDrawer';
-import { sanitizeSvg, rasterizeSvgToDataUrl, getDiagramTypeLabel } from '../utils/svgHelper';
+import { sanitizeSvg, getDiagramTypeLabel } from '../utils/svgHelper';
+import { generateTestPrepPDF } from '../utils/apQuestionPaperPdfExporter';
 import SafePdfViewer from './SafePdfViewer';
 import { safeGetItem, safeSetItem, safeJsonParse } from '../utils/storage';
+import { getUserHistory, saveUserHistory } from '../utils/userHistory';
 
 interface TestPrepProps {
   onBack: () => void;
@@ -136,7 +135,59 @@ export function getApExamDurationSeconds(subjectId: string, qType: 'objective' |
     timing = key ? AP_EXAM_TIMING[key] : { objectiveSeconds: 90, subjectiveSeconds: 900, label: '1m 30s / MCQ • 15m / FRQ' };
   }
   const perQuestion = qType === 'objective' ? timing.objectiveSeconds : timing.subjectiveSeconds;
-  return perQuestion * Math.max(1, count);
+  return Math.max(perQuestion * Math.max(count, 1), 60);
+}
+
+export function getQuestionRealPoints(q?: APSubjectiveQuestion | null): number {
+  if (!q) return 6;
+
+  // 1. Calculate sum from scoringRubric point specifications (e.g. "Part (a) [1 pt]", "Part (b) [2 points]")
+  if (Array.isArray(q.scoringRubric) && q.scoringRubric.length > 0) {
+    let sum = 0;
+    let foundExplicit = false;
+    for (const item of q.scoringRubric) {
+      const str = String(item || '');
+      const bracketMatch = str.match(/\[\s*(?:\d+\s*\/\s*)?(\d+)\s*(?:points|point|pts|pt)\s*\]/i)
+        || str.match(/\(\s*(?:\d+\s*\/\s*)?(\d+)\s*(?:points|point|pts|pt)\s*\)/i);
+      if (bracketMatch) {
+        sum += parseInt(bracketMatch[1], 10);
+        foundExplicit = true;
+      } else {
+        const anyMatch = str.match(/\+?\b(\d+)\s*(?:points|point|pts|pt)\b/i);
+        if (anyMatch) {
+          sum += parseInt(anyMatch[1], 10);
+          foundExplicit = true;
+        }
+      }
+    }
+    if (foundExplicit && sum > 0) return sum;
+  }
+
+  // 2. Calculate sum from prompt sub-parts (e.g. "(a) ... [1 pt]")
+  if (typeof q.prompt === 'string') {
+    const matches = [...q.prompt.matchAll(/\([a-d]\)[^[]*?\[\s*(\d+)\s*(?:points|point|pts|pt)\s*\]/gi)];
+    if (matches.length > 0) {
+      const sum = matches.reduce((acc, m) => acc + parseInt(m[1], 10), 0);
+      if (sum > 0) return sum;
+    }
+  }
+
+  // 3. Check explicit totalPoints, guarding against generic uncalibrated 9 defaults on short questions
+  const partCount = typeof q.prompt === 'string' ? (q.prompt.match(/\([a-d]\)/gi) || []).length : 0;
+  const raw = Number(q.totalPoints);
+  if (!isNaN(raw) && raw >= 1 && raw <= 15) {
+    if (partCount === 1 && raw > 4) return 2;
+    if (partCount === 2 && raw > 6) return 4;
+    return raw;
+  }
+
+  // 4. Default calibrated to subparts count (College Board standards)
+  if (partCount >= 4) return 9;
+  if (partCount === 3) return 6;
+  if (partCount === 2) return 4;
+  if (partCount === 1) return 2;
+
+  return 6;
 }
 
 type QuestionType = 'objective' | 'subjective';
@@ -201,6 +252,21 @@ export function isOptionCorrectAnswer(
 export function shuffleAndBalanceObjectiveQuestions(questions: APObjectiveQuestion[]): APObjectiveQuestion[] {
   if (!Array.isArray(questions) || questions.length === 0) return questions;
 
+  // If questions are already balanced across options (e.g. prepared by server), avoid double-scrambling
+  if (questions.length >= 3) {
+    const letterCounts: Record<string, number> = { A: 0, B: 0, C: 0, D: 0 };
+    questions.forEach(q => {
+      const match = String(q.correctAnswer || '').match(/^[A-D]/i);
+      if (match) {
+        letterCounts[match[0].toUpperCase()] = (letterCounts[match[0].toUpperCase()] || 0) + 1;
+      }
+    });
+    const maxFreq = Math.max(...Object.values(letterCounts));
+    if (maxFreq <= Math.ceil(questions.length * 0.5)) {
+      return questions;
+    }
+  }
+
   const letters = ['A', 'B', 'C', 'D'];
   const count = questions.length;
 
@@ -264,13 +330,16 @@ export function shuffleAndBalanceObjectiveQuestions(questions: APObjectiveQuesti
     const newOptions = reorderedContents.map((text, p) => `${letters[p]}) ${text}`);
     const newCorrectAnswer = newOptions[targetPos];
 
-    // Update explanation if it mentions previous correct letter
+    // Safely update explanation letters without corrupting distractor analysis
     let newExplanation = q.explanation || '';
     const oldLetter = letters[currentCorrectIdx];
     const newLetter = letters[targetPos];
     if (oldLetter && oldLetter !== newLetter) {
       newExplanation = newExplanation
-        .replace(new RegExp(`\\bOption\\s+${oldLetter}\\b`, 'gi'), `Option ${newLetter}`)
+        .replace(new RegExp(`([.!?\\n]\\s*[-*•]?\\s*Option\\s+)${newLetter}\\b`, 'gi'), `$1__TEMP_SWAP__`)
+        .replace(new RegExp(`([.!?\\n]\\s*[-*•]?\\s*Option\\s+)${oldLetter}\\b`, 'gi'), `$1${newLetter}`)
+        .replace(/__TEMP_SWAP__/g, oldLetter)
+        .replace(new RegExp(`\\bOption\\s+${oldLetter}\\s+is\\s+correct\\b`, 'gi'), `Option ${newLetter} is correct`)
         .replace(new RegExp(`\\b${oldLetter}\\s+is\\s+correct\\b`, 'gi'), `${newLetter} is correct`)
         .replace(new RegExp(`\\(${oldLetter}\\)\\s+is\\s+correct\\b`, 'gi'), `(${newLetter}) is correct`);
     }
@@ -380,7 +449,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   // History & PDF Preview States
   const [historyList, setHistoryList] = useState<APTestPrepHistoryItem[]>(() => {
     try {
-      const parsed = safeJsonParse<APTestPrepHistoryItem[]>(safeGetItem('ap_test_prep_history'), []);
+      const parsed = getUserHistory<APTestPrepHistoryItem[]>('ap_test_prep_history', []);
       if (Array.isArray(parsed)) {
         return parsed.filter(item => item && typeof item === 'object' && item.id);
       }
@@ -388,6 +457,15 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     return [];
   });
   const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleAccountChange = () => {
+      const list = getUserHistory<APTestPrepHistoryItem[]>('ap_test_prep_history', []);
+      setHistoryList(Array.isArray(list) ? list.filter(item => item && item.id) : []);
+    };
+    window.addEventListener('user_account_changed', handleAccountChange);
+    return () => window.removeEventListener('user_account_changed', handleAccountChange);
+  }, []);
   const [previewPdfUri, setPreviewPdfUri] = useState<string | null>(null);
   const [previewPdfName, setPreviewPdfName] = useState<string>('AP_Practice_Set.pdf');
   const [isPdfDownloaded, setIsPdfDownloaded] = useState<boolean>(false);
@@ -457,7 +535,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     let evaluatedCount = 0;
 
     subjectiveQuestions.forEach((q, idx) => {
-      const qMax = q.totalPoints || 6;
+      const qMax = getQuestionRealPoints(q);
       if (subjectiveScores[idx]) {
         earnedTotal += subjectiveScores[idx].earned;
         maxTotal += subjectiveScores[idx].total || qMax;
@@ -1029,7 +1107,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         };
         setHistoryList(prev => {
           const updated = [newHistoryItem, ...prev.filter(h => h.id !== newHistoryItem.id)].slice(0, 50);
-          safeSetItem('ap_test_prep_history', JSON.stringify(updated));
+          saveUserHistory('ap_test_prep_history', updated);
           return updated;
         });
       } else {
@@ -1075,7 +1153,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         };
         setHistoryList(prev => {
           const updated = [newHistoryItem, ...prev.filter(h => h.id !== newHistoryItem.id)].slice(0, 50);
-          safeSetItem('ap_test_prep_history', JSON.stringify(updated));
+          saveUserHistory('ap_test_prep_history', updated);
           return updated;
         });
       }
@@ -1196,6 +1274,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
       [index]: { text: '', loading: true }
     }));
 
+    const realPoints = getQuestionRealPoints(q);
+
     try {
       const response = await fetch(getApiUrl('/api/evaluate-answer'), {
         method: 'POST',
@@ -1204,8 +1284,11 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
           questionText: q.prompt,
           userAnswer: ans || 'Student submitted solution in the attached photo/drawing.',
           subject: selectedSubject.name,
-          userGrade: 'AP High School Exam Standard',
-          image: img?.dataUrl || ''
+          userGrade: userGrade || 'AP High School Exam Standard',
+          image: img?.dataUrl || '',
+          totalPoints: realPoints,
+          scoringRubric: Array.isArray(q.scoringRubric) && q.scoringRubric.length > 0 ? q.scoringRubric : undefined,
+          modelAnswer: q.modelAnswer || undefined
         })
       });
 
@@ -1218,14 +1301,13 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
 
       // Extract earned points from College Board Chief Reader scorecard
       let earned = 0;
-      let total = q.totalPoints || 6;
+      let total = realPoints;
 
       const ptsMatch = feedbackText.match(/(?:Total AP Points|Score|Earned Points)[\s\S]*?(\d+)\s*\/\s*(\d+)/i)
         || feedbackText.match(/(\d+)\s*\/\s*(\d+)\s*(?:points|pts)/i);
 
       if (ptsMatch) {
-        earned = Math.min(parseInt(ptsMatch[1], 10), parseInt(ptsMatch[2], 10));
-        total = parseInt(ptsMatch[2], 10);
+        earned = Math.min(parseInt(ptsMatch[1], 10), realPoints);
       } else {
         if (feedbackText.toLowerCase().includes('full-credit') || feedbackText.toLowerCase().includes('score 5')) {
           earned = total;
@@ -1336,6 +1418,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
           questionType: type,
           subject: selectedSubject.name,
           unit: selectedUnit ? selectedUnit.title : selectedSubject.name,
+          gradeLevel: userGrade || 'AP High School (Advanced Placement)',
           mode
         })
       });
@@ -1424,480 +1507,23 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         return;
       }
 
-      const doc = new jsPDF({
-        unit: 'pt',
-        format: 'a4',
-        orientation: 'portrait'
+      const res = await generateTestPrepPDF({
+        subject: subj,
+        unitTitle: uTitle,
+        questionType: qType,
+        objectiveQuestions: objQs,
+        subjectiveQuestions: subQs,
       });
 
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 36;
-      const contentWidth = pageWidth - (margin * 2);
-
-      let currentY = 0;
-      let currentPage = 1;
-
-      // Header helper
-      const drawHeader = (isFirstPage: boolean) => {
-        if (isFirstPage) {
-          doc.setFillColor(30, 27, 75); // Deep Indigo (#1e1b4b)
-          doc.rect(0, 0, pageWidth, 74, 'F');
-
-          doc.setFillColor(99, 102, 241); // Indigo-500 strip
-          doc.rect(0, 74, pageWidth, 3, 'F');
-
-          doc.setTextColor(251, 191, 36); // Gold Amber
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(8.5);
-          doc.text('AP EXAM APP  |  ADVANCED PLACEMENT EXAM PREPARATION', margin, 24);
-
-          doc.setTextColor(255, 255, 255);
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(15);
-          doc.text(`AP ${sanitizePdfText(subj.name)} Practice Set`, margin, 45);
-
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(9);
-          doc.setTextColor(226, 232, 240);
-          const isComp = isComputerSubject(subj);
-          const formatSection = qType === 'objective' 
-            ? 'Section I (Multiple Choice)' 
-            : (isComp ? 'Section II (Create Performance Task)' : 'Section II (Free Response)');
-          const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-          doc.text(`Format: ${formatSection}   |   Unit: ${sanitizePdfText(uTitle)}   |   ${dateStr}`, margin, 62);
-
-          currentY = 96;
-        } else {
-          doc.setFillColor(248, 250, 252);
-          doc.rect(0, 0, pageWidth, 28, 'F');
-          doc.setDrawColor(226, 232, 240);
-          doc.line(0, 28, pageWidth, 28);
-
-          const isComp = isComputerSubject(subj);
-          const subTitle = qType === 'objective' 
-            ? 'Multiple Choice' 
-            : (isComp ? 'Create Performance Task' : 'Free Response');
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(8);
-          doc.setTextColor(100, 116, 139);
-          doc.text(`AP ${sanitizePdfText(subj.shortCode)} - ${subTitle}`, margin, 18);
-          doc.text('AP Exam Practice Engine', pageWidth - margin, 18, { align: 'right' });
-
-          currentY = 46;
-        }
-      };
-
-      // Footer helper
-      const drawFooter = (pageNum: number) => {
-        doc.setDrawColor(226, 232, 240);
-        doc.setLineWidth(0.5);
-        doc.line(margin, pageHeight - 24, pageWidth - margin, pageHeight - 24);
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7.5);
-        doc.setTextColor(148, 163, 184);
-        doc.text('AP Exam Prep  •  For interactive AI scoring & practice, use AP Exam app', margin, pageHeight - 12);
-        doc.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 12, { align: 'right' });
-      };
-
-      drawHeader(true);
-      drawFooter(currentPage);
-
-      const checkPageBreak = (neededHeight: number) => {
-        if (currentY + neededHeight > pageHeight - 40) {
-          doc.addPage();
-          currentPage++;
-          drawHeader(false);
-          drawFooter(currentPage);
-          // Restore default high-contrast body typography so leaked footer styling never infects questions
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(9.5);
-          doc.setTextColor(15, 23, 42);
-          return true;
-        }
-        return false;
-      };
-
-      if (qType === 'objective') {
-        for (let idx = 0; idx < objQs.length; idx++) {
-          const q = objQs[idx];
-
-          checkPageBreak(90);
-
-          // Question badge & skill
-          doc.setFillColor(241, 245, 249);
-          doc.roundedRect(margin, currentY, contentWidth, 20, 3, 3, 'F');
-          
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(9.5);
-          doc.setTextColor(30, 41, 59);
-          doc.text(`QUESTION ${idx + 1} OF ${objQs.length}`, margin + 8, currentY + 13.5);
-
-          if (q.skill) {
-            doc.setFont('helvetica', 'italic');
-            doc.setFontSize(8);
-            doc.setTextColor(99, 102, 241);
-            doc.text(sanitizePdfText(q.skill), pageWidth - margin - 8, currentY + 13.5, { align: 'right' });
-          }
-
-          currentY += 28;
-
-          // Stimulus (if exists)
-          if (q.stimulus && q.stimulus.trim()) {
-            currentY = drawRichTextWithTables(doc, q.stimulus.trim(), margin + 10, currentY, contentWidth - 20, {
-              fontName: 'times',
-              fontStyle: 'italic',
-              fontSize: 9,
-              textColor: [51, 65, 85],
-              checkPageBreak
-            });
-            currentY += 8;
-          }
-
-          // Question prompt with rich table rendering
-          currentY = drawRichTextWithTables(doc, q.question, margin, currentY, contentWidth, {
-            fontName: 'helvetica',
-            fontStyle: 'bold',
-            fontSize: 10.5,
-            textColor: [15, 23, 42],
-            checkPageBreak
-          });
-          currentY += 10;
-
-          // High-DPI Diagram / Coordinate Graph (if provided)
-          if (q.diagramSvg) {
-            try {
-              const diagramImg = await rasterizeSvgToDataUrl(q.diagramSvg, 1000, 550);
-              if (diagramImg) {
-                const diagH = 185;
-                const diagW = Math.min(contentWidth, diagH * (400 / 220));
-                const diagX = margin + (contentWidth - diagW) / 2;
-                checkPageBreak(diagH + 15);
-                doc.addImage(diagramImg, 'PNG', diagX, currentY, diagW, diagH);
-                currentY += diagH + 12;
-              }
-            } catch (err) {
-              console.warn('Could not rasterize SVG diagram for PDF:', err);
-            }
-          }
-
-          // Options with generous spacing between choices
-          q.options.forEach(opt => {
-            doc.setFillColor(241, 245, 249);
-            doc.circle(margin + 6, currentY + 6, 3, 'F');
-
-            currentY = drawRichTextWithTables(doc, opt, margin + 16, currentY, contentWidth - 24, {
-              fontName: 'helvetica',
-              fontStyle: 'normal',
-              fontSize: 9.5,
-              textColor: [30, 41, 59],
-              checkPageBreak
-            });
-            currentY += 8; // Generous space between options (answers)
-          });
-
-          currentY += 14;
-
-          // Separator line with generous spacing between questions
-          if (idx < objQs.length - 1) {
-            doc.setDrawColor(226, 232, 240);
-            doc.setLineWidth(0.5);
-            doc.line(margin, currentY, pageWidth - margin, currentY);
-            currentY += 26; // Generous space before next question
-          }
-        }
-
-        // ================= CONSOLIDATED ANSWER KEY ON LAST PAGE =================
-        doc.addPage();
-        currentPage++;
-        drawHeader(false);
-        drawFooter(currentPage);
-
-        // Section Title: Answer Key Banner
-        doc.setFillColor(240, 253, 244); // Light emerald
-        doc.setDrawColor(187, 247, 208);
-        doc.roundedRect(margin, currentY, contentWidth, 24, 4, 4, 'FD');
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10.5);
-        doc.setTextColor(21, 128, 61);
-        doc.text('OFFICIAL AP EXAM ANSWER KEY & DETAILED EXPLANATIONS', margin + 10, currentY + 16);
-        currentY += 34;
-
-        objQs.forEach((q, idx) => {
-          const cleanAns = sanitizePdfText(q.correctAnswer);
-          const expSteps = parseSolutionStepsForPdf(q.explanation);
-
-          checkPageBreak(60);
-
-          // Correct Answer Banner Header
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(9.5);
-          doc.setTextColor(21, 128, 61); // Emerald-700
-          doc.text(`QUESTION ${idx + 1} - [Correct Answer]:  ${cleanAns}`, margin, currentY);
-          currentY += 16;
-
-          expSteps.forEach((st, sIdx) => {
-            if (st.label && st.label.trim()) {
-              doc.setFont('helvetica', 'bold');
-              doc.setFontSize(8.5);
-              if (st.label.toLowerCase().includes('distractor')) {
-                doc.setTextColor(180, 83, 9); // Amber-700
-                currentY += 2;
-              } else if (st.label.toLowerCase().startsWith('option') || st.label.toLowerCase().startsWith('choice')) {
-                doc.setTextColor(126, 34, 206); // Purple-700
-              } else {
-                doc.setTextColor(79, 70, 229); // Indigo-600
-              }
-              doc.text(st.label, margin + 8, currentY);
-              currentY += 12;
-            } else if (sIdx === 0 && expSteps.length === 1) {
-              doc.setFont('helvetica', 'bold');
-              doc.setFontSize(8.5);
-              doc.setTextColor(100, 116, 139); // Slate-500
-              doc.text('Official Explanation:', margin + 8, currentY);
-              currentY += 12;
-            }
-
-            if (st.content && st.content.trim()) {
-              currentY = drawRichTextWithTables(doc, st.content, margin + 8, currentY, contentWidth - 16, {
-                fontName: 'helvetica',
-                fontStyle: 'normal',
-                fontSize: 8.5,
-                textColor: [51, 65, 85],
-                checkPageBreak
-              });
-              currentY += 8;
-            }
-          });
-
-          currentY += 12;
-          if (idx < objQs.length - 1) {
-            doc.setDrawColor(226, 232, 240);
-            doc.setLineWidth(0.5);
-            doc.line(margin, currentY, pageWidth - margin, currentY);
-            currentY += 20; // Distinct space between answer key items
-          }
-        });
-      } else {
-        // Subjective (FRQ) - 1. Print all FRQ prompts first
-        for (let idx = 0; idx < subQs.length; idx++) {
-          const q = subQs[idx];
-          const cleanPrompt = sanitizePdfText(q.prompt);
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10.5);
-          const promptLines = doc.splitTextToSize(cleanPrompt, contentWidth);
-          const promptH = (promptLines.length * 13) + 16;
-          const bannerH = 22;
-          const bannerSpacing = 8;
-          const diagEstimateH = q.diagramSvg ? 155 : 0;
-          const totalHeaderAndPrompt = bannerH + bannerSpacing + promptH + diagEstimateH + 16;
-          const maxUsablePageH = pageHeight - 40 - 46;
-
-          // Crucial fix: Check page break BEFORE drawing the banner so that banner and prompt are NEVER split across pages!
-          checkPageBreak(Math.min(totalHeaderAndPrompt, maxUsablePageH));
-
-          // Question / Task Banner
-          const isComp = isComputerSubject(subj);
-          doc.setFillColor(243, 232, 255); // Purple-100
-          doc.roundedRect(margin, currentY, contentWidth, bannerH, 3, 3, 'F');
-
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10);
-          doc.setTextColor(107, 33, 168); // Purple-800
-          const bannerText = isComp 
-            ? `CREATE PERFORMANCE TASK PROMPT ${idx + 1}  [${q.totalPoints || 6} POINTS]`
-            : `FREE RESPONSE QUESTION ${idx + 1}  [${q.totalPoints || 6} POINTS]`;
-          doc.text(bannerText, margin + 8, currentY + 15);
-
-          if (q.skill) {
-            doc.setFont('helvetica', 'italic');
-            doc.setFontSize(8);
-            doc.setTextColor(126, 34, 206);
-            doc.text(sanitizePdfText(q.skill), pageWidth - margin - 8, currentY + 15, { align: 'right' });
-          }
-
-          currentY += bannerH + bannerSpacing;
-
-          // Prompt with rich table and formatting support
-          currentY = drawRichTextWithTables(doc, q.prompt, margin, currentY, contentWidth, {
-            fontName: 'helvetica',
-            fontStyle: 'bold',
-            fontSize: 10.5,
-            textColor: [15, 23, 42],
-            checkPageBreak
-          });
-          currentY += 12;
-
-          // High-DPI Diagram / Coordinate Graph (if provided)
-          if (q.diagramSvg) {
-            try {
-              const diagramImg = await rasterizeSvgToDataUrl(q.diagramSvg, 1000, 550);
-              if (diagramImg) {
-                const diagH = 185;
-                const diagW = Math.min(contentWidth, diagH * (400 / 220));
-                const diagX = margin + (contentWidth - diagW) / 2;
-                checkPageBreak(diagH + 15);
-                doc.addImage(diagramImg, 'PNG', diagX, currentY, diagW, diagH);
-                currentY += diagH + 10;
-              }
-            } catch (err) {
-              console.warn('Could not rasterize SVG diagram for PDF:', err);
-            }
-          }
-
-          // Workspace line for student
-          if (idx < subQs.length - 1) {
-            doc.setDrawColor(226, 232, 240);
-            doc.setLineWidth(0.5);
-            doc.line(margin, currentY, pageWidth - margin, currentY);
-            currentY += 26;
-          }
-        }
-
-        // ================= CONSOLIDATED SCORING RUBRIC & SOLUTIONS ON LAST PAGE =================
-        doc.addPage();
-        currentPage++;
-        drawHeader(false);
-        drawFooter(currentPage);
-
-        // Section Title: Scoring Guidelines Banner
-        doc.setFillColor(238, 242, 255); // Indigo-50
-        doc.setDrawColor(199, 210, 254);
-        doc.roundedRect(margin, currentY, contentWidth, 24, 4, 4, 'FD');
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10.5);
-        doc.setTextColor(67, 56, 202);
-        const rubricMainTitle = isComputerSubject(subj)
-          ? 'OFFICIAL CREATE PERFORMANCE TASK SCORING GUIDELINES & MODEL RESPONSES'
-          : 'OFFICIAL COLLEGE BOARD SCORING GUIDELINES & MODEL SOLUTIONS';
-        doc.text(rubricMainTitle, margin + 10, currentY + 16);
-        currentY += 34;
-
-        subQs.forEach((q, idx) => {
-          const isCompSub = isComputerSubject(subj);
-          const subHeaderTitle = isCompSub
-            ? `TASK PROMPT ${idx + 1} SCORING RUBRIC & EXEMPLARY SOLUTION`
-            : `QUESTION ${idx + 1} SCORING RUBRIC & EXEMPLARY SOLUTION`;
-
-          const steps = parseSolutionStepsForPdf(q.modelAnswer);
-
-          checkPageBreak(50);
-
-          // Task / Question Sub-header
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10);
-          doc.setTextColor(88, 28, 135); // Purple-900
-          doc.text(subHeaderTitle, margin, currentY);
-          currentY += 14;
-
-          // Model Solution Section Banner
-          doc.setFillColor(238, 242, 255); // Indigo-50
-          doc.setDrawColor(199, 210, 254); // Indigo-200
-          doc.roundedRect(margin, currentY, contentWidth, 20, 3, 3, 'FD');
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(9);
-          doc.setTextColor(67, 56, 202); // Indigo-700
-          doc.text('Exemplary Model Solution (Maximum Score):', margin + 10, currentY + 13.5);
-          currentY += 26;
-
-          // Render each step/part with full support for embedded data tables
-          steps.forEach(st => {
-            checkPageBreak(40);
-
-            if (st.label && st.label.trim()) {
-              doc.setFont('helvetica', 'bold');
-              doc.setFontSize(9);
-              doc.setTextColor(67, 56, 202); // Indigo-700
-              doc.text(st.label, margin + 8, currentY);
-              currentY += 13;
-            }
-
-            currentY = drawRichTextWithTables(doc, st.content, margin + 8, currentY, contentWidth - 16, {
-              fontName: 'helvetica',
-              fontStyle: 'normal',
-              fontSize: 8.5,
-              textColor: [30, 41, 59],
-              checkPageBreak
-            });
-            currentY += 8;
-          });
-
-          currentY += 8;
-
-          // Scoring Guidelines
-          checkPageBreak(50);
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(9);
-          doc.setTextColor(5, 150, 105); // Emerald-600
-          doc.text('Official Reader Scoring Guidelines & Criteria:', margin, currentY);
-          currentY += 12;
-
-          q.scoringRubric.forEach(rubricItem => {
-            currentY = drawRichTextWithTables(doc, `• ${rubricItem}`, margin + 6, currentY, contentWidth - 12, {
-              fontName: 'helvetica',
-              fontStyle: 'normal',
-              fontSize: 8.5,
-              textColor: [51, 65, 85],
-              checkPageBreak
-            });
-            currentY += 6;
-          });
-
-          currentY += 14;
-          if (idx < subQs.length - 1) {
-            doc.setDrawColor(226, 232, 240);
-            doc.setLineWidth(0.5);
-            doc.line(margin, currentY, pageWidth - margin, currentY);
-            currentY += 24;
-          }
-        });
-      }
-
-      // ─── FINAL PAGE PRO TIP CALLOUT BOX ───
-      const tipBoxH = 38;
-      checkPageBreak(tipBoxH + 15);
-
-      const targetTipY = Math.max(currentY + 14, pageHeight - 36 - tipBoxH);
-
-      doc.setFillColor(245, 243, 255);
-      doc.setDrawColor(199, 210, 254);
-      doc.setLineWidth(0.8);
-      doc.roundedRect(margin, targetTipY, contentWidth, tipBoxH, 4, 4, 'FD');
-
-      // Left vertical accent
-      doc.setFillColor(99, 102, 241);
-      doc.roundedRect(margin, targetTipY, 5, tipBoxH, 2, 2, 'F');
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8.5);
-      doc.setTextColor(67, 56, 202);
-      doc.text('★ PRO TIP: FOR THE BEST STUDY & PRACTICE EXPERIENCE', margin + 12, targetTipY + 13);
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.6);
-      doc.setTextColor(55, 65, 81);
-      const tipText = 'To get instant AI feedback, interactive step-by-step hints, audio explanations, and timed exams, practice directly inside the AP Exam app rather than static PDFs!';
-      const tipLines = doc.splitTextToSize(tipText, contentWidth - 20);
-      let tCursorY = targetTipY + 24;
-      for (const line of tipLines) {
-        doc.text(line, margin + 12, tCursorY);
-        tCursorY += 9.5;
-      }
-
-      const isCompPdf = isComputerSubject(subj);
-      const pdfTypeTag = qType === 'objective' ? 'MCQ' : (isCompPdf ? 'CREATE_PT' : 'FRQ');
-      const filename = `AP_${subj.shortCode.replace(/\s+/g, '_')}_${pdfTypeTag}_Practice.pdf`;
-      const pdfBlob = doc.output('blob');
-      const blobUrl = URL.createObjectURL(pdfBlob);
+      if (!res) return;
 
       // Open preview reader only if not skipping preview (e.g. direct share)
       if (!options?.skipPreview) {
         setIsPdfDownloaded(false);
-        setPreviewPdfUri(blobUrl);
-        setPreviewPdfName(filename);
+        setPreviewPdfUri(res.blobUrl);
+        setPreviewPdfName(res.filename);
       }
-      return { blob: pdfBlob, filename };
+      return { blob: res.blob, filename: res.filename };
     } catch (err: any) {
       console.error("PDF Export Error:", err);
       showToast("Failed to create PDF preview: " + (err.message || err), "error");
@@ -1979,7 +1605,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     triggerVibration(10);
     setHistoryList(prev => {
       const updated = prev.filter(item => item.id !== id);
-      safeSetItem('ap_test_prep_history', JSON.stringify(updated));
+      saveUserHistory('ap_test_prep_history', updated);
       return updated;
     });
   };
@@ -1997,7 +1623,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
       icon: '🗑️',
       onConfirm: () => {
         setHistoryList([]);
-        safeSetItem('ap_test_prep_history', JSON.stringify([]));
+        saveUserHistory('ap_test_prep_history', []);
         showToast("Practice history cleared successfully", "success");
       }
     });
@@ -2821,6 +2447,15 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                                 </div>
                               )}
                             </div>
+
+                            {/* AI Safety Disclaimer */}
+                            {!inlineAi.loading && !inlineAi.error && (
+                              <div className="text-center pt-2 pb-1 px-4 border-t border-zinc-100 dark:border-zinc-800/40">
+                                <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium select-none tracking-tight">
+                                  AP Exam AI can make mistakes. Please double check important information.
+                                </p>
+                              </div>
+                            )}
                           </motion.div>
                         );
                       })()}
@@ -2988,7 +2623,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                 <div className="flex items-center justify-between text-xs font-bold text-zinc-500">
                   <span>{isComputerSubject(selectedSubject) ? 'Create Performance Task Prompt' : 'Free Response Question'} {currentSubIndex + 1} of {subjectiveQuestions.length}</span>
                   <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-black text-[10px]">
-                    {subjectiveQuestions[currentSubIndex]?.totalPoints || 6} Points Max
+                    {getQuestionRealPoints(subjectiveQuestions[currentSubIndex])} Points Max
                   </span>
                 </div>
 
@@ -3274,6 +2909,13 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                             <div className="p-3.5 text-xs text-zinc-800 leading-relaxed">
                               <GlobalMarkdown>{evaluation.text}</GlobalMarkdown>
                             </div>
+
+                            {/* AI Safety Disclaimer */}
+                            <div className="text-center pt-1 pb-1.5 px-4 border-t border-purple-200/50">
+                              <p className="text-[10px] text-zinc-400 font-medium select-none tracking-tight">
+                                AP Exam AI can make mistakes. Please double check important information.
+                              </p>
+                            </div>
                           </div>
                         )}
 
@@ -3383,6 +3025,15 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                                   </div>
                                 )}
                               </div>
+
+                              {/* AI Safety Disclaimer */}
+                              {!inlineAi.loading && !inlineAi.error && (
+                                <div className="text-center pt-2 pb-1 px-4 border-t border-zinc-100 dark:border-zinc-800/40">
+                                  <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium select-none tracking-tight">
+                                    AP Exam AI can make mistakes. Please double check important information.
+                                  </p>
+                                </div>
+                              )}
                             </motion.div>
                           );
                         })()}
@@ -4074,9 +3725,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                 onClick={async () => {
                   triggerVibration(15);
                   try {
-                    const res = await fetch(previewPdfUri);
-                    const blob = await res.blob();
-                    await sharePDFMobile(blob, previewPdfName);
+                    await sharePDFMobile(previewPdfUri, previewPdfName);
                   } catch (e: any) {
                     console.error("PDF share error:", e);
                     showToast("Share failed: " + (e.message || e), "error");

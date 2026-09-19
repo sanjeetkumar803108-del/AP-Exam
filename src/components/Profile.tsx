@@ -25,7 +25,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { triggerVibration } from '../utils/vibrate';
 import confetti from 'canvas-confetti';
-import { safeGetItem, safeSetItem, safeClearAll } from '../utils/storage';
+import { safeGetItem, safeSetItem, safeClearAll, safeRemoveItem, purgeUserDataPreservingSubscription } from '../utils/storage';
 import { getCoins, addCoins } from '../utils/coins';
 import { useSettings } from '../hooks/useSettings';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
@@ -504,7 +504,11 @@ export default function Profile({
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (appStateListener) {
-        appStateListener.remove();
+        if (typeof appStateListener.then === 'function') {
+          appStateListener.then((l: any) => l?.remove?.()).catch(() => {});
+        } else if (typeof appStateListener.remove === 'function') {
+          try { appStateListener.remove(); } catch (_) {}
+        }
       }
     };
   }, []);
@@ -1385,86 +1389,98 @@ export default function Profile({
       return;
     }
     
-    const proceedWithDeletion = async () => {
-      setLoading(true);
-      setIsDeleting(true);
-      triggerVibration([30, 50, 30]);
-      
-      try {
-        const uid = user.uid;
-        
-        // 1. Wipe user document from the primary "users" collection
-        try {
-          await deleteDoc(doc(db, 'users', uid));
-        } catch (err) {
-          console.error("Error deleting user doc:", err);
-        }
-        
-        // List of all collections where userId maps to uid
-        const collectionsToWipe = [
-          'pocket_items',
-          'ai_tutor_chats',
-          'quiz_results',
-          'generated_questions',
-          'MistakeVault',
-          'pdf_history'
-        ];
-        
-        // 2. Query and delete all user documents across all related collections
-        for (const colName of collectionsToWipe) {
+    if (isDeleting) return;
+
+    setLoading(true);
+    setIsDeleting(true);
+    triggerVibration([30, 50, 30]);
+
+    try {
+      const uid = user.uid;
+
+      // 1. Detect if the user currently has an active bought subscription
+      const hasActiveSubscription = Boolean(
+        isVip || 
+        safeGetItem('study_is_vip') === 'true' || 
+        safeGetItem(`study_is_vip_${uid}`) === 'true'
+      );
+
+      // 2. Fast parallel cloud data purge (bounded by 3.5s timeout so it never hangs)
+      const collectionsToWipe = [
+        'pocket_items',
+        'ai_tutor_chats',
+        'quiz_results',
+        'generated_questions',
+        'MistakeVault',
+        'pdf_history',
+        'study_passive_usage'
+      ];
+
+      const wipePromises = [
+        deleteDoc(doc(db, 'users', uid)).catch(e => console.warn("User doc delete:", e)),
+        ...collectionsToWipe.map(async (colName) => {
           try {
             const q = query(collection(db, colName), where('userId', '==', uid));
             const querySnapshot = await getDocs(q);
             const deletePromises = querySnapshot.docs.map(docSnap => deleteDoc(docSnap.ref));
             await Promise.all(deletePromises);
           } catch (err) {
-            console.error(`Error wiping collection ${colName}:`, err);
+            console.warn(`Wipe collection ${colName}:`, err);
           }
-        }
-        
-        // 3. Delete the Authentication record permanently
-        let authDeleted = false;
-        try {
-          await user.delete();
-          authDeleted = true;
-        } catch (authErr: any) {
-          console.warn("Auth delete failed (may require recent login):", authErr);
-        }
-        
-        if (authDeleted) {
-          showToast("🗑️ Account and data permanently deleted.");
-        } else {
-          showToast("🧹 Data wiped! Log out and in again to fully delete account login.");
-        }
-        
-        setActiveModal(null);
-        setIsVip(false);
-        safeClearAll();
-        if (Capacitor.isNativePlatform()) {
-          try {
-            await FirebaseAuthentication.signOut();
-          } catch (_) {}
-          await clearGoogleCredentialState();
-        }
-        await signOut(auth);
-        setShowSettings(false);
-      } catch (error: any) {
-        console.error("Error during account deletion:", error);
-        showToast("❌ Failed to complete data deletion.");
-      } finally {
-        setLoading(false);
-        setIsDeleting(false);
-      }
-    };
+        })
+      ];
 
-    Alert.alert(
-      "Confirm Deletion",
-      "Are you sure? This will permanently wipe your data.\n\n⚠️ WARNING: Deleting your account does NOT cancel your active Pro Subscription. You must manually cancel it in your device's App Store settings to avoid future charges.",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Delete", style: "destructive", onPress: proceedWithDeletion }
-      ]
-    );
+      await Promise.race([
+        Promise.allSettled(wipePromises),
+        new Promise(resolve => setTimeout(resolve, 3500))
+      ]);
+
+      // 3. Delete Firebase Auth user record
+      try {
+        await user.delete();
+      } catch (authErr: any) {
+        console.warn("Auth delete failed (may require recent login):", authErr);
+      }
+
+      // 4. Complete local storage purge: wipe all personal data, chats, quizzes, mistakes, coins,
+      // while safely preserving subscription status if user bought Pro!
+      purgeUserDataPreservingSubscription(hasActiveSubscription);
+
+      if (hasActiveSubscription) {
+        if (setIsVip) setIsVip(true);
+        safeSetItem('study_is_vip', 'true');
+      } else {
+        if (setIsVip) setIsVip(false);
+        safeRemoveItem('study_is_vip');
+      }
+
+      // 5. Clean native authentication & sign out
+      if (Capacitor.isNativePlatform()) {
+        try {
+          await FirebaseAuthentication.signOut();
+        } catch (_) {}
+        await clearGoogleCredentialState();
+      }
+      try {
+        await signOut(auth);
+      } catch (_) {}
+
+      // 6. UI Reset & Success feedback
+      setActiveModal(null);
+      setShowSettings(false);
+      
+      if (hasActiveSubscription) {
+        showToast("🗑️ Account & data deleted! Pro Subscription safely preserved on this device.");
+      } else {
+        showToast("🗑️ Account and all personal data permanently deleted.");
+      }
+    } catch (error: any) {
+      console.error("Error during account deletion:", error);
+      showToast("❌ Failed to complete data deletion. Please try again.");
+    } finally {
+      setLoading(false);
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -1870,116 +1886,186 @@ export default function Profile({
           })()}
 
           {/* Passive 7-Day App Usage Tracker Card */}
-          <div 
-            ref={appUsageCardRef}
-            className="bg-white rounded-[2.5rem] p-6 border border-zinc-200 shadow-sm space-y-4 relative"
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-zinc-400" /> App Usage Tracker
-              </h3>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full uppercase tracking-wider">
-                  Passive 7-Day Log
-                </span>
-                <button
-                  data-html2canvas-ignore="true"
-                  disabled={isSharingUsage}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleShareUsage();
-                  }}
-                  className="p-1.5 rounded-full hover:bg-zinc-100 text-zinc-400 hover:text-purple-600 transition-colors cursor-pointer active:scale-95 z-10 disabled:opacity-50"
-                  title="Share Usage Tracker Graph"
-                  aria-label="Share App Usage Tracker"
-                >
-                  {isSharingUsage ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-purple-600" />
-                  ) : (
-                    <Share2 className="w-4 h-4" />
-                  )}
-                </button>
+          {(() => {
+            const todayStr = getTodayDateString();
+            const todayMins = chartData.find(item => item.dateString === todayStr)?.focusTime || 0;
+            const highestItem = chartData.reduce(
+              (max, item) => (item.focusTime > (max?.focusTime || 0) ? item : max),
+              chartData[0] || { focusTime: 0, day: '', dateString: '' }
+            );
+            const highestMins = highestItem?.focusTime || 0;
+            const highestDay = highestItem?.day || '';
+
+            return (
+              <div 
+                ref={appUsageCardRef}
+                className="bg-white rounded-[2.5rem] p-6 border border-zinc-200 shadow-sm space-y-4 relative"
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-zinc-400" /> App Usage Tracker
+                  </h3>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[9.5px] font-black text-purple-600 bg-purple-50 dark:bg-purple-950/40 dark:text-purple-300 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                      Passive 7-Day Log
+                    </span>
+                    <button
+                      data-html2canvas-ignore="true"
+                      disabled={isSharingUsage}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleShareUsage();
+                      }}
+                      className="p-1.5 rounded-full hover:bg-zinc-100 text-zinc-400 hover:text-purple-600 transition-colors cursor-pointer active:scale-95 z-10 disabled:opacity-50"
+                      title="Share Usage Tracker Graph"
+                      aria-label="Share App Usage Tracker"
+                    >
+                      {isSharingUsage ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-purple-600" />
+                      ) : (
+                        <Share2 className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <p className="text-[11px] font-bold text-zinc-500 leading-relaxed">
+                  Tracks total active time spent in the app. Updates passively as you study, solve quizzes, and interact with the AI tutor.
+                </p>
+
+                {/* Passive Usage Line Chart */}
+                <div className="w-full h-52 -mt-1 select-none relative">
+                  {/* Floating Top-Right Corner Indicator */}
+                  <div className="absolute top-1 right-2 z-10 pointer-events-none flex items-center gap-1.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs border border-amber-200/90 dark:border-amber-800/70 px-2.5 py-1 rounded-xl text-[10px] font-black text-amber-700 dark:text-amber-300 shadow-2xs">
+                    <Trophy className="w-3.5 h-3.5 text-amber-500 fill-amber-400 shrink-0" />
+                    <span>Highest Study Time: <strong className="text-zinc-900 dark:text-white font-mono text-[11px]">{highestMins}m</strong> {highestDay ? <span className="text-amber-600 dark:text-amber-400 font-bold">({highestDay})</span> : ''}</span>
+                  </div>
+
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData} margin={{ top: 24, right: 10, left: -30, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" />
+                      <XAxis 
+                        dataKey="day" 
+                        tick={{ fill: '#a1a1aa', fontSize: 10, fontWeight: 700 }} 
+                        axisLine={false} 
+                        tickLine={false} 
+                      />
+                      <YAxis 
+                        stroke="#a1a1aa" 
+                        tick={{ fill: '#71717a', fontSize: 9, fontWeight: 700 }} 
+                        axisLine={false} 
+                        tickLine={false} 
+                        unit="m"
+                      />
+                      <Tooltip 
+                        content={({ active, payload, label }: any) => {
+                          if (active && payload && payload.length) {
+                            return (
+                              <div 
+                                style={{ 
+                                  backgroundColor: '#0f172a', 
+                                  border: '1px solid #334155',
+                                  boxShadow: '0 12px 28px -4px rgba(0, 0, 0, 0.45), 0 8px 12px -6px rgba(0, 0, 0, 0.3)',
+                                  color: '#ffffff'
+                                }} 
+                                className="rounded-2xl px-3.5 py-2.5 shadow-2xl text-[11px] font-sans select-none pointer-events-none"
+                              >
+                                <div className="flex items-center justify-between gap-3 mb-1.5">
+                                  <span style={{ color: '#f8fafc', fontWeight: 900, fontSize: '12px' }} className="tracking-tight">
+                                    {label} Report
+                                  </span>
+                                  <span style={{ color: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.15)', borderColor: 'rgba(56, 189, 248, 0.3)' }} className="text-[9px] font-extrabold px-2 py-0.5 rounded-full border">
+                                    Active Time
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 pt-0.5">
+                                  <span 
+                                    style={{ 
+                                      backgroundColor: '#a855f7', 
+                                      boxShadow: '0 0 10px rgba(168, 85, 247, 0.9)' 
+                                    }} 
+                                    className="w-2 h-2 rounded-full shrink-0" 
+                                  />
+                                  <span style={{ color: '#e2e8f0', fontWeight: 700, fontSize: '11px' }}>
+                                    Usage:
+                                  </span>
+                                  <span style={{ color: '#c084fc', fontWeight: 900, fontSize: '13px' }} className="font-mono">
+                                    {payload[0].value} mins
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="focusTime" 
+                        name="Active Time (Mins)" 
+                        stroke="#8b5cf6" 
+                        strokeWidth={3.5} 
+                        activeDot={{ r: 6 }} 
+                        dot={{ r: 3, fill: '#8b5cf6', strokeWidth: 0 }} 
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Twin Stat Cards: Today's Focus & Highest Study Time */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Today's Focus Time */}
+                  <div className="bg-zinc-50 dark:bg-zinc-850 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-3.5 flex flex-col justify-between">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-400 uppercase tracking-wider">Today</span>
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-black text-zinc-800 dark:text-zinc-100 block truncate">Today's Focus Time</span>
+                      <span className="text-base font-black text-zinc-900 dark:text-white font-mono block mt-0.5">
+                        {todayMins}m
+                      </span>
+                    </div>
+                    <span className="text-[8.5px] font-bold text-zinc-400 dark:text-zinc-400 mt-1 block truncate">Passively tracked</span>
+                  </div>
+
+                  {/* Highest Study Time */}
+                  <div className="bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-yellow-50/60 dark:from-amber-950/40 dark:to-orange-950/30 border border-amber-200/80 dark:border-amber-800/60 rounded-2xl p-3.5 flex flex-col justify-between shadow-2xs">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                        <Trophy className="w-3 h-3 text-amber-500 fill-amber-400" /> Peak Record
+                      </span>
+                      {highestDay && (
+                        <span className="text-[9px] font-extrabold text-amber-700 dark:text-amber-300 bg-white/90 dark:bg-zinc-800 px-1.5 py-0.2 rounded-md border border-amber-200/70 dark:border-amber-800/60 shadow-2xs">
+                          {highestDay}
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <span className="text-xs font-black text-zinc-900 dark:text-white block truncate">Highest Study Time</span>
+                      <span className="text-base font-black text-amber-600 dark:text-amber-400 font-mono block mt-0.5">
+                        {highestMins}m
+                      </span>
+                    </div>
+                    <span className="text-[8.5px] font-bold text-amber-700/90 dark:text-amber-400/90 mt-1 block truncate">7-Day Peak Record</span>
+                  </div>
+                </div>
+
+                {/* Subtle card branding for shared image */}
+                <div className="flex items-center justify-between pt-1 border-t border-zinc-100 dark:border-zinc-800 text-[10px] text-zinc-400 dark:text-zinc-300 font-semibold">
+                  <span className="flex items-center gap-1.5">
+                    <GraduationCap className="w-3.5 h-3.5 text-purple-500" /> AP Exam Prep App
+                  </span>
+                  <span>Study Analytics</span>
+                </div>
               </div>
-            </div>
-
-            <p className="text-[11px] font-bold text-zinc-500 leading-relaxed">
-              Tracks total active time spent in the app. Updates passively as you study, solve quizzes, and interact with the AI tutor.
-            </p>
-
-            {/* Passive Usage Line Chart */}
-            <div className="w-full h-48 -mt-1 select-none">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 10, right: 10, left: -30, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" />
-                  <XAxis 
-                    dataKey="day" 
-                    tick={{ fill: '#a1a1aa', fontSize: 10, fontWeight: 700 }} 
-                    axisLine={false} 
-                    tickLine={false} 
-                  />
-                  <YAxis 
-                    stroke="#a1a1aa" 
-                    tick={{ fill: '#71717a', fontSize: 9, fontWeight: 700 }} 
-                    axisLine={false} 
-                    tickLine={false} 
-                    unit="m"
-                  />
-                  <Tooltip 
-                    content={({ active, payload, label }: any) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <div className="bg-zinc-900/95 backdrop-blur-md text-white rounded-2xl p-3 shadow-xl border border-zinc-800 text-[11px] font-sans">
-                            <p className="font-black text-xs text-zinc-300 mb-1">{label} Report</p>
-                            <p className="flex items-center gap-1.5 font-bold text-purple-300">
-                              <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
-                              Usage: {payload[0].value} mins
-                            </p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="focusTime" 
-                    name="Active Time (Mins)" 
-                    stroke="#8b5cf6" 
-                    strokeWidth={3.5} 
-                    activeDot={{ r: 6 }} 
-                    dot={{ r: 3, fill: '#8b5cf6', strokeWidth: 0 }} 
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="bg-zinc-50 border border-zinc-100 rounded-2xl p-4 flex items-center justify-between">
-              <div>
-                <span className="text-xs font-black text-zinc-800 block">Today's Focus Time</span>
-                <span className="text-[9px] font-bold text-zinc-400">Recorded passively in background</span>
-              </div>
-              <span className="text-sm font-black text-zinc-900 bg-white border border-zinc-200/60 shadow-sm px-3.5 py-1.5 rounded-xl font-mono">
-                {(() => {
-                  const todayStr = getTodayDateString();
-                  const todayMins = chartData.find(item => item.dateString === todayStr)?.focusTime || 0;
-                  return `${todayMins}m`;
-                })()}
-              </span>
-            </div>
-
-            {/* Subtle card branding for shared image */}
-            <div className="flex items-center justify-between pt-1 border-t border-zinc-100 text-[10px] text-zinc-400 font-semibold">
-              <span className="flex items-center gap-1.5">
-                <GraduationCap className="w-3.5 h-3.5 text-purple-500" /> AP Exam Prep App
-              </span>
-              <span>Study Analytics</span>
-            </div>
-          </div>
+            );
+          })()}
 
           {/* Learning Preferences */}
-          <div className="bg-white rounded-[2.5rem] p-6 border border-zinc-200 shadow-sm space-y-4">
-            <h3 className="text-xs font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2 mb-2">
-              <Zap className="w-4 h-4 text-zinc-400" /> Accessibility & Focus
+          <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-6 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-4">
+            <h3 className="text-xs font-black text-zinc-400 dark:text-zinc-300 uppercase tracking-widest flex items-center gap-2 mb-2">
+              <Zap className="w-4 h-4 text-zinc-400 dark:text-zinc-300" /> Accessibility &amp; Focus
             </h3>
             
             {/* Dark Mode Toggle */}
@@ -1989,17 +2075,17 @@ export default function Profile({
                 onToggleDarkMode();
                 showToast(!isDarkMode ? "🌙 Dark Mode enabled" : "☀️ Light Mode enabled");
               }}
-              className="flex justify-between items-center bg-zinc-50 border border-zinc-100 rounded-2xl p-4 cursor-pointer hover:bg-zinc-100/50 transition-colors"
+              className="flex justify-between items-center bg-zinc-50 dark:bg-zinc-850 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-4 cursor-pointer hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors"
             >
               <div className="flex items-center gap-2.5">
                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
-                  isDarkMode ? 'bg-purple-100 text-purple-600' : 'bg-zinc-200/70 text-zinc-600'
+                  isDarkMode ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300' : 'bg-zinc-200/70 text-zinc-600'
                 }`}>
                   {isDarkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-amber-500" />}
                 </div>
                 <div>
-                  <span className="text-xs font-black text-zinc-800 block">Dark Mode</span>
-                  <span className="text-[9px] font-bold text-zinc-400">
+                  <span className="text-xs font-black text-zinc-800 dark:text-zinc-100 block">Dark Mode</span>
+                  <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-300">
                     {isDarkMode ? 'Dark theme active' : 'Switch between light and dark themes'}
                   </span>
                 </div>
@@ -2015,11 +2101,11 @@ export default function Profile({
                 triggerVibration(10);
                 setDeepFocus(!deepFocus);
               }}
-              className="flex justify-between items-center bg-zinc-50 border border-zinc-100 rounded-2xl p-4 cursor-pointer hover:bg-zinc-100/50 transition-colors"
+              className="flex justify-between items-center bg-zinc-50 dark:bg-zinc-850 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-4 cursor-pointer hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors"
             >
               <div>
-                <span className="text-xs font-black text-zinc-800 block">Deep Focus Mode</span>
-                <span className="text-[9px] font-bold text-zinc-400">Minimize distractions & hide gamification</span>
+                <span className="text-xs font-black text-zinc-800 dark:text-zinc-100 block">Deep Focus Mode</span>
+                <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-300">Minimize distractions &amp; hide gamification</span>
               </div>
               <div className={`w-10 h-6 ${deepFocus ? 'bg-purple-500' : 'bg-zinc-200'} rounded-full relative shadow-inner transition-colors shrink-0`}>
                 <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${deepFocus ? 'right-1' : 'left-1'}`} />
@@ -2053,18 +2139,18 @@ export default function Profile({
                     onNavigateToCoinPage();
                   }
                 }}
-                className="bg-white rounded-[2.25rem] p-5 border border-zinc-200 shadow-sm relative overflow-hidden flex flex-col justify-between cursor-pointer hover:bg-zinc-50 hover:border-zinc-300 active:scale-95 transition-all"
-                title="Click to view Coins & Rewards"
+                className="bg-white dark:bg-zinc-900 rounded-[2.25rem] p-5 border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden flex flex-col justify-between cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-850 hover:border-zinc-300 dark:hover:border-zinc-700 active:scale-95 transition-all"
+                title="Click to view Coins &amp; Rewards"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500 border border-amber-100">
-                    <Trophy className="w-4 h-4 fill-amber-100" />
+                  <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center text-amber-500 border border-amber-100 dark:border-amber-900/50">
+                    <Trophy className="w-4 h-4 fill-amber-100 dark:fill-amber-500/20" />
                   </div>
-                  <span className="text-[9px] uppercase font-black tracking-wider text-zinc-400">Coins</span>
+                  <span className="text-[9px] uppercase font-black tracking-wider text-zinc-400 dark:text-zinc-300">Coins</span>
                 </div>
                 <div>
-                  <p className="text-xl font-black text-zinc-850 leading-none">{coinsBalance}</p>
-                  <p className="text-[9px] text-zinc-400 font-bold mt-1">Available Study Coins</p>
+                  <p className="text-xl font-black text-zinc-850 dark:text-white leading-none">{coinsBalance}</p>
+                  <p className="text-[9px] text-zinc-400 dark:text-zinc-300 font-bold mt-1">Available Study Coins</p>
                 </div>
               </div>
             )}
@@ -2080,21 +2166,21 @@ export default function Profile({
                   setShowStreakDetails(true);
                 }
               }}
-              className="bg-white rounded-[2.25rem] p-5 border border-zinc-200 shadow-sm relative overflow-hidden flex flex-col justify-between cursor-pointer hover:bg-zinc-50 hover:border-zinc-300 active:scale-95 transition-all"
+              className="bg-white dark:bg-zinc-900 rounded-[2.25rem] p-5 border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden flex flex-col justify-between cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-850 hover:border-zinc-300 dark:hover:border-zinc-700 active:scale-95 transition-all"
               title="Click to view Streak details"
             >
               <div className="flex items-center justify-between mb-3">
-                <div className="w-8 h-8 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500 border border-orange-100">
-                  <Flame className="w-4 h-4 fill-orange-100" />
+                <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center text-orange-500 border border-orange-100 dark:border-orange-900/50">
+                  <Flame className="w-4 h-4 fill-orange-100 dark:fill-orange-500/20" />
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] uppercase font-black tracking-wider text-zinc-400 font-bold">Streak</span>
+                  <span className="text-[9px] uppercase font-black tracking-wider text-zinc-400 dark:text-zinc-300 font-bold">Streak</span>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleShareStreak();
                     }}
-                    className="p-1.5 rounded-full hover:bg-zinc-100 text-zinc-400 hover:text-orange-500 transition-colors cursor-pointer active:scale-95 z-10"
+                    className="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 dark:text-zinc-300 hover:text-orange-500 transition-colors cursor-pointer active:scale-95 z-10"
                     title="Share Streak"
                   >
                     <Share2 className="w-3.5 h-3.5" />
@@ -2102,8 +2188,8 @@ export default function Profile({
                 </div>
               </div>
               <div>
-                <p className="text-xl font-black text-zinc-850 leading-none">{studyStreak} Days</p>
-                <p className="text-[9px] text-zinc-400 font-bold mt-1">Daily App Check-In</p>
+                <p className="text-xl font-black text-zinc-850 dark:text-white leading-none">{studyStreak} Days</p>
+                <p className="text-[9px] text-zinc-400 dark:text-zinc-300 font-bold mt-1">Daily App Check-In</p>
               </div>
             </div>
           </div>
@@ -2111,30 +2197,30 @@ export default function Profile({
 
           {/* Weekly Quests & Missions */}
           {!deepFocus && (
-            <div className="bg-white rounded-[2.5rem] p-6 border border-zinc-200 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-6 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-                  <Target className="w-4 h-4 text-purple-600" /> Daily & Weekly Quests
+                <h3 className="text-xs font-black text-zinc-400 dark:text-zinc-300 uppercase tracking-widest flex items-center gap-2">
+                  <Target className="w-4 h-4 text-purple-600 dark:text-purple-400" /> Daily &amp; Weekly Quests
                 </h3>
-                <span className="text-[9.5px] font-extrabold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-150">
-                  Earn XP & Coins
+                <span className="text-[9.5px] font-extrabold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 rounded-full border border-purple-150 dark:border-purple-800/60">
+                  Earn XP &amp; Coins
                 </span>
               </div>
 
               {/* Daily Task XP Cap Meter */}
-              <div className="bg-gradient-to-r from-purple-50/90 via-indigo-50/80 to-blue-50/90 border border-purple-200/70 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-2xs">
+              <div className="bg-gradient-to-r from-purple-50/90 via-indigo-50/80 to-blue-50/90 dark:from-purple-950/40 dark:via-indigo-950/40 dark:to-blue-950/40 border border-purple-200/70 dark:border-purple-800/50 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-2xs">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-xl bg-purple-600/10 text-purple-700 flex items-center justify-center font-black text-sm shrink-0 shadow-inner">
+                  <div className="w-8 h-8 rounded-xl bg-purple-600/10 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 flex items-center justify-center font-black text-sm shrink-0 shadow-inner">
                     ⚡
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-black text-zinc-900">Daily Task XP Limit</span>
-                      <span className="text-[9px] font-black text-purple-700 bg-purple-100/90 px-1.5 py-0.2 rounded-full">
+                      <span className="text-[11px] font-black text-zinc-900 dark:text-white">Daily Task XP Limit</span>
+                      <span className="text-[9px] font-black text-purple-700 dark:text-purple-300 bg-purple-100/90 dark:bg-purple-900/60 px-1.5 py-0.2 rounded-full">
                         {dailyXP.earnedToday} / {dailyXP.dailyLimit} XP
                       </span>
                     </div>
-                    <div className="w-32 bg-purple-200/60 h-1.5 rounded-full overflow-hidden mt-1.5">
+                    <div className="w-32 bg-purple-200/60 dark:bg-purple-900/40 h-1.5 rounded-full overflow-hidden mt-1.5">
                       <div 
                         className="bg-gradient-to-r from-purple-600 to-indigo-600 h-full rounded-full transition-all duration-300"
                         style={{ width: `${Math.min(100, (dailyXP.earnedToday / dailyXP.dailyLimit) * 100)}%` }}
@@ -2142,7 +2228,11 @@ export default function Profile({
                     </div>
                   </div>
                 </div>
-                <span className={`text-[9px] font-extrabold px-2.5 py-1 rounded-xl shrink-0 ${dailyXP.isCapped ? 'bg-amber-100 text-amber-900 border border-amber-200' : 'bg-white text-purple-700 border border-purple-200 shadow-2xs'}`}>
+                <span className={`text-[9px] font-extrabold px-2.5 py-1 rounded-xl shrink-0 ${
+                  dailyXP.isCapped 
+                    ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800' 
+                    : 'bg-white dark:bg-zinc-800 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700 shadow-2xs'
+                }`}>
                   {dailyXP.isCapped ? '🌟 Capped (150/150)' : `+${dailyXP.remainingToday} XP Left`}
                 </span>
               </div>
@@ -2153,32 +2243,32 @@ export default function Profile({
                     key={quest.id} 
                     className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
                       quest.isClaimed 
-                        ? 'bg-zinc-50/60 border-zinc-200/60 opacity-60'
+                        ? 'bg-zinc-50/60 dark:bg-zinc-800/30 border-zinc-200/60 dark:border-zinc-800 opacity-60'
                         : quest.isCompleted 
-                          ? 'bg-gradient-to-r from-purple-50/80 to-indigo-50/80 border-purple-200 shadow-xs'
-                          : 'bg-zinc-50/40 border-zinc-200/50'
+                          ? 'bg-gradient-to-r from-purple-50/80 to-indigo-50/80 dark:from-purple-950/40 dark:to-indigo-950/40 border-purple-200 dark:border-purple-800/60 shadow-xs'
+                          : 'bg-zinc-50/40 dark:bg-zinc-850/60 border-zinc-200/50 dark:border-zinc-800'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="text-xl shrink-0">{quest.icon}</span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-black text-zinc-900 truncate">{quest.title}</span>
-                          <span className="text-[9px] font-black text-purple-700 bg-purple-100/70 px-1.5 py-0.5 rounded">
+                          <span className="text-xs font-black text-zinc-900 dark:text-white truncate">{quest.title}</span>
+                          <span className="text-[9px] font-black text-purple-700 dark:text-purple-300 bg-purple-100/70 dark:bg-purple-900/60 px-1.5 py-0.5 rounded">
                             +{quest.xpReward} XP
                           </span>
                         </div>
-                        <p className="text-[10px] text-zinc-500 font-medium truncate">{quest.desc}</p>
+                        <p className="text-[10px] text-zinc-500 dark:text-zinc-300 font-medium truncate">{quest.desc}</p>
                         
                         {/* Quest Progress Micro Bar */}
                         <div className="flex items-center gap-2 mt-1.5">
-                          <div className="w-24 bg-zinc-200 h-1.5 rounded-full overflow-hidden">
+                          <div className="w-24 bg-zinc-200 dark:bg-zinc-700 h-1.5 rounded-full overflow-hidden">
                             <div 
                               className="bg-purple-600 h-full rounded-full transition-all"
                               style={{ width: `${Math.min(100, (quest.currentCount / quest.targetCount) * 100)}%` }}
                             />
                           </div>
-                          <span className="text-[8.5px] font-bold text-zinc-400">
+                          <span className="text-[8.5px] font-bold text-zinc-400 dark:text-zinc-300">
                             {quest.currentCount}/{quest.targetCount}
                           </span>
                         </div>
@@ -2187,8 +2277,8 @@ export default function Profile({
 
                     <div className="shrink-0">
                       {quest.isClaimed ? (
-                        <span className="text-[9.5px] font-black text-zinc-400 flex items-center gap-1">
-                          <Check className="w-3.5 h-3.5 text-zinc-400" /> Done
+                        <span className="text-[9.5px] font-black text-zinc-400 dark:text-zinc-300 flex items-center gap-1">
+                          <Check className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-300" /> Done
                         </span>
                       ) : quest.isCompleted ? (
                         <button
@@ -2203,7 +2293,7 @@ export default function Profile({
                           Claim 🏆
                         </button>
                       ) : (
-                        <span className="text-[9px] font-extrabold text-zinc-400 bg-zinc-100 px-2 py-1 rounded-lg">
+                        <span className="text-[9px] font-extrabold text-zinc-500 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-2 py-1 rounded-lg">
                           In Progress
                         </span>
                       )}
@@ -2216,8 +2306,8 @@ export default function Profile({
 
           {/* Achievement Badges Shelf */}
           {!deepFocus && (
-            <div className="bg-white rounded-[2.5rem] p-6 border border-zinc-200 shadow-sm space-y-4">
-              <h3 className="text-xs font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+            <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-6 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-4">
+              <h3 className="text-xs font-black text-zinc-400 dark:text-zinc-300 uppercase tracking-widest flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-amber-500" /> Study Mastery Badges
               </h3>
 
@@ -2229,38 +2319,38 @@ export default function Profile({
                       key={badge.id}
                       className={`rounded-2xl border text-center flex flex-col items-center justify-between gap-1.5 transition-all ${
                         isGrandmaster
-                          ? 'col-span-3 p-3.5 bg-gradient-to-r from-amber-50/80 via-yellow-50/60 to-amber-50/80 border-amber-300/80 shadow-xs'
+                          ? 'col-span-3 p-3.5 bg-gradient-to-r from-amber-50/80 via-yellow-50/60 to-amber-50/80 dark:from-amber-950/40 dark:via-yellow-950/30 dark:to-amber-950/40 border-amber-300/80 dark:border-amber-700/60 shadow-xs'
                           : badge.unlocked
-                            ? 'p-3 bg-amber-50/50 border-amber-200 shadow-xs'
-                            : 'p-3 bg-zinc-50/30 border-zinc-200/40 opacity-50'
+                            ? 'p-3 bg-amber-50/50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/60 shadow-xs'
+                            : 'p-3 bg-zinc-50/30 dark:bg-zinc-850/40 border-zinc-200/40 dark:border-zinc-800 opacity-50'
                       }`}
                     >
                       <span className={isGrandmaster ? 'text-3xl' : 'text-2xl'}>{badge.icon}</span>
                       <div className="flex flex-col items-center">
                         <span
                           className={`text-[10px] font-black block truncate ${
-                            badge.unlocked ? 'text-zinc-900' : isGrandmaster ? 'text-amber-900' : 'text-zinc-400'
+                            badge.unlocked ? 'text-zinc-900 dark:text-white' : isGrandmaster ? 'text-amber-900 dark:text-amber-300' : 'text-zinc-400 dark:text-zinc-300'
                           }`}
                         >
                           {badge.title}
                         </span>
-                        <span className="text-[8px] font-bold text-zinc-400 block">
+                        <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-400 block">
                           {badge.requiredXP.toLocaleString()} XP
                         </span>
                         {/* Surprise Email text displayed ONLY on Grandmaster badge */}
                         {badge.specialReward && (
-                          <div className="mt-1 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 text-[8px] font-black uppercase tracking-wider shadow-2xs">
+                          <div className="mt-1 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 text-[8px] font-black uppercase tracking-wider shadow-2xs">
                             <span>🎁</span>
                             <span>{badge.specialReward}</span>
                           </div>
                         )}
                       </div>
                       {badge.unlocked ? (
-                        <span className="text-[8px] font-black uppercase text-amber-600 bg-amber-100/80 px-1.5 py-0.5 rounded">
+                        <span className="text-[8px] font-black uppercase text-amber-600 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-900/60 px-1.5 py-0.5 rounded">
                           Unlocked
                         </span>
                       ) : (
-                        <span className="text-[8px] font-bold text-zinc-400 flex items-center gap-0.5">
+                        <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-400 flex items-center gap-0.5">
                           <Lock className="w-2.5 h-2.5" /> Locked
                         </span>
                       )}
@@ -2272,9 +2362,9 @@ export default function Profile({
           )}
 
           {/* Quick Info Box */}
-          <div className="bg-blue-50/50 rounded-2xl p-4 border border-blue-100 flex items-start gap-3">
-            <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-            <p className="text-[10px] font-medium text-blue-700 leading-relaxed">
+          <div className="bg-blue-50/50 dark:bg-blue-950/30 rounded-2xl p-4 border border-blue-100 dark:border-blue-900/40 flex items-start gap-3">
+            <Info className="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" />
+            <p className="text-[10px] font-medium text-blue-700 dark:text-blue-300 leading-relaxed">
               AP Exam App customizes solutions, vocabulary, and tutor responses dynamically based on your selected Study Level (High School, College, or Advanced). Change your level anytime!
             </p>
           </div>
@@ -2466,11 +2556,11 @@ export default function Profile({
                           await Share.share({
                             title: '📚 AP Exam — Smart Study App',
                             text: '🚀 I use AP Exam App to solve homework, generate quizzes & get AI tutoring! Try it free 👇',
-                            url: 'https://play.google.com/store/apps/details?id=com.helpyou.ai',
+                            url: 'https://play.google.com/store/apps/details?id=com.apexam.prep',
                             dialogTitle: 'Share AP Exam App with friends'
                           });
                         } else {
-                          await navigator.clipboard.writeText('https://play.google.com/store/apps/details?id=com.helpyou.ai');
+                          await navigator.clipboard.writeText('https://play.google.com/store/apps/details?id=com.apexam.prep');
                           showToast('🔗 App link copied to clipboard!');
                         }
                       } catch (e) {
@@ -2506,7 +2596,7 @@ export default function Profile({
                   <button 
                     onClick={() => { 
                       triggerVibration(15); 
-                      window.location.href = 'market://details?id=com.helpyou.ai';
+                      window.location.href = 'market://details?id=com.apexam.prep';
                     }}
                     className="w-full p-4 flex justify-between items-center bg-white hover:bg-zinc-50/30 border-t border-zinc-100 transition-colors text-left"
                   >

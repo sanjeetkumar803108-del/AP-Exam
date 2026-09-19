@@ -11,6 +11,21 @@ export interface MobilePickedFile {
   fileObj: File; // Mock/Real File object
 }
 
+export interface MobilePickFailure {
+  error: 'blocked' | 'denied' | 'unknown';
+  message: string;
+}
+
+export type NativePhotoResult = MobilePickedFile | MobilePickFailure | null;
+
+export function isMobilePickFailure(result: NativePhotoResult): result is MobilePickFailure {
+  return !!result && typeof result === 'object' && 'error' in result;
+}
+
+export function isMobilePickedFile(result: NativePhotoResult): result is MobilePickedFile {
+  return !!result && typeof result === 'object' && 'fileObj' in result;
+}
+
 // Convert base64 to Blob
 export function base64ToBlob(base64: string, mimeType: string): Blob {
   const byteCharacters = atob(base64);

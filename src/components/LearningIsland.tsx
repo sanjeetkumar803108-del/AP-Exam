@@ -45,6 +45,7 @@ import {
 import { TreasureIslandCanvas } from './TreasureIslandCanvas';
 import { getApiUrl } from '../utils/api';
 import { getStudyXP, getStudyLevel, addStudyXP } from '../utils/gamification';
+import { getUserProfileData } from '../utils/profile';
 
 interface LearningIslandProps {
   onBack: () => void;
@@ -288,8 +289,8 @@ function generateLocalAIExplanation(
 
   text += `### 📐 3. Clear Step-by-Step Solution\n\n`;
   text += `${question.explanation}\n\n`;
-  text += `* **Step 1:** Formulate the governing formula or theorem.\n`;
-  text += `* **Step 2:** Substitute the exact boundary conditions or given values.\n`;
+  text += `* **Step 1:** Formulate the governing formula or theorem.\n\n`;
+  text += `* **Step 2:** Substitute the exact boundary conditions or given values.\n\n`;
   text += `* **Step 3:** Calculate and conclude: The correct result is **Option ${correctLetter}:** ${correctText}\n\n`;
 
   text += `### 💡 4. Chief Reader AP Exam Takeaway\n\n`;
@@ -928,6 +929,7 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
     setIsAILoading(true);
 
     try {
+      const _islandProfile = getUserProfileData();
       const payload = {
         questionText: currentQ.stem,
         options: currentQ.options,
@@ -936,6 +938,7 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
         subject: selectedSubject.name,
         unit: `Unit ${activeQuizLevel?.unitIndex}: ${activeQuizLevel?.name}`,
         mode: 'full-solution',
+        gradeLevel: _islandProfile.gradeLevel,
         followUpQuestion: isWrong
           ? `The student selected Option ${chosenLetter} (${chosenText}), which is INCORRECT. The correct answer is Option ${correctLetter} (${correctText}).
 Please structure your response into these 4 clear sections:
@@ -947,7 +950,7 @@ Please structure your response into these 4 clear sections:
       };
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2500);
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
 
       const res = await fetch(getApiUrl('/api/ap-tutor-explain'), {
         method: 'POST',
@@ -1252,10 +1255,12 @@ Please structure your response into these 4 clear sections:
                   </span>
                 </div>
 
-                <h3 className="text-base font-black text-zinc-950 mt-1">
-                  {selectedLevel.name}
-                </h3>
-                <p className="text-xs text-zinc-600 mt-0.5">{selectedLevel.subtitle}</p>
+                <div className="text-base font-black text-zinc-950 mt-1">
+                  <GlobalMarkdown content={selectedLevel.name} className="[&_p]:my-0 [&_p]:inline text-base font-black text-zinc-950" />
+                </div>
+                <div className="text-xs text-zinc-600 mt-1 font-medium flex items-center justify-center">
+                  <GlobalMarkdown content={selectedLevel.subtitle} className="[&_p]:my-0 [&_p]:inline text-xs text-zinc-600 font-medium text-center" />
+                </div>
 
                 <div className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-3 my-4 flex items-center justify-around text-center">
                   <div>
@@ -1316,9 +1321,9 @@ Please structure your response into these 4 clear sections:
                 <span className="text-[11px] font-black uppercase tracking-wider text-amber-900 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full">
                   Unit {activeQuizLevel.unitIndex} • Level {activeQuizLevel.levelNumber} ({activeQuizLevel.difficulty})
                 </span>
-                <h3 className="text-xs sm:text-sm font-black text-zinc-950 mt-0.5 truncate max-w-[220px] sm:max-w-md">
-                  {activeQuizLevel.name}
-                </h3>
+                <div className="text-xs sm:text-sm font-black text-zinc-950 mt-0.5 truncate max-w-[220px] sm:max-w-md">
+                  <GlobalMarkdown content={activeQuizLevel.name} className="[&_p]:my-0 [&_p]:inline text-xs sm:text-sm font-black text-zinc-950" />
+                </div>
               </div>
 
               <div className="text-xs font-black text-zinc-900 bg-zinc-100 px-2.5 py-1 rounded-xl border border-zinc-200">
@@ -1531,6 +1536,13 @@ Please structure your response into these 4 clear sections:
                                           Got it, thanks! 👍
                                         </button>
                                       </div>
+
+                                      {/* AI Safety Disclaimer */}
+                                      <div className="pt-2 text-center">
+                                        <p className="text-[10px] text-zinc-400 font-medium select-none tracking-tight">
+                                          AP Exam AI can make mistakes. Please double check important information.
+                                        </p>
+                                      </div>
                                     </>
                                   )}
                                 </div>
@@ -1541,15 +1553,22 @@ Please structure your response into these 4 clear sections:
                                     <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                                     <span>College Board Step-by-Step Explanation</span>
                                   </div>
-                                  <div className="text-xs sm:text-sm font-medium text-zinc-950 leading-relaxed">
+                                  <div className="text-xs sm:text-sm font-medium text-zinc-950 leading-relaxed space-y-2">
                                     <GlobalMarkdown content={currentQ.explanation} className="text-zinc-950 font-medium" />
-                                  </div>
 
-                                  {currentQ.distractorTip && (
-                                    <div className="text-[11px] font-semibold text-rose-950 bg-rose-50 border-2 border-rose-200/90 p-2.5 rounded-xl mt-2 leading-relaxed">
-                                      <GlobalMarkdown content={currentQ.distractorTip} className="text-rose-950 font-semibold" />
+                                    {currentQ.distractorTip && (
+                                      <div className="text-[11px] font-semibold text-rose-950 bg-rose-50 border-2 border-rose-200/90 p-2.5 rounded-xl mt-2 leading-relaxed">
+                                        <GlobalMarkdown content={currentQ.distractorTip} className="text-rose-950 font-semibold" />
+                                      </div>
+                                    )}
+
+                                    {/* AI Safety Disclaimer */}
+                                    <div className="text-center pt-2 pb-0.5">
+                                      <p className="text-[10px] text-zinc-400 font-medium select-none tracking-tight">
+                                        AP Exam AI can make mistakes. Please double check important information.
+                                      </p>
                                     </div>
-                                  )}
+                                  </div>
                                 </div>
                               </motion.div>
                             )}

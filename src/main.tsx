@@ -19,14 +19,7 @@ window.addEventListener('unhandledrejection', (event) => {
     str.includes('loading chunk')
   ) {
     event.preventDefault();
-    if ((str.includes('dynamically imported module') || str.includes('loading chunk')) && typeof window !== 'undefined') {
-      const last = sessionStorage.getItem('last_chunk_auto_reload');
-      const now = Date.now();
-      if (!last || now - parseInt(last, 10) > 15000) {
-        sessionStorage.setItem('last_chunk_auto_reload', now.toString());
-        window.location.reload();
-      }
-    }
+    console.warn('[Global Unhandled Rejection absorbed safely]:', str);
     return;
   }
   console.warn('[Global Unhandled Rejection absorbed]:', event.reason);
@@ -42,14 +35,7 @@ window.addEventListener('error', (event) => {
     msg.includes('loading chunk')
   ) {
     event.preventDefault();
-    if ((msg.includes('dynamically imported module') || msg.includes('loading chunk')) && typeof window !== 'undefined') {
-      const last = sessionStorage.getItem('last_chunk_auto_reload');
-      const now = Date.now();
-      if (!last || now - parseInt(last, 10) > 15000) {
-        sessionStorage.setItem('last_chunk_auto_reload', now.toString());
-        window.location.reload();
-      }
-    }
+    console.warn('[Global Error absorbed safely]:', msg);
     return;
   }
 });

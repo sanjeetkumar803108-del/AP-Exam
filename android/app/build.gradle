@@ -3,10 +3,10 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 
 android {
-    namespace "com.helpyou.ai"
+    namespace "com.apexam.prep"
     compileSdk 36
     defaultConfig {
-        applicationId "com.helpyou.ai"
+        applicationId "com.apexam.prep"
         minSdkVersion 24
         targetSdkVersion 34
         versionCode 1

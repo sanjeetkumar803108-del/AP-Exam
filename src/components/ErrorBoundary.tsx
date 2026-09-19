@@ -48,23 +48,21 @@ export default class ErrorBoundary extends Component<Props, State> {
 
     try { triggerVibration(10); } catch (_) {}
 
-    // 1. If it is a chunk version mismatch error, auto-reload window cleanly once
-    if (isChunkLoadError(error) && typeof window !== 'undefined') {
-      const lastReload = sessionStorage.getItem('last_chunk_auto_reload');
-      const now = Date.now();
-      if (!lastReload || now - parseInt(lastReload, 10) > 15000) {
-        sessionStorage.setItem('last_chunk_auto_reload', now.toString());
-        console.warn(`[CrashProof Boundary] Auto-healing chunk mismatch for ${feature}...`);
+    // 1. Invalidate stale lazy chunks only if a chunk error occurred, and purge corrupt cache
+    resetAllLazyChunks();
+    this.autoPurgeCorruptCache();
+
+    // 2. If it is a chunk or network module error (new deployment hash mismatch)
+    if (isChunkLoadError(error)) {
+      console.warn(`[CrashProof Boundary - ${feature}] Dynamic chunk hitch captured. Auto-syncing workspace...`);
+      const lastReload = Number(sessionStorage.getItem('last_chunk_reload_ts') || '0');
+      if (Date.now() - lastReload > 8000) {
+        sessionStorage.setItem('last_chunk_reload_ts', String(Date.now()));
         window.location.reload();
         return;
       }
+      return;
     }
-
-    // 2. Automatically purge any corrupt local cache keys for this feature
-    this.autoPurgeCorruptCache();
-
-    // Invalidate stale lazy chunks
-    resetAllLazyChunks();
 
     // 3. Silent self-healing attempt
     const currentAttempts = this.state.autoHealAttempts;
@@ -72,9 +70,6 @@ export default class ErrorBoundary extends Component<Props, State> {
       this.setState(prev => ({ autoHealAttempts: prev.autoHealAttempts + 1 }));
       this.autoHealTimer = setTimeout(() => {
         console.log(`[CrashProof Boundary - ${feature}] Performing silent auto-heal attempt ${currentAttempts + 1}...`);
-        try {
-          window.dispatchEvent(new CustomEvent('app-force-refresh'));
-        } catch (_) {}
         if (this.props.onRetry) {
           try { this.props.onRetry(); } catch (_) {}
         }
@@ -88,6 +83,16 @@ export default class ErrorBoundary extends Component<Props, State> {
     this.autoHealTimer = setTimeout(() => {
       this.handleGracefulExit();
     }, 100);
+  }
+
+  public componentDidUpdate(prevProps: Props) {
+    if (prevProps.featureName !== this.props.featureName && this.state.hasError) {
+      if (this.autoHealTimer) {
+        clearTimeout(this.autoHealTimer);
+        this.autoHealTimer = null;
+      }
+      this.setState({ hasError: false, error: null, autoHealAttempts: 0 });
+    }
   }
 
   public componentDidMount() {
@@ -137,6 +142,14 @@ export default class ErrorBoundary extends Component<Props, State> {
   private handleSoftReset = () => {
     try { triggerVibration(15); } catch (_) {}
     resetAllLazyChunks();
+
+    // If it was a dynamic chunk/module loading error (new deployment), reloading fetches latest bundle
+    if (isChunkLoadError(this.state.error)) {
+      sessionStorage.setItem('last_chunk_reload_ts', String(Date.now()));
+      window.location.reload();
+      return;
+    }
+
     try {
       window.dispatchEvent(new CustomEvent('app-force-refresh'));
     } catch (_) {}
@@ -175,6 +188,8 @@ export default class ErrorBoundary extends Component<Props, State> {
       return this.props.children;
     }
 
+    const isChunk = isChunkLoadError(this.state.error);
+
     // High-Fidelity, gentle self-healing view (never scary, never stuck)
     return (
       <div className="w-full h-full min-h-[320px] flex flex-col items-center justify-center p-6 bg-[#FAF9F6] text-zinc-900 text-center font-sans">
@@ -185,12 +200,14 @@ export default class ErrorBoundary extends Component<Props, State> {
 
         {/* Reassuring Title */}
         <h2 className="text-base font-black tracking-tight text-zinc-850">
-          Restoring Study Workspace
+          {isChunk ? 'New Update Available' : 'Restoring Study Workspace'}
         </h2>
 
         {/* Friendly Subtitle */}
         <p className="text-xs text-zinc-500 font-medium max-w-xs mt-1.5 leading-relaxed">
-          Self-healing and optimizing your session. Your study progress and streak are completely safe.
+          {isChunk 
+            ? 'A fresh update of this feature is available. Tap below to sync instantly with zero progress lost.'
+            : (this.props.fallbackMessage || 'Self-healing and optimizing your session. Your study progress and streak are completely safe.')}
         </p>
 
         {/* Clean Action Buttons */}
@@ -200,7 +217,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             className="w-full px-5 py-2.5 bg-zinc-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-zinc-800 shadow-sm cursor-pointer active:scale-95 transition-transform"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            Resume Feature
+            {isChunk ? 'Update & Resume' : 'Resume Feature'}
           </button>
 
           <button

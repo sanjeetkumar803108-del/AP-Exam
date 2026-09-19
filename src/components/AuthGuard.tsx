@@ -67,7 +67,7 @@ export default function AuthGuard({
             <Onboarding 
               onComplete={() => {
                 setShowOnboarding(false);
-                setShowAcademicSetup(true);
+                setShowAcademicSetup(false);
               }} 
             />
           </Suspense>

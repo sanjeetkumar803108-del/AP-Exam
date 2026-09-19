@@ -32,31 +32,24 @@ export const safeRemoveItem = (key: string): void => {
 };
 
 export const safeClearAll = (): void => {
-  // Preserve published sample papers, downloaded PDF cache, and device identity across logouts
-  const preservedKeys = [
-    'ap_sample_papers_cache',
-    'ap_sample_papers_vault',
-    'study_unique_device_id'
+  // Session tokens and ephemeral cache to clear on logout
+  const sessionKeysToClear = [
+    'study_session_token',
+    'study_user_session_token',
+    'active_temporary_session'
   ];
-  const preservedData: Record<string, string> = {};
-  
+
   try {
-    for (const key of preservedKeys) {
-      const val = window.localStorage.getItem(key);
-      if (val !== null) preservedData[key] = val;
-    }
-    window.localStorage.clear();
-    for (const [key, val] of Object.entries(preservedData)) {
-      window.localStorage.setItem(key, val);
-    }
+    sessionKeysToClear.forEach(k => {
+      window.localStorage.removeItem(k);
+    });
   } catch (e) {
-    console.warn('localStorage clear failed');
+    console.warn('localStorage session clear notice:', e);
   }
-  for (const key in memoryStorage) {
-    if (!preservedKeys.includes(key)) {
-      delete memoryStorage[key];
-    }
-  }
+
+  sessionKeysToClear.forEach(k => {
+    delete memoryStorage[k];
+  });
 };
 
 export const safePurgeKeysByPrefix = (prefix: string): void => {
@@ -74,6 +67,47 @@ export const safePurgeKeysByPrefix = (prefix: string): void => {
     if (k.startsWith(prefix)) {
       delete memoryStorage[k];
     }
+  }
+};
+
+/**
+ * Permanently wipes all personal user data from storage upon account deletion,
+ * while safely preserving bought subscriptions if keepSubscription is true.
+ */
+export const purgeUserDataPreservingSubscription = (keepSubscription: boolean): void => {
+  const subscriptionKeys = new Set([
+    'study_is_vip',
+    'rc_vip_active',
+    'is_pro_subscription',
+    'user_subscription_status'
+  ]);
+
+  try {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const k = window.localStorage.key(i);
+      if (k) {
+        if (keepSubscription && (subscriptionKeys.has(k) || k.startsWith('study_is_vip_'))) {
+          continue;
+        }
+        keysToRemove.push(k);
+      }
+    }
+    keysToRemove.forEach(k => window.localStorage.removeItem(k));
+  } catch (e) {
+    console.warn('Error purging localStorage on account delete:', e);
+  }
+
+  // Wipe memory storage except subscription
+  for (const k in memoryStorage) {
+    if (keepSubscription && (subscriptionKeys.has(k) || k.startsWith('study_is_vip_'))) {
+      continue;
+    }
+    delete memoryStorage[k];
+  }
+
+  if (keepSubscription) {
+    safeSetItem('study_is_vip', 'true');
   }
 };
 

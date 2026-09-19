@@ -13,6 +13,7 @@ export default defineConfig(() => {
       },
     },
     build: {
+      emptyOutDir: false, // Keep previous hashed chunks alive so active sessions never hit 404
       target: 'es2022',
       cssCodeSplit: true,
       chunkSizeWarningLimit: 800,

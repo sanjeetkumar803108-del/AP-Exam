@@ -96,7 +96,7 @@ export default function ToastProvider() {
             </span>
 
             {/* Message */}
-            <p className="flex-1 text-xs font-semibold leading-relaxed break-words">
+            <p className="flex-1 text-xs font-semibold leading-snug break-words line-clamp-2">
               {toast.message}
             </p>
 

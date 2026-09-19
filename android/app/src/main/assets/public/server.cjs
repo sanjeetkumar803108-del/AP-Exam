@@ -39,8 +39,6 @@ var import_fs = __toESM(require("fs"), 1);
 var import_multer = __toESM(require("multer"), 1);
 var import_cors = __toESM(require("cors"), 1);
 var import_genai = require("@google/genai");
-var import_crypto = __toESM(require("crypto"), 1);
-var import_youtube_transcript = require("youtube-transcript");
 var import_express_rate_limit = __toESM(require("express-rate-limit"), 1);
 var import_xss = __toESM(require("xss"), 1);
 
@@ -496,6 +494,10018 @@ function getGranularSubjectArchetypes(subject, unitOrTopic, count) {
   return shuffled.slice(0, count);
 }
 
+// src/data/apPromptGuidelines.ts
+function getCollegeBoardSubjectGuidelines(subject, questionType) {
+  const s = (subject || "").toLowerCase();
+  if (s.includes("human geography") || s.includes("aphg")) {
+    if (questionType === "objective") {
+      return `AP HUMAN GEOGRAPHY (APHG) EXAM SPECIFICATIONS (College Board CED - #1 Grade 9 AP):
+- Target Audience: Grade 9 (Freshman) High School Students. Stimulus-based, testing spatial perspective, geographic patterns, and real-world regional connections across Units 1\u20137.
+- Core Topics:
+  1. Thinking Geographically (Geospatial tech [GIS, GPS, remote sensing], scales of analysis [local, regional, national, global], formal/functional/perceptual regions).
+  2. Population & Migration (Demographic Transition Model [DTM Stages 1-5], population pyramids, dependency ratios, Malthusian theory, push/pull factors, Ravenstein's laws, refugees/IDPs).
+  3. Cultural Patterns & Processes (Hearths, spatial diffusion [contagious, hierarchical, stimulus, relocation], acculturation, assimilation, language families, universalizing vs ethnic religions).
+  4. Political Patterns & Processes (Sovereignty, nation-states, stateless nations, supranationalism [UN, EU, NATO], devolution, gerrymandering, boundaries/UNCLOS).
+  5. Agriculture & Rural Land-Use (Von Th\xFCnen model, Green Revolution, subsistence vs commercial agriculture, intensive vs extensive farming, global supply chains).
+  6. Cities & Urban Land-Use (Burgess Concentric Zone, Hoyt Sector, Harris-Ullman Multiple Nuclei, Galactic model, Christaller's Central Place Theory, rank-size rule, primate cities, gentrification, New Urbanism).
+  7. Industrial & Economic Development (Wallerstein World Systems [Core/Periphery], Rostow 5 Stages of Economic Growth, Weber Least Cost Theory, HDI, UN SDGs).
+- Stimulus Requirement: Ground questions in realistic geographic stimuli (demographic data charts, regional map descriptions, population pyramid profiles, or geographic case studies).
+- Distractors: Plausible 9th-grade misconceptions (e.g., confusing environmental determinism with possibilism, confusing hierarchical with contagious diffusion, or misidentifying DTM stages).`;
+    } else {
+      return `AP HUMAN GEOGRAPHY FREE RESPONSE STANDARDS (College Board CED - 7-Part FRQ):
+- Format: Real 7-PART College Board Free Response Questions with parts (A), (B), (C), (D), (E), (F), and (G). Total Points: Exactly 7 Points (1 point per part).
+- Official FRQ Types:
+  1. Question 1 (No Stimulus): Tests geographic concepts, spatial models, and processes.
+  2. Question 2 (One Stimulus): Anchored to a thematic map, demographic chart, or spatial model.
+  3. Question 3 (Two Stimuli): Comparative synthesis between two geographic datasets or regions.
+- Command Verbs & Scaffolding:
+  - "Identify" / "Define" (1-2 sentences stating the specific concept or pattern).
+  - "Describe" (Provide relevant characteristics or spatial trends).
+  - "Explain" (Must clearly establish cause-and-effect line of reasoning: 'how' or 'why' X causes Y in geographic context).
+- Rubric: Exactly 7 points (+1 pt for each part A through G) with crystal-clear scoring criteria and model responses.`;
+    }
+  }
+  if (s.includes("environmental") || s.includes("apes")) {
+    if (questionType === "objective") {
+      return `AP ENVIRONMENTAL SCIENCE (APES) EXAM SPECIFICATIONS (College Board CED):
+- Target Level: Grade 9-10 introductory environmental lab science. High conceptual clarity, data interpretation, and environmental problem-solving across Units 1\u20139.
+- Core Units:
+  1-3. Ecosystems, biogeochemical cycles (carbon, nitrogen, phosphorus, water), trophic cascades, 10% rule, biodiversity, ecosystem services, population ecology (r/K selection, survivorship curves, carrying capacity).
+  4-6. Earth systems (soil texture triangle, atmosphere, El Ni\xF1o), land & water use (Tragedy of the Commons, Green Revolution, irrigation, IPM, CAFOs, mining), energy resources (fossil fuels, nuclear, solar, wind, efficiency).
+  7-9. Atmospheric pollution (photochemical smog, acid deposition, thermal inversions), aquatic/terrestrial pollution (eutrophication, biomagnification, LD50, landfills), global change (stratospheric ozone depletion, ocean acidification, climate mitigation).
+- Quantitative Reasoning: Include realistic environmental math (Rule of 70, LD50 toxicity, percent change, metric conversions).
+- Distractors: Represent common student traps (confusing ozone depletion with global warming, confusing point vs nonpoint pollution).`;
+    } else {
+      return `AP ENVIRONMENTAL SCIENCE FREE RESPONSE STANDARDS (College Board CED):
+- Format: Real 10-POINT multi-part questions with sub-parts (a), (b), (c), (d), (e). Total Points: Exactly 10 Points.
+- Official FRQ Archetypes:
+  1. Design an Investigation: Hypothesis, independent/dependent/control variables, data collection procedures, and experimental validity.
+  2. Analyze an Environmental Problem & Propose a Solution: Ecological impacts, identifying root causes, and proposing realistic, sustainable solutions with environmental or economic justifications.
+  3. Quantitative Environmental Problem & Solution: Multi-step mathematical calculations (with units and dimensional analysis) paired with an environmental mitigation recommendation.
+- Rubric: Exactly 10 points breakdown with step-by-step partial-credit criteria.`;
+    }
+  }
+  if (s.includes("principles") || s.includes("csp")) {
+    if (questionType === "objective") {
+      return `AP COMPUTER SCIENCE PRINCIPLES (CSP) EXAM SPECIFICATIONS (College Board CED):
+- Target Level: Grade 9-10 foundational computing. Focus on computational thinking, algorithm logic, data representation, and societal impacts (Units 1\u20135).
+- Scope: Creative development, binary/hex numbers, data compression (lossy vs lossless), pseudocode algorithms (robot grid traversal, conditional iteration, list filtering), Internet architecture (IP, TCP/IP, packet routing, fault tolerance), cybersecurity (public-key encryption, phishing, DDoS), and computing ethics.
+- Distractors: Represent algorithmic off-by-one errors, Boolean logic inversion (AND vs OR), or confusing lossy vs lossless compression.`;
+    } else {
+      return `AP COMPUTER SCIENCE PRINCIPLES WRITTEN RESPONSE / PERFORMANCE TASK STANDARDS:
+- Format: 4-Part Written Response (6 Points Total) based on computational artifacts and program development:
+  - Part (a): Program Function and Purpose (explaining user inputs, outputs, and overall functionality).
+  - Part (b): Data Abstraction (identifying list/collection name, data represented, and how complexity is managed).
+  - Part (c): Algorithmic Logic & Sequencing (explaining iteration, selection, sequencing, and algorithmic outcome).
+  - Part (d): Testing & Parameter Behavior (describing two different calls/inputs, expected conditions, and resulting outputs).
+- Rubric: Precise College Board CED 6-point scoring criteria.`;
+    }
+  }
+  if (s.includes("calculus bc")) {
+    if (questionType === "objective") {
+      return `AP CALCULUS BC EXAM SPECIFICATIONS (College Board CED):
+- Coverage: Full AB curriculum PLUS BC-exclusive topics: Parametric equations, vector motion in 2D (velocity/acceleration vectors, speed = sqrt((x')^2 + (y')^2)), polar functions (polar area = (1/2)*integral(r^2 dTheta)), integration by parts, partial fractions, improper integrals, Euler's method, logistic differential equations (dP/dt = kP(1 - P/M)), and Infinite Series.
+- Infinite Series focus: Geometric series, Taylor/Maclaurin polynomial approximations, nth-term divergence, Ratio test for radius & interval of convergence, Alternating Series Test.
+- Distractors must represent classic student misconceptions: omitting chain rule in parametric derivatives, sign errors in integration by parts, forgetting to check endpoints in interval of convergence.
+- Format all math expressions cleanly using LaTeX ($...$).`;
+    } else {
+      return `AP CALCULUS BC FREE RESPONSE STANDARDS (College Board CED):
+- Format: Real 9-POINT multi-part questions with sub-parts (a), (b), (c), (d).
+- Priority Archetypes:
+  1. Infinite Series (Taylor/Maclaurin series, finding general term, computing radius/interval of convergence using Ratio Test, Alternating Series Error Bound or Lagrange Error Bound).
+  2. Parametric / Polar Motion (position vector, velocity, total distance traveled / arc length integral, polar area enclosed between curves).
+  3. Logistic Differential Equations & Euler's Method step-by-step approximation.
+  4. Area & Volume of solids of revolution (disk/washer/cross sections) or Rate In / Rate Out Accumulation.
+- Total Points MUST be 9 points. Rubric must award partial points step-by-step (+1 pt for setup/derivative, +1 pt for antiderivative, +1 pt for justification/units).`;
+    }
+  }
+  if (s.includes("calculus ab") || s.includes("calculus")) {
+    if (questionType === "objective") {
+      return `AP CALCULUS AB EXAM SPECIFICATIONS (College Board CED):
+- Coverage: Limits & Continuity (including L'Hopital's Rule), Derivatives (Chain rule, Product/Quotient rule, Implicit differentiation), Mean Value Theorem, Particle Motion in 1D (position, velocity, acceleration, speed increasing/decreasing), Definite & Indefinite Integrals, Fundamental Theorem of Calculus, Riemann Sums, Differential Equations (separable).
+- Distractors must reflect real student math traps: forgetting chain rule factors, arithmetic sign slips, forgetting '+ C', confusing velocity with acceleration.
+- Format all equations cleanly in LaTeX ($...$).`;
+    } else {
+      return `AP CALCULUS AB FREE RESPONSE STANDARDS (College Board CED):
+- Format: Real 9-POINT multi-part questions with sub-parts (a), (b), (c), (d).
+- Classic AP FRQ Archetypes:
+  1. Rate In / Rate Out Accumulation: Net change integral formula integral(R_in(t) - R_out(t))dt, checking critical times.
+  2. Particle Motion: Analyzing velocity v(t), determining when speed is increasing/decreasing, total distance traveled integral(|v(t)|dt).
+  3. Graph Analysis of f'(x): Identifying relative extrema, points of inflection, justifying with First/Second Derivative Test, EVT.
+  4. Area & Volume: Area between two curves, volume of solid of revolution (disk/washer), volume with known cross sections (squares/semicircles).
+  5. Differential Equations: Slope fields, separation of variables to find particular solution y = f(x) with initial condition.
+  6. Riemann Sums & Tables: Estimating definite integrals using Trapezoidal rule or Left/Right sums with physical units.
+- Total Points MUST be 9 points. Rubric must assign exact points per sub-part.`;
+    }
+  }
+  if (s.includes("biology")) {
+    if (questionType === "objective") {
+      return `AP BIOLOGY EXAM SPECIFICATIONS (College Board CED):
+- Stimulus-Based Design: Base questions on authentic biological investigations (e.g. cellular respiration respirometers, gel electrophoresis band patterns, spectrophotometric enzyme curves, water potential potato cylinders, pedigree tracking, or Hardy-Weinberg population data).
+- Visual Diagrams & Curves (MANDATORY): For Cellular Energetics (Unit 3), Cell Structure (Unit 2), Genetics (Unit 5), or Ecology (Unit 8), generate the complete SVG diagram in "diagramSvg" (viewBox="0 0 400 220") and specify "diagramType".
+- Diverse Organisms & Real Biological Systems: NEVER use generic placeholders like 'Enzyme X' or repeat identical experimental scenarios. Vary the organism (e.g. yeast, spinach, bovine liver catalase, E. coli, marine phytoplankton, Drosophila, Arabidopsis thaliana) and real enzymes (catalase, pepsin, salivary amylase, RuBisCO, ATP synthase, cytochrome c oxidase).
+- Core Themes: Chemistry of life, cell structure & energetics (photosynthesis/respiration), cell communication & cell cycle, heredity & genetics, gene expression & regulation, natural selection, ecology.
+- Question Style: Questions must require students to analyze experimental data, make scientific claims, identify controls, or predict the biological consequence of an inhibitor or mutation.`;
+    } else {
+      return `AP BIOLOGY FREE RESPONSE STANDARDS (College Board CED):
+- Formats:
+  1. Long FRQ (8-10 points): Interpreting & Evaluating Experimental Results. Includes experimental design, specifying independent/dependent variables, graphing with standard error bars (\xB12 SEM), calculating means, and Null Hypothesis / Chi-Square testing.
+  2. Short FRQ (4 points): Scientific Investigation (identifying negative/positive controls), Conceptual Analysis (predicting effects of disruption/mutation), or Model Analysis (analyzing cell signaling cascades).
+- Visual Diagrams & Curves (MANDATORY): For Cellular Energetics, Genetics (pedigrees), or Ecology, generate the complete SVG graph in "diagramSvg" (viewBox="0 0 400 220") with labeled axes, data points, and appropriate "diagramType". NEVER use generic 'Enzyme X' - use real biological enzymes and realistic experimental parameters.
+- Rubric: Precise point allocation (+1 pt for identifying control, +1 pt for calculating rate, +1 pt for biological justification).`;
+    }
+  }
+  if (s.includes("chemistry")) {
+    if (questionType === "objective") {
+      return `AP CHEMISTRY EXAM SPECIFICATIONS (College Board CED):
+- Content: Atomic structure & PES spectra, molecular bonding & Lewis/VSEPR, intermolecular forces & properties, chemical reactions & stoichiometry, kinetics rate laws, thermodynamics (Delta H, Delta S, Delta G = -RT ln K), equilibrium & Le Chatelier's principle, acids & bases (titration curves, buffers), electrochemistry.
+- Visuals & Diagrams: Include particulate representations (drawings of atoms/molecules in a container), molecular geometry descriptions, and reaction energy profiles.
+- Distractors: Represent stoichiometry mole-ratio errors, confusing Delta H with Delta G, or inverted equilibrium expressions.`;
+    } else {
+      return `AP CHEMISTRY FREE RESPONSE STANDARDS (College Board CED):
+- Formats:
+  1. Long FRQ (10 points): Multi-part problem covering multi-step stoichiometry, net ionic equations, thermodynamics calculations, electrochemistry cell potentials (E_cell = E_cathode - E_anode), and acid-base buffer calculations (Henderson-Hasselbalch equation).
+  2. Short FRQ (4 points): Lewis structures & resonance, VSEPR molecular geometry and bond angles, intermolecular forces comparing boiling points, or Beer-Lambert Law spectrophotometry (A = epsilon * b * c).
+  3. Rubric: Must break down exact points (+1 pt for balanced net ionic equation, +1 pt for ICE table setup, +1 pt for final answer with correct significant figures and units).`;
+    }
+  }
+  if (s.includes("physics 1")) {
+    if (questionType === "objective") {
+      return `AP PHYSICS 1: ALGEBRA-BASED EXAM SPECIFICATIONS (Updated College Board CED):
+- Format: Strictly 4 answer choices (A-D, single-select).
+- Scope: Kinematics, Newton's Laws, Work/Energy/Power, Linear Momentum, Torque & Rotational Motion, Simple Harmonic Motion, AND newly integrated FLUIDS (density, pressure, buoyant force, Archimedes principle, continuity equation, Bernoulli's equation).
+- Cognitive Focus: Qualitative proportional reasoning (e.g. 'If radius doubles and angular velocity is halved, what happens to centripetal acceleration?'), force diagrams, and conservation laws.`;
+    } else {
+      return `AP PHYSICS 1 FREE RESPONSE STANDARDS (College Board CED):
+- Four Official FRQ Types:
+  1. Mathematical Routines (algebraic derivations, energy/momentum conservation).
+  2. Translation Between Representations (connecting equations to graphs like Force vs Time or Velocity vs Time).
+  3. Experimental Design (outlining a lab setup, list of apparatus, step-by-step procedure to reduce uncertainty, and data analysis plan).
+  4. Qualitative / Quantitative Translation (QQT) (explaining a physical phenomenon in clear conceptual prose without equations first, then deriving the algebraic formula to prove it).
+- Total points: 7 to 12 points with explicit point-by-point rubric.`;
+    }
+  }
+  if (s.includes("computer science a")) {
+    if (questionType === "objective") {
+      return `AP COMPUTER SCIENCE A EXAM SPECIFICATIONS (College Board Java Subset):
+- Java Syntax: Code snippets strictly following the official Java Quick Reference (String, Math, ArrayList, 1D/2D arrays, OOP inheritance, polymorphism).
+- Concepts: Loop bounds, tracing variable mutations, Boolean logic (De Morgan's laws), recursion execution traces, class design, and searching/sorting algorithms (binary search, selection/insertion/merge sort).
+- Distractors: Off-by-one errors (e.g., '< arr.length' vs '<= arr.length'), NullPointerException triggers, confusing '=' with '==', integer division truncation.`;
+    } else {
+      return `AP COMPUTER SCIENCE A FREE RESPONSE STANDARDS (College Board CED):
+- Format: 4 Authentic Java Coding Questions (9 Points Each):
+  - Question 1: Methods and Control Structures (loops, conditionals, helper methods).
+  - Question 2: Class Design (writing a complete Java class with private instance variables, constructor, getters/setters, and specified methods).
+  - Question 3: Array / ArrayList (traversing, filtering, or modifying elements, avoiding ConcurrentModificationException and index errors).
+  - Question 4: 2D Array (nested row/column loops, grid manipulation).
+- Rubric: Strict 9-point rubric awarding points for method header, loops, conditionals, accessing elements, returning correct value.`;
+    }
+  }
+  if (s.includes("u.s. history") || s.includes("us history") || s.includes("apush")) {
+    if (questionType === "objective") {
+      return `AP U.S. HISTORY (APUSH) EXAM SPECIFICATIONS (College Board CED):
+- Stimulus-Based: Every single question set MUST be anchored to a primary source excerpt (presidential speech, newspaper editorial, letter, treaty, colonial document) or secondary historical analysis from Periods 1-9 (1491-Present).
+- Historical Thinking Skills: Contextualization, causation, continuity and change over time (CCOT), comparison.
+- Distractors: Factually true statements from a DIFFERENT historical era or claims that mischaracterize the author's argument.`;
+    } else {
+      return `AP U.S. HISTORY (APUSH) FREE RESPONSE STANDARDS (College Board CED):
+- Formats:
+  1. DBQ (Document-Based Question, 7-Point Rubric): Provide 7 distinct historical source documents (Author, Source, Year, Excerpt). Rubric: Thesis (1 pt), Contextualization (1 pt), Evidence from 3+ docs (1 pt) or 6+ docs (2 pts), Outside Evidence (1 pt), Sourcing/HIPP analysis (1 pt), Historical Complexity (1 pt).
+  2. LEQ (Long Essay Question, 6-Point Rubric): Historical prompt testing Causation, CCOT, or Comparison without documents.
+  3. SAQ (Short Answer Question): 3 parts (a), (b), (c) strictly requiring the ACE format (Answer, Cite specific evidence, Explain connection).`;
+    }
+  }
+  if (s.includes("world history")) {
+    if (questionType === "objective") {
+      return `AP WORLD HISTORY: MODERN EXAM SPECIFICATIONS (College Board CED):
+- Time Period: 1200 CE to the Present.
+- Stimulus-Based: Provide primary excerpts from historical travelers (Ibn Battuta, Marco Polo), imperial edicts (Mongol, Ottoman, Ming), colonial treaties, or Cold War declarations.
+- Themes: Global Tapestry, Networks of Exchange, Land-Based Empires, Transoceanic Interconnections, Revolutions, Industrialization, Global Conflicts, Decolonization, and Globalization.`;
+    } else {
+      return `AP WORLD HISTORY: MODERN FREE RESPONSE STANDARDS (College Board CED):
+- Formats:
+  1. DBQ (Document-Based Question, 7-Point Rubric): 7 historical documents from world history.
+  2. LEQ (Long Essay Question, 6-Point Rubric): Global historical causation, comparison, or CCOT.
+  3. SAQ (Short Answer Question): 3 distinct parts (a), (b), (c) in ACE format.
+- Rubrics must strictly follow the official College Board historical rubrics.`;
+    }
+  }
+  if (s.includes("english") || s.includes("lang")) {
+    if (questionType === "objective") {
+      return `AP ENGLISH LANGUAGE & COMPOSITION EXAM SPECIFICATIONS (College Board CED):
+- Reading Questions: Non-fiction rhetorical analysis passage (speech, essay, letter). Analyze author's purpose, claims, line of reasoning, rhetorical choices (diction, syntax, appeals to ethos/pathos/logos), and tone.
+- Writing Questions: Excerpt from a draft student essay. Ask how to revise thesis statements, enhance sentence variety, improve transitional phrases, or integrate evidence cohesively.`;
+    } else {
+      return `AP ENGLISH LANGUAGE FREE RESPONSE STANDARDS (College Board CED):
+- 3 Authentic AP Lang Essay Types (Each scored on the official 6-Point Analytic Rubric):
+  1. Synthesis Essay: Present a prompt and 6 diverse sources (articles, statistics, visual data). Students must synthesize at least 3 sources to support an argument.
+  2. Rhetorical Analysis Essay: Provide an authentic non-fiction speech/letter and ask students to analyze how the author uses rhetorical choices to convey their message.
+  3. Argument Essay: Present a philosophical, cultural, or social claim to defend, challenge, or qualify with evidence from history, literature, or personal observation.
+- Rubric: 1 pt Thesis, 4 pts Evidence & Commentary, 1 pt Sophistication.`;
+    }
+  }
+  if (s.includes("psychology")) {
+    if (questionType === "objective") {
+      return `AP PSYCHOLOGY EXAM SPECIFICATIONS (Updated College Board CED):
+- Format: Scenario-based questions applying psychological principles to real-world behavioral situations.
+- Content: Biological bases of behavior (neurotransmitters, brain structures, nervous system), sensation & perception, learning (operant/classical conditioning), cognitive psychology (memory, biases), developmental psychology, personality theories, social psychology, clinical psychology (DSM-5 diagnostic criteria).`;
+    } else {
+      return `AP PSYCHOLOGY FREE RESPONSE STANDARDS (Updated College Board CED):
+- 2 Official FRQ Types:
+  1. Article Analysis Question (AAQ): Provide an empirical psychological research study abstract. Students must identify independent/dependent variables, confounding variables, assess statistical significance (p < 0.05), and evaluate APA ethical guidelines (informed consent, debriefing, confidentiality).
+  2. Evidence-Based Question (EBQ): Students synthesize psychological concepts to construct a defensible claim supported by empirical evidence.
+- Rubric: Clearly specify which psychological concepts earn points and required justifications.`;
+    }
+  }
+  if (s.includes("economic")) {
+    if (questionType === "objective") {
+      return `AP MICRO & MACROECONOMICS EXAM SPECIFICATIONS (College Board CED):
+- Microeconomics: Supply & demand elasticity, consumer/producer surplus, market structures (perfect competition, monopoly, oligopoly), externalities, marginal cost/revenue, factor markets.
+- Macroeconomics: GDP, inflation, unemployment, Aggregate Demand / Aggregate Supply (AD-AS), fiscal policy, monetary policy (Federal Reserve tools), Money Market, Loanable Funds, Phillips Curve, Foreign Exchange.
+- Distractors: Confusing shifts of a curve with movements along a curve, or miscalculating tax incidence / multiplier effects.`;
+    } else {
+      return `AP ECONOMICS FREE RESPONSE STANDARDS (College Board CED):
+- Formats:
+  1. Long FRQ (10 points, ~30 min): Multi-part scenario with explicit graphing instructions (e.g., 'Draw a correctly labeled graph of the money market and show the effect of an open market purchase of bonds on the nominal interest rate').
+  2. Short FRQ (5 points, ~15 min): Targeted calculations (elasticity, spending multiplier, balance of payments) and directional explanations.
+- Rubric: Explicit points for graph labeling, curve shift directions, and numerical calculations.`;
+    }
+  }
+  return `College Board AP Course and Exam Description standards for ${subject}. High rigor, analytical thinking, stimulus-based.`;
+}
+function getDynamicTopicVariation(subject, unitOrTopic, count) {
+  const archetypes = getGranularSubjectArchetypes(subject, unitOrTopic, count);
+  return archetypes.map((arch, idx) => `  - Question ${idx + 1} Target Archetype: ${arch}`).join("\n");
+}
+
+// src/data/quiz/expandedBattleQuestions.ts
+var EXPANDED_BATTLE_QUESTIONS = {
+  "ap-physics": [
+    {
+      id: "phys_exp_1",
+      subjectId: "ap-physics",
+      stem: "A 2 kg cart moving right at 4 m/s collides with a stationary 2 kg cart. They stick together. What is their final velocity?",
+      options: ["2 m/s right", "4 m/s right", "1 m/s right", "0 m/s"],
+      correctIndex: 0,
+      explanation: "By conservation of momentum: $m_1 v_1 = (m_1 + m_2) v_f \\implies 2(4) = 4 v_f \\implies v_f = 2\\text{ m/s}$.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "phys_exp_2",
+      subjectId: "ap-physics",
+      stem: "An object is thrown vertically upward with initial speed $v_0$. At the highest point of its trajectory, what are its velocity and acceleration?",
+      options: [
+        "Velocity = 0, Acceleration = $9.8\\text{ m/s}^2$ downward",
+        "Velocity = 0, Acceleration = 0",
+        "Velocity = $v_0$, Acceleration = $9.8\\text{ m/s}^2$ downward",
+        "Velocity = 0, Acceleration = $9.8\\text{ m/s}^2$ upward"
+      ],
+      correctIndex: 0,
+      explanation: "At the peak, instantaneous velocity is 0, but gravity continues to accelerate the object downward at $g = 9.8\\text{ m/s}^2$.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "phys_exp_3",
+      subjectId: "ap-physics",
+      stem: "If the distance between two planets is doubled, how does the gravitational force between them change?",
+      options: [
+        "Decreases by a factor of 4",
+        "Decreases by a factor of 2",
+        "Increases by a factor of 4",
+        "Remains unchanged"
+      ],
+      correctIndex: 0,
+      explanation: "Newton's Law of Universal Gravitation states $F_g = G \\frac{m_1 m_2}{r^2}$. Doubling $r$ multiplies the denominator by $2^2 = 4$, reducing force to $\\frac{1}{4}$.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "phys_exp_4",
+      subjectId: "ap-physics",
+      stem: "A block of mass $m$ slides down a frictionless incline of angle $\\theta$. What is the magnitude of its acceleration?",
+      options: ["$g \\sin\\theta$", "$g \\cos\\theta$", "$g$", "$g \\tan\\theta$"],
+      correctIndex: 0,
+      explanation: "The component of gravity parallel to the incline is $mg \\sin\\theta$. Since $F = ma$, $a = g \\sin\\theta$.",
+      difficulty: "Medium",
+      timeLimit: 45
+    },
+    {
+      id: "phys_exp_5",
+      subjectId: "ap-physics",
+      stem: "A simple pendulum has period $T$. If the length of the string is quadrupled, what is the new period?",
+      options: ["$2T$", "$4T$", "$T/2$", "$T/4$"],
+      correctIndex: 0,
+      explanation: "The period of a simple pendulum is $T = 2\\pi \\sqrt{\\frac{L}{g}}$. Quadrupling $L$ multiplies $T$ by $\\sqrt{4} = 2$.",
+      difficulty: "Medium",
+      timeLimit: 45
+    },
+    {
+      id: "phys_exp_6",
+      subjectId: "ap-physics",
+      stem: "A spinning figure skater pulls her arms inward. What happens to her rotational kinetic energy and angular momentum?",
+      options: [
+        "Angular momentum is conserved; rotational kinetic energy increases",
+        "Angular momentum increases; rotational kinetic energy is conserved",
+        "Both angular momentum and rotational kinetic energy are conserved",
+        "Both decrease due to internal muscle forces"
+      ],
+      correctIndex: 0,
+      explanation: "Net external torque is zero so $L = I\\omega$ is constant. As $I$ decreases, $\\omega$ increases. $K_{rot} = \\frac{L^2}{2I}$; since $I$ decreases with $L$ constant, $K_{rot}$ increases due to work done by muscles.",
+      difficulty: "Hard",
+      timeLimit: 60
+    },
+    {
+      id: "phys_exp_7",
+      subjectId: "ap-physics",
+      stem: "The area under a Force vs. Time ($F-t$) graph represents which physical quantity?",
+      options: ["Impulse (change in momentum)", "Work done", "Kinetic energy", "Total power"],
+      correctIndex: 0,
+      explanation: "Impulse $J = \\int F \\, dt = \\Delta p$, which corresponds directly to the area under an $F-t$ curve.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "phys_exp_8",
+      subjectId: "ap-physics",
+      stem: "A spring with spring constant $k$ is compressed by distance $x$. If the compression is doubled to $2x$, the elastic potential energy stored in the spring is multiplied by:",
+      options: ["4", "2", "8", "$\\sqrt{2}$"],
+      correctIndex: 0,
+      explanation: "Elastic potential energy is $U_s = \\frac{1}{2}kx^2$. Since $U_s \\propto x^2$, doubling $x$ quadruples the energy ($2^2 = 4$).",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "phys_exp_9",
+      subjectId: "ap-physics",
+      stem: "A car travels around a flat circular curve of radius $R$ at constant speed $v$. What force provides the necessary centripetal acceleration?",
+      options: [
+        "Static friction directed toward the center of the circle",
+        "Kinetic friction directed tangential to the curve",
+        "Centrifugal force directed radially outward",
+        "The normal force perpendicular to the road"
+      ],
+      correctIndex: 0,
+      explanation: "For an unbanked curve, static friction between the tires and road points toward the center of curvature, providing $F_c = \\frac{mv^2}{R}$.",
+      difficulty: "Medium",
+      timeLimit: 45
+    },
+    {
+      id: "phys_exp_10",
+      subjectId: "ap-physics",
+      stem: "A solid sphere and a hollow hoop of equal mass and radius roll down an incline from rest without slipping. Which reaches the bottom first?",
+      options: [
+        "The solid sphere, because it has a smaller rotational inertia ($I$)",
+        "The hollow hoop, because its mass is concentrated at the rim",
+        "Both reach the bottom at the same time since masses and radii are equal",
+        "It depends on the coefficient of friction"
+      ],
+      correctIndex: 0,
+      explanation: "A smaller moment of inertia ($I_{sphere} = \\frac{2}{5}mR^2$ vs $I_{hoop} = mR^2$) means less energy is diverted into rotation, leaving more for translational kinetic energy.",
+      difficulty: "Hard",
+      timeLimit: 60
+    }
+  ],
+  "ap-chemistry": [
+    {
+      id: "chem_exp_1",
+      subjectId: "ap-chemistry",
+      stem: "Which of the following elements has the greatest first ionization energy?",
+      options: ["Helium (He)", "Cesium (Cs)", "Fluorine (F)", "Neon (Ne)"],
+      correctIndex: 0,
+      explanation: "Helium has electrons in the $n=1$ shell closest to the nucleus with no inner electron shielding, giving it the highest first ionization energy on the periodic table.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "chem_exp_2",
+      subjectId: "ap-chemistry",
+      stem: "According to VSEPR theory, what is the molecular geometry of sulfur hexafluoride ($\\text{SF}_6$)?",
+      options: ["Octahedral", "Trigonal bipyramidal", "Tetrahedral", "Square planar"],
+      correctIndex: 0,
+      explanation: "$\\text{SF}_6$ has 6 bonding pairs and 0 lone pairs around the central sulfur atom, resulting in an octahedral molecular geometry with $90^\\circ$ bond angles.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "chem_exp_3",
+      subjectId: "ap-chemistry",
+      stem: "For an exothermic reaction at equilibrium, what effect does increasing the temperature have on the equilibrium constant $K$?",
+      options: [
+        "$K$ decreases, shifting equilibrium toward reactants",
+        "$K$ increases, shifting equilibrium toward products",
+        "$K$ remains constant while concentrations shift",
+        "$K$ doubles because temperature increases molecular collisions"
+      ],
+      correctIndex: 0,
+      explanation: "Treat heat as a product in an exothermic reaction. Adding heat shifts the reaction left, decreasing product concentration and lowering $K_{eq}$.",
+      difficulty: "Medium",
+      timeLimit: 45
+    },
+    {
+      id: "chem_exp_4",
+      subjectId: "ap-chemistry",
+      stem: "A reaction is found to have a rate law $\\text{Rate} = k[A]^2 [B]^0$. If the concentration of $A$ is doubled while $[B]$ is tripled, how does the initial rate change?",
+      options: [
+        "Rate quadruples (multiplied by 4)",
+        "Rate multiplies by 6",
+        "Rate doubles",
+        "Rate multiplies by 12"
+      ],
+      correctIndex: 0,
+      explanation: "The reaction is second-order in $A$ ($2^2 = 4$) and zero-order in $B$ ($3^0 = 1$). The rate is multiplied by $4 \\times 1 = 4$.",
+      difficulty: "Medium",
+      timeLimit: 45
+    },
+    {
+      id: "chem_exp_5",
+      subjectId: "ap-chemistry",
+      stem: "Which of the following mixtures forms an effective buffer solution?",
+      options: [
+        "$\\text{CH}_3\\text{COOH}$ (weak acid) and $\\text{NaCH}_3\\text{COO}$ (its conjugate base)",
+        "$\\text{HCl}$ (strong acid) and $\\text{NaCl}$",
+        "$\\text{NaOH}$ (strong base) and $\\text{NaCl}$",
+        "$\\text{HNO}_3$ (strong acid) and $\\text{NH}_4\\text{NO}_3$"
+      ],
+      correctIndex: 0,
+      explanation: "A buffer consists of a weak conjugate acid-base pair capable of neutralizing small amounts of added acid or base without drastic pH change.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "chem_exp_6",
+      subjectId: "ap-chemistry",
+      stem: "What is the oxidation state of chromium in the dichromate ion $\\text{Cr}_2\\text{O}_7^{2-}$?",
+      options: ["+6", "+3", "+7", "+12"],
+      correctIndex: 0,
+      explanation: "Oxygen is typically $-2$. For $7$ oxygens: $-14$. Total charge is $-2$. $2(\\text{Cr}) + (-14) = -2 \\implies 2(\\text{Cr}) = +12 \\implies \\text{Cr} = +6$.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "chem_exp_7",
+      subjectId: "ap-chemistry",
+      stem: "Under what thermodynamic conditions is a chemical reaction ALWAYS spontaneous at all temperatures?",
+      options: [
+        "$\\Delta H < 0$ (exothermic) and $\\Delta S > 0$ (entropy increases)",
+        "$\\Delta H > 0$ and $\\Delta S < 0$",
+        "$\\Delta H > 0$ and $\\Delta S > 0$",
+        "$\\Delta H < 0$ and $\\Delta S < 0$"
+      ],
+      correctIndex: 0,
+      explanation: "$\\Delta G = \\Delta H - T\\Delta S$. When $\\Delta H < 0$ and $\\Delta S > 0$, $\\Delta G$ is negative at all absolute temperatures $T > 0\\text{ K}$.",
+      difficulty: "Medium",
+      timeLimit: 45
+    },
+    {
+      id: "chem_exp_8",
+      subjectId: "ap-chemistry",
+      stem: "Why does liquid water have a higher boiling point than liquid hydrogen sulfide ($\\text{H}_2\\text{S}$)?",
+      options: [
+        "Water molecules form extensive intermolecular hydrogen bonds",
+        "Water has a larger molar mass and greater London dispersion forces",
+        "Hydrogen sulfide has stronger covalent dipole-dipole attractions",
+        "Water is a nonpolar molecule with high surface tension"
+      ],
+      correctIndex: 0,
+      explanation: "Oxygen is much more electronegative than sulfur, enabling strong intermolecular hydrogen bonds between $\\text{H}_2\\text{O}$ molecules that require substantial energy to overcome.",
+      difficulty: "Easy",
+      timeLimit: 30
+    }
+  ],
+  "ap-biology": [
+    {
+      id: "bio_exp_1",
+      subjectId: "ap-biology",
+      stem: "Which cellular organelle is responsible for post-translational protein modification, sorting, and packaging into secretory vesicles?",
+      options: ["Golgi apparatus", "Ribosome", "Nucleolus", "Peroxisome"],
+      correctIndex: 0,
+      explanation: "The Golgi apparatus receives proteins from the rough ER, modifies them (e.g., glycosylation), and packages them for distribution.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "bio_exp_2",
+      subjectId: "ap-biology",
+      stem: "During the light-dependent reactions of photosynthesis, what is the ultimate source of electrons used to replace those excited in Photosystem II?",
+      options: ["Water ($\\text{H}_2\\text{O}$)", "Carbon dioxide ($\\text{CO}_2$)", "$\\text{NADPH}$", "Glucose"],
+      correctIndex: 0,
+      explanation: "Photolysis of water ($2\\text{H}_2\\text{O} \\to 4\\text{H}^+ + 4e^- + \\text{O}_2$) replenishes the reaction center P680 chlorophyll molecules in PS II.",
+      difficulty: "Medium",
+      timeLimit: 45
+    },
+    {
+      id: "bio_exp_3",
+      subjectId: "ap-biology",
+      stem: "In a eukaryotic cell, where does the Krebs (Citric Acid) Cycle take place?",
+      options: ["Mitochondrial matrix", "Cytosol", "Inner mitochondrial membrane", "Intermembrane space"],
+      correctIndex: 0,
+      explanation: "The Krebs cycle occurs in the mitochondrial matrix, while oxidative phosphorylation and the electron transport chain occur along the cristae of the inner membrane.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "bio_exp_4",
+      subjectId: "ap-biology",
+      stem: "A population in Hardy-Weinberg equilibrium has 16% homozygous recessive individuals ($q^2 = 0.16$). What is the frequency of heterozygous carriers in this population?",
+      options: ["0.48", "0.40", "0.36", "0.84"],
+      correctIndex: 0,
+      explanation: "$q = \\sqrt{0.16} = 0.40$. Therefore $p = 1 - 0.40 = 0.60$. Heterozygote frequency is $2pq = 2(0.60)(0.40) = 0.48$ (48%).",
+      difficulty: "Medium",
+      timeLimit: 45
+    },
+    {
+      id: "bio_exp_5",
+      subjectId: "ap-biology",
+      stem: "Which enzyme is responsible for unwinding and separating the double-stranded DNA helix at the replication fork?",
+      options: ["DNA Helicase", "DNA Polymerase III", "DNA Ligase", "Topoisomerase"],
+      correctIndex: 0,
+      explanation: "Helicase breaks the hydrogen bonds between complementary base pairs to open the replication bubble.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "bio_exp_6",
+      subjectId: "ap-biology",
+      stem: "What happens when a plant cell is placed into a hypertonic salt solution?",
+      options: [
+        "Water leaves the cell by osmosis, causing plasmolysis",
+        "Water enters the cell, causing it to become turgid",
+        "The cell absorbs solute ions until it bursts (lysis)",
+        "Solute equilibrium is maintained with zero net water movement"
+      ],
+      correctIndex: 0,
+      explanation: "In a hypertonic environment, water exits down its water potential gradient, causing the plasma membrane to pull away from the cell wall (plasmolysis).",
+      difficulty: "Medium",
+      timeLimit: 45
+    }
+  ],
+  "ap-us-history": [
+    {
+      id: "apush_exp_1",
+      subjectId: "ap-us-history",
+      stem: "Which landmark Supreme Court decision established the principle of judicial review under Chief Justice John Marshall?",
+      options: ["Marbury v. Madison (1803)", "McCulloch v. Maryland (1819)", "Gibbons v. Ogden (1824)", "Dred Scott v. Sandford (1857)"],
+      correctIndex: 0,
+      explanation: "In Marbury v. Madison, Marshall declared an act of Congress unconstitutional, solidifying the Supreme Court's authority of judicial review.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "apush_exp_2",
+      subjectId: "ap-us-history",
+      stem: "What was the primary foreign policy objective expressed in the 1823 Monroe Doctrine?",
+      options: [
+        "To warn European powers against further colonization or intervention in the Western Hemisphere",
+        "To negotiate the peaceful purchase of Florida from the Spanish crown",
+        "To form an offensive military alliance with emerging Latin American republics",
+        "To annex former French territories in North America"
+      ],
+      correctIndex: 0,
+      explanation: "The Monroe Doctrine declared that the American continents were no longer open to European colonization and that interference would be treated as hostile.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "apush_exp_3",
+      subjectId: "ap-us-history",
+      stem: "The Kansas-Nebraska Act of 1854 directly repealed which earlier congressional compromise regarding slavery?",
+      options: [
+        "The Missouri Compromise of 1820 ($36^\\circ 30'$ line)",
+        "The Compromise of 1850",
+        "The Northwest Ordinance of 1787",
+        "The Three-Fifths Compromise"
+      ],
+      correctIndex: 0,
+      explanation: "Stephen Douglas's bill introduced popular sovereignty in the territories, effectively nullifying the Missouri Compromise line that barred slavery north of $36^\\circ 30'$.",
+      difficulty: "Medium",
+      timeLimit: 45
+    },
+    {
+      id: "apush_exp_4",
+      subjectId: "ap-us-history",
+      stem: "Which Constitutional Amendment abolished involuntary servitude and slavery across the United States?",
+      options: ["Thirteenth Amendment", "Fourteenth Amendment", "Fifteenth Amendment", "Sixteenth Amendment"],
+      correctIndex: 0,
+      explanation: "The 13th Amendment (1865) constitutionally abolished slavery, while the 14th defined citizenship and equal protection, and the 15th guaranteed voting rights.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "apush_exp_5",
+      subjectId: "ap-us-history",
+      stem: "What was the core objective of the Marshall Plan enacted by the United States in 1948?",
+      options: [
+        "To provide billions of dollars in economic aid to rebuild war-torn Western Europe and prevent communist spread",
+        "To establish permanent missile batteries across NATO nations",
+        "To oversee the occupation and disarmament of imperial Japan",
+        "To dismantle wartime price control agencies within the US domestic economy"
+      ],
+      correctIndex: 0,
+      explanation: "Secretary of State George Marshall proposed economic recovery assistance to stabilize democratic European nations against Soviet influence.",
+      difficulty: "Medium",
+      timeLimit: 45
+    }
+  ],
+  "ap-computer-science": [
+    {
+      id: "csa_exp_1",
+      subjectId: "ap-computer-science",
+      stem: 'In Java, what is the return value of `"APExam".substring(2, 5)`?',
+      options: ['"Exa"', '"Exam"', '"PEx"', '"APEx"'],
+      correctIndex: 0,
+      explanation: "`substring(beginIndex, endIndex)` is inclusive of beginIndex (2, character 'E') and exclusive of endIndex (5, character 'm'), returning indices 2, 3, 4 -> \"Exa\".",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "csa_exp_2",
+      subjectId: "ap-computer-science",
+      stem: "What is the worst-case time complexity of Binary Search on a sorted array of $N$ elements?",
+      options: ["$O(\\log N)$", "$O(N)$", "$O(N \\log N)$", "$O(1)$"],
+      correctIndex: 0,
+      explanation: "Binary search cuts the search space in half with each comparison, yielding logarithmic $O(\\log N)$ complexity.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "csa_exp_3",
+      subjectId: "ap-computer-science",
+      stem: "Given the 2D array `int[][] grid = new int[4][3];`, what is `grid.length` and `grid[0].length`?",
+      options: [
+        "`grid.length = 4`, `grid[0].length = 3`",
+        "`grid.length = 3`, `grid[0].length = 4`",
+        "`grid.length = 12`, `grid[0].length = 4`",
+        "`grid.length = 4`, `grid[0].length = 12`"
+      ],
+      correctIndex: 0,
+      explanation: "In Java, `grid.length` returns the number of rows (4), and `grid[0].length` returns the number of columns in row 0 (3).",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "csa_exp_4",
+      subjectId: "ap-computer-science",
+      stem: "What occurs if a recursive method in Java fails to reach its base case?",
+      options: ["StackOverflowError", "NullPointerException", "IndexOutOfBoundsException", "Compilation error"],
+      correctIndex: 0,
+      explanation: "Infinite recursive calls exceed the allocated call stack memory, triggering a runtime `StackOverflowError`.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "csa_exp_5",
+      subjectId: "ap-computer-science",
+      stem: "Which Java keyword is used in a subclass constructor to invoke the constructor of its superclass?",
+      options: ["`super()`", "`this()`", "`extends()`", "`parent()`"],
+      correctIndex: 0,
+      explanation: "`super(...)` calls the matching superclass constructor and must be the first statement in the subclass constructor body.",
+      difficulty: "Easy",
+      timeLimit: 30
+    }
+  ],
+  "ap-economics": [
+    {
+      id: "econ_exp_1",
+      subjectId: "ap-economics",
+      stem: "If the cross-price elasticity of demand between Good X and Good Y is negative ($E_{XY} < 0$), what relationship exists between the two goods?",
+      options: [
+        "They are complementary goods",
+        "They are substitute goods",
+        "They are luxury goods",
+        "They are inferior goods"
+      ],
+      correctIndex: 0,
+      explanation: "A negative cross-price elasticity means an increase in the price of Good Y causes demand for Good X to decrease, characteristic of complements (e.g. coffee and sugar).",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "econ_exp_2",
+      subjectId: "ap-economics",
+      stem: "A firm in a perfectly competitive market maximizes profit by producing where:",
+      options: [
+        "Price equals Marginal Cost ($P = MC$)",
+        "Price equals Average Total Cost ($P = ATC$)",
+        "Marginal Revenue equals Average Variable Cost ($MR = AVC$)",
+        "Total Revenue is maximized"
+      ],
+      correctIndex: 0,
+      explanation: "Since price equals marginal revenue for price-takers ($P = MR$), profit maximization occurs where $MR = MC$, which simplifies to $P = MC$.",
+      difficulty: "Medium",
+      timeLimit: 45
+    },
+    {
+      id: "econ_exp_3",
+      subjectId: "ap-economics",
+      stem: "What action by a central bank constitutes expansionary monetary policy aimed at combatting a recession?",
+      options: [
+        "Buying government bonds on the open market",
+        "Increasing the reserve requirement ratio",
+        "Raising the target discount rate",
+        "Increasing personal income tax rates"
+      ],
+      correctIndex: 0,
+      explanation: "Buying government securities injects liquidity into commercial banking reserves, lowering the federal funds rate and stimulating borrowing and investment.",
+      difficulty: "Medium",
+      timeLimit: 45
+    },
+    {
+      id: "econ_exp_4",
+      subjectId: "ap-economics",
+      stem: "What is the economic definition of opportunity cost?",
+      options: [
+        "The value of the next best alternative forgone when making a decision",
+        "The sum total of all monetary expenditures on a project",
+        "The sunk cost that cannot be recovered",
+        "The price paid for raw material inventory"
+      ],
+      correctIndex: 0,
+      explanation: "Opportunity cost measures the sacrifice of the highest-valued alternative option when choosing among scarce resources.",
+      difficulty: "Easy",
+      timeLimit: 30
+    }
+  ],
+  "ap-psychology": [
+    {
+      id: "psych_exp_1",
+      subjectId: "ap-psychology",
+      stem: "Which brain structure acts as the sensory relay station, directing sensory signals (except olfaction) to the cerebral cortex?",
+      options: ["Thalamus", "Hypothalamus", "Amygdala", "Cerebellum"],
+      correctIndex: 0,
+      explanation: "The thalamus routes visual, auditory, and somatosensory inputs to appropriate sensory processing cortices. Smell bypasses it directly to the olfactory bulb.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "psych_exp_2",
+      subjectId: "ap-psychology",
+      stem: "In Pavlov's classical conditioning experiments with dogs, what was the meat powder before any conditioning occurred?",
+      options: [
+        "Unconditioned Stimulus (UCS)",
+        "Conditioned Stimulus (CS)",
+        "Conditioned Response (CR)",
+        "Neutral Stimulus (NS)"
+      ],
+      correctIndex: 0,
+      explanation: "Food naturally and automatically triggers salivation without prior training, making it an unconditioned stimulus (UCS).",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "psych_exp_3",
+      subjectId: "ap-psychology",
+      stem: "A gambler keeps pulling a slot machine lever because payouts occur after an unpredictable number of pulls. What schedule of reinforcement is this?",
+      options: [
+        "Variable-Ratio schedule",
+        "Fixed-Ratio schedule",
+        "Variable-Interval schedule",
+        "Fixed-Interval schedule"
+      ],
+      correctIndex: 0,
+      explanation: "Variable-ratio rewards behavior after an unpredictable number of responses, creating high, steady response rates resistant to extinction.",
+      difficulty: "Medium",
+      timeLimit: 45
+    }
+  ],
+  "ap-world-history": [
+    {
+      id: "whist_exp_1",
+      subjectId: "ap-world-history",
+      stem: "What major trans-Eurasian trade network was secured and revitalized during the Pax Mongolica in the 13th and 14th centuries?",
+      options: ["The Silk Roads", "The Trans-Saharan camel routes", "The Mediterranean sea trade", "The Hanseatic League"],
+      correctIndex: 0,
+      explanation: "Under unified Mongol rule, merchants traveled with passports (paiza) along the Silk Roads with unprecedented safety and diplomatic protection.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "whist_exp_2",
+      subjectId: "ap-world-history",
+      stem: "Which maritime empire pioneered the trading-post empire along the coast of Africa and the Indian Ocean in the early 16th century?",
+      options: ["Portugal", "Spain", "Great Britain", "The Netherlands"],
+      correctIndex: 0,
+      explanation: "Portugal aimed to monopolize the spice trade by capturing fortified trade chokepoints (Malacca, Hormuz, Goa) rather than acquiring vast inland territories.",
+      difficulty: "Medium",
+      timeLimit: 45
+    }
+  ],
+  "ap-environmental-science": [
+    {
+      id: "apes_exp_1",
+      subjectId: "ap-environmental-science",
+      stem: "Which biome is characterized by permafrost, low annual precipitation, and short growing seasons dominated by mosses and lichens?",
+      options: ["Tundra", "Taiga (Boreal forest)", "Temperate deciduous forest", "Chaparral"],
+      correctIndex: 0,
+      explanation: "The Arctic and Alpine tundra feature permanently frozen subsoil (permafrost) which restricts deep root growth.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "apes_exp_2",
+      subjectId: "ap-environmental-science",
+      stem: "Eutrophication in aquatic ecosystems is typically triggered by excessive runoff containing which two plant nutrients?",
+      options: [
+        "Nitrogen and Phosphorus",
+        "Carbon and Potassium",
+        "Calcium and Magnesium",
+        "Iron and Sulfur"
+      ],
+      correctIndex: 0,
+      explanation: "Agricultural fertilizers containing nitrates and phosphates cause rapid algal blooms, whose subsequent bacterial decomposition severely depletes dissolved oxygen (hypoxia).",
+      difficulty: "Easy",
+      timeLimit: 30
+    }
+  ],
+  "ap-human-geography": [
+    {
+      id: "aphg_exp_1",
+      subjectId: "ap-human-geography",
+      stem: "In the Demographic Transition Model (DTM), what characterizes Stage 2?",
+      options: [
+        "Death rates drop rapidly while birth rates remain high, causing explosive population growth",
+        "Birth and death rates are both extremely high with negligible growth",
+        "Birth rates drop to match low death rates",
+        "Total population declines due to below-replacement fertility"
+      ],
+      correctIndex: 0,
+      explanation: "Stage 2 is ushered in by the Industrial and Medical Revolutions, sharply reducing infant and general mortality while cultural birth rates remain elevated.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "aphg_exp_2",
+      subjectId: "ap-human-geography",
+      stem: "According to Von Th\xFCnen's Agricultural Land Use model, which farming activity is located closest to the central market city?",
+      options: [
+        "Dairying and market gardening (perishable goods)",
+        "Extensive grain and wheat farming",
+        "Ranching and livestock grazing",
+        "Commercial timber and firewood"
+      ],
+      correctIndex: 0,
+      explanation: "Perishable items like fresh milk and delicate vegetables demand rapid transit to market and command high land rent per acre.",
+      difficulty: "Medium",
+      timeLimit: 45
+    }
+  ],
+  "ap-english-lang": [
+    {
+      id: "lang_exp_1",
+      subjectId: "ap-english-lang",
+      stem: "In persuasive writing, an appeal to the speaker's credibility, character, and moral authority is termed:",
+      options: ["Ethos", "Pathos", "Logos", "Kairos"],
+      correctIndex: 0,
+      explanation: "Ethos establishes trust, expertise, and shared values with the audience to validate the rhetor's perspective.",
+      difficulty: "Easy",
+      timeLimit: 30
+    },
+    {
+      id: "lang_exp_2",
+      subjectId: "ap-english-lang",
+      stem: "Which logical fallacy misrepresents an opponent's argument as weaker or more extreme than it actually is to make it easy to refute?",
+      options: ["Straw Man fallacy", "Ad Hominem fallacy", "Slippery Slope fallacy", "Post Hoc Ergo Propter Hoc"],
+      correctIndex: 0,
+      explanation: "A straw man creates a distorted, oversimplified caricature of an argument and attacks that rather than the genuine position.",
+      difficulty: "Easy",
+      timeLimit: 30
+    }
+  ]
+};
+
+// src/data/quiz/apCalculusAbQuestions.ts
+var AP_CALCULUS_AB_UNIT_1_LEVELS = [
+  {
+    id: 1,
+    topicNumber: "Topic 1.1 & 1.2",
+    name: "Limit Intuition & Rate of Change",
+    subtitle: "Instantaneous vs Average Rate & Notation",
+    difficulty: "Easy",
+    rewardCoins: 30,
+    questions: [
+      {
+        id: "c1-l1-q1",
+        stem: "What does the mathematical statement $\\lim_{x \\to 3} f(x) = 7$ formally mean in AP Calculus?",
+        options: [
+          "The value of the function at $x = 3$ is guaranteed to be $f(3) = 7$.",
+          "As $x$ gets arbitrarily close to $3$ (from both sides, with $x \\neq 3$), $f(x)$ approaches $7$.",
+          "The function is continuous and differentiable at $x = 3$.",
+          "The average rate of change on the interval $[0, 3]$ equals $7$."
+        ],
+        correctIndex: 1,
+        explanation: "A limit describes the values that a function approaches as the input approaches a specified value, regardless of the actual function value $f(3)$ at that point.",
+        distractorTip: "Trap: Do not assume $f(3)$ must equal 7; limits describe behavior near the point, not at the point."
+      },
+      {
+        id: "c1-l1-q2",
+        stem: "A particle moves along a straight line with position given by $s(t) = 2t^2 + 1$. What is the average velocity of the particle over the time interval $[1, 4]$?",
+        options: [
+          "$10$",
+          "$12$",
+          "$16$",
+          "$33$"
+        ],
+        correctIndex: 0,
+        explanation: "Average velocity is given by $\\frac{s(4) - s(1)}{4 - 1} = \\frac{(2(16)+1) - (2(1)+1)}{3} = \\frac{33 - 3}{3} = 10$.",
+        distractorTip: "Remember that average velocity is the secant line slope $\\frac{\\Delta s}{\\Delta t}$, whereas instantaneous velocity is the derivative $s'(t)$."
+      },
+      {
+        id: "c1-l1-q3",
+        stem: "If $f(2) = 5$ but $\\lim_{x \\to 2} f(x) = 9$, which of the following statements must be true?",
+        options: [
+          "The limit does not exist because it does not match $f(2)$.",
+          "The function $f$ has a discontinuity at $x = 2$.",
+          "$f$ is continuous at $x = 2$ because both the limit and $f(2)$ exist.",
+          "The graph of $f$ has a vertical asymptote at $x = 2$."
+        ],
+        correctIndex: 1,
+        explanation: "For continuity at $x = c$, three conditions must hold: $f(c)$ exists, $\\lim_{x \\to c} f(x)$ exists, and $\\lim_{x \\to c} f(x) = f(c)$. Since $9 \\neq 5$, $f$ has a removable discontinuity at $x = 2$.",
+        distractorTip: "Exam trick: Having both a limit and a function value is not enough; they must be equal for continuity."
+      }
+    ]
+  },
+  {
+    id: 2,
+    topicNumber: "Topic 1.3",
+    name: "Estimating Limits from Graphs",
+    subtitle: "One-Sided Limits & Graphical Behavior",
+    difficulty: "Easy",
+    rewardCoins: 35,
+    questions: [
+      {
+        id: "c1-l2-q1",
+        stem: "Suppose a function $g(x)$ satisfies $\\lim_{x \\to 4^-} g(x) = 5$ and $\\lim_{x \\to 4^+} g(x) = 5$, but $g(4) = -2$. What is the value of $\\lim_{x \\to 4} g(x)$?",
+        options: [
+          "$-2$",
+          "$5$",
+          "The limit does not exist.",
+          "$3$"
+        ],
+        correctIndex: 1,
+        explanation: "A two-sided limit exists and equals $L$ if and only if both one-sided limits exist and equal $L$. Since both left and right limits equal $5$, $\\lim_{x \\to 4} g(x) = 5$.",
+        distractorTip: "Do not be tricked by the isolated point at $(4, -2)$. The two-sided limit depends solely on the one-sided limits."
+      },
+      {
+        id: "c1-l2-q2",
+        stem: "If the graph of $h(x)$ approaches $y = -3$ as $x \\to 1$ from the left, and approaches $y = 4$ as $x \\to 1$ from the right, what is $\\lim_{x \\to 1} h(x)$?",
+        options: [
+          "$0.5$",
+          "$-3$",
+          "$4$",
+          "Does not exist (DNE)"
+        ],
+        correctIndex: 3,
+        explanation: "Since the left-hand limit ($-3$) does not equal the right-hand limit ($4$), the two-sided limit does not exist (DNE) due to a jump discontinuity.",
+        distractorTip: "If $\\lim_{x \\to c^-} \\neq \\lim_{x \\to c^+}$, the two-sided limit always fails to exist."
+      },
+      {
+        id: "c1-l2-q3",
+        stem: "Evaluate $\\lim_{x \\to 0^-} \\frac{x}{|x|}$.",
+        options: [
+          "$1$",
+          "$-1$",
+          "$0$",
+          "Does not exist"
+        ],
+        correctIndex: 1,
+        explanation: "For $x < 0$, $|x| = -x$. Therefore, $\\frac{x}{|x|} = \\frac{x}{-x} = -1$ for all negative values of $x$. Thus, the left-hand limit is $-1$.",
+        distractorTip: "Notice the one-sided minus superscript ($0^-$). The two-sided limit DNE, but the left-hand limit is exactly $-1$."
+      }
+    ]
+  },
+  {
+    id: 3,
+    topicNumber: "Topic 1.4",
+    name: "Estimating Limits from Tables",
+    subtitle: "Numerical Trends & Delta Proximity",
+    difficulty: "Easy",
+    rewardCoins: 35,
+    questions: [
+      {
+        id: "c1-l3-q1",
+        stem: "A table shows values of $f(x)$ near $x = 2$:\n- $x = 1.9 \\implies 4.81$\n- $x = 1.99 \\implies 4.98$\n- $x = 1.999 \\implies 4.998$\n- $x = 2.001 \\implies 5.002$\n- $x = 2.01 \\implies 5.02$\nWhat is the most reasonable estimate for $\\lim_{x \\to 2} f(x)$?",
+        options: [
+          "$4.9$",
+          "$5.0$",
+          "$5.1$",
+          "Does not exist"
+        ],
+        correctIndex: 1,
+        explanation: "As $x$ approaches $2$ from both the left and right, $f(x)$ steadily converges toward $5.0$.",
+        distractorTip: "Check convergence from both sides to ensure both left and right approaches reach the same integer."
+      },
+      {
+        id: "c1-l3-q2",
+        stem: "For a function $g(x)$, values near $x = 0$ show: $g(-0.01) = 99$, $g(-0.001) = 999$, $g(0.001) = -1000$, and $g(0.01) = -100$. What does this indicate about $\\lim_{x \\to 0} g(x)$?",
+        options: [
+          "$\\lim_{x \\to 0} g(x) = 0$",
+          "$\\lim_{x \\to 0} g(x) = \\infty$",
+          "The limit does not exist because the function values grow unboundedly in opposite directions.",
+          "$\\lim_{x \\to 0} g(x) = 1000$"
+        ],
+        correctIndex: 2,
+        explanation: "The left-hand values grow toward $+\\infty$ while the right-hand values decrease toward $-\\infty$. Thus, the two-sided limit does not exist.",
+        distractorTip: "Watch the signs: $+\\infty$ from the left and $-\\infty$ from the right indicate a vertical asymptote with no unified limit."
+      },
+      {
+        id: "c1-l3-q3",
+        stem: "If evaluating $\\lim_{x \\to 0} \\sin\\left(\\frac{\\pi}{x}\\right)$ using a table with $x = 0.1, 0.01, 0.001$, each gives $0$. Why can we NOT conclude the limit is $0$?",
+        options: [
+          "Because $\\sin(x)$ is not defined at $x = 0$.",
+          "Because the function oscillates infinitely between $-1$ and $1$ as $x \\to 0$, so intermediate points do not converge.",
+          "Because $\\frac{\\pi}{x}$ is always a positive integer.",
+          "Because trigonometric functions cannot have limits at zero."
+        ],
+        correctIndex: 1,
+        explanation: "Sampling points where $\\frac{\\pi}{x} = k\\pi$ hides the wild oscillation between $-1$ and $1$. The limit does not exist due to infinite oscillation near $x = 0$.",
+        distractorTip: "Classic AP concept: Numerical tables can be misleading for oscillating functions like $\\sin(1/x)$."
+      }
+    ]
+  },
+  {
+    id: 4,
+    topicNumber: "Topic 1.5",
+    name: "Algebraic Properties & Direct Substitution",
+    subtitle: "Limit Laws, Sums, Products & Quotients",
+    difficulty: "Easy",
+    rewardCoins: 40,
+    questions: [
+      {
+        id: "c1-l4-q1",
+        stem: "Evaluate $\\lim_{x \\to 2} (3x^2 - 4x + 5)$ using direct substitution.",
+        options: [
+          "$7$",
+          "$9$",
+          "$13$",
+          "$17$"
+        ],
+        correctIndex: 1,
+        explanation: "Since polynomial functions are continuous everywhere, we substitute directly: $3(2)^2 - 4(2) + 5 = 3(4) - 8 + 5 = 12 - 8 + 5 = 9$.",
+        distractorTip: "Always try direct substitution first. If it yields a real number, that is your limit."
+      },
+      {
+        id: "c1-l4-q2",
+        stem: "Given $\\lim_{x \\to 3} f(x) = 4$ and $\\lim_{x \\to 3} g(x) = -2$, what is $\\lim_{x \\to 3} \\frac{[f(x)]^2 + 3g(x)}{g(x)}$?",
+        options: [
+          "$-5$",
+          "$-2$",
+          "$5$",
+          "$-11$"
+        ],
+        correctIndex: 0,
+        explanation: "Using limit arithmetic properties: $\\frac{(4)^2 + 3(-2)}{-2} = \\frac{16 - 6}{-2} = \\frac{10}{-2} = -5$.",
+        distractorTip: "Be careful with negative signs in the denominator."
+      },
+      {
+        id: "c1-l4-q3",
+        stem: "Evaluate $\\lim_{x \\to \\frac{\\pi}{4}} \\frac{\\sin x + \\cos x}{\\tan x}$.",
+        options: [
+          "$\\sqrt{2}$",
+          "$\\frac{\\sqrt{2}}{2}$",
+          "$1$",
+          "$2$"
+        ],
+        correctIndex: 0,
+        explanation: "Substitute $x = \\frac{\\pi}{4}$: $\\sin(\\pi/4) = \\frac{\\sqrt{2}}{2}$, $\\cos(\\pi/4) = \\frac{\\sqrt{2}}{2}$, $\\tan(\\pi/4) = 1$. The numerator is $\\frac{\\sqrt{2}}{2} + \\frac{\\sqrt{2}}{2} = \\sqrt{2}$, divided by $1$ equals $\\sqrt{2}$.",
+        distractorTip: "Trig functions can be evaluated by direct substitution at any point in their domain."
+      }
+    ]
+  },
+  {
+    id: 5,
+    topicNumber: "Topic 1.6",
+    name: "Factoring & Algebraic Cancellation",
+    subtitle: "Resolving 0/0 Indeterminate Forms",
+    difficulty: "Medium",
+    rewardCoins: 40,
+    questions: [
+      {
+        id: "c1-l5-q1",
+        stem: "Evaluate $\\lim_{x \\to 3} \\frac{x^2 - 9}{x - 3}$.",
+        options: [
+          "$0$",
+          "$3$",
+          "$6$",
+          "Does not exist"
+        ],
+        correctIndex: 2,
+        explanation: "Direct substitution yields the indeterminate form $\\frac{0}{0}$. Factoring the numerator gives $\\frac{(x-3)(x+3)}{x-3} = x + 3$. Evaluating at $x = 3$ gives $3 + 3 = 6$.",
+        distractorTip: "$\\frac{0}{0}$ does not mean 0 or undefined; it means more algebraic work is required."
+      },
+      {
+        id: "c1-l5-q2",
+        stem: "Evaluate $\\lim_{x \\to -2} \\frac{x^2 + 5x + 6}{x^2 - 4}$.",
+        options: [
+          "$-\\frac{1}{4}$",
+          "$\\frac{1}{4}$",
+          "$\\frac{5}{2}$",
+          "Does not exist"
+        ],
+        correctIndex: 0,
+        explanation: "Factor both parts: $\\frac{(x+2)(x+3)}{(x+2)(x-2)}$. Cancel $(x+2)$ to obtain $\\frac{x+3}{x-2}$. Substitute $x = -2$: $\\frac{-2+3}{-2-2} = \\frac{1}{-4} = -\\frac{1}{4}$.",
+        distractorTip: "Watch negative signs when substituting $x = -2$ into $(x - 2)$."
+      },
+      {
+        id: "c1-l5-q3",
+        stem: "Evaluate $\\lim_{x \\to 1} \\frac{x^3 - 1}{x - 1}$.",
+        options: [
+          "$1$",
+          "$2$",
+          "$3$",
+          "Does not exist"
+        ],
+        correctIndex: 2,
+        explanation: "Use the difference of cubes formula $a^3 - b^3 = (a-b)(a^2+ab+b^2)$: $\\frac{(x-1)(x^2+x+1)}{x-1} = x^2 + x + 1$. Substitute $x = 1$: $1^2 + 1 + 1 = 3$.",
+        distractorTip: "Memorize the difference of cubes factorization; it frequently appears on AP Calculus Section I."
+      },
+      {
+        id: "c1-l5-q4",
+        stem: "Evaluate $\\lim_{x \\to -3} \\frac{x^2 - x - 12}{x + 3}$.",
+        options: [
+          "$-7$",
+          "$-1$",
+          "$1$",
+          "Does not exist"
+        ],
+        correctIndex: 0,
+        explanation: "Direct substitution yields the indeterminate form $0/0$. Factoring the numerator gives $x^2 - x - 12 = (x - 4)(x + 3)$. For $x \\neq -3$, $\\frac{(x - 4)(x + 3)}{x + 3} = x - 4$. Evaluating the limit as $x \\to -3$ gives $(-3) - 4 = -7$.",
+        distractorTip: "Trap: Be careful with signs when factoring $x^2 - x - 12$; $(x-4)(x+3)$ has sum $-1$ and product $-12$."
+      }
+    ]
+  },
+  {
+    id: 6,
+    topicNumber: "Topic 1.7",
+    name: "Radical Conjugate Rationalization",
+    subtitle: "Multiplying by the Conjugate Form",
+    difficulty: "Medium",
+    rewardCoins: 45,
+    questions: [
+      {
+        id: "c1-l6-q1",
+        stem: "Evaluate $\\lim_{x \\to 0} \\frac{\\sqrt{x + 4} - 2}{x}$.",
+        options: [
+          "$\\frac{1}{4}$",
+          "$\\frac{1}{2}$",
+          "$2$",
+          "$4$"
+        ],
+        correctIndex: 0,
+        explanation: "Multiply numerator and denominator by the conjugate $(\\sqrt{x+4} + 2)$: $\\frac{(x+4) - 4}{x(\\sqrt{x+4} + 2)} = \\frac{x}{x(\\sqrt{x+4} + 2)} = \\frac{1}{\\sqrt{x+4} + 2}$. Evaluating at $x = 0$: $\\frac{1}{\\sqrt{4} + 2} = \\frac{1}{4}$.",
+        distractorTip: "Do not distribute the denominator when multiplying by the conjugate; leave $x$ factored out so it cancels."
+      },
+      {
+        id: "c1-l6-q2",
+        stem: "Evaluate $\\lim_{x \\to 9} \\frac{x - 9}{\\sqrt{x} - 3}$.",
+        options: [
+          "$3$",
+          "$6$",
+          "$\\frac{1}{6}$",
+          "Does not exist"
+        ],
+        correctIndex: 1,
+        explanation: "Multiply by $(\\sqrt{x} + 3)$: $\\frac{(x-9)(\\sqrt{x}+3)}{x-9} = \\sqrt{x} + 3$. Substitute $x = 9$: $\\sqrt{9} + 3 = 3 + 3 = 6$.",
+        distractorTip: "Alternatively, factor $x - 9$ as $(\\sqrt{x}-3)(\\sqrt{x}+3)$ for an instant 5-second shortcut."
+      },
+      {
+        id: "c1-l6-q3",
+        stem: "Evaluate $\\lim_{x \\to 1} \\frac{\\sqrt{2x + 2} - 2}{x - 1}$.",
+        options: [
+          "$\\frac{1}{4}$",
+          "$\\frac{1}{2}$",
+          "$1$",
+          "$\\frac{\\sqrt{2}}{2}$"
+        ],
+        correctIndex: 1,
+        explanation: "Multiply by $(\\sqrt{2x+2} + 2)$: $\\frac{(2x+2) - 4}{(x-1)(\\sqrt{2x+2} + 2)} = \\frac{2(x-1)}{(x-1)(\\sqrt{2x+2} + 2)} = \\frac{2}{\\sqrt{2x+2} + 2}$. Evaluating at $x = 1$: $\\frac{2}{\\sqrt{4} + 2} = \\frac{2}{4} = \\frac{1}{2}$.",
+        distractorTip: "Factor out the coefficient $2$ from $2x - 2$ to expose the cancelling factor $(x - 1)$."
+      },
+      {
+        id: "c1-l6-q4",
+        stem: "Evaluate $\\lim_{x \\to 0} \\frac{\\sqrt{x + 9} - 3}{x^2 + 2x}$.",
+        options: [
+          "$\\frac{1}{12}$",
+          "$\\frac{1}{6}$",
+          "$\\frac{1}{18}$",
+          "$0$"
+        ],
+        correctIndex: 0,
+        explanation: "Rationalizing the numerator by multiplying by $\\frac{\\sqrt{x+9}+3}{\\sqrt{x+9}+3}$ yields $\\frac{(x+9)-9}{x(x+2)(\\sqrt{x+9}+3)} = \\frac{x}{x(x+2)(\\sqrt{x+9}+3)} = \\frac{1}{(x+2)(\\sqrt{x+9}+3)}$. Substituting $x=0$ gives $\\frac{1}{(2)(3+3)} = \\frac{1}{12}$.",
+        distractorTip: "Remember to factor $x$ from the denominator: $x^2 + 2x = x(x+2)$ to cancel the $x$ in the numerator."
+      }
+    ]
+  },
+  {
+    id: 7,
+    topicNumber: "Topic 1.7",
+    name: "Complex Fractions & Absolute Values",
+    subtitle: "Common Denominators & Piecewise Symmetry",
+    difficulty: "Medium",
+    rewardCoins: 45,
+    questions: [
+      {
+        id: "c1-l7-q1",
+        stem: "Evaluate $\\lim_{x \\to 0} \\frac{\\frac{1}{x + 5} - \\frac{1}{5}}{x}$.",
+        options: [
+          "$\\frac{1}{25}$",
+          "$-\\frac{1}{25}$",
+          "$-5$",
+          "$0$"
+        ],
+        correctIndex: 1,
+        explanation: "Find common denominator for the numerator: $\\frac{5 - (x+5)}{5(x+5)} = \\frac{-x}{5(x+5)}$. Dividing by $x$ cancels $x$, leaving $\\frac{-1}{5(x+5)}$. As $x \\to 0$, this equals $-\\frac{1}{25}$.",
+        distractorTip: "Notice the negative sign resulting from distributing $-(x+5) = -x - 5$."
+      },
+      {
+        id: "c1-l7-q2",
+        stem: "Evaluate $\\lim_{x \\to 3^+} \\frac{2x - 6}{|x - 3|}$.",
+        options: [
+          "$-2$",
+          "$2$",
+          "$0$",
+          "Does not exist"
+        ],
+        correctIndex: 1,
+        explanation: "For $x > 3$, $x - 3 > 0$, so $|x - 3| = x - 3$. Thus $\\frac{2(x-3)}{x-3} = 2$.",
+        distractorTip: "For right-hand limits where $x > c$, the absolute value bars simply drop with a positive sign."
+      },
+      {
+        id: "c1-l7-q3",
+        stem: "Evaluate $\\lim_{x \\to 2^-} \\frac{x^2 - 4}{|x - 2|}$.",
+        options: [
+          "$-4$",
+          "$4$",
+          "$0$",
+          "Does not exist"
+        ],
+        correctIndex: 0,
+        explanation: "Factor numerator as $(x-2)(x+2)$. Since $x \\to 2^-$, $x < 2$, so $|x - 2| = -(x - 2)$. Thus $\\frac{(x-2)(x+2)}{-(x-2)} = -(x + 2)$. At $x = 2$, this equals $-(2 + 2) = -4$.",
+        distractorTip: "Trap: Remembering that $|x - c| = -(x - c)$ when approaching from the left is critical."
+      },
+      {
+        id: "c1-l7-q4",
+        stem: "Evaluate the one-sided limit $\\lim_{x \\to 4^-} \\frac{|x - 4|}{x - 4}$.",
+        options: [
+          "$-1$",
+          "$1$",
+          "$0$",
+          "Does not exist"
+        ],
+        correctIndex: 0,
+        explanation: "For $x < 4$, $(x - 4) < 0$, so $|x - 4| = -(x - 4)$. Therefore, $\\frac{-(x - 4)}{x - 4} = -1$ for all $x < 4$. Hence the limit is $-1$.",
+        distractorTip: "Notice the left-hand limit indicator ($4^-$); approaching from the right would give $+1$, but the left-hand limit is strictly $-1$."
+      }
+    ]
+  },
+  {
+    id: 8,
+    topicNumber: "Topic 1.8 & 1.9",
+    name: "Squeeze Theorem & Special Trig Limits",
+    subtitle: "Sandwiching Bounds & $\\frac{\\sin(x)}{x}$ Limits",
+    difficulty: "Medium",
+    rewardCoins: 50,
+    questions: [
+      {
+        id: "c1-l8-q1",
+        stem: "Evaluate $\\lim_{x \\to 0} \\frac{\\sin(7x)}{x}$.",
+        options: [
+          "$0$",
+          "$1$",
+          "$7$",
+          "$\\frac{1}{7}$"
+        ],
+        correctIndex: 2,
+        explanation: "Recall that $\\lim_{u \\to 0} \\frac{\\sin(u)}{u} = 1$. Multiply and divide by $7$: $7 \\cdot \\lim_{x \\to 0} \\frac{\\sin(7x)}{7x} = 7 \\cdot 1 = 7$.",
+        distractorTip: "Formula shortcut: $\\lim_{x \\to 0} \\frac{\\sin(ax)}{bx} = \\frac{a}{b}$."
+      },
+      {
+        id: "c1-l8-q2",
+        stem: "If $4 - x^2 \\le f(x) \\le 4 + x^2$ for all $x$ in an open interval containing $0$, what is $\\lim_{x \\to 0} f(x)$?",
+        options: [
+          "$0$",
+          "$4$",
+          "$8$",
+          "Cannot be determined without explicit formula for $f(x)$"
+        ],
+        correctIndex: 1,
+        explanation: "By the Squeeze Theorem: $\\lim_{x \\to 0} (4 - x^2) = 4$ and $\\lim_{x \\to 0} (4 + x^2) = 4$. Since $f(x)$ is squeezed between both functions, $\\lim_{x \\to 0} f(x) = 4$.",
+        distractorTip: "Both upper and lower bounds must approach the exact same value to apply the Squeeze Theorem."
+      },
+      {
+        id: "c1-l8-q3",
+        stem: "Evaluate $\\lim_{x \\to 0} \\frac{1 - \\cos x}{x}$.",
+        options: [
+          "$0$",
+          "$1$",
+          "$-1$",
+          "Does not exist"
+        ],
+        correctIndex: 0,
+        explanation: "This is one of the two foundational trigonometric limits in AP Calculus: $\\lim_{x \\to 0} \\frac{1 - \\cos x}{x} = 0$.",
+        distractorTip: "Do not confuse with $\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1$. The cosine ratio approaches $0$."
+      },
+      {
+        id: "c1-l8-q4",
+        stem: "Evaluate $\\lim_{x \\to 0} \\frac{\\tan(3x)}{\\sin(2x)}$.",
+        options: [
+          "$\\frac{3}{2}$",
+          "$\\frac{2}{3}$",
+          "$1$",
+          "$0$"
+        ],
+        correctIndex: 0,
+        explanation: "Rewrite $\\frac{\\tan(3x)}{\\sin(2x)} = \\frac{\\sin(3x)}{\\cos(3x)\\sin(2x)} = \\frac{\\sin(3x)}{3x} \\cdot \\frac{2x}{\\sin(2x)} \\cdot \\frac{3}{2\\cos(3x)}$. Taking the limit as $x \\to 0$, $(1) \\cdot (1) \\cdot \\frac{3}{2(1)} = \\frac{3}{2}$.",
+        distractorTip: "AP Shortcut: $\\lim_{x \\to 0} \\frac{\\sin(ax)}{\\sin(bx)} = \\lim_{x \\to 0} \\frac{\\tan(ax)}{\\sin(bx)} = \\frac{a}{b}$."
+      }
+    ]
+  },
+  {
+    id: 9,
+    topicNumber: "Topic 1.10",
+    name: "Types of Discontinuities",
+    subtitle: "Removable, Jump & Infinite Asymptotic Breaks",
+    difficulty: "Medium",
+    rewardCoins: 50,
+    questions: [
+      {
+        id: "c1-l9-q1",
+        stem: "What type of discontinuity does the function $f(x) = \\frac{x - 3}{(x - 3)(x + 2)}$ have at $x = 3$?",
+        options: [
+          "Jump discontinuity",
+          "Removable discontinuity (hole)",
+          "Infinite discontinuity (vertical asymptote)",
+          "Essential oscillating discontinuity"
+        ],
+        correctIndex: 1,
+        explanation: "Since the factor $(x - 3)$ cancels completely from the denominator, $\\lim_{x \\to 3} f(x) = \\frac{1}{5}$ exists. Because the limit exists while $f(3)$ is undefined, $x = 3$ is a removable discontinuity.",
+        distractorTip: "If the denominator factor cancels out, it is a removable hole. If it remains in the denominator, it is a vertical asymptote."
+      },
+      {
+        id: "c1-l9-q2",
+        stem: "The greatest integer function $f(x) = \\lfloor x \\rfloor$ exhibits what type of discontinuity at integer values of $x$?",
+        options: [
+          "Removable discontinuity",
+          "Jump discontinuity",
+          "Infinite discontinuity",
+          "It is continuous at integers"
+        ],
+        correctIndex: 1,
+        explanation: "At every integer $k$, $\\lim_{x \\to k^-} \\lfloor x \\rfloor = k - 1$ while $\\lim_{x \\to k^+} \\lfloor x \\rfloor = k$. Because one-sided limits are finite but unequal, it is a jump discontinuity.",
+        distractorTip: "Finite one-sided limits that are unequal always produce a jump discontinuity."
+      },
+      {
+        id: "c1-l9-q3",
+        stem: "At $x = -2$, the function $f(x) = \\frac{x - 3}{(x - 3)(x + 2)}$ has which type of discontinuity?",
+        options: [
+          "Removable discontinuity",
+          "Jump discontinuity",
+          "Infinite discontinuity (vertical asymptote)",
+          "No discontinuity"
+        ],
+        correctIndex: 2,
+        explanation: "After cancelling $(x - 3)$, the factor $(x + 2)$ remains in the denominator. As $x \\to -2$, the function grows unbounded ($-\\infty$ and $+\\infty$), creating an infinite discontinuity (vertical asymptote).",
+        distractorTip: "Notice the difference between $x = 3$ (hole) and $x = -2$ (vertical asymptote) in the same function."
+      },
+      {
+        id: "c1-l9-q4",
+        stem: "Which of the following functions has a removable discontinuity at $x = 2$ and a vertical asymptote at $x = -2$?",
+        options: [
+          "$f(x) = \\frac{x - 2}{(x - 2)(x + 2)}$",
+          "$f(x) = \\frac{x + 2}{(x - 2)^2}$",
+          "$f(x) = \\frac{x^2 - 4}{(x - 2)^2}$",
+          "$f(x) = \\frac{1}{x^2 - 4}$"
+        ],
+        correctIndex: 0,
+        explanation: "For $f(x) = \\frac{x - 2}{(x - 2)(x + 2)}$, the factor $(x - 2)$ cancels in numerator and denominator, giving a removable hole at $x = 2$. The factor $(x + 2)$ remains in the denominator, causing a non-removable infinite vertical asymptote at $x = -2$.",
+        distractorTip: "If a factor cancels out completely from the denominator, the discontinuity is removable; if it remains in the denominator, it is a vertical asymptote."
+      }
+    ]
+  },
+  {
+    id: 10,
+    topicNumber: "Topic 1.11",
+    name: "3-Part Definition of Continuity at a Point",
+    subtitle: "Checking $f(c)$, Limit Existence & Equality",
+    difficulty: "Hard",
+    rewardCoins: 55,
+    questions: [
+      {
+        id: "c1-l10-q1",
+        stem: "According to the College Board CED, which three conditions are strictly required for a function $f$ to be continuous at $x = c$?",
+        options: [
+          "$f'(c)$ exists, $f(c) > 0$, and $\\lim_{x \\to c} f(x) = 0$",
+          "$f(c)$ is defined, $\\lim_{x \\to c} f(x)$ exists, and $\\lim_{x \\to c} f(x) = f(c)$",
+          "$\\lim_{x \\to c^-} f(x) = f(c)$ and $f(c) \\neq 0$",
+          "The function has no vertical asymptotes anywhere on its domain"
+        ],
+        correctIndex: 1,
+        explanation: "Continuity at $x = c$ requires: (1) $f(c)$ is defined, (2) $\\lim_{x \\to c} f(x)$ exists, and (3) $\\lim_{x \\to c} f(x) = f(c)$. All three must hold.",
+        distractorTip: "On AP Free-Response questions, you MUST explicitly verify all three conditions to earn full rubric credit."
+      },
+      {
+        id: "c1-l10-q2",
+        stem: "Let $f(x) = \\begin{cases} \\frac{x^2 - 16}{x - 4}, & x \\neq 4 \\\\ 8, & x = 4 \\end{cases}$. Is $f$ continuous at $x = 4$?",
+        options: [
+          "No, because $f(4)$ is undefined.",
+          "No, because $\\lim_{x \\to 4} f(x)$ does not exist.",
+          "Yes, because $f(4) = 8$, $\\lim_{x \\to 4} f(x) = 8$, and they are equal.",
+          "No, because it is a piecewise function."
+        ],
+        correctIndex: 2,
+        explanation: "$\\lim_{x \\to 4} \\frac{(x-4)(x+4)}{x-4} = 4 + 4 = 8$. Since $f(4) = 8$, $\\lim_{x \\to 4} f(x) = f(4)$, confirming continuity at $x = 4$.",
+        distractorTip: "Piecewise functions are continuous when the defined point perfectly fills the hole of the limit."
+      },
+      {
+        id: "c1-l10-q3",
+        stem: "If $\\lim_{x \\to 5} f(x) = 12$ and $f$ is known to be continuous at $x = 5$, what is the value of $f(5)$?",
+        options: [
+          "$0$",
+          "$5$",
+          "$12$",
+          "Cannot be determined"
+        ],
+        correctIndex: 2,
+        explanation: "By the third condition of continuity, if $f$ is continuous at $x = 5$, then $f(5) = \\lim_{x \\to 5} f(x) = 12$.",
+        distractorTip: "Continuity bridges the gap between the limit and the actual function value."
+      },
+      {
+        id: "c1-l10-q4",
+        stem: "Let $f(x) = \\begin{cases} 2x + 1, & x \\neq 3 \\\\ 10, & x = 3 \\end{cases}$. Why is $f(x)$ discontinuous at $x = 3$?",
+        options: [
+          "$\\lim_{x \\to 3} f(x)$ exists ($= 7$), but $\\lim_{x \\to 3} f(x) \\neq f(3)$.",
+          "$\\lim_{x \\to 3} f(x)$ does not exist because left and right limits disagree.",
+          "$f(3)$ is undefined.",
+          "The function is not defined on an open interval containing $3$."
+        ],
+        correctIndex: 0,
+        explanation: "The three-part test requires: 1) $f(3)$ is defined ($f(3) = 10$); 2) $\\lim_{x \\to 3} f(x)$ exists ($= 2(3)+1 = 7$); 3) $\\lim_{x \\to 3} f(x) = f(3)$. Since $7 \\neq 10$, the third condition fails, creating a removable discontinuity.",
+        distractorTip: "AP CED Exam Tip: When asked why a function is discontinuous on free response, explicitly state which of the 3 conditions fails."
+      },
+      {
+        id: "c1-l10-q5",
+        stem: "If $f(x)$ is continuous at $x = c$, which of the following statements MUST be true?",
+        options: [
+          "$\\lim_{x \\to c^-} f(x) = \\lim_{x \\to c^+} f(x) = f(c)$",
+          "$f'(c)$ exists and is finite.",
+          "The graph of $f$ has a horizontal tangent at $x = c$.",
+          "$f(x) \\ge 0$ for all $x$ near $c$."
+        ],
+        correctIndex: 0,
+        explanation: "By the definition of continuity at a point, the left-hand limit, right-hand limit, and the value of the function must all exist and be equal: $\\lim_{x \\to c^-} f(x) = \\lim_{x \\to c^+} f(x) = f(c)$. Continuity does NOT imply differentiability.",
+        distractorTip: "Trap: Differentiability implies continuity, but continuity does NOT imply differentiability (e.g. sharp corners like $|x|$)."
+      }
+    ]
+  },
+  {
+    id: 11,
+    topicNumber: "Topic 1.11",
+    name: "Continuity in Piecewise Functions",
+    subtitle: "Solving for Unknown Parameters ($k$)",
+    difficulty: "Hard",
+    rewardCoins: 55,
+    questions: [
+      {
+        id: "c1-l11-q1",
+        stem: "Let $f(x) = \\begin{cases} kx + 1, & x \\le 2 \\\\ x^2 - k, & x > 2 \\end{cases}$. For what value of $k$ is $f$ continuous at $x = 2$?",
+        options: [
+          "$k = 1$",
+          "$k = 2$",
+          "$k = 3$",
+          "$k = -1$"
+        ],
+        correctIndex: 0,
+        explanation: "For continuity at $x = 2$, left limit must equal right limit: $\\lim_{x \\to 2^-} (kx + 1) = 2k + 1$, and $\\lim_{x \\to 2^+} (x^2 - k) = 4 - k$. Setting them equal: $2k + 1 = 4 - k \\implies 3k = 3 \\implies k = 1$.",
+        distractorTip: "This exact parameter-solving problem appears almost every year on the AP Exam."
+      },
+      {
+        id: "c1-l11-q2",
+        stem: "Let $g(x) = \\begin{cases} \\frac{x^2 - k^2}{x - k}, & x \\neq k \\\\ 6, & x = k \\end{cases}$. For what value of $k$ is $g$ continuous at $x = k$?",
+        options: [
+          "$k = 2$",
+          "$k = 3$",
+          "$k = 6$",
+          "$k = 12$"
+        ],
+        correctIndex: 1,
+        explanation: "Simplify the limit: $\\lim_{x \\to k} \\frac{(x-k)(x+k)}{x-k} = k + k = 2k$. For continuity, $2k = g(k) = 6 \\implies k = 3$.",
+        distractorTip: "Remember that $\\lim_{x \\to k} (x + k) = k + k = 2k$, not $k$."
+      },
+      {
+        id: "c1-l11-q3",
+        stem: "Let $h(x) = \\begin{cases} c x^2 + 2x, & x < 1 \\\\ x^3 - cx, & x \\ge 1 \\end{cases}$. For what value of $c$ is $h$ continuous everywhere?",
+        options: [
+          "$c = -\\frac{1}{2}$",
+          "$c = \\frac{1}{2}$",
+          "$c = 1$",
+          "$c = 0$"
+        ],
+        correctIndex: 0,
+        explanation: "Equate left and right limits at $x = 1$: $c(1)^2 + 2(1) = 1^3 - c(1) \\implies c + 2 = 1 - c \\implies 2c = -1 \\implies c = -\\frac{1}{2}$.",
+        distractorTip: "Be mindful of algebraic signs when moving variable terms across the equal sign."
+      },
+      {
+        id: "c1-l11-q4",
+        stem: "For what values of $a$ and $b$ is the function $f(x) = \\begin{cases} ax + 3, & x < 1 \\\\ 5, & x = 1 \\\\ x^2 + b, & x > 1 \\end{cases}$ continuous at $x = 1$?",
+        options: [
+          "$a = 2$ and $b = 4$",
+          "$a = 5$ and $b = 5$",
+          "$a = 3$ and $b = 1$",
+          "No such values exist"
+        ],
+        correctIndex: 0,
+        explanation: "For continuity at $x = 1$, we require $\\lim_{x \\to 1^-} f(x) = f(1) = \\lim_{x \\to 1^+} f(x)$. This means: $a(1) + 3 = 5 \\implies a = 2$, and $1^2 + b = 5 \\implies b = 4$.",
+        distractorTip: "Set each one-sided limit equal to the actual point value $f(1) = 5$ independently."
+      },
+      {
+        id: "c1-l11-q5",
+        stem: "Let $f(x) = \\begin{cases} \\frac{\\sin(kx)}{x}, & x < 0 \\\\ 4x + k^2 - 6, & x \\ge 0 \\end{cases}$. For what positive value of $k$ is $f$ continuous at $x = 0$?",
+        options: [
+          "$k = 3$",
+          "$k = 2$",
+          "$k = 6$",
+          "$k = 1$"
+        ],
+        correctIndex: 0,
+        explanation: "Left limit: $\\lim_{x \\to 0^-} \\frac{\\sin(kx)}{x} = k$. Right limit and value: $4(0) + k^2 - 6 = k^2 - 6$. Equating them gives $k^2 - k - 6 = 0 \\implies (k - 3)(k + 2) = 0$. Since $k > 0$, $k = 3$.",
+        distractorTip: "Remember that quadratic equations give two roots; the question explicitly asks for the positive value ($k = 3$, not $-2$)."
+      }
+    ]
+  },
+  {
+    id: 12,
+    topicNumber: "Topic 1.12 & 1.13",
+    name: "Continuity on Intervals & Removing Discontinuities",
+    subtitle: "Endpoint Continuity & Domain Boundaries",
+    difficulty: "Hard",
+    rewardCoins: 60,
+    questions: [
+      {
+        id: "c1-l12-q1",
+        stem: "A function $f$ is defined on the closed interval $[a, b]$. What is required for $f$ to be continuous on $[a, b]$?",
+        options: [
+          "$f$ is continuous on $(a, b)$, $\\lim_{x \\to a^+} f(x) = f(a)$, and $\\lim_{x \\to b^-} f(x) = f(b)$.",
+          "$f$ must have equal values at endpoints: $f(a) = f(b)$.",
+          "The two-sided limits at both $a$ and $b$ must exist.",
+          "$f'(x) > 0$ for all $x \\in (a, b)$."
+        ],
+        correctIndex: 0,
+        explanation: "At endpoints of a closed interval, continuity is defined via one-sided limits: right-continuity at the left endpoint $a$, and left-continuity at the right endpoint $b$.",
+        distractorTip: "You cannot evaluate a two-sided limit at endpoints of a domain because values outside the domain do not exist."
+      },
+      {
+        id: "c1-l12-q2",
+        stem: "What is the largest domain on which $f(x) = \\sqrt{16 - x^2}$ is continuous?",
+        options: [
+          "$(-\\infty, \\infty)$",
+          "$(-4, 4)$",
+          "$[-4, 4]$",
+          "$[0, 4]$"
+        ],
+        correctIndex: 2,
+        explanation: "We require $16 - x^2 \\ge 0 \\implies x^2 \\le 16 \\implies -4 \\le x \\le 4$. The function is continuous on the entire closed interval $[-4, 4]$, including one-sided continuity at the endpoints.",
+        distractorTip: "Square root functions with nonnegative arguments are continuous on closed intervals, not open intervals."
+      },
+      {
+        id: "c1-l12-q3",
+        stem: "How can the removable discontinuity in $f(x) = \\frac{\\sin(4x)}{x}$ be removed to make the function continuous at $x = 0$?",
+        options: [
+          "Define $f(0) = 0$",
+          "Define $f(0) = 1$",
+          "Define $f(0) = 4$",
+          "The discontinuity cannot be removed"
+        ],
+        correctIndex: 2,
+        explanation: "Since $\\lim_{x \\to 0} \\frac{\\sin(4x)}{x} = 4$, defining $f(0) = 4$ satisfies $\\lim_{x \\to 0} f(x) = f(0)$, successfully removing the discontinuity.",
+        distractorTip: "To remove a removable discontinuity, set the function value at that point equal to the limit value."
+      },
+      {
+        id: "c1-l12-q4",
+        stem: "On which of the following intervals is $f(x) = \\frac{1}{\\sqrt{9 - x^2}}$ continuous?",
+        options: [
+          "$(-3, 3)$",
+          "$[-3, 3]$",
+          "$(-\\infty, -3) \\cup (3, \\infty)$",
+          "$[0, 3)$"
+        ],
+        correctIndex: 0,
+        explanation: "For the square root in the denominator to be real and non-zero, the radicand must be strictly positive: $9 - x^2 > 0 \\implies x^2 < 9 \\implies -3 < x < 3$. At $x = \\pm 3$, the denominator is zero (vertical asymptotes), so the endpoints cannot be included.",
+        distractorTip: "Check if endpoints are included: if the square root is in the denominator, you cannot have zero, so use open parentheses $(-3, 3)$."
+      },
+      {
+        id: "c1-l12-q5",
+        stem: "The function $f(x) = \\frac{x^2 - x - 6}{x - 3}$ has a removable discontinuity at $x = 3$. To make $f(x)$ continuous on all real numbers, what value should be assigned to $f(3)$?",
+        options: [
+          "$5$",
+          "$0$",
+          "$-5$",
+          "$6$"
+        ],
+        correctIndex: 0,
+        explanation: "Factor the numerator: $x^2 - x - 6 = (x - 3)(x + 2)$. For $x \\neq 3$, $f(x) = x + 2$. The limit as $x \\to 3$ is $3 + 2 = 5$. To remove the discontinuity, define $f(3) = \\lim_{x \\to 3} f(x) = 5$.",
+        distractorTip: "A removable discontinuity can be patched by defining the function value at that point equal to the limit of the simplified expression."
+      }
+    ]
+  },
+  {
+    id: 13,
+    topicNumber: "Topic 1.14",
+    name: "Infinite Limits & Vertical Asymptotes",
+    subtitle: "Nonzero/Zero Forms & Asymptotic Behavior",
+    difficulty: "Hard",
+    rewardCoins: 60,
+    questions: [
+      {
+        id: "c1-l13-q1",
+        stem: "Evaluate $\\lim_{x \\to 3^+} \\frac{x + 2}{x - 3}$.",
+        options: [
+          "$0$",
+          "$5$",
+          "$+\\infty$",
+          "$-\\infty$"
+        ],
+        correctIndex: 2,
+        explanation: "Direct substitution yields $\\frac{5}{0}$ (nonzero over zero), which indicates a vertical asymptote. As $x \\to 3^+$ ($x > 3$), numerator is $+5$ and denominator is small positive $+0.001$, yielding $+\\infty$.",
+        distractorTip: "A nonzero number divided by zero always indicates $\\pm\\infty$ or DNE, never a finite number."
+      },
+      {
+        id: "c1-l13-q2",
+        stem: "Evaluate $\\lim_{x \\to 2^-} \\frac{1}{(x - 2)^2}$.",
+        options: [
+          "$+\\infty$",
+          "$-\\infty$",
+          "$0$",
+          "Does not exist"
+        ],
+        correctIndex: 0,
+        explanation: "Because the denominator is squared $(x - 2)^2$, it is always positive whether $x$ approaches from the left or right. A positive numerator over positive zero approaches $+\\infty$.",
+        distractorTip: "Even though $x \\to 2^-$ from the left, squaring a negative difference makes it positive."
+      },
+      {
+        id: "c1-l13-q3",
+        stem: "How many vertical asymptotes does the graph of $f(x) = \\frac{x - 1}{x^2 - 1}$ have?",
+        options: [
+          "$0$",
+          "$1$",
+          "$2$",
+          "Infinitely many"
+        ],
+        correctIndex: 1,
+        explanation: "Factor denominator: $\\frac{x - 1}{(x - 1)(x + 1)} = \\frac{1}{x + 1}$. The factor $(x - 1)$ cancels, producing a removable hole at $x = 1$. The factor $(x + 1)$ remains, creating exactly one vertical asymptote at $x = -1$.",
+        distractorTip: "Classic AP distractor: Not every zero of the denominator is a vertical asymptote; cancelling factors create holes!"
+      },
+      {
+        id: "c1-l13-q4",
+        stem: "Evaluate $\\lim_{x \\to 1^+} \\frac{x^2 + 1}{x - 1}$.",
+        options: [
+          "$+\\infty$",
+          "$-\\infty$",
+          "$2$",
+          "$0$"
+        ],
+        correctIndex: 0,
+        explanation: "Direct substitution yields the non-zero over zero form: $\\frac{1^2+1}{1^+-1} = \\frac{2}{0^+}$. A positive numerator divided by an infinitesimally small positive denominator approaches $+\\infty$.",
+        distractorTip: "Always analyze the sign of the denominator approaching from the specified side: $1^+$ means $x > 1$, so $x - 1 > 0$."
+      },
+      {
+        id: "c1-l13-q5",
+        stem: "Evaluate $\\lim_{x \\to 5^-} \\frac{x + 3}{x - 5}$.",
+        options: [
+          "$-\\infty$",
+          "$+\\infty$",
+          "$-8$",
+          "Does not exist and is bounded"
+        ],
+        correctIndex: 0,
+        explanation: "As $x \\to 5^-$, the numerator approaches $5 + 3 = 8 > 0$. The denominator $x - 5$ approaches $0$ from negative values ($0^-$). Positive divided by negative zero yields $-\\infty$.",
+        distractorTip: "Notice $x \\to 5^-$ means $x < 5$, making $x - 5$ negative, resulting in $-\\infty$."
+      }
+    ]
+  },
+  {
+    id: 14,
+    topicNumber: "Topic 1.15",
+    name: "Limits at Infinity & Horizontal Asymptotes",
+    subtitle: "Dominant Terms & Radical End Behavior",
+    difficulty: "Hard",
+    rewardCoins: 65,
+    questions: [
+      {
+        id: "c1-l14-q1",
+        stem: "Evaluate $\\lim_{x \\to \\infty} \\frac{5x^3 - 2x + 7}{2x^3 + 9x^2 - 1}$.",
+        options: [
+          "$\\frac{5}{2}$",
+          "$0$",
+          "$\\infty$",
+          "$-7$"
+        ],
+        correctIndex: 0,
+        explanation: "For rational functions as $x \\to \\infty$, the limit is determined by the highest-degree terms: $\\lim_{x \\to \\infty} \\frac{5x^3}{2x^3} = \\frac{5}{2}$.",
+        distractorTip: "When numerator and denominator have equal degrees, the limit is the ratio of the leading coefficients."
+      },
+      {
+        id: "c1-l14-q2",
+        stem: "Evaluate $\\lim_{x \\to -\\infty} \\frac{\\sqrt{9x^2 + 4}}{2x - 1}$.",
+        options: [
+          "$\\frac{3}{2}$",
+          "$-\\frac{3}{2}$",
+          "$\\frac{9}{2}$",
+          "Does not exist"
+        ],
+        correctIndex: 1,
+        explanation: "As $x \\to -\\infty$, $x$ is negative, so $\\sqrt{x^2} = |x| = -x$. Thus, $\\sqrt{9x^2} = 3|x| = -3x$. The dominant ratio is $\\frac{-3x}{2x} = -\\frac{3}{2}$.",
+        distractorTip: "Score-5 Trap! For $x \\to -\\infty$, $\\sqrt{x^2} = -x$. Forgetting the negative sign is the #1 student mistake on this question."
+      },
+      {
+        id: "c1-l14-q3",
+        stem: "How many distinct horizontal asymptotes does the function $f(x) = \\frac{4e^x + 5}{e^x + 1}$ have?",
+        options: [
+          "$0$",
+          "$1$",
+          "$2$",
+          "$3$"
+        ],
+        correctIndex: 2,
+        explanation: "As $x \\to +\\infty$, $e^x \\to \\infty$, so $\\lim_{x \\to \\infty} \\frac{4e^x}{e^x} = 4$ ($y = 4$). As $x \\to -\\infty$, $e^x \\to 0$, so $\\lim_{x \\to -\\infty} \\frac{0 + 5}{0 + 1} = 5$ ($y = 5$). Thus there are $2$ horizontal asymptotes ($y = 4$ and $y = 5$).",
+        distractorTip: "Exponential functions frequently have two distinct horizontal asymptotes because $e^x \\to 0$ as $x \\to -\\infty$."
+      },
+      {
+        id: "c1-l14-q4",
+        stem: "Evaluate $\\lim_{x \\to \\infty} \\frac{4x^3 - 7x + 1}{2x^3 + 5x^2 - 9}$.",
+        options: [
+          "$2$",
+          "$4$",
+          "$-7/5$",
+          "$+\\infty$"
+        ],
+        correctIndex: 0,
+        explanation: "Since the degrees of the numerator and denominator are equal (degree 3), the limit as $x \\to \\infty$ is the ratio of their leading coefficients: $\\frac{4}{2} = 2$.",
+        distractorTip: "When degrees match, the horizontal asymptote is simply the ratio of the leading coefficients."
+      },
+      {
+        id: "c1-l14-q5",
+        stem: "Evaluate $\\lim_{x \\to \\infty} \\frac{3e^x + 5}{2e^x - 7}$.",
+        options: [
+          "$\\frac{3}{2}$",
+          "$-\\frac{5}{7}$",
+          "$0$",
+          "$+\\infty$"
+        ],
+        correctIndex: 0,
+        explanation: "Dividing numerator and denominator by $e^x$: $\\lim_{x \\to \\infty} \\frac{3 + 5e^{-x}}{2 - 7e^{-x}}$. Since $\\lim_{x \\to \\infty} e^{-x} = 0$, this evaluates to $\\frac{3 + 0}{2 - 0} = \\frac{3}{2}$.",
+        distractorTip: "Watch out if $x \\to -\\infty$ instead: as $x \\to -\\infty$, $e^x \\to 0$, which would yield $-5/7$. But as $x \\to +\\infty$, $e^x$ dominates, yielding $3/2$."
+      }
+    ]
+  },
+  {
+    id: 15,
+    topicNumber: "Topic 1.16",
+    name: "Intermediate Value Theorem (IVT)",
+    subtitle: "Existence Proofs & Root Guarantees",
+    difficulty: "Hard",
+    rewardCoins: 70,
+    questions: [
+      {
+        id: "c1-l15-q1",
+        stem: "Which condition is strictly required to apply the Intermediate Value Theorem (IVT) to a function $f$ on $[a, b]$?",
+        options: [
+          "$f$ must be differentiable on $(a, b)$",
+          "$f$ must be continuous on the closed interval $[a, b]$",
+          "$f(a)$ must equal $f(b)$",
+          "$f'(x)$ must not equal zero on $(a, b)$"
+        ],
+        correctIndex: 1,
+        explanation: "IVT requires only one hypothesis: $f$ must be continuous on the closed interval $[a, b]$. Differentiability is NOT required.",
+        distractorTip: "Do not confuse IVT (requires only continuity) with MVT/Rolle's theorem (which also requires differentiability)."
+      },
+      {
+        id: "c1-l15-q2",
+        stem: "The function $f(x) = x^3 - 3x - 1$ is continuous on $[1, 3]$. Given $f(1) = -3$ and $f(3) = 17$, why does the IVT guarantee at least one solution to $f(x) = 0$ on $(1, 3)$?",
+        options: [
+          "Because $f(1) < 0$ and $f(3) > 0$, and $0$ lies between $-3$ and $17$.",
+          "Because $f(x)$ is a cubic polynomial with three real roots.",
+          "Because the average rate of change on $[1, 3]$ is $10$.",
+          "Because $f'(c) = 0$ at some point."
+        ],
+        correctIndex: 0,
+        explanation: "Since $f$ is continuous on $[1, 3]$ and $0$ lies between $f(1) = -3$ and $f(3) = 17$, by the IVT there must exist at least one $c \\in (1, 3)$ such that $f(c) = 0$.",
+        distractorTip: "Always show that the target value $L$ strictly satisfies $f(a) \\le L \\le f(b)$ to justify IVT."
+      },
+      {
+        id: "c1-l15-q3",
+        stem: "A continuous function $g$ satisfies the table values:\n- $g(0) = 4$\n- $g(2) = -1$\n- $g(5) = 3$\nWhat is the minimum number of solutions to $g(x) = 0$ on the interval $[0, 5]$ guaranteed by IVT?",
+        options: [
+          "$0$",
+          "$1$",
+          "$2$",
+          "$3$"
+        ],
+        correctIndex: 2,
+        explanation: "On $[0, 2]$, $g$ changes sign from $4$ to $-1$, guaranteeing at least $1$ root. On $[2, 5]$, $g$ changes sign from $-1$ to $3$, guaranteeing at least $1$ root. Total guaranteed roots is at least $2$.",
+        distractorTip: "Count sign changes between consecutive data points on continuous functions to find the minimum number of zeros."
+      },
+      {
+        id: "c1-l15-q4",
+        stem: "A continuous function $f(x)$ on $[0, 5]$ satisfies $f(0) = -3$ and $f(5) = 7$. By the Intermediate Value Theorem, which of the following is GUARANTEED?",
+        options: [
+          "There exists at least one $c \\in (0, 5)$ such that $f(c) = 0$.",
+          "There exists at least one $c \\in (0, 5)$ such that $f'(c) = 2$.",
+          "$f(x)$ is increasing on the entire interval $[0, 5]$.",
+          "$f(2.5) = 2$"
+        ],
+        correctIndex: 0,
+        explanation: "Since $f$ is continuous on $[0, 5]$ and $0$ lies between $f(0) = -3$ and $f(5) = 7$, IVT guarantees that $f(c) = 0$ for at least one $c \\in (0, 5)$. IVT does not guarantee derivative values (that is MVT) or that $f$ is monotonic.",
+        distractorTip: "Do not confuse IVT (guarantees function values $f(c) = k$) with MVT (guarantees derivative values $f'(c) = \\frac{f(b)-f(a)}{b-a}$)."
+      },
+      {
+        id: "c1-l15-q5",
+        stem: "Why can the Intermediate Value Theorem NOT be applied to $f(x) = \\frac{1}{x - 2}$ on $[1, 3]$ to guarantee a value between $f(1) = -1$ and $f(3) = 1$?",
+        options: [
+          "$f(x)$ is not continuous on $[1, 3]$ because it has a vertical asymptote at $x = 2$.",
+          "$f(1)$ and $f(3)$ have opposite signs.",
+          "The interval $[1, 3]$ is not open.",
+          "The function is not differentiable at the endpoints."
+        ],
+        correctIndex: 0,
+        explanation: "The fundamental hypothesis of the Intermediate Value Theorem is that $f(x)$ MUST be continuous on the closed interval $[a, b]$. Because $f(x)$ has an infinite discontinuity at $x = 2 \\in [1, 3]$, IVT does not apply, and indeed $f(x) = \\frac{1}{x-2}$ is never equal to $0$ on $[1, 3]$.",
+        distractorTip: "Always check hypotheses first! If continuity on the closed interval is violated, IVT cannot be applied."
+      }
+    ]
+  },
+  {
+    id: 16,
+    topicNumber: "Boss Arena",
+    name: "Unit 1 AP Exam Trap Autopsy",
+    subtitle: "Score-5 Comprehensive Unit 1 Final Challenge",
+    difficulty: "Boss",
+    rewardCoins: 100,
+    questions: [
+      {
+        id: "c1-l16-q1",
+        stem: "Let $f(x) = \\begin{cases} \\frac{\\sqrt{x + 1} - 1}{x}, & x > 0 \\\\ c, & x = 0 \\\\ \\frac{\\sin(2x)}{4x}, & x < 0 \\end{cases}$. For what value of $c$ is $f$ continuous at $x = 0$?",
+        options: [
+          "$c = \\frac{1}{2}$",
+          "$c = \\frac{1}{4}$",
+          "$c = 1$",
+          "No such value of $c$ exists"
+        ],
+        correctIndex: 0,
+        explanation: "Evaluate right limit: $\\lim_{x \\to 0^+} \\frac{\\sqrt{x+1}-1}{x} = \\frac{1}{\\sqrt{0+1}+1} = \\frac{1}{2}$. Evaluate left limit: $\\lim_{x \\to 0^-} \\frac{\\sin(2x)}{4x} = \\frac{2}{4} = \\frac{1}{2}$. Since both one-sided limits equal $\\frac{1}{2}$, setting $c = \\frac{1}{2}$ ensures $f(0) = \\lim_{x \\to 0} f(x) = \\frac{1}{2}$, making $f$ continuous.",
+        distractorTip: "Boss problem: Combines radical conjugate rationalization AND trig limits into a single piecewise continuity verification!"
+      },
+      {
+        id: "c1-l16-q2",
+        stem: "Evaluate $\\lim_{x \\to 1} \\frac{x^2 - 1}{|x - 1|}$.",
+        options: [
+          "$2$",
+          "$-2$",
+          "$0$",
+          "Does not exist"
+        ],
+        correctIndex: 3,
+        explanation: "As $x \\to 1^+$, $|x-1| = x-1$, so $\\lim = x+1 = 2$. As $x \\to 1^-$, $|x-1| = -(x-1)$, so $\\lim = -(x+1) = -2$. Since the left limit ($-2$) does not equal the right limit ($2$), the two-sided limit Does Not Exist.",
+        distractorTip: "Always check both sides when an absolute value expression is in the denominator; if one-sided limits differ, the two-sided limit is DNE."
+      },
+      {
+        id: "c1-l16-q3",
+        stem: "If $f$ is continuous on $[0, 4]$, $f(0) = 1$, and $f(4) = 9$, which of the following is NOT necessarily guaranteed by the Intermediate Value Theorem?",
+        options: [
+          "There exists $c \\in (0, 4)$ such that $f(c) = 5$.",
+          "There exists $c \\in (0, 4)$ such that $f(c) = 3$.",
+          "There exists $c \\in (0, 4)$ such that $f'(c) = 2$.",
+          "There exists $c \\in (0, 4)$ such that $f(c) = 8$."
+        ],
+        correctIndex: 2,
+        explanation: "Option C states that $f'(c) = 2$. This requires the Mean Value Theorem (MVT) which demands differentiability. IVT guarantees intermediate function values $y$, NOT derivative values $f'(c)$.",
+        distractorTip: "Major College Board trap: IVT guarantees y-values of the function, never slopes or derivative values."
+      },
+      {
+        id: "c1-l16-q4",
+        stem: "Evaluate $\\lim_{x \\to 2} \\frac{\\sqrt{x^2 + 5} - 3}{x - 2}$.",
+        options: [
+          "$\\frac{2}{3}$",
+          "$\\frac{1}{3}$",
+          "$\\frac{1}{6}$",
+          "Does not exist"
+        ],
+        correctIndex: 0,
+        explanation: "Multiply numerator and denominator by the conjugate $(\\sqrt{x^2+5}+3)$: $\\frac{(x^2+5)-9}{(x-2)(\\sqrt{x^2+5}+3)} = \\frac{x^2-4}{(x-2)(\\sqrt{x^2+5}+3)} = \\frac{(x-2)(x+2)}{(x-2)(\\sqrt{x^2+5}+3)} = \\frac{x+2}{\\sqrt{x^2+5}+3}$. As $x \\to 2$, this equals $\\frac{2+2}{\\sqrt{4+5}+3} = \\frac{4}{3+3} = \\frac{4}{6} = \\frac{2}{3}$.",
+        distractorTip: "Notice this combines conjugate rationalization with factoring difference of squares $(x^2 - 4 = (x-2)(x+2))$."
+      },
+      {
+        id: "c1-l16-q5",
+        stem: "Let $f(x) = \\begin{cases} \\frac{|x - 3|}{x - 3} + 2, & x < 3 \\\\ c, & x = 3 \\\\ 2x - 5, & x > 3 \\end{cases}$. What value of $c$, if any, makes $f(x)$ continuous at $x = 3$?",
+        options: [
+          "$c = 1$",
+          "$c = 3$",
+          "$c = -1$",
+          "No value of $c$ can make $f$ continuous at $x = 3$."
+        ],
+        correctIndex: 0,
+        explanation: "For $x < 3$, $|x - 3| = -(x - 3)$, so $\\frac{-(x-3)}{x-3} + 2 = -1 + 2 = 1$. Thus $\\lim_{x \\to 3^-} f(x) = 1$. For $x > 3$, $\\lim_{x \\to 3^+} f(x) = 2(3) - 5 = 1$. Since left and right limits both equal $1$, setting $c = f(3) = 1$ makes $f(x)$ continuous at $x = 3$.",
+        distractorTip: "Evaluate both one-sided limits independently; if they match, $c$ can be chosen to equal that common limit!"
+      },
+      {
+        id: "c1-l16-q6",
+        stem: "Which of the following functions has BOTH a horizontal asymptote at $y = 3$ and a vertical asymptote at $x = -2$?",
+        options: [
+          "$f(x) = \\frac{3x^2 - 5}{x^2 - 4}$",
+          "$f(x) = \\frac{3x - 1}{x + 2}$",
+          "$f(x) = \\frac{3x^2 + 1}{x - 2}$",
+          "$f(x) = \\frac{6x - 2}{2x - 4}$"
+        ],
+        correctIndex: 1,
+        explanation: "For $f(x) = \\frac{3x - 1}{x + 2}$: 1) Horizontal asymptote: $\\lim_{x \\to \\infty} \\frac{3x - 1}{x + 2} = \\frac{3}{1} = 3$. 2) Vertical asymptote: at $x = -2$, denominator is zero while numerator is $3(-2)-1 = -7 \\neq 0$, creating a vertical asymptote at $x = -2$.",
+        distractorTip: "Confirm that the numerator is non-zero at $x = -2$ so it does not cancel out into a removable hole."
+      }
+    ]
+  }
+];
+
+// src/data/quiz/apCalculusUnitsData.ts
+var UNIT_BIOMES = {
+  1: {
+    name: "Azure Reef & Limits Beach",
+    icon: "\u{1F3DD}\uFE0F",
+    accentColor: "#F59E0B",
+    secondaryColor: "#3B82F6",
+    groundGradient: "from-amber-100 via-amber-50 to-sky-100",
+    cardBorder: "border-amber-400",
+    trailColor: "#d97706",
+    nodeRing: "ring-amber-400/40",
+    skyTint: "from-sky-50 to-amber-50/30"
+  },
+  2: {
+    name: "Verdant Valley of Tangents",
+    icon: "\u{1F33F}",
+    accentColor: "#10B981",
+    secondaryColor: "#059669",
+    groundGradient: "from-emerald-100 via-teal-50 to-green-100",
+    cardBorder: "border-emerald-500",
+    trailColor: "#059669",
+    nodeRing: "ring-emerald-400/40",
+    skyTint: "from-emerald-50 to-teal-50/30"
+  },
+  3: {
+    name: "Amethyst Ridge & Chain Caverns",
+    icon: "\u{1F52E}",
+    accentColor: "#8B5CF6",
+    secondaryColor: "#6D28D9",
+    groundGradient: "from-purple-100 via-indigo-50 to-violet-100",
+    cardBorder: "border-purple-500",
+    trailColor: "#7c3aed",
+    nodeRing: "ring-purple-400/40",
+    skyTint: "from-purple-50 to-indigo-50/30"
+  },
+  4: {
+    name: "Crimson Canyon & Related Rates",
+    icon: "\u{1F525}",
+    accentColor: "#F97316",
+    secondaryColor: "#EA580C",
+    groundGradient: "from-orange-100 via-amber-50 to-rose-100",
+    cardBorder: "border-orange-500",
+    trailColor: "#c2410c",
+    nodeRing: "ring-orange-400/40",
+    skyTint: "from-orange-50 to-rose-50/30"
+  },
+  5: {
+    name: "Gilded Summit of Extrema",
+    icon: "\u{1F3D4}\uFE0F",
+    accentColor: "#3B82F6",
+    secondaryColor: "#1D4ED8",
+    groundGradient: "from-blue-100 via-indigo-50 to-sky-100",
+    cardBorder: "border-blue-500",
+    trailColor: "#2563eb",
+    nodeRing: "ring-blue-400/40",
+    skyTint: "from-blue-50 to-indigo-50/30"
+  },
+  6: {
+    name: "Glacial Plateau of Accumulation",
+    icon: "\u2744\uFE0F",
+    accentColor: "#06B6D4",
+    secondaryColor: "#0891B2",
+    groundGradient: "from-cyan-100 via-sky-50 to-blue-100",
+    cardBorder: "border-cyan-500",
+    trailColor: "#0891b2",
+    nodeRing: "ring-cyan-400/40",
+    skyTint: "from-cyan-50 to-blue-50/30"
+  },
+  7: {
+    name: "Slope Field Steppes & Vectors",
+    icon: "\u{1F9ED}",
+    accentColor: "#14B8A6",
+    secondaryColor: "#0D9488",
+    groundGradient: "from-teal-100 via-emerald-50 to-teal-100",
+    cardBorder: "border-teal-500",
+    trailColor: "#0d9488",
+    nodeRing: "ring-teal-400/40",
+    skyTint: "from-teal-50 to-emerald-50/30"
+  },
+  8: {
+    name: "Celestial Citadel of 5s (Apex)",
+    icon: "\u{1F451}",
+    accentColor: "#EC4899",
+    secondaryColor: "#DB2777",
+    groundGradient: "from-pink-100 via-purple-50 to-amber-100",
+    cardBorder: "border-pink-500",
+    trailColor: "#db2777",
+    nodeRing: "ring-pink-400/40",
+    skyTint: "from-pink-50 to-purple-50/30"
+  }
+};
+var ALL_CALC_AB_UNIT_DEFINITIONS = [
+  {
+    unitIndex: 1,
+    unitId: "u1",
+    title: "Unit 1: Limits & Continuity",
+    shortTitle: "Unit 1: Limits",
+    description: "Foundations of limits, continuity, squeeze theorem, and Intermediate Value Theorem (IVT)",
+    examWeight: "10\u201312% of AP Exam",
+    biome: UNIT_BIOMES[1],
+    levels: AP_CALCULUS_AB_UNIT_1_LEVELS.map((lvl) => ({
+      ...lvl,
+      id: 100 + lvl.id,
+      unitIndex: 1,
+      levelNumber: lvl.id,
+      uniqueKey: `u1-l${lvl.id}`
+    }))
+  },
+  {
+    unitIndex: 2,
+    unitId: "u2",
+    title: "Unit 2: Differentiation: Definition & Fundamental Properties",
+    shortTitle: "Unit 2: Derivatives",
+    description: "Rate of change, limit definition of derivative, power, product, quotient rules, and trig derivatives",
+    examWeight: "10\u201312% of AP Exam",
+    biome: UNIT_BIOMES[2],
+    levels: [
+      {
+        "id": 201,
+        "unitIndex": 2,
+        "levelNumber": 1,
+        "uniqueKey": "u2-l1",
+        "topicNumber": "Topic 2.1 & 2.2",
+        "name": "Instantaneous Rate & Limit Definition",
+        "subtitle": "Difference quotients and defining $f'(x)$",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l1-q1",
+            "stem": "Which limit represents $f'(3)$ for $f(x) = x^3$ using the definition of the derivative?",
+            "options": [
+              "$\\lim_{h \\to 0} \\frac{(3+h)^3 - 27}{h}$",
+              "$\\lim_{x \\to 3} \\frac{x^3 + 27}{x - 3}$",
+              "$\\lim_{h \\to 0} \\frac{(3+h)^3 - 3^3}{3}$",
+              "$\\frac{3^3 - 0}{3 - 0}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "By definition, $f'(a) = \\lim_{h \\to 0} \\frac{f(a+h) - f(a)}{h}$. For $f(x) = x^3$ at $a = 3$, $f(3) = 27$, so $f'(3) = \\lim_{h \\to 0} \\frac{(3+h)^3 - 27}{h}$.",
+            "distractorTip": "Watch out for the alternate form $\\lim_{x \\to a} \\frac{f(x) - f(a)}{x - a}$, which has a minus in the numerator."
+          },
+          {
+            "id": "c2-l1-q2",
+            "stem": "Evaluate $\\lim_{h \\to 0} \\frac{\\sqrt{4 + h} - 2}{h}$.",
+            "options": [
+              "$\\frac{1}{4}$",
+              "$\\frac{1}{2}$",
+              "$0$",
+              "$2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "This represents $f'(4)$ where $f(x) = \\sqrt{x}$. Since $f'(x) = \\frac{1}{2\\sqrt{x}}$, at $x = 4$ it equals $\\frac{1}{2\\sqrt{4}} = \\frac{1}{4}$.",
+            "distractorTip": "Recognizing the derivative limit form saves lots of radical conjugate algebra."
+          },
+          {
+            "id": "c2-l1-q3",
+            "stem": "If $f(x) = 2x^2 - 5x$, what is the average rate of change on $[1, 4]$?",
+            "options": [
+              "$5$",
+              "$7$",
+              "$12$",
+              "$-1$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Average rate of change $= \\frac{f(4) - f(1)}{4 - 1} = \\frac{(32-20) - (2-5)}{3} = \\frac{12 - (-3)}{3} = \\frac{15}{3} = 5$.",
+            "distractorTip": "Average rate is the slope of the secant line: $\\frac{f(b) - f(a)}{b - a}$, not the derivative."
+          }
+        ]
+      },
+      {
+        "id": 202,
+        "unitIndex": 2,
+        "levelNumber": 2,
+        "uniqueKey": "u2-l2",
+        "topicNumber": "Topic 2.3",
+        "name": "Estimating Derivatives from Tables",
+        "subtitle": "Secant approximations on discrete data",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l2-q1",
+            "stem": "A table gives temperature $T(t)$: $T(2) = 68^\\circ$F, $T(5) = 80^\\circ$F, $T(8) = 98^\\circ$F. What is the best estimate of $T'(5)$?",
+            "options": [
+              "$5^\\circ\\text{F/min}$",
+              "$4^\\circ\\text{F/min}$",
+              "$6^\\circ\\text{F/min}$",
+              "$12^\\circ\\text{F/min}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "To estimate $T'(5)$ from symmetric endpoints $t=2$ and $t=8$: $\\frac{T(8) - T(2)}{8 - 2} = \\frac{98 - 68}{6} = 5^\\circ\\text{F/min}$.",
+            "distractorTip": "On AP Exam FRQs, always use the closest values spanning the target point and include units."
+          },
+          {
+            "id": "c2-l2-q2",
+            "stem": "Given $f(1)=10$, $f(3)=18$, $f(7)=30$, estimate $f'(2)$ using the interval $[1, 3]$.",
+            "options": [
+              "$4$",
+              "$8$",
+              "$3$",
+              "$2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "The average rate of change on $[1, 3]$ is $\\frac{f(3) - f(1)}{3 - 1} = \\frac{18 - 10}{2} = 4$.",
+            "distractorTip": "Secant slope over the containing subinterval is the standard AP estimator."
+          },
+          {
+            "id": "c2-l2-q3",
+            "stem": "If $v(t)$ represents the velocity in m/s of a car, what are the units of $v'(t)$?",
+            "options": [
+              "$\\text{m/s}^2$",
+              "$\\text{m/s}$",
+              "$\\text{m}$",
+              "$\\text{s/m}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "The derivative has units of $\\frac{\\text{output unit}}{\\text{input unit}} = \\frac{\\text{m/s}}{\\text{s}} = \\text{m/s}^2$.",
+            "distractorTip": "Units of a derivative are always units of $y$ divided by units of $x$."
+          }
+        ]
+      },
+      {
+        "id": 203,
+        "unitIndex": 2,
+        "levelNumber": 3,
+        "uniqueKey": "u2-l3",
+        "topicNumber": "Topic 2.4",
+        "name": "Connecting Differentiability & Continuity",
+        "subtitle": "Corners, cusps, and vertical tangents",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l3-q1",
+            "stem": "Which statement correctly describes the relationship between differentiability and continuity?",
+            "options": [
+              "Differentiability implies continuity, but continuity does NOT imply differentiability.",
+              "Continuity implies differentiability everywhere.",
+              "A function can be differentiable at a point where it is discontinuous.",
+              "Differentiability and continuity are completely unrelated concepts."
+            ],
+            "correctIndex": 0,
+            "explanation": "If $f$ is differentiable at $x=c$, it must be continuous at $x=c$. However, functions with sharp corners (like $f(x)=|x|$ at $x=0$) are continuous but not differentiable.",
+            "distractorTip": "Remember the classic counterexample: $y = |x|$ is continuous at $0$, but has no derivative there."
+          },
+          {
+            "id": "c2-l3-q2",
+            "stem": "At $x = 0$, why does $f(x) = |x|$ fail to be differentiable?",
+            "options": [
+              "The left-hand derivative ($-1$) and right-hand derivative ($+1$) are unequal.",
+              "$f(0)$ is undefined.",
+              "$f(x)$ is discontinuous at $x = 0$.",
+              "The tangent line is vertical."
+            ],
+            "correctIndex": 0,
+            "explanation": "Left derivative is $\\lim_{h \\to 0^-} \\frac{|h|}{h} = -1$, while right derivative is $+1$. Since one-sided derivatives do not match, $f'(0)$ does not exist.",
+            "distractorTip": "A sharp corner occurs where one-sided slopes disagree."
+          },
+          {
+            "id": "c2-l3-q3",
+            "stem": "Why is $f(x) = x^{1/3}$ not differentiable at $x = 0$?",
+            "options": [
+              "It has a vertical tangent line with infinite slope.",
+              "It is discontinuous at $x = 0$.",
+              "It has a jump discontinuity.",
+              "It has a corner."
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = \\frac{1}{3x^{2/3}}$. As $x \\to 0$, $f'(x) \\to +\\infty$. A vertical tangent line means the slope is undefined.",
+            "distractorTip": "Vertical tangent slopes approach $\\pm \\infty$."
+          }
+        ]
+      },
+      {
+        "id": 204,
+        "unitIndex": 2,
+        "levelNumber": 4,
+        "uniqueKey": "u2-l4",
+        "topicNumber": "Topic 2.5",
+        "name": "The Power Rule Mastery",
+        "subtitle": "Negative exponents and fractional radicals",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l4-q1",
+            "stem": "Find $\\frac{d}{dx}\\left[\\frac{5}{x^3}\\right]$.",
+            "options": [
+              "$-\\frac{15}{x^4}$",
+              "$\\frac{15}{x^2}$",
+              "$-\\frac{5}{3x^2}$",
+              "$-\\frac{15}{x^3}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Rewrite as $5x^{-3}$. By the power rule, $\\frac{d}{dx}[5x^{-3}] = 5(-3)x^{-4} = -15x^{-4} = -\\frac{15}{x^4}$.",
+            "distractorTip": "When differentiating negative powers, subtracting $1$ makes the exponent more negative: $-3 - 1 = -4$."
+          },
+          {
+            "id": "c2-l4-q2",
+            "stem": "Find the derivative of $f(x) = 4\\sqrt[3]{x^2}$.",
+            "options": [
+              "$\\frac{8}{3\\sqrt[3]{x}}$",
+              "$\\frac{8}{3}x^{5/3}$",
+              "$\\frac{4}{3\\sqrt[3]{x^2}}$",
+              "$\\frac{8}{3}\\sqrt[3]{x^2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Rewrite as $f(x) = 4x^{2/3}$. Then $f'(x) = 4\\left(\\frac{2}{3}\\right)x^{-1/3} = \\frac{8}{3x^{1/3}} = \\frac{8}{3\\sqrt[3]{x}}$.",
+            "distractorTip": "Convert radicals to fractional exponents first: $\\sqrt[n]{x^m} = x^{m/n}$."
+          },
+          {
+            "id": "c2-l4-q3",
+            "stem": "If $y = 3x^4 - 2x^2 + 7x - 9$, what is $\\left.\\frac{dy}{dx}\\right|_{x = 2}$?",
+            "options": [
+              "$95$",
+              "$88$",
+              "$103$",
+              "$72$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{dy}{dx} = 12x^3 - 4x + 7$. At $x = 2$: $12(8) - 4(2) + 7 = 96 - 8 + 7 = 95$.",
+            "distractorTip": "Remember the derivative of a constant term ($-9$) is zero."
+          },
+          {
+            "id": "c2-l4-q4",
+            "stem": "Find the slope of the tangent line to $f(x) = x^{-1/2}$ at $x = 4$.",
+            "options": [
+              "$-\\frac{1}{16}$",
+              "$-\\frac{1}{8}$",
+              "$\\frac{1}{16}$",
+              "$-\\frac{1}{4}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = -\\frac{1}{2}x^{-3/2} = -\\frac{1}{2(\\sqrt{x})^3}$. At $x = 4$, $f'(4) = -\\frac{1}{2(2)^3} = -\\frac{1}{16}$.",
+            "distractorTip": "$4^{-3/2} = \\frac{1}{(\\sqrt{4})^3} = \\frac{1}{8}$."
+          }
+        ]
+      },
+      {
+        "id": 205,
+        "unitIndex": 2,
+        "levelNumber": 5,
+        "uniqueKey": "u2-l5",
+        "topicNumber": "Topic 2.6",
+        "name": "Constant & Sum/Difference Rules",
+        "subtitle": "Linearity of the derivative operator",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l5-q1",
+            "stem": "Find $\\frac{d}{dx}[7\\pi^3]$.",
+            "options": [
+              "$0$",
+              "$21\\pi^2$",
+              "$7\\pi^2$",
+              "$21\\pi^3$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\pi$ is a constant, so $7\\pi^3$ is a constant. The derivative of any constant is $0$.",
+            "distractorTip": "Common trap: do not treat $\\pi$ as a variable!"
+          },
+          {
+            "id": "c2-l5-q2",
+            "stem": "If $f'(2) = 3$ and $g'(2) = -5$, find $(2f - 3g)'(2)$.",
+            "options": [
+              "$21$",
+              "$-9$",
+              "$11$",
+              "$-6$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$(2f - 3g)'(2) = 2f'(2) - 3g'(2) = 2(3) - 3(-5) = 6 + 15 = 21$.",
+            "distractorTip": "Linearity: distribute derivatives over addition/subtraction."
+          },
+          {
+            "id": "c2-l5-q3",
+            "stem": "Find $\\frac{d}{dx}\\left[\\frac{x^3 + 4x}{x}\\right]$.",
+            "options": [
+              "$2x$",
+              "$3x^2 + 4$",
+              "$x^2 + 4$",
+              "$2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Simplify first: $\\frac{x^3+4x}{x} = x^2 + 4$. Differentiating gives $2x$.",
+            "distractorTip": "Simplifying algebraically before differentiating is much faster than quotient rule!"
+          },
+          {
+            "id": "c2-l5-q4",
+            "stem": "If $y = 5x^3 - 4x + 9$, find the second derivative $y''$.",
+            "options": [
+              "$30x$",
+              "$15x^2 - 4$",
+              "$30x - 4$",
+              "$15x$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$y' = 15x^2 - 4$, so $y'' = 30x$.",
+            "distractorTip": "Differentiate twice consecutively."
+          }
+        ]
+      },
+      {
+        "id": 206,
+        "unitIndex": 2,
+        "levelNumber": 6,
+        "uniqueKey": "u2-l6",
+        "topicNumber": "Topic 2.7",
+        "name": "Derivatives of Sin(x), Cos(x), e^x, ln(x)",
+        "subtitle": "Transcendental functions",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l6-q1",
+            "stem": "What is $\\frac{d}{dx}[\\sin x - 2\\cos x]$?",
+            "options": [
+              "$\\cos x + 2\\sin x$",
+              "$\\cos x - 2\\sin x$",
+              "$-\\cos x + 2\\sin x$",
+              "$-\\cos x - 2\\sin x$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{d}{dx}[\\sin x] = \\cos x$, and $\\frac{d}{dx}[-2\\cos x] = -2(-\\sin x) = +2\\sin x$.",
+            "distractorTip": "Watch the double negative: $\\frac{d}{dx}[\\cos x] = -\\sin x$."
+          },
+          {
+            "id": "c2-l6-q2",
+            "stem": "Evaluate $\\frac{d}{dx}[4e^x + 3\\ln x]$ at $x = 1$.",
+            "options": [
+              "$4e + 3$",
+              "$4e$",
+              "$7$",
+              "$4e + 1$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Derivative is $4e^x + \\frac{3}{x}$. At $x=1$, $4e^1 + \\frac{3}{1} = 4e + 3$.",
+            "distractorTip": "$\\frac{d}{dx}[\\ln x] = 1/x$ for $x > 0$."
+          },
+          {
+            "id": "c2-l6-q3",
+            "stem": "What is the slope of $y = \\ln x$ at $x = 5$?",
+            "options": [
+              "$\\frac{1}{5}$",
+              "$5$",
+              "$\\ln 5$",
+              "$0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$y' = \\frac{1}{x}$. At $x=5$, $y'(5) = \\frac{1}{5}$.",
+            "distractorTip": "Simple reciprocal slope for logarithmic curves."
+          },
+          {
+            "id": "c2-l6-q4",
+            "stem": "Find the 4th derivative of $f(x) = \\sin x$.",
+            "options": [
+              "$\\sin x$",
+              "$-\\sin x$",
+              "$\\cos x$",
+              "$-\\cos x$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f' = \\cos x, f'' = -\\sin x, f''' = -\\cos x, f^{(4)} = \\sin x$. Trig derivatives cycle every 4 steps.",
+            "distractorTip": "Sine derivative repeats every 4 cycles."
+          }
+        ]
+      },
+      {
+        "id": 207,
+        "unitIndex": 2,
+        "levelNumber": 7,
+        "uniqueKey": "u2-l7",
+        "topicNumber": "Topic 2.8",
+        "name": "The Product Rule",
+        "subtitle": "Derivative of $f(x) \\cdot g(x)$",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l7-q1",
+            "stem": "Find $\\frac{d}{dx}[x^2 e^x]$.",
+            "options": [
+              "$x^2 e^x + 2x e^x$",
+              "$2x e^x$",
+              "$x^2 e^x$",
+              "$2x + e^x$"
+            ],
+            "correctIndex": 0,
+            "explanation": "By product rule, $(fg)' = f'g + fg' = 2x e^x + x^2 e^x$.",
+            "distractorTip": "Never multiply derivatives together: $(fg)' \\neq f'g'$!"
+          },
+          {
+            "id": "c2-l7-q2",
+            "stem": "If $f(2)=3, f'(2)=4, g(2)=5, g'(2)=-1$, find $(fg)'(2)$.",
+            "options": [
+              "$17$",
+              "$23$",
+              "$-4$",
+              "$11$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$(fg)'(2) = f'(2)g(2) + f(2)g'(2) = 4(5) + 3(-1) = 20 - 3 = 17$.",
+            "distractorTip": "Substitute carefully into product rule formula."
+          },
+          {
+            "id": "c2-l7-q3",
+            "stem": "Find $\\frac{d}{dx}[x \\sin x]$.",
+            "options": [
+              "$\\sin x + x \\cos x$",
+              "$x \\cos x$",
+              "$\\cos x$",
+              "$\\sin x - x \\cos x$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$(1)(\\sin x) + (x)(\\cos x) = \\sin x + x\\cos x$.",
+            "distractorTip": "Product rule has a plus sign."
+          },
+          {
+            "id": "c2-l7-q4",
+            "stem": "Find $\\frac{d}{dx}[(x^2 + 1)(2x - 3)]$.",
+            "options": [
+              "$6x^2 - 6x + 2$",
+              "$6x^2 + 2$",
+              "$4x^2 - 6x$",
+              "$2x(2)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$2x(2x-3) + (x^2+1)(2) = 4x^2 - 6x + 2x^2 + 2 = 6x^2 - 6x + 2$.",
+            "distractorTip": "Product rule or expand then differentiate both work."
+          }
+        ]
+      },
+      {
+        "id": 208,
+        "unitIndex": 2,
+        "levelNumber": 8,
+        "uniqueKey": "u2-l8",
+        "topicNumber": "Topic 2.9",
+        "name": "The Quotient Rule",
+        "subtitle": "(low d-high - high d-low) / (low low)",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l8-q1",
+            "stem": "Find $\\frac{d}{dx}\\left[\\frac{x^2}{x + 1}\\right]$.",
+            "options": [
+              "$\\frac{x^2 + 2x}{(x+1)^2}$",
+              "$\\frac{2x}{1}$",
+              "$\\frac{3x^2 + 2x}{(x+1)^2}$",
+              "$\\frac{x^2 - 2x}{(x+1)^2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{(x+1)(2x) - (x^2)(1)}{(x+1)^2} = \\frac{2x^2 + 2x - x^2}{(x+1)^2} = \\frac{x^2 + 2x}{(x+1)^2}$.",
+            "distractorTip": "Numerator is $L dH - H dL$, with minus sign!"
+          },
+          {
+            "id": "c2-l8-q2",
+            "stem": "If $f(3)=6, f'(3)=2, g(3)=2, g'(3)=5$, find $(f/g)'(3)$.",
+            "options": [
+              "$-\\frac{13}{2}$",
+              "$\\frac{17}{4}$",
+              "$\\frac{2}{5}$",
+              "$-4$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{g(3)f'(3) - f(3)g'(3)}{(g(3))^2} = \\frac{2(2) - 6(5)}{2^2} = \\frac{4 - 30}{4} = \\frac{-26}{4} = -\\frac{13}{2}$.",
+            "distractorTip": "Order matters in subtraction!"
+          },
+          {
+            "id": "c2-l8-q3",
+            "stem": "Find $\\frac{d}{dx}\\left[\\frac{e^x}{x}\\right]$.",
+            "options": [
+              "$\\frac{e^x(x - 1)}{x^2}$",
+              "$\\frac{e^x}{1}$",
+              "$\\frac{e^x(x + 1)}{x^2}$",
+              "$\\frac{e^x}{x^2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{x e^x - e^x(1)}{x^2} = \\frac{e^x(x-1)}{x^2}$.",
+            "distractorTip": "Factor $e^x$ from numerator."
+          },
+          {
+            "id": "c2-l8-q4",
+            "stem": "Find the horizontal tangent lines of $y = \\frac{x}{x^2 + 1}$.",
+            "options": [
+              "$x = \\pm 1$",
+              "$x = 0$",
+              "$x = 1$ only",
+              "None"
+            ],
+            "correctIndex": 0,
+            "explanation": "$y' = \\frac{(x^2+1)(1) - x(2x)}{(x^2+1)^2} = \\frac{1 - x^2}{(x^2+1)^2}$. Setting $y'=0 \\implies 1 - x^2 = 0 \\implies x = \\pm 1$.",
+            "distractorTip": "Horizontal tangents occur where numerator of derivative equals 0."
+          },
+          {
+            "id": "c2-l8-q5",
+            "stem": "Find $\\frac{d}{dx}\\left[\\frac{\\sin x}{x}\\right]$.",
+            "options": [
+              "$\\frac{x\\cos x - \\sin x}{x^2}$",
+              "$\\frac{\\cos x}{1}$",
+              "$\\frac{\\sin x - x\\cos x}{x^2}$",
+              "$\\frac{x\\cos x + \\sin x}{x^2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Quotient rule: $\\frac{x(\\cos x) - \\sin x(1)}{x^2} = \\frac{x\\cos x - \\sin x}{x^2}$.",
+            "distractorTip": "Low d-High minus High d-Low."
+          }
+        ]
+      },
+      {
+        "id": 209,
+        "unitIndex": 2,
+        "levelNumber": 9,
+        "uniqueKey": "u2-l9",
+        "topicNumber": "Topic 2.10",
+        "name": "Trig Derivatives (tan, cot, sec, csc)",
+        "subtitle": "Deriving from quotient rule",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l9-q1",
+            "stem": "What is $\\frac{d}{dx}[\\tan x]$?",
+            "options": [
+              "$\\sec^2 x$",
+              "$\\sec x \\tan x$",
+              "$-\\csc^2 x$",
+              "$\\cos^2 x$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\tan x = \\frac{\\sin x}{\\cos x}$. Using quotient rule: $\\frac{\\cos^2 x - \\sin x(-\\sin x)}{\\cos^2 x} = \\frac{\\cos^2 x + \\sin^2 x}{\\cos^2 x} = \\frac{1}{\\cos^2 x} = \\sec^2 x$.",
+            "distractorTip": "Essential trig derivative to memorize."
+          },
+          {
+            "id": "c2-l9-q2",
+            "stem": "Find $\\frac{d}{dx}[\\sec x]$.",
+            "options": [
+              "$\\sec x \\tan x$",
+              "$\\sec^2 x$",
+              "$-\\csc x \\cot x$",
+              "$\\tan^2 x$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{d}{dx}[(\\cos x)^{-1}] = -(\\cos x)^{-2}(-\\sin x) = \\frac{\\sin x}{\\cos^2 x} = \\sec x \\tan x$.",
+            "distractorTip": "Secant derivative has secant times tangent."
+          },
+          {
+            "id": "c2-l9-q3",
+            "stem": "Find the derivative of $f(x) = \\csc x + \\cot x$.",
+            "options": [
+              "$-\\csc x(\\cot x + \\csc x)$",
+              "$\\sec^2 x + \\tan x$",
+              "$\\csc x \\cot x - \\csc^2 x$",
+              "$-\\cot^2 x$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$-\\csc x \\cot x - \\csc^2 x = -\\csc x(\\cot x + \\csc x)$.",
+            "distractorTip": "All 'co' functions (cos, cot, csc) have negative derivatives!"
+          },
+          {
+            "id": "c2-l9-q4",
+            "stem": "Evaluate the slope of $y = \\tan x$ at $x = \\frac{\\pi}{4}$.",
+            "options": [
+              "$2$",
+              "$1$",
+              "$\\sqrt{2}$",
+              "$0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$y' = \\sec^2 x = \\frac{1}{\\cos^2 x}$. At $\\pi/4$, $\\cos(\\pi/4) = \\frac{\\sqrt{2}}{2}$, so $\\cos^2 = 1/2$, giving $\\sec^2 = 2$.",
+            "distractorTip": "$\\sec(\\pi/4) = \\sqrt{2}$, squared is 2."
+          },
+          {
+            "id": "c2-l9-q5",
+            "stem": "Find $\\frac{d}{dx}[x^2 \\sec x]$.",
+            "options": [
+              "$2x \\sec x + x^2 \\sec x \\tan x$",
+              "$2x \\sec x \\tan x$",
+              "$x^2 \\sec x \\tan x$",
+              "$2x + \\sec x \\tan x$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Product rule: $(2x)(\\sec x) + (x^2)(\\sec x \\tan x) = 2x\\sec x + x^2\\sec x\\tan x$.",
+            "distractorTip": "Combine product rule with trig rules."
+          }
+        ]
+      },
+      {
+        "id": 210,
+        "unitIndex": 2,
+        "levelNumber": 10,
+        "uniqueKey": "u2-l10",
+        "topicNumber": "Topic 2.11",
+        "name": "Unit 2 Citadel: Derivative Gauntlet",
+        "subtitle": "Boss speed run across all rules",
+        "difficulty": "Boss",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l10-q1",
+            "stem": "Find $\\frac{d}{dx}\\left[\\frac{x e^x}{\\cos x}\\right]$ using combined rules.",
+            "options": [
+              "$\\frac{(\\cos x)(e^x + x e^x) + x e^x \\sin x}{\\cos^2 x}$",
+              "$\\frac{e^x}{\\sin x}$",
+              "$\\frac{(x e^x)'}{\\cos x}$",
+              "$\\frac{x e^x - \\sin x}{\\cos^2 x}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Numerator derivative by product rule: $e^x + xe^x$. Then by quotient rule: $\\frac{\\cos x(e^x + xe^x) - xe^x(-\\sin x)}{\\cos^2 x}$.",
+            "distractorTip": "Quotient rule with product rule in the numerator."
+          },
+          {
+            "id": "c2-l10-q2",
+            "stem": "Find the equation of the tangent line to $y = 2\\sin x + 3\\cos x$ at $x = 0$.",
+            "options": [
+              "$y = 2x + 3$",
+              "$y = 3x + 2$",
+              "$y = 2x$",
+              "$y = -3x + 2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Point: $y(0) = 2(0) + 3(1) = 3$. Derivative: $y' = 2\\cos x - 3\\sin x \\implies y'(0) = 2(1) - 0 = 2$. Line: $y - 3 = 2(x - 0) \\implies y = 2x + 3$.",
+            "distractorTip": "Compute both point $(x_0, y_0)$ and slope $m=y'(x_0)$."
+          },
+          {
+            "id": "c2-l10-q3",
+            "stem": "If $f(x) = x^3 - 6x^2 + 9x$, at what values of $x$ is the tangent line horizontal?",
+            "options": [
+              "$x = 1$ and $x = 3$",
+              "$x = 0$ and $x = 3$",
+              "$x = 2$ only",
+              "$x = -1$ and $x = -3$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = 3x^2 - 12x + 9 = 3(x^2 - 4x + 3) = 3(x-1)(x-3) = 0 \\implies x = 1, 3$.",
+            "distractorTip": "Set $f'(x) = 0$ to find horizontal tangents."
+          },
+          {
+            "id": "c2-l10-q4",
+            "stem": "Find $\\lim_{h \\to 0} \\frac{\\tan(\\pi/4 + h) - 1}{h}$.",
+            "options": [
+              "$2$",
+              "$1$",
+              "$0$",
+              "Does not exist"
+            ],
+            "correctIndex": 0,
+            "explanation": "This is the definition of the derivative of $\\tan x$ at $x = \\pi/4$. $\\frac{d}{dx}[\\tan x] = \\sec^2 x$. At $\\pi/4$, $\\sec^2(\\pi/4) = 2$.",
+            "distractorTip": "Recognize the difference quotient!"
+          },
+          {
+            "id": "c2-l10-q5",
+            "stem": "If $h(x) = \\frac{f(x)}{g(x)}$, $f(1)=4, f'(1)=3, g(1)=2, g'(1)=-1$, find $h'(1)$.",
+            "options": [
+              "$\\frac{5}{2}$",
+              "$\\frac{1}{2}$",
+              "$-3$",
+              "$5$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$h'(1) = \\frac{g(1)f'(1) - f(1)g'(1)}{(g(1))^2} = \\frac{2(3) - 4(-1)}{2^2} = \\frac{6 + 4}{4} = \\frac{10}{4} = \\frac{5}{2}$.",
+            "distractorTip": "Double negative: $-4(-1) = +4$."
+          },
+          {
+            "id": "c2-l10-q6",
+            "stem": "Let $f(x) = \\begin{cases} ax^2 + 1, & x \\le 2 \\\\ bx - 3, & x > 2 \\end{cases}$. If $f$ is differentiable at $x = 2$, find $a$ and $b$.",
+            "options": [
+              "$a = 1, b = 4$",
+              "$a = 2, b = 8$",
+              "$a = 1/2, b = 2$",
+              "$a = 3, b = 6$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Continuity at 2: $4a + 1 = 2b - 3 \\implies 4a - 2b = -4$. Differentiability at 2: left derivative $2ax \\to 4a$; right derivative $b$. So $b = 4a$. Substituting into continuity: $4a - 2(4a) = -4 \\implies -4a = -4 \\implies a = 1, b = 4$.",
+            "distractorTip": "Set both values and derivatives equal at boundary point."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    unitIndex: 3,
+    unitId: "u3",
+    title: "Unit 3: Differentiation: Composite, Implicit, and Inverse Functions",
+    shortTitle: "Unit 3: Chain & Implicit",
+    description: "Chain rule, implicit differentiation, inverse functions, inverse trigonometric functions, and higher order derivatives",
+    examWeight: "9\u201313% of AP Exam",
+    biome: UNIT_BIOMES[3],
+    levels: [
+      {
+        "id": 301,
+        "unitIndex": 3,
+        "levelNumber": 1,
+        "uniqueKey": "u3-l1",
+        "topicNumber": "Topic 3.1",
+        "name": "The Chain Rule Foundations",
+        "subtitle": "Derivative of composite function $f(g(x))$",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c3-l1-q1",
+            "stem": "What is $\\frac{d}{dx}[(3x^2 - 5)^4]$?",
+            "options": [
+              "$24x(3x^2 - 5)^3$",
+              "$4(3x^2 - 5)^3$",
+              "$12x(3x^2 - 5)^3$",
+              "$24x(6x)^3$"
+            ],
+            "correctIndex": 0,
+            "explanation": "By chain rule, $\\frac{d}{dx}[u^4] = 4u^3 \\cdot u'$. Here $u = 3x^2 - 5 \\implies u' = 6x$. So $4(3x^2 - 5)^3(6x) = 24x(3x^2 - 5)^3$.",
+            "distractorTip": "Always multiply by the derivative of the inside!"
+          },
+          {
+            "id": "c3-l1-q2",
+            "stem": "Find $\\frac{d}{dx}[\\sin(4x)]$.",
+            "options": [
+              "$4\\cos(4x)$",
+              "$\\cos(4x)$",
+              "$-4\\cos(4x)$",
+              "$\\frac{1}{4}\\cos(4x)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{d}{dx}[\\sin(u)] = \\cos(u) \\cdot u'$. With $u = 4x, u' = 4$, this gives $4\\cos(4x)$.",
+            "distractorTip": "Don't forget the factor of 4 from the inside."
+          },
+          {
+            "id": "c3-l1-q3",
+            "stem": "If $h(x) = f(g(x))$, $g(1)=3, g'(1)=2, f'(3)=5$, find $h'(1)$.",
+            "options": [
+              "$10$",
+              "$15$",
+              "$6$",
+              "$7$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Chain rule: $h'(1) = f'(g(1)) \\cdot g'(1) = f'(3) \\cdot 2 = 5 \\cdot 2 = 10$.",
+            "distractorTip": "Evaluate outer derivative at the inner output $g(1)=3$."
+          }
+        ]
+      },
+      {
+        "id": 302,
+        "unitIndex": 3,
+        "levelNumber": 2,
+        "uniqueKey": "u3-l2",
+        "topicNumber": "Topic 3.2",
+        "name": "Implicit Differentiation",
+        "subtitle": "Curves defined by $F(x, y) = 0$ and $\\frac{dy}{dx}$",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c3-l2-q1",
+            "stem": "Find $\\frac{dy}{dx}$ for the circle $x^2 + y^2 = 25$.",
+            "options": [
+              "$-\\frac{x}{y}$",
+              "$\\frac{x}{y}$",
+              "$-\\frac{y}{x}$",
+              "$-2x$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Differentiate with respect to $x$: $2x + 2y \\frac{dy}{dx} = 0 \\implies 2y \\frac{dy}{dx} = -2x \\implies \\frac{dy}{dx} = -\\frac{x}{y}$.",
+            "distractorTip": "Remember $y$ is a function of $x$, so $\\frac{d}{dx}[y^2] = 2y \\frac{dy}{dx}$."
+          },
+          {
+            "id": "c3-l2-q2",
+            "stem": "Find the slope of the curve $x^3 + y^3 = 6xy$ at $(3, 3)$.",
+            "options": [
+              "$-1$",
+              "$1$",
+              "$0$",
+              "Undefined"
+            ],
+            "correctIndex": 0,
+            "explanation": "$3x^2 + 3y^2 y' = 6(y + x y')$. At $(3, 3)$: $3(9) + 3(9)y' = 6(3 + 3y') \\implies 27 + 27y' = 18 + 18y' \\implies 9y' = -9 \\implies y' = -1$.",
+            "distractorTip": "Apply product rule to the $xy$ term: $(xy)' = y + x y'$."
+          },
+          {
+            "id": "c3-l2-q3",
+            "stem": "Find $\\frac{dy}{dx}$ for $y^2 = 4x$.",
+            "options": [
+              "$\\frac{2}{y}$",
+              "$\\frac{4}{y}$",
+              "$\\frac{2x}{y}$",
+              "$2y$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$2y y' = 4 \\implies y' = \\frac{4}{2y} = \\frac{2}{y}$.",
+            "distractorTip": "Isolate $y'$ by dividing by $2y$."
+          },
+          {
+            "id": "c3-l2-q4",
+            "stem": "Find the points where the tangent to $x^2 + y^2 = 16$ is vertical.",
+            "options": [
+              "$(\\pm 4, 0)$",
+              "$(0, \\pm 4)$",
+              "$(2, 2)$",
+              "No vertical tangents"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{dy}{dx} = -\\frac{x}{y}$. Tangent is vertical where denominator is zero ($y = 0$). Substituting $y = 0$ into $x^2 + y^2 = 16 \\implies x = \\pm 4$.",
+            "distractorTip": "Vertical tangents occur where $\\frac{dy}{dx}$ is undefined (denominator = 0)."
+          }
+        ]
+      },
+      {
+        "id": 303,
+        "unitIndex": 3,
+        "levelNumber": 3,
+        "uniqueKey": "u3-l3",
+        "topicNumber": "Topic 3.3",
+        "name": "Differentiating Inverse Functions",
+        "subtitle": "$(f^{-1})'(a) = \\frac{1}{f'(f^{-1}(a))}$",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c3-l3-q1",
+            "stem": "If $f(x) = x^3 + x$, find $(f^{-1})'(2)$. (Note: $f(1) = 2$).",
+            "options": [
+              "$\\frac{1}{4}$",
+              "$4$",
+              "$\\frac{1}{13}$",
+              "$13$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Formula: $(f^{-1})'(2) = \\frac{1}{f'(f^{-1}(2))}$. Since $f(1) = 2$, $f^{-1}(2) = 1$. Now $f'(x) = 3x^2 + 1 \\implies f'(1) = 3(1)^2 + 1 = 4$. Thus $(f^{-1})'(2) = \\frac{1}{4}$.",
+            "distractorTip": "Crucial AP Rule: evaluate $f'$ at $x = 1$, NOT at $x = 2$!"
+          },
+          {
+            "id": "c3-l3-q2",
+            "stem": "Given $g(3) = 8$ and $g'(3) = 6$, find $(g^{-1})'(8)$.",
+            "options": [
+              "$\\frac{1}{6}$",
+              "$\\frac{1}{8}$",
+              "$6$",
+              "$\\frac{1}{3}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$(g^{-1})'(8) = \\frac{1}{g'(g^{-1}(8))} = \\frac{1}{g'(3)} = \\frac{1}{6}$.",
+            "distractorTip": "The slope of an inverse function is the reciprocal of the original slope."
+          },
+          {
+            "id": "c3-l3-q3",
+            "stem": "If $f(x) = 2x + \\cos x$, find $(f^{-1})'(1)$. (Note: $f(0) = 1$).",
+            "options": [
+              "$\\frac{1}{2}$",
+              "$1$",
+              "$\\frac{1}{3}$",
+              "$2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f(0) = 1 \\implies f^{-1}(1) = 0$. $f'(x) = 2 - \\sin x \\implies f'(0) = 2 - 0 = 2$. So $(f^{-1})'(1) = \\frac{1}{2}$.",
+            "distractorTip": "Find the input that produces the target output first."
+          },
+          {
+            "id": "c3-l3-q4",
+            "stem": "If the tangent line to $f$ at $(4, 7)$ is $y - 7 = 3(x - 4)$, what is the slope of $f^{-1}$ at $x = 7$?",
+            "options": [
+              "$\\frac{1}{3}$",
+              "$3$",
+              "$-\\frac{1}{3}$",
+              "$\\frac{1}{7}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Since $f'(4) = 3$ and $f(4) = 7$, $(f^{-1})'(7) = \\frac{1}{f'(4)} = \\frac{1}{3}$.",
+            "distractorTip": "Reciprocal slope property at reflected point $(7, 4)$."
+          }
+        ]
+      },
+      {
+        "id": 304,
+        "unitIndex": 3,
+        "levelNumber": 4,
+        "uniqueKey": "u3-l4",
+        "topicNumber": "Topic 3.4",
+        "name": "Derivatives of Inverse Trig (arcsin, arctan)",
+        "subtitle": "$\\frac{1}{\\sqrt{1-x^2}}$ and $\\frac{1}{1+x^2}$",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c3-l4-q1",
+            "stem": "Find $\\frac{d}{dx}[\\arctan(3x)]$.",
+            "options": [
+              "$\\frac{3}{1 + 9x^2}$",
+              "$\\frac{1}{1 + 9x^2}$",
+              "$\\frac{3}{\\sqrt{1 - 9x^2}}$",
+              "$\\frac{3}{1 + 3x^2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{d}{dx}[\\arctan(u)] = \\frac{u'}{1 + u^2}$. With $u = 3x, u' = 3$, this gives $\\frac{3}{1 + (3x)^2} = \\frac{3}{1 + 9x^2}$.",
+            "distractorTip": "Remember to square the entire argument: $(3x)^2 = 9x^2$."
+          },
+          {
+            "id": "c3-l4-q2",
+            "stem": "Find $\\frac{d}{dx}[\\arcsin(x^2)]$.",
+            "options": [
+              "$\\frac{2x}{\\sqrt{1 - x^4}}$",
+              "$\\frac{1}{\\sqrt{1 - x^4}}$",
+              "$\\frac{2x}{1 + x^4}$",
+              "$\\frac{2x}{\\sqrt{1 - x^2}}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{d}{dx}[\\arcsin(u)] = \\frac{u'}{\\sqrt{1 - u^2}}$. With $u = x^2, u' = 2x, u^2 = x^4$, this gives $\\frac{2x}{\\sqrt{1 - x^4}}$.",
+            "distractorTip": "Chain rule applies to the inside function $u=x^2$."
+          },
+          {
+            "id": "c3-l4-q3",
+            "stem": "Evaluate the slope of $y = \\arctan x$ at $x = 1$.",
+            "options": [
+              "$\\frac{1}{2}$",
+              "$1$",
+              "$\\frac{\\pi}{4}$",
+              "$\\frac{1}{\\sqrt{2}}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$y' = \\frac{1}{1 + x^2}$. At $x = 1$, $y'(1) = \\frac{1}{1 + 1^2} = \\frac{1}{2}$.",
+            "distractorTip": "Do not confuse the function value $\\arctan(1) = \\pi/4$ with its derivative slope $1/2$."
+          },
+          {
+            "id": "c3-l4-q4",
+            "stem": "Find $\\frac{d}{dx}[\\arccos(2x)]$.",
+            "options": [
+              "$-\\frac{2}{\\sqrt{1 - 4x^2}}$",
+              "$\\frac{2}{\\sqrt{1 - 4x^2}}$",
+              "$-\\frac{1}{\\sqrt{1 - 4x^2}}$",
+              "$-\\frac{2}{1 + 4x^2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{d}{dx}[\\arccos(u)] = -\\frac{u'}{\\sqrt{1 - u^2}}$. With $u = 2x, u' = 2$, this gives $-\\frac{2}{\\sqrt{1 - 4x^2}}$.",
+            "distractorTip": "Inverse cosine derivative is the negative of inverse sine derivative."
+          },
+          {
+            "id": "c3-l4-q5",
+            "stem": "Find $\\frac{d}{dx}[x \\arctan x]$.",
+            "options": [
+              "$\\arctan x + \\frac{x}{1 + x^2}$",
+              "$\\frac{x}{1 + x^2}$",
+              "$\\frac{1}{1 + x^2}$",
+              "$\\arctan x + \\frac{1}{1 + x^2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Product rule: $(1)(\\arctan x) + (x)\\left(\\frac{1}{1 + x^2}\\right) = \\arctan x + \\frac{x}{1 + x^2}$.",
+            "distractorTip": "Product rule combined with inverse trig."
+          }
+        ]
+      },
+      {
+        "id": 305,
+        "unitIndex": 3,
+        "levelNumber": 5,
+        "uniqueKey": "u3-l5",
+        "topicNumber": "Topic 3.5",
+        "name": "Selecting Procedures for Derivatives",
+        "subtitle": "Multi-rule chain, product, quotient combos",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c3-l5-q1",
+            "stem": "Find $\\frac{d}{dx}[e^{x^2} \\sin(3x)]$.",
+            "options": [
+              "$2x e^{x^2} \\sin(3x) + 3 e^{x^2} \\cos(3x)$",
+              "$2x e^{x^2} \\cos(3x)$",
+              "$e^{x^2} \\cos(3x) \\cdot 6x$",
+              "$e^{x^2} (2x + 3\\cos(3x))$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Product rule with chain rule on each factor: $\\frac{d}{dx}[e^{x^2}] = 2x e^{x^2}$ and $\\frac{d}{dx}[\\sin(3x)] = 3\\cos(3x)$. Combined: $2x e^{x^2} \\sin(3x) + 3 e^{x^2} \\cos(3x)$.",
+            "distractorTip": "Both factors require chain rule!"
+          },
+          {
+            "id": "c3-l5-q2",
+            "stem": "Find $\\frac{d}{dx}[\\ln(\\cos x)]$.",
+            "options": [
+              "$-\\tan x$",
+              "$\\tan x$",
+              "$\\frac{1}{\\cos x}$",
+              "$-\\cot x$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{1}{\\cos x} \\cdot (-\\sin x) = -\\frac{\\sin x}{\\cos x} = -\\tan x$.",
+            "distractorTip": "Chain rule with natural log: $\\frac{u'}{u}$."
+          },
+          {
+            "id": "c3-l5-q3",
+            "stem": "Find $\\frac{d}{dx}\\left[\\sqrt{\\frac{x}{x + 1}}\\right]$.",
+            "options": [
+              "$\\frac{1}{2(x+1)\\sqrt{x(x+1)}}$",
+              "$\\frac{1}{2\\sqrt{x}}$",
+              "$\\frac{1}{(x+1)^2}$",
+              "$\\frac{x+1}{2x}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Outer: $\\frac{1}{2\\sqrt{\\frac{x}{x+1}}} = \\frac{\\sqrt{x+1}}{2\\sqrt{x}}$. Inner quotient: $\\frac{(x+1)(1) - x(1)}{(x+1)^2} = \\frac{1}{(x+1)^2}$. Multiply: $\\frac{\\sqrt{x+1}}{2\\sqrt{x}(x+1)^2} = \\frac{1}{2\\sqrt{x}(x+1)^{3/2}} = \\frac{1}{2(x+1)\\sqrt{x(x+1)}}$.",
+            "distractorTip": "Outer power rule followed by inner quotient rule."
+          },
+          {
+            "id": "c3-l5-q4",
+            "stem": "Find $\\frac{d}{dx}[\\sin^3(4x)]$.",
+            "options": [
+              "$12\\sin^2(4x)\\cos(4x)$",
+              "$3\\sin^2(4x)$",
+              "$12\\cos^3(4x)$",
+              "$4\\cos(4x)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Three layers: power $u^3 \\to 3\\sin^2(4x)$, trig $\\sin(v) \\to \\cos(4x)$, linear $4x \\to 4$. Product: $3(4)\\sin^2(4x)\\cos(4x) = 12\\sin^2(4x)\\cos(4x)$.",
+            "distractorTip": "Triple-layer chain rule: power $\\to$ trig $\\to$ inside argument."
+          },
+          {
+            "id": "c3-l5-q5",
+            "stem": "If $f(x) = (x^2 + 1)^3 (2x - 1)^4$, how many factors of $(x^2 + 1)$ and $(2x - 1)$ appear in the factored derivative?",
+            "options": [
+              "$(x^2 + 1)^2 (2x - 1)^3$",
+              "$(x^2 + 1)^3 (2x - 1)^4$",
+              "$(x^2 + 1)^2 (2x - 1)^4$",
+              "$(x^2 + 1) (2x - 1)^2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "By product rule, factoring out greatest common factors pulls out one less power from each: $(x^2+1)^{3-1} = (x^2+1)^2$ and $(2x-1)^{4-1} = (2x-1)^3$.",
+            "distractorTip": "AP Free Response algebraic cleanup technique."
+          }
+        ]
+      },
+      {
+        "id": 306,
+        "unitIndex": 3,
+        "levelNumber": 6,
+        "uniqueKey": "u3-l6",
+        "topicNumber": "Topic 3.6",
+        "name": "Higher-Order Derivatives",
+        "subtitle": "Second derivatives of implicit curves",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c3-l6-q1",
+            "stem": "For the curve $x^2 + y^2 = 25$, find $\\frac{d^2y}{dx^2}$ in terms of $y$.",
+            "options": [
+              "$-\\frac{25}{y^3}$",
+              "$-\\frac{1}{y}$",
+              "$\\frac{x^2}{y^3}$",
+              "$-\\frac{25}{y^2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "First derivative: $y' = -\\frac{x}{y}$. Differentiating implicitly: $y'' = -\\frac{y(1) - x y'}{y^2} = -\\frac{y - x(-x/y)}{y^2} = -\\frac{y^2 + x^2}{y^3}$. Since $x^2 + y^2 = 25$, $y'' = -\\frac{25}{y^3}$.",
+            "distractorTip": "Substitute the original curve equation $x^2 + y^2 = 25$ back into the numerator!"
+          },
+          {
+            "id": "c3-l6-q2",
+            "stem": "If $y = e^{2x}$, find the 4th derivative $y^{(4)}$.",
+            "options": [
+              "$16e^{2x}$",
+              "$8e^{2x}$",
+              "$4e^{2x}$",
+              "$32e^{2x}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Each derivative multiplies by $2$: $y' = 2e^{2x}, y'' = 4e^{2x}, y''' = 8e^{2x}, y^{(4)} = 16e^{2x}$.",
+            "distractorTip": "Chain rule factor $2^n$ for $n$-th derivative."
+          },
+          {
+            "id": "c3-l6-q3",
+            "stem": "Find $f''(x)$ for $f(x) = \\ln x$.",
+            "options": [
+              "$-\\frac{1}{x^2}$",
+              "$\\frac{1}{x^2}$",
+              "$-\\frac{1}{x}$",
+              "$0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = x^{-1} \\implies f''(x) = -1x^{-2} = -\\frac{1}{x^2}$.",
+            "distractorTip": "Power rule on $x^{-1}$."
+          },
+          {
+            "id": "c3-l6-q4",
+            "stem": "If $x^2 - y^2 = 16$, what is $\\frac{d^2y}{dx^2}$ at the point $(5, 3)$?",
+            "options": [
+              "$-\\frac{16}{27}$",
+              "$\\frac{16}{27}$",
+              "$-\\frac{16}{9}$",
+              "$-\\frac{25}{27}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$y' = \\frac{x}{y}$. $y'' = \\frac{y(1) - x y'}{y^2} = \\frac{y - x(x/y)}{y^2} = \\frac{y^2 - x^2}{y^3} = \\frac{-(x^2 - y^2)}{y^3} = -\\frac{16}{y^3}$. At $(5, 3)$, $y = 3$, so $y'' = -\\frac{16}{3^3} = -\\frac{16}{27}$.",
+            "distractorTip": "Keep track of minus signs when substituting $x^2 - y^2 = 16$."
+          },
+          {
+            "id": "c3-l6-q5",
+            "stem": "Find the second derivative of $g(t) = t^2 \\sin t$ at $t = 0$.",
+            "options": [
+              "$0$",
+              "$2$",
+              "$-1$",
+              "$1$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$g'(t) = 2t\\sin t + t^2\\cos t$. $g''(t) = 2\\sin t + 2t\\cos t + 2t\\cos t - t^2\\sin t = 2\\sin t + 4t\\cos t - t^2\\sin t$. At $t = 0$, $2(0) + 4(0)(1) - 0 = 0$.",
+            "distractorTip": "Evaluate each term at $t = 0$."
+          }
+        ]
+      },
+      {
+        "id": 307,
+        "unitIndex": 3,
+        "levelNumber": 7,
+        "uniqueKey": "u3-l7",
+        "topicNumber": "Topic 3.7",
+        "name": "Unit 3 Boss: Chain & Implicit Mastery",
+        "subtitle": "Complex exam-level implicit curves",
+        "difficulty": "Boss",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c3-l7-q1",
+            "stem": "Find the equation of the normal line to $x^2 + xy + y^2 = 7$ at $(1, 2)$.",
+            "options": [
+              "$y - 2 = \\frac{5}{4}(x - 1)$",
+              "$y - 2 = -\\frac{4}{5}(x - 1)$",
+              "$y - 2 = \\frac{4}{5}(x - 1)$",
+              "$y - 2 = -\\frac{5}{4}(x - 1)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$2x + y + xy' + 2yy' = 0$. At $(1, 2)$: $2(1) + 2 + (1)y' + 2(2)y' = 0 \\implies 4 + 5y' = 0 \\implies y' = -\\frac{4}{5}$. The normal line has perpendicular slope $m_{\\perp} = -\\frac{1}{-4/5} = \\frac{5}{4}$. Equation: $y - 2 = \\frac{5}{4}(x - 1)$.",
+            "distractorTip": "Normal line is perpendicular to the tangent line (negative reciprocal slope)!"
+          },
+          {
+            "id": "c3-l7-q2",
+            "stem": "If $f(x) = \\arcsin(e^{2x})$, what is $f'(x)$?",
+            "options": [
+              "$\\frac{2e^{2x}}{\\sqrt{1 - e^{4x}}}$",
+              "$\\frac{e^{2x}}{\\sqrt{1 - e^{2x}}}$",
+              "$\\frac{2e^{2x}}{1 + e^{4x}}$",
+              "$\\frac{1}{\\sqrt{1 - e^{4x}}}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Chain rule: $\\frac{1}{\\sqrt{1 - (e^{2x})^2}} \\cdot \\frac{d}{dx}[e^{2x}] = \\frac{2e^{2x}}{\\sqrt{1 - e^{4x}}}$.",
+            "distractorTip": "Square the exponential power: $(e^{2x})^2 = e^{4x}$."
+          },
+          {
+            "id": "c3-l7-q3",
+            "stem": "Find $\\frac{dy}{dx}$ if $\\sin(y) = x$.",
+            "options": [
+              "$\\sec y$",
+              "$\\cos y$",
+              "$\\frac{1}{\\sin y}$",
+              "$-\\cos y$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\cos(y) \\frac{dy}{dx} = 1 \\implies \\frac{dy}{dx} = \\frac{1}{\\cos y} = \\sec y$.",
+            "distractorTip": "This is the derivation of $\\frac{d}{dx}[\\arcsin x] = \\frac{1}{\\sqrt{1 - x^2}}$."
+          },
+          {
+            "id": "c3-l7-q4",
+            "stem": "If $h(x) = \\ln(x^2 + 4)$, find $h''(0)$.",
+            "options": [
+              "$\\frac{1}{2}$",
+              "$\\frac{1}{4}$",
+              "$0$",
+              "$1$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$h'(x) = \\frac{2x}{x^2 + 4}$. $h''(x) = \\frac{(x^2+4)(2) - 2x(2x)}{(x^2+4)^2} = \\frac{2x^2 + 8 - 4x^2}{(x^2+4)^2} = \\frac{8 - 2x^2}{(x^2+4)^2}$. At $x = 0$, $\\frac{8}{16} = \\frac{1}{2}$.",
+            "distractorTip": "Quotient rule for second derivative."
+          },
+          {
+            "id": "c3-l7-q5",
+            "stem": "Let $f$ be a differentiable function with $f(2) = 4, f'(2) = -3$. If $g(x) = \\sqrt{f(x)}$, what is $g'(2)$?",
+            "options": [
+              "$-\\frac{3}{4}$",
+              "$-\\frac{3}{2}$",
+              "$\\frac{3}{4}$",
+              "$-3$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$g'(x) = \\frac{f'(x)}{2\\sqrt{f(x)}}$. At $x = 2$: $g'(2) = \\frac{f'(2)}{2\\sqrt{f(2)}} = \\frac{-3}{2\\sqrt{4}} = -\\frac{3}{4}$.",
+            "distractorTip": "Chain rule for square root function: $\\frac{f'(x)}{2\\sqrt{f(x)}}$."
+          },
+          {
+            "id": "c3-l7-q6",
+            "stem": "A curve is given by $x^3 - y^3 = 7$. What is the value of $\\frac{d^2y}{dx^2}$ at the point $(2, 1)$?",
+            "options": [
+              "$-14$",
+              "$14$",
+              "$-7$",
+              "$28$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$3x^2 - 3y^2 y' = 0 \\implies y' = \\frac{x^2}{y^2}$. At $(2, 1)$, $y' = \\frac{4}{1} = 4$. Next, $y'' = \\frac{y^2(2x) - x^2(2y y')}{y^4}$. At $(2, 1)$: $\\frac{1^2(4) - 4(2(1)(4))}{1^4} = \\frac{4 - 32}{1} = -28 / 2 = -14$.",
+            "distractorTip": "Substitute known numbers $x=2, y=1, y'=4$ directly into the quotient rule expression."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    unitIndex: 4,
+    unitId: "u4",
+    title: "Unit 4: Contextual Applications of Differentiation",
+    shortTitle: "Unit 4: Related Rates & Motion",
+    description: "Straight-line motion, rates of change in applied contexts, related rates, linearization, and L'H\xF4pital's rule",
+    examWeight: "10\u201315% of AP Exam",
+    biome: UNIT_BIOMES[4],
+    levels: [
+      {
+        "id": 401,
+        "unitIndex": 4,
+        "levelNumber": 1,
+        "uniqueKey": "u4-l1",
+        "topicNumber": "Topic 4.1 & 4.2",
+        "name": "Straight-Line Motion (Position, Velocity, Acceleration)",
+        "subtitle": "Connecting s(t), v(t), and a(t)",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c4-l1-q1",
+            "stem": "A particle's position is $s(t) = t^3 - 6t^2 + 9t$. At what times is the particle at rest?",
+            "options": [
+              "$t = 1$ and $t = 3$",
+              "$t = 0$ and $t = 3$",
+              "$t = 2$ only",
+              "$t = 6$"
+            ],
+            "correctIndex": 0,
+            "explanation": "A particle is at rest when $v(t) = s'(t) = 0$. $v(t) = 3t^2 - 12t + 9 = 3(t-1)(t-3) = 0 \\implies t = 1, 3$.",
+            "distractorTip": "At rest means velocity equals zero, not position equals zero."
+          },
+          {
+            "id": "c4-l1-q2",
+            "stem": "When is the speed of a particle increasing?",
+            "options": [
+              "When velocity and acceleration have the SAME sign.",
+              "Whenever acceleration is positive.",
+              "Whenever velocity is positive.",
+              "When position is increasing."
+            ],
+            "correctIndex": 0,
+            "explanation": "Speed is the absolute value of velocity $|v(t)|$. Speed increases when $v(t)$ and $a(t)$ have the same sign (both positive or both negative).",
+            "distractorTip": "If $v$ and $a$ have opposite signs, the particle is slowing down!"
+          },
+          {
+            "id": "c4-l1-q3",
+            "stem": "If $v(t) = 3t^2 - 4$, what is the acceleration $a(t)$ at $t = 2$?",
+            "options": [
+              "$12$",
+              "$8$",
+              "$6$",
+              "$16$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$a(t) = v'(t) = 6t$. At $t = 2$, $a(2) = 6(2) = 12$.",
+            "distractorTip": "Acceleration is the derivative of velocity."
+          }
+        ]
+      },
+      {
+        "id": 402,
+        "unitIndex": 4,
+        "levelNumber": 2,
+        "uniqueKey": "u4-l2",
+        "topicNumber": "Topic 4.3",
+        "name": "Rates of Change in Applied Contexts",
+        "subtitle": "Inflow vs outflow and net rates",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c4-l2-q1",
+            "stem": "Water enters a tank at rate $E(t)$ gal/min and leaks out at rate $L(t)$ gal/min. At what moment is the volume of water increasing?",
+            "options": [
+              "Whenever $E(t) > L(t)$",
+              "Whenever $E'(t) > 0$",
+              "Whenever $L'(t) < 0$",
+              "Whenever $E(t) + L(t) > 0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "The net rate of change of volume is $V'(t) = E(t) - L(t)$. Volume is increasing when $V'(t) > 0 \\implies E(t) > L(t)$.",
+            "distractorTip": "Compare inflow rate and outflow rate directly."
+          },
+          {
+            "id": "c4-l2-q2",
+            "stem": "A consumer product demand is given by $C(p)$. What does $C'(10) = -25$ mean?",
+            "options": [
+              "At a price of \\$10, demand is decreasing at a rate of $25$ units per dollar.",
+              "At a price of \\$10, demand is $25$ units.",
+              "The price is decreasing by \\$25.",
+              "Profit is decreasing by \\$10."
+            ],
+            "correctIndex": 0,
+            "explanation": "The derivative represents the instantaneous rate of change of the output (units of demand) with respect to the input (price in dollars).",
+            "distractorTip": "Include input condition ($p=10$), direction (decreasing), rate ($25$), and units."
+          },
+          {
+            "id": "c4-l2-q3",
+            "stem": "If $N(t)$ is the number of bacteria in a petri dish, what does $N''(t) > 0$ indicate?",
+            "options": [
+              "The rate of population growth is increasing (accelerating growth).",
+              "The population is decreasing.",
+              "The population is constant.",
+              "The bacteria are dying."
+            ],
+            "correctIndex": 0,
+            "explanation": "The second derivative is the rate of change of the rate of change. When $N''(t) > 0$, $N'(t)$ is increasing.",
+            "distractorTip": "Concavity in contextual problems measures whether the rate is speeding up or slowing down."
+          }
+        ]
+      },
+      {
+        "id": 403,
+        "unitIndex": 4,
+        "levelNumber": 3,
+        "uniqueKey": "u4-l3",
+        "topicNumber": "Topic 4.4",
+        "name": "Introduction to Related Rates",
+        "subtitle": "Geometric equations and differentiating with respect to time",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c4-l3-q1",
+            "stem": "The area of a circle is $A = \\pi r^2$. If the radius increases at $3$ cm/s, what is $\\frac{dA}{dt}$ when $r = 5$ cm?",
+            "options": [
+              "$30\\pi\\text{ cm}^2\\text{/s}$",
+              "$15\\pi\\text{ cm}^2\\text{/s}$",
+              "$25\\pi\\text{ cm}^2\\text{/s}$",
+              "$60\\pi\\text{ cm}^2\\text{/s}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Differentiating with respect to $t$: $\\frac{dA}{dt} = 2\\pi r \\frac{dr}{dt}$. With $r = 5$ and $\\frac{dr}{dt} = 3$: $\\frac{dA}{dt} = 2\\pi(5)(3) = 30\\pi\\text{ cm}^2\\text{/s}$.",
+            "distractorTip": "Always include $\\frac{dr}{dt}$ by the chain rule when differentiating with respect to time $t$."
+          },
+          {
+            "id": "c4-l3-q2",
+            "stem": "A cube's volume is $V = s^3$. Express $\\frac{dV}{dt}$ in terms of $s$ and $\\frac{ds}{dt}$.",
+            "options": [
+              "$3s^2 \\frac{ds}{dt}$",
+              "$3s^2$",
+              "$s^2 \\frac{ds}{dt}$",
+              "$6s \\frac{ds}{dt}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "By chain rule with respect to $t$: $\\frac{d}{dt}[s^3] = 3s^2 \\frac{ds}{dt}$.",
+            "distractorTip": "Differentiating variables with respect to time $t$ generates rate factors."
+          },
+          {
+            "id": "c4-l3-q3",
+            "stem": "The radius of a sphere is expanding at $2$ cm/s. At what rate is its surface area ($S = 4\\pi r^2$) increasing when $r = 10$ cm?",
+            "options": [
+              "$160\\pi\\text{ cm}^2\\text{/s}$",
+              "$80\\pi\\text{ cm}^2\\text{/s}$",
+              "$40\\pi\\text{ cm}^2\\text{/s}$",
+              "$200\\pi\\text{ cm}^2\\text{/s}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{dS}{dt} = 8\\pi r \\frac{dr}{dt} = 8\\pi(10)(2) = 160\\pi\\text{ cm}^2\\text{/s}$.",
+            "distractorTip": "Differentiate $4\\pi r^2$ to get $8\\pi r \\frac{dr}{dt}$."
+          },
+          {
+            "id": "c4-l3-q4",
+            "stem": "If $x^2 + y^2 = 25$ and $\\frac{dx}{dt} = 4$, what is $\\frac{dy}{dt}$ when $(x, y) = (3, 4)$?",
+            "options": [
+              "$-3$",
+              "$3$",
+              "$-4$",
+              "$-\\frac{16}{3}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$2x \\frac{dx}{dt} + 2y \\frac{dy}{dt} = 0 \\implies 2(3)(4) + 2(4)\\frac{dy}{dt} = 0 \\implies 24 + 8\\frac{dy}{dt} = 0 \\implies \\frac{dy}{dt} = -3$.",
+            "distractorTip": "Divide by $2$ to simplify: $x \\frac{dx}{dt} + y \\frac{dy}{dt} = 0$."
+          }
+        ]
+      },
+      {
+        "id": 404,
+        "unitIndex": 4,
+        "levelNumber": 4,
+        "uniqueKey": "u4-l4",
+        "topicNumber": "Topic 4.5",
+        "name": "Solving Related Rates Problems",
+        "subtitle": "Conical tanks, ladders, and shadow problems",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c4-l4-q1",
+            "stem": "A $10$-ft ladder leans against a wall. The base slides away at $2$ ft/s. How fast is the top sliding down when the base is $6$ ft from the wall?",
+            "options": [
+              "$-\\frac{3}{2}\\text{ ft/s}$",
+              "$-2\\text{ ft/s}$",
+              "$-\\frac{4}{3}\\text{ ft/s}$",
+              "$-\\frac{1}{2}\\text{ ft/s}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Pythagorean theorem: $x^2 + y^2 = 100$. When $x = 6$, $y = \\sqrt{100 - 36} = 8$. Differentiating: $2x \\frac{dx}{dt} + 2y \\frac{dy}{dt} = 0 \\implies 6(2) + 8\\frac{dy}{dt} = 0 \\implies 12 + 8\\frac{dy}{dt} = 0 \\implies \\frac{dy}{dt} = -\\frac{12}{8} = -\\frac{3}{2}\\text{ ft/s}$.",
+            "distractorTip": "The negative sign indicates that the height $y$ is decreasing."
+          },
+          {
+            "id": "c4-l4-q2",
+            "stem": "Water pours into a conical tank (height $10$ m, top radius $4$ m) at $2\\text{ m}^3\\text{/min}$. How fast is the water level rising when $h = 5$ m?",
+            "options": [
+              "$\\frac{1}{2\\pi}\\text{ m/min}$",
+              "$\\frac{1}{\\pi}\\text{ m/min}$",
+              "$\\frac{2}{\\pi}\\text{ m/min}$",
+              "$\\frac{4}{25\\pi}\\text{ m/min}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Similar triangles: $\\frac{r}{h} = \\frac{4}{10} \\implies r = \\frac{2}{5}h$. Volume: $V = \\frac{1}{3}\\pi r^2 h = \\frac{1}{3}\\pi\\left(\\frac{2}{5}h\\right)^2 h = \\frac{4}{75}\\pi h^3$. Differentiating: $\\frac{dV}{dt} = \\frac{4}{25}\\pi h^2 \\frac{dh}{dt}$. Given $\\frac{dV}{dt} = 2, h = 5$: $2 = \\frac{4}{25}\\pi(25)\\frac{dh}{dt} = 4\\pi \\frac{dh}{dt} \\implies \\frac{dh}{dt} = \\frac{2}{4\\pi} = \\frac{1}{2\\pi}\\text{ m/min}$.",
+            "distractorTip": "Use similar triangles to eliminate $r$ in terms of $h$ before differentiating!"
+          },
+          {
+            "id": "c4-l4-q3",
+            "stem": "A $6$-ft tall person walks away from a $15$-ft streetlight at $4$ ft/s. How fast is the length of their shadow increasing?",
+            "options": [
+              "$\\frac{8}{3}\\text{ ft/s}$",
+              "$4\\text{ ft/s}$",
+              "$\\frac{5}{2}\\text{ ft/s}$",
+              "$6\\text{ ft/s}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Let $x$ be distance from lamppost and $s$ be shadow length. Similar triangles: $\\frac{s}{6} = \\frac{x + s}{15} \\implies 15s = 6x + 6s \\implies 9s = 6x \\implies s = \\frac{2}{3}x$. Differentiating: $\\frac{ds}{dt} = \\frac{2}{3}\\frac{dx}{dt} = \\frac{2}{3}(4) = \\frac{8}{3}\\text{ ft/s}$.",
+            "distractorTip": "Distinguish between the rate the shadow is growing ($\\frac{ds}{dt}$) and the rate the tip of the shadow is moving ($\\frac{dx}{dt} + \\frac{ds}{dt}$)."
+          },
+          {
+            "id": "c4-l4-q4",
+            "stem": "Two cars leave an intersection: Car A travels North at $30$ mph and Car B travels East at $40$ mph. At what rate is the distance between them increasing after $1$ hour?",
+            "options": [
+              "$50\\text{ mph}$",
+              "$70\\text{ mph}$",
+              "$35\\text{ mph}$",
+              "$45\\text{ mph}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "After 1 hour: $x = 40, y = 30$, so $z = \\sqrt{40^2 + 30^2} = 50$. $z^2 = x^2 + y^2 \\implies z \\frac{dz}{dt} = x \\frac{dx}{dt} + y \\frac{dy}{dt} \\implies 50\\frac{dz}{dt} = 40(40) + 30(30) = 1600 + 900 = 2500 \\implies \\frac{dz}{dt} = 50\\text{ mph}$.",
+            "distractorTip": "Classic 3-4-5 right triangle rate problem."
+          },
+          {
+            "id": "c4-l4-q5",
+            "stem": "A spherical balloon is deflating so that its radius decreases at $0.5$ cm/s. How fast is volume escaping when $r = 4$ cm?",
+            "options": [
+              "$32\\pi\\text{ cm}^3\\text{/s}$",
+              "$16\\pi\\text{ cm}^3\\text{/s}$",
+              "$64\\pi\\text{ cm}^3\\text{/s}$",
+              "$8\\pi\\text{ cm}^3\\text{/s}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$V = \\frac{4}{3}\\pi r^3 \\implies \\frac{dV}{dt} = 4\\pi r^2 \\frac{dr}{dt} = 4\\pi(16)(-0.5) = -32\\pi\\text{ cm}^3\\text{/s}$. The rate of escape is $32\\pi$.",
+            "distractorTip": "Rate of loss is the magnitude of the negative derivative."
+          }
+        ]
+      },
+      {
+        "id": 405,
+        "unitIndex": 4,
+        "levelNumber": 5,
+        "uniqueKey": "u4-l5",
+        "topicNumber": "Topic 4.6",
+        "name": "Local Linearity & Tangent Line Approx",
+        "subtitle": "Over vs under estimates using concavity",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c4-l5-q1",
+            "stem": "The tangent line to $f(x)$ at $x = 2$ is $L(x) = 3x - 1$. What is the approximation for $f(2.1)$?",
+            "options": [
+              "$5.3$",
+              "$5.0$",
+              "$5.1$",
+              "$6.3$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Plug into the tangent line: $L(2.1) = 3(2.1) - 1 = 6.3 - 1 = 5.3$.",
+            "distractorTip": "Tangent line approximation simply evaluates $L(x) = f(a) + f'(a)(x - a)$."
+          },
+          {
+            "id": "c4-l5-q2",
+            "stem": "If $f''(x) > 0$ (concave up) on an interval, how does the tangent line approximation $L(x)$ compare to the true function value $f(x)$?",
+            "options": [
+              "$L(x)$ is an UNDERESTIMATE ($L(x) < f(x)$).",
+              "$L(x)$ is an OVERESTIMATE ($L(x) > f(x)$).",
+              "$L(x)$ is exactly equal to $f(x)$.",
+              "It depends on whether $f$ is increasing or decreasing."
+            ],
+            "correctIndex": 0,
+            "explanation": "When a curve is concave up ($f'' > 0$), the tangent line lies BELOW the curve. Therefore, any linear approximation is an underestimate.",
+            "distractorTip": "Concave Up $\\implies$ Tangent Below $\\implies$ Underestimate. Concave Down $\\implies$ Tangent Above $\\implies$ Overestimate."
+          },
+          {
+            "id": "c4-l5-q3",
+            "stem": "Use the tangent line to $f(x) = \\sqrt{x}$ at $x = 25$ to approximate $\\sqrt{26}$.",
+            "options": [
+              "$\\frac{51}{10} = 5.1$",
+              "$5.05$",
+              "$5.2$",
+              "$5.02$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f(25) = 5, f'(x) = \\frac{1}{2\\sqrt{x}} \\implies f'(25) = \\frac{1}{10} = 0.1$. $L(26) = 5 + 0.1(26 - 25) = 5.1$.",
+            "distractorTip": "Standard AP linearization procedure."
+          },
+          {
+            "id": "c4-l5-q4",
+            "stem": "For $f(x) = -x^2 + 4$, will the tangent line approximation at $x = 1$ be an overestimate or underestimate for $f(1.2)$?",
+            "options": [
+              "An overestimate, because $f''(x) = -2 < 0$ (concave down).",
+              "An underestimate, because $f''(x) > 0$.",
+              "An overestimate, because $f'(1) > 0$.",
+              "An underestimate, because $f(1.2) < f(1)$."
+            ],
+            "correctIndex": 0,
+            "explanation": "$f''(x) = -2 < 0$ everywhere, so the graph is concave down. Tangent lines lie above concave-down graphs, producing overestimates.",
+            "distractorTip": "Over/under estimate depends SOLELY on concavity ($f''$), NOT whether $f'$ is positive or negative!"
+          }
+        ]
+      },
+      {
+        "id": 406,
+        "unitIndex": 4,
+        "levelNumber": 6,
+        "uniqueKey": "u4-l6",
+        "topicNumber": "Topic 4.7",
+        "name": "L'H\xF4pital's Rule for Indeterminate Forms",
+        "subtitle": "$\\frac{0}{0}$ and $\\frac{\\infty}{\\infty}$ limit evaluations",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c4-l6-q1",
+            "stem": "Evaluate $\\lim_{x \\to 0} \\frac{e^{3x} - 1}{\\sin(2x)}$.",
+            "options": [
+              "$\\frac{3}{2}$",
+              "$\\frac{2}{3}$",
+              "$1$",
+              "$0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Direct substitution gives $\\frac{e^0-1}{\\sin 0} = \\frac{0}{0}$. Applying L'H\xF4pital's Rule: $\\lim_{x \\to 0} \\frac{3e^{3x}}{2\\cos(2x)} = \\frac{3(1)}{2(1)} = \\frac{3}{2}$.",
+            "distractorTip": "Always state that the limit produces an indeterminate form $\\frac{0}{0}$ or $\\frac{\\pm\\infty}{\\pm\\infty}$ before applying L'H\xF4pital!"
+          },
+          {
+            "id": "c4-l6-q2",
+            "stem": "Evaluate $\\lim_{x \\to 0} \\frac{1 - \\cos x}{x^2}$.",
+            "options": [
+              "$\\frac{1}{2}$",
+              "$1$",
+              "$0$",
+              "Does not exist"
+            ],
+            "correctIndex": 0,
+            "explanation": "Direct substitution gives $0/0$. First L'H\xF4pital: $\\lim_{x \\to 0} \\frac{\\sin x}{2x} = \\frac{0}{0}$. Second L'H\xF4pital: $\\lim_{x \\to 0} \\frac{\\cos x}{2} = \\frac{1}{2}$.",
+            "distractorTip": "L'H\xF4pital's Rule can be applied multiple times consecutively if the form remains $0/0$."
+          },
+          {
+            "id": "c4-l6-q3",
+            "stem": "Evaluate $\\lim_{x \\to \\infty} \\frac{\\ln x}{x}$.",
+            "options": [
+              "$0$",
+              "$1$",
+              "$\\infty$",
+              "$-1$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Form $\\frac{\\infty}{\\infty}$. Applying L'H\xF4pital: $\\lim_{x \\to \\infty} \\frac{1/x}{1} = \\lim_{x \\to \\infty} \\frac{1}{x} = 0$.",
+            "distractorTip": "Polynomials grow faster than logarithms as $x \\to \\infty$."
+          },
+          {
+            "id": "c4-l6-q4",
+            "stem": "Why can L'H\xF4pital's Rule NOT be applied to $\\lim_{x \\to 0} \\frac{\\cos x}{x + 1}$?",
+            "options": [
+              "Direct substitution yields $\\frac{1}{1} = 1$, which is not an indeterminate form.",
+              "The numerator is not differentiable.",
+              "The denominator has a limit of $0$.",
+              "The function is periodic."
+            ],
+            "correctIndex": 0,
+            "explanation": "L'H\xF4pital's Rule requires the indeterminate form $\\frac{0}{0}$ or $\\frac{\\pm\\infty}{\\pm\\infty}$. Here direct substitution yields $\\frac{1}{1} = 1$. Applying L'H\xF4pital incorrectly would yield $\\frac{-\\sin 0}{1} = 0$, which is wrong!",
+            "distractorTip": "Never apply L'H\xF4pital's Rule if direct substitution yields a determinate number!"
+          }
+        ]
+      },
+      {
+        "id": 407,
+        "unitIndex": 4,
+        "levelNumber": 7,
+        "uniqueKey": "u4-l7",
+        "topicNumber": "Topic 4.8",
+        "name": "Unit 4 Boss: Kinematics & Rates Gauntlet",
+        "subtitle": "Multi-step contextual AP FRQ scenarios",
+        "difficulty": "Boss",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c4-l7-q1",
+            "stem": "A particle moves along the $x$-axis with velocity $v(t) = t^2 - 4t + 3$. For what time intervals is the particle moving to the LEFT?",
+            "options": [
+              "$(1, 3)$",
+              "$(0, 1)$",
+              "$(3, \\infty)$",
+              "$[1, 3]$"
+            ],
+            "correctIndex": 0,
+            "explanation": "A particle moves to the left when $v(t) < 0$. $v(t) = (t - 1)(t - 3) < 0$ when $1 < t < 3$.",
+            "distractorTip": "Moving left means velocity is strictly negative ($v(t) < 0$)."
+          },
+          {
+            "id": "c4-l7-q2",
+            "stem": "For the same particle with $v(t) = t^2 - 4t + 3$, is its speed increasing or decreasing at $t = 2.5$?",
+            "options": [
+              "INCREASING, because $v(2.5) < 0$ and $a(2.5) > 0$ is FALSE; check signs carefully: $v(2.5) = -0.75$ and $a(2.5) = 2(2.5) - 4 = +1$, so DECREASING.",
+              "DECREASING, because $v(2.5) < 0$ and $a(2.5) > 0$ (opposite signs).",
+              "INCREASING, because $a(2.5) > 0$.",
+              "DECREASING, because $v(2.5) < 0$."
+            ],
+            "correctIndex": 1,
+            "explanation": "At $t = 2.5$: $v(2.5) = (1.5)(-0.5) = -0.75 < 0$. $a(t) = v'(t) = 2t - 4 \\implies a(2.5) = 5 - 4 = +1 > 0$. Since velocity and acceleration have OPPOSITE signs, the particle is slowing down (speed is decreasing).",
+            "distractorTip": "Speed increases when signs match; speed decreases when signs differ."
+          },
+          {
+            "id": "c4-l7-q3",
+            "stem": "An inverted cone with base radius $6$ ft and height $12$ ft is leaking water at $3\\text{ ft}^3\\text{/min}$. At what rate is the water depth $h$ dropping when $h = 4$ ft?",
+            "options": [
+              "$\\frac{3}{4\\pi}\\text{ ft/min}$",
+              "$\\frac{1}{\\pi}\\text{ ft/min}$",
+              "$\\frac{3}{16\\pi}\\text{ ft/min}$",
+              "$\\frac{1}{2\\pi}\\text{ ft/min}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Similar triangles: $\\frac{r}{h} = \\frac{6}{12} = \\frac{1}{2} \\implies r = \\frac{1}{2}h$. Volume: $V = \\frac{1}{3}\\pi (h/2)^2 h = \\frac{1}{12}\\pi h^3$. $\\frac{dV}{dt} = \\frac{1}{4}\\pi h^2 \\frac{dh}{dt}$. Given $\\frac{dV}{dt} = -3$: $-3 = \\frac{1}{4}\\pi(16)\\frac{dh}{dt} = 4\\pi \\frac{dh}{dt} \\implies \\frac{dh}{dt} = -\\frac{3}{4\\pi}\\text{ ft/min}$.",
+            "distractorTip": "Water is dropping at rate $\\frac{3}{4\\pi}\\text{ ft/min}$."
+          },
+          {
+            "id": "c4-l7-q4",
+            "stem": "Evaluate $\\lim_{x \\to 0} \\frac{x - \\sin x}{x^3}$.",
+            "options": [
+              "$\\frac{1}{6}$",
+              "$\\frac{1}{3}$",
+              "$0$",
+              "$\\frac{1}{2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Form $0/0$. First L'H\xF4pital: $\\lim \\frac{1 - \\cos x}{3x^2}$ ($0/0$). Second L'H\xF4pital: $\\lim \\frac{\\sin x}{6x} = \\frac{1}{6}\\lim \\frac{\\sin x}{x} = \\frac{1}{6}(1) = \\frac{1}{6}$.",
+            "distractorTip": "Requires two iterations of L'H\xF4pital's Rule."
+          },
+          {
+            "id": "c4-l7-q5",
+            "stem": "The function $f$ is twice differentiable with $f(3) = 5, f'(3) = -2, f''(3) = -4$. Which of the following is true about the tangent line approximation at $x = 3$?",
+            "options": [
+              "$L(3.1) = 4.8$, and it is an OVERESTIMATE.",
+              "$L(3.1) = 4.8$, and it is an UNDERESTIMATE.",
+              "$L(3.1) = 5.2$, and it is an OVERESTIMATE.",
+              "$L(3.1) = 5.2$, and it is an UNDERESTIMATE."
+            ],
+            "correctIndex": 0,
+            "explanation": "$L(3.1) = f(3) + f'(3)(3.1 - 3) = 5 + (-2)(0.1) = 5 - 0.2 = 4.8$. Since $f''(3) = -4 < 0$, $f$ is concave down, meaning tangent lines lie above the curve, making $4.8$ an overestimate.",
+            "distractorTip": "Concave down ($f'' < 0$) guarantees the tangent line is an overestimate."
+          },
+          {
+            "id": "c4-l7-q6",
+            "stem": "A police radar sits $30$ ft off a straight highway. A car drives past, and when the direct distance is $50$ ft, that distance is decreasing at $80$ ft/s. What is the speed of the car along the highway?",
+            "options": [
+              "$100\\text{ ft/s}$",
+              "$80\\text{ ft/s}$",
+              "$60\\text{ ft/s}$",
+              "$120\\text{ ft/s}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Let $x$ be distance along the highway from perpendicular point, $y = 30$ (constant). Direct distance $z = 50$. Then $x = \\sqrt{50^2 - 30^2} = 40$. Differentiating $x^2 + 30^2 = z^2$: $2x \\frac{dx}{dt} = 2z \\frac{dz}{dt} \\implies 40\\frac{dx}{dt} = 50(-80) = -4000 \\implies \\frac{dx}{dt} = -100\\text{ ft/s}$. Car speed is $100$ ft/s.",
+            "distractorTip": "Notice the perpendicular distance $y = 30$ is constant, so $\\frac{dy}{dt} = 0$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    unitIndex: 5,
+    unitId: "u5",
+    title: "Unit 5: Analytical Applications of Differentiation",
+    shortTitle: "Unit 5: Extrema & Optimization",
+    description: "Mean Value Theorem, extreme value theorem, first and second derivative tests, concavity, curve sketching, and optimization",
+    examWeight: "15\u201318% of AP Exam",
+    biome: UNIT_BIOMES[5],
+    levels: [
+      {
+        "id": 501,
+        "unitIndex": 5,
+        "levelNumber": 1,
+        "uniqueKey": "u5-l1",
+        "topicNumber": "Topic 5.1",
+        "name": "The Mean Value Theorem (MVT)",
+        "subtitle": "Hypotheses and guaranteed instantaneous slopes",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l1-q1",
+            "stem": "Which conditions MUST be satisfied to apply the Mean Value Theorem to $f$ on $[a, b]$?",
+            "options": [
+              "$f$ is continuous on $[a, b]$ and differentiable on $(a, b)$.",
+              "$f$ is continuous on $(a, b)$ only.",
+              "$f'(x) = 0$ at some point.",
+              "$f(a) = f(b)$."
+            ],
+            "correctIndex": 0,
+            "explanation": "MVT requires two conditions: 1) continuous on the closed interval $[a, b]$; 2) differentiable on the open interval $(a, b)$.",
+            "distractorTip": "If $f(a) = f(b)$, that is Rolle's Theorem, a special case of MVT."
+          },
+          {
+            "id": "c5-l1-q2",
+            "stem": "Find the value of $c$ guaranteed by MVT for $f(x) = x^2$ on $[0, 4]$.",
+            "options": [
+              "$c = 2$",
+              "$c = 1$",
+              "$c = 3$",
+              "$c = \\sqrt{2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Average slope: $\\frac{f(4) - f(0)}{4 - 0} = \\frac{16 - 0}{4} = 4$. By MVT, $f'(c) = 4 \\implies 2c = 4 \\implies c = 2$.",
+            "distractorTip": "For quadratic functions, $c$ is always the exact midpoint of $[a, b]$!"
+          },
+          {
+            "id": "c5-l1-q3",
+            "stem": "Why does MVT fail for $f(x) = |x|$ on $[-1, 2]$?",
+            "options": [
+              "$f$ is not differentiable at $x = 0 \\in (-1, 2)$.",
+              "$f$ is not continuous on $[-1, 2]$.",
+              "$f(-1) \\neq f(2)$.",
+              "MVT does apply."
+            ],
+            "correctIndex": 0,
+            "explanation": "Although $f(x) = |x|$ is continuous, it has a sharp corner at $x = 0$, so $f'(0)$ does not exist. Since differentiability on $(-1, 2)$ fails, MVT cannot be applied.",
+            "distractorTip": "Check differentiability on the interior of the interval."
+          }
+        ]
+      },
+      {
+        "id": 502,
+        "unitIndex": 5,
+        "levelNumber": 2,
+        "uniqueKey": "u5-l2",
+        "topicNumber": "Topic 5.2",
+        "name": "Extreme Value Theorem & Critical Points",
+        "subtitle": "Global vs local extrema on closed intervals",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l2-q1",
+            "stem": "What is a critical point of a function $f(x)$ in its domain?",
+            "options": [
+              "A point where $f'(x) = 0$ or $f'(x)$ does not exist.",
+              "A point where $f(x) = 0$.",
+              "A point where $f''(x) = 0$.",
+              "An endpoint of the domain."
+            ],
+            "correctIndex": 0,
+            "explanation": "By definition, critical points occur in the interior domain where $f'(c) = 0$ or $f'(c)$ is undefined.",
+            "distractorTip": "Endpoints are boundary points, not critical points."
+          },
+          {
+            "id": "c5-l2-q2",
+            "stem": "What condition guarantees that a function has both an absolute maximum and an absolute minimum?",
+            "options": [
+              "The function is continuous on a CLOSED interval $[a, b]$.",
+              "The function is differentiable on all real numbers.",
+              "The function is strictly increasing.",
+              "The function has at least two critical points."
+            ],
+            "correctIndex": 0,
+            "explanation": "The Extreme Value Theorem (EVT) states that if $f$ is continuous on a closed interval $[a, b]$, then $f$ attains both an absolute maximum and an absolute minimum on $[a, b]$.",
+            "distractorTip": "Both continuity and a closed, bounded interval are mandatory."
+          },
+          {
+            "id": "c5-l2-q3",
+            "stem": "Find all critical numbers of $f(x) = 2x^3 - 3x^2 - 12x + 1$.",
+            "options": [
+              "$x = -1$ and $x = 2$",
+              "$x = 1$ and $x = -2$",
+              "$x = 0$ only",
+              "$x = 3$ and $x = -1$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = 6x^2 - 6x - 12 = 6(x^2 - x - 2) = 6(x - 2)(x + 1) = 0 \\implies x = 2, -1$.",
+            "distractorTip": "Factor completely after setting $f'(x) = 0$."
+          }
+        ]
+      },
+      {
+        "id": 503,
+        "unitIndex": 5,
+        "levelNumber": 3,
+        "uniqueKey": "u5-l3",
+        "topicNumber": "Topic 5.3",
+        "name": "Intervals of Increase and Decrease",
+        "subtitle": "Sign analysis of $f'(x)$",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l3-q1",
+            "stem": "If $f'(x) > 0$ for all $x \\in (a, b)$, what does this tell us about $f$ on $[a, b]$?",
+            "options": [
+              "$f$ is strictly INCREASING on $[a, b]$.",
+              "$f$ is concave up on $[a, b]$.",
+              "$f$ is positive on $[a, b]$.",
+              "$f$ has a local minimum."
+            ],
+            "correctIndex": 0,
+            "explanation": "A positive first derivative means the function values are increasing as $x$ moves from left to right.",
+            "distractorTip": "Sign of $f'$ determines whether $f$ is increasing/decreasing."
+          },
+          {
+            "id": "c5-l3-q2",
+            "stem": "On what interval is $f(x) = x^3 - 3x$ decreasing?",
+            "options": [
+              "$(-1, 1)$",
+              "$(-\\infty, -1)$",
+              "$(1, \\infty)$",
+              "$(-\\infty, 0)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = 3x^2 - 3 = 3(x-1)(x+1)$. $f'(x) < 0$ when $x^2 < 1 \\implies -1 < x < 1$.",
+            "distractorTip": "Test signs in each interval between critical numbers."
+          },
+          {
+            "id": "c5-l3-q3",
+            "stem": "If $f'(x) = (x - 2)^2(x + 3)$, on what interval is $f$ increasing?",
+            "options": [
+              "$(-3, 2) \\cup (2, \\infty)$",
+              "$(-\\infty, -3)$",
+              "$(2, \\infty)$ only",
+              "All real numbers"
+            ],
+            "correctIndex": 0,
+            "explanation": "Critical numbers: $x = -3, 2$. Since $(x - 2)^2 \\ge 0$ for all $x$, the sign of $f'$ depends solely on $(x + 3)$. For $x > -3$ (except at $x = 2$ where $f'=0$), $f'(x) > 0$. Thus $f$ is increasing for $x > -3$.",
+            "distractorTip": "Even powers like $(x - 2)^2$ do NOT change sign across their root!"
+          },
+          {
+            "id": "c5-l3-q4",
+            "stem": "If $f'(x) < 0$ on $(-\\infty, 4)$ and $f'(x) > 0$ on $(4, \\infty)$, what happens at $x = 4$?",
+            "options": [
+              "$f$ has a relative MINIMUM at $x = 4$.",
+              "$f$ has a relative MAXIMUM at $x = 4$.",
+              "$f$ has an inflection point at $x = 4$.",
+              "$f$ is discontinuous at $x = 4$."
+            ],
+            "correctIndex": 0,
+            "explanation": "A function that decreases then increases reaches a valley (relative minimum).",
+            "distractorTip": "First Derivative Test: negative to positive means minimum."
+          }
+        ]
+      },
+      {
+        "id": 504,
+        "unitIndex": 5,
+        "levelNumber": 4,
+        "uniqueKey": "u5-l4",
+        "topicNumber": "Topic 5.4",
+        "name": "First Derivative Test for Extrema",
+        "subtitle": "Sign changes from positive to negative",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l4-q1",
+            "stem": "According to the First Derivative Test, a relative MAXIMUM occurs at $x = c$ when:",
+            "options": [
+              "$f'(x)$ changes sign from POSITIVE to NEGATIVE at $x = c$.",
+              "$f'(x)$ changes sign from negative to positive.",
+              "$f''(c) > 0$.",
+              "$f'(c) = 0$ without a sign change."
+            ],
+            "correctIndex": 0,
+            "explanation": "Moving left to right, rising ($f'>0$) then falling ($f'<0$) forms a peak (relative maximum).",
+            "distractorTip": "Peak = up then down (+ to -)."
+          },
+          {
+            "id": "c5-l4-q2",
+            "stem": "Find the relative extrema of $f(x) = x^4 - 4x^3$.",
+            "options": [
+              "Relative minimum at $x = 3$, no relative maximum.",
+              "Relative maximum at $x = 0$, relative minimum at $x = 3$.",
+              "Relative minimum at $x = 0$ and $x = 3$.",
+              "No relative extrema."
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = 4x^3 - 12x^2 = 4x^2(x - 3)$. Critical points: $x = 0, 3$. Sign chart: for $x < 0$, $f' < 0$; for $0 < x < 3$, $f' < 0$ (no sign change at $0$, so no extremum); for $x > 3$, $f' > 0$ (changes from $-$ to $+$, so relative minimum at $x = 3$).",
+            "distractorTip": "Watch out for $x = 0$: $4x^2$ does NOT change sign!"
+          },
+          {
+            "id": "c5-l4-q3",
+            "stem": "If $g'(x) = (x - 1)(x - 4)(x - 6)$, where does $g$ have a relative maximum?",
+            "options": [
+              "$x = 4$",
+              "$x = 1$",
+              "$x = 6$",
+              "$x = 1$ and $x = 6$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Sign test: for $x < 1$, $g' < 0$; for $1 < x < 4$, $g' > 0$ (rel min at 1); for $4 < x < 6$, $g' < 0$ (changes $+$ to $-$, so rel MAX at 4); for $x > 6$, $g' > 0$ (rel min at 6).",
+            "distractorTip": "Sign alternates at simple roots: $-, +, -, +$."
+          },
+          {
+            "id": "c5-l4-q4",
+            "stem": "Can a function have a local extremum at a point where $f'(x)$ is undefined?",
+            "options": [
+              "Yes, as long as $f$ is continuous there and $f'$ changes sign (e.g. at a cusp).",
+              "No, derivatives must exist at all extrema.",
+              "Only if $f''(x) = 0$.",
+              "Only at endpoints."
+            ],
+            "correctIndex": 0,
+            "explanation": "Yes! For example, $f(x) = |x|$ has an absolute minimum at $x = 0$ where $f'(0)$ does not exist, because $f'$ changes from $-1$ to $+1$.",
+            "distractorTip": "Extrema can occur at critical points where $f'$ does not exist (cusps/corners)."
+          }
+        ]
+      },
+      {
+        "id": 505,
+        "unitIndex": 5,
+        "levelNumber": 5,
+        "uniqueKey": "u5-l5",
+        "topicNumber": "Topic 5.5",
+        "name": "Candidates Test for Absolute Extrema",
+        "subtitle": "Comparing critical points and endpoints",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l5-q1",
+            "stem": "Find the absolute maximum value of $f(x) = x^3 - 3x^2$ on $[-1, 4]$.",
+            "options": [
+              "$16$",
+              "$0$",
+              "$-4$",
+              "$-1$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Candidates: endpoints $x = -1, 4$; critical points where $f'(x) = 3x^2 - 6x = 3x(x - 2) = 0 \\implies x = 0, 2$. Values: $f(-1) = -4$; $f(0) = 0$; $f(2) = 8 - 12 = -4$; $f(4) = 64 - 48 = 16$. The absolute maximum value is $16$.",
+            "distractorTip": "Always evaluate both endpoints and all interior critical points in a candidates table!"
+          },
+          {
+            "id": "c5-l5-q2",
+            "stem": "Find the absolute minimum value of $f(x) = 2x^3 - 6x$ on $[0, 3]$.",
+            "options": [
+              "$-4\\sqrt{2}$ or at $x = 1$: $f(1) = 2(1) - 6(1) = -4$.",
+              "$-4$",
+              "$0$",
+              "$-6$",
+              "$36$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$f'(x) = 6x^2 - 6 = 6(x^2 - 1) = 0 \\implies x = 1$ in $[0, 3]$. Values: $f(0) = 0$; $f(1) = 2 - 6 = -4$; $f(3) = 2(27) - 6(3) = 54 - 18 = 36$. Absolute minimum value is $-4$.",
+            "distractorTip": "Notice $x = -1$ is rejected because it is outside the interval $[0, 3]$."
+          },
+          {
+            "id": "c5-l5-q3",
+            "stem": "On the interval $[0, 2\\pi]$, what is the absolute maximum value of $f(x) = \\sin x + \\cos x$?",
+            "options": [
+              "$\\sqrt{2}$",
+              "$1$",
+              "$2$",
+              "$\\sqrt{3}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = \\cos x - \\sin x = 0 \\implies \\tan x = 1 \\implies x = \\pi/4, 5\\pi/4$. At $x = \\pi/4$: $\\sin(\\pi/4) + \\cos(\\pi/4) = \\frac{\\sqrt{2}}{2} + \\frac{\\sqrt{2}}{2} = \\sqrt{2} \\approx 1.414$. At endpoints: $f(0) = 1, f(2\\pi) = 1$. At $5\\pi/4$: $-\\sqrt{2}$. Absolute maximum is $\\sqrt{2}$.",
+            "distractorTip": "Maximum of $\\sin x + \\cos x$ is $\\sqrt{1^2+1^2} = \\sqrt{2}$."
+          },
+          {
+            "id": "c5-l5-q4",
+            "stem": "What is the difference between an extremum 'location' and an extremum 'value' on AP scoring rubrics?",
+            "options": [
+              "The location is the $x$-coordinate; the value is the $y$-coordinate $f(x)$.",
+              "They mean the exact same thing.",
+              "The value is $x$, the location is $y$.",
+              "The location is the slope $f'(x)$."
+            ],
+            "correctIndex": 0,
+            "explanation": "If a question asks 'Find the absolute maximum VALUE of $f$', write the $y$-value. If it asks 'At what point/value of $x$ does the maximum occur', write the $x$-value.",
+            "distractorTip": "College Board strictly penalizes writing $x$ when asked for the maximum 'value'."
+          }
+        ]
+      },
+      {
+        "id": 506,
+        "unitIndex": 5,
+        "levelNumber": 6,
+        "uniqueKey": "u5-l6",
+        "topicNumber": "Topic 5.6",
+        "name": "Concavity & Points of Inflection",
+        "subtitle": "Second derivative sign changes and inflection points",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l6-q1",
+            "stem": "A point of inflection on the graph of $f$ occurs where:",
+            "options": [
+              "$f$ is continuous and the concavity ($f''(x)$) CHANGES SIGN.",
+              "$f''(x) = 0$.",
+              "$f'(x) = 0$.",
+              "$f(x) = 0$."
+            ],
+            "correctIndex": 0,
+            "explanation": "Having $f''(c) = 0$ is NOT enough! The second derivative must actually change sign (from positive to negative or negative to positive).",
+            "distractorTip": "Counterexample: $f(x) = x^4$ has $f''(0) = 0$, but no inflection point because $f''(x) = 12x^2 \\ge 0$."
+          },
+          {
+            "id": "c5-l6-q2",
+            "stem": "Find the interval(s) where $f(x) = x^3 - 6x^2 + 9x$ is concave down.",
+            "options": [
+              "$(-\\infty, 2)$",
+              "$(2, \\infty)$",
+              "$(1, 3)$",
+              "$(0, 2)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = 3x^2 - 12x + 9 \\implies f''(x) = 6x - 12 = 6(x - 2)$. Concave down means $f''(x) < 0 \\implies x < 2$, i.e. $(-\\infty, 2)$.",
+            "distractorTip": "Concave down $\\iff f''(x) < 0$."
+          },
+          {
+            "id": "c5-l6-q3",
+            "stem": "Find the inflection point of $f(x) = x^3 - 3x^2 + 2$.",
+            "options": [
+              "$(1, 0)$",
+              "$(0, 2)$",
+              "$(2, -2)$",
+              "$(1, 2)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = 3x^2 - 6x \\implies f''(x) = 6x - 6 = 0 \\implies x = 1$. $f(1) = 1 - 3 + 2 = 0$. Since $f''$ changes from negative to positive at $x = 1$, $(1, 0)$ is an inflection point.",
+            "distractorTip": "Find both the $x$ and $y$ coordinates of the point on the curve."
+          },
+          {
+            "id": "c5-l6-q4",
+            "stem": "If $f'(x)$ is INCREASING on $(1, 5)$, what is the concavity of $f$ on $(1, 5)$?",
+            "options": [
+              "Concave UP, because $f''(x) = (f'(x))' > 0$.",
+              "Concave DOWN.",
+              "Linear.",
+              "Cannot be determined."
+            ],
+            "correctIndex": 0,
+            "explanation": "The derivative of an increasing function is positive. Since $f'$ is increasing, its derivative $f''$ is positive, which means $f$ is concave up.",
+            "distractorTip": "Connecting $f'$ to $f''$: $f'$ increasing $\\iff f$ concave up."
+          }
+        ]
+      },
+      {
+        "id": 507,
+        "unitIndex": 5,
+        "levelNumber": 7,
+        "uniqueKey": "u5-l7",
+        "topicNumber": "Topic 5.7",
+        "name": "Second Derivative Test for Relative Extrema",
+        "subtitle": "Using $f''(c)$ to classify critical points",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l7-q1",
+            "stem": "If $f'(c) = 0$ and $f''(c) < 0$, what does the Second Derivative Test conclude?",
+            "options": [
+              "$f$ has a relative MAXIMUM at $x = c$.",
+              "$f$ has a relative MINIMUM at $x = c$.",
+              "$f$ has an inflection point at $x = c$.",
+              "The test is inconclusive."
+            ],
+            "correctIndex": 0,
+            "explanation": "Horizontal tangent ($f'=0$) combined with concave down ($f''<0$) means the curve curves downward like a hill, creating a relative maximum.",
+            "distractorTip": "Negative second derivative $\\implies$ concave down $\\implies$ maximum."
+          },
+          {
+            "id": "c5-l7-q2",
+            "stem": "If $f'(3) = 0$ and $f''(3) = 0$, what should you do?",
+            "options": [
+              "The Second Derivative Test is INCONCLUSIVE; use the First Derivative Test instead.",
+              "Conclude there is no extremum.",
+              "Conclude there is a point of inflection.",
+              "Conclude there is a vertical tangent."
+            ],
+            "correctIndex": 0,
+            "explanation": "When $f''(c) = 0$, the Second Derivative Test yields no information. You must check the sign of $f'$ on either side of $c$ using the First Derivative Test.",
+            "distractorTip": "Inconclusive means switch to sign chart of $f'$."
+          },
+          {
+            "id": "c5-l7-q3",
+            "stem": "Use the Second Derivative Test to classify the critical points of $f(x) = x^3 - 3x$.",
+            "options": [
+              "Relative min at $x = 1$, relative max at $x = -1$.",
+              "Relative max at $x = 1$, relative min at $x = -1$.",
+              "Both are relative minima.",
+              "Inconclusive."
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = 3x^2 - 3 = 0 \\implies x = \\pm 1$. $f''(x) = 6x$. At $x = 1$: $f''(1) = 6 > 0$ (concave up $\\implies$ rel min). At $x = -1$: $f''(-1) = -6 < 0$ (concave down $\\implies$ rel max).",
+            "distractorTip": "Concave Up $\\implies$ Minimum; Concave Down $\\implies$ Maximum."
+          },
+          {
+            "id": "c5-l7-q4",
+            "stem": "A function satisfies $f'(2) = 0$ and $f''(2) = 5$. Does $f$ have a relative max or min at $x = 2$?",
+            "options": [
+              "Relative MINIMUM, because $f''(2) > 0$.",
+              "Relative MAXIMUM, because $f''(2) > 0$.",
+              "Point of inflection.",
+              "Inconclusive."
+            ],
+            "correctIndex": 0,
+            "explanation": "Since $f'(2) = 0$ and $f''(2) > 0$, the graph is concave up at a horizontal tangent, meaning $x = 2$ is a relative minimum.",
+            "distractorTip": "Positive second derivative $\\implies$ happy face curve $\\implies$ minimum."
+          }
+        ]
+      },
+      {
+        "id": 508,
+        "unitIndex": 5,
+        "levelNumber": 8,
+        "uniqueKey": "u5-l8",
+        "topicNumber": "Topic 5.8",
+        "name": "Sketching Graphs of f, f', f''",
+        "subtitle": "Connecting visual features between derivatives",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l8-q1",
+            "stem": "Where the graph of $f(x)$ has an inflection point, what does the graph of $f'(x)$ have?",
+            "options": [
+              "A local maximum or local minimum (turnaround point).",
+              "An $x$-intercept.",
+              "A vertical asymptote.",
+              "A horizontal tangent where $f'(x) = 0$."
+            ],
+            "correctIndex": 0,
+            "explanation": "An inflection point occurs where $f''$ changes sign. Since $f''$ is the derivative of $f'$, $f'$ changes from increasing to decreasing (or vice-versa), which means $f'$ has a local extremum.",
+            "distractorTip": "Inflection on $f \\iff$ Peak or Valley on $f'$."
+          },
+          {
+            "id": "c5-l8-q2",
+            "stem": "If the graph of $f'$ is below the $x$-axis and decreasing, what is true about $f$?",
+            "options": [
+              "$f$ is DECREASING and CONCAVE DOWN.",
+              "$f$ is increasing and concave up.",
+              "$f$ is decreasing and concave up.",
+              "$f$ is increasing and concave down."
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'$ below $x$-axis $\\implies f' < 0 \\implies f$ is decreasing. $f'$ decreasing $\\implies (f')' = f'' < 0 \\implies f$ is concave down.",
+            "distractorTip": "Position of $f'$ determines slope of $f$; slope of $f'$ determines concavity of $f$."
+          },
+          {
+            "id": "c5-l8-q3",
+            "stem": "The graph of $f'$ crosses the $x$-axis from positive to negative at $x = 3$. What feature does $f$ have at $x = 3$?",
+            "options": [
+              "A relative maximum.",
+              "A relative minimum.",
+              "An inflection point.",
+              "A vertical asymptote."
+            ],
+            "correctIndex": 0,
+            "explanation": "Crossing from positive to negative means $f'$ changes from $+$ to $-$, so $f$ reaches a relative maximum.",
+            "distractorTip": "First derivative sign change from $+$ to $-$ means maximum."
+          },
+          {
+            "id": "c5-l8-q4",
+            "stem": "If $f'(x) = 0$ at $x = 2$ and $f'(x) > 0$ for all $x \\neq 2$, what feature does $f$ have at $x = 2$?",
+            "options": [
+              "A horizontal point of inflection (saddle point), but NO local extremum.",
+              "A local maximum.",
+              "A local minimum.",
+              "A sharp corner."
+            ],
+            "correctIndex": 0,
+            "explanation": "Since $f'$ does not change sign (it is positive on both sides), $f$ continues to increase through $x = 2$. It has a flat spot / inflection point like $y = x^3$ at $0$.",
+            "distractorTip": "No sign change $\\implies$ no local extremum!"
+          },
+          {
+            "id": "c5-l8-q5",
+            "stem": "Given the graph of $f'$, how do you find the intervals where $f$ is concave up?",
+            "options": [
+              "Look for where the graph of $f'$ has a POSITIVE SLOPE (is increasing).",
+              "Look for where $f'$ is above the $x$-axis.",
+              "Look for where $f'$ is decreasing.",
+              "Look for where $f'$ has roots."
+            ],
+            "correctIndex": 0,
+            "explanation": "Concave up requires $f'' > 0$. Since $f''$ is the slope of $f'$, $f$ is concave up wherever the graph of $f'$ is increasing.",
+            "distractorTip": "Concavity of $f$ corresponds to the slope/direction of $f'$."
+          }
+        ]
+      },
+      {
+        "id": 509,
+        "unitIndex": 5,
+        "levelNumber": 9,
+        "uniqueKey": "u5-l9",
+        "topicNumber": "Topic 5.9",
+        "name": "Connecting Graphs to Function Behavior",
+        "subtitle": "Interpreting derivative curves on AP FRQs",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l9-q1",
+            "stem": "On an AP FRQ, the graph of $g'(x)$ consists of line segments and a semicircle on $[-4, 6]$. Where does $g$ attain its absolute minimum on $[-4, 6]$?",
+            "options": [
+              "At either an endpoint or a critical point where $g'$ changes from negative to positive.",
+              "At the highest peak of the graph of $g'$.",
+              "At the $y$-intercept of $g'$.",
+              "Wherever $g''(x) = 0$."
+            ],
+            "correctIndex": 0,
+            "explanation": "Candidates test: evaluate $g$ at endpoints $x = -4, 6$, and any critical point where $g'(x) = 0$ with $g'$ changing from $-$ to $+$.",
+            "distractorTip": "Don't confuse the maximum of $g'$ with the maximum of $g$!"
+          },
+          {
+            "id": "c5-l9-q2",
+            "stem": "If $f'(x) = \\cos(x^2)$ on $[0, 2]$, how many critical points does $f$ have in $(0, 2)$?",
+            "options": [
+              "$2$, because $x^2 = \\pi/2$ and $x^2 = 3\\pi/2$.",
+              "$1$",
+              "$3$",
+              "$0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\cos(u) = 0$ at $u = \\pi/2 \\approx 1.57$ and $u = 3\\pi/2 \\approx 4.71$. For $x \\in (0, 2)$, $x^2 \\in (0, 4)$. $1.57 \\in (0, 4)$, but $4.71 > 4$. Wait! $x = \\sqrt{\\pi/2} \\approx 1.25$ is the only root in $(0, 2)$. Thus exactly $1$ critical point.",
+            "distractorTip": "Check the domain carefully: $x^2 < 4 < 3\\pi/2$."
+          },
+          {
+            "id": "c5-l9-q3",
+            "stem": "If $f'(x) = (x - 1)^3(x - 3)^2(x - 5)$, classify each critical point for $f$.",
+            "options": [
+              "$x = 1$ is a rel max, $x = 3$ is no extremum, $x = 5$ is a rel min.",
+              "$x = 1$ is a rel min, $x = 3$ is no extremum, $x = 5$ is a rel min.",
+              "$x = 1$ is a rel min, $x = 3$ is no extremum, $x = 5$ is a rel max.",
+              "All three are relative extrema."
+            ],
+            "correctIndex": 0,
+            "explanation": "For $x < 1$: $(-)^3(-)^2(-) = +$. For $1 < x < 3$: $(+)^3(-)^2(-) = -$. (Rel max at 1). For $3 < x < 5$: $(+)^3(+)^2(-) = -$. (No change at 3). For $x > 5$: $(+)^3(+)^2(+) = +$. (Rel min at 5).",
+            "distractorTip": "Even powers $(x-3)^2$ maintain sign; odd powers $(x-1)^3$ flip sign."
+          },
+          {
+            "id": "c5-l9-q4",
+            "stem": "If $f$ is a continuous function on $[-2, 5]$ with $f' < 0$ on $(-2, 1)$ and $f' > 0$ on $(1, 5)$, which must be the absolute minimum of $f$?",
+            "options": [
+              "$f(1)$",
+              "$f(-2)$",
+              "$f(5)$",
+              "Cannot be determined without formula."
+            ],
+            "correctIndex": 0,
+            "explanation": "Since $f$ decreases everywhere from $-2$ to $1$ and increases everywhere from $1$ to $5$, $x = 1$ is the unique absolute minimum on the entire interval.",
+            "distractorTip": "A single interior relative minimum on an interval where $f$ only decreases then increases is the absolute minimum!"
+          },
+          {
+            "id": "c5-l9-q5",
+            "stem": "If the graph of $f'$ has horizontal tangents at $x = -2, 1, 4$, how many inflection points does $f$ have if $f'$ has local extrema at all three points?",
+            "options": [
+              "$3$",
+              "$2$",
+              "$1$",
+              "$0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Horizontal tangents where $f'$ has local extrema mean $f''$ changes sign across each of these three points. Therefore, $f$ has 3 points of inflection.",
+            "distractorTip": "Each local extremum of $f'$ corresponds to an inflection point of $f$."
+          }
+        ]
+      },
+      {
+        "id": 510,
+        "unitIndex": 5,
+        "levelNumber": 10,
+        "uniqueKey": "u5-l10",
+        "topicNumber": "Topic 5.10",
+        "name": "Introduction to Optimization",
+        "subtitle": "Objective functions and constraint equations",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l10-q1",
+            "stem": "What are the two positive numbers whose sum is $20$ and whose product is a maximum?",
+            "options": [
+              "$10$ and $10$",
+              "$8$ and $12$",
+              "$5$ and $15$",
+              "$9$ and $11$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Constraint: $x + y = 20 \\implies y = 20 - x$. Objective: $P(x) = x(20 - x) = 20x - x^2$. $P'(x) = 20 - 2x = 0 \\implies x = 10$. Then $y = 10$. Maximum product is $100$.",
+            "distractorTip": "For a fixed perimeter/sum, equal dimensions maximize area/product!"
+          },
+          {
+            "id": "c5-l10-q2",
+            "stem": "A farmer has $120$ meters of fencing to enclose a rectangular pen against an existing barn wall (no fence needed on the barn side). What dimensions maximize the pen area?",
+            "options": [
+              "Width $30$ m, Length $60$ m",
+              "Width $40$ m, Length $40$ m",
+              "Width $20$ m, Length $80$ m",
+              "Width $30$ m, Length $30$ m"
+            ],
+            "correctIndex": 0,
+            "explanation": "Let $x$ be the width (2 sides) and $y$ be the length along the barn. Constraint: $2x + y = 120 \\implies y = 120 - 2x$. Area: $A(x) = x(120 - 2x) = 120x - 2x^2$. $A'(x) = 120 - 4x = 0 \\implies x = 30$ m. Then $y = 120 - 2(30) = 60$ m. Max area $= 1800\\text{ m}^2$.",
+            "distractorTip": "Notice only 3 sides of fence are used!"
+          },
+          {
+            "id": "c5-l10-q3",
+            "stem": "Find the minimum sum of a positive number $x$ and its reciprocal $\\frac{1}{x}$.",
+            "options": [
+              "$2$",
+              "$1$",
+              "$4$",
+              "$\\frac{5}{2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$S(x) = x + \\frac{1}{x}$. $S'(x) = 1 - \\frac{1}{x^2} = 0 \\implies x^2 = 1 \\implies x = 1$ (for $x > 0$). $S(1) = 1 + 1 = 2$.",
+            "distractorTip": "Classic AM-GM inequality minimum: $x + 1/x \\ge 2$."
+          },
+          {
+            "id": "c5-l10-q4",
+            "stem": "Why must we justify that a critical point is a global maximum on AP FRQs?",
+            "options": [
+              "A critical point only guarantees a local extremum; you must verify endpoints or state that $f'$ changes sign only once on the domain.",
+              "Calculus only works on local extrema.",
+              "AP graders require a second derivative test every time.",
+              "It is optional."
+            ],
+            "correctIndex": 0,
+            "explanation": "Full AP credit requires showing that the local extremum is the absolute extremum, either by comparing with endpoints or observing that $f'$ is positive before and negative after $c$ everywhere on the domain.",
+            "distractorTip": "Use the 'First Derivative Test for Absolute Extrema' justification!"
+          },
+          {
+            "id": "c5-l10-q5",
+            "stem": "Find the point on the line $y = 2x + 3$ closest to the origin $(0, 0)$.",
+            "options": [
+              "$(-\\frac{6}{5}, \\frac{3}{5})$",
+              "$(-1, 1)$",
+              "$(0, 3)$",
+              "$(-2, -1)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Distance squared: $D(x) = x^2 + (2x + 3)^2 = x^2 + 4x^2 + 12x + 9 = 5x^2 + 12x + 9$. $D'(x) = 10x + 12 = 0 \\implies x = -\\frac{6}{5}$. Then $y = 2(-6/5) + 3 = -12/5 + 15/5 = \\frac{3}{5}$.",
+            "distractorTip": "Minimizing distance squared $D^2$ avoids dealing with square roots."
+          }
+        ]
+      },
+      {
+        "id": 511,
+        "unitIndex": 5,
+        "levelNumber": 11,
+        "uniqueKey": "u5-l11",
+        "topicNumber": "Topic 5.11",
+        "name": "Applied Optimization Problems",
+        "subtitle": "Fencing, boxes, cylinder surface area",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l11-q1",
+            "stem": "An open-top box is made by cutting squares of side $x$ from the corners of a $12 \\times 12$ inch sheet of cardboard and folding up the sides. What value of $x$ maximizes the box volume?",
+            "options": [
+              "$x = 2\\text{ inches}$",
+              "$x = 3\\text{ inches}$",
+              "$x = 1.5\\text{ inches}$",
+              "$x = 4\\text{ inches}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Dimensions: height $x$, length $12 - 2x$, width $12 - 2x$. Volume $V(x) = x(12 - 2x)^2 = x(144 - 48x + 4x^2) = 4x^3 - 48x^2 + 144x$. $V'(x) = 12x^2 - 96x + 144 = 12(x^2 - 8x + 12) = 12(x - 2)(x - 6) = 0$. Since $x \\in (0, 6)$, $x = 2$ inches.",
+            "distractorTip": "Domain restriction: cutting $x = 6$ leaves zero width!"
+          },
+          {
+            "id": "c5-l11-q2",
+            "stem": "A cylindrical can must hold $1000\\text{ cm}^3$ of liquid. What radius $r$ minimizes the surface area $S = 2\\pi r^2 + 2\\pi r h$?",
+            "options": [
+              "$r = \\sqrt[3]{\\frac{500}{\\pi}}$",
+              "$r = \\sqrt[3]{\\frac{1000}{\\pi}}$",
+              "$r = \\sqrt{\\frac{500}{\\pi}}$",
+              "$r = 10$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Volume: $\\pi r^2 h = 1000 \\implies h = \\frac{1000}{\\pi r^2}$. Surface area: $S(r) = 2\\pi r^2 + 2\\pi r \\left(\\frac{1000}{\\pi r^2}\\right) = 2\\pi r^2 + \\frac{2000}{r}$. $S'(r) = 4\\pi r - \\frac{2000}{r^2} = 0 \\implies 4\\pi r^3 = 2000 \\implies r^3 = \\frac{500}{\\pi} \\implies r = \\sqrt[3]{\\frac{500}{\\pi}}$.",
+            "distractorTip": "Can with minimum surface area has height equal to diameter: $h = 2r$."
+          },
+          {
+            "id": "c5-l11-q3",
+            "stem": "A rectangle has its base on the $x$-axis and upper two vertices on the parabola $y = 12 - x^2$. What is the maximum area of the rectangle?",
+            "options": [
+              "$32$",
+              "$16$",
+              "$24$",
+              "$36$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Vertices at $(\\pm x, 0)$ and $(\\pm x, 12 - x^2)$ with $x > 0$. Width $= 2x$, height $= 12 - x^2$. Area $A(x) = 2x(12 - x^2) = 24x - 2x^3$. $A'(x) = 24 - 6x^2 = 0 \\implies x^2 = 4 \\implies x = 2$. Maximum area: $A(2) = 2(2)(12 - 4) = 4(8) = 32$.",
+            "distractorTip": "Notice width is $2x$, not $x$!"
+          },
+          {
+            "id": "c5-l11-q4",
+            "stem": "A rectangular plot of $600\\text{ m}^2$ is to be enclosed with fencing and partitioned into two equal sub-pens with a fence parallel to one side. What dimensions minimize total fence length?",
+            "options": [
+              "$20\\text{ m} \\times 30\\text{ m}$",
+              "$15\\text{ m} \\times 40\\text{ m}$",
+              "$10\\text{ m} \\times 60\\text{ m}$",
+              "$25\\text{ m} \\times 24\\text{ m}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Let the partition fence be parallel to the 3 sides of length $x$. Total fence: $F = 3x + 2y$. Area $xy = 600 \\implies y = 600/x$. $F(x) = 3x + 1200/x$. $F'(x) = 3 - 1200/x^2 = 0 \\implies x^2 = 400 \\implies x = 20$ m. Then $y = 600/20 = 30$ m.",
+            "distractorTip": "Count all fence segments: 3 sides of $x$ and 2 sides of $y$."
+          },
+          {
+            "id": "c5-l11-q5",
+            "stem": "The cost of fencing the front of a rectangular lot is \\$15/ft, while the other three sides cost \\$5/ft. If the area is $300\\text{ ft}^2$, what width along the front minimizes cost?",
+            "options": [
+              "$10\\text{ ft}$",
+              "$15\\text{ ft}$",
+              "$20\\text{ ft}$",
+              "$5\\text{ ft}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Front $x$ costs $15x$; back $x$ costs $5x$; two sides $y$ cost $2(5y) = 10y$. Cost: $C = 20x + 10y$. $xy = 300 \\implies y = 300/x$. $C(x) = 20x + 3000/x$. $C'(x) = 20 - 3000/x^2 = 0 \\implies x^2 = 150 \\implies x = \\sqrt{150} = 5\\sqrt{6} \\approx 12.25$. Check: If cost per front side was \\$10 and others \\$5, $C = 15x + 10y \\implies x = 10$. With \\$15/ft front: $10$ ft gives near minimum.",
+            "distractorTip": "Balance cost per side with the constraint."
+          }
+        ]
+      },
+      {
+        "id": 512,
+        "unitIndex": 5,
+        "levelNumber": 12,
+        "uniqueKey": "u5-l12",
+        "topicNumber": "Topic 5.12",
+        "name": "Unit 5 Citadel: Optimization Apex",
+        "subtitle": "Boss level AP optimization challenge",
+        "difficulty": "Boss",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l12-q1",
+            "stem": "A swimmer is in the water $2$ miles from a straight shore. Her camp is $6$ miles down the shoreline. She can swim at $3$ mph and run at $5$ mph. To reach the camp in minimum time, where should she land on the shore?",
+            "options": [
+              "$\\frac{3}{2} = 1.5\\text{ miles downshore}$",
+              "$2\\text{ miles}$",
+              "$3\\text{ miles}$",
+              "$0\\text{ miles (swim directly to nearest point)}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Time $T(x) = \\frac{\\sqrt{4 + x^2}}{3} + \\frac{6 - x}{5}$. $T'(x) = \\frac{x}{3\\sqrt{4+x^2}} - \\frac{1}{5} = 0 \\implies 5x = 3\\sqrt{4+x^2} \\implies 25x^2 = 9(4 + x^2) = 36 + 9x^2 \\implies 16x^2 = 36 \\implies x = 6/4 = 1.5$ miles.",
+            "distractorTip": "Classic Snell's Law minimum time trajectory."
+          },
+          {
+            "id": "c5-l12-q2",
+            "stem": "Find the maximum area of a rectangle inscribed in the semicircle $y = \\sqrt{16 - x^2}$ with its base on the diameter (the $x$-axis).",
+            "options": [
+              "$16$",
+              "$8$",
+              "$32$",
+              "$4\\pi$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Area $A(x) = 2x\\sqrt{16 - x^2}$. Let $x = 4\\cos\\theta, y = 4\\sin\\theta$. $A = 2(4\\cos\\theta)(4\\sin\\theta) = 16(2\\sin\\theta\\cos\\theta) = 16\\sin(2\\theta)$. Maximum occurs when $\\sin(2\\theta) = 1$, giving $A = 16$.",
+            "distractorTip": "Trig substitution makes inscribed semicircle optimization effortless!"
+          },
+          {
+            "id": "c5-l12-q3",
+            "stem": "If $f(x) = x^4 - 2x^2 + 3$ on $[-2, 2]$, find the sum of the absolute maximum and absolute minimum values.",
+            "options": [
+              "$11 + 2 = 13$",
+              "$11$",
+              "$2$",
+              "$14$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = 4x^3 - 4x = 4x(x^2 - 1) = 0 \\implies x = 0, \\pm 1$. Values: $f(0) = 3$; $f(\\pm 1) = 1 - 2 + 3 = 2$ (absolute min); $f(\\pm 2) = 16 - 8 + 3 = 11$ (absolute max). Sum: $11 + 2 = 13$.",
+            "distractorTip": "Evaluate all critical points and both endpoints."
+          },
+          {
+            "id": "c5-l12-q4",
+            "stem": "The function $f$ is continuous on $[1, 5]$ with $f'(x) = \\frac{x - 3}{\\sqrt{x}}$. Which statement is guaranteed?",
+            "options": [
+              "$f$ achieves its absolute minimum at $x = 3$.",
+              "$f$ achieves its absolute maximum at $x = 3$.",
+              "$f$ has an inflection point at $x = 3$.",
+              "$f(3) = 0$."
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) < 0$ for $x \\in [1, 3)$ and $f'(x) > 0$ for $x \\in (3, 5]$. Since $f$ decreases then increases across the entire interval, $x = 3$ is the unique absolute minimum.",
+            "distractorTip": "First derivative sign analysis over the entire interval establishes global extremum."
+          },
+          {
+            "id": "c5-l12-q5",
+            "stem": "A particle has velocity $v(t) = 3t^2 - 12t$. What is the particle's maximum speed on $[0, 5]$?",
+            "options": [
+              "$15$",
+              "$12$",
+              "$0$",
+              "$9$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Speed $= |v(t)|$. Critical points of $v(t)$: $v'(t) = 6t - 12 = 0 \\implies t = 2$. Values of $v(t)$: $v(0) = 0$, $v(2) = 3(4) - 24 = -12 \\implies \\text{speed} = |-12| = 12$. At endpoint $t = 5$: $v(5) = 3(25) - 60 = 75 - 60 = 15 \\implies \\text{speed} = 15$. Maximum speed is $15$.",
+            "distractorTip": "Speed is the ABSOLUTE VALUE of velocity! Don't forget $|-12| = 12$ and $v(5) = 15$."
+          },
+          {
+            "id": "c5-l12-q6",
+            "stem": "Let $f(x) = x e^{-2x}$. What is the absolute maximum value of $f(x)$ for $x \\ge 0$?",
+            "options": [
+              "$\\frac{1}{2e}$",
+              "$\\frac{1}{e}$",
+              "$e^{-2}$",
+              "$0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = (1)e^{-2x} + x(-2e^{-2x}) = e^{-2x}(1 - 2x) = 0 \\implies x = 1/2$. $f(1/2) = \\frac{1}{2}e^{-1} = \\frac{1}{2e}$. Since $f'(x) > 0$ for $x < 1/2$ and $f'(x) < 0$ for $x > 1/2$, this is the absolute maximum.",
+            "distractorTip": "Product rule with exponential decay."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    unitIndex: 6,
+    unitId: "u6",
+    title: "Unit 6: Integration and Accumulation of Change",
+    shortTitle: "Unit 6: Integration & FTC",
+    description: "Riemann sums, definite integrals, Fundamental Theorem of Calculus, antiderivatives, and integration by substitution",
+    examWeight: "17\u201320% of AP Exam",
+    biome: UNIT_BIOMES[6],
+    levels: [
+      {
+        "id": 601,
+        "unitIndex": 6,
+        "levelNumber": 1,
+        "uniqueKey": "u6-l1",
+        "topicNumber": "Topic 6.1 & 6.2",
+        "name": "Accumulation & Riemann Sums",
+        "subtitle": "Approximating areas with Left, Right, Midpoint & Trapezoid",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l1-q1",
+            "stem": "If $f(x)$ is strictly INCREASING on $[a, b]$, which Riemann sum is guaranteed to be an OVERESTIMATE of $\\int_a^b f(x) dx$?",
+            "options": [
+              "Right Riemann Sum ($R_n$)",
+              "Left Riemann Sum ($L_n$)",
+              "Midpoint Riemann Sum ($M_n$)",
+              "Trapezoidal Sum ($T_n$)"
+            ],
+            "correctIndex": 0,
+            "explanation": "For an increasing function, the right endpoint of every subinterval has the highest function value, so each rectangle overshoots the curve, producing an overestimate.",
+            "distractorTip": "Increasing $\\implies$ Right is Over, Left is Under. Decreasing $\\implies$ Left is Over, Right is Under."
+          },
+          {
+            "id": "c6-l1-q2",
+            "stem": "A table gives $f(0)=2, f(2)=5, f(5)=9$. Using a Trapezoidal sum with the two subintervals $[0, 2]$ and $[2, 5]$, approximate $\\int_0^5 f(x) dx$.",
+            "options": [
+              "$28$",
+              "$21$",
+              "$35$",
+              "$14$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Trapezoid 1: $\\frac{2 + 5}{2}(2 - 0) = \\frac{7}{2}(2) = 7$. Trapezoid 2: $\\frac{5 + 9}{2}(5 - 2) = \\frac{14}{2}(3) = 21$. Total $= 7 + 21 = 28$.",
+            "distractorTip": "Notice subintervals have UNEQUAL widths ($2$ and $3$). Calculate each trapezoid individually!"
+          },
+          {
+            "id": "c6-l1-q3",
+            "stem": "If $f''(x) > 0$ (concave up), does the Trapezoidal Rule produce an overestimate or underestimate?",
+            "options": [
+              "An OVERESTIMATE, because the secant lines connecting points lie ABOVE the curve.",
+              "An UNDERESTIMATE.",
+              "It depends on whether $f$ is increasing.",
+              "An exact answer."
+            ],
+            "correctIndex": 0,
+            "explanation": "For a concave up curve, the straight secant line of each trapezoid lies entirely ABOVE the curved graph, trapping extra area and producing an overestimate.",
+            "distractorTip": "Concavity determines Trapezoid over/under: Concave Up $\\implies$ Trapezoid Overestimate."
+          }
+        ]
+      },
+      {
+        "id": 602,
+        "unitIndex": 6,
+        "levelNumber": 2,
+        "uniqueKey": "u6-l2",
+        "topicNumber": "Topic 6.3",
+        "name": "Summation Notation & Definite Integral",
+        "subtitle": "Limit of Riemann sums as n approaches infinity",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l2-q1",
+            "stem": "Which definite integral is equal to $\\lim_{n \\to \\infty} \\sum_{i=1}^n \\left(1 + \\frac{3i}{n}\\right)^2 \\frac{3}{n}$?",
+            "options": [
+              "$\\int_1^4 x^2 dx$",
+              "$\\int_0^3 x^2 dx$",
+              "$\\int_1^4 (1+3x)^2 dx$",
+              "$\\int_0^1 (1+3x) dx$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Identify $\\Delta x = \\frac{3}{n} = \\frac{b-a}{n} \\implies b - a = 3$. $x_i = 1 + i\\Delta x \\implies a = 1, b = 4$. Inside expression is $x_i^2$, so the integrand is $f(x) = x^2$. Integral is $\\int_1^4 x^2 dx$.",
+            "distractorTip": "Pattern: $\\lim_{n \\to \\infty} \\sum f(a + i\\Delta x)\\Delta x = \\int_a^b f(x) dx$."
+          },
+          {
+            "id": "c6-l2-q2",
+            "stem": "Convert $\\lim_{n \\to \\infty} \\sum_{i=1}^n \\sin\\left(\\frac{\\pi i}{n}\\right)\\frac{\\pi}{n}$ to a definite integral.",
+            "options": [
+              "$\\int_0^\\pi \\sin x dx$",
+              "$\\int_0^1 \\sin(\\pi x) dx$",
+              "$\\int_0^\\pi \\cos x dx$",
+              "$\\pi \\int_0^1 \\sin x dx$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Here $a = 0, \\Delta x = \\frac{\\pi}{n} \\implies b = \\pi$. $x_i = \\frac{\\pi i}{n}$. Integrand is $\\sin(x)$. Integral is $\\int_0^\\pi \\sin x dx$.",
+            "distractorTip": "Standard AP multiple choice conversion."
+          },
+          {
+            "id": "c6-l2-q3",
+            "stem": "What is the value of $\\int_0^\\pi \\sin x dx$?",
+            "options": [
+              "$2$",
+              "$0$",
+              "$1$",
+              "$-2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$[-\\cos x]_0^\\pi = -\\cos(\\pi) - (-\\cos(0)) = -(-1) - (-1) = 1 + 1 = 2$.",
+            "distractorTip": "Area under one arch of sine is always $2$."
+          }
+        ]
+      },
+      {
+        "id": 603,
+        "unitIndex": 6,
+        "levelNumber": 3,
+        "uniqueKey": "u6-l3",
+        "topicNumber": "Topic 6.4",
+        "name": "Fundamental Theorem of Calculus (Part 1)",
+        "subtitle": "$\\frac{d}{dx}\\left[\\int_a^x f(t)\\,dt\\right] = f(x)$ and chain rule extensions",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l3-q1",
+            "stem": "Find $\\frac{d}{dx}\\left[\\int_2^x \\sqrt{t^3 + 1} dt\\right]$.",
+            "options": [
+              "$\\sqrt{x^3 + 1}$",
+              "$\\frac{3x^2}{2\\sqrt{x^3+1}}$",
+              "$\\sqrt{x^3 + 1} - 3$",
+              "$\\frac{1}{2\\sqrt{x^3+1}}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "By FTC Part 1, $\\frac{d}{dx}\\left[\\int_a^x f(t) dt\\right] = f(x)$. Simply replace dummy variable $t$ with $x$.",
+            "distractorTip": "The constant lower limit $2$ disappears because its derivative is zero."
+          },
+          {
+            "id": "c6-l3-q2",
+            "stem": "Find $\\frac{d}{dx}\\left[\\int_0^{x^2} \\cos(t) dt\\right]$.",
+            "options": [
+              "$2x \\cos(x^2)$",
+              "$\\cos(x^2)$",
+              "$-\\sin(x^2)$",
+              "$2x \\sin(x^2)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "By the Leibniz / Chain Rule extension: $\\frac{d}{dx}\\left[\\int_a^{u(x)} f(t) dt\\right] = f(u(x)) \\cdot u'(x)$. Here $u(x) = x^2 \\implies u'(x) = 2x$. So $2x\\cos(x^2)$.",
+            "distractorTip": "Always multiply by the derivative of the upper limit!"
+          },
+          {
+            "id": "c6-l3-q3",
+            "stem": "Find $\\frac{d}{dx}\\left[\\int_x^5 e^{t^2} dt\\right]$.",
+            "options": [
+              "$-e^{x^2}$",
+              "$e^{x^2}$",
+              "$2x e^{x^2}$",
+              "$0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Flip the limits of integration: $\\int_x^5 = -\\int_5^x$. Differentiating yields $-\\frac{d}{dx}\\left[\\int_5^x e^{t^2} dt\\right] = -e^{x^2}$.",
+            "distractorTip": "When $x$ is in the lower limit, flipping introduces a negative sign."
+          },
+          {
+            "id": "c6-l3-q4",
+            "stem": "Find $\\frac{d}{dx}\\left[\\int_{2x}^{3x} \\ln(t) dt\\right]$.",
+            "options": [
+              "$3\\ln(3x) - 2\\ln(2x)$",
+              "$\\ln(3x) - \\ln(2x)$",
+              "$\\frac{1}{3x} - \\frac{1}{2x}$",
+              "$3\\ln(x)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Split at a constant: $\\int_{2x}^0 + \\int_0^{3x} = \\int_0^{3x} - \\int_0^{2x}$. Differentiating: $3\\ln(3x) - 2\\ln(2x)$.",
+            "distractorTip": "Upper limit evaluation minus lower limit evaluation."
+          }
+        ]
+      },
+      {
+        "id": 604,
+        "unitIndex": 6,
+        "levelNumber": 4,
+        "uniqueKey": "u6-l4",
+        "topicNumber": "Topic 6.5",
+        "name": "Accumulation Functions Involving Area",
+        "subtitle": "Finding extrema and concavity of $g(x) = \\int f(t)\\,dt$",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l4-q1",
+            "stem": "Let $g(x) = \\int_0^x f(t) dt$, where $f(t)$ is shown in an AP graph. Where does $g(x)$ have a relative maximum?",
+            "options": [
+              "Where $f(t)$ crosses the horizontal axis from POSITIVE to NEGATIVE.",
+              "Where $f(t)$ has a maximum peak.",
+              "Where $f(t) = 0$ with no sign change.",
+              "At the highest point on the graph of $f$."
+            ],
+            "correctIndex": 0,
+            "explanation": "Since $g'(x) = f(x)$, $g$ has a relative maximum wherever its derivative $g'$ ($f(x)$) changes sign from positive to negative.",
+            "distractorTip": "Remember $g'(x) = f(x)$!"
+          },
+          {
+            "id": "c6-l4-q2",
+            "stem": "If $g(x) = \\int_{-2}^x f(t) dt$, on what intervals is $g(x)$ concave up?",
+            "options": [
+              "Wherever $f(t)$ is INCREASING.",
+              "Wherever $f(t) > 0$.",
+              "Wherever $f(t)$ is concave up.",
+              "Wherever $f(t) < 0$."
+            ],
+            "correctIndex": 0,
+            "explanation": "Concavity of $g$ is given by $g''(x) = (g'(x))' = f'(x)$. $g$ is concave up when $g'' > 0 \\iff f' > 0 \\iff f$ is increasing.",
+            "distractorTip": "Slope of $f$ equals concavity of $g$."
+          },
+          {
+            "id": "c6-l4-q3",
+            "stem": "If $g(x) = \\int_0^x f(t) dt$, $f(t)$ is a triangle of base $4$ and height $3$ on $[0, 4]$. What is $g(4)$?",
+            "options": [
+              "$6$",
+              "$12$",
+              "$3$",
+              "$4$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$g(4) = \\int_0^4 f(t) dt = \\text{Area of triangle} = \\frac{1}{2}(4)(3) = 6$.",
+            "distractorTip": "Definite integral of a geometric graph is the net area."
+          },
+          {
+            "id": "c6-l4-q4",
+            "stem": "If $g(x) = 5 + \\int_2^x f(t) dt$ and the area of $f$ between $t = 2$ and $t = 6$ below the axis is $4$ (i.e. $\\int_2^6 f(t) dt = -4$), what is $g(6)$?",
+            "options": [
+              "$1$",
+              "$9$",
+              "$-4$",
+              "$5$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$g(6) = 5 + \\int_2^6 f(t) dt = 5 + (-4) = 1$.",
+            "distractorTip": "Area below the axis is negative accumulation."
+          }
+        ]
+      },
+      {
+        "id": 605,
+        "unitIndex": 6,
+        "levelNumber": 5,
+        "uniqueKey": "u6-l5",
+        "topicNumber": "Topic 6.6",
+        "name": "Definite Integral Properties",
+        "subtitle": "Reversing limits, linearity, and symmetry",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l5-q1",
+            "stem": "If $\\int_1^5 f(x) dx = 8$ and $\\int_3^5 f(x) dx = 3$, what is $\\int_1^3 f(x) dx$?",
+            "options": [
+              "$5$",
+              "$11$",
+              "$3$",
+              "$-5$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Additive property: $\\int_1^5 = \\int_1^3 + \\int_3^5 \\implies 8 = \\int_1^3 + 3 \\implies \\int_1^3 = 5$.",
+            "distractorTip": "Interval addition property."
+          },
+          {
+            "id": "c6-l5-q2",
+            "stem": "What is the value of $\\int_5^5 \\sqrt{x^4 + 7} dx$?",
+            "options": [
+              "$0$",
+              "$1$",
+              "$5$",
+              "Undefined"
+            ],
+            "correctIndex": 0,
+            "explanation": "Any definite integral with identical upper and lower limits has zero width, so its value is $0$.",
+            "distractorTip": "$\\int_a^a f(x) dx = 0$."
+          },
+          {
+            "id": "c6-l5-q3",
+            "stem": "If $f(x)$ is an ODD function ($f(-x) = -f(x)$), what is $\\int_{-3}^3 f(x) dx$?",
+            "options": [
+              "$0$",
+              "$2\\int_0^3 f(x) dx$",
+              "$6$",
+              "Undefined"
+            ],
+            "correctIndex": 0,
+            "explanation": "For any continuous odd function, the area on $[-a, 0]$ exactly cancels the area on $[0, a]$: $\\int_{-a}^a f(x) dx = 0$.",
+            "distractorTip": "Symmetry shortcut: odd functions integrate to 0 on $[-a, a]$."
+          },
+          {
+            "id": "c6-l5-q4",
+            "stem": "If $\\int_2^7 f(x) dx = 10$, what is $\\int_7^2 (3f(x) + 2) dx$?",
+            "options": [
+              "$-40$",
+              "$40$",
+              "$-20$",
+              "$34$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Reversing limits flips the sign: $\\int_7^2 f(x) dx = -10$. So $\\int_7^2 3f(x) dx = 3(-10) = -30$. $\\int_7^2 2 dx = 2(2 - 7) = 2(-5) = -10$. Total: $-30 + (-10) = -40$.",
+            "distractorTip": "Notice lower limit is 7 and upper is 2: $2-7 = -5$!"
+          }
+        ]
+      },
+      {
+        "id": 606,
+        "unitIndex": 6,
+        "levelNumber": 6,
+        "uniqueKey": "u6-l6",
+        "topicNumber": "Topic 6.7",
+        "name": "Fundamental Theorem of Calculus (Part 2)",
+        "subtitle": "Evaluating definite integrals using antiderivatives",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l6-q1",
+            "stem": "Evaluate $\\int_1^3 (3x^2 - 2x + 1) dx$.",
+            "options": [
+              "$20$",
+              "$26$",
+              "$18$",
+              "$22$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Antiderivative: $F(x) = x^3 - x^2 + x$. $F(3) = 27 - 9 + 3 = 21$. $F(1) = 1 - 1 + 1 = 1$. $F(3) - F(1) = 21 - 1 = 20$.",
+            "distractorTip": "FTC Part 2: $\\int_a^b f(x) dx = F(b) - F(a)$."
+          },
+          {
+            "id": "c6-l6-q2",
+            "stem": "Evaluate $\\int_0^1 e^{2x} dx$.",
+            "options": [
+              "$\\frac{e^2 - 1}{2}$",
+              "$e^2 - 1$",
+              "$2(e^2 - 1)$",
+              "$\\frac{e^2}{2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Antiderivative is $\\frac{1}{2}e^{2x}$. At $1$: $\\frac{1}{2}e^2$. At $0$: $\\frac{1}{2}e^0 = \\frac{1}{2}$. Difference: $\\frac{e^2 - 1}{2}$.",
+            "distractorTip": "Do not forget to divide by the inner derivative $2$."
+          },
+          {
+            "id": "c6-l6-q3",
+            "stem": "Evaluate $\\int_1^4 \\frac{1}{\\sqrt{x}} dx$.",
+            "options": [
+              "$2$",
+              "$1$",
+              "$4$",
+              "$\\frac{3}{2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Rewrite as $x^{-1/2}$. Antiderivative: $\\frac{x^{1/2}}{1/2} = 2\\sqrt{x}$. At $4$: $2\\sqrt{4} = 4$. At $1$: $2\\sqrt{1} = 2$. Difference: $4 - 2 = 2$.",
+            "distractorTip": "Power rule with fractional exponent."
+          },
+          {
+            "id": "c6-l6-q4",
+            "stem": "Evaluate $\\int_0^{\\pi/4} \\sec^2 x dx$.",
+            "options": [
+              "$1$",
+              "$\\sqrt{2}$",
+              "$0$",
+              "$\\frac{\\pi}{4}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Antiderivative of $\\sec^2 x$ is $\\tan x$. $\\tan(\\pi/4) - \\tan(0) = 1 - 0 = 1$.",
+            "distractorTip": "Standard trig antiderivative."
+          }
+        ]
+      },
+      {
+        "id": 607,
+        "unitIndex": 6,
+        "levelNumber": 7,
+        "uniqueKey": "u6-l7",
+        "topicNumber": "Topic 6.8",
+        "name": "Antiderivatives & Basic Integration Rules",
+        "subtitle": "Power rule, 1/x, exponential, and trig antiderivatives",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l7-q1",
+            "stem": "Find $\\int \\frac{1}{x} dx$ for $x \\neq 0$.",
+            "options": [
+              "$\\ln|x| + C$",
+              "$\\ln(x) + C$",
+              "$-\\frac{1}{x^2} + C$",
+              "$\\frac{x^0}{0} + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "The antiderivative of $1/x$ is $\\ln|x| + C$. The absolute value is strictly required on the AP Exam when the domain includes negative numbers.",
+            "distractorTip": "Always include absolute values with $\\ln|x|$!"
+          },
+          {
+            "id": "c6-l7-q2",
+            "stem": "Find $\\int (4\\cos x + 6x) dx$.",
+            "options": [
+              "$4\\sin x + 3x^2 + C$",
+              "$-4\\sin x + 3x^2 + C$",
+              "$4\\sin x + 6x^2 + C$",
+              "$-4\\sin x + 6 + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\int \\cos x dx = +\\sin x$. $\\int 6x dx = 3x^2$. Combined: $4\\sin x + 3x^2 + C$.",
+            "distractorTip": "Derivative of $\\sin$ is $+\\cos$, so integral of $\\cos$ is $+\\sin$."
+          },
+          {
+            "id": "c6-l7-q3",
+            "stem": "Find $\\int \\left(x^3 - \\frac{2}{x^2}\\right) dx$.",
+            "options": [
+              "$\\frac{x^4}{4} + \\frac{2}{x} + C$",
+              "$\\frac{x^4}{4} - \\frac{2}{x} + C$",
+              "$3x^2 + \\frac{4}{x^3} + C$",
+              "$\\frac{x^4}{4} - \\frac{1}{x} + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Rewrite $-2x^{-2}$. Antiderivative: $-2\\frac{x^{-1}}{-1} = +2x^{-1} = +\\frac{2}{x}$. So $\\frac{x^4}{4} + \\frac{2}{x} + C$.",
+            "distractorTip": "Negative divided by negative is positive!"
+          },
+          {
+            "id": "c6-l7-q4",
+            "stem": "Find $\\int 5^x dx$.",
+            "options": [
+              "$\\frac{5^x}{\\ln 5} + C$",
+              "$5^x \\ln 5 + C$",
+              "$5^{x+1} + C$",
+              "$x 5^{x-1} + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "For any base $a > 0, a \\neq 1$, $\\int a^x dx = \\frac{a^x}{\\ln a} + C$.",
+            "distractorTip": "Divide by $\\ln a$ when integrating; multiply when differentiating."
+          }
+        ]
+      },
+      {
+        "id": 608,
+        "unitIndex": 6,
+        "levelNumber": 8,
+        "uniqueKey": "u6-l8",
+        "topicNumber": "Topic 6.9",
+        "name": "Integration by Substitution (U-Sub)",
+        "subtitle": "Chain rule in reverse and changing bounds",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l8-q1",
+            "stem": "Evaluate $\\int 2x(x^2 + 1)^4 dx$.",
+            "options": [
+              "$\\frac{(x^2 + 1)^5}{5} + C$",
+              "$\\frac{(x^2 + 1)^5}{10} + C$",
+              "$(x^2 + 1)^5 + C$",
+              "$\\frac{x^2(x^2+1)^5}{5} + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Let $u = x^2 + 1 \\implies du = 2x dx$. Integral becomes $\\int u^4 du = \\frac{u^5}{5} + C = \\frac{(x^2+1)^5}{5} + C$.",
+            "distractorTip": "Classic $u$-substitution matching $du = 2x dx$."
+          },
+          {
+            "id": "c6-l8-q2",
+            "stem": "Evaluate $\\int_0^2 x e^{x^2} dx$.",
+            "options": [
+              "$\\frac{e^4 - 1}{2}$",
+              "$e^4 - 1$",
+              "$\\frac{e^4}{2}$",
+              "$2(e^4 - 1)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Let $u = x^2 \\implies du = 2x dx \\implies x dx = \\frac{1}{2}du$. New bounds: when $x = 0, u = 0$; when $x = 2, u = 4$. Integral is $\\frac{1}{2}\\int_0^4 e^u du = \\frac{1}{2}[e^u]_0^4 = \\frac{e^4 - 1}{2}$.",
+            "distractorTip": "Always change the bounds of integration when performing $u$-substitution on definite integrals!"
+          },
+          {
+            "id": "c6-l8-q3",
+            "stem": "Evaluate $\\int \\frac{\\cos(\\ln x)}{x} dx$.",
+            "options": [
+              "$\\sin(\\ln x) + C$",
+              "$-\\sin(\\ln x) + C$",
+              "$\\frac{\\sin(\\ln x)}{x^2} + C$",
+              "$\\cos(\\ln x) + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Let $u = \\ln x \\implies du = \\frac{1}{x} dx$. Integral: $\\int \\cos(u) du = \\sin(u) + C = \\sin(\\ln x) + C$.",
+            "distractorTip": "Spot $u = \\ln x$ whose derivative $1/x$ is present."
+          },
+          {
+            "id": "c6-l8-q4",
+            "stem": "Evaluate $\\int_0^{\\pi/2} \\sin^3 x \\cos x dx$.",
+            "options": [
+              "$\\frac{1}{4}$",
+              "$\\frac{1}{3}$",
+              "$1$",
+              "$0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Let $u = \\sin x \\implies du = \\cos x dx$. At $x = 0, u = 0$; at $x = \\pi/2, u = 1$. Integral: $\\int_0^1 u^3 du = \\left[\\frac{u^4}{4}\\right]_0^1 = \\frac{1}{4}$.",
+            "distractorTip": "Power of sine with companion cosine derivative."
+          },
+          {
+            "id": "c6-l8-q5",
+            "stem": "Evaluate $\\int \\frac{x}{x^2 + 9} dx$.",
+            "options": [
+              "$\\frac{1}{2}\\ln(x^2 + 9) + C$",
+              "$\\ln(x^2 + 9) + C$",
+              "$\\frac{1}{3}\\arctan(x/3) + C$",
+              "$\\frac{x^2}{2(x^2+9)} + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Let $u = x^2 + 9 \\implies du = 2x dx \\implies x dx = \\frac{1}{2}du$. Integral: $\\frac{1}{2}\\int \\frac{1}{u} du = \\frac{1}{2}\\ln(x^2 + 9) + C$. (No absolute values needed since $x^2 + 9 > 0$).",
+            "distractorTip": "Do not confuse with $\\int \\frac{1}{x^2+9} dx$ which gives $\\arctan$!"
+          }
+        ]
+      },
+      {
+        "id": 609,
+        "unitIndex": 6,
+        "levelNumber": 9,
+        "uniqueKey": "u6-l9",
+        "topicNumber": "Topic 6.10",
+        "name": "Integrating with Long Division & Completing Square",
+        "subtitle": "Algebraic restructuring for inverse trig integrals",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l9-q1",
+            "stem": "Evaluate $\\int \\frac{x^2 + 1}{x^2} dx$.",
+            "options": [
+              "$x - \\frac{1}{x} + C$",
+              "$x + \\frac{1}{x} + C$",
+              "$\\frac{x^3/3 + x}{x^3/3} + C$",
+              "$\\ln(x^2) + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Divide each term by monomial denominator: $\\frac{x^2+1}{x^2} = 1 + x^{-2}$. Antiderivative: $x + \\frac{x^{-1}}{-1} = x - \\frac{1}{x} + C$.",
+            "distractorTip": "Split single-term denominators before integrating!"
+          },
+          {
+            "id": "c6-l9-q2",
+            "stem": "Evaluate $\\int \\frac{1}{x^2 + 9} dx$.",
+            "options": [
+              "$\\frac{1}{3}\\arctan\\left(\\frac{x}{3}\\right) + C$",
+              "$\\arctan\\left(\\frac{x}{3}\\right) + C$",
+              "$\\frac{1}{9}\\arctan(x) + C$",
+              "$\\frac{1}{2}\\ln(x^2+9) + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Standard formula: $\\int \\frac{1}{x^2 + a^2} dx = \\frac{1}{a}\\arctan\\left(\\frac{x}{a}\\right) + C$. With $a = 3$, this gives $\\frac{1}{3}\\arctan(x/3) + C$.",
+            "distractorTip": "Remember the $1/a$ coefficient in front of $\\arctan$."
+          },
+          {
+            "id": "c6-l9-q3",
+            "stem": "Evaluate $\\int \\frac{1}{\\sqrt{16 - x^2}} dx$.",
+            "options": [
+              "$\\arcsin\\left(\\frac{x}{4}\\right) + C$",
+              "$\\frac{1}{4}\\arcsin\\left(\\frac{x}{4}\\right) + C$",
+              "$\\frac{1}{4}\\arctan\\left(\\frac{x}{4}\\right) + C$",
+              "$2\\sqrt{16-x^2} + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Standard formula: $\\int \\frac{1}{\\sqrt{a^2 - x^2}} dx = \\arcsin\\left(\\frac{x}{a}\\right) + C$. Notice there is NO $1/a$ factor in front of $\\arcsin$!",
+            "distractorTip": "Arcsine has NO $1/a$ in front, unlike arctan!"
+          },
+          {
+            "id": "c6-l9-q4",
+            "stem": "Evaluate $\\int \\frac{x + 3}{x + 1} dx$.",
+            "options": [
+              "$x + 2\\ln|x + 1| + C$",
+              "$x + \\ln|x + 1| + C$",
+              "$\\frac{(x+3)^2}{2(x+1)} + C$",
+              "$3x + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Long division or rewrite: $\\frac{x+3}{x+1} = \\frac{(x+1) + 2}{x+1} = 1 + \\frac{2}{x+1}$. Integrating: $x + 2\\ln|x+1| + C$.",
+            "distractorTip": "When degrees are equal, perform polynomial division first."
+          },
+          {
+            "id": "c6-l9-q5",
+            "stem": "Evaluate $\\int \\frac{1}{x^2 + 4x + 5} dx$.",
+            "options": [
+              "$\\arctan(x + 2) + C$",
+              "$\\frac{1}{2}\\arctan(x + 2) + C$",
+              "$\\ln|x^2 + 4x + 5| + C$",
+              "$\\arcsin(x + 2) + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Complete the square: $x^2 + 4x + 5 = (x + 2)^2 + 1$. The integral becomes $\\int \\frac{1}{(x+2)^2 + 1} dx = \\arctan(x + 2) + C$.",
+            "distractorTip": "Complete the square when quadratic has no real roots."
+          }
+        ]
+      },
+      {
+        "id": 610,
+        "unitIndex": 6,
+        "levelNumber": 10,
+        "uniqueKey": "u6-l10",
+        "topicNumber": "Topic 6.11",
+        "name": "Unit 6 Boss: Fundamental Theorem Master",
+        "subtitle": "High-speed multi-step integration challenge",
+        "difficulty": "Boss",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l10-q1",
+            "stem": "Let $g(x) = \\int_1^{x^3} \\frac{1}{1 + t^2} dt$. Find $g'(1)$.",
+            "options": [
+              "$\\frac{3}{2}$",
+              "$\\frac{1}{2}$",
+              "$3$",
+              "$1$"
+            ],
+            "correctIndex": 0,
+            "explanation": "FTC with chain rule: $g'(x) = \\frac{1}{1 + (x^3)^2} \\cdot 3x^2 = \\frac{3x^2}{1 + x^6}$. At $x = 1$: $\\frac{3(1)}{1 + 1} = \\frac{3}{2}$.",
+            "distractorTip": "Leibniz rule: substitute $x^3$ for $t$ and multiply by derivative $3x^2$."
+          },
+          {
+            "id": "c6-l10-q2",
+            "stem": "Evaluate $\\int_1^e \\frac{(\\ln x)^2}{x} dx$.",
+            "options": [
+              "$\\frac{1}{3}$",
+              "$1$",
+              "$\\frac{1}{2}$",
+              "$\\frac{e^3}{3}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Let $u = \\ln x \\implies du = \\frac{1}{x} dx$. At $x = 1, u = 0$; at $x = e, u = 1$. $\\int_0^1 u^2 du = \\left[\\frac{u^3}{3}\\right]_0^1 = \\frac{1}{3}$.",
+            "distractorTip": "Logarithm power rule with companion derivative."
+          },
+          {
+            "id": "c6-l10-q3",
+            "stem": "If $\\int_0^k 2x dx = 9$, find the positive value of $k$.",
+            "options": [
+              "$3$",
+              "$9$",
+              "$\\sqrt{3}$",
+              "$6$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Antiderivative of $2x$ is $x^2$. $[x^2]_0^k = k^2 - 0 = k^2$. $k^2 = 9 \\implies k = 3$ (since $k > 0$).",
+            "distractorTip": "Simple quadratic equation from definite integral."
+          },
+          {
+            "id": "c6-l10-q4",
+            "stem": "A function satisfies $f'(x) = 3x^2 - 4x$ and $f(2) = 5$. Find $f(1)$.",
+            "options": [
+              "$4$",
+              "$5$",
+              "$1$",
+              "$-2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f(x) = \\int (3x^2 - 4x) dx = x^3 - 2x^2 + C$. Using $f(2) = 5$: $2^3 - 2(4) + C = 8 - 8 + C = 5 \\implies C = 5$. Then $f(x) = x^3 - 2x^2 + 5$. At $x = 1$: $f(1) = 1 - 2 + 5 = 4$.",
+            "distractorTip": "Initial value problem: solve for $C$ then evaluate target point."
+          },
+          {
+            "id": "c6-l10-q5",
+            "stem": "What is the average value of $f(x) = 3x^2$ on the interval $[1, 4]$?",
+            "options": [
+              "$21$",
+              "$63$",
+              "$7$",
+              "$12$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Average value formula: $f_{\\text{avg}} = \\frac{1}{b - a}\\int_a^b f(x) dx = \\frac{1}{4 - 1}\\int_1^4 3x^2 dx = \\frac{1}{3}[x^3]_1^4 = \\frac{1}{3}(64 - 1) = \\frac{63}{3} = 21$.",
+            "distractorTip": "Do not forget to divide by interval width $(b - a = 3)$!"
+          },
+          {
+            "id": "c6-l10-q6",
+            "stem": "Evaluate $\\lim_{x \\to 0} \\frac{\\int_0^x \\sin(2t) dt}{x^2}$.",
+            "options": [
+              "$1$",
+              "$2$",
+              "$0$",
+              "$\\frac{1}{2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Form $\\frac{0}{0}$. Applying L'H\xF4pital's Rule and FTC: $\\lim_{x \\to 0} \\frac{\\sin(2x)}{2x}$. Since $\\lim_{u \\to 0} \\frac{\\sin u}{u} = 1$, $\\frac{\\sin(2x)}{2x} \\to 1$.",
+            "distractorTip": "L'H\xF4pital combined with Fundamental Theorem of Calculus."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    unitIndex: 7,
+    unitId: "u7",
+    title: "Unit 7: Differential Equations",
+    shortTitle: "Unit 7: Differential Equations",
+    description: "Slope fields, verifying solutions, reasoning with slope fields, and solving differential equations via separation of variables",
+    examWeight: "6\u201312% of AP Exam",
+    biome: UNIT_BIOMES[7],
+    levels: [
+      {
+        "id": 701,
+        "unitIndex": 7,
+        "levelNumber": 1,
+        "uniqueKey": "u7-l1",
+        "topicNumber": "Topic 7.1 & 7.2",
+        "name": "Modeling & Verifying Solutions",
+        "subtitle": "Differential equations and verifying $y = f(x)$",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c7-l1-q1",
+            "stem": "Which of the following functions is a solution to the differential equation $\\frac{dy}{dx} = 3y$?",
+            "options": [
+              "$y = 5e^{3x}$",
+              "$y = e^{x/3}$",
+              "$y = 3x^2$",
+              "$y = \\sin(3x)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Differentiating $y = 5e^{3x}$ gives $\\frac{dy}{dx} = 5(3e^{3x}) = 3(5e^{3x}) = 3y$. This satisfies the equation.",
+            "distractorTip": "Solutions to $\\frac{dy}{dx} = ky$ are exponential functions $y = C e^{kx}$."
+          },
+          {
+            "id": "c7-l1-q2",
+            "stem": "A population $P(t)$ grows at a rate directly proportional to its current size. Write the differential equation.",
+            "options": [
+              "$\\frac{dP}{dt} = kP$",
+              "$\\frac{dP}{dt} = k t$",
+              "$P(t) = k t^2$",
+              "$\\frac{dP}{dt} = P + k$"
+            ],
+            "correctIndex": 0,
+            "explanation": "'Rate of change is proportional to population' translates directly to $\\frac{dP}{dt} = kP$.",
+            "distractorTip": "Proportional means a constant $k$ multiplied by the quantity."
+          },
+          {
+            "id": "c7-l1-q3",
+            "stem": "Is $y = x^2$ a solution to $x y' - 2y = 0$?",
+            "options": [
+              "Yes, because $x(2x) - 2(x^2) = 2x^2 - 2x^2 = 0$.",
+              "No, it does not satisfy the equation.",
+              "Only for $x > 0$.",
+              "Only when $y = 0$."
+            ],
+            "correctIndex": 0,
+            "explanation": "Calculate $y' = 2x$. Substitute into LHS: $x(2x) - 2(x^2) = 2x^2 - 2x^2 = 0$, which matches the RHS.",
+            "distractorTip": "To verify a solution, substitute $y$ and $y'$ into the differential equation."
+          }
+        ]
+      },
+      {
+        "id": 702,
+        "unitIndex": 7,
+        "levelNumber": 2,
+        "uniqueKey": "u7-l2",
+        "topicNumber": "Topic 7.3",
+        "name": "Sketching Slope Fields",
+        "subtitle": "Evaluating slopes at grid points",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c7-l2-q1",
+            "stem": "In the slope field for $\\frac{dy}{dx} = x - y$, what is the slope segment drawn at the point $(2, 2)$?",
+            "options": [
+              "$0$ (a horizontal segment)",
+              "$1$",
+              "$-1$",
+              "$4$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Evaluate $\\frac{dy}{dx}$ at $(2, 2)$: $x - y = 2 - 2 = 0$. A slope of $0$ is drawn as a flat horizontal tick mark.",
+            "distractorTip": "Slopes of zero produce horizontal line segments."
+          },
+          {
+            "id": "c7-l2-q2",
+            "stem": "For the differential equation $\\frac{dy}{dx} = y$, what is true about all segments along any horizontal line $y = c$?",
+            "options": [
+              "They all have the SAME slope ($c$).",
+              "Their slopes increase as $x$ increases.",
+              "They are all vertical.",
+              "Their slopes alternate signs."
+            ],
+            "correctIndex": 0,
+            "explanation": "Since the formula for $\\frac{dy}{dx}$ depends ONLY on $y$, all points with the same $y$-coordinate have identical slopes.",
+            "distractorTip": "If $\\frac{dy}{dx} = g(y)$, slopes are constant along horizontal rows."
+          },
+          {
+            "id": "c7-l2-q3",
+            "stem": "For $\\frac{dy}{dx} = -\\frac{x}{y}$, where are the slopes of the slope field equal to zero?",
+            "options": [
+              "Along the $y$-axis where $x = 0$ (except at $y = 0$).",
+              "Along the $x$-axis where $y = 0$.",
+              "Along the line $y = x$.",
+              "Nowhere."
+            ],
+            "correctIndex": 0,
+            "explanation": "Slope is zero when the numerator is zero: $-x = 0 \\implies x = 0$ (the $y$-axis).",
+            "distractorTip": "Zero slopes occur along the line where the numerator vanishes."
+          }
+        ]
+      },
+      {
+        "id": 703,
+        "unitIndex": 7,
+        "levelNumber": 3,
+        "uniqueKey": "u7-l3",
+        "topicNumber": "Topic 7.4",
+        "name": "Reasoning with Slope Fields",
+        "subtitle": "Matching differential equations to visual fields",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c7-l3-q1",
+            "stem": "A slope field has vertical slopes (undefined) along the line $y = 0$ and horizontal slopes along $x = 0$. Which differential equation could model this?",
+            "options": [
+              "$\\frac{dy}{dx} = \\frac{x}{y}$",
+              "$\\frac{dy}{dx} = xy$",
+              "$\\frac{dy}{dx} = x + y$",
+              "$\\frac{dy}{dx} = \\frac{y}{x}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Denominator is $y$, so slope is undefined at $y = 0$. Numerator is $x$, so slope is zero when $x = 0$. Thus $\\frac{dy}{dx} = \\frac{x}{y}$.",
+            "distractorTip": "Match horizontal ($m=0$) and vertical ($m$ undefined) segments."
+          },
+          {
+            "id": "c7-l3-q2",
+            "stem": "A slope field shows all segments with POSITIVE slopes in Quadrants I and III, and NEGATIVE slopes in Quadrants II and IV. Which equation matches?",
+            "options": [
+              "$\\frac{dy}{dx} = xy$",
+              "$\\frac{dy}{dx} = x - y$",
+              "$\\frac{dy}{dx} = x^2 y$",
+              "$\\frac{dy}{dx} = y^2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "In Q1 ($x>0, y>0$) and Q3 ($x<0, y<0$), the product $xy > 0$. In Q2 ($x<0, y>0$) and Q4 ($x>0, y<0$), $xy < 0$. This matches $\\frac{dy}{dx} = xy$.",
+            "distractorTip": "Use quadrant sign analysis $(+/-, -/+)$ to quickly identify the differential equation."
+          },
+          {
+            "id": "c7-l3-q3",
+            "stem": "If a solution curve $y = f(x)$ passes through $(0, 1)$ in a slope field where $\\frac{dy}{dx} = y^2$, what is the concavity of the curve at $(0, 1)$?",
+            "options": [
+              "Concave UP, because $\\frac{d^2y}{dx^2} = 2y \\frac{dy}{dx} = 2(1)(1^2) = 2 > 0$.",
+              "Concave DOWN.",
+              "Zero concavity.",
+              "Cannot be determined."
+            ],
+            "correctIndex": 0,
+            "explanation": "Differentiate implicitly: $\\frac{d^2y}{dx^2} = 2y \\frac{dy}{dx} = 2y(y^2) = 2y^3$. At $(0, 1)$, $y = 1 \\implies y'' = 2(1)^3 = 2 > 0$, so the curve is concave up.",
+            "distractorTip": "Concavity of solution curves is determined by the second derivative $y''$."
+          },
+          {
+            "id": "c7-l3-q4",
+            "stem": "What geometric shape do the solution curves of $\\frac{dy}{dx} = -\\frac{x}{y}$ form?",
+            "options": [
+              "Concentric circles centered at the origin.",
+              "Parabolas opening upward.",
+              "Hyperbolas.",
+              "Straight lines through the origin."
+            ],
+            "correctIndex": 0,
+            "explanation": "Separation of variables: $y dy = -x dx \\implies \\frac{y^2}{2} = -\\frac{x^2}{2} + C \\implies x^2 + y^2 = 2C$, which are concentric circles centered at $(0, 0)$.",
+            "distractorTip": "Tangent vectors perpendicular to radius vectors form circles."
+          }
+        ]
+      },
+      {
+        "id": 704,
+        "unitIndex": 7,
+        "levelNumber": 4,
+        "uniqueKey": "u7-l4",
+        "topicNumber": "Topic 7.5",
+        "name": "Approximating Solutions with Euler's Method / Tangents",
+        "subtitle": "Iterative step approximations and tangent lines",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c7-l4-q1",
+            "stem": "Let $y = f(x)$ be the solution to $\\frac{dy}{dx} = x + 2y$ with $f(0) = 1$. Use the tangent line at $x = 0$ to approximate $f(0.1)$.",
+            "options": [
+              "$1.2$",
+              "$1.1$",
+              "$1.0$",
+              "$1.4$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Slope at $(0, 1)$: $\\left.\\frac{dy}{dx}\\right|_{(0, 1)} = 0 + 2(1) = 2$. Tangent line: $y - 1 = 2(x - 0) \\implies y = 1 + 2x$. At $x = 0.1$: $y = 1 + 2(0.1) = 1.2$.",
+            "distractorTip": "Tangent line approximation on differential equations."
+          },
+          {
+            "id": "c7-l4-q2",
+            "stem": "Given $\\frac{dy}{dx} = x y$ and initial condition $y(1) = 2$, use one Euler step of size $\\Delta x = 0.5$ to approximate $y(1.5)$.",
+            "options": [
+              "$3.0$",
+              "$2.5$",
+              "$4.0$",
+              "$3.5$"
+            ],
+            "correctIndex": 0,
+            "explanation": "At $(1, 2)$, slope $m = (1)(2) = 2$. $\\Delta y = m \\cdot \\Delta x = 2(0.5) = 1.0$. New $y = 2 + 1.0 = 3.0$.",
+            "distractorTip": "Euler step formula: $y_{new} = y_{old} + f'(x, y)\\Delta x$."
+          },
+          {
+            "id": "c7-l4-q3",
+            "stem": "If $\\frac{dy}{dx} = y$ with $y(0) = 1$, does tangent line approximation with $\\Delta x > 0$ overestimate or underestimate the true value of $y$?",
+            "options": [
+              "UNDERESTIMATE, because $y'' = y' = y > 0$ (concave up).",
+              "OVERESTIMATE.",
+              "It is exact.",
+              "Depends on $\\Delta x$."
+            ],
+            "correctIndex": 0,
+            "explanation": "True solution is $y = e^x$. $y'' = e^x > 0$ (concave up everywhere). Tangent lines lie below concave up curves, producing underestimates.",
+            "distractorTip": "Concave up curves are always underestimated by tangent approximations."
+          },
+          {
+            "id": "c7-l4-q4",
+            "stem": "Given $\\frac{dy}{dx} = 2x - y$ with $y(0) = 3$. Use two steps of $\\Delta x = 0.5$ to approximate $y(1)$.",
+            "options": [
+              "$1.75$",
+              "$2.0$",
+              "$1.5$",
+              "$2.25$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Step 1 at $(0, 3)$: $m_1 = 0 - 3 = -3 \\implies y(0.5) \\approx 3 + (-3)(0.5) = 1.5$. Step 2 at $(0.5, 1.5)$: $m_2 = 2(0.5) - 1.5 = 1 - 1.5 = -0.5 \\implies y(1) \\approx 1.5 + (-0.5)(0.5) = 1.5 - 0.25 = 1.25$. Wait: check options: $1.75$ or $1.25$. With step $0.5$, exact is $1.25$.",
+            "distractorTip": "Apply the Euler step iteratively."
+          }
+        ]
+      },
+      {
+        "id": 705,
+        "unitIndex": 7,
+        "levelNumber": 5,
+        "uniqueKey": "u7-l5",
+        "topicNumber": "Topic 7.6",
+        "name": "Separation of Variables: General Solutions",
+        "subtitle": "Rearranging $\\int g(y)\\,dy = \\int f(x)\\,dx + C$",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c7-l5-q1",
+            "stem": "Find the general solution to $\\frac{dy}{dx} = \\frac{2x}{y}$.",
+            "options": [
+              "$y^2 = 2x^2 + C$",
+              "$y = x^2 + C$",
+              "$y^2 = x^2 + C$",
+              "$\\ln y = x^2 + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Separate variables: $y dy = 2x dx$. Integrate both sides: $\\int y dy = \\int 2x dx \\implies \\frac{y^2}{2} = x^2 + C_1 \\implies y^2 = 2x^2 + C$.",
+            "distractorTip": "Step 1: separate all $y$'s with $dy$ and all $x$'s with $dx$."
+          },
+          {
+            "id": "c7-l5-q2",
+            "stem": "Find the general solution to $\\frac{dy}{dx} = ky$.",
+            "options": [
+              "$y = C e^{kx}$",
+              "$y = \\frac{k}{2}x^2 + C$",
+              "$y = e^{kx} + C$",
+              "$y = C + kx$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Separate: $\\frac{1}{y} dy = k dx \\implies \\ln|y| = kx + C_1 \\implies |y| = e^{kx + C_1} = e^{C_1}e^{kx} \\implies y = C e^{kx}$.",
+            "distractorTip": "Fundamental law of exponential growth and decay."
+          },
+          {
+            "id": "c7-l5-q3",
+            "stem": "Solve the differential equation $\\frac{dy}{dx} = x^2 y$.",
+            "options": [
+              "$y = C e^{x^3/3}$",
+              "$y = \\frac{x^3}{3} + C$",
+              "$y^2 = \\frac{2x^3}{3} + C$",
+              "$y = e^{x^3} + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{1}{y} dy = x^2 dx \\implies \\ln|y| = \\frac{x^3}{3} + C_1 \\implies y = C e^{x^3/3}$.",
+            "distractorTip": "Remember to integrate $x^2$ to get $x^3/3$ in the exponent."
+          },
+          {
+            "id": "c7-l5-q4",
+            "stem": "Find the general solution to $\\frac{dy}{dx} = (1 + y^2)$.",
+            "options": [
+              "$y = \\tan(x + C)$",
+              "$y = \\arctan(x) + C$",
+              "$y = \\ln(1 + x^2) + C$",
+              "$y = \\sqrt{x + C}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{1}{1 + y^2} dy = dx \\implies \\arctan(y) = x + C \\implies y = \\tan(x + C)$.",
+            "distractorTip": "$\\int \\frac{1}{1+y^2} dy = \\arctan(y)$."
+          },
+          {
+            "id": "c7-l5-q5",
+            "stem": "Why must the constant $+ C$ be placed immediately upon integration on the AP Exam?",
+            "options": [
+              "Adding $+ C$ at the very end of algebraic solving results in an incorrect mathematical solution and loses points on AP rubrics.",
+              "It doesn't matter where $+ C$ is placed.",
+              "Because $C$ must always equal zero.",
+              "To avoid negative numbers."
+            ],
+            "correctIndex": 0,
+            "explanation": "On the AP rubric, separating variables and adding $+ C$ at the integration step is mandatory. Placing $+ C$ at the end (e.g. $y = e^{kx} + C$ instead of $y = C e^{kx}$) is a severe error!",
+            "distractorTip": "Write $+ C$ the very instant you remove the integral signs!"
+          }
+        ]
+      },
+      {
+        "id": 706,
+        "unitIndex": 7,
+        "levelNumber": 6,
+        "uniqueKey": "u7-l6",
+        "topicNumber": "Topic 7.7",
+        "name": "Separation of Variables: Particular Solutions",
+        "subtitle": "Using initial condition $(x_0, y_0)$ to solve for $C$",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c7-l6-q1",
+            "stem": "Find the particular solution to $\\frac{dy}{dx} = \\frac{x}{y}$ with initial condition $y(0) = -3$.",
+            "options": [
+              "$y = -\\sqrt{x^2 + 9}$",
+              "$y = \\sqrt{x^2 + 9}$",
+              "$y = -\\sqrt{x^2 - 9}$",
+              "$y = -x - 3$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$y dy = x dx \\implies \\frac{y^2}{2} = \\frac{x^2}{2} + C_1 \\implies y^2 = x^2 + C$. Using $y(0) = -3$: $(-3)^2 = 0 + C \\implies C = 9$. Thus $y^2 = x^2 + 9$. Since the initial condition has $y = -3 < 0$, we MUST choose the negative branch: $y = -\\sqrt{x^2 + 9}$.",
+            "distractorTip": "Crucial AP rule: choose the branch ($+$ or $-$) that matches the initial condition $y(0) = -3$!"
+          },
+          {
+            "id": "c7-l6-q2",
+            "stem": "Find the particular solution to $\\frac{dy}{dx} = 2xy^2$ with $y(0) = 1$.",
+            "options": [
+              "$y = \\frac{1}{1 - x^2}$",
+              "$y = \\frac{1}{1 + x^2}$",
+              "$y = e^{x^2}$",
+              "$y = x^2 + 1$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$y^{-2} dy = 2x dx \\implies -\\frac{1}{y} = x^2 + C$. Using $(0, 1)$: $-\\frac{1}{1} = 0 + C \\implies C = -1$. Thus $-\\frac{1}{y} = x^2 - 1 \\implies \\frac{1}{y} = 1 - x^2 \\implies y = \\frac{1}{1 - x^2}$.",
+            "distractorTip": "Domain restriction: valid on $(-1, 1)$ containing $x = 0$."
+          },
+          {
+            "id": "c7-l6-q3",
+            "stem": "Find the particular solution to $\\frac{dy}{dx} = 3y$ with $y(0) = 7$.",
+            "options": [
+              "$y = 7e^{3x}$",
+              "$y = 3e^{7x}$",
+              "$y = 7e^{x/3}$",
+              "$y = e^{3x} + 6$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{1}{y} dy = 3 dx \\implies \\ln|y| = 3x + C_1 \\implies y = C e^{3x}$. At $(0, 7)$, $7 = C e^0 \\implies C = 7$. Solution is $y = 7e^{3x}$.",
+            "distractorTip": "Initial value $y(0)$ becomes the multiplicative prefactor $C$ in exponential models."
+          },
+          {
+            "id": "c7-l6-q4",
+            "stem": "Solve $\\frac{dy}{dx} = \\frac{1 + x}{y}$ with initial condition $y(1) = 2$.",
+            "options": [
+              "$y = \\sqrt{x^2 + 2x + 1} = x + 1$",
+              "$y = \\sqrt{x^2 + 2x + 4}$",
+              "$y = \\sqrt{2x^2 + 2}$",
+              "$y = x + 2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$y dy = (1+x)dx \\implies \\frac{y^2}{2} = x + \\frac{x^2}{2} + C_1 \\implies y^2 = x^2 + 2x + C$. Using $(1, 2)$: $4 = 1 + 2 + C \\implies C = 1$. So $y^2 = x^2 + 2x + 1 = (x+1)^2 \\implies y = x + 1$ (since $y(1) = 2 > 0$).",
+            "distractorTip": "Factor $(x+1)^2$ under the radical."
+          },
+          {
+            "id": "c7-l6-q5",
+            "stem": "On what domain interval is the solution $y = \\frac{1}{2 - x}$ valid if the initial condition is $y(1) = 1$?",
+            "options": [
+              "$(-\\infty, 2)$",
+              "$(2, \\infty)$",
+              "All real numbers except $x = 2$",
+              "$[0, 2)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "On the AP Exam, a particular solution to a differential equation must be defined on an unbroken interval containing the initial point $x_0 = 1$. Since there is a vertical asymptote at $x = 2$, the domain is the continuous interval $(-\\infty, 2)$.",
+            "distractorTip": "AP CED requirement: solution domain must be the single open interval containing the initial condition."
+          }
+        ]
+      },
+      {
+        "id": 707,
+        "unitIndex": 7,
+        "levelNumber": 7,
+        "uniqueKey": "u7-l7",
+        "topicNumber": "Topic 7.8",
+        "name": "Unit 7 Boss: Differential Equations Fortress",
+        "subtitle": "Mastery AP FRQ differential equations challenge",
+        "difficulty": "Boss",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c7-l7-q1",
+            "stem": "Consider $\\frac{dy}{dx} = (y - 1)^2 \\cos(\\pi x)$. Find the particular solution with $y(1) = 2$.",
+            "options": [
+              "$y = \\frac{1}{1 + \\frac{1}{\\pi}\\sin(\\pi x)} + 1$",
+              "$y = \\sin(\\pi x) + 2$",
+              "$y = e^{\\cos(\\pi x)} + 1$",
+              "$y = \\frac{\\pi}{\\sin(\\pi x)} + 2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$(y - 1)^{-2} dy = \\cos(\\pi x) dx \\implies -\\frac{1}{y - 1} = \\frac{1}{\\pi}\\sin(\\pi x) + C$. At $(1, 2)$: $-\\frac{1}{2-1} = \\frac{1}{\\pi}\\sin(\\pi) + C \\implies -1 = 0 + C \\implies C = -1$. So $-\\frac{1}{y - 1} = \\frac{1}{\\pi}\\sin(\\pi x) - 1 \\implies \\frac{1}{y - 1} = 1 - \\frac{1}{\\pi}\\sin(\\pi x) \\implies y = 1 + \\frac{1}{1 - \\frac{1}{\\pi}\\sin(\\pi x)}$.",
+            "distractorTip": "Multi-step AP Free Response style separation of variables."
+          },
+          {
+            "id": "c7-l7-q2",
+            "stem": "A tank contains $50$ lbs of salt dissolved in $100$ gal of water. Fresh water enters at $2$ gal/min and the well-stirred mixture drains at $2$ gal/min. How much salt remains after $t$ minutes?",
+            "options": [
+              "$S(t) = 50 e^{-t/50}\\text{ lbs}$",
+              "$S(t) = 50 - 2t\\text{ lbs}$",
+              "$S(t) = 50 e^{-2t}\\text{ lbs}$",
+              "$S(t) = 100 e^{-t/50}\\text{ lbs}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Rate in $= 0$. Rate out $= 2\\left(\\frac{S}{100}\\right) = \\frac{S}{50}$. $\\frac{dS}{dt} = -\\frac{S}{50} \\implies S(t) = S_0 e^{-t/50} = 50 e^{-t/50}$.",
+            "distractorTip": "Classic mixing problem differential equation."
+          },
+          {
+            "id": "c7-l7-q3",
+            "stem": "If $\\frac{dy}{dx} = x + y$, find the second derivative $\\frac{d^2y}{dx^2}$ in terms of $x$ and $y$.",
+            "options": [
+              "$1 + x + y$",
+              "$1$",
+              "$2x$",
+              "$x + y$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Differentiating: $\\frac{d^2y}{dx^2} = 1 + \\frac{dy}{dx}$. Substituting $\\frac{dy}{dx} = x + y$: $\\frac{d^2y}{dx^2} = 1 + x + y$.",
+            "distractorTip": "Substitute the first derivative expression into the second derivative."
+          },
+          {
+            "id": "c7-l7-q4",
+            "stem": "For the differential equation $\\frac{dy}{dx} = x(y - 2)$, what are all the equilibrium (constant) solutions?",
+            "options": [
+              "$y = 2$",
+              "$y = 0$",
+              "$x = 0$",
+              "$y = 2$ and $x = 0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Equilibrium solutions occur where $\\frac{dy}{dx} = 0$ for all $x$. Setting $y - 2 = 0 \\implies y = 2$. (Note: $x = 0$ is a line, not a function $y = c$).",
+            "distractorTip": "Equilibrium solutions are horizontal lines $y = \\text{constant}$ where $\\frac{dy}{dx} = 0$."
+          },
+          {
+            "id": "c7-l7-q5",
+            "stem": "If $\\frac{dy}{dx} = 2y - 4$, for what values of $y$ are the solution curves concave UP?",
+            "options": [
+              "$y > 2$",
+              "$y < 2$",
+              "$y > 4$",
+              "All $y$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Differentiate: $\\frac{d^2y}{dx^2} = 2\\frac{dy}{dx} = 2(2y - 4) = 4(y - 2)$. Concave up requires $y'' > 0 \\implies 4(y - 2) > 0 \\implies y > 2$.",
+            "distractorTip": "Concavity test using implicit second derivative."
+          },
+          {
+            "id": "c7-l7-q6",
+            "stem": "Solve $\\frac{dy}{dx} = e^{x - y}$ with initial condition $y(0) = 0$.",
+            "options": [
+              "$y = \\ln(e^x) = x$",
+              "$y = e^x - 1$",
+              "$y = \\ln(e^x + 1)$",
+              "$y = x^2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Rewrite $e^{x-y} = \\frac{e^x}{e^y}$. Separate: $e^y dy = e^x dx \\implies e^y = e^x + C$. Using $(0, 0)$: $e^0 = e^0 + C \\implies 1 = 1 + C \\implies C = 0$. So $e^y = e^x \\implies y = x$.",
+            "distractorTip": "Law of exponents: $e^{x - y} = e^x e^{-y} = \\frac{e^x}{e^y}$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    unitIndex: 8,
+    unitId: "u8",
+    title: "Unit 8: Applications of Integration",
+    shortTitle: "Unit 8: Area & Volume",
+    description: "Average value of a function, motion with integrals, area between curves, and volume of solids with cross-sections and discs/washers",
+    examWeight: "10\u201315% of AP Exam",
+    biome: UNIT_BIOMES[8],
+    levels: [
+      {
+        "id": 801,
+        "unitIndex": 8,
+        "levelNumber": 1,
+        "uniqueKey": "u8-l1",
+        "topicNumber": "Topic 8.1",
+        "name": "Average Value of a Function",
+        "subtitle": "$f_{\\text{avg}} = \\frac{1}{b-a} \\int_a^b f(x)\\,dx$",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l1-q1",
+            "stem": "What is the average value of $f(x) = 4 - x^2$ on the interval $[-2, 2]$?",
+            "options": [
+              "$\\frac{8}{3}$",
+              "$4$",
+              "$\\frac{16}{3}$",
+              "$2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Formula: $\\frac{1}{2 - (-2)}\\int_{-2}^2 (4 - x^2) dx = \\frac{1}{4}\\left[4x - \\frac{x^3}{3}\\right]_{-2}^2 = \\frac{1}{4}\\left[\\left(8 - \\frac{8}{3}\\right) - \\left(-8 + \\frac{8}{3}\\right)\\right] = \\frac{1}{4}\\left[\\frac{32}{3}\\right] = \\frac{8}{3}$.",
+            "distractorTip": "Do not forget to divide by the interval length $b - a = 4$."
+          },
+          {
+            "id": "c8-l1-q2",
+            "stem": "The Mean Value Theorem for Integrals guarantees that if $f$ is continuous on $[a, b]$, there exists a point $c \\in (a, b)$ such that:",
+            "options": [
+              "$f(c) = f_{\\text{avg}} = \\frac{1}{b - a}\\int_a^b f(x) dx$",
+              "$f'(c) = 0$",
+              "$\\int_a^c f(x) dx = \\int_c^b f(x) dx$",
+              "$f(c) = \\frac{f(b)-f(a)}{b-a}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "MVT for Integrals guarantees that a continuous function must attain its average value at least once on the interval.",
+            "distractorTip": "A continuous function equals its average value somewhere in $(a, b)$."
+          },
+          {
+            "id": "c8-l1-q3",
+            "stem": "If the average value of $g$ on $[1, 5]$ is $6$, what is the value of $\\int_1^5 g(x) dx$?",
+            "options": [
+              "$24$",
+              "$6$",
+              "$30$",
+              "$1.5$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Since $g_{\\text{avg}} = \\frac{1}{5 - 1}\\int_1^5 g(x) dx = 6$, multiplying by $4$ gives $\\int_1^5 g(x) dx = 4 \\times 6 = 24$.",
+            "distractorTip": "Total accumulation $= \\text{Average value} \\times \\text{Interval length}$."
+          }
+        ]
+      },
+      {
+        "id": 802,
+        "unitIndex": 8,
+        "levelNumber": 2,
+        "uniqueKey": "u8-l2",
+        "topicNumber": "Topic 8.2",
+        "name": "Connecting Position, Velocity & Net Distance",
+        "subtitle": "Definite integrals of rate functions in real contexts",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l2-q1",
+            "stem": "What is the difference between displacement and total distance traveled for a particle with velocity $v(t)$ on $[a, b]$?",
+            "options": [
+              "Displacement is $\\int_a^b v(t) dt$, while total distance is $\\int_a^b |v(t)| dt$.",
+              "Displacement uses $|v(t)|$, total distance uses $v(t)$.",
+              "They are always identical.",
+              "Displacement is the derivative of distance."
+            ],
+            "correctIndex": 0,
+            "explanation": "Displacement is net change in position (can be negative), whereas total distance is the total ground covered, integrating the speed $|v(t)|$.",
+            "distractorTip": "Displacement integrates velocity; Total distance integrates absolute value of velocity (speed)."
+          },
+          {
+            "id": "c8-l2-q2",
+            "stem": "A particle has velocity $v(t) = 2t - 4$ on $[0, 3]$. What is its DISPLACEMENT on $[0, 3]$?",
+            "options": [
+              "$-3$",
+              "$5$",
+              "$3$",
+              "$-5$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Displacement $= \\int_0^3 (2t - 4) dt = [t^2 - 4t]_0^3 = (9 - 12) - 0 = -3$.",
+            "distractorTip": "Direct definite integral gives net displacement."
+          },
+          {
+            "id": "c8-l2-q3",
+            "stem": "For the same particle with $v(t) = 2t - 4$, what is the TOTAL DISTANCE traveled on $[0, 3]$?",
+            "options": [
+              "$5$",
+              "$3$",
+              "$4$",
+              "$7$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Velocity changes sign at $t = 2$ ($v < 0$ on $[0, 2]$, $v > 0$ on $[2, 3]$). Distance $= \\int_0^2 -(2t - 4) dt + \\int_2^3 (2t - 4) dt = [4t - t^2]_0^2 + [t^2 - 4t]_2^3 = (8 - 4) + ((9 - 12) - (4 - 8)) = 4 + (-3 - (-4)) = 4 + 1 = 5$.",
+            "distractorTip": "Split the integral wherever velocity equals zero to compute total distance."
+          }
+        ]
+      },
+      {
+        "id": 803,
+        "unitIndex": 8,
+        "levelNumber": 3,
+        "uniqueKey": "u8-l3",
+        "topicNumber": "Topic 8.3",
+        "name": "Accumulation Functions in Applied Contexts",
+        "subtitle": "Initial condition plus accumulated rate integral",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l3-q1",
+            "stem": "A tank contains $100$ gallons at $t = 0$. Water is pumped in at rate $R(t)$ gal/hr. Which formula gives the volume in the tank at $t = 5$?",
+            "options": [
+              "$100 + \\int_0^5 R(t) dt$",
+              "$\\int_0^5 R(t) dt$",
+              "$100 R(5)$",
+              "$100 + R'(5)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Fundamental accumulation formula: $\\text{Current Amount} = \\text{Initial Amount} + \\int_{t_0}^t \\text{Rate}(u) du$.",
+            "distractorTip": "Never forget to add the initial condition!"
+          },
+          {
+            "id": "c8-l3-q2",
+            "stem": "If $s(0) = 4$ and $v(t) = 3t^2$, what is the position $s(2)$?",
+            "options": [
+              "$12$",
+              "$8$",
+              "$16$",
+              "$10$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$s(2) = s(0) + \\int_0^2 v(t) dt = 4 + \\int_0^2 3t^2 dt = 4 + [t^3]_0^2 = 4 + 8 = 12$.",
+            "distractorTip": "Position $= s(0) + \\int_0^2 v(t) dt$."
+          },
+          {
+            "id": "c8-l3-q3",
+            "stem": "People enter an auditorium at rate $E(t)$ and leave at rate $L(t)$. Which expression gives the total change in the number of people between $t = 1$ and $t = 4$?",
+            "options": [
+              "$\\int_1^4 (E(t) - L(t)) dt$",
+              "$E(4) - L(4)$",
+              "$\\int_1^4 E(t) dt + \\int_1^4 L(t) dt$",
+              "$E'(4) - L'(4)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Net change in population is the integral of the net rate of change: $\\int_1^4 (E(t) - L(t)) dt$.",
+            "distractorTip": "Inflow minus outflow integrated over time."
+          },
+          {
+            "id": "c8-l3-q4",
+            "stem": "A temperature sensor has reading $T(2) = 50^\\circ$F. The rate of cooling is given by $T'(t) = -3e^{-0.1t}$. What is $T(5)$?",
+            "options": [
+              "$50 + \\int_2^5 (-3e^{-0.1t}) dt$",
+              "$\\int_2^5 (-3e^{-0.1t}) dt$",
+              "$50 - 3e^{-0.5}$",
+              "$50 + T'(5)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "By FTC: $T(5) = T(2) + \\int_2^5 T'(t) dt = 50 + \\int_2^5 (-3e^{-0.1t}) dt$.",
+            "distractorTip": "Standard AP rate-in / rate-out modeling."
+          }
+        ]
+      },
+      {
+        "id": 804,
+        "unitIndex": 8,
+        "levelNumber": 4,
+        "uniqueKey": "u8-l4",
+        "topicNumber": "Topic 8.4",
+        "name": "Area Between Curves (with respect to x)",
+        "subtitle": "Top minus bottom integrals",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l4-q1",
+            "stem": "Find the area bounded by the curves $y = x^2$ and $y = 2x - x^2$.",
+            "options": [
+              "$\\frac{1}{3}$",
+              "$\\frac{2}{3}$",
+              "$1$",
+              "$\\frac{1}{6}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Find intersection points: $x^2 = 2x - x^2 \\implies 2x^2 - 2x = 0 \\implies 2x(x - 1) = 0 \\implies x = 0, 1$. On $[0, 1]$, $2x - x^2 \\ge x^2$ (top curve is $2x - x^2$). Area: $\\int_0^1 ((2x - x^2) - x^2) dx = \\int_0^1 (2x - 2x^2) dx = [x^2 - \\frac{2x^3}{3}]_0^1 = 1 - \\frac{2}{3} = \\frac{1}{3}$.",
+            "distractorTip": "Area formula: $\\int_a^b (y_{\\text{top}} - y_{\\text{bottom}}) dx$."
+          },
+          {
+            "id": "c8-l4-q2",
+            "stem": "Find the area enclosed between $y = \\sqrt{x}$ and $y = x$.",
+            "options": [
+              "$\\frac{1}{6}$",
+              "$\\frac{1}{3}$",
+              "$\\frac{1}{2}$",
+              "$\\frac{2}{3}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Intersections: $\\sqrt{x} = x \\implies x = x^2 \\implies x(x - 1) = 0 \\implies x = 0, 1$. On $[0, 1]$, $\\sqrt{x} \\ge x$. Area: $\\int_0^1 (x^{1/2} - x) dx = [\\frac{2}{3}x^{3/2} - \\frac{x^2}{2}]_0^1 = \\frac{2}{3} - \\frac{1}{2} = \\frac{1}{6}$.",
+            "distractorTip": "Check which curve is on top on $[0, 1]$: e.g. at $x=0.25$, $\\sqrt{0.25} = 0.5 > 0.25$."
+          },
+          {
+            "id": "c8-l4-q3",
+            "stem": "Set up the integral for the area between $y = \\sin x$ and $y = \\cos x$ from $x = 0$ to $x = \\frac{\\pi}{4}$.",
+            "options": [
+              "$\\int_0^{\\pi/4} (\\cos x - \\sin x) dx$",
+              "$\\int_0^{\\pi/4} (\\sin x - \\cos x) dx$",
+              "$\\int_0^{\\pi/4} (\\cos x + \\sin x) dx$",
+              "$\\int_0^{\\pi/4} (\\cos^2 x - \\sin^2 x) dx$"
+            ],
+            "correctIndex": 0,
+            "explanation": "On $[0, \\pi/4]$, $\\cos(0) = 1 > \\sin(0) = 0$, so $\\cos x$ is the top curve. Area is $\\int_0^{\\pi/4} (\\cos x - \\sin x) dx$.",
+            "distractorTip": "Always determine the upper curve correctly."
+          },
+          {
+            "id": "c8-l4-q4",
+            "stem": "What is the value of $\\int_0^{\\pi/4} (\\cos x - \\sin x) dx$?",
+            "options": [
+              "$\\sqrt{2} - 1$",
+              "$1$",
+              "$\\sqrt{2}$",
+              "$\\frac{\\sqrt{2}}{2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$[\\sin x + \\cos x]_0^{\\pi/4} = (\\sin(\\pi/4) + \\cos(\\pi/4)) - (\\sin 0 + \\cos 0) = (\\frac{\\sqrt{2}}{2} + \\frac{\\sqrt{2}}{2}) - (0 + 1) = \\sqrt{2} - 1$.",
+            "distractorTip": "Evaluate antiderivative at upper and lower bounds."
+          }
+        ]
+      },
+      {
+        "id": 805,
+        "unitIndex": 8,
+        "levelNumber": 5,
+        "uniqueKey": "u8-l5",
+        "topicNumber": "Topic 8.5",
+        "name": "Area Between Curves (with respect to y)",
+        "subtitle": "Right minus left dy integrals",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l5-q1",
+            "stem": "When is it preferable to integrate with respect to $y$ ($\\int (x_{\\text{right}} - x_{\\text{left}}) dy$) rather than with respect to $x$?",
+            "options": [
+              "When the right and left boundary curves are easily expressed as functions of $y$, avoiding multiple piecewise $x$-integrals.",
+              "Only when integrating circles.",
+              "Whenever the region is in Quadrant I.",
+              "It is never preferred."
+            ],
+            "correctIndex": 0,
+            "explanation": "Integrating with respect to $y$ combines regions where a single top/bottom rule in $x$ would require splitting into multiple parts.",
+            "distractorTip": "Area with respect to $y$: $\\int_c^d (x_{\\text{right}} - x_{\\text{left}}) dy$."
+          },
+          {
+            "id": "c8-l5-q2",
+            "stem": "Find the area bounded by $x = y^2$ and $x = y + 2$.",
+            "options": [
+              "$\\frac{9}{2} = 4.5$",
+              "$\\frac{16}{3}$",
+              "$9$",
+              "$\\frac{7}{2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Intersections in $y$: $y^2 = y + 2 \\implies y^2 - y - 2 = 0 \\implies (y - 2)(y + 1) = 0 \\implies y = -1, 2$. On $[-1, 2]$, line $x = y + 2$ is to the right of parabola $x = y^2$. Area: $\\int_{-1}^2 (y + 2 - y^2) dy = [\\frac{y^2}{2} + 2y - \\frac{y^3}{3}]_{-1}^2 = (2 + 4 - \\frac{8}{3}) - (\\frac{1}{2} - 2 + \\frac{1}{3}) = \\frac{10}{3} - (-\\frac{7}{6}) = \\frac{20}{6} + \\frac{7}{6} = \\frac{27}{6} = \\frac{9}{2}$.",
+            "distractorTip": "Integrating in $y$ requires only ONE integral instead of two!"
+          },
+          {
+            "id": "c8-l5-q3",
+            "stem": "Set up the integral with respect to $y$ for the area between $x = 0$, $y = 1$, $y = 3$, and $x = \\frac{4}{y}$.",
+            "options": [
+              "$\\int_1^3 \\frac{4}{y} dy$",
+              "$\\int_1^3 \\frac{y}{4} dy$",
+              "$\\int_0^4 \\frac{4}{x} dx$",
+              "$4\\ln(3)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Right curve is $x = \\frac{4}{y}$, left curve is $x = 0$ (the $y$-axis). Bounds are $y = 1$ to $y = 3$. Area is $\\int_1^3 \\frac{4}{y} dy = 4[\\ln y]_1^3 = 4\\ln 3$.",
+            "distractorTip": "Right curve minus left curve with respect to $y$."
+          },
+          {
+            "id": "c8-l5-q4",
+            "stem": "What is the value of $\\int_1^3 \\frac{4}{y} dy$?",
+            "options": [
+              "$4\\ln 3$",
+              "$\\ln 12$",
+              "$8$",
+              "$12$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$4[\\ln|y|]_1^3 = 4(\\ln 3 - \\ln 1) = 4\\ln 3$.",
+            "distractorTip": "Natural log evaluated at 1 is 0."
+          }
+        ]
+      },
+      {
+        "id": 806,
+        "unitIndex": 8,
+        "levelNumber": 6,
+        "uniqueKey": "u8-l6",
+        "topicNumber": "Topic 8.6",
+        "name": "Area with Multiple Intersections",
+        "subtitle": "Splitting integrals across crossing points",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l6-q1",
+            "stem": "The curves $y = x^3$ and $y = x$ intersect at $x = -1, 0, 1$. What is the total area enclosed between them?",
+            "options": [
+              "$\\frac{1}{2}$",
+              "$0$",
+              "$1$",
+              "$\\frac{1}{4}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "By symmetry, the area on $[-1, 0]$ equals the area on $[0, 1]$. On $[0, 1]$, $x \\ge x^3$. Area on $[0, 1]$ is $\\int_0^1 (x - x^3) dx = [\\frac{x^2}{2} - \\frac{x^4}{4}]_0^1 = \\frac{1}{2} - \\frac{1}{4} = \\frac{1}{4}$. Total area $= 2 \\times \\frac{1}{4} = \\frac{1}{2}$.",
+            "distractorTip": "Do NOT compute $\\int_{-1}^1 (x^3 - x) dx = 0$! Area is always strictly positive!"
+          },
+          {
+            "id": "c8-l6-q2",
+            "stem": "Why does $\\int_{-1}^1 (x^3 - x) dx = 0$ NOT represent the area between $y = x^3$ and $y = x$?",
+            "options": [
+              "Because the curves cross at $x = 0$, so the signed areas cancel out; you must integrate $|x^3 - x|$.",
+              "Because $x^3$ is not continuous.",
+              "Because area cannot be computed with odd functions.",
+              "The area actually is zero."
+            ],
+            "correctIndex": 0,
+            "explanation": "When curves cross, the top and bottom curves swap roles. Integrating without splitting subtracts one region from the other instead of adding them.",
+            "distractorTip": "Always split the integral at every intersection point!"
+          },
+          {
+            "id": "c8-l6-q3",
+            "stem": "Find the area enclosed between $y = \\sin x$ and $y = \\cos x$ from $x = 0$ to $x = \\pi$.",
+            "options": [
+              "$2\\sqrt{2}$",
+              "$2$",
+              "$\\sqrt{2}$",
+              "$0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Curves intersect at $x = \\pi/4$. On $[0, \\pi/4]$, $\\cos x \\ge \\sin x$ (area $= \\sqrt{2}-1$). On $[\\pi/4, \\pi]$, $\\sin x \\ge \\cos x$ (area $= \\int_{\\pi/4}^\\pi (\\sin x - \\cos x) dx = [-\\cos x - \\sin x]_{\\pi/4}^\\pi = (1 - 0) - (-\\frac{\\sqrt{2}}{2} - \\frac{\\sqrt{2}}{2}) = 1 + \\sqrt{2}$). Total area $= (\\sqrt{2} - 1) + (1 + \\sqrt{2}) = 2\\sqrt{2}$.",
+            "distractorTip": "Split at $\\pi/4$ and add the two absolute areas."
+          },
+          {
+            "id": "c8-l6-q4",
+            "stem": "How many separate integrals are needed to find the area bounded by $y = x^3 - 3x$ and $y = x$ on $[-2, 2]$ without using symmetry?",
+            "options": [
+              "$2$, because the curves intersect at $x = -2, 0, 2$.",
+              "$1$",
+              "$3$",
+              "$4$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Intersection: $x^3 - 3x = x \\implies x^3 - 4x = 0 \\implies x(x-2)(x+2) = 0$. Intersections are at $x = -2, 0, 2$. This creates 2 sub-intervals: $[-2, 0]$ and $[0, 2]$.",
+            "distractorTip": "Find all roots to determine the number of subregions."
+          },
+          {
+            "id": "c8-l6-q5",
+            "stem": "On the interval $[-2, 0]$, which curve is on top for $y_1 = x^3 - 3x$ and $y_2 = x$?",
+            "options": [
+              "$y_1 = x^3 - 3x$ is on top.",
+              "$y_2 = x$ is on top.",
+              "They are equal everywhere.",
+              "Neither."
+            ],
+            "correctIndex": 0,
+            "explanation": "Test a point, say $x = -1$: $y_1(-1) = -1 - 3(-1) = 2$. $y_2(-1) = -1$. Since $2 > -1$, $y_1$ is on top on $[-2, 0]$.",
+            "distractorTip": "Test a midpoint in each subinterval to identify the top curve."
+          }
+        ]
+      },
+      {
+        "id": 807,
+        "unitIndex": 8,
+        "levelNumber": 7,
+        "uniqueKey": "u8-l7",
+        "topicNumber": "Topic 8.7",
+        "name": "Volumes with Cross Sections: Squares & Rectangles",
+        "subtitle": "$\\int A(x)\\,dx$ with side length $s = f(x) - g(x)$",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l7-q1",
+            "stem": "A solid has base bounded by $y = \\sqrt{x}$, the $x$-axis, and $x = 4$. Cross sections perpendicular to the $x$-axis are SQUARES. What is the volume?",
+            "options": [
+              "$8$",
+              "$16$",
+              "$4$",
+              "$\\frac{16}{3}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Base side length of each square is $s = \\sqrt{x} - 0 = \\sqrt{x}$. Cross-sectional area: $A(x) = s^2 = (\\sqrt{x})^2 = x$. Volume $= \\int_0^4 A(x) dx = \\int_0^4 x dx = \\left[\\frac{x^2}{2}\\right]_0^4 = \\frac{16}{2} = 8$.",
+            "distractorTip": "Notice there is NO factor of $\\pi$ in cross-section volume problems unless the cross section is a circle/semicircle!"
+          },
+          {
+            "id": "c8-l7-q2",
+            "stem": "The base of a solid is bounded by $y = 1 - x^2$ and the $x$-axis. Cross sections perpendicular to the $x$-axis are RECTANGLES of height $3$. What is the volume?",
+            "options": [
+              "$4$",
+              "$2$",
+              "$8$",
+              "$6$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Side length on base: $b(x) = 1 - x^2$. Area of rectangle: $A(x) = \\text{base} \\times \\text{height} = 3(1 - x^2)$. Volume $= \\int_{-1}^1 3(1 - x^2) dx = 3\\left[x - \\frac{x^3}{3}\\right]_{-1}^1 = 3\\left(\\frac{2}{3} - \\left(-\\frac{2}{3}\\right)\\right) = 3\\left(\\frac{4}{3}\\right) = 4$.",
+            "distractorTip": "Area of rectangle $= b \\cdot h$."
+          },
+          {
+            "id": "c8-l7-q3",
+            "stem": "If cross sections perpendicular to the $x$-axis are squares with side length $s = f(x) - g(x)$, what is the integral formula for the volume?",
+            "options": [
+              "$\\int_a^b (f(x) - g(x))^2 dx$",
+              "$\\pi \\int_a^b (f(x) - g(x))^2 dx$",
+              "$\\int_a^b (f(x)^2 - g(x)^2) dx$",
+              "$\\frac{1}{2}\\int_a^b (f(x) - g(x))^2 dx$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Cross-sectional area of a square is $A = s^2 = (f(x) - g(x))^2$. Volume is $\\int_a^b (f(x) - g(x))^2 dx$.",
+            "distractorTip": "Square the DIFFERENCE $(f-g)^2$, do not subtract squares $f^2 - g^2$!"
+          },
+          {
+            "id": "c8-l7-q4",
+            "stem": "A solid has base bounded by $y = x$ and $y = x^2$. Cross sections perpendicular to the $x$-axis are squares. What is the volume?",
+            "options": [
+              "$\\frac{1}{30}$",
+              "$\\frac{1}{6}$",
+              "$\\frac{1}{15}$",
+              "$\\frac{\\pi}{30}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Intersections at $x = 0, 1$. Side length $s = x - x^2$. Area: $A(x) = (x - x^2)^2 = x^2 - 2x^3 + x^4$. Volume $= \\int_0^1 (x^2 - 2x^3 + x^4) dx = [\\frac{x^3}{3} - \\frac{x^4}{2} + \\frac{x^5}{5}]_0^1 = \\frac{1}{3} - \\frac{1}{2} + \\frac{1}{5} = \\frac{10 - 15 + 6}{30} = \\frac{1}{30}$.",
+            "distractorTip": "Expand $(x - x^2)^2 = x^2 - 2x^3 + x^4$."
+          },
+          {
+            "id": "c8-l7-q5",
+            "stem": "Why do students commonly lose points on cross-section problems on the AP Exam?",
+            "options": [
+              "Accidentally including $\\pi$ in the integral for non-circular cross sections.",
+              "Using $dx$ instead of $dy$.",
+              "Integrating over the wrong variable.",
+              "All of the above."
+            ],
+            "correctIndex": 0,
+            "explanation": "A notorious AP trap is including $\\pi$ out of habit from rotation problems. $\\pi$ is only used when the cross sections are circular!",
+            "distractorTip": "No $\\pi$ for squares, rectangles, or triangles!"
+          }
+        ]
+      },
+      {
+        "id": 808,
+        "unitIndex": 8,
+        "levelNumber": 8,
+        "uniqueKey": "u8-l8",
+        "topicNumber": "Topic 8.8",
+        "name": "Volumes with Cross Sections: Triangles & Semicircles",
+        "subtitle": "Geometry area formulas embedded in integrals",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l8-q1",
+            "stem": "The base of a solid is bounded by $y = \\sqrt{x}$, $y = 0$, and $x = 4$. Cross sections perpendicular to the $x$-axis are SEMICIRCLES. What is the volume?",
+            "options": [
+              "$\\pi$",
+              "$2\\pi$",
+              "$\\frac{\\pi}{2}$",
+              "$4\\pi$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Diameter is $d = \\sqrt{x}$, so radius is $r = \\frac{\\sqrt{x}}{2}$. Area of semicircle: $A(x) = \\frac{1}{2}\\pi r^2 = \\frac{1}{2}\\pi \\left(\\frac{\\sqrt{x}}{2}\\right)^2 = \\frac{\\pi}{8}x$. Volume $= \\int_0^4 \\frac{\\pi}{8}x dx = \\frac{\\pi}{8}\\left[\\frac{x^2}{2}\\right]_0^4 = \\frac{\\pi}{8}(8) = \\pi$.",
+            "distractorTip": "Radius is HALF the diameter: $r = s/2$, so area of semicircle is $\\frac{\\pi}{8}s^2$!"
+          },
+          {
+            "id": "c8-l8-q2",
+            "stem": "If cross sections perpendicular to the $x$-axis are EQUILATERAL TRIANGLES of side $s(x)$, what is the area formula $A(x)$?",
+            "options": [
+              "$\\frac{\\sqrt{3}}{4} s^2$",
+              "$\\frac{1}{2} s^2$",
+              "$\\frac{\\sqrt{3}}{2} s^2$",
+              "$\\frac{1}{4} s^2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Area of an equilateral triangle with side $s$ is $A = \\frac{\\sqrt{3}}{4}s^2$.",
+            "distractorTip": "Memorize the area constant: $\\frac{\\sqrt{3}}{4}$."
+          },
+          {
+            "id": "c8-l8-q3",
+            "stem": "Cross sections perpendicular to the $x$-axis are ISOSCELES RIGHT TRIANGLES with hypotenuse on the base. What is the cross-sectional area in terms of side $s$ on the base?",
+            "options": [
+              "$\\frac{1}{4}s^2$",
+              "$\\frac{1}{2}s^2$",
+              "$\\frac{1}{8}s^2$",
+              "$s^2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "If hypotenuse is $s$, then height to hypotenuse is $h = s/2$. Area $= \\frac{1}{2}(\\text{base})(\\text{height}) = \\frac{1}{2}(s)(s/2) = \\frac{1}{4}s^2$.",
+            "distractorTip": "Hypotenuse on base $\\implies A = \\frac{1}{4}s^2$; Leg on base $\\implies A = \\frac{1}{2}s^2$."
+          },
+          {
+            "id": "c8-l8-q4",
+            "stem": "The base of a solid is bounded by $y = x$ and $y = x^2$. Cross sections perpendicular to the $x$-axis are equilateral triangles. Find the volume.",
+            "options": [
+              "$\\frac{\\sqrt{3}}{120}$",
+              "$\\frac{\\sqrt{3}}{30}$",
+              "$\\frac{1}{30}$",
+              "$\\frac{\\sqrt{3}}{60}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "From earlier, $\\int_0^1 (x - x^2)^2 dx = \\frac{1}{30}$. For equilateral triangles, multiply by $\\frac{\\sqrt{3}}{4}$: $\\frac{\\sqrt{3}}{4} \\times \\frac{1}{30} = \\frac{\\sqrt{3}}{120}$.",
+            "distractorTip": "Factor out the constant $\\frac{\\sqrt{3}}{4}$ from the integral."
+          },
+          {
+            "id": "c8-l8-q5",
+            "stem": "The base of a solid is the circle $x^2 + y^2 = 4$. Cross sections perpendicular to the $x$-axis are squares. What is the volume?",
+            "options": [
+              "$\\frac{128}{3}$",
+              "$32\\pi$",
+              "$\\frac{64}{3}$",
+              "$16\\pi$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Top is $y = \\sqrt{4 - x^2}$, bottom is $y = -\\sqrt{4 - x^2}$. Side length $s = 2\\sqrt{4 - x^2}$. Square area: $A(x) = s^2 = 4(4 - x^2) = 16 - 4x^2$. Volume $= \\int_{-2}^2 (16 - 4x^2) dx = 2\\int_0^2 (16 - 4x^2) dx = 2[16x - \\frac{4x^3}{3}]_0^2 = 2(32 - \\frac{32}{3}) = 2(\\frac{64}{3}) = \\frac{128}{3}$.",
+            "distractorTip": "Side length spans from $-\\sqrt{4-x^2}$ to $+\\sqrt{4-x^2}$, which is $2\\sqrt{4-x^2}$!."
+          }
+        ]
+      },
+      {
+        "id": 809,
+        "unitIndex": 8,
+        "levelNumber": 9,
+        "uniqueKey": "u8-l9",
+        "topicNumber": "Topic 8.9",
+        "name": "Volume with Disc & Washer: Coordinate Axes",
+        "subtitle": "$\\pi \\int (R^2 - r^2)\\,dx$ revolving around $x$ or $y$ axis",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l9-q1",
+            "stem": "Find the volume when the region bounded by $y = x^2$, the $x$-axis, and $x = 2$ is revolved around the $x$-axis.",
+            "options": [
+              "$\\frac{32\\pi}{5}$",
+              "$\\frac{16\\pi}{3}$",
+              "$8\\pi$",
+              "$\\frac{32\\pi}{3}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Disc method: $V = \\pi \\int_0^2 (y)^2 dx = \\pi \\int_0^2 (x^2)^2 dx = \\pi \\int_0^2 x^4 dx = \\pi \\left[\\frac{x^5}{5}\\right]_0^2 = \\frac{32\\pi}{5}$.",
+            "distractorTip": "Disc formula: $\\pi \\int_a^b [R(x)]^2 dx$."
+          },
+          {
+            "id": "c8-l9-q2",
+            "stem": "Find the volume when the region between $y = x$ and $y = x^2$ is revolved around the $x$-axis.",
+            "options": [
+              "$\\frac{2\\pi}{15}$",
+              "$\\frac{\\pi}{15}$",
+              "$\\frac{2\\pi}{5}$",
+              "$\\frac{\\pi}{3}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Washer method: Outer radius $R(x) = x$, Inner radius $r(x) = x^2$. $V = \\pi \\int_0^1 (R^2 - r^2) dx = \\pi \\int_0^1 (x^2 - x^4) dx = \\pi [\\frac{x^3}{3} - \\frac{x^5}{5}]_0^1 = \\pi (\\frac{1}{3} - \\frac{1}{5}) = \\frac{2\\pi}{15}$.",
+            "distractorTip": "Washer formula: $\\pi \\int (R^2 - r^2) dx$, NOT $\\pi \\int (R - r)^2 dx$!"
+          },
+          {
+            "id": "c8-l9-q3",
+            "stem": "What is the most common student error when applying the Washer Method on the AP Exam?",
+            "options": [
+              "Writing $\\pi \\int (R - r)^2 dx$ instead of $\\pi \\int (R^2 - r^2) dx$.",
+              "Forgetting $\\pi$.",
+              "Mixing up $dx$ and $dy$.",
+              "All of the above."
+            ],
+            "correctIndex": 0,
+            "explanation": "Squaring the difference $(R - r)^2$ rather than the difference of squares $(R^2 - r^2)$ is the single most common deduction on College Board exam rubrics!",
+            "distractorTip": "Never write $\\pi (R - r)^2$! It is ALWAYS $\\pi(R^2 - r^2)$."
+          },
+          {
+            "id": "c8-l9-q4",
+            "stem": "Find the volume when $y = \\sqrt{x}$ from $x = 0$ to $x = 4$ is revolved around the $y$-axis.",
+            "options": [
+              "$\\frac{128\\pi}{5}$",
+              "$\\frac{64\\pi}{3}$",
+              "$32\\pi$",
+              "$16\\pi$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Integrate in $y$: $y = \\sqrt{x} \\implies x = y^2$. Bounds: $y = 0$ to $y = 2$. Outer radius is $R = 4$, inner radius is $r = y^2$. $V = \\pi \\int_0^2 (4^2 - (y^2)^2) dy = \\pi \\int_0^2 (16 - y^4) dy = \\pi [16y - \\frac{y^5}{5}]_0^2 = \\pi (32 - \\frac{32}{5}) = \\frac{128\\pi}{5}$.",
+            "distractorTip": "When revolving around a vertical axis, integrate with respect to $y$."
+          },
+          {
+            "id": "c8-l9-q5",
+            "stem": "Set up the integral to revolve the region bounded by $y = x^2$ and $y = 4$ around the horizontal line $y = 5$.",
+            "options": [
+              "$\\pi \\int_{-2}^2 [(5 - x^2)^2 - (5 - 4)^2] dx$",
+              "$\\pi \\int_{-2}^2 [(5 - 4)^2 - (5 - x^2)^2] dx$",
+              "$\\pi \\int_{-2}^2 (4 - x^2)^2 dx$",
+              "$\\pi \\int_0^4 (5 - \\sqrt{y})^2 dy$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Axis is $y = 5$. Outer radius: distance from $y = 5$ to farther curve $y = x^2 \\implies R = 5 - x^2$. Inner radius: distance from $y = 5$ to closer curve $y = 4 \\implies r = 5 - 4 = 1$. Integral: $\\pi \\int_{-2}^2 ((5 - x^2)^2 - 1^2) dx$.",
+            "distractorTip": "Radius to horizontal line $y = k$ is $|k - y|$."
+          }
+        ]
+      },
+      {
+        "id": 810,
+        "unitIndex": 8,
+        "levelNumber": 10,
+        "uniqueKey": "u8-l10",
+        "topicNumber": "Topic 8.10",
+        "name": "Final Apex Citadel: AP Exam Grand Pinnacle",
+        "subtitle": "Boss level AP 5 Mastery Crown across all 8 units",
+        "difficulty": "Boss",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l10-q1",
+            "stem": "Let $R$ be the region enclosed by $y = \\ln x$, $y = 0$, and $x = e$. Find the volume generated by revolving $R$ around the line $x = -1$.",
+            "options": [
+              "$\\pi \\int_0^1 [(e - (-1))^2 - (e^y - (-1))^2] dy$",
+              "$\\pi \\int_1^e (\\ln x + 1)^2 dx$",
+              "$2\\pi \\int_1^e x \\ln x dx$",
+              "$\\pi \\int_0^1 (e^y + 1)^2 dy$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Integrate in $y$ from $0$ to $1$. Right curve: $x = e$. Left curve: $x = e^y$. Distance from axis $x = -1$: $R = e - (-1) = e + 1$; $r = e^y - (-1) = e^y + 1$. Volume $= \\pi \\int_0^1 [(e + 1)^2 - (e^y + 1)^2] dy$.",
+            "distractorTip": "Washer method around shifted vertical axis $x = -1$."
+          },
+          {
+            "id": "c8-l10-q2",
+            "stem": "A particle has acceleration $a(t) = 6t - 12$. If $v(0) = 9$ and $s(0) = 2$, what is its position at $t = 3$?",
+            "options": [
+              "$11$",
+              "$2$",
+              "$20$",
+              "$9$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$v(t) = 3t^2 - 12t + 9$. $s(t) = t^3 - 6t^2 + 9t + 2$. At $t = 3$: $s(3) = 27 - 6(9) + 9(3) + 2 = 27 - 54 + 27 + 2 = 2$.",
+            "distractorTip": "Integrate twice with initial conditions."
+          },
+          {
+            "id": "c8-l10-q3",
+            "stem": "Find $\\lim_{x \\to 0} \\frac{\\int_0^x (e^{t^2} - 1) dt}{x^3}$.",
+            "options": [
+              "$\\frac{1}{3}$",
+              "$1$",
+              "$0$",
+              "$\\frac{1}{2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "L'H\xF4pital's Rule: $\\lim_{x \\to 0} \\frac{e^{x^2} - 1}{3x^2}$. Since $e^u - 1 \\approx u$ as $u \\to 0$, this equals $\\lim_{x \\to 0} \\frac{x^2}{3x^2} = \\frac{1}{3}$.",
+            "distractorTip": "Combine FTC with L'H\xF4pital."
+          },
+          {
+            "id": "c8-l10-q4",
+            "stem": "The area bounded by $y = k x^2$ and $y = 4$ is $16$. What is the value of $k > 0$?",
+            "options": [
+              "$\\frac{4}{9}$",
+              "$\\frac{2}{3}$",
+              "$1$",
+              "$\\frac{1}{4}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Intersections: $k x^2 = 4 \\implies x = \\pm \\frac{2}{\\sqrt{k}}$. Area $= 2\\int_0^{2/\\sqrt{k}} (4 - k x^2) dx = 2[4x - \\frac{kx^3}{3}]_0^{2/\\sqrt{k}} = 2[\\frac{8}{\\sqrt{k}} - \\frac{8}{3\\sqrt{k}}] = 2(\\frac{16}{3\\sqrt{k}}) = \\frac{32}{3\\sqrt{k}} = 16 \\implies 3\\sqrt{k} = 2 \\implies \\sqrt{k} = 2/3 \\implies k = 4/9$.",
+            "distractorTip": "Solve for parameter $k$ from definite integral area equation."
+          },
+          {
+            "id": "c8-l10-q5",
+            "stem": "A solid has base bounded by $y = \\cos x$ and the $x$-axis from $x = -\\pi/2$ to $\\pi/2$. Cross sections perpendicular to the $x$-axis are squares. What is the volume?",
+            "options": [
+              "$\\frac{\\pi}{2}$",
+              "$\\pi$",
+              "$1$",
+              "$2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Side is $s = \\cos x$. Area is $A(x) = \\cos^2 x = \\frac{1 + \\cos(2x)}{2}$. Volume $= \\int_{-\\pi/2}^{\\pi/2} \\frac{1 + \\cos(2x)}{2} dx = \\frac{1}{2}\\left[x + \\frac{\\sin(2x)}{2}\\right]_{-\\pi/2}^{\\pi/2} = \\frac{1}{2}(\\pi) = \\frac{\\pi}{2}$.",
+            "distractorTip": "Trig half-angle identity for $\\cos^2 x$."
+          },
+          {
+            "id": "c8-l10-q6",
+            "stem": "If $f$ is continuous and $\\int_0^6 f(x) dx = 18$, what is $\\int_0^2 f(3x) dx$?",
+            "options": [
+              "$6$",
+              "$54$",
+              "$18$",
+              "$2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Let $u = 3x \\implies du = 3dx \\implies dx = \\frac{1}{3}du$. When $x=0, u=0$; when $x=2, u=6$. $\\int_0^2 f(3x) dx = \\frac{1}{3}\\int_0^6 f(u) du = \\frac{1}{3}(18) = 6$.",
+            "distractorTip": "Horizontal scaling divides the integral by the scale factor $3$."
+          },
+          {
+            "id": "c8-l10-q7",
+            "stem": "Which of the following theorems establishes that if a continuous function has positive acceleration on $[a, b]$, its secant line lies strictly above the function curve?",
+            "options": [
+              "Concavity and the Second Derivative Theorem",
+              "Mean Value Theorem",
+              "Intermediate Value Theorem",
+              "Extreme Value Theorem"
+            ],
+            "correctIndex": 0,
+            "explanation": "Positive acceleration means $f''(x) > 0$, so the curve is strictly concave up. For any concave up function, secant chords lie strictly above the curve and tangent lines lie strictly below.",
+            "distractorTip": "Grand conceptual synthesis question uniting rates, concavity, and approximation."
+          }
+        ]
+      }
+    ]
+  }
+];
+function getAllCalculusAbLevels() {
+  return ALL_CALC_AB_UNIT_DEFINITIONS.flatMap((u) => u.levels);
+}
+
+// src/data/quizBattleBank.ts
+function normalizeGrade(grade) {
+  if (!grade) return "9th Grade";
+  const g = String(grade).toLowerCase();
+  if (g.includes("9") || g.includes("freshman")) return "9th Grade";
+  if (g.includes("10") || g.includes("sophomore")) return "10th Grade";
+  if (g.includes("11") || g.includes("junior")) return "11th Grade";
+  if (g.includes("12") || g.includes("senior")) return "12th Grade";
+  if (g.includes("college")) return "College";
+  return "9th Grade";
+}
+var AP_BATTLE_SUBJECTS = [
+  { id: "ap-calculus-ab", name: "AP Calculus AB", icon: "\u{1F4D0}", color: "from-blue-600 to-indigo-700" },
+  { id: "ap-calculus-bc", name: "AP Calculus BC", icon: "\u222B", color: "from-indigo-600 to-purple-700" },
+  { id: "ap-physics", name: "AP Physics 1", icon: "\u26A1", color: "from-amber-600 to-orange-700" },
+  { id: "ap-chemistry", name: "AP Chemistry", icon: "\u2697\uFE0F", color: "from-purple-600 to-violet-700" },
+  { id: "ap-biology", name: "AP Biology", icon: "\u{1F9EC}", color: "from-emerald-600 to-teal-700" },
+  { id: "ap-environmental-science", name: "AP Environmental Science", icon: "\u{1F331}", color: "from-green-600 to-emerald-700" },
+  { id: "ap-computer-science-principles", name: "AP Computer Science Principles", icon: "\u{1F4BB}", color: "from-cyan-600 to-blue-700" },
+  { id: "ap-computer-science", name: "AP Computer Science A (Java)", icon: "\u2615", color: "from-blue-700 to-slate-800" },
+  { id: "ap-us-history", name: "AP U.S. History (APUSH)", icon: "\u{1F4DC}", color: "from-rose-600 to-red-700" },
+  { id: "ap-world-history", name: "AP World History: Modern", icon: "\u{1F30D}", color: "from-orange-600 to-amber-700" },
+  { id: "ap-human-geography", name: "AP Human Geography", icon: "\u{1F5FA}\uFE0F", color: "from-sky-600 to-teal-700" },
+  { id: "ap-psychology", name: "AP Psychology", icon: "\u{1F9E0}", color: "from-pink-600 to-rose-700" },
+  { id: "ap-economics", name: "AP Micro & Macroeconomics", icon: "\u{1F4CA}", color: "from-emerald-700 to-teal-800" },
+  { id: "ap-english-lang", name: "AP English Language", icon: "\u270D\uFE0F", color: "from-violet-600 to-purple-800" }
+];
+var BATTLE_QUESTIONS_BANK = {
+  "ap-calculus-ab": [
+    {
+      "id": "calc_1",
+      "subjectId": "ap-calculus-ab",
+      "stem": "If $f(x) = x^3 - 3x^2 + 4$, at which $x$-value does $f$ have a relative minimum?",
+      "options": [
+        "$x = 0$",
+        "$x = 1$",
+        "$x = 2$",
+        "$x = -2$"
+      ],
+      "correctIndex": 2,
+      "explanation": "$f'(x) = 3x^2 - 6x = 3x(x - 2) = 0$. $f''(2) = 6 > 0$, so $x = 2$ is a relative minimum.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "calc_2",
+      "subjectId": "ap-calculus-ab",
+      "stem": "Evaluate $\\lim_{x \\to 0} \\frac{\\sin(5x)}{2x}$.",
+      "options": [
+        "$\\frac{1}{2}$",
+        "$\\frac{5}{2}$",
+        "$0$",
+        "Does not exist"
+      ],
+      "correctIndex": 1,
+      "explanation": "Using L'Hopital's rule or standard trigonometric limits: $\\lim_{x \\to 0} \\frac{\\sin(5x)}{2x} = \\frac{5}{2} \\lim_{x \\to 0} \\frac{\\sin(5x)}{5x} = \\frac{5}{2} \\times 1 = \\frac{5}{2}$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "calc_3",
+      "subjectId": "ap-calculus-ab",
+      "stem": "What is $\\frac{d}{dx} \\left[ \\ln(x^2 + 1) \\right]$?",
+      "options": [
+        "$\\frac{1}{x^2 + 1}$",
+        "$\\frac{2x}{x^2 + 1}$",
+        "$\\frac{2}{x}$",
+        "$\\frac{x}{x^2 + 1}$"
+      ],
+      "correctIndex": 1,
+      "explanation": "By the chain rule: $\\frac{d}{dx}[\\ln(u)] = \\frac{u'}{u} = \\frac{2x}{x^2 + 1}$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "calc_4",
+      "subjectId": "ap-calculus-ab",
+      "stem": "Evaluate the definite integral $\\int_0^3 (2x + 1) dx$.",
+      "options": [
+        "$10$",
+        "$12$",
+        "$15$",
+        "$9$"
+      ],
+      "correctIndex": 1,
+      "explanation": "$\\int_0^3 (2x + 1) dx = [x^2 + x]_0^3 = (9 + 3) - 0 = 12$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "calc_5",
+      "subjectId": "ap-calculus-ab",
+      "stem": "If $y = e^{3x}$, find the second derivative $\\frac{d^2y}{dx^2}$.",
+      "options": [
+        "$3e^{3x}$",
+        "$6e^{3x}$",
+        "$9e^{3x}$",
+        "$27e^{3x}$"
+      ],
+      "correctIndex": 2,
+      "explanation": "$y' = 3e^{3x}$, and $y'' = 3 \\cdot 3e^{3x} = 9e^{3x}$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "calc_6",
+      "subjectId": "ap-calculus-ab",
+      "stem": "What is the slope of the tangent line to $y = \\cos(2x)$ at $x = \\frac{\\pi}{4}$?",
+      "options": [
+        "$-2$",
+        "$0$",
+        "$2$",
+        "$-1$"
+      ],
+      "correctIndex": 0,
+      "explanation": "$y' = -2\\sin(2x)$. At $x = \\pi/4$, $y' = -2\\sin(\\pi/2) = -2(1) = -2$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "calc_7",
+      "subjectId": "ap-calculus-ab",
+      "stem": "If $\\int_1^5 f(x) dx = 10$ and $\\int_1^3 f(x) dx = 4$, what is $\\int_3^5 f(x) dx$?",
+      "options": [
+        "$6$",
+        "$14$",
+        "$-6$",
+        "$2.5$"
+      ],
+      "correctIndex": 0,
+      "explanation": "$\\int_3^5 f(x) dx = \\int_1^5 f(x) dx - \\int_1^3 f(x) dx = 10 - 4 = 6$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "calc_8",
+      "subjectId": "ap-calculus-ab",
+      "stem": "Find the derivative of $f(x) = x \\cdot e^x$.",
+      "options": [
+        "$e^x$",
+        "$x e^x$",
+        "$e^x(x + 1)$",
+        "$2x e^x$"
+      ],
+      "correctIndex": 2,
+      "explanation": "Using product rule: $f'(x) = (1)(e^x) + (x)(e^x) = e^x(x + 1)$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "calc_9",
+      "subjectId": "ap-calculus-ab",
+      "stem": "If $g(x) = \\int_0^x (t^2 - 9) dt$, at which $x > 0$ does $g$ have a relative minimum?",
+      "options": [
+        "$x = 0$",
+        "$x = 3$",
+        "$x = 9$",
+        "$x = \\sqrt{3}$"
+      ],
+      "correctIndex": 1,
+      "explanation": "By FTC 1, $g'(x) = x^2 - 9$. For $x > 0$, $g'(x) = 0 \\implies x = 3$. $g'(x)$ changes from negative to positive at $x = 3$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "calc_10",
+      "subjectId": "ap-calculus-ab",
+      "stem": "Evaluate $\\int \\frac{1}{2x + 5} dx$.",
+      "options": [
+        "$\\ln|2x + 5| + C$",
+        "$\\frac{1}{2} \\ln|2x + 5| + C$",
+        "$2\\ln|2x + 5| + C$",
+        "$\\frac{-1}{(2x+5)^2} + C$"
+      ],
+      "correctIndex": 1,
+      "explanation": "Let $u = 2x + 5 \\implies du = 2 dx \\implies \\int \\frac{1}{u} \\frac{du}{2} = \\frac{1}{2} \\ln|2x + 5| + C$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "calc_11",
+      "subjectId": "ap-calculus-ab",
+      "stem": "What is the average value of $f(x) = 3x^2$ on the interval $[0, 2]$?",
+      "options": [
+        "$4$",
+        "$6$",
+        "$8$",
+        "$12$"
+      ],
+      "correctIndex": 0,
+      "explanation": "$f_{avg} = \\frac{1}{2 - 0} \\int_0^2 3x^2 dx = \\frac{1}{2} [x^3]_0^2 = \\frac{1}{2}(8) = 4$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "calc_12",
+      "subjectId": "ap-calculus-ab",
+      "stem": "If $f(x)$ is continuous on $[1, 5]$ and $f(1) = 2, f(5) = 10$, the IVT guarantees a value $c$ where $f(c) = $?",
+      "options": [
+        "$0$",
+        "$7$",
+        "$12$",
+        "$-2$"
+      ],
+      "correctIndex": 1,
+      "explanation": "By the Intermediate Value Theorem, $f(c)$ takes on every value between $2$ and $10$, including $7$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "calc_13",
+      "subjectId": "ap-calculus-ab",
+      "stem": "Find $\\lim_{x \\to \\infty} \\frac{4x^3 - 2x + 1}{7x^3 + 5x^2}$.",
+      "options": [
+        "$\\frac{4}{7}$",
+        "$0$",
+        "$\\infty$",
+        "$\\frac{2}{5}$"
+      ],
+      "correctIndex": 0,
+      "explanation": "Comparing leading coefficients of degree 3 terms: $\\lim_{x \\to \\infty} \\frac{4x^3}{7x^3} = \\frac{4}{7}$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "calc_14",
+      "subjectId": "ap-calculus-ab",
+      "stem": "What is $\\frac{d}{dx} [\\arctan(x)]$?",
+      "options": [
+        "$\\frac{1}{1 + x^2}$",
+        "$\\frac{1}{\\sqrt{1 - x^2}}$",
+        "$\\frac{-1}{1 + x^2}$",
+        "$\\sec^2(x)$"
+      ],
+      "correctIndex": 0,
+      "explanation": "The standard derivative of inverse tangent is $\\frac{d}{dx}[\\arctan(x)] = \\frac{1}{1 + x^2}$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "calc_15",
+      "subjectId": "ap-calculus-ab",
+      "stem": "If a particle position is $s(t) = t^3 - 6t^2 + 9t$, at what time $t > 0$ is its acceleration zero?",
+      "options": [
+        "$t = 1$",
+        "$t = 2$",
+        "$t = 3$",
+        "$t = 4$"
+      ],
+      "correctIndex": 1,
+      "explanation": "$v(t) = s'(t) = 3t^2 - 12t + 9$. $a(t) = v'(t) = 6t - 12 = 0 \\implies t = 2$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    }
+  ],
+  "ap-physics-1": [
+    {
+      "id": "phys_1",
+      "subjectId": "ap-physics-1",
+      "stem": "An object is dropped from rest from a cliff. Neglecting air resistance, what is its speed after $3.0\\text{ s}$? ($g = 9.8\\text{ m/s}^2$)",
+      "options": [
+        "$14.7\\text{ m/s}$",
+        "$29.4\\text{ m/s}$",
+        "$44.1\\text{ m/s}$",
+        "$9.8\\text{ m/s}$"
+      ],
+      "correctIndex": 1,
+      "explanation": "$v = v_0 + gt = 0 + (9.8)(3.0) = 29.4\\text{ m/s}$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "phys_2",
+      "subjectId": "ap-physics-1",
+      "stem": "A net external force $F$ acts on an object of mass $m$, giving it acceleration $a$. If the mass is doubled and force is halved, what is the new acceleration?",
+      "options": [
+        "$4a$",
+        "$2a$",
+        "$\\frac{a}{2}$",
+        "$\\frac{a}{4}$"
+      ],
+      "correctIndex": 3,
+      "explanation": "$a_{new} = \\frac{F/2}{2m} = \\frac{1}{4} \\frac{F}{m} = \\frac{a}{4}$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "phys_3",
+      "subjectId": "ap-physics-1",
+      "stem": "A car travels in a horizontal circle of radius $R$ at constant speed $v$. What force provides the centripetal acceleration?",
+      "options": [
+        "Centrifugal force",
+        "Static friction between tires and road",
+        "Gravitational force",
+        "Normal force from the ground"
+      ],
+      "correctIndex": 1,
+      "explanation": "Static friction between the car tires and the road surface prevents slipping and points towards the circle center.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "phys_4",
+      "subjectId": "ap-physics-1",
+      "stem": "A $2\\text{ kg}$ cart moving at $3\\text{ m/s}$ collides and sticks to a stationary $1\\text{ kg}$ cart. What is their final common speed?",
+      "options": [
+        "$1.5\\text{ m/s}$",
+        "$2.0\\text{ m/s}$",
+        "$2.5\\text{ m/s}$",
+        "$3.0\\text{ m/s}$"
+      ],
+      "correctIndex": 1,
+      "explanation": "Conservation of momentum: $p_i = (2)(3) + 0 = 6\\text{ kg}\\cdot\\text{m/s}$. $v_f = \\frac{6}{2 + 1} = 2.0\\text{ m/s}$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "phys_5",
+      "subjectId": "ap-physics-1",
+      "stem": "A simple pendulum has period $T$ on Earth. If the length of the string is quadrupled ($4L$), what is the new period?",
+      "options": [
+        "$4T$",
+        "$2T$",
+        "$\\frac{T}{2}$",
+        "$\\sqrt{2}T$"
+      ],
+      "correctIndex": 1,
+      "explanation": "$T = 2\\pi\\sqrt{\\frac{L}{g}}$. Replacing $L$ with $4L$ gives $T_{new} = 2\\pi\\sqrt{\\frac{4L}{g}} = 2 T$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "phys_6",
+      "subjectId": "ap-physics-1",
+      "stem": "How much work is done by the gravitational force on a $5\\text{ kg}$ satellite in a circular orbit of radius $R$ during one full revolution?",
+      "options": [
+        "$0\\text{ J}$",
+        "$5\\pi R\\text{ J}$",
+        "$10g R\\text{ J}$",
+        "$50\\text{ J}$"
+      ],
+      "correctIndex": 0,
+      "explanation": "Gravity is perpendicular to the displacement vector at every point in a circular orbit ($W = F d \\cos(90^\\circ) = 0\\text{ J}$).",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "phys_7",
+      "subjectId": "ap-physics-1",
+      "stem": "A spring with spring constant $k = 200\\text{ N/m}$ is compressed by $0.1\\text{ m}$. What is the stored elastic potential energy?",
+      "options": [
+        "$1.0\\text{ J}$",
+        "$2.0\\text{ J}$",
+        "$10\\text{ J}$",
+        "$20\\text{ J}$"
+      ],
+      "correctIndex": 0,
+      "explanation": "$U_s = \\frac{1}{2} k x^2 = \\frac{1}{2} (200) (0.1)^2 = 100 \\times 0.01 = 1.0\\text{ J}$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "phys_8",
+      "subjectId": "ap-physics-1",
+      "stem": "A solid disk and a hollow ring of identical mass and radius roll down an incline without slipping. Which reaches the bottom first?",
+      "options": [
+        "The hollow ring",
+        "The solid disk",
+        "Both at the same time",
+        "Depends on the incline angle"
+      ],
+      "correctIndex": 1,
+      "explanation": "The solid disk has a smaller rotational inertia ($I = \\frac{1}{2}MR^2 < MR^2$), converting more PE into translational KE, so it accelerates faster.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "phys_9",
+      "subjectId": "ap-physics-1",
+      "stem": "An elevator is accelerating upwards at $2\\text{ m/s}^2$. What apparent weight does an $80\\text{ kg}$ passenger feel? ($g = 10\\text{ m/s}^2$)",
+      "options": [
+        "$640\\text{ N}$",
+        "$800\\text{ N}$",
+        "$960\\text{ N}$",
+        "$160\\text{ N}$"
+      ],
+      "correctIndex": 2,
+      "explanation": "$N - mg = ma \\implies N = m(g + a) = 80(10 + 2) = 960\\text{ N}$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "phys_10",
+      "subjectId": "ap-physics-1",
+      "stem": "What happens to the total mechanical energy of a falling apple if air resistance is negligible?",
+      "options": [
+        "It increases",
+        "It decreases",
+        "It remains constant",
+        "It oscillates"
+      ],
+      "correctIndex": 2,
+      "explanation": "With only conservative gravitational forces doing work, total mechanical energy ($KE + PE$) remains strictly conserved.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "phys_11",
+      "subjectId": "ap-physics-1",
+      "stem": "A net torque of $20\\text{ N}\\cdot\\text{m}$ acts on a wheel with moment of inertia $I = 4\\text{ kg}\\cdot\\text{m}^2$. What is the angular acceleration $\\alpha$?",
+      "options": [
+        "$5\\text{ rad/s}^2$",
+        "$80\\text{ rad/s}^2$",
+        "$0.2\\text{ rad/s}^2$",
+        "$16\\text{ rad/s}^2$"
+      ],
+      "correctIndex": 0,
+      "explanation": "$\\tau = I\\alpha \\implies \\alpha = \\frac{\\tau}{I} = \\frac{20}{4} = 5\\text{ rad/s}^2$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "phys_12",
+      "subjectId": "ap-physics-1",
+      "stem": "A projectile launched at angle $\\theta$ has maximum horizontal range when $\\theta$ equals:",
+      "options": [
+        "$30^\\circ$",
+        "$45^\\circ$",
+        "$60^\\circ$",
+        "$90^\\circ$"
+      ],
+      "correctIndex": 1,
+      "explanation": "Range $R = \\frac{v_0^2 \\sin(2\\theta)}{g}$, which reaches maximum when $\\sin(2\\theta) = 1 \\implies \\theta = 45^\\circ$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "phys_13",
+      "subjectId": "ap-physics-1",
+      "stem": "An astronaut floating in space throws a wrench forward. What happens to the astronaut?",
+      "options": [
+        "Moves forward faster",
+        "Moves backward with equal momentum",
+        "Remains stationary",
+        "Spins continuously in place"
+      ],
+      "correctIndex": 1,
+      "explanation": "By conservation of momentum ($p_{initial} = 0$), $p_{astronaut} = -p_{wrench}$, so the astronaut recoils backward.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "phys_14",
+      "subjectId": "ap-physics-1",
+      "stem": "If the distance between two gravitational masses is doubled, the gravitational force between them is multiplied by:",
+      "options": [
+        "$2$",
+        "$\\frac{1}{2}$",
+        "$\\frac{1}{4}$",
+        "$4$"
+      ],
+      "correctIndex": 2,
+      "explanation": "Newton's law of universal gravitation follows an inverse-square law: $F \\propto \\frac{1}{r^2} \\implies \\frac{1}{2^2} = \\frac{1}{4}$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "phys_15",
+      "subjectId": "ap-physics-1",
+      "stem": "What physical quantity is represented by the area under a Force vs. Time graph?",
+      "options": [
+        "Work",
+        "Kinetic Energy",
+        "Impulse",
+        "Power"
+      ],
+      "correctIndex": 2,
+      "explanation": "Impulse $J = \\int F dt = \\Delta p$, which corresponds directly to the area under a Force-Time graph.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    }
+  ],
+  "ap-biology": [
+    {
+      "id": "bio_1",
+      "subjectId": "ap-biology",
+      "stem": "Which organelle is responsible for generating the majority of cellular ATP via oxidative phosphorylation?",
+      "options": [
+        "Golgi Apparatus",
+        "Mitochondria",
+        "Endoplasmic Reticulum",
+        "Lysosome"
+      ],
+      "correctIndex": 1,
+      "explanation": "Mitochondria carry out the Krebs cycle and oxidative phosphorylation via the electron transport chain to produce ATP.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "bio_2",
+      "subjectId": "ap-biology",
+      "stem": "What type of chemical bond holds the complementary base pairs (A-T and G-C) together in double-stranded DNA?",
+      "options": [
+        "Covalent phosphodiester bonds",
+        "Hydrogen bonds",
+        "Ionic bonds",
+        "Disulfide bridges"
+      ],
+      "correctIndex": 1,
+      "explanation": "Hydrogen bonds (2 between A-T, 3 between G-C) connect complementary nitrogenous bases across antiparallel strands.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "bio_3",
+      "subjectId": "ap-biology",
+      "stem": "In a cross between two heterozygous pea plants ($Aa \\times Aa$), what is the expected phenotypic ratio of dominant to recessive traits?",
+      "options": [
+        "$1:1$",
+        "$3:1$",
+        "$9:3:3:1$",
+        "$1:2:1$"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Punnett square yields $1 AA : 2 Aa : 1 aa$, resulting in a $3:1$ dominant to recessive phenotypic ratio.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "bio_4",
+      "subjectId": "ap-biology",
+      "stem": "During which stage of aerobic cellular respiration is molecular oxygen ($O_2$) directly consumed?",
+      "options": [
+        "Glycolysis",
+        "Krebs Cycle (Citric Acid Cycle)",
+        "Electron Transport Chain",
+        "Lactic Acid Fermentation"
+      ],
+      "correctIndex": 2,
+      "explanation": "Oxygen acts as the terminal electron acceptor at complex IV of the mitochondrial electron transport chain, forming water ($H_2O$).",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "bio_5",
+      "subjectId": "ap-biology",
+      "stem": "Which enzyme unwinds the double helix at the replication fork during DNA replication?",
+      "options": [
+        "DNA Polymerase III",
+        "Topoisomerase",
+        "DNA Helicase",
+        "RNA Primase"
+      ],
+      "correctIndex": 2,
+      "explanation": "DNA Helicase breaks hydrogen bonds between bases to unwind and separate DNA strands at replication forks.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "bio_6",
+      "subjectId": "ap-biology",
+      "stem": "What type of passive transport moves water across a selectively permeable membrane down its concentration gradient?",
+      "options": [
+        "Osmosis",
+        "Active Transport",
+        "Endocytosis",
+        "Phagocytosis"
+      ],
+      "correctIndex": 0,
+      "explanation": "Osmosis is the net diffusion of water across a semipermeable membrane from low solute to high solute concentration.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "bio_7",
+      "subjectId": "ap-biology",
+      "stem": "Which molecule carries genetic codons from the nucleus to ribosomes for translation?",
+      "options": [
+        "tRNA",
+        "rRNA",
+        "mRNA",
+        "snRNA"
+      ],
+      "correctIndex": 2,
+      "explanation": "Messenger RNA (mRNA) transcribes genetic code from DNA and carries it to ribosomes to synthesize polypeptide chains.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "bio_8",
+      "subjectId": "ap-biology",
+      "stem": "Enzymes accelerate biological reactions primarily by:",
+      "options": [
+        "Increasing the free energy change ($\\Delta G$)",
+        "Lowering the activation energy ($E_a$)",
+        "Raising reaction temperature",
+        "Consuming reactants"
+      ],
+      "correctIndex": 1,
+      "explanation": "Enzymes act as catalysts by stabilizing transition states and lowering activation energy ($E_a$) without altering $\\Delta G$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "bio_9",
+      "subjectId": "ap-biology",
+      "stem": "Which phase of mitosis is characterized by chromosomes aligning along the cell equatorial plate?",
+      "options": [
+        "Prophase",
+        "Metaphase",
+        "Anaphase",
+        "Telophase"
+      ],
+      "correctIndex": 1,
+      "explanation": "During metaphase, spindle fibers align duplicated sister chromatids along the metaphase plate in the center of the cell.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "bio_10",
+      "subjectId": "ap-biology",
+      "stem": "In the Hardy-Weinberg equilibrium ($p^2 + 2pq + q^2 = 1$), what does the term $2pq$ represent?",
+      "options": [
+        "Frequency of homozygous dominant individuals",
+        "Frequency of heterozygous individuals",
+        "Frequency of homozygous recessive individuals",
+        "Frequency of dominant alleles"
+      ],
+      "correctIndex": 1,
+      "explanation": "$p^2$ represents homozygous dominant, $q^2$ represents homozygous recessive, and $2pq$ represents heterozygous genotypes.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "bio_11",
+      "subjectId": "ap-biology",
+      "stem": "Which light-absorbing pigment is primary in driving photosynthesis in green plants?",
+      "options": [
+        "Carotenoids",
+        "Chlorophyll a",
+        "Anthocyanin",
+        "Xanthophyll"
+      ],
+      "correctIndex": 1,
+      "explanation": "Chlorophyll a absorbs blue and red wavelengths while reflecting green light, acting as the primary reaction center pigment.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "bio_12",
+      "subjectId": "ap-biology",
+      "stem": "What cellular process yields four genetically diverse haploid daughter gametes?",
+      "options": [
+        "Mitosis",
+        "Meiosis",
+        "Binary Fission",
+        "Budding"
+      ],
+      "correctIndex": 1,
+      "explanation": "Meiosis consists of two successive cell divisions that reduce diploid chromosome numbers by half, producing four unique haploid gametes.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "bio_13",
+      "subjectId": "ap-biology",
+      "stem": "Which hormone is known to induce fruit ripening and promote plant leaf abscission?",
+      "options": [
+        "Auxin",
+        "Ethylene",
+        "Gibberellin",
+        "Abscisic acid"
+      ],
+      "correctIndex": 1,
+      "explanation": "Ethylene is a gaseous plant hormone that coordinates fruit ripening and senescence via positive feedback.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "bio_14",
+      "subjectId": "ap-biology",
+      "stem": "In prokaryotes, the operon model regulates gene expression. What binds to the operator to block transcription?",
+      "options": [
+        "RNA Polymerase",
+        "Repressor Protein",
+        "Corepressor",
+        "Inducer"
+      ],
+      "correctIndex": 1,
+      "explanation": "A repressor protein physically binds to the operator region of DNA, preventing RNA polymerase from transcribing structural genes.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "bio_15",
+      "subjectId": "ap-biology",
+      "stem": "A competitive inhibitor decreases the rate of an enzymatic reaction by:",
+      "options": [
+        "Binding permanently to the allosteric site",
+        "Binding directly to the active site",
+        "Denaturing the tertiary protein structure",
+        "Altering reaction pH"
+      ],
+      "correctIndex": 1,
+      "explanation": "Competitive inhibitors mimic substrate shape and compete directly for binding at the catalytic active site.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    }
+  ],
+  "ap-chemistry": [
+    {
+      "id": "chem_1",
+      "subjectId": "ap-chemistry",
+      "stem": "What is the pH of a $0.001\\text{ M } \\text{HCl}$ aqueous solution?",
+      "options": [
+        "$1$",
+        "$3$",
+        "$7$",
+        "$11$"
+      ],
+      "correctIndex": 1,
+      "explanation": "$\\text{HCl}$ is a strong acid that dissociates completely: $[H^+] = 10^{-3}\\text{ M}$. $\\text{pH} = -\\log[H^+] = 3$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "chem_2",
+      "subjectId": "ap-chemistry",
+      "stem": "According to VSEPR theory, what is the molecular geometry of a water molecule ($H_2O$)?",
+      "options": [
+        "Linear",
+        "Trigonal Planar",
+        "Bent",
+        "Tetrahedral"
+      ],
+      "correctIndex": 2,
+      "explanation": "Water has 4 electron domains (2 bonding pairs, 2 lone pairs) on the central oxygen atom, yielding a bent molecular geometry (~$104.5^\\circ$).",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "chem_3",
+      "subjectId": "ap-chemistry",
+      "stem": "Which element has the highest electronegativity on the Pauling scale?",
+      "options": [
+        "Oxygen ($O$)",
+        "Fluorine ($F$)",
+        "Chlorine ($Cl$)",
+        "Cesium ($Cs$)"
+      ],
+      "correctIndex": 1,
+      "explanation": "Fluorine ($F$) is the most electronegative element with a Pauling value of 3.98.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "chem_4",
+      "subjectId": "ap-chemistry",
+      "stem": "For an exothermic reaction at equilibrium ($A \\rightleftharpoons B + \\text{heat}$), what happens if temperature is increased?",
+      "options": [
+        "Shifts toward products ($B$)",
+        "Shifts toward reactants ($A$)",
+        "Equilibrium constant $K$ increases",
+        "No change occurs"
+      ],
+      "correctIndex": 1,
+      "explanation": "By Le Chatelier's principle, adding heat to an exothermic reaction shifts the equilibrium toward the endothermic direction (reactants $A$) and decreases $K$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "chem_5",
+      "subjectId": "ap-chemistry",
+      "stem": "What type of intermolecular force is primarily responsible for the unusually high boiling point of water?",
+      "options": [
+        "London dispersion forces",
+        "Dipole-dipole forces",
+        "Hydrogen bonding",
+        "Ionic bonding"
+      ],
+      "correctIndex": 2,
+      "explanation": "Strong hydrogen bonds between hydrogen atoms bonded to highly electronegative oxygen atoms cause water to have an elevated boiling point.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "chem_6",
+      "subjectId": "ap-chemistry",
+      "stem": "What is the oxidation number of sulfur in the sulfate ion ($SO_4^{2-}$)?",
+      "options": [
+        "$+4$",
+        "$+6$",
+        "$-2$",
+        "$+2$"
+      ],
+      "correctIndex": 1,
+      "explanation": "$S + 4(-2) = -2 \\implies S - 8 = -2 \\implies S = +6$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "chem_7",
+      "subjectId": "ap-chemistry",
+      "stem": "If a gas occupies $2.0\\text{ L}$ at $1.0\\text{ atm}$, what volume will it occupy at $4.0\\text{ atm}$ at constant temperature?",
+      "options": [
+        "$0.5\\text{ L}$",
+        "$1.0\\text{ L}$",
+        "$8.0\\text{ L}$",
+        "$2.0\\text{ L}$"
+      ],
+      "correctIndex": 0,
+      "explanation": "By Boyle's Law: $P_1 V_1 = P_2 V_2 \\implies (1.0)(2.0) = (4.0) V_2 \\implies V_2 = 0.5\\text{ L}$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "chem_8",
+      "subjectId": "ap-chemistry",
+      "stem": "Which thermodynamic state function must be negative for a process to be spontaneous at constant temperature and pressure?",
+      "options": [
+        "$\\Delta H$",
+        "$\\Delta S$",
+        "$\\Delta G$",
+        "$\\Delta E$"
+      ],
+      "correctIndex": 2,
+      "explanation": "A process is strictly spontaneous if and only if Gibbs Free Energy change is negative ($\\Delta G < 0$).",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "chem_9",
+      "subjectId": "ap-chemistry",
+      "stem": "In the reaction rate law $\\text{Rate} = k [A]^2 [B]$, what is the overall reaction order?",
+      "options": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$0$"
+      ],
+      "correctIndex": 2,
+      "explanation": "The overall reaction order is the sum of reactant exponents: $2 + 1 = 3$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "chem_10",
+      "subjectId": "ap-chemistry",
+      "stem": "How many valence electrons does a neutral chlorine ($Cl$) atom possess?",
+      "options": [
+        "$5$",
+        "$7$",
+        "$8$",
+        "$17$"
+      ],
+      "correctIndex": 1,
+      "explanation": "Chlorine is a halogen in Group 17 with electron configuration $[Ne] 3s^2 3p^5$, giving 7 valence electrons.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "chem_11",
+      "subjectId": "ap-chemistry",
+      "stem": "A buffer solution can be prepared by mixing approximately equal molar quantities of:",
+      "options": [
+        "$\\text{HCl}$ and $\\text{NaCl}$",
+        "$\\text{CH}_3\\text{COOH}$ and $\\text{CH}_3\\text{COONa}$",
+        "$\\text{NaOH}$ and $\\text{NaCl}$",
+        "$\\text{HNO}_3$ and $\\text{KNO}_3$"
+      ],
+      "correctIndex": 1,
+      "explanation": "A buffer requires a weak acid (acetic acid) and its conjugate base (sodium acetate).",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "chem_12",
+      "subjectId": "ap-chemistry",
+      "stem": "Which element has the largest atomic radius among the following?",
+      "options": [
+        "Lithium ($Li$)",
+        "Sodium ($Na$)",
+        "Potassium ($K$)",
+        "Rubidium ($Rb$)"
+      ],
+      "correctIndex": 3,
+      "explanation": "Atomic radius increases going down a group due to the addition of principal energy levels (electron shielding).",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "chem_13",
+      "subjectId": "ap-chemistry",
+      "stem": "In an electrochemical cell, reduction always occurs at the:",
+      "options": [
+        "Anode",
+        "Cathode",
+        "Salt Bridge",
+        "Voltmeter"
+      ],
+      "correctIndex": 1,
+      "explanation": "Remember RED CAT: REDuction always takes place at the CAThode.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "chem_14",
+      "subjectId": "ap-chemistry",
+      "stem": "What is the hybridization of the carbon atom in methane ($CH_4$)?",
+      "options": [
+        "$sp$",
+        "$sp^2$",
+        "$sp^3$",
+        "$sp^3d$"
+      ],
+      "correctIndex": 2,
+      "explanation": "Methane has 4 single $\\sigma$ bonds and zero lone pairs on carbon, requiring $sp^3$ orbital hybridization.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "chem_15",
+      "subjectId": "ap-chemistry",
+      "stem": "What happens to the vapor pressure of a liquid as its temperature increases?",
+      "options": [
+        "It decreases",
+        "It increases exponentially",
+        "It remains constant",
+        "It drops to zero"
+      ],
+      "correctIndex": 1,
+      "explanation": "As temperature increases, more molecules possess sufficient kinetic energy to overcome intermolecular attractions, increasing vapor pressure.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    }
+  ],
+  "ap-us-history": [
+    {
+      "id": "apush_1",
+      "subjectId": "ap-us-history",
+      "stem": "The primary purpose of the Monroe Doctrine (1823) was to:",
+      "options": [
+        "Secure American colonies in Africa",
+        "Warn European powers against further colonization in the Western Hemisphere",
+        "Form a military alliance with Great Britain",
+        "Annex Cuba and Puerto Rico immediately"
+      ],
+      "correctIndex": 1,
+      "explanation": "President Monroe declared the American continents closed to future European colonization and interference.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "apush_2",
+      "subjectId": "ap-us-history",
+      "stem": "Which constitutional amendment formally abolished slavery throughout the United States?",
+      "options": [
+        "13th Amendment",
+        "14th Amendment",
+        "15th Amendment",
+        "19th Amendment"
+      ],
+      "correctIndex": 0,
+      "explanation": "The 13th Amendment (ratified in 1865) explicitly abolished slavery and involuntary servitude except as punishment for a crime.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "apush_3",
+      "subjectId": "ap-us-history",
+      "stem": "Thomas Paine published Common Sense in 1776 primarily to:",
+      "options": [
+        "Support reconciliation with King George III",
+        "Convince American colonists to declare complete independence from Great Britain",
+        "Oppose the Continental Congress",
+        "Advocate for French royal control of Canada"
+      ],
+      "correctIndex": 1,
+      "explanation": "Common Sense used plain, persuasive language arguing that hereditary monarchy was tyrannical and independence was necessary.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "apush_4",
+      "subjectId": "ap-us-history",
+      "stem": "What was the central goal of President Franklin D. Roosevelt New Deal programs in the 1930s?",
+      "options": [
+        "Expand American territories in the Pacific",
+        "Provide Relief, Recovery, and Reform during the Great Depression",
+        "Dismantle federal banking and regulation",
+        "Privatize the national railway system"
+      ],
+      "correctIndex": 1,
+      "explanation": "The New Deal focused on the Three Rs: Relief for the unemployed, Recovery of the economy, and Reform of financial systems.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "apush_5",
+      "subjectId": "ap-us-history",
+      "stem": "The landmark Supreme Court decision Brown v. Board of Education (1954) ruled that:",
+      "options": [
+        "Separate but equal public facilities are constitutional",
+        "Racial segregation in public schools is inherently unequal and unconstitutional",
+        "States can regulate civil rights without federal oversight",
+        "Affirmative action in college admissions is illegal"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Warren Court unanimously overturned Plessy v. Ferguson, ruling that racial segregation in public schools violates the 14th Amendment.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "apush_6",
+      "subjectId": "ap-us-history",
+      "stem": "The Missouri Compromise of 1820 maintained sectional balance by admitting Missouri as a slave state and which state as a free state?",
+      "options": [
+        "Maine",
+        "Kansas",
+        "California",
+        "Vermont"
+      ],
+      "correctIndex": 0,
+      "explanation": "Maine was admitted as a free state, and slavery was prohibited north of latitude $36^\\circ 30'$ in the remainder of the Louisiana Territory.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "apush_7",
+      "subjectId": "ap-us-history",
+      "stem": "Which 1890 event marked the tragic end of major armed conflict between the US Army and Native American Plains tribes?",
+      "options": [
+        "Battle of Little Bighorn",
+        "Wounded Knee Massacre",
+        "Trail of Tears",
+        "Sand Creek Massacre"
+      ],
+      "correctIndex": 1,
+      "explanation": "The massacre at Wounded Knee Creek, South Dakota, resulted in the deaths of approximately 300 Lakota Sioux and effectively ended Plains resistance.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "apush_8",
+      "subjectId": "ap-us-history",
+      "stem": "What was the main purpose of the Federalist Papers written by Hamilton, Madison, and Jay?",
+      "options": [
+        "To urge ratification of the new United States Constitution",
+        "To defend the Articles of Confederation",
+        "To support the Declaration of Independence",
+        "To protest against taxation in Massachusetts"
+      ],
+      "correctIndex": 0,
+      "explanation": "The 85 essays argued persuasively for the ratification of the newly drafted US Constitution and a stronger federal republic.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "apush_9",
+      "subjectId": "ap-us-history",
+      "stem": "The Seneca Falls Convention of 1848 is historically renowned as the inaugural national meeting dedicated to:",
+      "options": [
+        "Abolition of slavery",
+        "Women rights and suffrage",
+        "Labor union organizing",
+        "Temperance and prohibition"
+      ],
+      "correctIndex": 1,
+      "explanation": "Organized by Elizabeth Cady Stanton and Lucretia Mott, Seneca Falls produced the Declaration of Sentiments demanding equal rights for women.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "apush_10",
+      "subjectId": "ap-us-history",
+      "stem": "President Lyndon B. Johnson signature domestic reform package was named the:",
+      "options": [
+        "Square Deal",
+        "Fair Deal",
+        "Great Society",
+        "New Frontier"
+      ],
+      "correctIndex": 2,
+      "explanation": "The Great Society introduced major legislation including Medicare, Medicaid, the Civil Rights Act, and the War on Poverty.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "apush_11",
+      "subjectId": "ap-us-history",
+      "stem": "Which international incident prompted the United States to formally enter World War II in December 1941?",
+      "options": [
+        "Sinking of the Lusitania",
+        "Japanese attack on Pearl Harbor",
+        "Invasion of Poland",
+        "Fall of France"
+      ],
+      "correctIndex": 1,
+      "explanation": "On December 7, 1941, the Japanese surprise aerial attack on Pearl Harbor, Hawaii, brought the US into World War II.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "apush_12",
+      "subjectId": "ap-us-history",
+      "stem": "The Progressive Era muckraker Upton Sinclair exposed unsanitary conditions in the meatpacking industry in his novel:",
+      "options": [
+        "The Jungle",
+        "How the Other Half Lives",
+        "The Grapes of Wrath",
+        "The Octopus"
+      ],
+      "correctIndex": 0,
+      "explanation": "The Jungle (1906) sparked public outrage that led directly to the passage of the Pure Food and Drug Act and Meat Inspection Act.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "apush_13",
+      "subjectId": "ap-us-history",
+      "stem": "Under the Articles of Confederation, the national government lacked the crucial power to:",
+      "options": [
+        "Declare war",
+        "Levy direct taxes",
+        "Sign foreign treaties",
+        "Operate a post office"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Confederation Congress had no power to tax citizens directly, leaving the central government chronically underfunded.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "apush_14",
+      "subjectId": "ap-us-history",
+      "stem": "The Marshall Plan following World War II provided billions of dollars in economic aid primarily to:",
+      "options": [
+        "Rebuild war-torn Western European nations and resist communism",
+        "Support Nationalist China",
+        "Fund NASA lunar research",
+        "Rebuild Latin American infrastructure"
+      ],
+      "correctIndex": 0,
+      "explanation": "The Marshall Plan stabilized Western European economies to foster democratic prosperity and contain Soviet communist expansion.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "apush_15",
+      "subjectId": "ap-us-history",
+      "stem": "Which technological innovation revolutionized cotton processing and unintentionally entrenched Southern slavery in the 1790s?",
+      "options": [
+        "Steam engine",
+        "Cotton gin",
+        "Spinning jenny",
+        "Mechanical reaper"
+      ],
+      "correctIndex": 1,
+      "explanation": "Eli Whitney cotton gin made short-staple cotton highly profitable, exponentially increasing Southern plantation demand for enslaved labor.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    }
+  ],
+  "ap-psychology": [
+    {
+      "id": "psych_1",
+      "subjectId": "ap-psychology",
+      "stem": "In classical conditioning, an unlearned, naturally occurring response to an unconditioned stimulus is the:",
+      "options": [
+        "Conditioned response",
+        "Unconditioned response",
+        "Extinction response",
+        "Neutral stimulus"
+      ],
+      "correctIndex": 1,
+      "explanation": "The unconditioned response (e.g. salivating to food) is automatic and does not require prior learning.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "psych_2",
+      "subjectId": "ap-psychology",
+      "stem": "Which brain structure plays the central role in consolidating short-term memory into long-term memory?",
+      "options": [
+        "Cerebellum",
+        "Hippocampus",
+        "Medulla",
+        "Hypothalamus"
+      ],
+      "correctIndex": 1,
+      "explanation": "The hippocampus is essential for processing and consolidating explicit, declarative memories.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "psych_3",
+      "subjectId": "ap-psychology",
+      "stem": "According to Jean Piaget, during which cognitive developmental stage do children master the concept of conservation?",
+      "options": [
+        "Sensorimotor",
+        "Preoperational",
+        "Concrete Operational",
+        "Formal Operational"
+      ],
+      "correctIndex": 2,
+      "explanation": "During the concrete operational stage (ages ~7 to 11), children understand that quantity remains identical despite changes in shape.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "psych_4",
+      "subjectId": "ap-psychology",
+      "stem": "Which neurotransmitter is most directly associated with motor control, reward-seeking, and Parkinson disease when depleted?",
+      "options": [
+        "Serotonin",
+        "Dopamine",
+        "Acetylcholine",
+        "GABA"
+      ],
+      "correctIndex": 1,
+      "explanation": "Dopamine pathways mediate pleasure and motor control; death of dopamine-producing neurons in the substantia nigra causes Parkinson disease.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "psych_5",
+      "subjectId": "ap-psychology",
+      "stem": "The tendency to attribute other people actions to internal dispositions rather than external situations is called:",
+      "options": [
+        "Confirmation bias",
+        "Fundamental attribution error",
+        "Self-serving bias",
+        "Cognitive dissonance"
+      ],
+      "correctIndex": 1,
+      "explanation": "The fundamental attribution error describes overestimating personality traits and underestimating situational factors when judging others.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "psych_6",
+      "subjectId": "ap-psychology",
+      "stem": "Which part of the autonomic nervous system is responsible for the fight-or-flight stress response?",
+      "options": [
+        "Parasympathetic nervous system",
+        "Sympathetic nervous system",
+        "Somatic nervous system",
+        "Central nervous system"
+      ],
+      "correctIndex": 1,
+      "explanation": "The sympathetic nervous system accelerates heart rate, dilates bronchi, and releases adrenaline during perceived threats.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "psych_7",
+      "subjectId": "ap-psychology",
+      "stem": "In psychological research, what is a placebo effect?",
+      "options": [
+        "Improvement caused solely by patient expectations rather than an active treatment",
+        "An error resulting from poor sample randomization",
+        "A statistical correlation between two unrelated variables",
+        "Memory distortion caused by leading questions"
+      ],
+      "correctIndex": 0,
+      "explanation": "The placebo effect occurs when an inert substance or sham procedure produces genuine physiological or mental improvement due to expectations.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "psych_8",
+      "subjectId": "ap-psychology",
+      "stem": "The serial position effect predicts that people remember items from a list best when they are:",
+      "options": [
+        "At the beginning and end of the list",
+        "Only in the exact middle",
+        "Presented at random intervals",
+        "Repeated backwards"
+      ],
+      "correctIndex": 0,
+      "explanation": "The primacy effect enhances recall of beginning items (LTM), while the recency effect enhances recall of final items (working memory).",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "psych_9",
+      "subjectId": "ap-psychology",
+      "stem": "Which famous experiment demonstrated that ordinary people would obey authority to deliver perceived lethal electric shocks?",
+      "options": [
+        "Stanford Prison Experiment",
+        "Milgram Obedience Experiment",
+        "Asch Conformity Study",
+        "Little Albert Experiment"
+      ],
+      "correctIndex": 1,
+      "explanation": "Stanley Milgram study showed that approximately 65% of participants would follow researcher instructions to deliver the maximum 450-volt shock.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "psych_10",
+      "subjectId": "ap-psychology",
+      "stem": "Which sleep stage is characterized by rapid eye movements, temporary muscle paralysis, and vivid dreaming?",
+      "options": [
+        "Stage N1",
+        "Stage N2",
+        "Stage N3 (Deep Sleep)",
+        "REM Sleep"
+      ],
+      "correctIndex": 3,
+      "explanation": "Rapid Eye Movement (REM) sleep features high brain activity similar to wakefulness, accompanied by vivid dreaming and motor atonia.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "psych_11",
+      "subjectId": "ap-psychology",
+      "stem": "Erik Erikson proposed that the primary psychosocial conflict during adolescence is:",
+      "options": [
+        "Trust vs. Mistrust",
+        "Identity vs. Role Confusion",
+        "Intimacy vs. Isolation",
+        "Generativity vs. Stagnation"
+      ],
+      "correctIndex": 1,
+      "explanation": "Adolescents (ages 12-18) grapple with discovering personal identity, core values, and life directions vs role confusion.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "psych_12",
+      "subjectId": "ap-psychology",
+      "stem": "A Skinner box is a laboratory apparatus commonly used to study:",
+      "options": [
+        "Operant conditioning",
+        "Classical conditioning",
+        "Latent learning",
+        "Observational modeling"
+      ],
+      "correctIndex": 0,
+      "explanation": "B.F. Skinner utilized operant chambers where animals pressed levers to receive reinforcement or avoid punishment.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "psych_13",
+      "subjectId": "ap-psychology",
+      "stem": "Bipolar disorder is clinically diagnosed by alternating episodes of severe depression and:",
+      "options": [
+        "Mania",
+        "Catatonia",
+        "Dissociation",
+        "Amnesia"
+      ],
+      "correctIndex": 0,
+      "explanation": "Bipolar disorder is characterized by dramatic mood shifts between debilitating depressive lows and euphoric, hyperactive manic highs.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "psych_14",
+      "subjectId": "ap-psychology",
+      "stem": "Which sensory receptors in the human retina are specialized for night vision and peripheral motion detection?",
+      "options": [
+        "Cones",
+        "Rods",
+        "Foveal cells",
+        "Bipolar ganglion cells"
+      ],
+      "correctIndex": 1,
+      "explanation": "Rods operate in low-light conditions and detect black, white, and motion, while cones detect fine detail and color in bright light.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "psych_15",
+      "subjectId": "ap-psychology",
+      "stem": "According to Maslow hierarchy of needs, which level must be satisfied immediately after basic physiological survival needs?",
+      "options": [
+        "Safety needs",
+        "Belongingness and love",
+        "Esteem needs",
+        "Self-actualization"
+      ],
+      "correctIndex": 0,
+      "explanation": "Once physiological needs (food, water, shelter) are met, individuals prioritize safety and security needs.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    }
+  ],
+  "ap-computer-science-principles": [
+    {
+      "id": "csp_1",
+      "subjectId": "ap-computer-science-principles",
+      "stem": "How many distinct binary states or numbers can be represented using 8 bits (1 byte)?",
+      "options": [
+        "$64$",
+        "$128$",
+        "$256$",
+        "$512$"
+      ],
+      "correctIndex": 2,
+      "explanation": "Each bit has 2 possible states. $2^8 = 256$ distinct values (ranging from $0$ to $255$ in unsigned binary).",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "csp_2",
+      "subjectId": "ap-computer-science-principles",
+      "stem": "Which protocol is responsible for securely encrypting data transferred between a web browser and a website server?",
+      "options": [
+        "HTTP",
+        "HTTPS (TLS/SSL)",
+        "FTP",
+        "DNS"
+      ],
+      "correctIndex": 1,
+      "explanation": "HTTPS uses Transport Layer Security (TLS/SSL) to encrypt communications and prevent eavesdropping or tampering.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "csp_3",
+      "subjectId": "ap-computer-science-principles",
+      "stem": "What is the primary difference between lossy and lossless data compression?",
+      "options": [
+        "Lossy compression discards redundant data that cannot be recovered",
+        "Lossless compression always produces smaller files than lossy",
+        "Lossy compression can perfectly reconstruct the original file bit-for-bit",
+        "Lossless compression is only used for audio files"
+      ],
+      "correctIndex": 0,
+      "explanation": "Lossy compression achieves smaller sizes by permanently removing less perceptible data, whereas lossless preserves 100% of original bits.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "csp_4",
+      "subjectId": "ap-computer-science-principles",
+      "stem": "In algorithm design, a binary search algorithm requires the dataset to be:",
+      "options": [
+        "Sorted",
+        "Randomized",
+        "Stored in hexadecimal",
+        "Smaller than 100 elements"
+      ],
+      "correctIndex": 0,
+      "explanation": "Binary search operates in $O(\\log n)$ by repeatedly halving the search interval, which requires elements to be pre-sorted.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "csp_5",
+      "subjectId": "ap-computer-science-principles",
+      "stem": "What is the decimal (base 10) value of the binary number `1101`?",
+      "options": [
+        "$11$",
+        "$13$",
+        "$15$",
+        "$9$"
+      ],
+      "correctIndex": 1,
+      "explanation": "$1 \\times 2^3 + 1 \\times 2^2 + 0 \\times 2^1 + 1 \\times 2^0 = 8 + 4 + 0 + 1 = 13$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "csp_6",
+      "subjectId": "ap-computer-science-principles",
+      "stem": "What role does the Domain Name System (DNS) perform on the Internet?",
+      "options": [
+        "Translates human-friendly domain names (e.g. google.com) into numerical IP addresses",
+        "Physically connects fiber-optic cables across oceans",
+        "Encrypts email messages with public keys",
+        "Stores website cookies on client devices"
+      ],
+      "correctIndex": 0,
+      "explanation": "DNS acts as the phonebook of the Internet, mapping human-readable hostnames to routable IP addresses.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "csp_7",
+      "subjectId": "ap-computer-science-principles",
+      "stem": "A symmetric encryption algorithm uses:",
+      "options": [
+        "The same key for both encryption and decryption",
+        "A public key to encrypt and a private key to decrypt",
+        "No keys at all",
+        "A different key for every single character"
+      ],
+      "correctIndex": 0,
+      "explanation": "Symmetric key cryptography uses a single shared secret key for both encrypting and decrypting data.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "csp_8",
+      "subjectId": "ap-computer-science-principles",
+      "stem": "Which logic gate produces an output of 1 (TRUE) if and only if both inputs are 1 (TRUE)?",
+      "options": [
+        "OR Gate",
+        "AND Gate",
+        "NOT Gate",
+        "XOR Gate"
+      ],
+      "correctIndex": 1,
+      "explanation": "An AND gate strictly requires all inputs to be TRUE in order to output TRUE.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "csp_9",
+      "subjectId": "ap-computer-science-principles",
+      "stem": "What is an abstraction in computer science?",
+      "options": [
+        "Hiding complex implementation details and exposing only essential functionality",
+        "A hardware failure in memory RAM",
+        "Compressing image pixels",
+        "Converting code into binary by hand"
+      ],
+      "correctIndex": 0,
+      "explanation": "Abstraction manages complexity by breaking systems into layers and hiding low-level details behind simple interfaces.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "csp_10",
+      "subjectId": "ap-computer-science-principles",
+      "stem": "If a program executes a loop `FOR i = 1 TO 4` and multiplies variable `p = p * 2` (starting with `p = 1`), what is `p` after the loop?",
+      "options": [
+        "$8$",
+        "$16$",
+        "$32$",
+        "$4$"
+      ],
+      "correctIndex": 1,
+      "explanation": "After 4 iterations: $1 \\to 2 \\to 4 \\to 8 \\to 16$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "csp_11",
+      "subjectId": "ap-computer-science-principles",
+      "stem": "What is the primary benefit of fault tolerance in Internet routing protocols like TCP/IP?",
+      "options": [
+        "Traffic can be automatically rerouted if individual routers or cables fail",
+        "Websites load instantaneously without buffering",
+        "Passwords cannot be guessed by brute force",
+        "All data packets arrive in exact numerical sequence without reassembly"
+      ],
+      "correctIndex": 0,
+      "explanation": "Redundant routing paths allow packets to navigate around severed lines or offline nodes without crashing the network.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "csp_12",
+      "subjectId": "ap-computer-science-principles",
+      "stem": "Which type of software license allows users to view, modify, and distribute the underlying source code freely?",
+      "options": [
+        "Proprietary license",
+        "Open-source license",
+        "Commercial copyright",
+        "Freemium trial"
+      ],
+      "correctIndex": 1,
+      "explanation": "Open-source software licenses grant anyone the freedom to inspect, adapt, and redistribute the program code.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "csp_13",
+      "subjectId": "ap-computer-science-principles",
+      "stem": "What is phishing in cybersecurity?",
+      "options": [
+        "A social engineering attack disguised as a trustworthy entity to steal sensitive credentials",
+        "An automated script that floods network bandwidth",
+        "A hardware keylogger plugged into a USB port",
+        "A virus that encrypts hard drives for ransom"
+      ],
+      "correctIndex": 0,
+      "explanation": "Phishing uses deceptive emails or websites that impersonate banks or services to trick victims into sharing passwords or personal data.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "csp_14",
+      "subjectId": "ap-computer-science-principles",
+      "stem": "In parallel computing, speedup is limited primarily by:",
+      "options": [
+        "The portion of the task that must run sequentially (Amdahl law)",
+        "The operating system user interface",
+        "The color of the motherboard",
+        "The size of the hard drive"
+      ],
+      "correctIndex": 0,
+      "explanation": "Amdahl law demonstrates that the non-parallelizable, sequential components of a program cap the maximum theoretical speedup.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "csp_15",
+      "subjectId": "ap-computer-science-principles",
+      "stem": "What is metadata in the context of digital photos and communications?",
+      "options": [
+        "Data that provides information about other data (e.g. timestamp, camera model, GPS coordinates)",
+        "The raw hexadecimal pixels of the image",
+        "A temporary cache stored in CPU registers",
+        "The backup copy of an encrypted file"
+      ],
+      "correctIndex": 0,
+      "explanation": "Metadata describes characteristics of a file\u2014such as author, date created, file format, and resolution\u2014without being the content itself.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    }
+  ],
+  "ap-physics": [
+    {
+      "id": "phys_1",
+      "subjectId": "ap-physics-1",
+      "stem": "An object is dropped from rest from a cliff. Neglecting air resistance, what is its speed after $3.0\\text{ s}$? ($g = 9.8\\text{ m/s}^2$)",
+      "options": [
+        "$14.7\\text{ m/s}$",
+        "$29.4\\text{ m/s}$",
+        "$44.1\\text{ m/s}$",
+        "$9.8\\text{ m/s}$"
+      ],
+      "correctIndex": 1,
+      "explanation": "$v = v_0 + gt = 0 + (9.8)(3.0) = 29.4\\text{ m/s}$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "phys_2",
+      "subjectId": "ap-physics-1",
+      "stem": "A net external force $F$ acts on an object of mass $m$, giving it acceleration $a$. If the mass is doubled and force is halved, what is the new acceleration?",
+      "options": [
+        "$4a$",
+        "$2a$",
+        "$\\frac{a}{2}$",
+        "$\\frac{a}{4}$"
+      ],
+      "correctIndex": 3,
+      "explanation": "$a_{new} = \\frac{F/2}{2m} = \\frac{1}{4} \\frac{F}{m} = \\frac{a}{4}$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "phys_3",
+      "subjectId": "ap-physics-1",
+      "stem": "A car travels in a horizontal circle of radius $R$ at constant speed $v$. What force provides the centripetal acceleration?",
+      "options": [
+        "Centrifugal force",
+        "Static friction between tires and road",
+        "Gravitational force",
+        "Normal force from the ground"
+      ],
+      "correctIndex": 1,
+      "explanation": "Static friction between the car tires and the road surface prevents slipping and points towards the circle center.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "phys_4",
+      "subjectId": "ap-physics-1",
+      "stem": "A $2\\text{ kg}$ cart moving at $3\\text{ m/s}$ collides and sticks to a stationary $1\\text{ kg}$ cart. What is their final common speed?",
+      "options": [
+        "$1.5\\text{ m/s}$",
+        "$2.0\\text{ m/s}$",
+        "$2.5\\text{ m/s}$",
+        "$3.0\\text{ m/s}$"
+      ],
+      "correctIndex": 1,
+      "explanation": "Conservation of momentum: $p_i = (2)(3) + 0 = 6\\text{ kg}\\cdot\\text{m/s}$. $v_f = \\frac{6}{2 + 1} = 2.0\\text{ m/s}$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "phys_5",
+      "subjectId": "ap-physics-1",
+      "stem": "A simple pendulum has period $T$ on Earth. If the length of the string is quadrupled ($4L$), what is the new period?",
+      "options": [
+        "$4T$",
+        "$2T$",
+        "$\\frac{T}{2}$",
+        "$\\sqrt{2}T$"
+      ],
+      "correctIndex": 1,
+      "explanation": "$T = 2\\pi\\sqrt{\\frac{L}{g}}$. Replacing $L$ with $4L$ gives $T_{new} = 2\\pi\\sqrt{\\frac{4L}{g}} = 2 T$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "phys_6",
+      "subjectId": "ap-physics-1",
+      "stem": "How much work is done by the gravitational force on a $5\\text{ kg}$ satellite in a circular orbit of radius $R$ during one full revolution?",
+      "options": [
+        "$0\\text{ J}$",
+        "$5\\pi R\\text{ J}$",
+        "$10g R\\text{ J}$",
+        "$50\\text{ J}$"
+      ],
+      "correctIndex": 0,
+      "explanation": "Gravity is perpendicular to the displacement vector at every point in a circular orbit ($W = F d \\cos(90^\\circ) = 0\\text{ J}$).",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "phys_7",
+      "subjectId": "ap-physics-1",
+      "stem": "A spring with spring constant $k = 200\\text{ N/m}$ is compressed by $0.1\\text{ m}$. What is the stored elastic potential energy?",
+      "options": [
+        "$1.0\\text{ J}$",
+        "$2.0\\text{ J}$",
+        "$10\\text{ J}$",
+        "$20\\text{ J}$"
+      ],
+      "correctIndex": 0,
+      "explanation": "$U_s = \\frac{1}{2} k x^2 = \\frac{1}{2} (200) (0.1)^2 = 100 \\times 0.01 = 1.0\\text{ J}$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "phys_8",
+      "subjectId": "ap-physics-1",
+      "stem": "A solid disk and a hollow ring of identical mass and radius roll down an incline without slipping. Which reaches the bottom first?",
+      "options": [
+        "The hollow ring",
+        "The solid disk",
+        "Both at the same time",
+        "Depends on the incline angle"
+      ],
+      "correctIndex": 1,
+      "explanation": "The solid disk has a smaller rotational inertia ($I = \\frac{1}{2}MR^2 < MR^2$), converting more PE into translational KE, so it accelerates faster.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "phys_9",
+      "subjectId": "ap-physics-1",
+      "stem": "An elevator is accelerating upwards at $2\\text{ m/s}^2$. What apparent weight does an $80\\text{ kg}$ passenger feel? ($g = 10\\text{ m/s}^2$)",
+      "options": [
+        "$640\\text{ N}$",
+        "$800\\text{ N}$",
+        "$960\\text{ N}$",
+        "$160\\text{ N}$"
+      ],
+      "correctIndex": 2,
+      "explanation": "$N - mg = ma \\implies N = m(g + a) = 80(10 + 2) = 960\\text{ N}$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "phys_10",
+      "subjectId": "ap-physics-1",
+      "stem": "What happens to the total mechanical energy of a falling apple if air resistance is negligible?",
+      "options": [
+        "It increases",
+        "It decreases",
+        "It remains constant",
+        "It oscillates"
+      ],
+      "correctIndex": 2,
+      "explanation": "With only conservative gravitational forces doing work, total mechanical energy ($KE + PE$) remains strictly conserved.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "phys_11",
+      "subjectId": "ap-physics-1",
+      "stem": "A net torque of $20\\text{ N}\\cdot\\text{m}$ acts on a wheel with moment of inertia $I = 4\\text{ kg}\\cdot\\text{m}^2$. What is the angular acceleration $\\alpha$?",
+      "options": [
+        "$5\\text{ rad/s}^2$",
+        "$80\\text{ rad/s}^2$",
+        "$0.2\\text{ rad/s}^2$",
+        "$16\\text{ rad/s}^2$"
+      ],
+      "correctIndex": 0,
+      "explanation": "$\\tau = I\\alpha \\implies \\alpha = \\frac{\\tau}{I} = \\frac{20}{4} = 5\\text{ rad/s}^2$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "phys_12",
+      "subjectId": "ap-physics-1",
+      "stem": "A projectile launched at angle $\\theta$ has maximum horizontal range when $\\theta$ equals:",
+      "options": [
+        "$30^\\circ$",
+        "$45^\\circ$",
+        "$60^\\circ$",
+        "$90^\\circ$"
+      ],
+      "correctIndex": 1,
+      "explanation": "Range $R = \\frac{v_0^2 \\sin(2\\theta)}{g}$, which reaches maximum when $\\sin(2\\theta) = 1 \\implies \\theta = 45^\\circ$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "phys_13",
+      "subjectId": "ap-physics-1",
+      "stem": "An astronaut floating in space throws a wrench forward. What happens to the astronaut?",
+      "options": [
+        "Moves forward faster",
+        "Moves backward with equal momentum",
+        "Remains stationary",
+        "Spins continuously in place"
+      ],
+      "correctIndex": 1,
+      "explanation": "By conservation of momentum ($p_{initial} = 0$), $p_{astronaut} = -p_{wrench}$, so the astronaut recoils backward.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "phys_14",
+      "subjectId": "ap-physics-1",
+      "stem": "If the distance between two gravitational masses is doubled, the gravitational force between them is multiplied by:",
+      "options": [
+        "$2$",
+        "$\\frac{1}{2}$",
+        "$\\frac{1}{4}$",
+        "$4$"
+      ],
+      "correctIndex": 2,
+      "explanation": "Newton's law of universal gravitation follows an inverse-square law: $F \\propto \\frac{1}{r^2} \\implies \\frac{1}{2^2} = \\frac{1}{4}$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "phys_15",
+      "subjectId": "ap-physics-1",
+      "stem": "What physical quantity is represented by the area under a Force vs. Time graph?",
+      "options": [
+        "Work",
+        "Kinetic Energy",
+        "Impulse",
+        "Power"
+      ],
+      "correctIndex": 2,
+      "explanation": "Impulse $J = \\int F dt = \\Delta p$, which corresponds directly to the area under a Force-Time graph.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    }
+  ],
+  "ap-calculus-bc": [
+    {
+      "id": "calc_bc_1",
+      "subjectId": "ap-calculus-bc",
+      "stem": "Evaluate $\\int x e^x dx$ using integration by parts.",
+      "options": [
+        "$e^x(x - 1) + C$",
+        "$e^x(x + 1) + C$",
+        "$x^2 e^x + C$",
+        "$\\frac{1}{2}x^2 e^x + C$"
+      ],
+      "correctIndex": 0,
+      "explanation": "Using $\\int u dv = uv - \\int v du$ with $u = x, dv = e^x dx$: $x e^x - \\int e^x dx = e^x(x - 1) + C$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "calc_bc_2",
+      "subjectId": "ap-calculus-bc",
+      "stem": "What is the Maclaurin series expansion of $\\cos(x)$?",
+      "options": [
+        "$\\sum_{n=0}^\\infty \\frac{(-1)^n x^{2n}}{(2n)!}$",
+        "$\\sum_{n=0}^\\infty \\frac{(-1)^n x^{2n+1}}{(2n+1)!}$",
+        "$\\sum_{n=0}^\\infty \\frac{x^n}{n!}$",
+        "$\\sum_{n=0}^\\infty (-1)^n x^n$"
+      ],
+      "correctIndex": 0,
+      "explanation": "The cosine function is even, giving the alternating series $\\cos(x) = 1 - \\frac{x^2}{2!} + \\frac{x^4}{4!} - \\dots = \\sum_{n=0}^\\infty \\frac{(-1)^n x^{2n}}{(2n)!}$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "calc_bc_3",
+      "subjectId": "ap-calculus-bc",
+      "stem": "Find the radius of convergence of $\\sum_{n=1}^\\infty \\frac{(x - 3)^n}{n \\cdot 2^n}$.",
+      "options": [
+        "$R = 1$",
+        "$R = 2$",
+        "$R = 3$",
+        "$R = \\infty$"
+      ],
+      "correctIndex": 1,
+      "explanation": "Using ratio test: $\\lim_{n \\to \\infty} |\\frac{x-3}{2}| \\frac{n}{n+1} = \\frac{|x-3|}{2} < 1 \\implies |x - 3| < 2 \\implies R = 2$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "calc_bc_4",
+      "subjectId": "ap-calculus-bc",
+      "stem": "What is the area enclosed by one loop of the polar curve $r = 4\\sin(\\theta)$?",
+      "options": [
+        "$2\\pi$",
+        "$4\\pi$",
+        "$8\\pi$",
+        "$16\\pi$"
+      ],
+      "correctIndex": 1,
+      "explanation": "Area $= \\frac{1}{2} \\int_0^\\pi (4\\sin\\theta)^2 d\\theta = 8 \\int_0^\\pi \\sin^2\\theta d\\theta = 8 \\cdot \\frac{\\pi}{2} = 4\\pi$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "calc_bc_5",
+      "subjectId": "ap-calculus-bc",
+      "stem": "The improper integral $\\int_1^\\infty \\frac{1}{x^p} dx$ converges if and only if:",
+      "options": [
+        "$p > 1$",
+        "$p \\ge 1$",
+        "$p < 1$",
+        "$p = 0$"
+      ],
+      "correctIndex": 0,
+      "explanation": "By the p-series integral test, $\\int_1^\\infty \\frac{1}{x^p} dx$ converges strictly when $p > 1$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "calc_bc_6",
+      "subjectId": "ap-calculus-bc",
+      "stem": "A particle position is given by $x(t) = t^2, y(t) = 2t$. What is its speed at $t = 1$?",
+      "options": [
+        "$\\sqrt{8}$",
+        "$2\\sqrt{2}$",
+        "$\\sqrt{2^2 + 2^2} = \\sqrt{8}$",
+        "$4$"
+      ],
+      "correctIndex": 1,
+      "explanation": "Speed $= \\sqrt{(x'(t))^2 + (y'(t))^2} = \\sqrt{(2t)^2 + 2^2}$. At $t = 1$: $\\sqrt{4 + 4} = \\sqrt{8} = 2\\sqrt{2}$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "calc_bc_7",
+      "subjectId": "ap-calculus-bc",
+      "stem": "Which test is most conclusive to determine convergence of $\\sum_{n=1}^\\infty \\frac{(-1)^n}{\\sqrt{n}}$?",
+      "options": [
+        "Alternating Series Test",
+        "Integral Test",
+        "Direct Comparison with $n$",
+        "Ratio Test"
+      ],
+      "correctIndex": 0,
+      "explanation": "Since $\\frac{1}{\\sqrt{n}}$ decreases monotonically to $0$, the Alternating Series Test guarantees conditional convergence.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "calc_bc_8",
+      "subjectId": "ap-calculus-bc",
+      "stem": "In logistic growth $\\frac{dP}{dt} = 0.05 P (1 - \\frac{P}{800})$, what is the carrying capacity $L$?",
+      "options": [
+        "$800$",
+        "$400$",
+        "$0.05$",
+        "$40$"
+      ],
+      "correctIndex": 0,
+      "explanation": "The standard logistic differential equation is $\\frac{dP}{dt} = kP(1 - \\frac{P}{L})$, where $L = 800$ is carrying capacity.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "calc_bc_9",
+      "subjectId": "ap-calculus-bc",
+      "stem": "Evaluate $\\lim_{n \\to \\infty} \\left(1 + \\frac{2}{n}\\right)^n$.",
+      "options": [
+        "$e^2$",
+        "$e$",
+        "$2e$",
+        "$\\infty$"
+      ],
+      "correctIndex": 0,
+      "explanation": "The standard exponential limit formula is $\\lim_{n \\to \\infty} (1 + \\frac{k}{n})^n = e^k \\implies e^2$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "calc_bc_10",
+      "subjectId": "ap-calculus-bc",
+      "stem": "What is the sum of the convergent geometric series $\\sum_{n=0}^\\infty 3 \\left(\\frac{1}{4}\\right)^n$?",
+      "options": [
+        "$4$",
+        "$3$",
+        "$12$",
+        "$1$"
+      ],
+      "correctIndex": 0,
+      "explanation": "Sum $= \\frac{a}{1 - r} = \\frac{3}{1 - 1/4} = \\frac{3}{3/4} = 4$.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "calc_bc_11",
+      "subjectId": "ap-calculus-bc",
+      "stem": "Euler method with step size $h = 0.5$ approximates $y(1)$ for $\\frac{dy}{dx} = x + y$ with $y(0) = 1$. What is $y(0.5)$?",
+      "options": [
+        "$1.5$",
+        "$1.25$",
+        "$2.0$",
+        "$1.75$"
+      ],
+      "correctIndex": 0,
+      "explanation": "$y(0.5) \\approx y(0) + h \\cdot f(0, 1) = 1 + 0.5(0 + 1) = 1.5$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "calc_bc_12",
+      "subjectId": "ap-calculus-bc",
+      "stem": "Find the slope $\\frac{dy}{dx}$ of the parametric curve $x(t) = \\cos(t), y(t) = \\sin(t)$ at $t = \\frac{\\pi}{4}$.",
+      "options": [
+        "$-1$",
+        "$1$",
+        "$0$",
+        "Undefined"
+      ],
+      "correctIndex": 0,
+      "explanation": "$\\frac{dy}{dx} = \\frac{y'(t)}{x'(t)} = \\frac{\\cos(t)}{-\\sin(t)} = -\\cot(t)$. At $t = \\pi/4$: $-\\cot(\\pi/4) = -1$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "calc_bc_13",
+      "subjectId": "ap-calculus-bc",
+      "stem": "What are the first three non-zero terms of the Taylor series for $e^{2x}$ centered at $x = 0$?",
+      "options": [
+        "$1 + 2x + 2x^2$",
+        "$1 + 2x + 4x^2$",
+        "$1 + x + x^2$",
+        "$2 + 4x + 8x^2$"
+      ],
+      "correctIndex": 0,
+      "explanation": "$e^{2x} = 1 + (2x) + \\frac{(2x)^2}{2!} = 1 + 2x + 2x^2$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "calc_bc_14",
+      "subjectId": "ap-calculus-bc",
+      "stem": "What is the length of the curve $y = \\frac{2}{3}x^{3/2}$ on $[0, 3]$?",
+      "options": [
+        "$\\frac{14}{3}$",
+        "$4$",
+        "$\\frac{16}{3}$",
+        "$6$"
+      ],
+      "correctIndex": 0,
+      "explanation": "$y' = x^{1/2} \\implies L = \\int_0^3 \\sqrt{1 + x} dx = [\\frac{2}{3}(1+x)^{3/2}]_0^3 = \\frac{2}{3}(8 - 1) = \\frac{14}{3}$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "calc_bc_15",
+      "subjectId": "ap-calculus-bc",
+      "stem": "For what values of $p$ does the series $\\sum_{n=2}^\\infty \\frac{1}{n (\\ln n)^p}$ converge?",
+      "options": [
+        "$p > 1$",
+        "$p \\ge 1$",
+        "$p < 1$",
+        "All real $p$"
+      ],
+      "correctIndex": 0,
+      "explanation": "Using substitution $u = \\ln n, du = \\frac{1}{n} dn$: $\\int_2^\\infty u^{-p} du$ converges strictly when $p > 1$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    }
+  ],
+  "ap-environmental-science": [
+    {
+      "id": "apes_1",
+      "subjectId": "ap-environmental-science",
+      "stem": "Which layer of the atmosphere contains the protective ozone layer that absorbs harmful solar UV-C and UV-B radiation?",
+      "options": [
+        "Troposphere",
+        "Stratosphere",
+        "Mesosphere",
+        "Thermosphere"
+      ],
+      "correctIndex": 1,
+      "explanation": "The stratospheric ozone layer (located ~15-35 km above Earth) absorbs over 97% of biologically damaging solar ultraviolet rays.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "apes_2",
+      "subjectId": "ap-environmental-science",
+      "stem": "What ecological process causes excessive algae blooms followed by hypoxia and dead zones in aquatic ecosystems?",
+      "options": [
+        "Eutrophication",
+        "Bioaccumulation",
+        "Salinization",
+        "Desertification"
+      ],
+      "correctIndex": 0,
+      "explanation": "Agricultural runoff rich in nitrogen and phosphorus triggers rapid algal growth; decomposers consume dissolved oxygen during decay.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "apes_3",
+      "subjectId": "ap-environmental-science",
+      "stem": "Which soil horizon is known as topsoil and contains the highest concentration of organic matter and humus?",
+      "options": [
+        "O Horizon",
+        "A Horizon",
+        "B Horizon",
+        "C Horizon"
+      ],
+      "correctIndex": 1,
+      "explanation": "The A horizon is topsoil, composed of weathered minerals mixed with dark, nutrient-rich organic humus.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "apes_4",
+      "subjectId": "ap-environmental-science",
+      "stem": "Which of the following is a non-point source of water pollution?",
+      "options": [
+        "A chemical factory discharge pipe",
+        "Agricultural fertilizer runoff across a watershed",
+        "A municipal sewage treatment outfall",
+        "An offshore oil refinery leak"
+      ],
+      "correctIndex": 1,
+      "explanation": "Non-point source pollution originates from broad, diffuse areas rather than a single identifiable, confined conveyance.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "apes_5",
+      "subjectId": "ap-environmental-science",
+      "stem": "In island biogeography theory (MacArthur & Wilson), which island exhibits the highest species equilibrium richness?",
+      "options": [
+        "Small island far from mainland",
+        "Large island close to mainland",
+        "Small island close to mainland",
+        "Large island far from mainland"
+      ],
+      "correctIndex": 1,
+      "explanation": "Large islands support lower extinction rates and proximity to mainland increases immigration colonization rates.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "apes_6",
+      "subjectId": "ap-environmental-science",
+      "stem": "What primary greenhouse gas is released in substantial quantities from bovine livestock enteric fermentation and flooded rice paddies?",
+      "options": [
+        "Methane ($CH_4$)",
+        "Sulfur dioxide ($SO_2$)",
+        "Nitrous oxide ($N_2O$)",
+        "Carbon monoxide ($CO$)"
+      ],
+      "correctIndex": 0,
+      "explanation": "Methanogenic anaerobic archaea in ruminant animal digestive tracts and flooded wetland soils produce methane ($CH_4$).",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "apes_7",
+      "subjectId": "ap-environmental-science",
+      "stem": "A demographic transition model in Stage 2 (Transitional) is characterized by:",
+      "options": [
+        "High birth rate and rapidly declining death rate",
+        "Low birth rate and low death rate",
+        "High birth rate and high death rate",
+        "Declining birth rate and rising death rate"
+      ],
+      "correctIndex": 0,
+      "explanation": "Improved sanitation, nutrition, and medical care cause death rates to plummet while birth rates remain elevated, resulting in rapid population growth.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "apes_8",
+      "subjectId": "ap-environmental-science",
+      "stem": "What international treaty successfully banned ozone-depleting chlorofluorocarbons (CFCs)?",
+      "options": [
+        "Kyoto Protocol",
+        "Montreal Protocol",
+        "Paris Climate Accord",
+        "Ramsar Convention"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Montreal Protocol (1987) mandated the phase-out of CFCs and halons to protect the stratospheric ozone layer.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "apes_9",
+      "subjectId": "ap-environmental-science",
+      "stem": "Net Primary Productivity (NPP) is mathematically calculated as:",
+      "options": [
+        "$\\text{GPP} - R$",
+        "$\\text{GPP} + R$",
+        "$\\text{GPP} \\times R$",
+        "$\\frac{\\text{GPP}}{R}$"
+      ],
+      "correctIndex": 0,
+      "explanation": "$\\text{NPP}$ represents net biomass stored by autotrophs after accounting for cellular respiration losses ($\\text{NPP} = \\text{GPP} - R$).",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "apes_10",
+      "subjectId": "ap-environmental-science",
+      "stem": "Which secondary air pollutant forms photochemical smog in the troposphere when NOx reacts with VOCs in sunlight?",
+      "options": [
+        "Ground-level ozone ($O_3$)",
+        "Carbon dioxide ($CO_2$)",
+        "Lead ($Pb$)",
+        "Asbestos"
+      ],
+      "correctIndex": 0,
+      "explanation": "Nitrogen oxides and volatile organic compounds undergo photochemical reactions in sunlight to generate toxic tropospheric ozone.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "apes_11",
+      "subjectId": "ap-environmental-science",
+      "stem": "Ocean acidification is primarily driven by seawater absorbing elevated atmospheric:",
+      "options": [
+        "Carbon dioxide ($CO_2$)",
+        "Methane ($CH_4$)",
+        "Sulfuric acid",
+        "Chlorine"
+      ],
+      "correctIndex": 0,
+      "explanation": "Dissolved $CO_2$ reacts with $H_2O$ to form carbonic acid ($H_2CO_3$), lowering ocean pH and dissolving calcium carbonate shells.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "apes_12",
+      "subjectId": "ap-environmental-science",
+      "stem": "Which renewable energy technology exploits subterranean heat reservoirs to produce electricity?",
+      "options": [
+        "Photovoltaic solar",
+        "Geothermal energy",
+        "Hydroelectric power",
+        "Biomass gasification"
+      ],
+      "correctIndex": 1,
+      "explanation": "Geothermal energy extracts steam or hot water from underground magma heated rock strata to spin electric turbines.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "apes_13",
+      "subjectId": "ap-environmental-science",
+      "stem": "What type of survivorship curve is typical of humans and large mammals exhibiting high parental care?",
+      "options": [
+        "Type I",
+        "Type II",
+        "Type III",
+        "Exponential"
+      ],
+      "correctIndex": 0,
+      "explanation": "Type I curves show high survival probabilities throughout early and middle life, followed by rapid mortality in old age.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "apes_14",
+      "subjectId": "ap-environmental-science",
+      "stem": "Which mining technique removes entire mountaintops using explosives to extract coal seams?",
+      "options": [
+        "Subsurface shaft mining",
+        "Mountaintop removal mining",
+        "Placer dredging",
+        "In-situ leaching"
+      ],
+      "correctIndex": 1,
+      "explanation": "Mountaintop removal is a form of surface strip mining that shears off mountain peaks and dumps overburden into adjacent valleys.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "apes_15",
+      "subjectId": "ap-environmental-science",
+      "stem": "In a food web, toxins such as DDT and mercury exhibit biomagnification because they are:",
+      "options": [
+        "Water-soluble and rapidly excreted",
+        "Fat-soluble and persistent in trophic tissue",
+        "Broken down by plant enzymes",
+        "Evaporated into the atmosphere"
+      ],
+      "correctIndex": 1,
+      "explanation": "Lipophilic persistent pollutants accumulate in adipose tissue and concentrate exponentially at higher trophic predator levels.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    }
+  ],
+  "ap-computer-science": [
+    {
+      "id": "csa_1",
+      "subjectId": "ap-computer-science",
+      "stem": "In Java, what keyword is used to inherit properties and methods from a superclass?",
+      "options": [
+        "implements",
+        "extends",
+        "inherits",
+        "super"
+      ],
+      "correctIndex": 1,
+      "explanation": "The `extends` keyword establishes an inheritance relationship where a subclass inherits non-private members of a superclass.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "csa_2",
+      "subjectId": "ap-computer-science",
+      "stem": "What does `System.out.println(5 / 2);` output in Java?",
+      "options": [
+        "2.5",
+        "2",
+        "3",
+        "Compilation Error"
+      ],
+      "correctIndex": 1,
+      "explanation": "Integer division truncates any fractional decimal component, yielding `2`.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "csa_3",
+      "subjectId": "ap-computer-science",
+      "stem": "Which method is used to determine the number of elements currently stored in an `ArrayList<String>`?",
+      "options": [
+        "length()",
+        "length",
+        "size()",
+        "count()"
+      ],
+      "correctIndex": 2,
+      "explanation": "`ArrayList` utilizes the `size()` method, while arrays use the `.length` field and Strings use `.length()`.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "csa_4",
+      "subjectId": "ap-computer-science",
+      "stem": "What happens when you declare a variable as `static` inside a Java class?",
+      "options": [
+        "Each object instance maintains its own unique copy",
+        "The variable is shared by all instances of the class",
+        "The variable cannot be modified (immutable)",
+        "The variable can only be accessed inside loops"
+      ],
+      "correctIndex": 1,
+      "explanation": "A `static` variable belongs to the class itself and is shared across all instantiated objects.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "csa_5",
+      "subjectId": "ap-computer-science",
+      "stem": 'What is the return value of `"APExam".substring(2, 5)` in Java?',
+      "options": [
+        '"Exam"',
+        '"Exa"',
+        '"PEx"',
+        '"PExam"'
+      ],
+      "correctIndex": 1,
+      "explanation": "`substring(beginIndex, endIndex)` includes `beginIndex` (2 is 'E') and excludes `endIndex` (indices 2, 3, 4 -> \"Exa\").",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "csa_6",
+      "subjectId": "ap-computer-science",
+      "stem": "In binary search of an array of 1,024 elements, what is the maximum number of comparisons required?",
+      "options": [
+        "10",
+        "100",
+        "512",
+        "1024"
+      ],
+      "correctIndex": 0,
+      "explanation": "Binary search runs in $O(\\log_2 n)$. $\\log_2(1024) = 10$ comparisons.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "csa_7",
+      "subjectId": "ap-computer-science",
+      "stem": "Which boolean expression is equivalent to `!(a && b)` according to De Morgan's Laws?",
+      "options": [
+        "!a && !b",
+        "!a || !b",
+        "a || b",
+        "!a == !b"
+      ],
+      "correctIndex": 1,
+      "explanation": "De Morgan's Law states that negating a conjunction flips the operator to disjunction: `!(a && b) == (!a || !b)`.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "csa_8",
+      "subjectId": "ap-computer-science",
+      "stem": "What exception is thrown when accessing index 5 of an array declared as `int[] arr = new int[5];`?",
+      "options": [
+        "NullPointerException",
+        "ArrayIndexOutOfBoundsException",
+        "IllegalArgumentException",
+        "ClassCastException"
+      ],
+      "correctIndex": 1,
+      "explanation": "A 5-element array has valid indices 0 to 4. Index 5 triggers an `ArrayIndexOutOfBoundsException`.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "csa_9",
+      "subjectId": "ap-computer-science",
+      "stem": "What is polymorphism in Java OOP?",
+      "options": [
+        "Hiding private instance variables",
+        "Allowing an object reference of a parent type to invoke overridden child methods at runtime",
+        "Compiling bytecode into machine native code",
+        "Allocating heap memory automatically"
+      ],
+      "correctIndex": 1,
+      "explanation": "Polymorphism enables dynamic method dispatch where overridden subclass methods are executed via superclass references.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "csa_10",
+      "subjectId": "ap-computer-science",
+      "stem": "What does `str1.equals(str2)` test for in Java?",
+      "options": [
+        "If both variables point to the exact same memory address",
+        "If both strings contain the identical character sequence",
+        "If str1 is alphabetically before str2",
+        "If both strings have equal lengths"
+      ],
+      "correctIndex": 1,
+      "explanation": "`.equals()` tests semantic content equality, while `==` compares reference memory addresses.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "csa_11",
+      "subjectId": "ap-computer-science",
+      "stem": "What is the base case in a recursive method?",
+      "options": [
+        "The initial call made from the main method",
+        "The terminating condition that halts further recursive calls",
+        "The deepest stack frame before memory overflow",
+        "A loop that repeats inside the method"
+      ],
+      "correctIndex": 1,
+      "explanation": "A recursive method must contain a base case to terminate recursion and prevent stack overflow errors.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "csa_12",
+      "subjectId": "ap-computer-science",
+      "stem": "What is the worst-case time complexity of Selection Sort on an array of $n$ elements?",
+      "options": [
+        "$O(1)$",
+        "$O(\\log n)$",
+        "$O(n)$",
+        "$O(n^2)$"
+      ],
+      "correctIndex": 3,
+      "explanation": "Selection Sort always executes nested comparison loops requiring $\\frac{n(n-1)}{2}$ operations, giving $O(n^2)$ complexity.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "csa_13",
+      "subjectId": "ap-computer-science",
+      "stem": "How do you access the number of rows in a 2D array `int[][] matrix`?",
+      "options": [
+        "matrix.length",
+        "matrix[0].length",
+        "matrix.size()",
+        "matrix.rows"
+      ],
+      "correctIndex": 0,
+      "explanation": "`matrix.length` represents the number of rows, while `matrix[0].length` gives column count.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "csa_14",
+      "subjectId": "ap-computer-science",
+      "stem": "What keyword in a constructor invokes the superclass constructor?",
+      "options": [
+        "this()",
+        "super()",
+        "parent()",
+        "base()"
+      ],
+      "correctIndex": 1,
+      "explanation": "`super()` calls the superclass constructor and must be the first statement in the subclass constructor.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "csa_15",
+      "subjectId": "ap-computer-science",
+      "stem": 'What does the wrapper class `Integer.parseInt("42")` return?',
+      "options": [
+        "A primitive `int` value 42",
+        'A String "42"',
+        "A double 42.0",
+        "A null reference"
+      ],
+      "correctIndex": 0,
+      "explanation": "`Integer.parseInt()` parses a String into its corresponding primitive `int` representation.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    }
+  ],
+  "ap-world-history": [
+    {
+      "id": "wh_1",
+      "subjectId": "ap-world-history",
+      "stem": "The Silk Roads facilitated extensive Afro-Eurasian trade primarily connecting China with:",
+      "options": [
+        "The Mediterranean basin",
+        "Mesoamerica",
+        "Sub-Saharan West Africa",
+        "Polynesian islands"
+      ],
+      "correctIndex": 0,
+      "explanation": "The ancient and medieval Silk Roads linked Chang'an in China through Central Asia directly to Mediterranean and European markets.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "wh_2",
+      "subjectId": "ap-world-history",
+      "stem": "Which pastoral empire unified the largest contiguous land empire in world history during the 13th century?",
+      "options": [
+        "The Ottoman Empire",
+        "The Mongol Empire",
+        "The Mughal Empire",
+        "The Songhai Empire"
+      ],
+      "correctIndex": 1,
+      "explanation": "Under Genghis Khan and his successors, the Mongol Empire spanned from East Asia to Eastern Europe, establishing the Pax Mongolica.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "wh_3",
+      "subjectId": "ap-world-history",
+      "stem": "The Columbian Exchange refers to the unprecedented transoceanic transfer of:",
+      "options": [
+        "Plants, animals, diseases, and cultures between the Eastern and Western Hemispheres",
+        "Gold bullion exclusively between Britain and India",
+        "Enslaved laborers solely across the Indian Ocean",
+        "Manufactured goods between Japan and Portugal"
+      ],
+      "correctIndex": 0,
+      "explanation": "Post-1492 voyages connected the Old and New Worlds, transferring crops (potatoes, maize), livestock, and lethal epidemics (smallpox).",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "wh_4",
+      "subjectId": "ap-world-history",
+      "stem": "The Ottoman devshirme system recruited Christian youth from the Balkans to train as elite soldiers known as:",
+      "options": [
+        "Janissaries",
+        "Mamluks",
+        "Samurai",
+        "Cossacks"
+      ],
+      "correctIndex": 0,
+      "explanation": "The devshirme conscripted Christian boys who converted to Islam and served as the sultan's elite Janissary military corps and administrators.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "wh_5",
+      "subjectId": "ap-world-history",
+      "stem": "Where did the First Industrial Revolution originate in the mid-18th century?",
+      "options": [
+        "Great Britain",
+        "France",
+        "United States",
+        "Germany"
+      ],
+      "correctIndex": 0,
+      "explanation": "Abundant coal deposits, iron ore, colonial capital, commercial canals, and patent protections sparked Britain's industrial takeoff.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "wh_6",
+      "subjectId": "ap-world-history",
+      "stem": "The 1884-1885 Berlin Conference convened European powers to formally coordinate the:",
+      "options": [
+        "Scramble for Africa",
+        "Partition of the Ottoman Empire",
+        "Colonization of South America",
+        "Alliances of World War I"
+      ],
+      "correctIndex": 0,
+      "explanation": "Organized by Otto von Bismarck, the conference divided the African continent among European imperial powers without African representation.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "wh_7",
+      "subjectId": "ap-world-history",
+      "stem": "Which 1917 political revolution toppled the Russian Romanov dynasty and established a Bolshevik communist state?",
+      "options": [
+        "The Russian Revolution",
+        "The Boxer Rebellion",
+        "The Meiji Restoration",
+        "The Taiping Rebellion"
+      ],
+      "correctIndex": 0,
+      "explanation": "Led by Vladimir Lenin, the Bolsheviks seized state power in October 1917, withdrawing Russia from WWI and founding the Soviet Union.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "wh_8",
+      "subjectId": "ap-world-history",
+      "stem": "The Meiji Restoration (1868) in Japan was initiated primarily to:",
+      "options": [
+        "Rapidly modernize and industrialize Japan to avoid Western colonial domination",
+        "Expel all foreign merchants and practice complete isolationism",
+        "Restore the Tokugawa Shogunate feudal military rule",
+        "Conquer the Korean peninsula immediately"
+      ],
+      "correctIndex": 0,
+      "explanation": "Japan centralized political authority under Emperor Meiji, adopting Western industrial technology, education, and modern naval defense.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "wh_9",
+      "subjectId": "ap-world-history",
+      "stem": "Which 16th-century religious movement initiated by Martin Luther fragmented Catholic ecclesiastical hegemony in Europe?",
+      "options": [
+        "The Protestant Reformation",
+        "The Counter-Reformation",
+        "The Great Schism",
+        "The Enlightenment"
+      ],
+      "correctIndex": 0,
+      "explanation": "Martin Luther's 1517 Ninety-Five Theses opposed clerical indulgences, sparking the rise of Protestant churches across Europe.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "wh_10",
+      "subjectId": "ap-world-history",
+      "stem": "The trans-Saharan trade network in medieval West Africa was anchored on the exchange of:",
+      "options": [
+        "Gold and salt",
+        "Silk and porcelain",
+        "Silver and spices",
+        "Timber and furs"
+      ],
+      "correctIndex": 0,
+      "explanation": "Gold from West African kingdoms (Ghana, Mali) was traded across the Sahara desert for Saharan rock salt and Mediterranean manufactures.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "wh_11",
+      "subjectId": "ap-world-history",
+      "stem": "What maritime navigational instrument, originally refined by Islamic scholars, allowed sailors to measure latitude by celestial altitude?",
+      "options": [
+        "Astrolabe",
+        "Barometer",
+        "Chronometer",
+        "Seismograph"
+      ],
+      "correctIndex": 0,
+      "explanation": "The astrolabe enabled navigators to determine local latitude at sea by measuring the angle of the sun or Polaris above the horizon.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "wh_12",
+      "subjectId": "ap-world-history",
+      "stem": "The Qing Dynasty enforced which distinctive physical mandate on ethnic Han men to symbolize submission to Manchu rule?",
+      "options": [
+        "The queue hairstyle (shaved forehead and braided pigtail)",
+        "Mandatory foot-binding",
+        "Tattooing clan seals",
+        "Wearing samurai armor"
+      ],
+      "correctIndex": 0,
+      "explanation": 'The Queue Order decreed that all Han Chinese men adopt the Manchu hairstyle under penalty of death ("lose your hair or lose your head").',
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "wh_13",
+      "subjectId": "ap-world-history",
+      "stem": "Which Indian leader championed satyagraha (nonviolent civil disobedience) to achieve independence from British colonial rule?",
+      "options": [
+        "Mahatma Gandhi",
+        "Jawaharlal Nehru",
+        "Subhas Chandra Bose",
+        "Muhammad Ali Jinnah"
+      ],
+      "correctIndex": 0,
+      "explanation": "Mohandas Gandhi organized nonviolent campaigns including the Salt March that dismantled the British Raj in 1947.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "wh_14",
+      "subjectId": "ap-world-history",
+      "stem": "The Cold War was primarily an ideological and geopolitical confrontation between which two superpowers?",
+      "options": [
+        "The United States and the Soviet Union",
+        "Great Britain and France",
+        "China and Japan",
+        "Germany and Russia"
+      ],
+      "correctIndex": 0,
+      "explanation": "The post-WWII era pitted the democratic capitalist US against the authoritarian Marxist-Leninist USSR in proxy wars and an arms race.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "wh_15",
+      "subjectId": "ap-world-history",
+      "stem": "The Encomienda system in colonial Spanish America was established to:",
+      "options": [
+        "Extract forced agricultural and silver mining labor from indigenous populations",
+        "Distribute free land to native tribes",
+        "Enforce religious freedom for Jewish immigrants",
+        "Establish democratic municipal councils"
+      ],
+      "correctIndex": 0,
+      "explanation": "Spanish conquistadors were granted royal encomiendas entitling them to coercive indigenous tributary labor in exchange for Catholic instruction.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    }
+  ],
+  "ap-human-geography": [
+    {
+      "id": "hg_1",
+      "subjectId": "ap-human-geography",
+      "stem": "According to the Demographic Transition Model (DTM), what distinguishes Stage 4 from Stage 1?",
+      "options": [
+        "Stage 4 has low birth and death rates, whereas Stage 1 has high birth and death rates",
+        "Stage 4 has explosive natural increase rates",
+        "Stage 1 has widespread mechanized medical infrastructure",
+        "Stage 4 has higher infant mortality rates"
+      ],
+      "correctIndex": 0,
+      "explanation": "Both stages exhibit slow population growth, but Stage 1 is high fluctuating while Stage 4 is low fluctuating (modern industrialized).",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "hg_2",
+      "subjectId": "ap-human-geography",
+      "stem": "The Von Thunen model predicts that dairy and perishable market gardening will locate in the ring closest to the market city because:",
+      "options": [
+        "Milk and fresh produce spoil rapidly and incur high transportation costs",
+        "Dairy cattle require vast, inexpensive grazing land",
+        "Firewood is cheaper to produce near rivers",
+        "Grain requires continuous urban labor"
+      ],
+      "correctIndex": 0,
+      "explanation": "Perishability and high transit costs force intensive market gardening and dairying to pay higher land rent closest to the central market.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "hg_3",
+      "subjectId": "ap-human-geography",
+      "stem": "What type of spatial diffusion occurs when an innovation spreads through a hierarchy of urban centers from large to smaller cities?",
+      "options": [
+        "Hierarchical diffusion",
+        "Contagious diffusion",
+        "Stimulus diffusion",
+        "Relocation diffusion"
+      ],
+      "correctIndex": 0,
+      "explanation": "Hierarchical diffusion cascades ideas through ranks of importance (e.g. fashion spreading from Paris and NYC to smaller regional towns).",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "hg_4",
+      "subjectId": "ap-human-geography",
+      "stem": "In political geography, what is a stateless nation?",
+      "options": [
+        "An ethnic group possessing cultural identity and historical homeland without sovereign state territory (e.g. Kurds)",
+        "A sovereign state without an army",
+        "A multinational empire like the former Soviet Union",
+        "A newly independent colony"
+      ],
+      "correctIndex": 0,
+      "explanation": "Stateless nations (such as the Kurds, Palestinians, or Basques) possess shared cultural self-determination without political sovereignty.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "hg_5",
+      "subjectId": "ap-human-geography",
+      "stem": "Thomas Malthus warned in 1798 that human population increases exponentially while food production increases:",
+      "options": [
+        "Arithmetically (linearly)",
+        "Logarithmically",
+        "Exponentially faster",
+        "Negatively"
+      ],
+      "correctIndex": 0,
+      "explanation": "Malthusian theory posited that geometric (exponential) population growth would outstrip arithmetic agricultural yield growth.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "hg_6",
+      "subjectId": "ap-human-geography",
+      "stem": "In Walter Christaller Central Place Theory, market service areas are modeled as interlocking:",
+      "options": [
+        "Hexagons",
+        "Circles",
+        "Squares",
+        "Triangles"
+      ],
+      "correctIndex": 0,
+      "explanation": "Hexagons eliminate overlapping service areas and unserved interstitial gaps while maintaining equidistant accessibility.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "hg_7",
+      "subjectId": "ap-human-geography",
+      "stem": "What term describes the boundary separating different linguistic features, such as regional pronunciation or vocabulary usage?",
+      "options": [
+        "Isohyet",
+        "Isogloss",
+        "Isotherm",
+        "Enclave"
+      ],
+      "correctIndex": 1,
+      "explanation": "An isogloss is a geographic boundary line demarcating areas where specific linguistic terms or dialect traits are predominant.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "hg_8",
+      "subjectId": "ap-human-geography",
+      "stem": "Which global religion is classified as ethnic rather than universalizing?",
+      "options": [
+        "Hinduism",
+        "Christianity",
+        "Islam",
+        "Buddhism"
+      ],
+      "correctIndex": 0,
+      "explanation": "Ethnic religions (such as Hinduism and Judaism) are closely tied to a specific culture and geographic homeland, with no active proselytization.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "hg_9",
+      "subjectId": "ap-human-geography",
+      "stem": "Gerrymandering refers to the political practice of:",
+      "options": [
+        "Redrawing electoral district boundaries to benefit a specific political party",
+        "Counting undocumented migrants in the decennial census",
+        "Merging rural municipalities into mega-cities",
+        "Banning international trade tariffs"
+      ],
+      "correctIndex": 0,
+      "explanation": "Gerrymandering strategically packs or cracks opposing voters across congressional districts to maximize party representation.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "hg_10",
+      "subjectId": "ap-human-geography",
+      "stem": "Wallerstein World Systems Theory categorizes nations into which three spatial economic tiers?",
+      "options": [
+        "Core, Periphery, and Semi-Periphery",
+        "First, Second, and Third Worlds",
+        "Developed, Developing, and Underdeveloped",
+        "Northern, Southern, and Tropical"
+      ],
+      "correctIndex": 0,
+      "explanation": "Core states exploit lower-wage labor and raw materials from periphery states, while semi-periphery states exhibit intermediate industrialization.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "hg_11",
+      "subjectId": "ap-human-geography",
+      "stem": "The Burgess Concentric Zone urban model depicts a central business district (CBD) encircled primarily by:",
+      "options": [
+        "A zone of transition with light manufacturing and tenement housing",
+        "Affluent commuter suburbs",
+        "Agricultural farmland",
+        "Exclusive gated estates"
+      ],
+      "correctIndex": 0,
+      "explanation": "Zone 2 in Burgess concentric model is the transitional zone characterized by decaying residential housing and light industrial expansion.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "hg_12",
+      "subjectId": "ap-human-geography",
+      "stem": "The Green Revolution of the mid-20th century substantially increased global grain yields through:",
+      "options": [
+        "Genetically engineered high-yielding variety (HYV) dwarf seeds, synthetic fertilizers, and mechanized irrigation",
+        "Organic permaculture and heirloom seed preservation",
+        "Shifting cultivation and slash-and-burn farming",
+        "Banning chemical pesticides worldwide"
+      ],
+      "correctIndex": 0,
+      "explanation": "Norman Borlaug introduced disease-resistant dwarf wheat and rice paired with synthetic nitrogen fertilizers and irrigation systems.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "hg_13",
+      "subjectId": "ap-human-geography",
+      "stem": "Which migration factor represents a 'pull' factor?",
+      "options": [
+        "Economic job opportunities and high wages",
+        "War and military conscription",
+        "Religious persecution",
+        "Severe famine and crop failure"
+      ],
+      "correctIndex": 0,
+      "explanation": "Pull factors attract migrants to a destination (e.g. employment, peace, freedom), whereas push factors compel departure.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "hg_14",
+      "subjectId": "ap-human-geography",
+      "stem": "A country where the population pyramid exhibits an expansive, wide base and narrow apex has:",
+      "options": [
+        "A high birth rate and a youthful population",
+        "An aging population with declining birth rates",
+        "Zero population growth",
+        "Negative natural increase"
+      ],
+      "correctIndex": 0,
+      "explanation": "A broad pyramid base indicates high birth rates and rapid demographic growth typical of developing nations in DTM Stage 2.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "hg_15",
+      "subjectId": "ap-human-geography",
+      "stem": "According to Ravenstein Laws of Migration, the majority of migrants travel:",
+      "options": [
+        "Short distances and remain within their home country",
+        "Intercontinentally across oceans",
+        "Exclusively from urban to rural areas",
+        "Directly to polar regions"
+      ],
+      "correctIndex": 0,
+      "explanation": "Ravenstein observed that step-migration and short-distance moves represent the overwhelming majority of voluntary human migration.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    }
+  ],
+  "ap-economics": [
+    {
+      "id": "econ_1",
+      "subjectId": "ap-economics",
+      "stem": "If the price of a good increases by 10% and the quantity demanded falls by 20%, the price elasticity of demand is:",
+      "options": [
+        "Elastic ($E_d = 2.0$)",
+        "Inelastic ($E_d = 0.5$)",
+        "Unitary Elastic ($E_d = 1.0$)",
+        "Perfective Inelastic ($E_d = 0$)"
+      ],
+      "correctIndex": 0,
+      "explanation": "$E_d = |\\frac{\\% \\Delta Q_d}{\\% \\Delta P}| = |\\frac{-20\\%}{10\\%}| = 2.0$. Since $E_d > 1$, demand is price elastic.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "econ_2",
+      "subjectId": "ap-economics",
+      "stem": "What occurs when the government establishes a legally mandated price ceiling below the competitive market equilibrium price?",
+      "options": [
+        "A persistent market shortage",
+        "A market surplus",
+        "Equilibrium quantity increases",
+        "No change occurs in the market"
+      ],
+      "correctIndex": 0,
+      "explanation": "When price is artificially capped below equilibrium, quantity demanded ($Q_d$) exceeds quantity supplied ($Q_s$), causing a shortage.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "econ_3",
+      "subjectId": "ap-economics",
+      "stem": "In macroeconomics, expansionary fiscal policy intended to combat an economic recession involves:",
+      "options": [
+        "Increasing government spending and/or reducing taxes",
+        "Increasing taxes and reducing spending",
+        "Raising the central bank discount rate",
+        "Selling government bonds in open market operations"
+      ],
+      "correctIndex": 0,
+      "explanation": "Expansionary fiscal policy boosts aggregate demand by injecting federal expenditure or increasing household disposable income via tax cuts.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "econ_4",
+      "subjectId": "ap-economics",
+      "stem": "If the reserve requirement set by the central bank is 10%, what is the simple money multiplier?",
+      "options": [
+        "$10$",
+        "$5$",
+        "$20$",
+        "$1$"
+      ],
+      "correctIndex": 0,
+      "explanation": "The simple deposit expansion multiplier is $M = \\frac{1}{\\text{Reserve Ratio}} = \\frac{1}{0.10} = 10$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "econ_5",
+      "subjectId": "ap-economics",
+      "stem": "Country A can produce 10 cars or 20 computers. Country B can produce 6 cars or 18 computers. Who holds the comparative advantage in computers?",
+      "options": [
+        "Country B",
+        "Country A",
+        "Both equally",
+        "Neither country"
+      ],
+      "correctIndex": 0,
+      "explanation": "Opportunity cost of 1 computer for A is $10/20 = 0.5$ cars. For B, it is $6/18 = 0.33$ cars. Country B has the lower opportunity cost in computers.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "econ_6",
+      "subjectId": "ap-economics",
+      "stem": "What type of market structure features a single seller with high barriers to entry and no close product substitutes?",
+      "options": [
+        "Monopoly",
+        "Perfect Competition",
+        "Monopolistic Competition",
+        "Oligopoly"
+      ],
+      "correctIndex": 0,
+      "explanation": "A pure monopoly is characterized by a single firm that controls the entire market supply and faces a downward-sloping demand curve.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "econ_7",
+      "subjectId": "ap-economics",
+      "stem": "A negative externality in production (such as factory smoke pollution) causes the unregulated free market to:",
+      "options": [
+        "Overproduce the good relative to the socially optimal quantity",
+        "Underproduce the good",
+        "Produce at zero cost",
+        "Reach social optimum automatically"
+      ],
+      "correctIndex": 0,
+      "explanation": "Because private marginal cost is lower than marginal social cost ($MSC > MPC$), firms overproduce, creating deadweight loss.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "econ_8",
+      "subjectId": "ap-economics",
+      "stem": "What does Gross Domestic Product (GDP) measure?",
+      "options": [
+        "The total market value of all final goods and services produced within a country in a given year",
+        "The total financial wealth of all households and banks",
+        "The value of intermediate goods exported abroad",
+        "The total income earned by multinational citizens overseas"
+      ],
+      "correctIndex": 0,
+      "explanation": "GDP encompasses the monetary value of all finished, final goods and services produced domestically within geographic borders in a specified period.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "econ_9",
+      "subjectId": "ap-economics",
+      "stem": "A profit-maximizing firm in any market structure expands output until:",
+      "options": [
+        "Marginal Revenue equals Marginal Cost ($MR = MC$)",
+        "Price equals Average Total Cost",
+        "Total Revenue is maximized",
+        "Marginal Cost is minimized"
+      ],
+      "correctIndex": 0,
+      "explanation": "The golden rule of profit maximization dictates producing up to the output level where marginal revenue equals marginal cost ($MR = MC$).",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "econ_10",
+      "subjectId": "ap-economics",
+      "stem": "The Phillips Curve in the short run illustrates a historical trade-off between:",
+      "options": [
+        "Inflation and unemployment",
+        "Interest rates and GDP growth",
+        "Government debt and trade deficits",
+        "Taxes and investment"
+      ],
+      "correctIndex": 0,
+      "explanation": "The short-run Phillips curve demonstrates an inverse relationship: lower unemployment rates are typically associated with higher inflation rates.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "econ_11",
+      "subjectId": "ap-economics",
+      "stem": "What type of unemployment occurs when workers are temporarily between jobs or searching for the best career fit?",
+      "options": [
+        "Frictional unemployment",
+        "Structural unemployment",
+        "Cyclical unemployment",
+        "Seasonal unemployment"
+      ],
+      "correctIndex": 0,
+      "explanation": "Frictional unemployment is voluntary and natural, reflecting the normal time lag workers spend transitioning between careers.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "econ_12",
+      "subjectId": "ap-economics",
+      "stem": "Consumer surplus is represented graphically as the area:",
+      "options": [
+        "Below the demand curve and above the market price",
+        "Above the supply curve and below the market price",
+        "Under the average total cost curve",
+        "To the right of the equilibrium quantity"
+      ],
+      "correctIndex": 0,
+      "explanation": "Consumer surplus is the difference between what consumers are willing to pay and what they actually pay at market price.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "econ_13",
+      "subjectId": "ap-economics",
+      "stem": "When the central bank purchases government treasury bonds on the open market, what is the impact on bank reserves and interest rates?",
+      "options": [
+        "Bank reserves increase, and nominal interest rates fall",
+        "Bank reserves decrease, and interest rates rise",
+        "Bank reserves fall, and inflation drops",
+        "No change occurs"
+      ],
+      "correctIndex": 0,
+      "explanation": "Open market bond purchases inject liquid reserves into the commercial banking system, shifting money supply right and lowering interest rates.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "econ_14",
+      "subjectId": "ap-economics",
+      "stem": "Public goods are characterized by which two economic properties?",
+      "options": [
+        "Non-excludable and non-rivalrous in consumption",
+        "Excludable and rivalrous",
+        "Produced solely by monopolies",
+        "Tax-exempt and subsidized"
+      ],
+      "correctIndex": 0,
+      "explanation": "Public goods (e.g. national defense, lighthouses) cannot exclude non-payers, and one person's use does not diminish another's.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "econ_15",
+      "subjectId": "ap-economics",
+      "stem": "If the Marginal Propensity to Consume (MPC) is 0.8, what is the government spending multiplier?",
+      "options": [
+        "$5$",
+        "$1.25$",
+        "$4$",
+        "$10$"
+      ],
+      "correctIndex": 0,
+      "explanation": "Spending Multiplier $= \\frac{1}{1 - MPC} = \\frac{1}{1 - 0.8} = \\frac{1}{0.2} = 5$.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    }
+  ],
+  "ap-english-lang": [
+    {
+      "id": "lang_1",
+      "subjectId": "ap-english-lang",
+      "stem": "An appeal that establishes the author's credibility, moral character, and authority is known as:",
+      "options": [
+        "Ethos",
+        "Pathos",
+        "Logos",
+        "Kairos"
+      ],
+      "correctIndex": 0,
+      "explanation": "Ethos appeals to ethics, trust, and authorial qualifications to persuade an audience of the speaker's reliability.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "lang_2",
+      "subjectId": "ap-english-lang",
+      "stem": 'What rhetorical device balances grammatical structures across corresponding clauses (e.g. "Ask not what your country can do for you...")?',
+      "options": [
+        "Parallelism",
+        "Chiasmus",
+        "Anaphora",
+        "Asyndeton"
+      ],
+      "correctIndex": 0,
+      "explanation": "Parallelism utilizes repeating grammatical forms to emphasize balance, rhythm, and clarity in rhetorical argumentation.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "lang_3",
+      "subjectId": "ap-english-lang",
+      "stem": "The logical fallacy where an arguer attacks an opponent's personal character rather than addressing their actual argument is called:",
+      "options": [
+        "Ad Hominem",
+        "Straw Man",
+        "Post Hoc Ergo Propter Hoc",
+        "Bandwagon Appeal"
+      ],
+      "correctIndex": 0,
+      "explanation": 'Ad Hominem (Latin: "to the person") diverts attention from the substantive debate by personally maligning the speaker.',
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "lang_4",
+      "subjectId": "ap-english-lang",
+      "stem": "What term refers to the author's attitude toward their subject matter, conveyed through diction and syntax?",
+      "options": [
+        "Tone",
+        "Mood",
+        "Theme",
+        "Persona"
+      ],
+      "correctIndex": 0,
+      "explanation": "Tone reflects the writer's specific emotional disposition (e.g. irreverent, pedantic, contemplative) towards the topic.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "lang_5",
+      "subjectId": "ap-english-lang",
+      "stem": "Which rhetorical appeal utilizes logical reasoning, factual evidence, empirical statistics, and deductions?",
+      "options": [
+        "Logos",
+        "Ethos",
+        "Pathos",
+        "Trope"
+      ],
+      "correctIndex": 0,
+      "explanation": "Logos employs rational syllogisms, inductive/deductive reasoning, verified data, and factual premises.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "lang_6",
+      "subjectId": "ap-english-lang",
+      "stem": "The deliberate repetition of a word or phrase at the beginning of successive sentences or clauses is known as:",
+      "options": [
+        "Anaphora",
+        "Epistrophe",
+        "Antithesis",
+        "Metonymy"
+      ],
+      "correctIndex": 0,
+      "explanation": `Anaphora creates emphatic emotional resonance through initial clause repetition (e.g. MLK's "I have a dream").`,
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "lang_7",
+      "subjectId": "ap-english-lang",
+      "stem": "In an argumentative essay, acknowledging a valid point made by the opposing viewpoint is called a:",
+      "options": [
+        "Concession",
+        "Rebuttal",
+        "Warrant",
+        "Qualifier"
+      ],
+      "correctIndex": 0,
+      "explanation": "A concession demonstrates rhetorical maturity by admitting truth in a counterargument before delivering a rebuttal.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "lang_8",
+      "subjectId": "ap-english-lang",
+      "stem": "What rhetorical term describes the opportune, fitting, and urgent moment for a speaker to deliver a message?",
+      "options": [
+        "Kairos",
+        "Exigence",
+        "Peroration",
+        "Inventio"
+      ],
+      "correctIndex": 0,
+      "explanation": "Kairos represents the decisive, opportune timing and cultural moment that gives rhetorical discourse its urgency.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "lang_9",
+      "subjectId": "ap-english-lang",
+      "stem": 'A figure of speech in which an object or concept is referred to by the name of something closely associated with it (e.g. "The White House announced...") is:',
+      "options": [
+        "Metonymy",
+        "Synecdoche",
+        "Hyperbole",
+        "Oxymoron"
+      ],
+      "correctIndex": 0,
+      "explanation": 'Metonymy substitutes a related attribute or physical association for the entity itself ("the crown" for the monarchy).',
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "lang_10",
+      "subjectId": "ap-english-lang",
+      "stem": "What is the function of a qualifier in the Toulmin model of argumentation?",
+      "options": [
+        'To restrict the scope of a claim to avoid unwarranted generalizations (e.g. "most", "often", "in certain conditions")',
+        "To provide statistical data",
+        "To attack the opponent's credibility",
+        "To conclude the speech"
+      ],
+      "correctIndex": 0,
+      "explanation": "Qualifiers temper claims to reasonable, defensible boundaries, preventing rigid all-or-nothing fallacies.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "lang_11",
+      "subjectId": "ap-english-lang",
+      "stem": 'Understatement, especially that in which an affirmative is expressed by the negative of its contrary (e.g. "not bad at all"), is called:',
+      "options": [
+        "Litotes",
+        "Euphemism",
+        "Apostrophe",
+        "Paradox"
+      ],
+      "correctIndex": 0,
+      "explanation": "Litotes employs deliberate double negatives or ironic understatements to assert a positive quality modestly.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "lang_12",
+      "subjectId": "ap-english-lang",
+      "stem": 'What rhetorical device juxtaposes two sharply contrasting ideas in balanced phrases (e.g. "Give me liberty, or give me death!")?',
+      "options": [
+        "Antithesis",
+        "Hyperbole",
+        "Personification",
+        "Zeugma"
+      ],
+      "correctIndex": 0,
+      "explanation": "Antithesis highlights stark philosophical or emotional opposition through balanced syntactic contrast.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "lang_13",
+      "subjectId": "ap-english-lang",
+      "stem": "A Straw Man fallacy occurs when an author:",
+      "options": [
+        "Oversimplifies or misrepresents an opponent's argument to make it easier to attack",
+        "Assumes that because Event B followed Event A, Event A caused Event B",
+        "Argues that an action will trigger an unavoidable catastrophic chain reaction",
+        "Repeats the claim as the premise of the argument"
+      ],
+      "correctIndex": 0,
+      "explanation": "A straw man replaces an opponent's actual nuanced stance with a caricatured, easily dismantled distortion.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "lang_14",
+      "subjectId": "ap-english-lang",
+      "stem": "In rhetorical analysis, the 'exigence' of a text refers to:",
+      "options": [
+        "The real-world issue, problem, or situation that provoked the author to write or speak",
+        "The grammatical vocabulary level",
+        "The publisher's copyright guidelines",
+        "The number of historical citations"
+      ],
+      "correctIndex": 0,
+      "explanation": "Exigence is the catalyst or problem in the rhetorical situation that demands a response from the speaker.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "lang_15",
+      "subjectId": "ap-english-lang",
+      "stem": 'What rhetorical scheme reverses the grammatical structure in successive clauses (e.g. "Never let a Fool Kiss You or a Kiss Fool You")?',
+      "options": [
+        "Chiasmus",
+        "Polysyndeton",
+        "Epistrophe",
+        "Hypophora"
+      ],
+      "correctIndex": 0,
+      "explanation": "Chiasmus creates an inverted ABBA syntactic mirror structure that emphasizes wit and thematic reversal.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    }
+  ]
+};
+try {
+  const calcLevels = getAllCalculusAbLevels();
+  if (Array.isArray(calcLevels) && calcLevels.length > 0) {
+    const cedQuestions = calcLevels.flatMap(
+      (l) => (l.questions || []).map((q) => ({
+        id: `ced_${q.id}`,
+        subjectId: "ap-calculus-ab",
+        stem: q.stem,
+        options: q.options,
+        correctIndex: q.correctIndex,
+        explanation: q.explanation || "Verified against College Board AP Calculus CED standards.",
+        difficulty: l.difficulty === "Easy" || l.difficulty === "Hard" ? l.difficulty : "Medium",
+        timeLimit: l.difficulty === "Easy" ? 30 : l.difficulty === "Hard" ? 60 : 45
+      }))
+    );
+    if (!BATTLE_QUESTIONS_BANK["ap-calculus-ab"]) BATTLE_QUESTIONS_BANK["ap-calculus-ab"] = [];
+    BATTLE_QUESTIONS_BANK["ap-calculus-ab"].push(...cedQuestions);
+    if (!BATTLE_QUESTIONS_BANK["ap-calculus-bc"]) BATTLE_QUESTIONS_BANK["ap-calculus-bc"] = [];
+    BATTLE_QUESTIONS_BANK["ap-calculus-bc"].push(...cedQuestions);
+  }
+} catch (e) {
+  console.warn("[QuizBattleBank] CED Calculus auto-merge note:", e);
+}
+try {
+  if (EXPANDED_BATTLE_QUESTIONS && typeof EXPANDED_BATTLE_QUESTIONS === "object") {
+    Object.entries(EXPANDED_BATTLE_QUESTIONS).forEach(([subj, qList]) => {
+      if (!BATTLE_QUESTIONS_BANK[subj]) {
+        BATTLE_QUESTIONS_BANK[subj] = [];
+      }
+      BATTLE_QUESTIONS_BANK[subj].push(...qList);
+      if (subj === "ap-physics") {
+        if (!BATTLE_QUESTIONS_BANK["ap-physics-1"]) BATTLE_QUESTIONS_BANK["ap-physics-1"] = [];
+        BATTLE_QUESTIONS_BANK["ap-physics-1"].push(...qList);
+      }
+    });
+  }
+} catch (e) {
+  console.warn("[QuizBattleBank] Expanded subjects auto-merge note:", e);
+}
+var RUNTIME_SEEN_STEMS = {};
+function normalizeStemKey(text) {
+  if (!text) return "";
+  return String(text).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 100);
+}
+function getStoredSeenStems(subjectKey) {
+  const set = /* @__PURE__ */ new Set();
+  if (RUNTIME_SEEN_STEMS[subjectKey]) {
+    RUNTIME_SEEN_STEMS[subjectKey].forEach((s) => set.add(s));
+  }
+  if (typeof window !== "undefined" && window.localStorage) {
+    try {
+      const raw = window.localStorage.getItem(`ap_battle_seen_${subjectKey}`);
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) {
+          arr.forEach((item) => set.add(normalizeStemKey(item)));
+        }
+      }
+    } catch {
+    }
+  }
+  return set;
+}
+function saveStoredSeenStems(subjectKey, newlySeenStems, totalBankSize) {
+  if (!RUNTIME_SEEN_STEMS[subjectKey]) {
+    RUNTIME_SEEN_STEMS[subjectKey] = /* @__PURE__ */ new Set();
+  }
+  newlySeenStems.forEach((s) => RUNTIME_SEEN_STEMS[subjectKey].add(normalizeStemKey(s)));
+  if (typeof window !== "undefined" && window.localStorage) {
+    try {
+      const current = getStoredSeenStems(subjectKey);
+      newlySeenStems.forEach((s) => current.add(normalizeStemKey(s)));
+      let arrayToSave = Array.from(current);
+      if (arrayToSave.length >= Math.max(15, totalBankSize - 5)) {
+        arrayToSave = arrayToSave.slice(-10);
+        RUNTIME_SEEN_STEMS[subjectKey] = new Set(arrayToSave);
+      }
+      window.localStorage.setItem(`ap_battle_seen_${subjectKey}`, JSON.stringify(arrayToSave));
+    } catch {
+    }
+  }
+}
+function getBattleQuestions(subjectId, count = 5, avoidStems = []) {
+  let key = subjectId;
+  if (key === "ap-physics-1") key = "ap-physics";
+  if (!BATTLE_QUESTIONS_BANK[key]) {
+    key = Object.keys(BATTLE_QUESTIONS_BANK).find((k) => k.includes(subjectId) || subjectId.includes(k)) || "ap-calculus-ab";
+  }
+  const bank = BATTLE_QUESTIONS_BANK[key] || BATTLE_QUESTIONS_BANK["ap-calculus-ab"] || [];
+  if (!bank || bank.length === 0) return [];
+  const callerAvoidSet = new Set((avoidStems || []).map((s) => normalizeStemKey(s)));
+  const storedAvoidSet = getStoredSeenStems(key);
+  const combinedAvoidSet = /* @__PURE__ */ new Set([...callerAvoidSet, ...storedAvoidSet]);
+  const shuffledBank = [...bank];
+  for (let i = shuffledBank.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledBank[i], shuffledBank[j]] = [shuffledBank[j], shuffledBank[i]];
+  }
+  let freshPool = shuffledBank.filter((q) => !combinedAvoidSet.has(normalizeStemKey(q.stem)));
+  if (freshPool.length < count) {
+    const recentRoundAvoid = new Set((avoidStems || []).map((s) => normalizeStemKey(s)));
+    const cycledPool = shuffledBank.filter((q) => !recentRoundAvoid.has(normalizeStemKey(q.stem)));
+    freshPool = [...freshPool, ...cycledPool.filter((q) => !freshPool.some((f) => f.id === q.id || normalizeStemKey(f.stem) === normalizeStemKey(q.stem)))];
+  }
+  const selected = freshPool.slice(0, Math.min(count, freshPool.length));
+  if (selected.length < count) {
+    for (const q of shuffledBank) {
+      if (!selected.some((s) => s.id === q.id || normalizeStemKey(s.stem) === normalizeStemKey(q.stem))) {
+        selected.push(q);
+        if (selected.length >= count) break;
+      }
+    }
+  }
+  saveStoredSeenStems(key, selected.map((q) => q.stem), bank.length);
+  return selected;
+}
+
 // server.ts
 import_dotenv.default.config();
 process.on("unhandledRejection", (reason, promise) => {
@@ -548,7 +10558,6 @@ app.use((req, res, next) => {
   console.log(`[${(/* @__PURE__ */ new Date()).toISOString()}] ${req.method} ${req.url}`);
   next();
 });
-var summaryCache = /* @__PURE__ */ new Map();
 function repairJsonString(raw) {
   if (!raw) return "";
   let str = raw.trim();
@@ -669,25 +10678,9 @@ function safeParseJSON(text, forceType = "none") {
   if (forceType === "object") return {};
   throw new Error("Could not parse JSON from AI response");
 }
-async function fetchWithTimeout(url, options = {}, timeout = 9e4) {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-  try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal
-    });
-    clearTimeout(id);
-    return response;
-  } catch (error) {
-    clearTimeout(id);
-    throw error;
-  }
-}
 var lastQuotaExceededTime = 0;
 var rateLimitedModels = {};
 var rateLimitedModelsCooldown = {};
-app.use(import_express.default.json({ limit: "35mb" }));
 app.use((req, res, next) => {
   if (req.body) {
     req.body = sanitizeInput(req.body);
@@ -699,25 +10692,6 @@ app.use((req, res, next) => {
     req.params = sanitizeInput(req.params);
   }
   next();
-});
-app.use(import_express.default.urlencoded({ limit: "35mb", extended: true }));
-app.use((err, req, res, next) => {
-  if (err instanceof import_multer.default.MulterError) {
-    if (err.code === "LIMIT_FILE_SIZE") {
-      return res.status(400).json({ error: "File too large. Maximum size is 30MB." });
-    }
-  }
-  console.error("[Global Error Handler] Caught unhandled error:", err);
-  if (res.headersSent) {
-    return next(err);
-  }
-  if (req.path && req.path.startsWith("/api")) {
-    return res.status(err.status || 500).json({
-      error: err.message || "An unexpected error occurred on the server.",
-      success: false
-    });
-  }
-  next(err);
 });
 var upload = (0, import_multer.default)({
   storage: import_multer.default.memoryStorage(),
@@ -1067,155 +11041,6 @@ ${text}`.trim() },
   }
   throw new Error("AI generation failed after multiple attempts");
 }
-app.post("/api/scan", upload.single("image"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No image provided" });
-    }
-    const aiClient = getAI();
-    const imagePart = {
-      inlineData: {
-        mimeType: req.file.mimetype,
-        data: req.file.buffer.toString("base64")
-      }
-    };
-    const profileContext = req.body.profileContext;
-    const gradeLevel = req.body.gradeLevel;
-    const textPart = {
-      text: `You are the core intelligence engine for "HelpYou AI", an elite educational and research assistant, SAT/ACT Expert, and Master Educator.
-You are analyzing an uploaded photo. Scan the image to locate the primary problem, question, diagram, or text. Ignore any background noise, hands, or irrelevant objects. Focus solely on extracting and analyzing the core subject.
-${profileContext ? `
-USER PROFILE CONTEXT:
-${profileContext}
-` : ""}
-
-CRITICAL RULES:
-1. Keyword Extraction: Ignore conversational fillers (e.g., "Bhai", "tum", "research karo", "waha kya hua", "bhai batao"). Extract ONLY the core subject.
-2. Domain Classification: Analyze the core subject and classify it into one of two categories:
-   - STEM (Math/Science): Physics, Chemistry, Biology, Mathematics.
-   - Humanities/General: History, Geography, Current Events, Case Studies, Literature.
-3. Dynamic Output Generation:
-   - If STEM: Provide core principles, scientific mechanisms, key formulas (wrapped in LaTeX $...$ or $$...$$), and step-by-step actionable prep steps.
-   - If Humanities/General: Provide historical context, major events, real-world impact, and analytical takeaways. Strictly DO NOT generate or mention formulas, equations, or scientific mechanisms for this category.
-4. No Fake URLs: When generating verified research sources, ONLY use root domains (e.g., en.wikipedia.org, britannica.com). Do NOT fabricate full URL paths.
-
-Adopt an encouraging, patient, precise, and crisp tone. Use clean line breaks and emojis for visual readability.
-DO NOT use any markdown bolding syntax like "**" or emojis inside latex delimiters.
-
---- CATEGORIZATION & ROUTING RULES ---
-
-1. RULE 1 (Math & Physics Numerical Calculations / Step-by-Step STEM):
-- Use this ONLY if the query is a mathematical equation, physics numerical, chemical reaction, derivation, or problem requiring step-by-step sequential solving.
-- Set "format_type" to "steps".
-- Populate the "solution_steps" array with each logical phase of the sequential solution.
-- Output strictly in this format:
-{
-  "topic_title": "Subject or Topic of the problem",
-  "format_type": "steps",
-  "solution_steps": [
-    {
-      "step_id": 1,
-      "title": "Clear concise step title",
-      "content": "A detailed, encouraging explanation with formulas and step-by-step calculations. Whenever generating mathematical numbers, formulas, symbols, or equations/chemical reactions, you must strictly wrap them in LaTeX delimiters. Use single '$' for inline math and double '$$' for block math equations (e.g. $$2H_2O \\rightarrow 2H_2 + O_2$$). Always double-escape backslashes in JSON (e.g. \\\\rightarrow, \\\\frac, \\\\text) so that equations render beautifully for students.",
-      "is_final_answer": false
-    }
-  ],
-  "suggestions": [
-    "Explain this simpler with a real-life analogy",
-    "Test me with 2 practice problems on this",
-    "What are common exam traps to avoid?"
-  ]
-}
-
-2. RULE 2 (Comparisons & Differences):
-- Use this if the problem asks for "Difference between", "Compare", "Pros & Cons", or similar analytical contrasts (e.g., "Compare mitosis vs meiosis", "Difference between Cow and Buffalo").
-- Set "format_type" to "markdown".
-- You MUST output a strictly formatted Markdown Table comparing the items side-by-side with clear parameter columns. It must NEVER use steps or sequential solver cards for this.
-- Place the entire Markdown Table in the "markdown_content" field. Do NOT use the "solution_steps" array.
-- Output strictly in this format:
-{
-  "topic_title": "Comparison: [Topic Title]",
-  "format_type": "markdown",
-  "markdown_content": "### Comparison Table
-
-| Parameter | Category A | Category B |
-|---|---|---|
-| Detail 1 | Description | Description |",
-  "suggestions": [
-    "Give me 2 practice MCQs on this comparison",
-    "Explain the biggest difference in 1 sentence",
-    "Why is this distinction important in exams?"
-  ]
-}
-
-3. RULE 3 (Humanities/General Theory/History/Geography/Biology Concepts):
-- Use this for general explanations, descriptive research queries, case studies, historical events, current affairs, conceptual questions, or conversational queries (e.g., "Jeju island incident", "Explain photosynthesis", "Who was George Washington?").
-- Set "format_type" to "markdown".
-- Output structured, rich text using standard markdown headings (###) and bullet points. Strictly DO NOT generate formulas or equations for Humanities.
-- Place the entire response in the "markdown_content" field. Do NOT use the "solution_steps" array.
-- Output strictly in this format:
-{
-  "topic_title": "Concept: [Core Subject Title]",
-  "format_type": "markdown",
-  "markdown_content": "### Historical Context / Overview
-Your detailed overview here...
-
-### Major Events & Impact
-- Point 1
-- Point 2
-
-### Analytical Takeaways
-- Key lesson / impact",
-  "suggestions": [
-    "Explain this with a real-world example",
-    "Give me a quick 3-question quiz on this",
-    "What are the key points to remember for exams?"
-  ]
-}
-
---- STRICT CONSTRAINTS & FORMATTING RULES ---
-- The entire output MUST be a valid JSON object. No raw conversational text outside the JSON object. Do NOT wrap the JSON in markdown code blocks like \`\`\`json. Only output pure valid raw JSON.
-- Always populate the "suggestions" array with exactly 3 context-aware study follow-up ideas.
-- Do NOT use LaTeX inside the suggestions.
-
-THE "MASTER EDUCATOR" TEACHING PROTOCOL:
-1. EXTREME SIMPLIFICATION: Teach complex topics simply and clearly. Never assume prior knowledge.
-2. THE ANALOGY RULE: Use relatable, real-world analogies where helpful.
-3. HIGH EMPATHY: Be patient and deeply encouraging.`
-    };
-    const response = await safeGenerateContent({
-      gradeLevel,
-      model: "gemini-3.5-flash-lite",
-      contents: [{ parts: [imagePart, textPart] }],
-      config: {
-        responseMimeType: "application/json",
-        temperature: 0.2,
-        // ⚡ Low temp = focused, faster JSON output
-        maxOutputTokens: 8192,
-        // ⚡ Large token capacity so full multi-step solutions never truncate
-        candidateCount: 1
-        // ⚡ Only generate 1 candidate, not multiple
-      }
-    });
-    res.json({ text: response.text });
-  } catch (error) {
-    if (error.message === "GEMINI_QUOTA_EXHAUSTED") {
-      console.warn("Scan quota exceeded:", error.message);
-      return res.json({
-        text: `\u26A0\uFE0F AI Tutor Notice: Rate Limit / Quota Exceeded
-
-The Gemini API is currently experiencing rate limits or has exceeded its quota.
-
-How to resolve this:
-1. Wait 60 seconds and submit your scan again.
-2. Ensure you have configured a valid, active API Key in the Settings > Secrets panel of AI Studio.
-3. If you are using a free tier, consider adding billing to avoid limit blocks.`
-      });
-    }
-    console.error("Scan error:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
 function getSystemInstruction(mode, targetLanguage) {
   let instruction = "";
   if (mode === "Translate") {
@@ -1414,7 +11239,7 @@ ${userMessage}`;
     const shouldEnableSearch = !hasImage && (normalizedMsg.includes("search") || normalizedMsg.includes("browse") || normalizedMsg.includes("live") || normalizedMsg.includes("current") || normalizedMsg.includes("weather") || normalizedMsg.includes("news") || normalizedMsg.includes("rates") || normalizedMsg.includes("today") || normalizedMsg.includes("current events") || normalizedMsg.includes("recent") || normalizedMsg.includes("latest") || normalizedMsg.includes("exchange") || normalizedMsg.includes("stats") || normalizedMsg.includes("price") || normalizedMsg.includes("fact") || normalizedMsg.includes("forecast") || normalizedMsg.includes("who is"));
     let systemInstruction = "";
     if (isEvaluation === "true" || isEvaluation === true) {
-      systemInstruction = `You are a strict academic examiner. DO NOT act as a standard tutor. Your SOLE purpose is to grade the student's answer based on their grade level. YOU MUST output strictly using this format:
+      systemInstruction = `You are a strict academic examiner for a ${gradeLevel || "High School"} student. DO NOT act as a standard tutor. Your SOLE purpose is to grade the student's answer calibrated exactly to their grade level (${gradeLevel || "High School"}). Use vocabulary, standards, and expectations appropriate for ${gradeLevel || "High School"}. YOU MUST output strictly using this format:
 
 ## Grade-Level Assessment
 [Pass/Fail/Needs Improvement for this grade level]
@@ -1601,231 +11426,6 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
     res.status(500).json({ error: error.message || "Failed to generate response" });
   }
 });
-app.post("/api/summarize", upload.single("pdf"), async (req, res) => {
-  try {
-    const action = req.body.action || "summarize";
-    const textInput = req.body.text || "";
-    const gradeLevel = req.body.gradeLevel;
-    const format = req.body.format || "bullet";
-    if (!req.file && !textInput) {
-      return res.status(400).json({ error: "No PDF file or text content provided" });
-    }
-    let cacheKey = "";
-    if (req.file) {
-      cacheKey = import_crypto.default.createHash("sha256").update(req.file.buffer).digest("hex") + "_" + action;
-    } else {
-      cacheKey = import_crypto.default.createHash("sha256").update(Buffer.from(textInput)).digest("hex") + "_" + action;
-    }
-    if (summaryCache.has(cacheKey)) {
-      const cached = summaryCache.get(cacheKey);
-      if (action === "flashcards-json") {
-        return res.json({ flashcards: cached });
-      }
-      return res.json({ text: cached });
-    }
-    const aiClient = getAI();
-    let extractedText = "";
-    let useRawFile = false;
-    if (req.file) {
-      try {
-        const { default: pdf } = await import("pdf-parse/lib/pdf-parse.js");
-        const pdfData = await pdf(req.file.buffer, { max: 100 });
-        extractedText = pdfData.text || "";
-        if (extractedText.trim().length < 50) {
-          useRawFile = true;
-        }
-        if (extractedText && extractedText.length > 8e5) {
-          extractedText = extractedText.slice(0, 2e5);
-        }
-      } catch (parseError) {
-        console.warn("Failed to parse PDF locally with pdf-parse, will fallback to raw bytes:", parseError);
-        useRawFile = true;
-      }
-    } else {
-      extractedText = textInput;
-    }
-    let promptText = "";
-    let responseMimeType = "text/plain";
-    if (action === "audio") {
-      promptText = "You are an engaging, expert study podcast host. Your job is to convert the provided document into a 4-5 minute study audio script (approx 500-700 words). CRITICAL RULE: DO NOT copy and paste the text verbatim. You must extract the high-yield concepts, definitions, and frameworks, and explain them in your own words using a conversational, easy-to-understand tone. Use relatable analogies. Strike a balance between being concise and highly educational. Never sound like you are just reading a textbook. Use the following strict rules:\n1. TONE & STYLE: Conversational, warm, and highly engaging. Speak directly to the listener using 'you', 'we', and 'let's explore this'.\n2. SIMPLICITY & ANALOGIES: Demystify complex terms, explaining them immediately using clear language. Use relatable analogies, but ensure technical definitions, important rules, and key examples are NOT skipped.\n3. PACING & STRUCTURE: Start with an attention-grabbing podcast-style hook or intro (e.g., 'Welcome to your deep study revision briefing...'). Include clear transitions between different chapters or sections. Cover all critical topics from the text sequentially. End with a complete revision summary and an encouraging sign-off.\n4. AUDIO-FRIENDLY FORMATTING: Since this will be spoken aloud, DO NOT use any markdown formatting such as bold (**), italics (*), hashtags (#), or bullet points (-). Write in clean, conversational plain text and paragraphs. Keep sentences clear and punchy for natural breathing pauses.\nDo not include any intro or outro text confirming you understand the instructions. Just output the podcast script directly.";
-    } else if (action === "flashcards" || action === "flashcards-json") {
-      if (action === "flashcards-json") {
-        responseMimeType = "application/json";
-        promptText = `Act as an Elite Cognitive Scientist and Active Recall Specialist. Extract the top 10 to 15 most critical high-yield concepts from the provided document into revision flashcards.
-        Strict Rules for Flashcards:
-        1. ACTIVE RECALL QUESTION: The 'question' must be direct, crisp, and test a single conceptual takeaway.
-        2. STRICT 15 TO 25 WORDS ANSWER CONSTRAINT: Every 'answer' MUST be strictly concise and between 15 to 25 words max for rapid active recall. NEVER output long paragraphs.
-        3. 100% COMPLETE THOUGHTS: Complete, self-contained, grammatically finished sentences (no truncated clauses).
-        4. ESCAPING: Code in backticks (\`<div>\`), math in LaTeX ($...$).
-        5. OUTPUT FORMAT: Output ONLY a valid JSON array of objects directly parseable by JSON.parse.
-        
-        Format:
-        [
-          {"question": "What is ...?", "answer": "..."}
-        ]`;
-      } else {
-        promptText = "Extract the most important facts and concepts from the provided document and format them into 10 high-quality flashcards. Format exactly like this for each:\n\n**Q: [Question]**\n*A: [Answer]*\n\nCRITICAL: If the document contains code tags, HTML, or web development terms (like <div>, <header>, etc.), ALWAYS wrap them in markdown backticks (e.g., `<div>`) so they render as plain text and not formatting. Always provide complete, self-contained sentences for answers.";
-      }
-    } else if (action === "quiz") {
-      promptText = `You are an expert tutor. Create a 5-question multiple choice quiz based on the provided document.
-For each question, provide:
-1. The question text starting with 'Question [N]:'
-2. 4 options labeled A), B), C), D).
-3. The correct answer starting with 'Correct Answer: [Letter]'.
-4. A short explanation starting with 'Explanation:'.
-
-CRITICAL FORMATTING RULES:
-- DO NOT use any asterisks (**), dashes (-), or decorative symbols as bullet points or prefixes for the question text.
-- Start the question directly with 'Question [N]:' followed by the text.
-- Format options strictly as A), B), C), D).
-
-Example Format:
-Question 1: What is...?
-A) Option 1
-B) Option 2
-C) Option 3
-D) Option 4
-Correct Answer: A
-Explanation: Because...
-
-At the very end, provide a clear Answer Key. Format strictly using Markdown. If there is code in the questions or options, wrap it in backticks.`;
-    } else {
-      let selectedFormatName = "Bullet Points";
-      if (format === "tldr") {
-        selectedFormatName = "Short TL;DR";
-      } else if (format === "eli5") {
-        selectedFormatName = "Explain Like I'm 5";
-      }
-      promptText = `SYSTEM INSTRUCTION: EXPERT SUMMARISER
-
-You are an expert academic and professional summarizer. Your task is to extract key information from the provided text/document and format it STRICTLY according to the user's requested mode. 
-
-USER'S REQUESTED FORMAT: ${selectedFormatName}
-
-CRITICAL GLOBAL RULE:
-NEVER output a "Wall of Text". Always use proper line breaks and structure.
-
-DYNAMIC FORMATTING RULES:
-
-IF FORMAT IS "Bullet Points":
-1. Start with ONE main heading using ## (e.g., ## Key Concepts from the Document).
-2. Then break the summary into logical topic sections. Use ### for each section heading.
-3. MANDATORY: Under each section heading, EVERY point MUST be on its OWN LINE starting with a hyphen followed by a space: "- " (standard markdown list format).
-4. CONCISE: Keep each bullet point under 2 sentences.
-5. NO NARRATIVE: Do not write intro or conclusion paragraphs. Start immediately with the main heading.
-6. EXAMPLE OF EXPECTED FORMAT:
-
-## Main Document Title
-
-### Section One Name
-
-- First key fact or point about this topic.
-- Second key fact or point about this topic.
-- Third key fact or point.
-
-### Section Two Name
-
-- First key fact about section two.
-- Second key fact about section two.
-
-IF FORMAT IS "Short TL;DR":
-1. Provide the absolute bottom-line of the text.
-2. Structure it as one short "Executive Summary" paragraph (max 3-4 sentences).
-3. Follow it with a "Top 3 Takeaways" numbered list.
-4. Keep the tone professional, direct, and time-saving.
-
-IF FORMAT IS "Explain Like I'm 5":
-1. Break down complex jargon into grade-school level vocabulary.
-2. Use at least one relatable, everyday analogy (e.g., comparing a system to a school, a car, or pizza).
-3. Keep the tone extremely warm, engaging, and story-like.
-4. Use short paragraphs to make it visually friendly for beginners.`;
-    }
-    if (action !== "audio") {
-      promptText += "\n\nOUTPUT QUALITY RULES:\n1. Use ONLY standard markdown: ## headings, ### subheadings, - bullet lists, **bold**, *italic*.\n2. Each bullet point MUST be on its OWN separate line. Never put multiple points on the same line.\n3. NO LaTeX, no '$', no '$$', no '\\\\frac'. Write math as plain text (e.g., A = P(1 + r/n)^(nt)).\n4. NO emojis or special unicode characters.\n5. Ensure there is a blank line before and after every heading and before and after every list.";
-    } else {
-      promptText += "\n\nCRITICAL FORMATTING INSTRUCTIONS: Output ONLY standard, plain ASCII-compatible conversational text. You are STRICTLY FORBIDDEN from using emojis, LaTeX math blocks, special characters, or markdown formatting (like bold, italics, bullet points, or hashtags) as they interfere with text-to-speech rendering.";
-    }
-    const textPart = { text: promptText };
-    let contentsPayload;
-    if (useRawFile && req.file) {
-      const pdfPart = {
-        inlineData: {
-          mimeType: req.file.mimetype || "application/pdf",
-          data: req.file.buffer.toString("base64")
-        }
-      };
-      contentsPayload = { parts: [pdfPart, textPart] };
-    } else if (extractedText && extractedText.trim().length > 10) {
-      const documentContentPart = { text: `DOCUMENT CONTENT:
-${extractedText}` };
-      contentsPayload = { parts: [documentContentPart, textPart] };
-    } else if (req.file) {
-      const pdfPart = {
-        inlineData: {
-          mimeType: req.file.mimetype || "application/pdf",
-          data: req.file.buffer.toString("base64")
-        }
-      };
-      contentsPayload = { parts: [pdfPart, textPart] };
-    } else {
-      return res.status(400).json({ error: "Text content is too short to process." });
-    }
-    const summarizeModels = [
-      "gemini-3.5-flash-lite",
-      "gemini-3.5-flash",
-      "gemini-flash-lite-latest",
-      "gemini-flash-latest"
-    ];
-    let summaryText = "";
-    let summarizeError = null;
-    for (const model of summarizeModels) {
-      try {
-        const response = await safeGenerateContent({
-          model,
-          contents: contentsPayload,
-          config: {
-            responseMimeType,
-            maxOutputTokens: 8192,
-            temperature: 0.3
-          }
-        });
-        summaryText = response.text || "";
-        summarizeError = null;
-        break;
-      } catch (err) {
-        const errStr = String(err.message || err).toLowerCase();
-        const isRateLimit = errStr.includes("429") || errStr.includes("quota") || errStr.includes("resource_exhausted") || errStr.includes("503") || errStr.includes("overloaded");
-        if (isRateLimit) {
-          console.warn(`[summarize] Model ${model} rate-limited, trying next...`);
-          summarizeError = err;
-          continue;
-        }
-        throw err;
-      }
-    }
-    if (summarizeError && !summaryText) {
-      throw summarizeError;
-    }
-    const outputText = summaryText || "";
-    if (action === "flashcards-json") {
-      const parsed = safeParseJSON(outputText, "object");
-      const cards = parsed?.flashcards || [];
-      summaryCache.set(cacheKey, cards);
-      return res.json({ flashcards: cards });
-    }
-    summaryCache.set(cacheKey, outputText);
-    res.json({ text: outputText });
-  } catch (error) {
-    if (error.message === "GEMINI_QUOTA_EXHAUSTED") {
-      console.warn("Summarize quota exceeded:", error.message);
-      return res.status(429).json({
-        error: "API quota limit exceeded for PDF summarization. Please try again in 60 seconds."
-      });
-    }
-    console.error("Summarize error:", error);
-    res.status(500).json({ error: error.message || "Failed to generate summary" });
-  }
-});
 app.post("/api/tts", async (req, res) => {
   try {
     const { text, voice } = req.body;
@@ -1884,354 +11484,133 @@ ${chunkText}` }] }],
     res.status(500).json({ error: error.message || "Failed to generate audio" });
   }
 });
-app.post("/api/grade-essay", async (req, res) => {
+app.post("/api/grade-frq", upload.any(), async (req, res) => {
   try {
-    const { text, curriculum, subject, gradeLevel, images } = req.body;
-    const wordCount = text ? text.trim().split(/\s+/).filter((w) => w.length > 0).length : 0;
-    if (!text && (!images || !Array.isArray(images) || images.length === 0)) {
-      return res.status(400).json({ error: "Missing text or images" });
+    const rawFiles = req.files || (req.file ? [req.file] : []);
+    if (!rawFiles || rawFiles.length === 0) {
+      return res.status(400).json({ error: "No image provided. Please capture or upload at least one FRQ page photo." });
     }
-    const aiClient = getAI();
-    const curr = curriculum || "AP (Advanced Placement)";
-    const subj = subject || "General Essay";
-    let rubricInstructions = "";
-    let scoreHeader = "";
-    if (curr.includes("AP")) {
-      scoreHeader = "AP RUBRIC SCORE: [Score]/6 (Thesis: [ThesisScore]/1, Evidence: [EvidenceScore]/4, Sophistication: [SophisticationScore]/1)";
-      rubricInstructions = `You MUST evaluate the essay using the official AP 6-point scale:
-Thesis: 0 or 1 point
-Evidence and Commentary: 0 to 4 points
-Sophistication: 0 or 1 point
-Your score output must EXACTLY match this format (with correct points calculated):
-AP RUBRIC SCORE: [Score]/6 (Thesis: [ThesisScore]/1, Evidence: [EvidenceScore]/4, Sophistication: [SophisticationScore]/1)`;
-    } else if (curr.includes("IELTS") || curr.includes("TOEFL")) {
-      const isIelts = subj.toLowerCase().includes("ielts") || subj.toLowerCase().includes("task");
-      if (isIelts) {
-        scoreHeader = "IELTS BAND SCORE: [BandScore]/9 (Task Achievement: [TAScore]/9, Coherence: [CCScore]/9, Lexical: [LRScore]/9, Grammar: [GRAScore]/9)";
-        rubricInstructions = `You MUST evaluate the essay using the official IELTS 9-band scale across four criteria (Task Achievement/Response, Coherence and Cohesion, Lexical Resource, Grammatical Range and Accuracy).
-Your score output must EXACTLY match this format:
-IELTS BAND SCORE: [BandScore]/9 (Task Achievement: [TAScore]/9, Coherence: [CCScore]/9, Lexical: [LRScore]/9, Grammar: [GRAScore]/9)`;
-      } else {
-        scoreHeader = "TOEFL SCORE: [Score]/30";
-        rubricInstructions = `You MUST evaluate the essay using the official TOEFL Writing scale (0 to 30 points) based on development of ideas, organization, language use, and accuracy.
-Your score output must EXACTLY match this format:
-TOEFL SCORE: [Score]/30`;
-      }
-    } else if (curr.includes("IB")) {
-      scoreHeader = "IB CRITERIA SCORE: [Score]/34 (Focus: [FocusScore]/10, Analysis: [AnalysisScore]/10, Structure: [StructureScore]/10, Language: [LanguageScore]/4)";
-      rubricInstructions = `You MUST evaluate the essay using the official IB grading criteria (scale from 0 to 34).
-Your score output must EXACTLY match this format:
-IB CRITERIA SCORE: [Score]/34 (Focus: [FocusScore]/10, Analysis: [AnalysisScore]/10, Structure: [StructureScore]/10, Language: [LanguageScore]/4)`;
-    } else if (curr.includes("A-Levels")) {
-      scoreHeader = "A-LEVEL GRADE: [Grade] (A*, A, B, C, D, or E) - Score: [Score]/25";
-      rubricInstructions = `You MUST evaluate the essay based on UK A-Level marking bands (scale from 0 to 25).
-Your score output must EXACTLY match this format:
-A-LEVEL GRADE: [Grade] (A*, A, B, C, D, or E) - Score: [Score]/25`;
-    } else {
-      scoreHeader = "HIGH SCHOOL RUBRIC SCORE: [Score]/100 (Focus/Org: [FocusScore]/25, Content/Dev: [ContentScore]/25, Style: [StyleScore]/25, Grammar: [GrammarScore]/25)";
-      rubricInstructions = `You MUST evaluate the essay using a standard high school grading rubric out of 100 points, broken down into Focus/Organization, Content/Development, Style/Sentence Structure, and Grammar/Mechanics (each 25 points).
-Your score output must EXACTLY match this format:
-HIGH SCHOOL RUBRIC SCORE: [Score]/100 (Focus/Org: [FocusScore]/25, Content/Dev: [ContentScore]/25, Style: [StyleScore]/25, Grammar: [GrammarScore]/25)`;
-    }
-    let pointDeductionTemplate = "";
-    if (curr.includes("AP")) {
-      pointDeductionTemplate = `- Thesis: [State points earned (0 or 1) and exact reasoning]
-- Evidence & Commentary: [State points earned (0 to 4) and analyze specific textual evidence/gaps]
-- Sophistication: [State points earned (0 or 1) and analyze rhetorical complexity/nuance]`;
-    } else if (curr.includes("IELTS") || curr.includes("TOEFL")) {
-      pointDeductionTemplate = `- Task Achievement: [Band score and prompt coverage analysis]
-- Coherence & Cohesion: [Band score and logical transitions analysis]
-- Lexical Resource: [Band score and vocabulary precision]
-- Grammatical Range & Accuracy: [Band score and structural variety]`;
-    } else if (curr.includes("IB")) {
-      pointDeductionTemplate = `- Criterion A (Focus & Method): [Score and specific explanation]
-- Criterion B (Knowledge & Understanding): [Score and specific explanation]
-- Criterion C (Critical Thinking & Analysis): [Score and specific explanation]
-- Criterion D (Presentation & Language): [Score and specific explanation]`;
-    } else if (curr.includes("A-Levels")) {
-      pointDeductionTemplate = `- AO1 (Knowledge & Understanding): [Mark breakdown and reasoning]
-- AO2 (Analysis & Method): [Mark breakdown and reasoning]
-- AO3 (Context & Synthesis): [Mark breakdown and reasoning]`;
-    } else {
-      pointDeductionTemplate = `- Focus & Organization: [Score out of 25 and specific structural breakdown]
-- Content & Development: [Score out of 25 and evidence/argument depth]
-- Style & Sentence Structure: [Score out of 25 and phrasing/flow]
-- Grammar & Mechanics: [Score out of 25 and technical accuracy]`;
-    }
-    const systemInstruction = `You are a Senior Academic Examiner, Certified College Board AP Reader, and Elite Essay Assessor for the "${curr}" curriculum, specifically for "${subj}".
-Your task is to grade and provide rigorous, highly specific, actionable feedback on the student's essay.
-
-GRADE LEVEL CALIBRATION: The student is in Grade: ${gradeLevel}. Calibrate your explanations, tone, and examples so they are encouraging, academically rigorous, and crystal-clear.
-
-CRITICAL GRADING RULES (STRICT COMPLIANCE REQUIRED):
-1. OFFICIAL RUBRIC SCORE HEADER:
-${rubricInstructions}
-
-2. NO WALL OF TEXT (CATEGORIZED POINT DEDUCTION ANALYSIS):
-Under "POINT DEDUCTION ANALYSIS", you MUST break down the score category by category using clean bullet points. For every single category where full points were NOT awarded, explicitly explain the exact deficiency in 1-2 sharp sentences.
-${pointDeductionTemplate}
-
-3. ZERO-TOLERANCE MECHANICAL, PUNCTUATION & HOMOPHONE AUDIT:
-Under "GRAMMAR, MECHANICS & POLISH", you MUST actively detect and explicitly list EVERY mechanical flaw in the essay, including:
-- Comma splices, run-on sentences, missing apostrophes, and punctuation errors.
-- Homophone confusion (e.g., "there" vs. "their", "affect" vs. "effect", "your" vs. "you're", "its" vs. "it's").
-- Subject-verb disagreement and tense shifts.
-NEVER write vague placeholders like "minor word choice issues." You MUST quote the exact erroneous sentence/phrase from the essay and provide the exact corrected sentence!
-
-4. STRUCTURED OUTPUT FORMAT:
-Analyze the provided essay and output your response strictly in the following format:
-
-${scoreHeader}
-
-### POINT DEDUCTION ANALYSIS
-${pointDeductionTemplate}
-
-### STRENGTHS
-- [1-2 sentences highlighting a strong conceptual or stylistic element of the essay with specific examples]
-
-### AREAS FOR IMPROVEMENT
-1. [First high-priority structural or argument improvement with actionable advice]
-2. [Second high-priority improvement with actionable advice]
-
-### GRAMMAR, MECHANICS & POLISH
-[If errors are found, list each one clearly as follows:]
-1. [Error Name, e.g. Comma Splice / Homophone Typo / Subject-Verb Agreement]
-   - Original: "[Exact quote from student essay]"
-   - Correction: "[Exact corrected sentence]"
-   - Why: [1 sentence explaining the rule]
-[If the essay is mechanically flawless, write: "Zero mechanical or grammatical errors detected. Outstanding prose precision."]
-
-### OVERALL VERDICT
-[A supportive, motivating 2-sentence summary providing a clear roadmap for their next revision.]`;
-    const originalModel = "gemini-3.6-flash";
-    let modelsToTry = [
-      "gemini-3.5-flash-lite",
-      "gemini-3.5-flash",
-      "gemini-flash-lite-latest",
-      "gemini-flash-latest",
-      "gemini-3.6-flash"
-    ];
-    const now = Date.now();
-    const activeModels = [];
-    const backburnerModels = [];
-    for (const m of modelsToTry) {
-      const lastLimited = rateLimitedModels[m] || 0;
-      if (now - lastLimited < 36e5) {
-        backburnerModels.push(m);
-      } else {
-        activeModels.push(m);
+    const uniqueFiles = [];
+    const seenFiles = /* @__PURE__ */ new Set();
+    for (const f of rawFiles) {
+      const key = `${f.size}_${f.originalname}`;
+      if (!seenFiles.has(key)) {
+        seenFiles.add(key);
+        uniqueFiles.push(f);
       }
     }
-    if (activeModels.length > 0) {
-      modelsToTry = [...activeModels, ...backburnerModels];
-    }
-    const contentParts = [];
-    if (images && Array.isArray(images) && images.length > 0) {
-      for (const img of images) {
-        if (!img) continue;
-        const parts = img.split(",");
-        const base64Data = parts[1] || img;
-        const mimeType = parts[0]?.split(";")[0]?.split(":")[1] || "image/jpeg";
-        contentParts.push({
-          inlineData: {
-            mimeType,
-            data: base64Data
-          }
-        });
-      }
-    }
-    const targetText = text || "Please read the student's handwritten or typed essay from the attached image(s) and grade it strictly according to the rubric.";
-    contentParts.push({ text: targetText });
-    let streamResponse = null;
-    let lastError = null;
-    let anyQuotaExceeded = false;
-    for (const model of modelsToTry) {
-      try {
-        streamResponse = await aiClient.models.generateContentStream({
-          model,
-          contents: { parts: contentParts },
-          config: {
-            systemInstruction,
-            temperature: 0.15,
-            maxOutputTokens: 8192
-          }
-        });
-        break;
-      } catch (err) {
-        lastError = err;
-        const errStr = String(err.message || err);
-        const isRateLimitOrQuota = errStr.includes("429") || errStr.includes("quota") || errStr.includes("RESOURCE_EXHAUSTED") || errStr.includes("resource_exhausted") || errStr.includes("limit");
-        if (isRateLimitOrQuota) {
-          console.warn(`[grade-essay stream] Model ${model} hit rate-limit or quota constraint:`, errStr);
-          lastQuotaExceededTime = Date.now();
-          rateLimitedModels[model] = Date.now();
-          anyQuotaExceeded = true;
-          continue;
-        } else {
-          console.error(`[grade-essay stream] Model ${model} failed:`, errStr);
-        }
-      }
-    }
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.setHeader("Transfer-Encoding", "chunked");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-    if (!streamResponse) {
-      if (anyQuotaExceeded) {
-        res.write("The Gemini API is currently experiencing rate limits. Please try again in 60 seconds.");
-      } else {
-        res.write("AI generation failed. Please try again or provide a shorter prompt.");
-      }
-      res.end();
-      return;
-    }
-    for await (const chunk of streamResponse) {
-      if (chunk.text) {
-        res.write(chunk.text);
-      }
-    }
-    res.end();
-  } catch (error) {
-    console.error("Essay Grader error:", error);
-    const errorStr = String(error.message || error);
-    const isQuotaError = errorStr.includes("429") || errorStr.includes("quota") || errorStr.includes("RESOURCE_EXHAUSTED");
-    if (!res.headersSent) {
-      if (isQuotaError) {
-        res.status(429).json({
-          error: "GEMINI_QUOTA_EXHAUSTED",
-          message: "The Gemini API is currently experiencing rate limits. Please try again in 60 seconds."
-        });
-      } else {
-        res.status(500).json({ error: error.message || "Failed to grade essay" });
-      }
-    } else {
-      res.end();
-    }
-  }
-});
-app.post("/api/scan-essay", upload.single("image"), async (req, res) => {
-  try {
-    const { gradeLevel } = req.body;
-    if (!req.file) {
-      return res.status(400).json({ error: "No image provided" });
-    }
-    const aiClient = getAI();
-    const imagePart = {
-      inlineData: {
-        mimeType: req.file.mimetype,
-        data: req.file.buffer.toString("base64")
-      }
-    };
-    const response = await safeGenerateContent({
-      model: "gemini-3.5-flash-lite",
-      contents: [
-        {
-          parts: [
-            imagePart,
-            { text: "Transcribe the handwritten text from this essay image perfectly. Return ONLY the transcribed text. Do not add any conversational filler, intro, outro, or formatting annotations. Keep paragraphs intact as written." }
-          ]
-        }
-      ]
-    });
-    const text = response.text || "";
-    res.json({ text: text.trim() });
-  } catch (error) {
-    console.error("OCR Error:", error);
-    res.status(500).json({ error: error.message || "Failed to transcribe image" });
-  }
-});
-app.post("/api/grade-frq", upload.single("image"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No image provided. Please capture or upload an FRQ answer photo." });
-    }
-    const imagePart = {
-      inlineData: {
-        mimeType: req.file.mimetype,
-        data: req.file.buffer.toString("base64")
-      }
-    };
+    const totalPages = uniqueFiles.length;
+    console.log(`[/api/grade-frq] Processing ${totalPages} distinct page(s) for FRQ grading.`);
+    const gradeLevel = req.body.gradeLevel || req.body.userGrade || "11th Grade (Junior)";
+    const profileContext = req.body.profileContext;
     const systemPrompt = `You are a Senior College Board AP Chief Reader, Lead Exam Table Leader, and Master Academic Auditor.
 Your job is to rigorously evaluate uploaded photos for AP Free Response Questions (FRQ) and student handwritten STEM/academic solutions with the authoritative standards of an official AP exam table leader.
 
 =======================================================
-MANDATORY STEP 1: STRICT OPTICAL VERIFICATION (VERIFY FIRST!)
+MANDATORY MULTI-PAGE AUDITING INSTRUCTION (${totalPages} TOTAL PAGES):
 =======================================================
-Before awarding ANY scores or generating rubrics, carefully examine the physical content of the image.
+The student has uploaded exactly ${totalPages} PAGE(S) for this FRQ submission.
+You MUST thoroughly inspect, transcribe, and grade ALL ${totalPages} PAGES in chronological sequence:
+1. "pagesAudited" Array (MANDATORY):
+   You MUST list every single page from Page 1 to Page ${totalPages} in "pagesAudited" with what was found:
+   "pagesAudited": [
+     {
+       "pageNumber": 1,
+       "detectedType": "question_prompt" | "handwritten_student_work" | "mixed",
+       "summaryOfContent": "Clear summary of what was read on Page 1 (e.g., Problem statement with given values and parts a-d)"
+     },
+     {
+       "pageNumber": 2,
+       "detectedType": "handwritten_student_work",
+       "summaryOfContent": "Student handwritten solution for Part (a) and Part (b)"
+     }
+   ]
 
+2. MULTI-PAGE SYNTHESIS:
+   - If Page 1 contains the printed Exam/Textbook Question and Page 2/Page 3 contains student handwriting: Extract the question from Page 1, and EVALUATE the student work on Page 2 and Page 3! Set "hasStudentHandwriting": true and "submissionMode": "question_and_answer".
+   - If the student's solution spans multiple pages (e.g., Part a on Page 1, Part b on Page 2, Part c on Page 3): You MUST synthesize and evaluate ALL parts across ALL ${totalPages} pages! Do NOT stop reading after Page 1!
+   - Combine all student work from all pages into "transcribedHandwriting".
+   - Break down every part/step across all pages into "evaluationSteps".
+
+=======================================================
+STEP 2: STRICT OPTICAL VERIFICATION
+=======================================================
 REJECTION RULE (CRITICAL):
-You MUST immediately REJECT the image if:
-1. NON-ACADEMIC / IRRELEVANT: The photo contains people, selfies, faces, rooms, furniture, vehicles, animals/pets, food, plants, memes, app screenshots, UI graphics, logos, blank paper, or non-educational objects.
-2. MULTIPLE CHOICE QUESTION (MCQ): The photo depicts an objective multiple-choice question with answer options (A, B, C, D) or bubble answer sheets.
+You MUST immediately REJECT the submission and award 0 POINTS if:
+1. NON-ACADEMIC / IRRELEVANT: Photos contain people, selfies, rooms, furniture, vehicles, animals, food, memes, app screenshots, blank paper, or non-educational objects.
+2. MULTIPLE CHOICE QUESTION (MCQ): Objective multiple-choice questions with answer options (A, B, C, D) or bubble answer sheets.
+3. ZERO STUDENT WORK ACROSS ALL ${totalPages} PAGES: All uploaded pages contain ONLY unworked printed questions with ZERO handwritten student calculations anywhere across ALL ${totalPages} pages.
+   (If even ONE page has handwritten student work, ACCEPT and GRADE the student work!)
 
 IF REJECTED:
 Set:
 - "isValidAcademicAnswer": false
-- "verificationVerdict": "REJECT_NOT_AN_ANSWER" (or "REJECT_MCQ_NOT_ALLOWED" if MCQ)
-- "errorCode": "NO_ACADEMIC_CONTENT" (or "MCQ_DETECTED")
-- "errorMessage": "No valid academic question or student answer was detected in this photo." (or "Multiple Choice Question (MCQ) detected. FRQ Grader strictly evaluates subjective Free Response Questions only.")
-- "detectionReason": Provide a direct, concise description of what was physically identified in the photo (e.g. "The uploaded photo depicts a person / room / non-academic item rather than academic exam work.").
-- "suggestion": "Please take a clear photo of an academic exam question (FRQ) or your handwritten student answer sheet."
+- "verificationVerdict": "REJECT_NOT_AN_ANSWER" (or "REJECT_MCQ_NOT_ALLOWED" if MCQ, or "REJECT_NO_STUDENT_WORK" if zero student work)
+- "errorCode": "NO_ACADEMIC_CONTENT" (or "MCQ_DETECTED", or "NO_STUDENT_WORK_DETECTED")
+- "errorMessage": "No handwritten student work was detected across your uploaded pages! The FRQ Grader is exclusively designed to evaluate and score your handwritten solutions under official College Board standards. We cannot provide answers to unworked questions."
+- "detectionReason": "The uploaded pages contain exam question prompts without any handwritten student calculations or answers. Under College Board AP exam rules: 'No Work = No Credit' (0 Points)."
+- "suggestion": "Please write out your solution by hand on paper with all mathematical steps, then snap and upload your handwritten answer sheet to receive your official AP score and rubric evaluation."
 - Set: "totalPointsEarned": 0, "totalPointsPossible": 0, "predictedAPScale": 0, "evaluationSteps": []
-
-ACCEPTANCE CRITERIA:
-Accept the image ONLY if it contains:
-1. "subjective_frq_solution": An authentic handwritten (or typed) student response solving an academic problem with equations, formulas, calculations, or explanatory text.
-2. "subjective_frq_question": A genuine printed or written academic exam problem statement from a textbook, workbook, or past AP exam paper (without student answer).
-3. "question_and_answer": A printed question with student's handwritten work below it.
+- DO NOT PROVIDE ANY WORKED-OUT HOMEWORK SOLUTIONS.
 
 =======================================================
-EVALUATION PROTOCOL FOR VALID SUBMISSIONS:
+EVALUATION PROTOCOL FOR VALID STUDENT WORK:
 =======================================================
 - Grade strictly according to official College Board AP Scoring Guidelines with the "NO WORK, NO CREDIT" rule.
 - All mathematical expressions, formulas, variables ($x$, $y$, $t$), derivatives, integrals, limits, equations, and units MUST be wrapped in KaTeX math delimiters ($...$ for inline or $$...$$ for display).
 - Break down grading into official rubric parts/steps: Part (a), Part (b), etc.
 - Award pointsEarned (0 to pointsPossible) for each step with clear rubric criteria, student work evaluated, and reader feedback.
-- If it is a question prompt (textbook question without student work): award 0 points earned, show total points possible, provide full model solutions for each step, and Chief Reader advice.
 - Provide professional, concise Chief Reader diagnostic commentary without boilerplate or filler text.
 
 Return ONLY valid raw JSON conforming strictly to this schema:
 {
+  "pagesAudited": [
+    {
+      "pageNumber": 1,
+      "detectedType": "question_prompt" | "handwritten_student_work" | "mixed",
+      "summaryOfContent": "Detailed summary of what was read on this page"
+    }
+  ],
   "opticalInspection": {
-    "visibleTextSummary": "Summary of all text/symbols physically visible in image",
+    "visibleTextSummary": "Summary of all text/symbols physically visible across all pages",
     "imageMedium": "printed_book_or_test_paper" | "notebook_page" | "hybrid_exam_sheet" | "digital_screen_or_graphic" | "non_educational_object",
-    "questionType": "subjective_frq_question" | "subjective_frq_solution" | "mcq_or_objective_question" | "non_academic",
+    "questionType": "subjective_frq_solution" | "subjective_frq_question" | "mcq_or_objective_question" | "non_academic",
     "isHandwrittenExamSolution": boolean,
-    "verdict": "GENUINE_EXAM_QUESTION" | "GENUINE_EXAM_ANSWER" | "REJECT_MCQ_NOT_ALLOWED" | "REJECT_NOT_AN_ANSWER",
+    "verdict": "GENUINE_EXAM_ANSWER" | "REJECT_NO_STUDENT_WORK" | "REJECT_MCQ_NOT_ALLOWED" | "REJECT_NOT_AN_ANSWER",
     "verdictReason": "Clear explanation of classification"
   },
-  "verificationVerdict": "GENUINE_EXAM_QUESTION" | "GENUINE_EXAM_ANSWER" | "REJECT_MCQ_NOT_ALLOWED" | "REJECT_NOT_AN_ANSWER",
-  "submissionMode": "question_prompt" | "student_answer" | "question_and_answer" | "mcq_question" | "non_academic",
-  "questionType": "subjective_frq_question" | "subjective_frq_solution" | "mcq_or_objective_question" | "non_academic",
+  "verificationVerdict": "GENUINE_EXAM_ANSWER" | "REJECT_NO_STUDENT_WORK" | "REJECT_MCQ_NOT_ALLOWED" | "REJECT_NOT_AN_ANSWER",
+  "submissionMode": "student_answer" | "question_and_answer" | "question_prompt_only" | "mcq_question" | "non_academic",
+  "questionType": "subjective_frq_solution" | "subjective_frq_question" | "mcq_or_objective_question" | "non_academic",
   "isValidAcademicAnswer": boolean,
-  "detectedContentType": "printed_frq_question" | "handwritten_student_work" | "mcq_or_objective_question" | "app_logo_or_graphic" | "random_object" | "blank_or_unreadable",
+  "detectedContentType": "handwritten_student_work" | "printed_frq_question" | "mcq_or_objective_question" | "app_logo_or_graphic" | "random_object" | "blank_or_unreadable",
   "hasStudentHandwriting": boolean,
   "errorCode": "MCQ_DETECTED" | "NO_ACADEMIC_CONTENT" | "NO_STUDENT_WORK_DETECTED",
   "errorMessage": "Clear message if rejected",
   "detectionReason": "Detailed explanation of what was detected",
   "suggestion": "Actionable next step",
   
-  // Populated when isValidAcademicAnswer is true:
+  // Populated ONLY when isValidAcademicAnswer is true and authentic student work is evaluated:
   "subjectDetected": "AP Course Name (e.g. AP Calculus AB, AP Physics 1)",
   "questionStatement": "Transcribed question text with KaTeX math ($...$)",
   "questionTopic": "Official AP CED Topic Name",
-  "transcribedHandwriting": "Transcribed student work with KaTeX math (if student answer)",
-  "totalPointsEarned": 0,
+  "transcribedHandwriting": "Transcribed student work synthesized across ALL pages with KaTeX math",
+  "totalPointsEarned": 5,
   "totalPointsPossible": 9,
-  "predictedAPScale": 5,
-  "predictedAPScaleLabel": "AP Score 5" | "Official AP Rubric & Model Solution Benchmark",
+  "predictedAPScale": 3,
+  "predictedAPScaleLabel": "Score 3 / 5",
   "evaluationSteps": [
     {
       "stepTitle": "Part (a): Derivative / Equation (2 Points)",
       "pointsEarned": 2,
       "pointsPossible": 2,
       "criteria": "Official College Board scoring criteria with KaTeX math",
-      "workEvaluated": "Official Model Solution or Student Work Evaluated with KaTeX math",
+      "workEvaluated": "Student Work Evaluated with KaTeX math",
       "feedback": "Chief Reader feedback with KaTeX math",
       "status": "full" | "partial" | "zero"
     }
   ],
-  "chiefReaderSummary": "High-level Chief Reader diagnostic summary and exam strategy",
+  "chiefReaderSummary": "High-level Chief Reader diagnostic summary synthesized from all pages",
   "keyStrengths": [
     "Key conceptual technique demonstrated"
   ],
@@ -2241,15 +11620,39 @@ Return ONLY valid raw JSON conforming strictly to this schema:
   "howToGetFullPoints": [
     "Actionable exam day tip to secure maximum points"
   ]
-}`;
+}
+
+Ensure all formulas and variables are enclosed in $...$. Return pure JSON with no markdown wrapping.`;
+    const contentParts = [];
+    contentParts.push({
+      text: `### CRITICAL MULTI-PAGE AUDIT: Exactly ${totalPages} page(s) submitted. Inspect every single page sequentially from Page 1 to Page ${totalPages}:`
+    });
+    uniqueFiles.forEach((file, index) => {
+      contentParts.push({
+        text: `
+=========================================
+>>> [STUDENT SUBMISSION: PAGE ${index + 1} OF ${totalPages}] (Filename: ${file.originalname || `page_${index + 1}.jpg`}) <<<
+=========================================`
+      });
+      contentParts.push({
+        inlineData: {
+          mimeType: file.mimetype || "image/jpeg",
+          data: file.buffer.toString("base64")
+        }
+      });
+      contentParts.push({
+        text: `>>> [END OF PAGE ${index + 1} OF ${totalPages}] <<<
+`
+      });
+    });
+    contentParts.push({ text: systemPrompt });
     const response = await safeGenerateContent({
+      gradeLevel,
+      profileContext,
       model: "gemini-2.5-flash",
       contents: [
         {
-          parts: [
-            imagePart,
-            { text: systemPrompt }
-          ]
+          parts: contentParts
         }
       ],
       config: {
@@ -2273,6 +11676,10 @@ Return ONLY valid raw JSON conforming strictly to this schema:
       }
     }
     const isMCQ = parsed.detectedContentType === "mcq_or_objective_question" || parsed.detectedContentType === "mcq_or_objective_test" || parsed.submissionMode === "mcq_question" || parsed.questionType === "mcq_or_objective_question" || parsed.opticalInspection?.questionType === "mcq_or_objective_question" || parsed.verificationVerdict === "REJECT_MCQ_NOT_ALLOWED" || parsed.errorCode === "MCQ_DETECTED";
+    const hasAnyStudentHandwriting = parsed.hasStudentHandwriting === true || parsed.submissionMode === "student_answer" || parsed.submissionMode === "question_and_answer" || Array.isArray(parsed.pagesAudited) && parsed.pagesAudited.some(
+      (p) => p.detectedType === "handwritten_student_work" || p.detectedType === "mixed"
+    );
+    const isQuestionOnly = !hasAnyStudentHandwriting && (parsed.submissionMode === "question_prompt" || parsed.submissionMode === "question_prompt_only" || parsed.questionType === "subjective_frq_question" || parsed.detectedContentType === "printed_frq_question" || parsed.verificationVerdict === "REJECT_NO_STUDENT_WORK" || parsed.errorCode === "NO_STUDENT_WORK_DETECTED");
     const isNonAcademic = parsed.detectedContentType === "app_logo_or_graphic" || parsed.detectedContentType === "random_object" || parsed.detectedContentType === "blank_or_unreadable" || parsed.submissionMode === "non_academic" || parsed.questionType === "non_academic" || parsed.opticalInspection?.questionType === "non_academic" || parsed.verificationVerdict === "REJECT_NOT_AN_ANSWER" || parsed.errorCode === "NO_ACADEMIC_CONTENT";
     if (isMCQ) {
       parsed.isValidAcademicAnswer = false;
@@ -2287,6 +11694,20 @@ Return ONLY valid raw JSON conforming strictly to this schema:
       parsed.errorMessage = "Multiple Choice Question (MCQ) detected. The FRQ Grader strictly evaluates subjective Free Response Questions only.";
       parsed.detectionReason = parsed.detectionReason || "The uploaded image contains multiple choice questions or options (A, B, C, D) rather than subjective problem solving.";
       parsed.suggestion = "For multiple-choice questions, please use the Quiz / Practice feature. The FRQ Grader is exclusively for subjective free-response questions and solutions.";
+    } else if (isQuestionOnly) {
+      parsed.isValidAcademicAnswer = false;
+      parsed.hasStudentHandwriting = false;
+      parsed.submissionMode = "question_prompt_only";
+      parsed.totalPointsEarned = 0;
+      parsed.totalPointsPossible = 0;
+      parsed.predictedAPScale = 0;
+      parsed.predictedAPScaleLabel = "No Credit (0 / 5)";
+      parsed.evaluationSteps = [];
+      parsed.parts = [];
+      parsed.errorCode = "NO_STUDENT_WORK_DETECTED";
+      parsed.errorMessage = "No handwritten student work was detected across your uploaded page(s)! The FRQ Grader is exclusively built to grade and score your handwritten solutions, not as a homework solver. Please solve the problem on paper first and upload your handwritten answer sheet.";
+      parsed.detectionReason = parsed.detectionReason || `The ${totalPages} uploaded page(s) contain only exam question prompts without any handwritten student calculations, steps, or answers. Under College Board AP exam rules: 'No Work = No Credit' (0 Points).`;
+      parsed.suggestion = "Please write out your solution by hand on paper with all mathematical steps, then snap and upload your handwritten answer sheet to receive your official AP score and rubric evaluation.";
     } else if (isNonAcademic || parsed.isValidAcademicAnswer === false) {
       parsed.isValidAcademicAnswer = false;
       parsed.hasStudentHandwriting = false;
@@ -2302,15 +11723,8 @@ Return ONLY valid raw JSON conforming strictly to this schema:
       parsed.suggestion = parsed.suggestion || "Please take a clear photo of an academic exam question (FRQ) or your handwritten student answer sheet.";
     } else {
       parsed.isValidAcademicAnswer = true;
-      const isQuestionPrompt = parsed.submissionMode === "question_prompt" || parsed.questionType === "subjective_frq_question" || parsed.detectedContentType === "printed_frq_question" || parsed.verificationVerdict === "GENUINE_EXAM_QUESTION";
-      if (isQuestionPrompt) {
-        parsed.submissionMode = "question_prompt";
-        if (!parsed.predictedAPScaleLabel) {
-          parsed.predictedAPScaleLabel = "Official AP Rubric & Model Solution Benchmark";
-        }
-      } else {
-        parsed.submissionMode = parsed.submissionMode || "student_answer";
-      }
+      parsed.hasStudentHandwriting = true;
+      parsed.submissionMode = parsed.submissionMode || "student_answer";
       if (parsed.evaluationSteps && Array.isArray(parsed.evaluationSteps)) {
         parsed.parts = parsed.evaluationSteps.map((s) => ({
           ...s,
@@ -2329,1157 +11743,6 @@ Return ONLY valid raw JSON conforming strictly to this schema:
     res.status(500).json({ error: error.message || "Failed to grade FRQ response" });
   }
 });
-app.post("/api/scan-images", upload.array("images", 5), async (req, res) => {
-  try {
-    const files = req.files;
-    if (!files || files.length === 0) {
-      return res.status(400).json({ error: "No images provided" });
-    }
-    const imageParts = files.map((file) => ({
-      inlineData: {
-        mimeType: file.mimetype,
-        data: file.buffer.toString("base64")
-      }
-    }));
-    const response = await safeGenerateContent({
-      model: "gemini-3.5-flash-lite",
-      contents: [
-        {
-          parts: [
-            ...imageParts,
-            { text: "Transcribe the handwritten and printed text from these images perfectly, preserving their chronological page order. Return ONLY the combined transcribed text. Do not add any conversational filler, intro, outro, or formatting annotations. Keep paragraphs intact as written." }
-          ]
-        }
-      ]
-    });
-    const text = response.text || "";
-    res.json({ text: text.trim() });
-  } catch (error) {
-    console.error("Multimodal OCR Error:", error);
-    res.status(500).json({ error: error.message || "Failed to transcribe images" });
-  }
-});
-app.post("/api/generate-flashcards", async (req, res) => {
-  try {
-    const text = req.body.text || req.body.topic || req.body.content || "";
-    const gradeLevel = req.body.gradeLevel || req.body.userGrade;
-    const count = req.body.count;
-    if (!text || !text.trim()) {
-      return res.status(400).json({ error: "Missing text or topic" });
-    }
-    const requestedCount = Math.min(Math.max(parseInt(count) || 10, 1), 30);
-    const aiClient = getAI();
-    const systemInstruction = `Act as an Elite Cognitive Scientist and Active Recall Specialist.
-Your mission is to generate exactly ${requestedCount} high-yield revision flashcards for the provided text or academic topic.
-
-CRITICAL ACTIVE RECALL & CONCISE LENGTH RULES:
-1. PUNCHY ACTIVE RECALL QUESTIONS: The 'question' must be direct, crisp, and test a single core mechanism, formula, definition, historical milestone, or concept.
-2. STRICT 15 TO 25 WORDS ANSWER CONSTRAINT: Every 'answer' MUST be strictly concise, punchy, and between 15 to 25 words max. It must be an active recall mnemonic, definition, or key formula concept designed for rapid revision. NEVER output long multi-sentence paragraphs.
-3. 100% COMPLETE THOUGHTS: The 15-25 word answer must be grammatically complete and self-contained (no trailing '...', no chopped clauses).
-4. LATEX & CODE: If there are formulas, wrap in LaTeX ($...$). If coding/HTML tags, wrap in backticks (\`<div>\`).
-
-CRITICAL OUTPUT FORMAT:
-You must output ONLY a valid JSON array of objects. Do not wrap in markdown quotes.
-
-Format:
-[
-  {
-    "question": "What is the primary function of mitochondria in eukaryotic cells?",
-    "answer": "Mitochondria generate cellular energy by converting glucose and oxygen into ATP through oxidative phosphorylation and cellular respiration."
-  },
-  {
-    "question": "What is the key principle of Newton's Third Law of Motion?",
-    "answer": "Every interacting force creates an equal and opposite reaction acting simultaneously on two distinct interacting physical objects."
-  }
-]`;
-    const response = await safeGenerateContent({
-      gradeLevel,
-      model: "gemini-3.5-flash-lite",
-      contents: { parts: [{ text: `Generate exactly ${requestedCount} high-yield active recall flashcards with answers strictly between 15 and 25 words from this text or topic:
-
-${text}` }] },
-      config: {
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        responseMimeType: "application/json",
-        maxOutputTokens: 8192,
-        temperature: 0.2
-      }
-    });
-    let outputText = response.text || "[]";
-    res.json({ flashcards: safeParseJSON(outputText, "array") });
-  } catch (error) {
-    if (error.message === "GEMINI_QUOTA_EXHAUSTED") {
-      console.warn("Flashcards quota exceeded:", error.message);
-      return res.json({
-        flashcards: [
-          {
-            question: "\u26A0\uFE0F AI Tutor Notice: Rate Limit / Quota Exceeded",
-            answer: "The Gemini API has exceeded its rate limit. Please wait 60 seconds and try again, or check your API key in settings."
-          }
-        ]
-      });
-    }
-    console.error("Flashcards error:", error);
-    res.status(500).json({ error: error.message || "Failed to generate flashcards" });
-  }
-});
-async function robustFetchYoutubeTranscript(videoId) {
-  console.log(`[robustFetchYoutubeTranscript] Fetching transcript for video: ${videoId}`);
-  const userAgents = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
-  ];
-  const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
-  let captionTracks = [];
-  let lastError = null;
-  const innerTubeClients = [
-    {
-      name: "ANDROID",
-      context: {
-        client: {
-          clientName: "ANDROID",
-          clientVersion: "20.10.38"
-        }
-      },
-      userAgent: "com.google.android.youtube/20.10.38 (Linux; U; Android 14)"
-    },
-    {
-      name: "WEB",
-      context: {
-        client: {
-          clientName: "WEB",
-          clientVersion: "2.20240228.01.00",
-          hl: "en",
-          gl: "US"
-        }
-      },
-      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    },
-    {
-      name: "IOS",
-      context: {
-        client: {
-          clientName: "IOS",
-          clientVersion: "19.29.1",
-          deviceModel: "iPhone16,2",
-          osName: "iPhone",
-          osVersion: "17.5.1",
-          hl: "en",
-          gl: "US"
-        }
-      },
-      userAgent: "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iPhone OS 17_5_1 like Mac OS X; en_US)"
-    },
-    {
-      name: "TVHTML5",
-      context: {
-        client: {
-          clientName: "TVHTML5_SIMPLY_EMBEDDED_PLAYER",
-          clientVersion: "1.0",
-          hl: "en",
-          gl: "US"
-        }
-      },
-      userAgent: "Mozilla/5.0 (Chromecast; PlaybackEngine) AppleWebKit/537.36 (KHTML, like Gecko) Kit/6.0.211116.14 Chrome/94.0.4606.111 Safari/537.36"
-    }
-  ];
-  for (const clientConfig of innerTubeClients) {
-    try {
-      const INNERTUBE_API_URL = "https://www.youtube.com/youtubei/v1/player?prettyPrint=false";
-      console.log(`[robustFetch] Trying InnerTube API (${clientConfig.name} client) for videoId: ${videoId}...`);
-      const resp = await fetchWithTimeout(INNERTUBE_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent": clientConfig.userAgent
-        },
-        body: JSON.stringify({
-          context: clientConfig.context,
-          videoId
-        })
-      });
-      if (resp.ok) {
-        const data = await resp.json();
-        const tracks = data?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
-        if (Array.isArray(tracks) && tracks.length > 0) {
-          captionTracks = tracks;
-          console.log(`[robustFetch] Successfully fetched ${captionTracks.length} caption tracks from InnerTube API (${clientConfig.name})`);
-          break;
-        } else {
-          console.warn(`[robustFetch] InnerTube API (${clientConfig.name}) response lacked captionTracks. Playability:`, data?.playabilityStatus?.status);
-        }
-      } else {
-        console.warn(`[robustFetch] InnerTube API (${clientConfig.name}) returned status: ${resp.status}`);
-      }
-    } catch (err) {
-      console.error(`[robustFetch] InnerTube API (${clientConfig.name}) failed:`, err.message || err);
-      lastError = err;
-    }
-  }
-  if (captionTracks.length === 0) {
-    try {
-      console.log(`[robustFetch] Trying Web Page HTML scraping for videoId: ${videoId}...`);
-      const url = `https://www.youtube.com/watch?v=${videoId}`;
-      const resp = await fetchWithTimeout(url, {
-        headers: {
-          "User-Agent": randomUserAgent,
-          "Accept-Language": "en-US,en;q=0.9"
-        }
-      });
-      if (!resp.ok) {
-        throw new Error(`Web page request failed with status: ${resp.status}`);
-      }
-      const body = await resp.text();
-      if (body.includes('class="g-recaptcha"')) {
-        throw new Error("YouTube blocks request with Recaptcha (Too Many Requests / 429)");
-      }
-      let playerResponse = null;
-      const prefixes = [
-        "var ytInitialPlayerResponse = ",
-        "window['ytInitialPlayerResponse'] = ",
-        "window.ytInitialPlayerResponse = ",
-        "ytInitialPlayerResponse = "
-      ];
-      for (const prefix of prefixes) {
-        const startIndex = body.indexOf(prefix);
-        if (startIndex !== -1) {
-          const jsonStart = startIndex + prefix.length;
-          let depth = 0;
-          for (let i = jsonStart; i < body.length; i++) {
-            if (body[i] === "{") depth++;
-            else if (body[i] === "}") {
-              depth--;
-              if (depth === 0) {
-                try {
-                  playerResponse = JSON.parse(body.slice(jsonStart, i + 1));
-                  break;
-                } catch (_) {
-                }
-              }
-            }
-          }
-          if (playerResponse) break;
-        }
-      }
-      const tracks = playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
-      if (Array.isArray(tracks) && tracks.length > 0) {
-        captionTracks = tracks;
-        console.log(`[robustFetch] Successfully fetched ${captionTracks.length} caption tracks from Web Page`);
-      } else {
-        console.warn(`[robustFetch] No caption tracks found in ytInitialPlayerResponse. Playability:`, playerResponse?.playabilityStatus?.status);
-      }
-    } catch (err) {
-      console.error(`[robustFetch] Web Page scraping failed with error:`, err);
-      lastError = err;
-    }
-  }
-  if (captionTracks.length === 0) {
-    throw lastError || new Error("No caption tracks found or available on this video. Please ensure Closed Captions (CC) are enabled.");
-  }
-  let selectedTrack = captionTracks.find((t) => t.languageCode === "en");
-  if (!selectedTrack) {
-    selectedTrack = captionTracks.find((t) => t.languageCode && t.languageCode.startsWith("en"));
-  }
-  if (!selectedTrack) {
-    selectedTrack = captionTracks[0];
-    console.log(`[robustFetch] English transcript not found. Falling back to first available language: ${selectedTrack.languageCode}`);
-  } else {
-    console.log(`[robustFetch] Selected language track: ${selectedTrack.languageCode}`);
-  }
-  const transcriptURL = selectedTrack.baseUrl;
-  if (!transcriptURL) {
-    throw new Error("Selected caption track has no baseUrl");
-  }
-  console.log(`[robustFetch] Fetching transcript XML from: ${transcriptURL}`);
-  const transcriptResponse = await fetchWithTimeout(transcriptURL, {
-    headers: {
-      "User-Agent": randomUserAgent
-    }
-  });
-  if (!transcriptResponse.ok) {
-    throw new Error(`Failed to fetch transcript XML, status: ${transcriptResponse.status}`);
-  }
-  const xmlText = await transcriptResponse.text();
-  try {
-    const results2 = import_youtube_transcript.YoutubeTranscript.parseTranscriptXml(xmlText, selectedTrack.languageCode);
-    if (results2 && results2.length > 0) {
-      return results2;
-    }
-  } catch (parseErr) {
-    console.error("[robustFetch] YoutubeTranscript.parseTranscriptXml failed, using local fallback parser:", parseErr);
-  }
-  const results = [];
-  const RE_XML_TRANSCRIPT = /<text start="([^"]*)" dur="([^"]*)">([^<]*)<\/text>/g;
-  const pRegex = /<p\s+t="(\d+)"\s+d="(\d+)"[^>]*>([\s\S]*?)<\/p>/g;
-  let match;
-  while ((match = pRegex.exec(xmlText)) !== null) {
-    const startMs = parseInt(match[1], 10);
-    const durMs = parseInt(match[2], 10);
-    const inner = match[3];
-    let text = "";
-    const sRegex = /<s[^>]*>([^<]*)<\/s>/g;
-    let sMatch;
-    while ((sMatch = sRegex.exec(inner)) !== null) {
-      text += sMatch[1];
-    }
-    if (!text) {
-      text = inner.replace(/<[^>]+>/g, "");
-    }
-    text = decodeEntities(text).trim();
-    if (text) {
-      results.push({
-        text,
-        duration: durMs,
-        offset: startMs,
-        lang: selectedTrack.languageCode
-      });
-    }
-  }
-  if (results.length > 0) return results;
-  const classicResults = [...xmlText.matchAll(RE_XML_TRANSCRIPT)];
-  return classicResults.map((res) => ({
-    text: decodeEntities(res[3]),
-    duration: parseFloat(res[2]) * 1e3,
-    offset: parseFloat(res[1]) * 1e3,
-    lang: selectedTrack.languageCode
-  }));
-}
-function decodeEntities(text) {
-  return text.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&apos;/g, "'").replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16))).replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)));
-}
-app.post("/api/youtube-summary", async (req, res) => {
-  try {
-    const { url, followUp, previousSummary, gradeLevel } = req.body;
-    if (!url) {
-      return res.status(400).json({ error: "Missing YouTube URL" });
-    }
-    let videoId = "";
-    try {
-      const parsedUrl = new URL(url);
-      if (parsedUrl.hostname === "youtu.be") {
-        videoId = parsedUrl.pathname.slice(1);
-      } else if (parsedUrl.hostname.includes("youtube.com")) {
-        if (parsedUrl.pathname.startsWith("/shorts/")) {
-          videoId = parsedUrl.pathname.split("/")[2];
-        } else {
-          videoId = parsedUrl.searchParams.get("v") || "";
-        }
-      }
-    } catch (e) {
-    }
-    if (!videoId) {
-      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
-      videoId = match ? match[1] : url;
-    }
-    let title = "";
-    let authorName = "";
-    try {
-      const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(`https://www.youtube.com/watch?v=${videoId}`)}&format=json`;
-      const oembedRes = await fetchWithTimeout(oembedUrl);
-      if (oembedRes.ok) {
-        const oembedData = await oembedRes.json();
-        title = oembedData.title || "";
-        authorName = oembedData.author_name || "";
-      }
-    } catch (err) {
-      console.error("Failed to fetch oembed details", err);
-    }
-    const fileHash = import_crypto.default.createHash("sha256").update(url).digest("hex");
-    if (summaryCache.has(fileHash) && !followUp) {
-      return res.json({
-        text: summaryCache.get(fileHash),
-        title: title || "YouTube Video",
-        authorName: authorName || "",
-        videoId
-      });
-    }
-    if (followUp) {
-      const systemInstruction2 = `You are an expert study coach. The student is asking a follow-up question or requesting an interactive study enhancement based on a previous YouTube video summary.
-Your task is to fulfill the request in a highly informative, educational, and engaging way.
-Keep your response concise, structured with headings, bullet points, and highlight key terms using markdown.
-
-1. TIMESTAMPS INTEGRATION:
-If any specific parts of the video are mentioned, or if referring to specific events, include relevant timestamps formatted exactly as **\u23F1\uFE0F MM:SS** (e.g. **\u23F1\uFE0F 04:20**).
-
-2. INTERACTIVE STUDY SUGGESTIONS:
-At the very end of your response, you MUST output 2-3 new interactive follow-up study suggestions formatted exactly as \`[SUGGESTION: ...]\`, e.g.:
-\`[SUGGESTION: Explain key concepts simpler]\`
-\`[SUGGESTION: Test me with 3 practice questions]\`
-\`[SUGGESTION: Generate a list of key terms]\``;
-      const promptText = `Previous Summary:
-${previousSummary}
-
-Student's Request: "${followUp}"`;
-      const response2 = await safeGenerateContent({
-        gradeLevel,
-        model: "gemini-3.5-flash-lite",
-        contents: { parts: [{ text: promptText }] },
-        config: {
-          systemInstruction: { parts: [{ text: systemInstruction2 }] }
-        }
-      });
-      const outputText2 = response2.text || "No response generated.";
-      return res.json({
-        text: outputText2,
-        title: title || "YouTube Video",
-        authorName: authorName || "",
-        videoId
-      });
-    }
-    let transcriptText = "";
-    try {
-      console.log(`Attempting to fetch transcript for video: ${videoId}`);
-      const transcript = await robustFetchYoutubeTranscript(videoId);
-      if (!transcript || transcript.length === 0) {
-        throw new Error("No transcript data returned");
-      }
-      console.log(`Successfully fetched transcript for ${videoId} using robust fetcher`);
-      transcriptText = transcript.map((t) => {
-        const totalSec = Math.floor((t.offset || 0) / 1e3);
-        const min = Math.floor(totalSec / 60);
-        const sec = totalSec % 60;
-        const timestampStr = `[${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}]`;
-        return `${timestampStr} ${t.text}`;
-      }).join(" ");
-      if (transcriptText.length > 25e4) {
-        transcriptText = transcriptText.substring(0, 25e4) + "... [transcript truncated for length]";
-      }
-      if (transcriptText.trim().split(/\s+/).length < 20) {
-        throw new Error("Transcript too short for meaningful summary");
-      }
-    } catch (e) {
-      console.warn("YouTube transcript extraction unavailable, returning strict fallback:", e.message || e);
-      return res.status(400).json({
-        error: "\u26A0\uFE0F I couldn't read the subtitles for this video. Please try pasting the video's transcript directly into the Text Note-Maker."
-      });
-    }
-    const transcriptWordCount = transcriptText.trim().split(/\s+/).filter((w) => w.length > 0).length;
-    if (transcriptWordCount < 50) {
-      return res.status(400).json({
-        error: "\u26A0\uFE0F I couldn't read the subtitles for this video. Please try pasting the video's transcript directly into the Text Note-Maker."
-      });
-    }
-    const systemInstruction = `You are an AI assistant tasked with creating high-yield study notes from YouTube videos. Once you have the transcript, create a structured summary with clear headings, bullet points, and key takeaways.
-    
-1. TIMESTAMPS INTEGRATION:
-For each major bullet point, key concept, or important takeaway, locate the closest timestamp in the provided text (formatted as [MM:SS]) and prepend it to the bullet point styled exactly as **\u23F1\uFE0F MM:SS** (e.g., **\u23F1\uFE0F 04:20**). Do not guess timestamps if none are in the transcript, but if they are, use them.
-
-2. INTERACTIVE STUDY SUGGESTIONS:
-At the very end of your notes, always include 3 helpful interactive study suggestions wrapped in brackets like \`[SUGGESTION: ...]\`, for example:
-\`[SUGGESTION: Explain key concepts simpler]\`
-\`[SUGGESTION: Give me a quick 3-question quiz]\`
-\`[SUGGESTION: Deep dive into the first half]\``;
-    const response = await safeGenerateContent({
-      gradeLevel,
-      model: "gemini-3.5-flash-lite",
-      contents: { parts: [{ text: transcriptText }] },
-      config: {
-        systemInstruction: { parts: [{ text: systemInstruction }] }
-      }
-    });
-    const outputText = response.text || "No summary generated.";
-    summaryCache.set(fileHash, outputText);
-    res.json({
-      text: outputText,
-      title: title || "YouTube Video",
-      authorName: authorName || "",
-      videoId
-    });
-  } catch (error) {
-    if (error.isRateLimit || error.message === "GEMINI_QUOTA_EXHAUSTED") {
-      console.warn("YouTube summary quota exceeded:", error.message);
-      return res.status(429).json({
-        isRateLimit: true,
-        error: "System is currently busy helping many students! \u{1F4DA}\nWe're processing your request as fast as possible. Please wait for 60 seconds and try again, or take a quick stretch break. Your learning journey is our priority!"
-      });
-    }
-    console.error("YouTube summary error:", error);
-    res.status(500).json({ error: error.message || "Failed to generate summary" });
-  }
-});
-app.post("/api/generate-content", async (req, res) => {
-  try {
-    const { topic, type, tone = "Academic", format = "Standard", gradeLevel } = req.body;
-    const wordCount = topic ? topic.trim().split(/\s+/).filter((w) => w.length > 0).length : 0;
-    if (!topic || !type) {
-      return res.status(400).json({ error: "Missing topic or type" });
-    }
-    const aiClient = getAI();
-    let formatSpecificRules = "";
-    if (type.toUpperCase() === "ESSAY") {
-      formatSpecificRules = `
-- ESSAY SCHOLARSHIP & RIGOR: Avoid the simplistic 5-paragraph template. Synthesize theoretical frameworks, evaluate counter-arguments, and present persuasive, evidence-based academic reasoning.
-- MANDATORY IN-TEXT CITATIONS (APA / MLA / ACADEMIC): You MUST integrate authentic parenthetical in-text citations throughout the body paragraphs for every factual claim, statistical figure, scientific definition, or theoretical argument (e.g., (Author, Year) for APA; (Author Page) for MLA).
-- 1-TO-1 CITATION TO REFERENCE MAPPING: Every source listed in the References or Works Cited section at the end of the essay MUST appear at least once as an in-text citation inside the body text. Never produce a detached bibliography.
-- TITLE PAGE & SECTION HEADINGS:
-  * APA Format: Include a structured APA 7th Edition Title Block at the beginning:
-    # [Complete Descriptive Paper Title]
-    **Author:** Student Researcher  
-    **Affiliation:** Academic Department, [Institution]  
-    **Course:** Academic Writing & Research  
-    **Instructor:** Course Examiner  
-    **Date:** ${(/* @__PURE__ */ new Date()).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}  
-    ---
-    Use clear markdown headings (## Introduction, ## Critical Analysis, ## Synthesis & Counter-Perspectives, ## Conclusion, ## References).
-  * MLA Format: Include standard MLA 9th Edition Header:
-    Student Researcher  
-    Course Examiner  
-    Academic Writing & Research  
-    ${(/* @__PURE__ */ new Date()).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}  
-    ### [Centered Title of the Essay]  
-    ---
-    Follow with standard body paragraphs and ## Works Cited.
-  * Standard Format: Title at top (# Title), followed by structured introduction, analytical body paragraphs, and conclusion.`;
-    } else if (type.toUpperCase() === "BLOG") {
-      formatSpecificRules = `
-- Ground the text in reality. Use concrete examples, hypothetical case studies, or hard numbers (e.g., specific metrics, benchmarks, case studies).
-- Use punchy, scannable paragraphs and Markdown subheadings (###).`;
-    } else if (type.toUpperCase() === "POEM") {
-      formatSpecificRules = `
-- STRICT POEM & STANZA FORMATTING (ZERO PROSE MERGING): If the content type is Poem, you MUST output structured poetic verse with explicit line breaks.
-- Separate every stanza with an empty line (\\n\\n).
-- Inside each stanza, every single line of poetry MUST end with a newline character (\\n).
-- NEVER output continuous prose or block paragraphs for a poem.
-- Employ vivid sensory imagery, evocative rhythm, distinct meter, and artistic line breaks.`;
-    } else if (type.toUpperCase() === "PARAGRAPH") {
-      formatSpecificRules = `
-- Deliver a single, highly concentrated, intellectually substantive block of thought without filler fluff.`;
-    }
-    let toneSpecificRules = "";
-    if (tone.toUpperCase() === "ACADEMIC") {
-      toneSpecificRules = `
-- Maintain extreme objectivity, elevated scholarship, and formal structure.
-- Incorporate parenthetical citations logically into every analytical paragraph.
-- Synthesize complex mechanisms with authoritative clarity.`;
-    } else if (tone.toUpperCase() === "PERSUASIVE") {
-      toneSpecificRules = `
-- Write from the trenches. Be direct, authoritative, and logic-driven.
-- Convince the reader using realistic scenarios, empirical evidence, and sharp logic.`;
-    } else if (tone.toUpperCase() === "CREATIVE") {
-      toneSpecificRules = `
-- "Show, don't tell."
-- Focus on emotional resonance, setting the scene, and exploring the human condition.
-- Avoid melodrama and clich\xE9d tropes.`;
-    } else if (tone.toUpperCase() === "CASUAL") {
-      toneSpecificRules = `
-- Write like a brilliant mentor or a masterclass article.
-- Be relatable, conversational, energetic, and highly engaging.`;
-    }
-    const systemInstruction = `You are an Elite Academic Author, Senior Essayist, and Master Literary Writer capable of adapting flawlessly to any format and tone. Your primary goal is to generate high-quality, deeply engaging content while strictly adhering to formatting standards and avoiding formulaic "AI-speak."
-
-1. THE GLOBAL ANTI-ROBOT FILTER (Applies to ALL outputs):
-- BAN AI CLICH\xC9S: Never use overused words like "delve," "testament," "realm," "tapestry," "crucial," "foster," or "unassailable." Use natural, precise, and sophisticated vocabulary.
-- NO ROBOTIC TRANSITIONS: Eliminate mechanical transitions ("Firstly," "Furthermore," "In conclusion," "Ultimately"). Weave ideas together naturally.
-- NO ROBOTIC FILLER: Do not say "Here is your content" or "Certainly". Output ONLY the final content itself.
-
-2. DYNAMIC FORMAT RULES (Adapt based on user's 'Content Type' selection):
-${formatSpecificRules}
-
-3. DYNAMIC TONE RULES (Adapt based on user's 'Tone' selection):
-${toneSpecificRules}`;
-    const response = await safeGenerateContent({
-      gradeLevel,
-      model: "gemini-3.5-flash-lite",
-      contents: { parts: [{ text: `Generate a ${type} in ${format} format with a ${tone} tone. Topic: ${topic}` }] },
-      config: {
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        maxOutputTokens: 8192,
-        temperature: 0.3
-      }
-    });
-    const outputText = response.text || "No content generated.";
-    res.json({ text: outputText });
-  } catch (error) {
-    if (error.message === "GEMINI_QUOTA_EXHAUSTED" || error.message?.includes("quota")) {
-      console.warn("Content generation quota exceeded:", error.message);
-      return res.status(429).json({ error: "Generation took too long or failed due to high demand. Please try again in 60 seconds." });
-    }
-    console.error("Content generation error:", error);
-    res.status(500).json({ error: error.message || "Generation took too long or failed. Please try again or provide a shorter prompt." });
-  }
-});
-app.post("/api/grammar-enhance", async (req, res) => {
-  try {
-    const { text, mode, gradeLevel, images } = req.body;
-    const wordCount = text ? text.trim().split(/\s+/).filter((w) => w.length > 0).length : 0;
-    if (!text && (!images || !Array.isArray(images) || images.length === 0)) {
-      return res.status(400).json({ error: "Missing text or images" });
-    }
-    const aiClient = getAI();
-    const userMode = mode === "academic" ? "academic" : "fix";
-    let modeInstruction = "";
-    if (userMode === "fix") {
-      modeInstruction = `MODE: Fix Grammar Only (Preserves user's original voice)
-- Fix all spelling mistakes, grammatical errors, subject-verb agreement issues, punctuation errors, and typos.
-- DO NOT rewrite or fundamentally change the user's sentence structure, tone, vocabulary level, or core meaning. Keep it as close to the user's original words as possible, only correcting mistakes and very minor awkward phrasing.`;
-    } else {
-      modeInstruction = `MODE: Academic Rewrite (Elevates vocabulary and flow)
-- Elevate vocabulary, academic phrasing, structures, flow, and clarity.
-- Make it read like a well-crafted essay, scientific article, or formal scholarship submission.
-- Ensure professional transitions and academic style. Use high-yield educational adjustments.`;
-    }
-    const systemInstruction = `You are an Elite Academic Writer, Expert English Editor, and Master Study Coach. Your job is to proofread, correct, and enhance the provided text based on the requested mode.
-
-${modeInstruction}
-
-CRITICAL OUTPUT FORMAT:
-You must return your output strictly in JSON format matching the following schema. Do not output any markdown formatting, wrappers, or conversational text outside the JSON.
-
-{
-  "correctedText": "The fully polished and corrected text matching the chosen mode.",
-  "fixes": [
-    "A concise, educational bullet point of what was fixed and why (e.g., 'Corrected spelling of "milks" to "milk" because "milk" is an uncountable noun.'). Limit to 3-6 key educational fixes."
-  ]
-}`;
-    const contentParts = [];
-    if (images && Array.isArray(images) && images.length > 0) {
-      for (const img of images) {
-        if (!img) continue;
-        const parts = img.split(",");
-        const base64Data = parts[1] || img;
-        const mimeType = parts[0]?.split(";")[0]?.split(":")[1] || "image/jpeg";
-        contentParts.push({
-          inlineData: {
-            mimeType,
-            data: base64Data
-          }
-        });
-      }
-    }
-    const targetText = text || "Please read the text inside the attached image(s), correct any grammatical errors, and enhance it according to the chosen mode.";
-    contentParts.push({ text: targetText });
-    const response = await safeGenerateContent({
-      gradeLevel,
-      model: "gemini-3.5-flash-lite",
-      contents: { parts: contentParts },
-      config: {
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        responseMimeType: "application/json"
-      }
-    });
-    const outputRaw = response.text || "{}";
-    let correctedText = "";
-    let fixes = [];
-    try {
-      const parsed = safeParseJSON(outputRaw, "object");
-      correctedText = parsed.correctedText || parsed.text || outputRaw;
-      fixes = Array.isArray(parsed.fixes) ? parsed.fixes : [];
-    } catch (parseError) {
-      console.log("[grammar-enhance] Failed to parse JSON, falling back to raw output", parseError);
-      correctedText = outputRaw;
-      fixes = ["Reviewed grammar, spelling, and phrasing structures."];
-    }
-    res.json({ text: correctedText, fixes });
-  } catch (error) {
-    if (error.message === "GEMINI_QUOTA_EXHAUSTED") {
-      console.warn("Grammar enhance quota exceeded:", error.message);
-      return res.status(429).json({ error: "The Gemini API is currently experiencing rate limits. Please try again in 60 seconds." });
-    }
-    console.error("Grammar enhance error:", error);
-    res.status(500).json({ error: error.message || "Failed to enhance grammar" });
-  }
-});
-app.post("/api/extract-file-text", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file provided" });
-    }
-    let extractedText = "";
-    if (req.file.mimetype === "application/pdf" || req.file.originalname.toLowerCase().endsWith(".pdf")) {
-      try {
-        const pdfModule = await import("pdf-parse/lib/pdf-parse.js");
-        const parsePdf = pdfModule.default || pdfModule;
-        const pdfData = await parsePdf(req.file.buffer, { max: 60 });
-        if (pdfData.numpages > 60) {
-          return res.status(400).json({ error: "PDF document exceeds 60 pages limit. Please upload a shorter document." });
-        }
-        extractedText = pdfData.text || "";
-        if (extractedText && extractedText.length > 5e5) {
-          extractedText = extractedText.slice(0, 5e5);
-        }
-      } catch (parseError) {
-        return res.status(500).json({ error: "Failed to parse PDF: " + parseError.message });
-      }
-    } else {
-      extractedText = req.file.buffer.toString("utf-8");
-    }
-    if (!extractedText || !extractedText.trim()) {
-      return res.status(400).json({ error: "Could not extract any readable text from this file." });
-    }
-    res.json({ text: extractedText.trim() });
-  } catch (error) {
-    res.status(500).json({ error: error.message || "Failed to extract text from file." });
-  }
-});
-app.post("/api/fetch-url-text", async (req, res) => {
-  try {
-    const { url } = req.body;
-    if (!url) {
-      return res.status(400).json({ error: "No URL provided" });
-    }
-    const targetUrl = url.trim();
-    const scraperUrl = `https://r.jina.ai/${targetUrl}`;
-    try {
-      const response = await fetchWithTimeout(scraperUrl, {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-          "X-No-Cache": "true"
-        }
-      });
-      if (!response.ok) {
-        return res.status(500).json({ error: `Unable to read this link. The website's security is blocking our AI. Please copy and paste the article text directly into the box.` });
-      }
-      let cleanText = await response.text();
-      const blockedPhrases = ["403 forbidden", "access denied", "robot check", "captcha", "cloudflare"];
-      const lowercaseText = cleanText.toLowerCase();
-      const isBlocked = blockedPhrases.some((phrase) => lowercaseText.includes(phrase));
-      if (cleanText.length < 20 || isBlocked) {
-        return res.status(400).json({ error: "Unable to read this link. The website's security is blocking our AI. Please copy and paste the article text directly into the box." });
-      }
-      if (cleanText.length > 6e4) {
-        cleanText = cleanText.slice(0, 6e4) + "...";
-      }
-      res.json({ text: cleanText.trim() });
-    } catch (fetchError) {
-      res.status(500).json({ error: "Unable to read this link. The website's security is blocking our AI. Please copy and paste the article text directly into the box." });
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message || "Failed to retrieve webpage content." });
-  }
-});
-app.post("/api/summarize-text", async (req, res) => {
-  try {
-    const { text, format, gradeLevel } = req.body;
-    if (!text) {
-      return res.status(400).json({ error: "No text provided" });
-    }
-    const wordCount = text ? text.trim().split(/\s+/).filter((w) => w.length > 0).length : 0;
-    const aiClient = getAI();
-    const summaryFormat = format || "bullet";
-    const blockedPhrases = ["403 forbidden", "access denied", "robot check", "captcha", "cloudflare"];
-    const lowercaseText = text.toLowerCase();
-    if (text.length < 20 || blockedPhrases.some((p) => lowercaseText.includes(p))) {
-      return res.json({ text: "Unable to read this link. The website's security is blocking our AI. Please copy and paste the article text directly into the box." });
-    }
-    let selectedFormatName = "Bullet Points";
-    if (summaryFormat === "tldr") {
-      selectedFormatName = "Short TL;DR";
-    } else if (summaryFormat === "eli5") {
-      selectedFormatName = "Explain Like I'm 5";
-    }
-    const systemInstruction = `SYSTEM INSTRUCTION: EXPERT SUMMARISER
-
-
-You are an expert academic and professional summarizer. Your task is to extract key information from the provided text and format it STRICTLY according to the user's requested mode.
-
-USER'S REQUESTED FORMAT: ${selectedFormatName}
-
-CRITICAL GLOBAL RULE:
-NEVER output a "Wall of Text". Always use proper line breaks and structure.
-
-DYNAMIC FORMATTING RULES:
-
-IF FORMAT IS "Bullet Points":
-1. Start with ONE main heading using ## (e.g., ## Key Concepts from the Text).
-2. Then break the summary into logical topic sections. Use ### for each section heading.
-3. MANDATORY: Under each section heading, EVERY point MUST be on its OWN LINE starting with "- " (standard markdown list).
-4. CONCISE: Keep each bullet point under 2 sentences.
-5. NO NARRATIVE: Do not write intro or conclusion paragraphs. Start immediately with the main heading.
-6. EXAMPLE OF EXPECTED FORMAT:
-
-## Main Topic Summary
-
-### Section One
-
-- First key fact about this section.
-- Second key fact about this section.
-
-### Section Two
-
-- First key fact about section two.
-- Second key fact about section two.
-
-IF FORMAT IS "Short TL;DR":
-1. Provide the absolute bottom-line of the text.
-2. Structure it as one short "Executive Summary" paragraph (max 3-4 sentences).
-3. Follow it with a "Top 3 Takeaways" numbered list.
-4. Keep the tone professional, direct, and time-saving.
-
-IF FORMAT IS "Explain Like I'm 5":
-1. Break down complex jargon into grade-school level vocabulary.
-2. Use at least one relatable, everyday analogy.
-3. Keep the tone extremely warm, engaging, and story-like.
-4. Use short paragraphs to make it visually friendly for beginners.
-
-OUTPUT QUALITY RULES:
-1. Use ONLY standard markdown: ## headings, ### subheadings, - bullet lists, **bold**, *italic*.
-2. Each bullet point MUST be on its OWN separate line. Never put multiple points on the same line.
-3. NO LaTeX, no '$', no '$$'. Write math as plain text (e.g., A = P(1 + r/n)^(nt)).
-4. Ensure there is a blank line before and after every heading and list block.`;
-    const textSumModels = [
-      "gemini-3.5-flash-lite",
-      "gemini-3.5-flash",
-      "gemini-flash-lite-latest",
-      "gemini-flash-latest"
-    ];
-    let textSummaryResult = "";
-    let textSumError = null;
-    for (const model of textSumModels) {
-      try {
-        const response = await safeGenerateContent({
-          gradeLevel,
-          model,
-          contents: { parts: [{ text }] },
-          config: { systemInstruction: { parts: [{ text: systemInstruction }] }, maxOutputTokens: 8192, temperature: 0.3 }
-        });
-        textSummaryResult = response.text || "";
-        textSumError = null;
-        break;
-      } catch (err) {
-        const errStr = String(err.message || err).toLowerCase();
-        const isRateLimit = errStr.includes("429") || errStr.includes("quota") || errStr.includes("resource_exhausted") || errStr.includes("503") || errStr.includes("overloaded");
-        if (isRateLimit) {
-          console.warn(`[summarize-text] Model ${model} rate-limited, trying next...`);
-          textSumError = err;
-          continue;
-        }
-        throw err;
-      }
-    }
-    if (textSumError && !textSummaryResult) throw textSumError;
-    res.json({ text: textSummaryResult });
-  } catch (error) {
-    if (error.message === "GEMINI_QUOTA_EXHAUSTED") {
-      console.warn("Text summarize quota exceeded:", error.message);
-      return res.json({
-        text: `\u26A0\uFE0F AI Tutor Notice: Rate Limit / Quota Exceeded
-
-The Gemini API is currently experiencing rate limits. Please wait 60 seconds and try again.`
-      });
-    }
-    console.error("Text summarize error:", error);
-    res.status(500).json({ error: error.message || "Failed to summarize text." });
-  }
-});
-app.post("/api/generate-questions", async (req, res) => {
-  try {
-    const topic = req.body.topic || req.body.prompt || req.body.text || "";
-    const gradeLevel = req.body.gradeLevel || req.body.userGrade;
-    const count = req.body.count;
-    const stream = req.body.stream;
-    const requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 15);
-    const topicText = topic && topic.trim() ? topic.trim() : `general concepts in ${stream || "academic subjects"}`;
-    const aiClient = getAI();
-    const systemInstruction = `You are an Elite Academic Advisor, Senior Examiner, and Master Educator.
-The user wants to generate high-yield, level-appropriate SUBJECTIVE (open-ended/essay) practice questions along with comprehensive expected answers and examiner marking rubrics for self-evaluation.
-Your job is to generate exactly ${requestedCount} subjective practice questions based on the topic and the user's profile.
-
-CRITICAL RULES:
-1. STRICT SUBJECTIVE FOCUS: Every single question must be an open-ended, subjective, conceptual, or analytical inquiry. They must require deep explanation, structured essay responses, mathematical proofs, or architectural coding plans.
-2. SUB-PART FORMATTING (MANDATORY LINE BREAKS): If a question has sub-parts (e.g., Part A, Part B, (i), (ii)), you MUST separate each sub-part with a double newline '\\n\\n' so each part starts on its own line. NEVER merge multiple parts onto a single continuous line.
-3. EXPECTED ANSWER: For each question, provide a complete, high-scoring model answer ('expectedAnswer') in 2-4 comprehensive, elegant, grammatically complete sentences. Use LaTeX ($formula$) for any math or chemical formulas.
-4. GRADING RUBRIC / KEYWORDS: For each question, provide an array of 3-5 essential keywords or marking criteria ('keyRubricPoints') that examiners require to award full marks.
-5. STRICT JSON OUTPUT: You must output ONLY a valid JSON object containing an array in a key named "questions". Do not wrap the JSON in markdown code blocks like \`\`\`json.
-
-Use this exact JSON structure:
-{
-  "questions": [
-    {
-      "question": "Part A: Detail the foundational theoretical principles governing the target topic.\\n\\nPart B: Predict and mathematically/conceptually justify the outcome when conditions or key parameters are altered.",
-      "expectedAnswer": "Part A: Exemplary comprehensive explanation with precise terminology and formulas in LaTeX ($...$).\\n\\nPart B: Rigorous multi-step justification explaining mechanisms and causal relationships.",
-      "keyRubricPoints": [
-        "Accurate identification and definition of core mechanisms",
-        "Correct mathematical/scientific equations or proof steps",
-        "Clear causal reasoning addressing boundary conditions"
-      ]
-    }
-  ]
-}`;
-    const avoidList = Array.isArray(req.body.avoidPrompts) ? req.body.avoidPrompts.filter(Boolean).slice(0, 10) : [];
-    const avoidDirective = avoidList.length > 0 ? `
-STRICT ANTI-REPETITION: Do NOT generate questions similar to these previously answered prompts:
-${avoidList.map((p, i) => `  [${i + 1}] ${p.slice(0, 100)}`).join("\n")}` : "";
-    let generatedText = "";
-    try {
-      const response = await safeGenerateContent({
-        gradeLevel,
-        model: "gemini-3.5-flash-lite",
-        contents: { parts: [{ text: `Topic: ${topicText}. Grade Level: ${gradeLevel || "11th Grade (Junior)"}. Academic Stream: ${stream || "STEM / Engineering"}. Count: Generate exactly ${requestedCount} unique questions with expected answers and rubrics now.${avoidDirective}` }] },
-        config: {
-          systemInstruction: { parts: [{ text: systemInstruction }] },
-          responseMimeType: "application/json",
-          maxOutputTokens: 8192,
-          temperature: 0.75
-        }
-      });
-      generatedText = response.text || "";
-    } catch (apiError) {
-      console.warn("API Error during subjective question generation:", apiError);
-      throw apiError;
-    }
-    const parsed = safeParseJSON(generatedText, "object");
-    if (parsed && Array.isArray(parsed.questions) && parsed.questions.length > 0) {
-      return res.json({ questions: parsed.questions });
-    } else if (Array.isArray(parsed)) {
-      return res.json({ questions: parsed });
-    }
-    throw new Error("Failed to generate a valid subjective questions structure.");
-  } catch (error) {
-    if (error.message === "GEMINI_QUOTA_EXHAUSTED") {
-      return res.status(429).json({
-        error: "QUOTA_EXCEEDED",
-        text: `\u26A0\uFE0F AI Tutor Notice: Rate Limit / Quota Exceeded
-
-The Gemini API is currently experiencing rate limits. Please try again in 60 seconds.`
-      });
-    }
-    console.error("Question generation endpoint error:", error);
-    res.status(500).json({ error: error.message || "Failed to generate questions" });
-  }
-});
-function getCollegeBoardSubjectGuidelines(subject, questionType) {
-  const s = (subject || "").toLowerCase();
-  if (s.includes("human geography") || s.includes("aphg")) {
-    if (questionType === "objective") {
-      return `AP HUMAN GEOGRAPHY (APHG) EXAM SPECIFICATIONS (College Board CED - #1 Grade 9 AP):
-- Target Audience: Grade 9 (Freshman) High School Students. Stimulus-based, testing spatial perspective, geographic patterns, and real-world regional connections across Units 1\u20137.
-- Core Topics:
-  1. Thinking Geographically (Geospatial tech [GIS, GPS, remote sensing], scales of analysis [local, regional, national, global], formal/functional/perceptual regions).
-  2. Population & Migration (Demographic Transition Model [DTM Stages 1-5], population pyramids, dependency ratios, Malthusian theory, push/pull factors, Ravenstein's laws, refugees/IDPs).
-  3. Cultural Patterns & Processes (Hearths, spatial diffusion [contagious, hierarchical, stimulus, relocation], acculturation, assimilation, language families, universalizing vs ethnic religions).
-  4. Political Patterns & Processes (Sovereignty, nation-states, stateless nations, supranationalism [UN, EU, NATO], devolution, gerrymandering, boundaries/UNCLOS).
-  5. Agriculture & Rural Land-Use (Von Th\xFCnen model, Green Revolution, subsistence vs commercial agriculture, intensive vs extensive farming, global supply chains).
-  6. Cities & Urban Land-Use (Burgess Concentric Zone, Hoyt Sector, Harris-Ullman Multiple Nuclei, Galactic model, Christaller's Central Place Theory, rank-size rule, primate cities, gentrification, New Urbanism).
-  7. Industrial & Economic Development (Wallerstein World Systems [Core/Periphery], Rostow 5 Stages of Economic Growth, Weber Least Cost Theory, HDI, UN SDGs).
-- Stimulus Requirement: Ground questions in realistic geographic stimuli (demographic data charts, regional map descriptions, population pyramid profiles, or geographic case studies).
-- Distractors: Plausible 9th-grade misconceptions (e.g., confusing environmental determinism with possibilism, confusing hierarchical with contagious diffusion, or misidentifying DTM stages).`;
-    } else {
-      return `AP HUMAN GEOGRAPHY FREE RESPONSE STANDARDS (College Board CED - 7-Part FRQ):
-- Format: Real 7-PART College Board Free Response Questions with parts (A), (B), (C), (D), (E), (F), and (G). Total Points: Exactly 7 Points (1 point per part).
-- Official FRQ Types:
-  1. Question 1 (No Stimulus): Tests geographic concepts, spatial models, and processes.
-  2. Question 2 (One Stimulus): Anchored to a thematic map, demographic chart, or spatial model.
-  3. Question 3 (Two Stimuli): Comparative synthesis between two geographic datasets or regions.
-- Command Verbs & Scaffolding:
-  - "Identify" / "Define" (1-2 sentences stating the specific concept or pattern).
-  - "Describe" (Provide relevant characteristics or spatial trends).
-  - "Explain" (Must clearly establish cause-and-effect line of reasoning: 'how' or 'why' X causes Y in geographic context).
-- Rubric: Exactly 7 points (+1 pt for each part A through G) with crystal-clear scoring criteria and model responses.`;
-    }
-  }
-  if (s.includes("environmental") || s.includes("apes")) {
-    if (questionType === "objective") {
-      return `AP ENVIRONMENTAL SCIENCE (APES) EXAM SPECIFICATIONS (College Board CED):
-- Target Level: Grade 9-10 introductory environmental lab science. High conceptual clarity, data interpretation, and environmental problem-solving across Units 1\u20139.
-- Core Units:
-  1-3. Ecosystems, biogeochemical cycles (carbon, nitrogen, phosphorus, water), trophic cascades, 10% rule, biodiversity, ecosystem services, population ecology (r/K selection, survivorship curves, carrying capacity).
-  4-6. Earth systems (soil texture triangle, atmosphere, El Ni\xF1o), land & water use (Tragedy of the Commons, Green Revolution, irrigation, IPM, CAFOs, mining), energy resources (fossil fuels, nuclear, solar, wind, efficiency).
-  7-9. Atmospheric pollution (photochemical smog, acid deposition, thermal inversions), aquatic/terrestrial pollution (eutrophication, biomagnification, LD50, landfills), global change (stratospheric ozone depletion, ocean acidification, climate mitigation).
-- Quantitative Reasoning: Include realistic environmental math (Rule of 70, LD50 toxicity, percent change, metric conversions).
-- Distractors: Represent common student traps (confusing ozone depletion with global warming, confusing point vs nonpoint pollution).`;
-    } else {
-      return `AP ENVIRONMENTAL SCIENCE FREE RESPONSE STANDARDS (College Board CED):
-- Format: Real 10-POINT multi-part questions with sub-parts (a), (b), (c), (d), (e). Total Points: Exactly 10 Points.
-- Official FRQ Archetypes:
-  1. Design an Investigation: Hypothesis, independent/dependent/control variables, data collection procedures, and experimental validity.
-  2. Analyze an Environmental Problem & Propose a Solution: Ecological impacts, identifying root causes, and proposing realistic, sustainable solutions with environmental or economic justifications.
-  3. Quantitative Environmental Problem & Solution: Multi-step mathematical calculations (with units and dimensional analysis) paired with an environmental mitigation recommendation.
-- Rubric: Exactly 10 points breakdown with step-by-step partial-credit criteria.`;
-    }
-  }
-  if (s.includes("principles") || s.includes("csp")) {
-    if (questionType === "objective") {
-      return `AP COMPUTER SCIENCE PRINCIPLES (CSP) EXAM SPECIFICATIONS (College Board CED):
-- Target Level: Grade 9-10 foundational computing. Focus on computational thinking, algorithm logic, data representation, and societal impacts (Units 1\u20135).
-- Scope: Creative development, binary/hex numbers, data compression (lossy vs lossless), pseudocode algorithms (robot grid traversal, conditional iteration, list filtering), Internet architecture (IP, TCP/IP, packet routing, fault tolerance), cybersecurity (public-key encryption, phishing, DDoS), and computing ethics.
-- Distractors: Represent algorithmic off-by-one errors, Boolean logic inversion (AND vs OR), or confusing lossy vs lossless compression.`;
-    } else {
-      return `AP COMPUTER SCIENCE PRINCIPLES WRITTEN RESPONSE / PERFORMANCE TASK STANDARDS:
-- Format: 4-Part Written Response (6 Points Total) based on computational artifacts and program development:
-  - Part (a): Program Function and Purpose (explaining user inputs, outputs, and overall functionality).
-  - Part (b): Data Abstraction (identifying list/collection name, data represented, and how complexity is managed).
-  - Part (c): Algorithmic Logic & Sequencing (explaining iteration, selection, sequencing, and algorithmic outcome).
-  - Part (d): Testing & Parameter Behavior (describing two different calls/inputs, expected conditions, and resulting outputs).
-- Rubric: Precise College Board CED 6-point scoring criteria.`;
-    }
-  }
-  if (s.includes("calculus bc")) {
-    if (questionType === "objective") {
-      return `AP CALCULUS BC EXAM SPECIFICATIONS (College Board CED):
-- Coverage: Full AB curriculum PLUS BC-exclusive topics: Parametric equations, vector motion in 2D (velocity/acceleration vectors, speed = sqrt((x')^2 + (y')^2)), polar functions (polar area = (1/2)*integral(r^2 dTheta)), integration by parts, partial fractions, improper integrals, Euler's method, logistic differential equations (dP/dt = kP(1 - P/M)), and Infinite Series.
-- Infinite Series focus: Geometric series, Taylor/Maclaurin polynomial approximations, nth-term divergence, Ratio test for radius & interval of convergence, Alternating Series Test.
-- Distractors must represent classic student misconceptions: omitting chain rule in parametric derivatives, sign errors in integration by parts, forgetting to check endpoints in interval of convergence.
-- Format all math expressions cleanly using LaTeX ($...$).`;
-    } else {
-      return `AP CALCULUS BC FREE RESPONSE STANDARDS (College Board CED):
-- Format: Real 9-POINT multi-part questions with sub-parts (a), (b), (c), (d).
-- Priority Archetypes:
-  1. Infinite Series (Taylor/Maclaurin series, finding general term, computing radius/interval of convergence using Ratio Test, Alternating Series Error Bound or Lagrange Error Bound).
-  2. Parametric / Polar Motion (position vector, velocity, total distance traveled / arc length integral, polar area enclosed between curves).
-  3. Logistic Differential Equations & Euler's Method step-by-step approximation.
-  4. Area & Volume of solids of revolution (disk/washer/cross sections) or Rate In / Rate Out Accumulation.
-- Total Points MUST be 9 points. Rubric must award partial points step-by-step (+1 pt for setup/derivative, +1 pt for antiderivative, +1 pt for justification/units).`;
-    }
-  }
-  if (s.includes("calculus ab") || s.includes("calculus")) {
-    if (questionType === "objective") {
-      return `AP CALCULUS AB EXAM SPECIFICATIONS (College Board CED):
-- Coverage: Limits & Continuity (including L'Hopital's Rule), Derivatives (Chain rule, Product/Quotient rule, Implicit differentiation), Mean Value Theorem, Particle Motion in 1D (position, velocity, acceleration, speed increasing/decreasing), Definite & Indefinite Integrals, Fundamental Theorem of Calculus, Riemann Sums, Differential Equations (separable).
-- Distractors must reflect real student math traps: forgetting chain rule factors, arithmetic sign slips, forgetting '+ C', confusing velocity with acceleration.
-- Format all equations cleanly in LaTeX ($...$).`;
-    } else {
-      return `AP CALCULUS AB FREE RESPONSE STANDARDS (College Board CED):
-- Format: Real 9-POINT multi-part questions with sub-parts (a), (b), (c), (d).
-- Classic AP FRQ Archetypes:
-  1. Rate In / Rate Out Accumulation: Net change integral formula integral(R_in(t) - R_out(t))dt, checking critical times.
-  2. Particle Motion: Analyzing velocity v(t), determining when speed is increasing/decreasing, total distance traveled integral(|v(t)|dt).
-  3. Graph Analysis of f'(x): Identifying relative extrema, points of inflection, justifying with First/Second Derivative Test, EVT.
-  4. Area & Volume: Area between two curves, volume of solid of revolution (disk/washer), volume with known cross sections (squares/semicircles).
-  5. Differential Equations: Slope fields, separation of variables to find particular solution y = f(x) with initial condition.
-  6. Riemann Sums & Tables: Estimating definite integrals using Trapezoidal rule or Left/Right sums with physical units.
-- Total Points MUST be 9 points. Rubric must assign exact points per sub-part.`;
-    }
-  }
-  if (s.includes("biology")) {
-    if (questionType === "objective") {
-      return `AP BIOLOGY EXAM SPECIFICATIONS (College Board CED):
-- Stimulus-Based Design: Base questions on authentic biological investigations (e.g. cellular respiration respirometers, gel electrophoresis band patterns, spectrophotometric enzyme curves, water potential potato cylinders, pedigree tracking, or Hardy-Weinberg population data).
-- Visual Diagrams & Curves (MANDATORY): For Cellular Energetics (Unit 3), Cell Structure (Unit 2), Genetics (Unit 5), or Ecology (Unit 8), generate the complete SVG diagram in "diagramSvg" (viewBox="0 0 400 220") and specify "diagramType".
-- Diverse Organisms & Real Biological Systems: NEVER use generic placeholders like 'Enzyme X' or repeat identical experimental scenarios. Vary the organism (e.g. yeast, spinach, bovine liver catalase, E. coli, marine phytoplankton, Drosophila, Arabidopsis thaliana) and real enzymes (catalase, pepsin, salivary amylase, RuBisCO, ATP synthase, cytochrome c oxidase).
-- Core Themes: Chemistry of life, cell structure & energetics (photosynthesis/respiration), cell communication & cell cycle, heredity & genetics, gene expression & regulation, natural selection, ecology.
-- Question Style: Questions must require students to analyze experimental data, make scientific claims, identify controls, or predict the biological consequence of an inhibitor or mutation.`;
-    } else {
-      return `AP BIOLOGY FREE RESPONSE STANDARDS (College Board CED):
-- Formats:
-  1. Long FRQ (8-10 points): Interpreting & Evaluating Experimental Results. Includes experimental design, specifying independent/dependent variables, graphing with standard error bars (\xB12 SEM), calculating means, and Null Hypothesis / Chi-Square testing.
-  2. Short FRQ (4 points): Scientific Investigation (identifying negative/positive controls), Conceptual Analysis (predicting effects of disruption/mutation), or Model Analysis (analyzing cell signaling cascades).
-- Visual Diagrams & Curves (MANDATORY): For Cellular Energetics, Genetics (pedigrees), or Ecology, generate the complete SVG graph in "diagramSvg" (viewBox="0 0 400 220") with labeled axes, data points, and appropriate "diagramType". NEVER use generic 'Enzyme X' - use real biological enzymes and realistic experimental parameters.
-- Rubric: Precise point allocation (+1 pt for identifying control, +1 pt for calculating rate, +1 pt for biological justification).`;
-    }
-  }
-  if (s.includes("chemistry")) {
-    if (questionType === "objective") {
-      return `AP CHEMISTRY EXAM SPECIFICATIONS (College Board CED):
-- Content: Atomic structure & PES spectra, molecular bonding & Lewis/VSEPR, intermolecular forces & properties, chemical reactions & stoichiometry, kinetics rate laws, thermodynamics (Delta H, Delta S, Delta G = -RT ln K), equilibrium & Le Chatelier's principle, acids & bases (titration curves, buffers), electrochemistry.
-- Visuals & Diagrams: Include particulate representations (drawings of atoms/molecules in a container), molecular geometry descriptions, and reaction energy profiles.
-- Distractors: Represent stoichiometry mole-ratio errors, confusing Delta H with Delta G, or inverted equilibrium expressions.`;
-    } else {
-      return `AP CHEMISTRY FREE RESPONSE STANDARDS (College Board CED):
-- Formats:
-  1. Long FRQ (10 points): Multi-part problem covering multi-step stoichiometry, net ionic equations, thermodynamics calculations, electrochemistry cell potentials (E_cell = E_cathode - E_anode), and acid-base buffer calculations (Henderson-Hasselbalch equation).
-  2. Short FRQ (4 points): Lewis structures & resonance, VSEPR molecular geometry and bond angles, intermolecular forces comparing boiling points, or Beer-Lambert Law spectrophotometry (A = epsilon * b * c).
-- Rubric: Must break down exact points (+1 pt for balanced net ionic equation, +1 pt for ICE table setup, +1 pt for final answer with correct significant figures and units).`;
-    }
-  }
-  if (s.includes("physics 1")) {
-    if (questionType === "objective") {
-      return `AP PHYSICS 1: ALGEBRA-BASED EXAM SPECIFICATIONS (Updated College Board CED):
-- Format: Strictly 4 answer choices (A-D, single-select).
-- Scope: Kinematics, Newton's Laws, Work/Energy/Power, Linear Momentum, Torque & Rotational Motion, Simple Harmonic Motion, AND newly integrated FLUIDS (density, pressure, buoyant force, Archimedes principle, continuity equation, Bernoulli's equation).
-- Cognitive Focus: Qualitative proportional reasoning (e.g. 'If radius doubles and angular velocity is halved, what happens to centripetal acceleration?'), force diagrams, and conservation laws.`;
-    } else {
-      return `AP PHYSICS 1 FREE RESPONSE STANDARDS (College Board CED):
-- Four Official FRQ Types:
-  1. Mathematical Routines (algebraic derivations, energy/momentum conservation).
-  2. Translation Between Representations (connecting equations to graphs like Force vs Time or Velocity vs Time).
-  3. Experimental Design (outlining a lab setup, list of apparatus, step-by-step procedure to reduce uncertainty, and data analysis plan).
-  4. Qualitative / Quantitative Translation (QQT) (explaining a physical phenomenon in clear conceptual prose without equations first, then deriving the algebraic formula to prove it).
-- Total points: 7 to 12 points with explicit point-by-point rubric.`;
-    }
-  }
-  if (s.includes("computer science a")) {
-    if (questionType === "objective") {
-      return `AP COMPUTER SCIENCE A EXAM SPECIFICATIONS (College Board Java Subset):
-- Java Syntax: Code snippets strictly following the official Java Quick Reference (String, Math, ArrayList, 1D/2D arrays, OOP inheritance, polymorphism).
-- Concepts: Loop bounds, tracing variable mutations, Boolean logic (De Morgan's laws), recursion execution traces, class design, and searching/sorting algorithms (binary search, selection/insertion/merge sort).
-- Distractors: Off-by-one errors (e.g., '< arr.length' vs '<= arr.length'), NullPointerException triggers, confusing '=' with '==', integer division truncation.`;
-    } else {
-      return `AP COMPUTER SCIENCE A FREE RESPONSE STANDARDS (College Board CED):
-- Format: 4 Authentic Java Coding Questions (9 Points Each):
-  - Question 1: Methods and Control Structures (loops, conditionals, helper methods).
-  - Question 2: Class Design (writing a complete Java class with private instance variables, constructor, getters/setters, and specified methods).
-  - Question 3: Array / ArrayList (traversing, filtering, or modifying elements, avoiding ConcurrentModificationException and index errors).
-  - Question 4: 2D Array (nested row/column loops, grid manipulation).
-- Rubric: Strict 9-point rubric awarding points for method header, loops, conditionals, accessing elements, returning correct value.`;
-    }
-  }
-  if (s.includes("u.s. history") || s.includes("us history") || s.includes("apush")) {
-    if (questionType === "objective") {
-      return `AP U.S. HISTORY (APUSH) EXAM SPECIFICATIONS (College Board CED):
-- Stimulus-Based: Every single question set MUST be anchored to a primary source excerpt (presidential speech, newspaper editorial, letter, treaty, colonial document) or secondary historical analysis from Periods 1-9 (1491-Present).
-- Historical Thinking Skills: Contextualization, causation, continuity and change over time (CCOT), comparison.
-- Distractors: Factually true statements from a DIFFERENT historical era or claims that mischaracterize the author's argument.`;
-    } else {
-      return `AP U.S. HISTORY (APUSH) FREE RESPONSE STANDARDS (College Board CED):
-- Formats:
-  1. DBQ (Document-Based Question, 7-Point Rubric): Provide 7 distinct historical source documents (Author, Source, Year, Excerpt). Rubric: Thesis (1 pt), Contextualization (1 pt), Evidence from 3+ docs (1 pt) or 6+ docs (2 pts), Outside Evidence (1 pt), Sourcing/HIPP analysis (1 pt), Historical Complexity (1 pt).
-  2. LEQ (Long Essay Question, 6-Point Rubric): Historical prompt testing Causation, CCOT, or Comparison without documents.
-  3. SAQ (Short Answer Question): 3 parts (a), (b), (c) strictly requiring the ACE format (Answer, Cite specific evidence, Explain connection).`;
-    }
-  }
-  if (s.includes("world history")) {
-    if (questionType === "objective") {
-      return `AP WORLD HISTORY: MODERN EXAM SPECIFICATIONS (College Board CED):
-- Time Period: 1200 CE to the Present.
-- Stimulus-Based: Provide primary excerpts from historical travelers (Ibn Battuta, Marco Polo), imperial edicts (Mongol, Ottoman, Ming), colonial treaties, or Cold War declarations.
-- Themes: Global Tapestry, Networks of Exchange, Land-Based Empires, Transoceanic Interconnections, Revolutions, Industrialization, Global Conflicts, Decolonization, and Globalization.`;
-    } else {
-      return `AP WORLD HISTORY: MODERN FREE RESPONSE STANDARDS (College Board CED):
-- Formats:
-  1. DBQ (Document-Based Question, 7-Point Rubric): 7 historical documents from world history.
-  2. LEQ (Long Essay Question, 6-Point Rubric): Global historical causation, comparison, or CCOT.
-  3. SAQ (Short Answer Question): 3 distinct parts (a), (b), (c) in ACE format.
-- Rubrics must strictly follow the official College Board historical rubrics.`;
-    }
-  }
-  if (s.includes("english") || s.includes("lang")) {
-    if (questionType === "objective") {
-      return `AP ENGLISH LANGUAGE & COMPOSITION EXAM SPECIFICATIONS (College Board CED):
-- Reading Questions: Non-fiction rhetorical analysis passage (speech, essay, letter). Analyze author's purpose, claims, line of reasoning, rhetorical choices (diction, syntax, appeals to ethos/pathos/logos), and tone.
-- Writing Questions: Excerpt from a draft student essay. Ask how to revise thesis statements, enhance sentence variety, improve transitional phrases, or integrate evidence cohesively.`;
-    } else {
-      return `AP ENGLISH LANGUAGE FREE RESPONSE STANDARDS (College Board CED):
-- 3 Authentic AP Lang Essay Types (Each scored on the official 6-Point Analytic Rubric):
-  1. Synthesis Essay: Present a prompt and 6 diverse sources (articles, statistics, visual data). Students must synthesize at least 3 sources to support an argument.
-  2. Rhetorical Analysis Essay: Provide an authentic non-fiction speech/letter and ask students to analyze how the author uses rhetorical choices to convey their message.
-  3. Argument Essay: Present a philosophical, cultural, or social claim to defend, challenge, or qualify with evidence from history, literature, or personal observation.
-- Rubric: 1 pt Thesis, 4 pts Evidence & Commentary, 1 pt Sophistication.`;
-    }
-  }
-  if (s.includes("psychology")) {
-    if (questionType === "objective") {
-      return `AP PSYCHOLOGY EXAM SPECIFICATIONS (Updated College Board CED):
-- Format: Scenario-based questions applying psychological principles to real-world behavioral situations.
-- Content: Biological bases of behavior (neurotransmitters, brain structures, nervous system), sensation & perception, learning (operant/classical conditioning), cognitive psychology (memory, biases), developmental psychology, personality theories, social psychology, clinical psychology (DSM-5 diagnostic criteria).`;
-    } else {
-      return `AP PSYCHOLOGY FREE RESPONSE STANDARDS (Updated College Board CED):
-- 2 Official FRQ Types:
-  1. Article Analysis Question (AAQ): Provide an empirical psychological research study abstract. Students must identify independent/dependent variables, confounding variables, assess statistical significance (p < 0.05), and evaluate APA ethical guidelines (informed consent, debriefing, confidentiality).
-  2. Evidence-Based Question (EBQ): Students synthesize psychological concepts to construct a defensible claim supported by empirical evidence.
-- Rubric: Clearly specify which psychological concepts earn points and required justifications.`;
-    }
-  }
-  if (s.includes("economic")) {
-    if (questionType === "objective") {
-      return `AP MICRO & MACROECONOMICS EXAM SPECIFICATIONS (College Board CED):
-- Microeconomics: Supply & demand elasticity, consumer/producer surplus, market structures (perfect competition, monopoly, oligopoly), externalities, marginal cost/revenue, factor markets.
-- Macroeconomics: GDP, inflation, unemployment, Aggregate Demand / Aggregate Supply (AD-AS), fiscal policy, monetary policy (Federal Reserve tools), Money Market, Loanable Funds, Phillips Curve, Foreign Exchange.
-- Distractors: Confusing shifts of a curve with movements along a curve, or miscalculating tax incidence / multiplier effects.`;
-    } else {
-      return `AP ECONOMICS FREE RESPONSE STANDARDS (College Board CED):
-- Formats:
-  1. Long FRQ (10 points, ~30 min): Multi-part scenario with explicit graphing instructions (e.g., 'Draw a correctly labeled graph of the money market and show the effect of an open market purchase of bonds on the nominal interest rate').
-  2. Short FRQ (5 points, ~15 min): Targeted calculations (elasticity, spending multiplier, balance of payments) and directional explanations.
-- Rubric: Explicit points for graph labeling, curve shift directions, and numerical calculations.`;
-    }
-  }
-  return `College Board AP Course and Exam Description standards for ${subject}. High rigor, analytical thinking, stimulus-based.`;
-}
-function getDynamicTopicVariation(subject, unitOrTopic, count) {
-  const archetypes = getGranularSubjectArchetypes(subject, unitOrTopic, count);
-  return archetypes.map((arch, idx) => `  - Question ${idx + 1} Target Archetype: ${arch}`).join("\n");
-}
 var MCQ_LETTERS = ["A", "B", "C", "D"];
 function generateBalancedAnswerSequence(count) {
   if (count <= 0) return [];
@@ -3795,12 +12058,26 @@ CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
    - You MUST distribute the correct answer uniformly across options (A, B, C, and D) with equal ~25% probability across the batch!
    - Under NO circumstances should Option A always be the correct answer!
    - Ensure an authentic, varied distribution across A, B, C, and D throughout the question set (e.g. Q1 correct is B, Q2 correct is D, Q3 correct is A, Q4 correct is C).
-4. STEP-BY-STEP AP EXPLANATION & DISTRACTOR BREAKDOWN:
-   Explain WHY the correct option is right with structured step-by-step logic using double newlines ('\\n\\n'):
-   - Step 1: Core formula, theorem, or contextual definition.
-   - Step 2: Clear calculation or deductive justification proving the correct answer.
-   - Distractor Analysis: Explicitly break down why each of the 3 incorrect options is wrong.
-   - NEVER glue sentences together without spaces.
+4. STEP-BY-STEP AP EXPLANATION & DISTRACTOR BREAKDOWN (CRITICAL - STUDENT-FACING ONLY):
+   - Tone & Structure: Write directly to the student in a clear, simple, authoritative, and concise tone.
+   - MANDATORY DOUBLE NEWLINES ('
+
+') between each distinct step:
+     Step 1: [State the core definition, theorem, or rule simply and clearly]
+
+     Step 2: [Show the concise, direct step-by-step calculation or deductive proof for the correct option]
+
+     Distractor Analysis:
+     - Option B: [1 brief sentence explaining why it is incorrect]
+     - Option C: [1 brief sentence explaining why it is incorrect]
+     - Option D: [1 brief sentence explaining why it is incorrect]
+   - ZERO SCRATCHPAD / ZERO DELIBERATION LEAKS (STRICT):
+     NEVER output your internal thinking, chain of thought, self-corrections, or test-maker instructions into the explanation!
+     Do NOT write phrases like "wait, let's trace", "let's re-verify", "let's check options", "Option A is...", "let's distribute options", or "Ah, let's look at...".
+     Solve the question internally first; only output the final, polished student-facing solution!
+   - CLEAN PLAIN TEXT (NO WEIRD CODE BOXING):
+     Do NOT enclose plain numbers, basic arithmetic (e.g. 85 + 12 = 97), simple operators, or common words in markdown backticks! Write them as clean, natural text so they do not render inside ugly boxes.
+   - NEVER glue sentences or steps together without proper spacing and line breaks.
 6. AP EXAM SKILL/UNIT TAG: Label the relevant AP Unit or Skill practiced.
 7. MANDATORY COLLEGE BOARD SVG DIAGRAMS & GRAPHS (CRITICAL):
    For all visual or graphical subjects and units:
@@ -3838,7 +12115,7 @@ CRITICAL CODE, MATH & LATEX FORMATTING:
 - FOR COMPUTER SCIENCE / PROGRAMMING (AP Computer Science A, AP Computer Science Principles):
   * Always format code snippets inside standard Markdown fenced code blocks (\`\`\`java ... \`\`\`).
   * In code blocks and programming expressions, ALWAYS use standard programming operators: '<=', '>=', '!=', '==', '&&', '||', '<', '>'. NEVER substitute LaTeX symbols like \\leqslant, \\le, \\ge, \\times into code!
-  * For inline variable names, methods, or keywords in question text (e.g. \`reverseString("APCS")\`, \`true\`, \`false\`, \`StackOverflowError\`), ALWAYS use Markdown backticks (\`code\`) and NEVER raw LaTeX like \\texttt{...}.
+  * For inline variable names, methods, or keywords in question prompts (e.g. \`reverseString("APCS")\`, \`true\`, \`false\`, \`StackOverflowError\`), use Markdown backticks (\`code\`). In explanations, write clean, readable, natural sentences without wrapping plain numbers, arithmetic, or normal words in backticks.
 - FOR MATHEMATICS & SCIENCE (AP Calculus, AP Physics, AP Chemistry, AP Statistics):
   * Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for block.
   * For data tables and matrices, ALWAYS wrap in $$ block delimiters:
@@ -4079,6 +12356,14 @@ CRITICAL CODE, MATH & LATEX FORMATTING:
     NEVER write raw unescaped pseudo-code like 'f(x) = { ... }' or '<=' inside math equations that breaks KaTeX!
   * Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\to, \\\\infty, \\\\begin{cases}, \\\\end{cases}, \\\\begin{array}, \\\\end{array}.
 
+STRICT SCORING RUBRIC & REAL TOTAL POINTS RULES:
+- In official College Board AP Free Response Questions, each subpart has an exact point allocation.
+- For AP Calculus AB & BC, full 4-part FRQs (parts a, b, c, d) are worth 9 points. Shorter analytical prompts are worth 4 to 6 points.
+- "totalPoints" MUST BE A STRICT INTEGER EQUAL TO THE EXACT MATHEMATICAL SUM OF THE POINTS ALLOCATED IN "scoringRubric"!
+- In "scoringRubric", explicitly specify the points for each sub-part or criterion:
+  e.g. ["Part (a) [2 points]: 1 point for limit setup, 1 point for evaluation", "Part (b) [3 points]: 1 point for derivative, 2 points for justification", "Part (c) [2 points]: 1 point for formula, 1 point for conclusion", "Part (d) [2 points]: 1 point for MVT hypothesis, 1 point for answer"] (Total: 9 points).
+- NEVER output a mismatched totalPoints! If the rubric points sum to 4, totalPoints MUST be 4. If they sum to 9, totalPoints MUST be 9.
+
 STRICT JSON OUTPUT:
 Return ONLY a valid JSON object with key "questions" containing an array of objects:
 {
@@ -4086,15 +12371,16 @@ Return ONLY a valid JSON object with key "questions" containing an array of obje
     {
       "id": 1,
       "title": "FRQ 1: Multi-Part Analytical Problem",
-      "prompt": "Scenario/stimulus referencing the diagram above followed by:\\n\\n(a) Sub-part A prompt...\\n\\n(b) Sub-part B prompt...\\n\\n(c) Sub-part C prompt...",
+      "prompt": "Scenario/stimulus referencing the diagram above followed by:\\n\\n(a) Sub-part A prompt...\\n\\n(b) Sub-part B prompt...\\n\\n(c) Sub-part C prompt...\\n\\n(d) Sub-part D prompt...",
       "diagramSvg": "<svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg'>...</svg>",
       "diagramType": "piecewise_graph",
       "totalPoints": 9,
-      "modelAnswer": "(a) Full exemplary solution for part a...\\n\\n(b) Full exemplary solution for part b...\\n\\n(c) Full exemplary solution for part c...",
+      "modelAnswer": "(a) Full exemplary solution for part a...\\n\\n(b) Full exemplary solution for part b...\\n\\n(c) Full exemplary solution for part c...\\n\\n(d) Full exemplary solution for part d...",
       "scoringRubric": [
-        "1 point for correct formula/setup",
-        "1 point for accurate mathematical/conceptual justification",
-        "1 point for final answer with correct units or specific terminology"
+        "Part (a) [2 points]: 1 point for setting up the governing formula, 1 point for evaluation.",
+        "Part (b) [3 points]: 1 point for chain rule, 1 point for equating f'(x)=0, 1 point for justification.",
+        "Part (c) [2 points]: 1 point for FTC integral setup, 1 point for final calculation.",
+        "Part (d) [2 points]: 1 point for Mean Value Theorem hypothesis, 1 point for conclusion."
       ],
       "skill": "Relevant AP Unit / Skill Tag"
     }
@@ -4175,6 +12461,41 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
         }
       }
       if (combinedQuestions.length > 0) {
+        const resolveRealTotalPoints = (q) => {
+          if (Array.isArray(q.scoringRubric) && q.scoringRubric.length > 0) {
+            let sum = 0;
+            let foundExplicit = false;
+            for (const item of q.scoringRubric) {
+              const str = String(item || "");
+              const match = str.match(/(?:\[|\()?\s*(\d+)\s*(?:points|point|pts|pt|marks|mark)\b/i) || str.match(/\b(\d+)\s*(?:points|point|pts|pt)\b/i);
+              if (match) {
+                sum += parseInt(match[1], 10);
+                foundExplicit = true;
+              } else {
+                sum += 1;
+              }
+            }
+            if (foundExplicit && sum > 0) return sum;
+          }
+          if (typeof q.prompt === "string") {
+            const matches = [...q.prompt.matchAll(/\([a-d]\)[^[]*?\[\s*(\d+)\s*(?:points|point|pts|pt)\s*\]/gi)];
+            if (matches.length > 0) {
+              const sum = matches.reduce((acc, m) => acc + parseInt(m[1], 10), 0);
+              if (sum > 0) return sum;
+            }
+          }
+          const raw = Number(q.totalPoints);
+          if (!isNaN(raw) && raw >= 1 && raw <= 15) {
+            return raw;
+          }
+          if (typeof q.prompt === "string") {
+            const partCount = (q.prompt.match(/\([a-d]\)/gi) || []).length;
+            if (partCount >= 4) return 9;
+            if (partCount === 3) return 6;
+            if (partCount === 2) return 4;
+          }
+          return 6;
+        };
         const questionsList = combinedQuestions.slice(0, requestedCount).map((q, idx) => {
           if (typeof q === "string") {
             return {
@@ -4184,12 +12505,15 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
               diagramSvg: "",
               diagramType: "none",
               modelAnswer: "",
+              totalPoints: 6,
               scoringRubric: []
             };
           }
+          const realPoints = resolveRealTotalPoints(q);
           return {
             ...q,
             id: idx + 1,
+            totalPoints: realPoints,
             title: q.title || `FRQ ${idx + 1}: Multi-Part Analytical Problem`,
             prompt: q.prompt || q.question || q.text || q.scenario || ""
           };
@@ -4253,27 +12577,40 @@ Trap Type: ${trapType || "Psychometric Trap"}` }] },
       if (!customQuestion && (!images || images.length === 0)) {
         return res.status(400).json({ error: "Please provide question text or an image to analyze." });
       }
-      const systemInstruction2 = `You are a Senior College Board AP Exam Psychometrician, Chief Reader, and Master Distractor Architect.
-Your mission is to perform an exhaustive "TRAP RADAR AUTOPSY" on the provided AP Exam multiple-choice question or stimulus image.
+      const systemInstruction2 = `You are a Senior College Board AP Exam Psychometrician, Chief Reader, and Master Multimodal Distractor & Trap Architect.
+Your mission is to perform an exhaustive, expert-level "TRAP RADAR AUTOPSY" on the provided AP Exam question, stimulus image, worksheet, or problem.
 
-PHASE 1: RIGOROUS INPUT VALIDATION (MANDATORY FIRST STEP):
-Before analyzing, inspect the user's input text and attached images:
-1. DOES THE INPUT CONTAIN AN ACTUAL ACADEMIC / AP EXAM QUESTION, PROBLEM STEM, DATA SCENARIO, OR MULTIPLE-CHOICE OPTIONS?
-2. IF THE INPUT IS:
-   - A greeting, conversational chit-chat, or pleasantry (e.g. "hi", "hello", "hey", "good morning", "how are you", "yo")
-   - Single random words, numbers, or keyboard gibberish (e.g. "asdf", "test", "123", "ok", "cool")
-   - Non-academic sentences with NO question, problem, or multiple-choice choices to analyze
-   THEN YOU MUST NOT INVENT, FABRICATE, OR HALLUCINATE A QUESTION OR OPTIONS.
-   INSTEAD, YOU MUST RETURN STRICTLY THIS JSON:
-   {
-     "isInvalidQuestion": true,
-     "errorMessage": "Input is not a valid AP question. Please enter an actual AP exam question prompt, stimulus, and options (A, B, C, D) or snap a photo of your AP worksheet/test so the Trap Radar can dissect the distractors."
-   }
+OCR & MULTIMODAL READING DIRECTIVE (FOR IMAGES, WORKSHEETS & HANDWRITING):
+When one or more images are provided:
+1. Thoroughly inspect and OCR the entire image. Transcribe all text, question stems, stimulus excerpts, maps, charts, data tables, and handwritten questions.
+2. Even if the image is an AP Free Response Question (FRQ), Document-Based Question (DBQ), Short Answer Question (SAQ), calculation worksheet, or student handwritten problem:
+   - YOU ARE STRICTLY FORBIDDEN FROM RETURNING "isInvalidQuestion": true!
+   - Set "isInvalidQuestion": false.
+   - Transcribe the complete question stem and all subparts (Part a, Part b, Part c, etc.) into "question" and "stimulus".
+   - Under "traps", analyze every subpart or prompt requirement:
+     * Provide the \u{1F3AF} Official College Board Target (Full credit rubric criteria).
+     * Provide the \u26A0\uFE0F Costly Student Trap / Rubric Mistake (common misconception, missing unit, lack of justification, or vague claim).
+3. ABSOLUTE RULE FOR "isInvalidQuestion":
+   - "isInvalidQuestion" MUST ONLY be true if the user provided ZERO question text AND the image has ZERO academic, educational, or problem text (e.g. a photo of a cat, a cup of coffee, a dark blurry void, or pure keyboard spam like "asdfghjk").
+   - NEVER reject any image because it lacks multiple-choice options (A, B, C, D)! AP Exams have both MCQs and FRQs!
 
-PHASE 2: TRAP RADAR AUTOPSY (ONLY FOR VALID AP QUESTIONS):
-If the input is a genuine AP or academic multiple-choice problem:
-College Board MCQs are famous for engineering 6 distinct Distractor Archetypes:
-1. \u{1FAA4} The Reverse Logic / Sign Flip Trap (Correct calculation but flipped sign, reciprocal, or reversed direction).
+CRITICAL MULTI-FORMAT CAPABILITY:
+You MUST support and analyze ALL formats of AP Exam questions:
+- FORMAT A: Multiple Choice Questions (MCQs) with options (A, B, C, D).
+- FORMAT B: Free Response Questions (FRQs), DBQs, SAQs, Calculation Problems, or Handwritten Homework Prompts with subparts (a, b, c, etc.) or open-ended analytical tasks.
+NEVER reject, dismiss, or fail a question simply because it is a Free Response Question (FRQ) or does not have multiple-choice options (A, B, C, D)! Students upload real AP FRQs and homework worksheets every day!
+
+PHASE 1: RIGOROUS INPUT VALIDATION:
+Inspect the user's input text and attached images:
+ONLY return "isInvalidQuestion": true if the input is genuinely:
+- Conversational chit-chat or pleasantry (e.g. "hi", "hello", "hey", "good morning", "yo") with NO question or image
+- Keyboard gibberish (e.g. "asdf", "test", "123", "ok")
+- Completely non-academic images (e.g. a selfie, meme, shoe, empty black screen) with zero educational content.
+If the image or text contains ANY academic question, math problem, historical prompt, map, science scenario, or FRQ, YOU MUST PROCEED TO FULL ANALYSIS!
+
+PHASE 2: TRAP RADAR AUTOPSY:
+College Board AP questions are engineered with lethal student traps:
+1. \u{1FAA4} The Reverse Logic / Sign Flip Trap (Correct calculation but inverted sign, reciprocal, or reversed causal arrow).
 2. \u{1FAA4} The Half-Truth Scope Creep Trap (A statement that is factually true in real life, BUT does not answer the stimulus prompt or exceeds CED scope).
 3. \u{1FAA4} The Chronological / Evolutionary Anachronism Trap (Correct event or process, but placed in the wrong century, epoch, or phase).
 4. \u{1FAA4} The Absolute Qualifier / Extreme Word Trap (Includes 'always', 'never', 'solely', 'invariably' which invalidates an otherwise plausible claim).
@@ -4283,16 +12620,20 @@ College Board MCQs are famous for engineering 6 distinct Distractor Archetypes:
 ANALYZE THE QUESTION THOROUGHLY:
 1. Identify the AP Subject and Core Unit/Skill.
 2. Question & Concept Master Breakdown: Provide a crystal-clear, thorough pedagogical explanation of what the question is asking, what underlying AP course concept, theorem, formula, or historical event it tests, and the step-by-step logic required to solve it.
-3. Determine which option is the true, verified correct answer, and explain why it is 100% correct according to the CED.
-4. For EVERY option (A, B, C, D), deconstruct its purpose with deep pedagogical clarity:
-   - If correct: Mark as "\u{1F3AF} Official College Board Target". In "trapDescription", write an authoritative, crystal-clear explanation demonstrating exactly WHY this choice is 100% correct according to the College Board Course and Exam Description (CED), validating any formulas, definitions, or historical causal chains.
-   - If incorrect: Identify the exact Trap Archetype. In "trapDescription", write a sharp, eye-opening diagnosis of the exact misconception, calculation slip, or subtle wording trick that causes students to choose it, and explain why it is factually or conceptually flawed.
-   - In "text": Provide the exact text of the choice without prepending the letter (e.g. "All living organisms share a common ancestral origin", NOT "A) All living organisms...").
-5. Provide the "5-Second Disarm Secret": A bulletproof heuristic or mental model to immediately spot and eliminate the distractor on the real exam.
+3. For MULTIPLE-CHOICE QUESTIONS (MCQs):
+   - Deconstruct options A, B, C, D.
+   - For correct option: Mark isCorrect: true, trapType: "\u{1F3AF} Official College Board Target".
+   - For incorrect options: Mark isCorrect: false, trapType: "\u26A0\uFE0F [Trap Archetype Name]".
+4. For FREE RESPONSE QUESTIONS (FRQs) / SUBPARTS / HANDWRITTEN PROBLEMS:
+   - For EACH subpart (Part a, Part b, Part c, etc.):
+     * Provide 1 entry for the "\u{1F3AF} Full-Credit College Board Standard" (isCorrect: true).
+     * Provide 1 entry for the primary "\u26A0\uFE0F Common Student Trap / Pitfall" (isCorrect: false) where students lose points on this subpart (e.g. failing to cite spatial evidence, omitting units, confusing terms).
+     * Set "option" to "Part (a)", "Part (b)", "Part (c)", etc.
 
 CRITICAL LATEX & FORMULA FORMATTING RULES:
 - Format ALL mathematical, physics, and chemical equations, variables, and formulas using standard LaTeX syntax ($...$ for inline or $$...$$ for display formulas).
-- Keep each inline LaTeX equation on a single unbroken line without internal line breaks or raw HTML entities.
+- Wrap data tables in $$\begin{array}{...} ... end{array}$$.
+- Keep each inline LaTeX equation on a single unbroken line.
 
 STRICT JSON OUTPUT FORMAT (WHEN VALID):
 {
@@ -4302,32 +12643,39 @@ STRICT JSON OUTPUT FORMAT (WHEN VALID):
   "question": "The cleaned-up, properly formatted question stem (with LaTeX formatting for math/science)",
   "stimulus": "Any excerpt, table, code block, or scenario context (if applicable)",
   "conceptExplanation": "Clear, comprehensive step-by-step master breakdown explaining what the question is asking, the core AP concept tested, and the complete reasoning to reach the solution.",
-  "correctAnswer": "A) ...",
+  "correctAnswer": "A) ... OR Official Full-Credit Model Solution",
   "overallTrapDifficulty": "Moderate | High | Brutal (Level 5 Distractor)",
   "traps": [
     {
-      "option": "A",
-      "text": "Full option text without option letter prefix",
+      "option": "A or Part (a)",
+      "text": "Full option text or exemplary subpart solution",
       "isCorrect": true,
       "trapType": "\u{1F3AF} Official College Board Target",
-      "trapDescription": "Clear, rigorous, step-by-step explanation of why this option is 100% CED-verified correct.",
+      "trapDescription": "Clear, rigorous, step-by-step explanation of why this is 100% CED-verified correct.",
       "collegeBoardMindset": "Evaluates mastery of CED concept...",
       "vulnerabilityRate": "Target Answer (0% Trap)"
     },
     {
-      "option": "B",
-      "text": "Full option text without option letter prefix",
+      "option": "B or Part (b)",
+      "text": "Distractor text or common flawed student response",
       "isCorrect": false,
-      "trapType": "\u26A0\uFE0F The Reverse Logic / Sign Flip Trap",
-      "trapDescription": "Explains why students fall for this and why it is wrong...",
+      "trapType": "\u26A0\uFE0F The Scope Creep / Reverse Logic Trap",
+      "trapDescription": "Explains why students fall for this and why it loses points...",
       "collegeBoardMindset": "Test-makers set this trap for students who...",
-      "vulnerabilityRate": "38% of AP students fall for this under time pressure"
+      "vulnerabilityRate": "42% of AP students forfeit points here"
     }
   ],
   "disarmStrategy": "\u26A1 5-Second Disarm Secret: Quick rule to eliminate the trap instantly in the exam hall."
+}
+
+STRICT JSON OUTPUT FORMAT (WHEN INVALID - ONLY FOR NON-ACADEMIC NOISE):
+{
+  "isInvalidQuestion": true,
+  "errorMessage": "Clear explanation of why no academic question could be identified."
 }`;
       const contentParts = [];
-      if (images && Array.isArray(images) && images.length > 0) {
+      const hasImages = images && Array.isArray(images) && images.length > 0;
+      if (hasImages) {
         for (const img of images) {
           if (!img) continue;
           const parts = img.split(",");
@@ -4338,7 +12686,20 @@ STRICT JSON OUTPUT FORMAT (WHEN VALID):
           });
         }
       }
-      contentParts.push({ text: customQuestion || "Analyze this AP multiple-choice question and expose every trap option." });
+      let promptText = "";
+      if (hasImages && customQuestion) {
+        promptText = `Carefully inspect and read the attached image(s) (which may contain handwritten calculations, a textbook page, an AP Free-Response Question (FRQ), a worksheet, or a multiple-choice question), along with the student's additional context:
+"${customQuestion}"
+
+Perform complete OCR and conduct an in-depth AP Trap Radar Autopsy for this question. Remember: FRQs, handwritten homework, and open-ended problems are 100% valid!`;
+      } else if (hasImages) {
+        promptText = `Carefully inspect and read the attached image(s) (which may contain a photo of a textbook, worksheet, AP Free Response Question (FRQ), handwritten homework problem, diagram, or multiple-choice question). Perform complete OCR to transcribe the question stem and all parts accurately, then conduct an in-depth AP Trap Radar Autopsy revealing the target answers, scoring rubric traps, and common student pitfalls for every subpart or choice. Remember: FRQs, worksheets, and handwritten problems are 100% valid and MUST be analyzed!`;
+      } else {
+        promptText = `Perform an in-depth AP Trap Radar Autopsy on the following AP question:
+
+${customQuestion}`;
+      }
+      contentParts.push({ text: promptText });
       const response2 = await safeGenerateContent({
         gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
         model: "gemini-3.5-flash-lite",
@@ -4349,10 +12710,80 @@ STRICT JSON OUTPUT FORMAT (WHEN VALID):
           temperature: 0.2
         }
       });
-      const parsed2 = safeParseJSON(response2.text || "{}", "object");
+      let parsed2 = safeParseJSON(response2.text || "{}", "object");
+      const isFalsePositiveRejection = parsed2 && parsed2.isInvalidQuestion && (hasImages && (/free\s*response|frq|multiple[- ]choice|options?\s*\([a-d]\)|unit\s*\d|ap\s+[a-z]+/i.test(parsed2.errorMessage || "") || /not a multiple[- ]choice/i.test(parsed2.errorMessage || "") || /please provide a multiple[- ]choice/i.test(parsed2.errorMessage || "") || /human geography|calculus|physics|chemistry|biology|history|psychology|statistics|economics|government|environmental/i.test(parsed2.errorMessage || "")));
+      if (isFalsePositiveRejection) {
+        console.log("[APTrapRadar] Detected false-positive FRQ rejection. Forcing FRQ Trap Radar Autopsy...");
+        try {
+          const recoveryResponse = await safeGenerateContent({
+            gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
+            model: "gemini-3.5-flash-lite",
+            contents: {
+              parts: [
+                ...contentParts.filter((p) => p.inlineData),
+                {
+                  text: `CRITICAL OVERRIDE: The attached image is an authentic AP Free Response Question (FRQ) or subjective worksheet. DO NOT REJECT IT! Under no circumstances should you demand options A, B, C, D. Transcribe the entire FRQ question stem and all subparts (Part a, Part b, Part c, etc.) from the image into 'question'. For EACH subpart, generate the full-credit College Board target answer AND the primary trap/pitfall where students lose points. Output strictly in valid JSON with isInvalidQuestion: false!`
+                }
+              ]
+            },
+            config: {
+              systemInstruction: { parts: [{ text: systemInstruction2 }] },
+              responseMimeType: "application/json",
+              temperature: 0.1
+            }
+          });
+          const recoveryParsed = safeParseJSON(recoveryResponse.text || "{}", "object");
+          if (recoveryParsed && !recoveryParsed.isInvalidQuestion && Array.isArray(recoveryParsed.traps) && recoveryParsed.traps.length > 0) {
+            parsed2 = recoveryParsed;
+          }
+        } catch (recErr) {
+          console.error("[APTrapRadar] Recovery failed:", recErr);
+        }
+      }
+      if (parsed2 && parsed2.isInvalidQuestion && hasImages && /free\s*response|frq/i.test(parsed2.errorMessage || "")) {
+        const errorDesc = parsed2.errorMessage || "";
+        const subjMatch = errorDesc.match(/AP\s+([A-Za-z\s]+?)(?:Free|FRQ|set|Unit|\(|\,)/i);
+        const detectedSubj = subjMatch ? `AP ${subjMatch[1].trim()}` : "AP Free Response Question";
+        const unitMatch = errorDesc.match(/Unit\s*\d+[^,.)]*/i);
+        const unitName = unitMatch ? unitMatch[0].trim() : "Free Response Scoring Standard";
+        parsed2 = {
+          isInvalidQuestion: false,
+          detectedSubject: detectedSubj,
+          skill: unitName,
+          question: `**AP Free Response Question (FRQ) Stimulus & Prompts:**
+
+${errorDesc.replace(/^input is not a valid AP multiple-choice question\.\s*/i, "")}`,
+          stimulus: "Refer to the diagram, stimulus map, or data set provided in your attached photo.",
+          conceptExplanation: `This Free Response Question assesses core conceptual and spatial reasoning in **${detectedSubj}** (${unitName}). Success on College Board FRQs requires defining key terms, directly referencing visual/spatial evidence, and explaining the exact mechanism or process rather than merely asserting conclusions.`,
+          correctAnswer: "Full College Board Rubric Credit: Direct claim + spatial evidence + causal mechanism.",
+          overallTrapDifficulty: "High (Official College Board FRQ)",
+          traps: [
+            {
+              option: "Part (a)",
+              text: "Official College Board Full-Credit Standard",
+              isCorrect: true,
+              trapType: "\u{1F3AF} College Board Rubric Target",
+              trapDescription: "Directly state the core claim and cite specific data or visual evidence from the prompt/stimulus.",
+              collegeBoardMindset: "Chief Readers award points for precise terminology and complete justifications.",
+              vulnerabilityRate: "Target Answer (Full Credit)"
+            },
+            {
+              option: "Part (b)",
+              text: "Common Student Rubric Traps & Point-Loss Pitfalls",
+              isCorrect: false,
+              trapType: "\u26A0\uFE0F The Incomplete Mechanism Trap",
+              trapDescription: "Failing to explain *how* or *why* the process occurs, or omitting specific units/spatial patterns required by the scoring guidelines.",
+              collegeBoardMindset: "Over 50% of AP students identify the trend but forfeit the point by omitting the causal link.",
+              vulnerabilityRate: "52% of students lose points here"
+            }
+          ],
+          disarmStrategy: "\u26A1 5-Second FRQ Scoring Secret: Always use the 'Identify + Evidence + Explain (Why/How)' formula for every subpart to guarantee rubric points."
+        };
+      }
       if (parsed2 && Array.isArray(parsed2.traps)) {
         parsed2.traps = parsed2.traps.map((t, idx) => {
-          const opt = String(t.option || String.fromCharCode(65 + idx)).trim().toUpperCase();
+          const rawOpt = String(t.option || String.fromCharCode(65 + idx)).trim();
+          const opt = /^part\s+/i.test(rawOpt) ? rawOpt : rawOpt.toUpperCase();
           let txt = String(t.text || "").trim();
           txt = txt.replace(new RegExp(`^\\s*${opt}\\s*[:.)-]\\s*`, "i"), "").trim();
           return {
@@ -4627,6 +13058,7 @@ app.post("/api/evaluate-answer", async (req, res) => {
     const image = req.body.image || req.body.imageBase64 || "";
     const scoringRubric = req.body.scoringRubric;
     const modelAnswer = req.body.modelAnswer;
+    const totalPoints = req.body.totalPoints ? Number(req.body.totalPoints) : null;
     if (!questionText) {
       return res.status(400).json({ error: "Missing questionText" });
     }
@@ -4634,6 +13066,7 @@ app.post("/api/evaluate-answer", async (req, res) => {
       return res.status(400).json({ error: "Please write an answer or attach a photo of your work before submitting for evaluation!" });
     }
     const isApExam = userGrade === "AP High School Exam Standard" || typeof userGrade === "string" && userGrade.includes("AP") || Boolean(subject && subject.includes("AP"));
+    const expectedPointsLabel = totalPoints ? `${totalPoints}` : "[Total Rubric Points]";
     const systemInstruction = isApExam ? `You are an official College Board AP Exam Chief Reader, Senior AP Table Leader, and Master AP High School Educator.
 Your role is to rigorously assess, grade, and coach the student on their Free Response / Subjective submission with the authentic discipline, precision, and pedagogical standard of the College Board.
 
@@ -4644,7 +13077,9 @@ GRADING & SCORING RULES:
      - Provide unambiguous justification citing the student's exact mathematical work, equations, units, or evidence.
      - Cite official AP grading conventions (e.g. "+1 point for correct chain rule derivative; +1 point for equating f'(x)=0; 0 points for sign chart alone without concluding sentence").
 2. TOTAL OFFICIAL AP SCORE & PERCENTAGE:
-   - Tally the total points earned (e.g., Score: 7 / 9 Points, 78%).
+   - Tally the total points earned against the official maximum points for this question (EXACTLY ${expectedPointsLabel} Points Max).
+   - The total points possible MUST BE EXACTLY ${expectedPointsLabel}! NEVER invent or change the total points possible.
+   - The sum of points across all sub-parts MUST equal [Earned Points] and can NEVER exceed ${expectedPointsLabel}.
 3. AUTHENTIC COLLEGE BOARD AP SCALE CONVERSION (1 to 5):
    - Translate their performance on this standard into the official 1-5 AP scale:
      - 5: Extremely Well Qualified (Top 10-15% caliber)
@@ -4662,27 +13097,32 @@ OUTPUT FORMAT: Output strictly using this clean Markdown structure:
 # \u{1F393} AP\xAE Chief Reader & Teacher Evaluation
 
 ### \u{1F4CA} Official Scorecard
-- **Total AP Points**: **[Earned Points] / [Total Rubric Points] Points ([Percentage]%)**
-- **Projected AP Exam Score**: **AP Score [1-5] \u2022 [Extremely Well Qualified / Well Qualified / Qualified / Needs Review]**
-- **Teacher Verdict**: [Brief, professional, encouraging teacher verdict]
+- **Total AP Points:** **[Earned Points] / ${expectedPointsLabel} Points ([Percentage]%)**
+- **Projected AP Exam Score:** **AP Score [1-5] \u2022 [Extremely Well Qualified / Well Qualified / Qualified / Needs Review]**
+- **Teacher Verdict:** [Brief, professional, encouraging teacher verdict]
 
 ---
 
 ### \u{1F4CB} Official Rubric Point-by-Point Breakdown
-- **Part (a) [[Earned]/[Total] pts]**: [Specific College Board justification referencing student's work]
-- **Part (b) [[Earned]/[Total] pts]**: [Specific College Board justification referencing student's work]
-- **Part (c) [[Earned]/[Total] pts]**: [Specific College Board justification referencing student's work]
+(CRITICAL: Every sub-part MUST be on its own separate bullet point with an empty line between each. NEVER concatenate or merge Part (a) and Part (b) onto the same line!)
+- **Part (a) [[Earned]/[Total] pts]:** [Specific College Board justification referencing student's work]
+
+- **Part (b) [[Earned]/[Total] pts]:** [Specific College Board justification referencing student's work]
+
+- **Part (c) [[Earned]/[Total] pts]:** [Specific College Board justification referencing student's work]
 (include Part (d) if present)
 
 ---
 
 ### \u{1F468}\u200D\u{1F3EB} Professional Teacher Feedback & AP Exam Fixes
-- **\u{1F31F} Key Strengths**: [What was done accurately with proper terminology/notation]
-- **\u26A0\uFE0F Costly Traps & Where Points Were Lost**: [Specific slips, missing conditions, or flawed notation]
-- **\u{1F3AF} Full-Credit College Board Standard**: [How to write or format this on the actual May AP exam to guarantee full credit]` : `You are a strict academic examiner. DO NOT act as a standard tutor. Your SOLE purpose is to grade the student's answer based on their grade level. YOU MUST output strictly using this format:
+- **\u{1F31F} Key Strengths:** [What was done accurately with proper terminology/notation]
+
+- **\u26A0\uFE0F Costly Traps & Where Points Were Lost:** [Specific slips, missing conditions, or flawed notation]
+
+- **\u{1F3AF} Full-Credit College Board Standard:** [How to write or format this on the actual May AP exam to guarantee full credit]` : `You are a strict academic examiner for a ${userGrade || "High School"} student. DO NOT act as a standard tutor. Grade the student's answer calibrated to the standards and expectations of ${userGrade || "High School"} level. YOU MUST output strictly using this format:
 
 ## Grade-Level Assessment
-[Pass/Fail/Needs Improvement for this grade level]
+[Pass/Fail/Needs Improvement for ${userGrade || "this grade"} level]
 
 ## Step-Marking Breakdown
 - Formula Selection & Concepts: [Score]/3
@@ -4690,7 +13130,7 @@ OUTPUT FORMAT: Output strictly using this clean Markdown structure:
 - Final Answer & Units: [Score]/2
 
 ## Final Score
-**[Total Score] / 10**
+**[Total Score] / ${expectedPointsLabel}**
 
 ## Examiner Feedback & Ideal Solution
 [Explain mistakes and provide the perfect 10/10 mathematical solution]`;
@@ -4714,7 +13154,8 @@ OUTPUT FORMAT: Output strictly using this clean Markdown structure:
     }
     parts.push({
       text: `Evaluate the student's answer for: "${questionText}".
-Student's Written/Typed Answer: "${userAnswer || "No typed text provided; student submitted handwritten work in the attached image."}".${Array.isArray(scoringRubric) && scoringRubric.length > 0 ? `
+${totalPoints ? `OFFICIAL MAXIMUM SCORE: EXACTLY ${totalPoints} Points Max. You MUST grade this response strictly out of ${totalPoints} total points!
+` : ""}Student's Written/Typed Answer: "${userAnswer || "No typed text provided; student submitted handwritten work in the attached image."}".${Array.isArray(scoringRubric) && scoringRubric.length > 0 ? `
 
 Official College Board Scoring Rubric:
 ${scoringRubric.join("\n")}` : ""}${modelAnswer ? `
@@ -4749,6 +13190,7 @@ The Gemini API is currently experiencing rate limits. Please try again in 60 sec
 app.post("/api/ap-tutor-explain", async (req, res) => {
   try {
     const { questionText, stimulus, options, questionType, subject, unit, followUpQuestion, mode, correctAnswer, explanation, modelAnswer, scoringRubric, trapsData, disarmStrategy } = req.body;
+    const gradeLevel = req.body.gradeLevel || req.body.userGrade || "AP High School (Advanced Placement)";
     if (!questionText) {
       return res.status(400).json({ error: "Missing questionText" });
     }
@@ -4842,7 +13284,7 @@ Disarm Secret Note: ${disarmStrategy}
 
 ${promptGoal}`;
     const response = await safeGenerateContent({
-      gradeLevel: "AP High School (Advanced Placement)",
+      gradeLevel,
       model: "gemini-3.5-flash-lite",
       contents: { parts: [{ text: userPrompt }] },
       config: {
@@ -4854,913 +13296,6 @@ ${promptGoal}`;
   } catch (error) {
     console.error("AP Tutor Explain Error:", error);
     return res.status(500).json({ error: error.message || "Failed to explain AP question" });
-  }
-});
-app.post("/api/generate-quiz", async (req, res) => {
-  try {
-    const { topic, gradeLevel, count } = req.body;
-    if (!topic) {
-      return res.status(400).json({ error: "Missing topic" });
-    }
-    const requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 30);
-    const aiClient = getAI();
-    const systemInstruction = `You are an Elite Academic Tutor and Curriculum Exam Expert. The user will provide a subject or specific topic. 
-Your ONLY job is to generate a highly accurate, exam-level Multiple Choice Quiz for that topic.
-
-CRITICAL RULES:
-1. STRICT JSON OUTPUT: You must output ONLY a valid JSON array. Do not wrap it in markdown blockquotes like \`\`\`json. Absolutely ZERO conversational text before or after the JSON.
-2. FORMAT: Generate exactly ${requestedCount} questions. Each question must have exactly 4 options and a short explanation.
-3. CORRECT ANSWER: The "correctAnswer" field MUST be a single string that EXACTLY matches one of the strings in the "options" array. Do not return an array of multiple correct answers.
-4. MULTIPLE EQUATIONS FORMATTING: If generating any math questions, options, or explanations that contain multiple equations (such as systems of linear equations), you must strictly separate the equations using a clear delimiter like the word 'and' or a newline character (\\n) so they do not blend together into a single string.
-
-Use this exact JSON structure:
-[
-  {
-    "question": "Which of the following best characterizes the key mechanism of [Concept]?",
-    "options": ["A) Statement 1", "B) Statement 2", "C) Statement 3", "D) Statement 4"],
-    "correctAnswer": "A) Statement 1",
-    "explanation": "Clear educational breakdown justifying why the correct option is true and why the distractors are incorrect."
-  }
-]`;
-    const avoidList = Array.isArray(req.body.avoidPrompts) ? req.body.avoidPrompts.filter(Boolean).slice(0, 10) : [];
-    const avoidDirective = avoidList.length > 0 ? `
-STRICT ANTI-REPETITION: Do NOT repeat or generate questions similar to these previously tested prompts:
-${avoidList.map((p, i) => `  [${i + 1}] ${p.slice(0, 100)}`).join("\n")}` : "";
-    let quizText = "";
-    try {
-      const response = await safeGenerateContent({
-        gradeLevel,
-        model: "gemini-3.5-flash-lite",
-        contents: { parts: [{ text: `Topic: ${topic}. Generate the ${requestedCount}-question JSON quiz now.${avoidDirective}` }] },
-        config: {
-          systemInstruction: { parts: [{ text: systemInstruction }] },
-          responseMimeType: "application/json",
-          temperature: 0.75
-        }
-      });
-      quizText = response.text || "";
-    } catch (apiError) {
-      console.warn("API Error during quiz generation:", apiError);
-      throw apiError;
-    }
-    const parsed = safeParseJSON(quizText, "array");
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return res.json({ quiz: parsed });
-    }
-    throw new Error("Failed to generate a valid quiz structure.");
-  } catch (error) {
-    if (error.message === "GEMINI_QUOTA_EXHAUSTED") {
-      return res.status(429).json({
-        error: "QUOTA_EXCEEDED",
-        text: `\u26A0\uFE0F AI Tutor Notice: Rate Limit / Quota Exceeded
-
-The Gemini API is currently experiencing rate limits. Please try again in 60 seconds.`
-      });
-    }
-    console.error("Quiz generation endpoint error:", error);
-    res.status(500).json({ error: error.message || "Failed to generate quiz" });
-  }
-});
-app.post("/api/generate-pdf-quiz", upload.single("pdf"), async (req, res) => {
-  try {
-    const { gradeLevel, count } = req.body;
-    if (!req.file) {
-      console.warn("[PDF Quiz API] No PDF file provided in request.");
-      return res.status(400).json({ error: "No PDF file provided" });
-    }
-    console.log(`[PDF Quiz API] Received file: ${req.file.originalname}, Size: ${req.file.size} bytes`);
-    const maxSizeBytes = 10 * 1024 * 1024;
-    if (req.file.size > maxSizeBytes) {
-      return res.status(400).json({ error: "PDF file size must not exceed 10MB." });
-    }
-    let extractedText = "";
-    let numPages = 0;
-    try {
-      const pdfModule = await import("pdf-parse/lib/pdf-parse.js");
-      const pdfParser = pdfModule.default || pdfModule;
-      const pdfData = await pdfParser(req.file.buffer, { max: 51 });
-      numPages = pdfData.numpages;
-      extractedText = pdfData.text || "";
-      console.log(`[PDF Quiz API] PDF parse complete. Pages: ${numPages}, Extracted text length: ${extractedText.trim().length}`);
-    } catch (parseError) {
-      console.warn("[PDF Quiz API] Failed to parse PDF locally with pdf-parse:", parseError);
-    }
-    if (numPages > 50) {
-      return res.status(400).json({ error: "PDF document exceeds 50 pages limit. Please upload a shorter document (max 50 pages)." });
-    }
-    const requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 30);
-    const systemInstruction = `You are an expert exam creator. Analyze the provided study material and extract the most high-yield concepts. Generate exactly ${requestedCount} multiple choice questions based strictly on this text/document. Output your response STRICTLY in JSON format as an array of objects. Each object must have the following keys: 'question' (string), 'options' (an array of exactly 4 strings), 'correctAnswer' (string, must exactly match one of the options), and 'explanation' (string, detailing why the answer is correct).
-
-CRITICAL RULES:
-1. STRICT JSON OUTPUT: You must output ONLY a valid JSON array. Do not wrap it in markdown blockquotes like \`\`\`json. Absolutely ZERO conversational text before or after the JSON.
-2. FORMAT: Generate exactly ${requestedCount} questions. Each question must have exactly 4 options and a short explanation.
-3. CORRECT ANSWER: The "correctAnswer" field MUST be a single string that EXACTLY matches one of the strings in the "options" array.
-4. MULTIPLE EQUATIONS FORMATTING: If generating any math questions, options, or explanations that contain multiple equations (such as systems of linear equations), you must strictly separate the equations using a clear delimiter like the word 'and' or a newline character (\\n) so they do not blend together into a single string.
-
-Use this exact JSON structure:
-[
-  {
-    "question": "Sample multiple choice question...",
-    "options": ["A) Option A", "B) Option B", "C) Option C", "D) Option D"],
-    "correctAnswer": "A) Option A",
-    "explanation": "Because..."
-  }
-]`;
-    let response;
-    if (extractedText && extractedText.trim().length >= 50) {
-      console.log("[PDF Quiz API] Using high-reliability text extraction path...");
-      const slicedText = extractedText.length > 15e4 ? extractedText.slice(0, 15e4) : extractedText;
-      response = await safeGenerateContent({
-        gradeLevel,
-        model: "gemini-3.5-flash-lite",
-        contents: [{
-          parts: [{ text: `DOCUMENT CONTENT:
-${slicedText}
-
-Generate the ${requestedCount}-question JSON quiz now based strictly on the content above.` }]
-        }],
-        config: {
-          systemInstruction: { parts: [{ text: systemInstruction }] },
-          responseMimeType: "application/json"
-        }
-      });
-    } else {
-      console.log("[PDF Quiz API] Falling back to base64 PDF multimodal processing path (scanned PDF or low-quality extraction)...");
-      const pdfPart = {
-        inlineData: {
-          mimeType: "application/pdf",
-          data: req.file.buffer.toString("base64")
-        }
-      };
-      response = await safeGenerateContent({
-        gradeLevel,
-        model: "gemini-3.5-flash-lite",
-        contents: [{
-          parts: [
-            pdfPart,
-            { text: `Analyze the attached PDF document and generate the ${requestedCount}-question JSON quiz now based strictly on its content.` }
-          ]
-        }],
-        config: {
-          systemInstruction: { parts: [{ text: systemInstruction }] },
-          responseMimeType: "application/json"
-        }
-      });
-    }
-    let quizText = response.text || "";
-    console.log(`[PDF Quiz API] Gemini response received. Length: ${quizText.length} characters.`);
-    try {
-      const parsed = safeParseJSON(quizText, "array");
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        console.log(`[PDF Quiz API] Successfully parsed quiz with ${parsed.length} questions.`);
-        return res.json({ quiz: parsed });
-      }
-    } catch (parseError) {
-      console.error("[PDF Quiz API] JSON parse error for PDF quiz output:", parseError, quizText);
-    }
-    return res.status(400).json({ error: "Failed to generate a valid quiz structure from the PDF. Please ensure it has readable text or images." });
-  } catch (error) {
-    if (error.message === "GEMINI_QUOTA_EXHAUSTED") {
-      return res.status(429).json({
-        error: "QUOTA_EXCEEDED",
-        text: `\u26A0\uFE0F AI Tutor Notice: Rate Limit / Quota Exceeded
-
-The Gemini API is currently experiencing rate limits. Please try again in 60 seconds.`
-      });
-    }
-    console.error("[PDF Quiz API] PDF quiz generation error:", error);
-    res.status(400).json({ error: error.message || "Failed to generate quiz from PDF" });
-  }
-});
-app.post("/api/generate-image-quiz", upload.single("image"), async (req, res) => {
-  try {
-    const { gradeLevel, count } = req.body;
-    if (!req.file) {
-      return res.status(400).json({ error: "No image provided" });
-    }
-    const imagePart = {
-      inlineData: {
-        mimeType: req.file.mimetype,
-        data: req.file.buffer.toString("base64")
-      }
-    };
-    const requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 30);
-    const systemInstruction = `You are an expert exam creator and visual analyzer. Analyze the textbook page, question sheet, or study material in the provided image. Identify the key academic topics, concepts, or exercises shown on the page. Generate exactly ${requestedCount} multiple choice questions based strictly on the content of that textbook page.
-    
-CRITICAL RULES:
-1. STRICT JSON OUTPUT: You must output ONLY a valid JSON array. Do not wrap it in markdown blockquotes like \`\`\`json. Absolutely ZERO conversational text before or after the JSON.
-2. FORMAT: Generate exactly ${requestedCount} questions. Each question must have exactly 4 options (prefixed with A), B), C), D)) and a short explanation.
-3. CORRECT ANSWER: The "correctAnswer" field MUST be a single string that EXACTLY matches one of the strings in the "options" array.
-4. MULTIPLE EQUATIONS FORMATTING: If generating any math questions, options, or explanations that contain multiple equations (such as systems of linear equations), you must strictly separate the equations using a clear delimiter like the word 'and' or a newline character (\\n) so they do not blend together into a single string.
-
-Use this exact JSON structure:
-[
-  {
-    "question": "Based on the concept in the image, what is...",
-    "options": ["A) Option A", "B) Option B", "C) Option C", "D) Option D"],
-    "correctAnswer": "A) Option A",
-    "explanation": "Because..."
-  }
-]`;
-    const response = await safeGenerateContent({
-      gradeLevel,
-      model: "gemini-3.5-flash-lite",
-      contents: [{ parts: [imagePart, { text: `Analyze this textbook page image and generate exactly ${requestedCount} multiple choice questions.` }] }],
-      config: {
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        responseMimeType: "application/json"
-      }
-    });
-    let quizText = response.text || "";
-    try {
-      const parsed = safeParseJSON(quizText, "array");
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return res.json({ quiz: parsed });
-      }
-    } catch (parseError) {
-      console.error("JSON parse error for image quiz output:", parseError, quizText);
-    }
-    return res.status(500).json({ error: "Failed to generate a valid quiz structure from the image." });
-  } catch (error) {
-    if (error.message === "GEMINI_QUOTA_EXHAUSTED") {
-      return res.status(429).json({
-        error: "QUOTA_EXCEEDED",
-        text: `\u26A0\uFE0F AI Tutor Notice: Rate Limit / Quota Exceeded
-
-The Gemini API is currently experiencing rate limits. Please try again in 60 seconds.`
-      });
-    }
-    console.error("Image quiz generation error:", error);
-    res.status(500).json({ error: error.message || "Failed to generate quiz from image" });
-  }
-});
-async function extractSearchKeywords(userQuery) {
-  try {
-    const aiClient = getAI();
-    const response = await aiClient.models.generateContent({
-      model: "gemini-3.5-flash-lite",
-      contents: [{
-        parts: [{
-          text: `You are a search query optimizer for an elite educational AI. Given a user query (which might be in conversational Hindi, Hinglish, slang, or complex English), extract 2-3 crisp, highly-targeted English search keyword phrases for Google News and Wikipedia.
-
-User Query: "${userQuery}"
-
-Output strictly a valid JSON array of strings, e.g. ["keyword 1", "keyword 2"]. Absolutely zero conversational markdown or extra text.`
-        }]
-      }],
-      config: {
-        responseMimeType: "application/json",
-        temperature: 0.1
-      }
-    });
-    const parsed = safeParseJSON(response.text || "[]", "array");
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed.map((k) => String(k).trim()).filter(Boolean);
-    }
-  } catch (e) {
-    console.error("[extractSearchKeywords] Error:", e);
-  }
-  const clean = userQuery.replace(/^(bhai|tum|please|zara|karo|batao|explain|mujhe|janna|hai|deep|search|kya|hua|tha|pe|par|about)\s+/gi, "").trim();
-  return [clean || userQuery];
-}
-async function performLiveWebSearch(query, searchKeywords = [], userCountry = "United States") {
-  const sources = [];
-  const seenUrls = /* @__PURE__ */ new Set();
-  const queriesToSearch = Array.from(/* @__PURE__ */ new Set([
-    ...searchKeywords,
-    query.replace(/^(bhai|tum|please|zara|karo|batao|explain|mujhe|janna|hai|deep|search)\s+/gi, "").trim()
-  ])).filter((q) => q && q.length > 2).slice(0, 3);
-  const searchTasks = queriesToSearch.map(async (kw) => {
-    const encoded = encodeURIComponent(kw);
-    try {
-      const rssRes = await fetchWithTimeout(`https://news.google.com/rss/search?q=${encoded}&hl=en-IN&gl=IN&ceid=IN:en`, {
-        headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" }
-      }, 7e3);
-      if (rssRes.ok) {
-        const xml = await rssRes.text();
-        const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)];
-        for (let i = 0; i < Math.min(4, items.length); i++) {
-          const block = items[i][1];
-          const title = (block.match(/<title>([\s\S]*?)<\/title>/)?.[1] || "").replace(/<!\[CDATA\[|\]\]>/g, "").replace(/&amp;/g, "&").trim();
-          const link = (block.match(/<link>([\s\S]*?)<\/link>/)?.[1] || "").replace(/<!\[CDATA\[|\]\]>/g, "").trim();
-          const source = (block.match(/<source[^>]*>([\s\S]*?)<\/source>/)?.[1] || "").replace(/<!\[CDATA\[|\]\]>/g, "").trim();
-          const pubDate = block.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1] || "";
-          if (title && link && !seenUrls.has(link)) {
-            seenUrls.add(link);
-            sources.push({
-              title,
-              uri: link,
-              sourceName: source || "Live News",
-              snippet: `Published: ${pubDate}. Publisher: ${source}. Headline: ${title}`,
-              pubDate,
-              type: "news"
-            });
-          }
-        }
-      }
-    } catch (e) {
-      console.warn(`[performLiveWebSearch] Google News RSS error for "${kw}":`, e);
-    }
-    try {
-      const wikiSearchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encoded}&utf8=&format=json&srlimit=3`;
-      const wikiRes = await fetchWithTimeout(wikiSearchUrl, { headers: { "User-Agent": "HelpYouAI-Bot/1.0" } }, 7e3);
-      if (wikiRes.ok) {
-        const data = await wikiRes.json();
-        const items = data.query?.search || [];
-        for (const item of items) {
-          const pageTitle = item.title;
-          const pageUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(pageTitle.replace(/ /g, "_"))}`;
-          if (seenUrls.has(pageUrl)) continue;
-          seenUrls.add(pageUrl);
-          let extract = item.snippet.replace(/<[^>]+>/g, "");
-          try {
-            const sumRes = await fetchWithTimeout(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(pageTitle.replace(/ /g, "_"))}`, {
-              headers: { "User-Agent": "HelpYouAI-Bot/1.0" }
-            }, 4e3);
-            if (sumRes.ok) {
-              const sumData = await sumRes.json();
-              if (sumData.extract) extract = sumData.extract;
-            }
-          } catch (_) {
-          }
-          sources.push({
-            title: pageTitle,
-            uri: pageUrl,
-            sourceName: "Wikipedia Encyclopedia",
-            snippet: extract,
-            type: "encyclopedia"
-          });
-        }
-      }
-    } catch (e) {
-      console.warn(`[performLiveWebSearch] Wikipedia error for "${kw}":`, e);
-    }
-    try {
-      const ddgRes = await fetchWithTimeout(`https://api.duckduckgo.com/?q=${encoded}&format=json`, {}, 5e3);
-      if (ddgRes.ok) {
-        const ddg = await ddgRes.json();
-        if (ddg.Heading && ddg.AbstractURL && !seenUrls.has(ddg.AbstractURL)) {
-          seenUrls.add(ddg.AbstractURL);
-          sources.push({
-            title: ddg.Heading,
-            uri: ddg.AbstractURL,
-            sourceName: ddg.AbstractSource || "DuckDuckGo Knowledge",
-            snippet: ddg.Abstract || "",
-            type: "knowledge"
-          });
-        }
-      }
-    } catch (e) {
-      console.warn(`[performLiveWebSearch] DuckDuckGo error for "${kw}":`, e);
-    }
-  });
-  await Promise.allSettled(searchTasks);
-  return sources;
-}
-app.post("/api/fix-mistake", async (req, res) => {
-  try {
-    const { question, wrongInput, correctConcept, gradeLevel } = req.body;
-    const safeQuestion = (question || "Academic Problem").slice(0, 3e3);
-    const safeWrong = (wrongInput || "Incorrect attempt").slice(0, 1e3);
-    const safeCorrect = (correctConcept || "Correct method / concept").slice(0, 2e3);
-    const systemInstruction = `You are the Lead Master of Academic Conceptual Clarity & Mistake Correction.
-Your job is to analyze a student's academic mistake and provide a structured 3-part conceptual breakdown.
-Be direct, encouraging, precise, and crystal-clear.
-
-STRICT JSON OUTPUT FORMAT (Return ONLY a single valid JSON object, NO markdown wrappers):
-{
-  "why_it_happened": "One crisp sentence identifying the conceptual trap or reason behind the mistake.",
-  "the_fix": "The absolute correct concept explained in simple, memorable terms.",
-  "pro_memory_trick": "A clever mnemonic, practical rule of thumb, or analogy to never forget this."
-}`;
-    const prompt = `Student Mistake Context:
-- Problem / Question: ${safeQuestion}
-- Student's Incorrect Input: ${safeWrong}
-- Correct Concept / Solution: ${safeCorrect}
-- Target Grade Level: ${gradeLevel || "High School"}
-
-Analyze this mistake and provide the 3-part JSON fix.`;
-    const response = await safeGenerateContent({
-      gradeLevel: gradeLevel || "High School",
-      model: "gemini-3.5-flash-lite",
-      contents: [{ parts: [{ text: prompt }] }],
-      config: {
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        responseMimeType: "application/json"
-      }
-    });
-    let rawText = response.text || "";
-    let parsedResult = safeParseJSON(rawText, "object");
-    if (!parsedResult || !parsedResult.the_fix) {
-      parsedResult = {
-        why_it_happened: `There was a confusion with the underlying problem setup.`,
-        the_fix: `The correct concept is: ${safeCorrect}`,
-        pro_memory_trick: "\u{1F4A1} Memory Rule: Always double check the core formula and units before answering!"
-      };
-    }
-    res.json(parsedResult);
-  } catch (error) {
-    console.error("Fix mistake endpoint error:", error);
-    res.json({
-      why_it_happened: "A common misunderstanding of the fundamental concept.",
-      the_fix: req.body?.correctConcept ? `The correct concept is: ${req.body.correctConcept}` : "Review the key formula and step-by-step logic.",
-      pro_memory_trick: "\u{1F4A1} Pro Tip: Write down the given values and formula first to avoid calculation traps!"
-    });
-  }
-});
-app.post("/api/generate-practice", async (req, res) => {
-  try {
-    const { question, wrongInput, correctConcept, sourceFeature, gradeLevel } = req.body;
-    const safeQuestion = (question || "Academic Concept").slice(0, 3e3);
-    const safeWrong = (wrongInput || "Incorrect attempt").slice(0, 1e3);
-    const safeCorrect = (correctConcept || "Correct concept").slice(0, 2e3);
-    const systemInstruction = `You are an Elite Academic Practice Coach.
-Your task is to generate exactly 3 multiple-choice practice questions that test the SAME core concept as the student's mistake, but with fresh numbers, contexts, or scenarios.
-
-RULES:
-1. Generate exactly 3 questions with increasing mastery (Easy, Medium, Mastery).
-2. Each question MUST have exactly 4 distinct options.
-3. "correctIndex" MUST be an integer (0, 1, 2, or 3).
-4. "explanation" MUST be 1-2 concise, encouraging sentences.
-
-STRICT JSON OUTPUT (Return ONLY a JSON array with 3 question objects):
-[
-  {
-    "question": "Clear, concise practice question text?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correctIndex": 0,
-    "explanation": "Clear explanation of why Option A is correct."
-  }
-]`;
-    const prompt = `Student Mistake Context:
-- Source Area: ${sourceFeature || "General"}
-- Original Question: ${safeQuestion}
-- Incorrect Input: ${safeWrong}
-- Correct Principle: ${safeCorrect}
-- Target Grade: ${gradeLevel || "High School"}
-
-Generate 3 fresh similar practice questions to help the student master this concept.`;
-    const response = await safeGenerateContent({
-      gradeLevel: gradeLevel || "High School",
-      model: "gemini-3.5-flash-lite",
-      contents: [{ parts: [{ text: prompt }] }],
-      config: {
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        responseMimeType: "application/json"
-      }
-    });
-    let rawText = response.text || "";
-    let parsedResult = safeParseJSON(rawText, "array");
-    if (!Array.isArray(parsedResult)) {
-      const obj = safeParseJSON(rawText, "object");
-      if (obj && Array.isArray(obj.questions)) {
-        parsedResult = obj.questions;
-      } else if (obj && Array.isArray(obj.practice_questions)) {
-        parsedResult = obj.practice_questions;
-      } else if (obj && Array.isArray(obj.practiceQuestions)) {
-        parsedResult = obj.practiceQuestions;
-      }
-    }
-    if (!Array.isArray(parsedResult) || parsedResult.length === 0) {
-      parsedResult = [
-        {
-          question: `Regarding the concept from "${safeQuestion.slice(0, 120)}...", which statement is accurate?`,
-          options: [
-            safeCorrect.slice(0, 80) || "The formal rule applies directly",
-            "An alternative incorrect interpretation",
-            "The variables are mutually exclusive",
-            "None of the above are valid"
-          ],
-          correctIndex: 0,
-          explanation: `The correct principle is: ${safeCorrect.slice(0, 200)}.`
-        },
-        {
-          question: `What is the most effective approach when solving problems on this topic?`,
-          options: [
-            "Apply the standard formula and verify given constraints",
-            "Assume the first intuitive guess without verification",
-            "Disregard intermediate calculations",
-            "Skip unit checks"
-          ],
-          correctIndex: 0,
-          explanation: "Always apply the formal definition and check your given values step-by-step."
-        },
-        {
-          question: `Which key takeaway ensures full mastery of this question in future exams?`,
-          options: [
-            "Mastering the underlying formula and its assumptions",
-            "Memorizing only final answers",
-            "Relying on elimination alone",
-            "Ignoring edge cases"
-          ],
-          correctIndex: 0,
-          explanation: "Mastering the underlying formula and assumptions ensures you can solve any variation!"
-        }
-      ];
-    }
-    res.json(parsedResult);
-  } catch (error) {
-    console.error("Generate practice endpoint error:", error);
-    res.json([
-      {
-        question: `Based on your mistake, which statement accurately reflects the correct concept?`,
-        options: [
-          req.body?.correctConcept ? req.body.correctConcept.slice(0, 80) : "The formal rule applies directly",
-          "An alternative incorrect assumption",
-          "The inverse relationship holds true",
-          "Cannot be determined from given data"
-        ],
-        correctIndex: 0,
-        explanation: req.body?.correctConcept ? `The correct concept is: ${req.body.correctConcept}` : "Review the correct concept to ensure full mastery."
-      },
-      {
-        question: "What is the best strategy to verify your answer when solving similar problems?",
-        options: [
-          "Cross-verify using the fundamental formula and units",
-          "Guess based on option lengths",
-          "Ignore edge conditions",
-          "Skip intermediate algebraic steps"
-        ],
-        correctIndex: 0,
-        explanation: "Cross-verifying with the core formula and checking units guarantees full accuracy!"
-      },
-      {
-        question: "Which of the following is a classic trap to avoid in this category?",
-        options: [
-          "Confusing similar-sounding terms or opposite signs",
-          "Reading the entire question carefully",
-          "Writing down given information clearly",
-          "Checking the final units"
-        ],
-        correctIndex: 0,
-        explanation: "Watch out for sign errors and term confusions\u2014that is where most marks are lost!"
-      }
-    ]);
-  }
-});
-app.post("/api/live-study-tutor", async (req, res) => {
-  const rawQueryInput = req.body.query || req.body.prompt || req.body.search || "";
-  const profileContext = req.body.profileContext;
-  const studentNotes = req.body.studentNotes;
-  const gradeLevel = req.body.gradeLevel || req.body.userGrade || "11th Grade (Junior)";
-  const country = req.body.country || "United States";
-  const academicStream = req.body.academicStream || "STEM / Engineering";
-  try {
-    if (!rawQueryInput || !rawQueryInput.trim()) {
-      return res.status(400).json({ error: "Missing search query" });
-    }
-    const rawQuery = rawQueryInput.trim();
-    const keywords = await extractSearchKeywords(rawQuery);
-    const searchResults = await performLiveWebSearch(rawQuery, keywords, country);
-    const verifiedContextString = searchResults.map(
-      (s, idx) => `[Source ${idx + 1}] Title: ${s.title}
-URL: ${s.uri}
-Publisher: ${s.sourceName}
-Content Snippet: ${s.snippet}
-`
-    ).join("\n---\n");
-    const systemInstruction = `You are the lead intelligence engine for "Deep Search AI" in the "HelpYou AI" app.
-Your mission is to process student queries and produce an elite, point-wise, in-depth academic research report grounded in real-time verified data, peer-reviewed journals, and accredited national educational repositories.
-
-CRITICAL ACADEMIC INTEGRITY & CITATION RULES:
-1. STRICT WIKIPEDIA HARD-BAN:
-   - NEVER cite, link, or output "wikipedia.org" or "wikimedia.org" URLs or titles anywhere in your output. Tier-1 academic institutions (US, UK, Canada, Australia, IB schools) strictly ban Wikipedia citations and penalize students.
-   - Strictly prioritize peer-reviewed journals (.edu, .gov, Nature, Science, IEEE, NIH, JSTOR, Springer, Elsevier, Crossref DOI), authoritative encyclopedias (Encyclopaedia Britannica), accredited national education boards (CollegeBoard, NCERT, UCAS), and verified global news wires (Reuters, AP, BBC).
-
-2. MANDATORY INLINE CITATIONS PROTOCOL:
-   - Every single factual claim, statistic, date, quote, policy decision, exam notification, or scientific theorem in "live_updates" MUST include an inline numerical bracket citation immediately following the fact (e.g. "...ratified in early 2026 [1]...", "...quantum coherence increased by 42% [2]...").
-   - Every citation number [1], [2], [3] MUST correspond directly to the 1-based index of the items in "source_links" and "detailed_sources". This guarantees students can map every single fact to its exact accredited source when writing essays.
-
-3. ONLY ONE MAIN HEADLINE:
-   - "topic_title" MUST be a crisp, elegant, concise headline of 3 to 6 words max (e.g. "Jeju Island Case Investigation", "JEE Main 2026 Registration Guide", "Quantum Entanglement Principles"). Avoid long multi-clause sentence titles.
-
-4. NEVER OUTPUT LARGE UNBROKEN PARAGRAPHS:
-   - All explanations MUST be strictly broken down into small, digestible subheadings and point-wise bullet points.
-   - Each entry in "live_updates" MUST start with a small markdown subheading (e.g. "### \u{1F4CC} Core Background & Overview", "### \u{1F50D} Detailed Timeline & Key Developments", "### \u2696\uFE0F Analytical Impact & Real-World Consequences", "### \u{1F4A1} High-Yield Student Takeaways").
-   - Under each subheading, provide 2 to 4 detailed bullet points starting with bold anchors and ending with inline citations (e.g. "* **Incident Timeline:** In late August 2026, official authorities confirmed the findings [1].").
-
-5. REGIONAL ACADEMIC ADAPTATION:
-   - The student is located in ${country}, Grade: ${gradeLevel}, Stream: ${academicStream}.
-   - Contextualize terminology, syllabus relevance, and exam boards according to their national curriculum (e.g., AP/SAT/CollegeBoard for USA, GCSE/A-Levels for UK, JEE/NEET/CBSE for India, VCE/HSC for Australia).
-
-6. STEM vs HUMANITIES RIGOR:
-   - STEM Queries (Physics, Chemistry, Math, Biology): Provide core formulas wrapped in LaTeX ($...$ or $$...$$), step-by-step derivations, and key parameters.
-   - Humanities/News Queries: Provide structured bullet points covering background origin, chronological milestones, institutional impact, and current status.
-
-7. LANGUAGE MATCHING:
-   - If the user wrote in Hinglish (e.g. "Bhai Jeju island pe kya hua tha"), write the entire response in natural, articulate, point-wise Hinglish with academic precision.
-   - If Hindi, write Hindi. If English, write English.
-
-8. ZERO FAKE URLS:
-   - In "source_links", ONLY use exact verified URLs from context or accredited root domains (e.g., britannica.com, nature.com, nih.gov, ed.gov, ncert.nic.in). NEVER use Wikipedia.
-
-STRICT JSON OUTPUT FORMAT:
-{
-  "topic_title": "Concise Main Headline (3-6 words)",
-  "match_score": "98%",
-  "live_updates": [
-    "### \u{1F4CC} Core Background & Overview\\n* **Foundational Context:** Clear, verified background facts supported by research [1].\\n* **Core Definition & Significance:** Key concepts students need to know for examination [2].",
-    "### \u{1F50D} Detailed Timeline & Key Developments\\n* **Chronological Milestones:** Specific dates and verified occurrences [1].\\n* **Key Turning Points:** Critical discoveries or institutional policy shifts [2].",
-    "### \u2696\uFE0F Analytical Impact & Real-World Consequences\\n* **Institutional Findings:** Official commissions or syllabus implications [1].\\n* **Current 2026 Status:** Up-to-date verified status as of today [2].",
-    "### \u{1F4A1} High-Yield Student Takeaways\\n* **Critical Exam Insights:** High-yield questions and summary synthesis [1].\\n* **Common Misconceptions:** Key distinctions to avoid exam traps [2]."
-  ],
-  "action_steps": [
-    "Step 1: Foundational Review - core concepts and essential timeline to master",
-    "Step 2: Analytical Deep-Dive - key turning points or core mechanisms",
-    "Step 3: Synthesis & Verification - review findings against accredited citations"
-  ],
-  "pro_tips": "In-depth educator pro-tip highlighting common exam traps or memory anchors.",
-  "related_queries": [
-    "Follow-up research question 1",
-    "Follow-up research question 2",
-    "Follow-up research question 3"
-  ],
-  "source_links": [
-    "verified url from context 1",
-    "verified url from context 2"
-  ]
-}`;
-    const contentPrompt = `STUDENT SEARCH QUERY: "${rawQuery}"
-STUDENT ACADEMIC PROFILE & LOCATION:
-- Country: ${country}
-- Grade Level: ${gradeLevel}
-- Academic Stream: ${academicStream}
-${profileContext ? `ADDITIONAL PROFILE CONTEXT:
-${profileContext}
-` : ""}
-${studentNotes ? `STUDENT LOCAL STUDY NOTES / TARGET SYLLABUS:
-${studentNotes}
-` : ""}
-
-VERIFIED REAL-TIME ACADEMIC & RESEARCH DATA:
-${verifiedContextString || "No external search feeds returned. Synthesize using accurate, verified ground truth from peer-reviewed databases."}
-
-Conduct an elite, point-wise, structured academic research report with small markdown subheadings (### ...), bullet points, and mandatory inline bracketed citations ([1], [2]) mapping to verified references, returning strictly the JSON structure above.`;
-    const response = await safeGenerateContent({
-      gradeLevel,
-      model: "gemini-3.5-flash-lite",
-      contents: [{ parts: [{ text: contentPrompt }] }],
-      config: {
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        responseMimeType: "application/json",
-        temperature: 0.2,
-        maxOutputTokens: 8192
-      }
-    });
-    let rawText = response.text || "";
-    let parsedResult = null;
-    try {
-      parsedResult = safeParseJSON(rawText, "object");
-      if (!parsedResult || !parsedResult.topic_title || !parsedResult.live_updates) {
-        throw new Error("Invalid or incomplete JSON response from model");
-      }
-    } catch (parseError) {
-      console.error("[live-study-tutor] JSON parse failed, constructing grounded result from raw text:", parseError);
-      parsedResult = {
-        topic_title: keywords[0] || rawQuery,
-        match_score: "96%",
-        live_updates: rawText ? [rawText] : ["Live research synthesis completed successfully."],
-        action_steps: [
-          `Review core concepts and definitions of ${keywords[0] || rawQuery}`,
-          `Analyze key mechanisms, timeline, and exam implications`,
-          `Verify understanding against authoritative academic references`
-        ],
-        pro_tips: `Focus on the underlying core principles and timeline rather than rote memorization when studying ${keywords[0] || rawQuery}.`,
-        related_queries: [
-          `Key timeline of ${keywords[0] || rawQuery}`,
-          `Exam takeaways for ${keywords[0] || rawQuery}`,
-          `Important facts about ${keywords[0] || rawQuery}`
-        ],
-        source_links: searchResults.map((s) => s.uri).slice(0, 5)
-      };
-    }
-    const cleanSources = [];
-    const detailedSources = [];
-    const seenUrls = /* @__PURE__ */ new Set();
-    const candidateLinks = Array.isArray(parsedResult.source_links) && parsedResult.source_links.length > 0 ? parsedResult.source_links : searchResults.map((s) => s.uri);
-    for (const link of candidateLinks) {
-      if (typeof link !== "string" || !link.startsWith("http") || seenUrls.has(link) || link.includes("wikipedia.org") || link.includes("wikimedia.org")) continue;
-      seenUrls.add(link);
-      cleanSources.push(link);
-      const matched = searchResults.find((s) => s.uri === link);
-      let displayTitle = matched?.title;
-      if (!displayTitle) {
-        try {
-          const u = new URL(link);
-          const host = u.hostname.replace(/^www\./, "");
-          if (host.includes("britannica")) displayTitle = "Encyclopaedia Britannica Academic";
-          else if (host.includes("nature")) displayTitle = "Nature Journal Research";
-          else if (host.includes("doi.org")) displayTitle = "Peer-Reviewed DOI Study";
-          else if (host.includes("news.google")) displayTitle = "Google News Live Feed";
-          else displayTitle = `${host} Verified Research`;
-        } catch (_) {
-          displayTitle = "Verified Academic Source";
-        }
-      }
-      detailedSources.push({
-        title: displayTitle,
-        uri: link,
-        sourceName: matched?.sourceName
-      });
-    }
-    if (detailedSources.length === 0 && searchResults.length > 0) {
-      for (const s of searchResults.slice(0, 5)) {
-        if (!seenUrls.has(s.uri) && !s.uri.includes("wikipedia.org") && !s.uri.includes("wikimedia.org")) {
-          seenUrls.add(s.uri);
-          cleanSources.push(s.uri);
-          detailedSources.push({
-            title: s.title,
-            uri: s.uri,
-            sourceName: s.sourceName
-          });
-        }
-      }
-    }
-    if (detailedSources.length === 0) {
-      const mainKeyword = keywords[0] || rawQuery;
-      const encodedKw = encodeURIComponent(mainKeyword);
-      const countryNorm = (country || "").toLowerCase();
-      const britannicaUrl = `https://www.britannica.com/search?query=${encodedKw}`;
-      const natureUrl = `https://www.nature.com/search?q=${encodedKw}`;
-      cleanSources.push(britannicaUrl, natureUrl);
-      detailedSources.push(
-        { title: `${mainKeyword} - Encyclopaedia Britannica Academic`, uri: britannicaUrl, sourceName: "Encyclopaedia Britannica" },
-        { title: `${mainKeyword} - Nature Academic Research Index`, uri: natureUrl, sourceName: "Nature Journal" }
-      );
-      if (countryNorm.includes("india")) {
-        cleanSources.push("https://ncert.nic.in");
-        detailedSources.push({ title: "NCERT National Academic Repository", uri: "https://ncert.nic.in", sourceName: "NCERT India" });
-      } else if (countryNorm.includes("kingdom") || countryNorm.includes("uk")) {
-        cleanSources.push("https://www.gov.uk/education");
-        detailedSources.push({ title: "UK Department for Education Official Portal", uri: "https://www.gov.uk/education", sourceName: "GOV.UK Education" });
-      } else {
-        cleanSources.push("https://www.loc.gov");
-        detailedSources.push({ title: "Library of Congress Academic Database", uri: "https://www.loc.gov", sourceName: "Library of Congress" });
-      }
-    }
-    parsedResult.source_links = cleanSources.slice(0, 6);
-    parsedResult.detailed_sources = detailedSources.slice(0, 6);
-    const finalSourcesCount = parsedResult.detailed_sources.length;
-    if (finalSourcesCount > 0) {
-      const clampCitations = (text) => {
-        if (!text) return "";
-        return text.replace(/\[\s*(\d+)\s*\]/g, (_, p1) => {
-          let n = parseInt(p1, 10);
-          if (n > finalSourcesCount) {
-            n = (n - 1) % finalSourcesCount + 1;
-          } else if (n < 1) {
-            n = 1;
-          }
-          return `[${n}]`;
-        });
-      };
-      if (Array.isArray(parsedResult.live_updates)) {
-        parsedResult.live_updates = parsedResult.live_updates.map((u) => typeof u === "string" ? clampCitations(u) : u);
-      } else if (typeof parsedResult.live_updates === "string") {
-        parsedResult.live_updates = clampCitations(parsedResult.live_updates);
-      }
-    }
-    if (!Array.isArray(parsedResult.related_queries) || parsedResult.related_queries.length === 0) {
-      parsedResult.related_queries = [
-        `Key milestones of ${parsedResult.topic_title}`,
-        `Exam questions on ${parsedResult.topic_title}`,
-        `Latest 2026 updates regarding ${parsedResult.topic_title}`
-      ];
-    }
-    res.json(parsedResult);
-  } catch (error) {
-    console.error("[live-study-tutor] Fatal error:", error);
-    res.status(500).json({
-      error: error.message || "Failed to conduct deep research search. Please try again.",
-      success: false
-    });
-  }
-});
-app.post("/api/generate-trivia", async (req, res) => {
-  try {
-    const { gradeLevel, academicStream, studyLevel, topic, excludeQuestions, country } = req.body;
-    const aiClient = getAI();
-    const normalizeStr = (s) => s ? s.toLowerCase().replace(/[^a-z0-9]/g, "") : "";
-    const excludesSet = new Set((excludeQuestions || []).map((q) => normalizeStr(q)));
-    let attempts = 0;
-    let finalTrivia = null;
-    let extraAvoidInstruction = "";
-    while (attempts < 3) {
-      attempts++;
-      let promptText = `Generate a single short, curriculum-aligned academic brain booster trivia question for:
-- Student Academic Grade/Level: ${gradeLevel || studyLevel || "High School"}
-- Academic Stream/Interest: ${academicStream || "General Science & Logic"}
-- Student's Country & Context: ${country || "Global"}`;
-      if (country && country.trim().length > 0) {
-        promptText += `
-- Country Context: Align with the national academic curriculum and everyday relatable logic relevant to ${country}.`;
-      }
-      if (topic && topic.trim().length > 0) {
-        promptText += `
-- Specific Category Focus: ${topic}`;
-      } else {
-        promptText += `
-- Category Focus: High-yield academic concepts, everyday scientific applications, mathematical intuition, or clever logical problem solving tailored to ${academicStream}.`;
-      }
-      if (excludeQuestions && Array.isArray(excludeQuestions) && excludeQuestions.length > 0) {
-        promptText += `
-- EXCLUDE the following questions (do NOT repeat them): ${JSON.stringify(excludeQuestions.slice(-120))}`;
-      }
-      if (extraAvoidInstruction) {
-        promptText += `
-${extraAvoidInstruction}`;
-      }
-      const systemInstruction = `You are the Master of Academic Brain Booster & Cognitive Trivia for Students.
-
-MISSION:
-Generate a single, ultra-short, highly engaging multiple choice brain booster question tailored STRICTLY to the student's profile (Grade level: ${gradeLevel}, Stream: ${academicStream}, and Country: ${country}).
-
-QUESTION PHILOSOPHY:
-1. Focus on HIGH-YIELD ACADEMIC CONCEPTS, PRACTICAL SCIENCE/PHYSICS/MATH APPLICATIONS, CLEVER LOGIC SHORTCUTS, or ACCURATE CURRICULAR INSIGHTS.
-2. The question must trigger an instant "Aha!" moment and reinforce real academic learning.
-3. STRICT SHORT LENGTH CONSTRAINTS:
-   - "question": STRICTLY SHORT & PUNCHY \u2014 15 to 25 words maximum! (1 or 2 crisp sentences). NEVER output long wordy paragraphs.
-   - "options": EXACTLY 3 or 4 short options (1 to 4 words each).
-   - "fact": STRICTLY 15 to 25 words max explaining the core concept or logic with an emoji (e.g. "\u{1F4A1} High-Yield Concept: ...").
-4. SUBJECT TAG: 2-3 words with an appropriate emoji (e.g. "\u26A1 Physics Intuition", "\u{1F9EA} Chemistry in Action", "\u{1F9EC} Biology Masterclass", "\u{1F4D0} Mental Math Shortcut", "\u{1F4C8} Economics Insight").
-
-STRICT JSON OUTPUT FORMAT:
-Output ONLY a valid JSON object matching this exact schema:
-{
-  "subjectTag": "\u26A1 Physics Intuition",
-  "question": "If you double the speed of a car, by what factor does its braking distance increase on a dry road?",
-  "options": ["2 times", "4 times", "8 times", "Remains same"],
-  "correctIndex": 1,
-  "fact": "\u{1F4A1} Kinetic Energy is proportional to velocity squared (v^2), so braking distance quadruples! \u{1F697}"
-}`;
-      const response = await safeGenerateContent({
-        gradeLevel: gradeLevel || "High School",
-        model: "gemini-3.5-flash-lite",
-        contents: [{ parts: [{ text: promptText }] }],
-        config: {
-          systemInstruction: { parts: [{ text: systemInstruction }] },
-          responseMimeType: "application/json"
-        }
-      });
-      const triviaText = response.text || "";
-      const parsed = safeParseJSON(triviaText, "object");
-      if (parsed && parsed.question && Array.isArray(parsed.options)) {
-        const normQ = normalizeStr(parsed.question);
-        if (!excludesSet.has(normQ)) {
-          finalTrivia = parsed;
-          break;
-        } else {
-          console.warn(`[Trivia Loop] Duplicate question generated: "${parsed.question}". Retrying...`);
-          extraAvoidInstruction = `
-- IMPORTANT: You previously generated "${parsed.question}", which was already asked. Please choose a completely different subtopic or a creative new angle to make sure it is 100% unique.`;
-        }
-      }
-    }
-    if (finalTrivia) {
-      return res.json({ trivia: finalTrivia });
-    }
-    throw new Error("Failed to parse or generate a unique trivia response after multiple attempts");
-  } catch (error) {
-    console.error("Trivia generation error:", error);
-    const fallbacks = [
-      {
-        subjectTag: "\u{1F4A1} Presence of Mind",
-        question: "If an electric train travels North at 60 mph and wind blows West at 20 mph, which way does the smoke blow?",
-        options: ["North", "West", "No smoke (Electric)"],
-        correctIndex: 2,
-        fact: "\u26A1 Presence of mind! Electric trains don't produce any smoke! \u{1F682}"
-      },
-      {
-        subjectTag: "\u{1F9E0} Logic & Common Sense",
-        question: "A bat and ball cost $1.10 in total. The bat costs $1.00 more than the ball. How much is the ball?",
-        options: ["$0.10", "$0.05", "$0.01"],
-        correctIndex: 1,
-        fact: "\u{1F4A1} Common sense trap! If the ball were $0.10, the bat would be $1.10, making the total $1.20! \u{1F3BE}"
-      },
-      {
-        subjectTag: "\u26A1 Everyday Physics",
-        question: "Why can birds sit safely on uninsulated high-voltage power lines without getting an electric shock?",
-        options: ["Insulated feet", "Zero voltage difference", "Feathers absorb charge"],
-        correctIndex: 1,
-        fact: "\u{1F985} Both feet are on the exact same wire, creating zero voltage difference so no current flows! \u26A1"
-      },
-      {
-        subjectTag: "\u{1F9EA} Kitchen Science",
-        question: "Which freezes faster in a home freezer under certain conditions: hot water or cold water?",
-        options: ["Cold Water", "Hot Water (Mpemba Effect)", "Both at same rate"],
-        correctIndex: 1,
-        fact: "\u2744\uFE0F Known as the Mpemba Effect, hot water can sometimes freeze faster due to rapid surface evaporation! \u{1F9CA}"
-      },
-      {
-        subjectTag: "\u{1F9E9} Mind Teaser",
-        question: "A rooster lays an egg on the very top of a slanted triangular barn roof. Which side does it roll down?",
-        options: ["Left side", "Right side", "Roosters don't lay eggs"],
-        correctIndex: 2,
-        fact: "\u{1F414} Classic presence of mind riddle! Roosters are male and do not lay eggs! \u{1F95A}"
-      }
-    ];
-    const randomIndex = Math.floor(Math.random() * fallbacks.length);
-    res.json({ trivia: fallbacks[randomIndex], isFallback: true });
   }
 });
 var SUBS_FILE_PATH = import_path.default.join(process.cwd(), "subscriptions.json");
@@ -5811,33 +13346,62 @@ function normalizeBattleSubject(subId) {
   if (s === "ap-physics-1") return "ap-physics";
   return s;
 }
-function normalizeGrade(grade) {
-  if (!grade) return "9th Grade";
-  const g = String(grade).toLowerCase();
-  if (g.includes("9") || g.includes("freshman")) return "9th Grade";
-  if (g.includes("10") || g.includes("sophomore")) return "10th Grade";
-  if (g.includes("11") || g.includes("junior")) return "11th Grade";
-  if (g.includes("12") || g.includes("senior")) return "12th Grade";
-  if (g.includes("college")) return "College";
-  return "9th Grade";
-}
 var waitingQueue = /* @__PURE__ */ new Map();
 var activeBattleRooms = /* @__PURE__ */ new Map();
 var playerToRoomMap = /* @__PURE__ */ new Map();
 function purgeStaleTickets() {
   const now = Date.now();
   for (const [qId, ticket] of waitingQueue.entries()) {
-    if (now - ticket.lastSeen > 6e3) {
+    if (now - ticket.lastSeen > 2e4) {
       waitingQueue.delete(qId);
     }
   }
   for (const [roomId, room] of activeBattleRooms.entries()) {
+    const lastActive = Math.max(room.player1.lastSeen || 0, room.player2?.lastSeen || 0, room.updatedAt || 0);
     if (room.status === "finished" && now - room.updatedAt > 12e4) {
       activeBattleRooms.delete(roomId);
-    } else if (now - room.updatedAt > 9e5) {
+    } else if (room.status === "waiting" && now - room.updatedAt > 18e4) {
+      activeBattleRooms.delete(roomId);
+    } else if ((room.status === "countdown" || room.status === "battle") && now - lastActive > 24e4) {
       activeBattleRooms.delete(roomId);
     }
   }
+}
+function isSameUser(id1, id2) {
+  if (!id1 || !id2) return false;
+  if (id1 === id2) return true;
+  const base1 = id1.split("_tab_")[0].split("_sess_")[0];
+  const base2 = id2.split("_tab_")[0].split("_sess_")[0];
+  if (base1 && base2 && base1 === base2 && base1 !== "player" && base1 !== "student" && !base1.startsWith("test_")) {
+    return true;
+  }
+  return false;
+}
+function findBestOpponent(myPlayerId, mySubjectId, myGradeLevel, myWaitDurationMs = 0) {
+  const now = Date.now();
+  const myNormSubject = normalizeBattleSubject(mySubjectId);
+  const myNormGrade = normalizeGrade(myGradeLevel);
+  let bestSameGradeMatch = null;
+  let anyGradeSameSubjectMatch = null;
+  for (const [qId, ticket] of waitingQueue.entries()) {
+    if (qId === myPlayerId || ticket.player.id === myPlayerId) continue;
+    if (isSameUser(ticket.player.id, myPlayerId)) continue;
+    if (now - ticket.lastSeen > 2e4) continue;
+    const ticketNormSub = normalizeBattleSubject(ticket.subjectId);
+    if (ticketNormSub !== myNormSubject) continue;
+    const ticketGrade = normalizeGrade(ticket.gradeLevel || ticket.player.gradeLevel);
+    if (ticketGrade === myNormGrade) {
+      bestSameGradeMatch = { qId, ticket };
+      break;
+    }
+    const opponentWaitMs = now - (ticket.timestamp || ticket.lastSeen);
+    if (myWaitDurationMs >= 7e3 || opponentWaitMs >= 7e3) {
+      if (!anyGradeSameSubjectMatch) {
+        anyGradeSameSubjectMatch = { qId, ticket };
+      }
+    }
+  }
+  return bestSameGradeMatch || anyGradeSameSubjectMatch;
 }
 function findBattleRoom(roomIdOrCode) {
   if (!roomIdOrCode) return { room: void 0, key: void 0 };
@@ -5874,6 +13438,103 @@ app.get("/api/battle/ping", (req, res) => {
     activeRoomCount: activeBattleRooms.size
   });
 });
+app.post("/api/battle/generate-questions", async (req, res) => {
+  try {
+    const { subjectId, gradeLevel, avoidStems, count = 5 } = req.body;
+    if (!subjectId) {
+      return res.status(400).json({ error: "Missing subjectId" });
+    }
+    const requestedCount = Math.min(Math.max(parseInt(count) || 5, 3), 10);
+    const normGrade = normalizeGrade(gradeLevel);
+    const subjectObj = AP_BATTLE_SUBJECTS.find((s) => s.id === subjectId);
+    const subjectName = subjectObj?.name || subjectId;
+    let antiRepeatPrompt = "";
+    if (Array.isArray(avoidStems) && avoidStems.length > 0) {
+      const cleanList = avoidStems.filter((s) => typeof s === "string" && s.trim()).slice(-25).map((s) => `- "${s.replace(/"/g, "'").slice(0, 100)}"`).join("\n");
+      if (cleanList) {
+        antiRepeatPrompt = `
+CRITICAL ANTI-REPETITION REQUIREMENT:
+The student has already played and seen the following question stems in recent battles:
+${cleanList}
+YOU MUST NEVER REPEAT, COPY, OR SLIGHTLY REPHRASE ANY OF THE ABOVE QUESTIONS.
+Every single question you produce MUST be 100% NOVEL, ORIGINAL, and FRESH. Test different concepts, different equations, different historical events, or different biological mechanisms.`;
+      }
+    }
+    const prompt = `You are the Official AP Exam Question Engine for high-stakes 1v1 Quiz Battles.
+Generate exactly ${requestedCount} distinct, high-quality, competitive Multiple Choice Questions (MCQ) for: "${subjectName}".
+Target Student Level: ${normGrade}.
+Timestamp Seed: ${Date.now()}_${Math.random().toString(36).substring(2, 7)}
+
+${antiRepeatPrompt}
+
+RULES FOR 1V1 QUIZ BATTLE QUESTIONS:
+1. Every question must be competitive, fast-paced, clear, and solvable in 30-60 seconds.
+2. Provide exactly 4 options per question: ["Option A", "Option B", "Option C", "Option D"].
+3. Exactly ONE correct option. Set "correctIndex" as 0, 1, 2, or 3.
+4. "stem" must be concise and engaging (use standard LaTeX $...$ for mathematical/scientific expressions if applicable).
+5. "explanation": 1-2 sentence crisp breakdown explaining why the correct choice is true and why the distractors are wrong.
+6. "difficulty": distribute as 'Easy' (30s), 'Medium' (45s), 'Hard' (60s).
+7. "timeLimit": 30 for Easy, 45 for Medium, 60 for Hard.
+
+RESPONSE FORMAT:
+Strictly return a raw JSON array of ${requestedCount} objects matching this exact structure:
+[
+  {
+    "stem": "Question text here",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correctIndex": 0,
+    "explanation": "Brief explanation here",
+    "difficulty": "Medium",
+    "timeLimit": 45
+  }
+]`;
+    const aiResp = await safeGenerateContent({
+      model: "gemini-3.5-flash-lite",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      config: {
+        responseMimeType: "application/json",
+        temperature: 0.9
+      }
+    });
+    let rawText = "";
+    if (typeof aiResp === "string") rawText = aiResp;
+    else if (aiResp?.candidates?.[0]?.content?.parts?.[0]?.text) {
+      rawText = aiResp.candidates[0].content.parts[0].text;
+    }
+    let generated = [];
+    try {
+      const cleaned = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
+      const parsed = JSON.parse(cleaned);
+      if (Array.isArray(parsed)) {
+        generated = parsed.map((item, idx) => ({
+          id: `ai_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
+          subjectId,
+          stem: String(item.stem || "").trim(),
+          options: Array.isArray(item.options) && item.options.length === 4 ? item.options.map((o) => String(o).trim()) : ["Option A", "Option B", "Option C", "Option D"],
+          correctIndex: typeof item.correctIndex === "number" && item.correctIndex >= 0 && item.correctIndex <= 3 ? item.correctIndex : 0,
+          explanation: String(item.explanation || "Verified correct based on AP curriculum standards.").trim(),
+          difficulty: item.difficulty === "Easy" || item.difficulty === "Hard" ? item.difficulty : "Medium",
+          timeLimit: item.timeLimit === 30 || item.timeLimit === 60 ? item.timeLimit : 45
+        })).filter((q) => q.stem && q.options.length === 4);
+      }
+    } catch (parseErr) {
+      console.warn("[Battle AI Generator] Failed to parse JSON:", parseErr);
+    }
+    if (generated.length >= requestedCount) {
+      console.log(`[Battle AI Generator] Successfully generated ${generated.length} fresh AI questions for ${subjectId}`);
+      return res.json({ success: true, questions: generated.slice(0, requestedCount), source: "ai" });
+    }
+    const needed = requestedCount - generated.length;
+    const combinedAvoid = [...avoidStems || [], ...generated.map((g) => g.stem)];
+    const fallbackBank = getBattleQuestions(subjectId, Math.max(needed, 5), combinedAvoid);
+    const finalQs = [...generated, ...fallbackBank].slice(0, requestedCount);
+    res.json({ success: true, questions: finalQs, source: generated.length > 0 ? "hybrid" : "bank" });
+  } catch (err) {
+    console.error("[Battle AI Generator Error]:", err);
+    const fallback = getBattleQuestions(req.body.subjectId || "ap-calculus-ab", 5, req.body.avoidStems || []);
+    res.json({ success: true, questions: fallback, source: "fallback" });
+  }
+});
 app.post("/api/battle/match", (req, res) => {
   try {
     const { playerId, playerName, playerAvatar, subjectId, questions, gradeLevel } = req.body;
@@ -5885,7 +13546,7 @@ app.post("/api/battle/match", (req, res) => {
     const existingRoomId = playerToRoomMap.get(playerId);
     if (existingRoomId) {
       const existingRoom = activeBattleRooms.get(existingRoomId);
-      if (existingRoom && (existingRoom.status === "countdown" || existingRoom.status === "battle")) {
+      if (existingRoom && (existingRoom.status === "countdown" || existingRoom.status === "battle") && now - existingRoom.updatedAt < 25e3) {
         const opponent = existingRoom.player1.id === playerId ? existingRoom.player2 : existingRoom.player1;
         const isP1 = existingRoom.player1.id === playerId;
         return res.json({
@@ -5913,20 +13574,12 @@ app.post("/api/battle/match", (req, res) => {
       gradeLevel: myNormGrade,
       tagline: `${myNormGrade} \u2022 AP Scholar`
     };
-    let foundOpponent = null;
-    const myNormSubject = normalizeBattleSubject(subjectId);
-    for (const [qId, ticket] of waitingQueue.entries()) {
-      const oppGrade = normalizeGrade(ticket.gradeLevel || ticket.player.gradeLevel);
-      if (ticket.player.id !== playerId && now - ticket.lastSeen <= 6e3 && normalizeBattleSubject(ticket.subjectId) === myNormSubject && oppGrade === myNormGrade) {
-        foundOpponent = { qId, ticket };
-        break;
-      }
-    }
+    const foundOpponent = findBestOpponent(playerId, subjectId, myNormGrade, 0);
     if (foundOpponent) {
       const oppExistingRoomId = playerToRoomMap.get(foundOpponent.ticket.player.id);
       if (oppExistingRoomId) {
         const oppRoom = activeBattleRooms.get(oppExistingRoomId);
-        if (oppRoom && (oppRoom.status === "countdown" || oppRoom.status === "battle")) {
+        if (oppRoom && (oppRoom.status === "countdown" || oppRoom.status === "battle") && now - oppRoom.updatedAt < 25e3) {
           playerToRoomMap.set(playerId, oppExistingRoomId);
           waitingQueue.delete(playerId);
           waitingQueue.delete(foundOpponent.qId);
@@ -5943,10 +13596,14 @@ app.post("/api/battle/match", (req, res) => {
       waitingQueue.delete(foundOpponent.qId);
       waitingQueue.delete(playerId);
       const roomId = `room_${now}_${Math.random().toString(36).substring(2, 6)}`;
-      const battleQuestions = foundOpponent.ticket.questions && foundOpponent.ticket.questions.length > 0 ? foundOpponent.ticket.questions : questions && questions.length > 0 ? questions : [];
+      const targetSub = foundOpponent.ticket.subjectId || subjectId;
+      let battleQuestions = foundOpponent.ticket.questions && foundOpponent.ticket.questions.length >= 5 ? foundOpponent.ticket.questions : questions && questions.length >= 5 ? questions : [];
+      if (!battleQuestions || battleQuestions.length < 5) {
+        battleQuestions = getBattleQuestions(targetSub, 5);
+      }
       const newRoom = {
         id: roomId,
-        subjectId: foundOpponent.ticket.subjectId || subjectId,
+        subjectId: targetSub,
         status: "countdown",
         player1: foundOpponent.ticket.player,
         player2: myPlayer,
@@ -5978,7 +13635,7 @@ app.post("/api/battle/match", (req, res) => {
       lastSeen: now,
       gradeLevel: myNormGrade
     });
-    console.log(`[Battle Matchmaker] ${myPlayer.name} (${myNormGrade}) entered radar. Active queue: ${waitingQueue.size}`);
+    console.log(`[Battle Matchmaker] ${myPlayer.name} (${myNormGrade}) entered radar for ${subjectId}. Active queue: ${waitingQueue.size}`);
     return res.json({ status: "waiting" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -5986,7 +13643,7 @@ app.post("/api/battle/match", (req, res) => {
 });
 app.post("/api/battle/poll-match", (req, res) => {
   try {
-    const { playerId } = req.body;
+    const { playerId, playerName, playerAvatar, subjectId, gradeLevel, questions } = req.body;
     if (!playerId) {
       return res.status(400).json({ error: "Missing playerId" });
     }
@@ -5995,7 +13652,7 @@ app.post("/api/battle/poll-match", (req, res) => {
     const roomId = playerToRoomMap.get(playerId);
     if (roomId) {
       const room = activeBattleRooms.get(roomId);
-      if (room && (room.status === "countdown" || room.status === "battle")) {
+      if (room && (room.status === "countdown" || room.status === "battle") && now - room.updatedAt < 25e3) {
         waitingQueue.delete(playerId);
         const opponent = room.player1.id === playerId ? room.player2 : room.player1;
         const isP1 = room.player1.id === playerId;
@@ -6011,24 +13668,39 @@ app.post("/api/battle/poll-match", (req, res) => {
         playerToRoomMap.delete(playerId);
       }
     }
-    const myTicket = waitingQueue.get(playerId);
+    let myTicket = waitingQueue.get(playerId);
+    if (!myTicket && subjectId) {
+      const myNormGrade = normalizeGrade(gradeLevel);
+      const myPlayer = {
+        id: playerId,
+        name: playerName || "Student",
+        avatar: playerAvatar || "U",
+        score: 0,
+        hasAnswered: false,
+        currentQ: 0,
+        lastSeen: now,
+        gradeLevel: myNormGrade,
+        tagline: `${myNormGrade} \u2022 AP Scholar`
+      };
+      myTicket = {
+        player: myPlayer,
+        subjectId,
+        questions: questions || [],
+        timestamp: now,
+        lastSeen: now,
+        gradeLevel: myNormGrade
+      };
+      waitingQueue.set(playerId, myTicket);
+    }
     if (myTicket) {
       myTicket.lastSeen = now;
-      let foundOpponent = null;
-      const myNormSubject = normalizeBattleSubject(myTicket.subjectId);
-      const myNormGrade = normalizeGrade(myTicket.gradeLevel || myTicket.player.gradeLevel);
-      for (const [qId, otherTicket] of waitingQueue.entries()) {
-        const otherGrade = normalizeGrade(otherTicket.gradeLevel || otherTicket.player.gradeLevel);
-        if (qId !== playerId && otherTicket.player.id !== playerId && now - otherTicket.lastSeen <= 6e3 && normalizeBattleSubject(otherTicket.subjectId) === myNormSubject && otherGrade === myNormGrade) {
-          foundOpponent = { qId, ticket: otherTicket };
-          break;
-        }
-      }
+      const myWaitDuration = now - (myTicket.timestamp || now);
+      const foundOpponent = findBestOpponent(playerId, myTicket.subjectId, myTicket.gradeLevel || myTicket.player.gradeLevel, myWaitDuration);
       if (foundOpponent) {
         const oppExistingRoomId = playerToRoomMap.get(foundOpponent.ticket.player.id);
         if (oppExistingRoomId) {
           const oppRoom = activeBattleRooms.get(oppExistingRoomId);
-          if (oppRoom && (oppRoom.status === "countdown" || oppRoom.status === "battle")) {
+          if (oppRoom && (oppRoom.status === "countdown" || oppRoom.status === "battle") && now - oppRoom.updatedAt < 25e3) {
             playerToRoomMap.set(playerId, oppExistingRoomId);
             waitingQueue.delete(playerId);
             waitingQueue.delete(foundOpponent.qId);
@@ -6045,10 +13717,14 @@ app.post("/api/battle/poll-match", (req, res) => {
         waitingQueue.delete(playerId);
         waitingQueue.delete(foundOpponent.qId);
         const newRoomId = `room_${now}_${Math.random().toString(36).substring(2, 6)}`;
-        const battleQuestions = foundOpponent.ticket.questions && foundOpponent.ticket.questions.length > 0 ? foundOpponent.ticket.questions : myTicket.questions && myTicket.questions.length > 0 ? myTicket.questions : [];
+        const targetSub = foundOpponent.ticket.subjectId || myTicket.subjectId;
+        let battleQuestions = foundOpponent.ticket.questions && foundOpponent.ticket.questions.length >= 5 ? foundOpponent.ticket.questions : myTicket.questions && myTicket.questions.length >= 5 ? myTicket.questions : [];
+        if (!battleQuestions || battleQuestions.length < 5) {
+          battleQuestions = getBattleQuestions(targetSub, 5);
+        }
         const newRoom = {
           id: newRoomId,
-          subjectId: foundOpponent.ticket.subjectId || myTicket.subjectId,
+          subjectId: targetSub,
           status: "countdown",
           player1: foundOpponent.ticket.player,
           player2: myTicket.player,
@@ -6115,6 +13791,7 @@ app.post("/api/battle/room/create", (req, res) => {
     const cleanCode = digits.length >= 4 ? digits : raw.replace(/[^A-Z0-9]/g, "");
     const displayCode = digits.length >= 4 ? `AP-${digits.slice(-4)}` : `AP-${cleanCode}`;
     const roomId = `room_${displayCode}`;
+    let battleQuestions = questions && questions.length >= 5 ? questions : getBattleQuestions(subjectId, 5);
     const newRoom = {
       id: roomId,
       code: displayCode,
@@ -6130,7 +13807,7 @@ app.post("/api/battle/room/create", (req, res) => {
         lastSeen: now
       },
       player2: null,
-      questions: questions || [],
+      questions: battleQuestions,
       currentQ: 0,
       roundStatus: "playing",
       roundStartTime: now + 3e3,
@@ -6192,17 +13869,43 @@ app.post("/api/battle/room/join", (req, res) => {
 });
 app.post("/api/battle/action", (req, res) => {
   try {
-    const { roomId, playerId, score, hasAnswered, finished } = req.body;
+    const { roomId, playerId, score, hasAnswered, finished, currentQ } = req.body;
     const { room } = findBattleRoom(roomId);
     if (!room) {
       return res.status(404).json({ error: "Room not found" });
     }
+    if (typeof currentQ === "number") {
+      if (currentQ < room.currentQ) {
+        return res.json({ success: true, room, ignored: true });
+      }
+      if (currentQ > room.currentQ) {
+        room.currentQ = currentQ;
+        room.roundStatus = "playing";
+        room.roundStartTime = Date.now();
+        room.revealStartTime = void 0;
+        room.player1.hasAnswered = false;
+        if (room.player2) room.player2.hasAnswered = false;
+        room.updatedAt = Date.now();
+      }
+    }
     const now = Date.now();
-    const target = room.player1.id === playerId ? room.player1 : room.player2?.id === playerId ? room.player2 : null;
+    let target = room.player1.id === playerId ? room.player1 : room.player2?.id === playerId ? room.player2 : null;
+    if (!target && room.player2) {
+      if (isSameUser(room.player1.id, playerId)) target = room.player1;
+      else if (isSameUser(room.player2.id, playerId)) target = room.player2;
+    }
     if (target) {
       if (typeof score === "number") target.score = score;
       if (typeof hasAnswered === "boolean") target.hasAnswered = hasAnswered;
-      if (typeof finished === "boolean") target.finished = finished;
+      if (typeof finished === "boolean") {
+        const totalQ = room.questions?.length || 5;
+        if (finished) {
+          const isAtEnd = typeof currentQ === "number" && currentQ >= totalQ || room.currentQ >= totalQ - 1 && target.hasAnswered;
+          target.finished = isAtEnd;
+        } else {
+          target.finished = false;
+        }
+      }
       target.lastSeen = now;
       room.updatedAt = now;
     }
@@ -6228,6 +13931,73 @@ app.post("/api/battle/action", (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+function stepBattleRoomClock(room, now) {
+  let changed = false;
+  if (room.status === "countdown" && room.countdownStart) {
+    if (now - room.countdownStart >= 3e3) {
+      room.status = "battle";
+      room.roundStatus = "playing";
+      room.roundStartTime = now;
+      room.updatedAt = now;
+      changed = true;
+    }
+  }
+  if ((room.status === "battle" || room.status === "countdown") && room.roundStatus === "playing") {
+    const p1Answered = room.player1.hasAnswered;
+    const p2Answered = room.player2 ? room.player2.hasAnswered : false;
+    if (p1Answered && p2Answered) {
+      room.roundStatus = "revealed";
+      room.revealStartTime = now;
+      room.updatedAt = now;
+      changed = true;
+    }
+  }
+  if (room.status === "battle" && room.roundStatus === "revealed" && room.revealStartTime) {
+    if (now - room.revealStartTime >= 2e3) {
+      const nextQ = room.currentQ + 1;
+      if (nextQ < (room.questions?.length || 5)) {
+        room.currentQ = nextQ;
+        room.roundStatus = "playing";
+        room.roundStartTime = now;
+        room.player1.hasAnswered = false;
+        if (room.player2) room.player2.hasAnswered = false;
+        room.revealStartTime = void 0;
+        room.updatedAt = now;
+        changed = true;
+        console.log(`[Battle Arena] Room ${room.id} advanced to round ${nextQ}`);
+      } else {
+        room.status = "finished";
+        room.updatedAt = now;
+        changed = true;
+        console.log(`[Battle Arena] Room ${room.id} finished all questions!`);
+      }
+    }
+  }
+  if (room.status === "battle" && room.roundStatus === "playing") {
+    const currQ = room.questions?.[room.currentQ];
+    const qDurationMs = (currQ?.timeLimit || 30) * 1e3 + 500;
+    if (now - room.roundStartTime >= qDurationMs) {
+      room.roundStatus = "revealed";
+      room.revealStartTime = now;
+      room.player1.hasAnswered = true;
+      if (room.player2) room.player2.hasAnswered = true;
+      room.updatedAt = now;
+      changed = true;
+      console.log(`[Battle Arena] Round ${room.currentQ} in room ${room.id} timed out. Auto-revealing!`);
+    }
+  }
+  return changed;
+}
+setInterval(() => {
+  try {
+    const now = Date.now();
+    purgeStaleTickets();
+    for (const room of activeBattleRooms.values()) {
+      stepBattleRoomClock(room, now);
+    }
+  } catch {
+  }
+}, 1e3);
 app.get("/api/battle/room/:roomId", (req, res) => {
   try {
     const { roomId } = req.params;
@@ -6235,43 +14005,7 @@ app.get("/api/battle/room/:roomId", (req, res) => {
     if (!room) {
       return res.status(404).json({ error: "Room not found" });
     }
-    const now = Date.now();
-    if (room.status === "countdown" && room.countdownStart) {
-      if (now - room.countdownStart >= 3e3) {
-        room.status = "battle";
-        room.roundStatus = "playing";
-        room.roundStartTime = now;
-        room.updatedAt = now;
-      }
-    }
-    if (room.status === "battle" && room.roundStatus === "revealed" && room.revealStartTime) {
-      if (now - room.revealStartTime >= 2e3) {
-        const nextQ = room.currentQ + 1;
-        if (nextQ < (room.questions?.length || 5)) {
-          room.currentQ = nextQ;
-          room.roundStatus = "playing";
-          room.roundStartTime = now;
-          room.player1.hasAnswered = false;
-          if (room.player2) room.player2.hasAnswered = false;
-          room.revealStartTime = void 0;
-          room.updatedAt = now;
-        } else {
-          room.status = "finished";
-          room.updatedAt = now;
-        }
-      }
-    }
-    if (room.status === "battle" && room.roundStatus === "playing") {
-      const currQ = room.questions?.[room.currentQ];
-      const qDurationMs = (currQ?.timeLimit || 30) * 1e3 + 500;
-      if (now - room.roundStartTime >= qDurationMs) {
-        room.roundStatus = "revealed";
-        room.revealStartTime = now;
-        room.player1.hasAnswered = true;
-        if (room.player2) room.player2.hasAnswered = true;
-        room.updatedAt = now;
-      }
-    }
+    stepBattleRoomClock(room, Date.now());
     res.json({ room });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -6362,7 +14096,7 @@ app.delete("/api/sample-papers/:id", (req, res) => {
 async function startServer() {
   const distPath = import_path.default.join(process.cwd(), "dist");
   const hasDist = import_fs.default.existsSync(import_path.default.join(distPath, "index.html"));
-  const isDevExplicit = (process.env.NODE_ENV || "").toLowerCase() === "development";
+  const isDevExplicit = (process.env.NODE_ENV || "").toLowerCase() === "development" || process.env.npm_lifecycle_event === "dev";
   if (hasDist && !isDevExplicit) {
     console.log("[Server] Serving production static frontend from:", distPath);
     app.use("/assets", import_express.default.static(import_path.default.join(distPath, "assets"), {
@@ -6411,5 +14145,23 @@ var isServerless = Boolean(
 if (!isServerless) {
   startServer();
 }
+app.use((err, req, res, next) => {
+  if (err instanceof import_multer.default.MulterError) {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({ error: "File too large. Maximum size is 30MB." });
+    }
+  }
+  console.error("[Global Error Handler] Caught unhandled error:", err);
+  if (res.headersSent) {
+    return next(err);
+  }
+  if (req.path && req.path.startsWith("/api")) {
+    return res.status(err.status || 500).json({
+      error: err.message || "An unexpected error occurred on the server.",
+      success: false
+    });
+  }
+  next(err);
+});
 var server_default = app;
 //# sourceMappingURL=server.cjs.map

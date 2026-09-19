@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.helpyou.ai',
+  appId: 'com.apexam.prep',
   appName: 'AP Exam',
   webDir: 'dist',
   server: {

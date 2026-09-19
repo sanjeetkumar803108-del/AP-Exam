@@ -27,96 +27,150 @@ export function cleanMarkdownMath(content: string): string {
   text = text.replace(/\\r\\n/g, '\n\n');
   text = text.replace(/\\n(?!(?:eq|abla|otin|atural|earrow|warrow)\b)/g, '\n\n');
 
-  // Format Step and Part headers with generous spacing
-  text = text.replace(/(?:^|\n|\s*)\b(Step\s*\d+(?:\s*\[[^\]]+\])?(?:\s*[:\-])?)\s*/gi, '\n\n**$1**\n\n');
-  text = text.replace(/(?:^|\n|\s*)\bPart\b\s*(\([A-Za-z0-9]+\)|[A-Da-d0-9]+)(?:\s*\[[^\]]+\])?(?:\s*[:\-])?\s*/gi, '\n\n**Part $1:**\n\n');
+  // Strip standalone orphaned asterisks on their own lines (e.g. "**\n\nStep 1...\n\n**")
+  text = text.replace(/^\s*\*\*\s*$/gm, '');
+  // Strip orphaned bullet asterisks (e.g. "• **\n" or "- **\n")
+  text = text.replace(/(?:^|\n)\s*[-*•]\s*\*\*\s*(?:\n|$)/g, '\n');
+  // Clean up bullet points starting with empty bold tags like "• **: "
+  text = text.replace(/(?:^|\n)\s*([-*•])\s*\*\*:\s*/g, '\n$1 ');
 
-  // 1. Repair escaped or eaten control characters in LaTeX math formulas using exact ASCII hex codes:
-  // \x0D = carriage return (\r)
-  text = text.replace(/\x0D(ightarrow|ho|ight|angle|eal|m|oot|ceil|floor)/g, '\\r$1');
-  // \x09 = tab (\t)
-  text = text.replace(/\x09(heta|ext|imes|an|au|o|ilde|ag|op|extbf|extit)/g, '\\t$1');
-  // \x0C = form feed (\f)
-  text = text.replace(/\x0C(rac|orall|lat|oot)/g, '\\f$1');
-  // \x08 = backspace (\b)
-  text = text.replace(/\x08(eta|egin|ar|ig|oldsymbol|inom|ot|ullet|f|mod)/g, '\\b$1');
-  // \x0A = newline (\n)
-  text = text.replace(/\x0A(eq|abla|otin|atural|earrow|warrow)/g, '\\n$1');
-  // \x0B = vertical tab (\v)
-  text = text.replace(/\x0B(ec|dots|dash)/g, '\\v$1');
+  // Strip AI internal monologue / scratchpad leaks in explanations (e.g. "However, wait—let's trace carefully...")
+  text = text.replace(/(?:However,\s*wait[\u2014\-]|Wait,\s*let['’]s|Let['’]s\s*(?:re-verify|make\s*sure|check|test|verify|trace|set\s*option)|Ah,\s*let['’]s)[\s\S]*?(?=(?:\bDistractor\s*Analysis\b|\bStep\s*\d+\b|(?:\n\s*[-*•]?\s*Option\s*[A-D]\b)|$))/gi, '');
 
-  // 1.5. Protect currency symbols & parenthetical price lists (e.g. "($AirA, FlyB)", "($100, $100)")
-  // so remarkMath doesn't treat dollar signs on prices as math delimiters
-  text = text.replace(/\$([A-Z][a-zA-Z0-9_]*\s*,\s*[A-Z][a-zA-Z0-9_]*)/g, '($1');
-  text = text.replace(/(^|[\s(])\$(\d+(?:\.\d+)?)(?![0-9a-zA-Z^_\\{])/g, '$1\\$$2');
+  // Strip backticks on numbers, arithmetic expressions, variables, and common types in explanations so they don't render as awkward boxes
+  text = text.replace(/`([0-9]+(?:\.[0-9]+)?)`/g, '$1');
+  text = text.replace(/`([a-zA-Z0-9_.]+(?:\s*[\+\-\*\/\%]\s*[a-zA-Z0-9_.]+)+)`/g, '$1');
+  text = text.replace(/`([\+\-\*\/\%\(\)\=\<\>\!\,]+)`/g, '$1');
+  text = text.replace(/`(\([a-zA-Z0-9_.\s\+\-\*\/]+\))`/g, '$1');
+  text = text.replace(/`\b(int|double|boolean|char|float|long|short|byte|void|String|true|false)\b`/gi, '$1');
+  text = text.replace(/`([a-zA-Z_][a-zA-Z0-9_]*)`/g, '$1');
 
-  // 2. Fix broken/clipped arrow tokens (e.g. "ightarrow" -> "\rightarrow")
-  text = text.replace(/(^|[\s$(=_])ightarrow([\s$_^0-9A-Za-z])/g, '$1\\rightarrow$2');
-  text = text.replace(/(^|[\s$(=_])rac\{/g, '$1\\frac{');
-  text = text.replace(/(^|[\s$(=_])ext\{/g, '$1\\text{');
-  text = text.replace(/(^|[\s$(=_])heta([\s$_^0-9A-Za-z])/g, '$1\\theta$2');
-  // Fix accent single quotes like 5\' or 3\' inside math/prose
-  text = text.replace(/([0-9a-zA-Z])\\'/g, "$1'");
-  // Fix bare degrees like ^\circ or ^\circ C
-  text = text.replace(/(?<![0-9a-zA-Z\)\}])\^\s*\\?circ/g, '^{\\circ}');
-  text = text.replace(/(\d+)\^\\?circ(?![a-zA-Z{])/g, '$1^{\\circ}');
+  // Enforce clean line breaks and spacing between Steps and Distractor Analysis
+  text = text.replace(/([.!?])\s*(Step\s*\d+\s*[:\-])\s*/gi, '$1\n\n**$2**\n\n');
+  text = text.replace(/([.!?])\s*\*{0,2}(Distractor\s*Analysis\s*[:\-])\*{0,2}\s*/gi, '$1\n\n**$2**\n\n');
+  text = text.replace(/(?:^|\n)\s*\*{0,2}(Distractor\s*Analysis\s*[:\-])\*{0,2}\s*/gi, '\n\n**$1**\n\n');
 
-  // 3. Heal pseudo-code limits and common mathematical notations
-  // Convert full limit equation like lim_{x->-inf} (3x-1)/sqrt(4x^2+5) = 3/(-sqrt(4)) = -3/2
-  text = text.replace(/lim_\{?x\s*->\s*-?\s*(?:inf|infinity)\}?\s*\(([^)]+)\)\/sqrt\(([^)]+)\)\s*=\s*([0-9\-\+]+)\/\(-?sqrt\(([0-9]+)\)\)\s*=\s*(-?[0-9]+\/[0-9]+)/gi,
-    '$$\\lim_{x \\to -\\infty} \\frac{$1}{\\sqrt{$2}} = \\frac{$3}{-\\sqrt{$4}} = $5$$');
+  // Format distractor options as clear, separated bullet points:
+  text = text.replace(/(?:[.!?]|\n|^)\s*[-*•]\s*(Option\s*[A-D]\b(?:\s*\([^)\n]+\))?)\s*[:\-]?\s*/gi, '\n- **$1:** ');
+  text = text.replace(/([.!?])\s*(Option\s*[A-D]\b(?:\s*\([^)\n]+\))?)\s*[:\-]\s*/gi, '$1\n- **$2:** ');
 
-  // Convert limit arrow notations like lim_{x->2}, lim_{x->2^-}, lim_{x->2^+}, lim_{x->c}
-  text = text.replace(/(?<!\$)\blim_\{x\s*->\s*([a-zA-Z0-9]+)(\^[\+\-]|\^\{[\+\-]\})?\}(?!\$)/gi, (m, val, sign) => {
-    const s = sign ? sign.replace(/[\{\}]/g, '') : '';
-    return `$\\lim_{x \\to ${val}${s ? `^{${s.replace('^', '')}}` : ''}}$`;
+  // Normalize Step headers at start of text or line:
+  text = text.replace(/^\s*(?:[-*•]\s*)?\*{0,2}\s*(Step\s*\d+(?:\s*(?:\[[^\]]+\]|\([^)]+\)))?(?:\s*[:\-])?)\s*\*{0,2}\s*/gi, '**$1**\n\n');
+  text = text.replace(/(?:\n\s*[-*•]?\s*\*{0,2}\s*)(Step\s*\d+(?:\s*(?:\[[^\]]+\]|\([^)]+\)))?(?:\s*[:\-])?)\s*\*{0,2}\s*/gi, '\n\n**$1**\n\n');
+
+  // Clean double spaces inside parentheses
+  text = text.replace(/\(\s+/g, '(').replace(/\s+\)/g, ')');
+
+  // Deduplicate excessive colons like ":**:" or "::::"
+  text = text.replace(/:\*\*:/g, ':**');
+  text = text.replace(/:\s*:\s*/g, ': ');
+
+  // Clean any accidental **** bold tags
+  text = text.replace(/\*{4,}/g, '**');
+
+  // Deduplicate excessive newlines (max 2 consecutive newlines)
+  text = text.replace(/\n{3,}/g, '\n\n');
+
+  // Fix missing opening ** on labels like "- Teacher Verdict**: " -> "- **Teacher Verdict:** "
+  text = text.replace(/^(\s*[-*•]\s*)([A-Za-z0-9\s/]+?)\*\*\s*:\s*/gm, '$1**$2:** ');
+
+  // Fix label with colon outside bold like "- **Teacher Verdict**:" -> "- **Teacher Verdict:**"
+  text = text.replace(/^(\s*[-*•]\s*\*\*[^*:\n]+?)\*\*\s*:\s*/gm, '$1:** ');
+
+  // Heal stray trailing ** on list lines (e.g. "- **Total AP Points:** 0 / 4 Points (0%)**")
+  text = text.replace(/^(\s*[-*•]\s*\*\*[^*:\n]+?\*\*:\s*)([^*\n]+?)\*\*\s*$/gm, (_m, prefix, val) => {
+    return `${prefix}**${val.trim().replace(/\*+/g, '')}**`;
   });
-  text = text.replace(/(?<!\$)\blim_\{x\s*->\s*-?\s*(?:inf|infinity)\}(?!\$)/gi, '$\\lim_{x \\to -\\infty}$');
-
-  // Convert arrow directionals like (x->2^-) or (x->2^+) or x -> -infinity
-  text = text.replace(/(?<!\$)\bx\s*->\s*-?\s*(?:infinity|inf)\b(?!\$)/gi, '$x \\to -\\infty$');
-  text = text.replace(/(?<!\$)\bx\s*->\s*([0-9a-zA-Z]+)\^([\+\-])(?!\$)/gi, '$x \\to $1^{$2}$');
-  text = text.replace(/(?<!\$)\bx\s*->\s*([0-9a-zA-Z]+)(?!\$|\^)/gi, '$x \\to $1$');
-
-  // Convert bare sqrt expressions like sqrt(x^2), sqrt(4x^2+5), sqrt(4)
-  text = text.replace(/(?<![\\$a-zA-Z0-9])sqrt\(([^)]+)\)/g, (m, inner) => {
-    let cleanInner = inner.replace(/\^([0-9a-zA-Z]+)/g, '^{$1}');
-    return `$\\sqrt{${cleanInner}}$`;
-  });
-
-  // Convert algebraic derivatives like d/dx[pi^2], dy/dx
-  text = text.replace(/(?<!\$)d\/dx\[([^\]]+)\](?!\$)/g, (m, inner) => {
-    let clean = inner.replace(/\^([0-9a-zA-Z]+)/g, '^{$1}');
-    return `$\\frac{d}{dx}[${clean}]$`;
-  });
-  text = text.replace(/(?<!\$)dy\/dx(?!\$)/g, '$\\frac{dy}{dx}$');
-
-  // Convert integrals like integral(x^-1 dx)
-  text = text.replace(/(?<!\$)integral\(([^)]+)\)(?!\$)/g, (m, inner) => {
-    let clean = inner.replace(/\^([0-9a-zA-Z\-]+)/g, '^{$1}');
-    return `$\\int (${clean})$`;
+  text = text.replace(/^(\s*[-*•]\s*\*\*[^*:\n]+?:\s*)([^*\n]+?)\*\*\s*$/gm, (_m, prefix, val) => {
+    return `${prefix}**${val.trim().replace(/\*+/g, '')}**`;
   });
 
-  // Convert != to \ne
-  text = text.replace(/(?<=\s)!=(?=\s)/g, '$\\ne$');
+  // Ensure subparts in rubric evaluations are separated on distinct bullet points with generous spacing:
+  // Handles inline Part (b), Part (c) following text with dashes (-), en-dashes (–), em-dashes (—), bullets (•)
+  const inlineSubpartRegex = /([a-zA-Z0-9\.\)\]\!;])\s*[\-\u2013\u2014•·*]?\s*\b(Part\s*\([a-dA-D0-9]+\)\s*\[\s*\d+\s*(?:\/\s*\d+)?\s*(?:points|point|pts|pt)\])(?:\s*[:\-])?\s*/gi;
+  text = text.replace(inlineSubpartRegex, (_match, endChar, partLabel) => {
+    return `${endChar}\n\n- **${partLabel}:** `;
+  });
 
-  text = text.replace(/\\?lim\s*\(\s*x\s*(?:->|\\to)\s*(?:infinity|\\infty)\s*\)/gi, '\\lim_{x \\to \\infty}');
-  text = text.replace(/\\left\\\{([^$\n]*?)(?=(\$|\n|$))/g, (m) => m.includes('\\right') ? m : m + '\\right.');
+  // If a line starts with "- Part (a) [X pts]:" (without bold), wrap label in bold
+  text = text.replace(/^(\s*[-*•]\s*)(Part\s*\([a-dA-D0-9]+\)\s*\[\s*\d+\s*(?:\/\s*\d+)?\s*(?:points|point|pts|pt)\])\s*:\s*(?!\*)/gim, '$1**$2:** ');
 
+  // If a line starts with "- **Part (a) [X pts]**:", move colon inside bold
+  text = text.replace(/^(\s*[-*•]\s*\*\*Part\s*\([a-dA-D0-9]+\)\s*\[\s*\d+\s*(?:\/\s*\d+)?\s*(?:points|point|pts|pt)\])\*\*\s*:\s*/gim, '$1:** ');
+  text = text.replace(/\*\*\*\*/g, '**');
 
-  // 4. Convert standard LaTeX display and inline math delimiters:
+  // Clean up any accidental orphaned asterisks
+  text = text.replace(/(?:^|\n)\s*[-*•]\s*[\*\-–—]\s*(?:\n|$)/g, '\n');
+  text = text.replace(/\*\*\s*\*\*/g, '');
+  text = text.replace(/^\s*\*\*\s*$/gm, '');
+
+  // 1. Convert standard LaTeX display and inline math delimiters:
   // \[ ... \] -> $$ ... $$
   text = text.replace(/\\\[([\s\S]*?)\\\]/g, '$$\n$1\n$$');
   // \( ... \) -> $ ... $
   text = text.replace(/\\\(([\s\S]*?)\\\)/g, '$$$1$$');
 
-  // 5. Repair single-backslash row breaks before \hline or at end of table rows:
-  // e.g. "4 \ \hline" -> "4 \\ \hline"
-  text = text.replace(/([^\\])\\\s*\\hline/g, '$1\\\\ \\hline');
-  text = text.replace(/([0-9a-zA-Z\)\}\]])\s*\\\s*(\n|$)/g, '$1 \\\\\n');
+  // 2. CRITICAL STEP: Sanitize and wrap LaTeX environments & tables (array, matrix, cases, tabular)
+  // Convert tabular to array (KaTeX array compatibility)
+  text = text.replace(/\\begin\{tabular\}(?:\s*\{([^}]*)\})?/g, (_m, colSpec) => {
+    return `\\begin{array}{${colSpec || 'c|ccccc'}}`;
+  });
+  text = text.replace(/\\end\{tabular\}/g, '\\end{array}');
 
-  // 5.5. Heal multiline inline math ($ ... \n ... $) where LaTeX formulas were split across line breaks:
-  // e.g. "$a = \frac{T - mg\n\sin\theta}{m}$" -> "$a = \frac{T - mg \sin\theta}{m}$"
+  // Strip ALL stray dollar signs immediately adjacent to \begin{env} or \end{env}
+  const envNames = 'array|matrix|pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix|cases|aligned|align\\*?|gather\\*?|equation\\*?';
+  const stripDollarRegexBegin = new RegExp(`\\$+\\s*(\\\\begin\\{(?:${envNames})\\})`, 'g');
+  const stripDollarRegexBeginAfter = new RegExp(`(\\\\begin\\{(?:${envNames})\\})\\s*\\$+`, 'g');
+  const stripDollarRegexEnd = new RegExp(`\\$+\\s*(\\\\end\\{(?:${envNames})\\})`, 'g');
+  const stripDollarRegexEndAfter = new RegExp(`(\\\\end\\{(?:${envNames})\\})\\s*\\$+`, 'g');
+
+  text = text.replace(stripDollarRegexBegin, '$1');
+  text = text.replace(stripDollarRegexBeginAfter, '$1');
+  text = text.replace(stripDollarRegexEnd, '$1');
+  text = text.replace(stripDollarRegexEndAfter, '$1');
+
+  // Wrap all environments (array, cases, matrix, etc.) that are not already enclosed in $$
+  const envRegex = new RegExp(`(?<!\\$\\$)\\s*(\\\\begin\\{(${envNames})\\}([\\s\\S]*?)\\\\end\\{\\2\\})\\s*(?!\\$\\$)`, 'g');
+  text = text.replace(envRegex, (_m, _full, envName, body) => {
+    let cleanBody = body.replace(/\$+/g, '');
+    let colSpec = '';
+    if (envName === 'array') {
+      const colMatch = cleanBody.match(/^\s*\{([^}]*)\}/);
+      if (colMatch) {
+        colSpec = `{${colMatch[1]}}`;
+        cleanBody = cleanBody.slice(colMatch[0].length);
+      } else {
+        colSpec = '{c|ccccc}';
+      }
+    }
+    // Clean row breaks and hlines
+    cleanBody = cleanBody.replace(/([^\\])\\\s*\\hline/g, '$1 \\\\ \\hline');
+    cleanBody = cleanBody.replace(/([0-9a-zA-Z\)\}\]])\s*\\hline/g, '$1 \\\\ \\hline');
+    cleanBody = cleanBody.replace(/([0-9a-zA-Z\)\}\]])\s*\\\s*(\n|$)/g, '$1 \\\\\n');
+    cleanBody = cleanBody.trim();
+
+    return `\n\n$$\n\\begin{${envName}}${colSpec}\n${cleanBody}\n\\end{${envName}}\n$$\n\n`;
+  });
+
+  // 3. Repair escaped or eaten control characters in LaTeX math formulas using exact ASCII hex codes:
+  text = text.replace(/\x0D(ightarrow|ho|ight|angle|eal|m|oot|ceil|floor)/g, '\\r$1');
+  text = text.replace(/\x09(heta|ext|imes|an|au|o|ilde|ag|op|extbf|extit)/g, '\\t$1');
+  text = text.replace(/\x0C(rac|orall|lat|oot)/g, '\\f$1');
+  text = text.replace(/\x08(eta|egin|ar|ig|oldsymbol|inom|ot|ullet|f|mod)/g, '\\b$1');
+  text = text.replace(/\x0A(eq|abla|otin|atural|earrow|warrow)/g, '\\n$1');
+  text = text.replace(/\x0B(ec|dots|dash)/g, '\\v$1');
+
+  // Fix broken/clipped arrow & math tokens
+  text = text.replace(/(^|[\s$(=_])imes(?=[\s$_^0-9A-Za-z\(\[\{])/g, '$1\\times ');
+  text = text.replace(/(^|[\s$(=_])ightarrow([\s$_^0-9A-Za-z])/g, '$1\\rightarrow$2');
+  text = text.replace(/(^|[\s$(=_])rac\{/g, '$1\\frac{');
+  text = text.replace(/(^|[\s$(=_])ext\{/g, '$1\\text{');
+  text = text.replace(/(^|[\s$(=_])heta([\s$_^0-9A-Za-z])/g, '$1\\theta$2');
+  text = text.replace(/([0-9a-zA-Z])\\'/g, "$1'");
+  text = text.replace(/(?<![0-9a-zA-Z\)\}])\^\s*\\?circ/g, '^{\\circ}');
+  text = text.replace(/(\d+)\^\\?circ(?![a-zA-Z{])/g, '$1^{\\circ}');
+
+  // Heal multiline inline math ($ ... \n ... $) where LaTeX formulas were split across line breaks
   text = text.replace(/(?<!\$)\$([^\$\n]+?(?:\\[a-zA-Z]+|[=+\-*/^_])[^\$]*?\n[^\$]+?)\$(?!\$)/g, (match, body) => {
     if (!body.includes('\n\n')) {
       return `$${body.replace(/\s*\n\s*/g, ' ').trim()}$`;
@@ -124,19 +178,11 @@ export function cleanMarkdownMath(content: string): string {
     return match;
   });
 
-  // 6. Wrap bare LaTeX environments (\begin{array}, \begin{matrix}, \begin{cases}, \begin{aligned}, etc.)
-  // that are NOT already enclosed in $$ or $
-  const envNames = 'array|matrix|pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix|cases|aligned|align\\*?|gather\\*?|equation\\*?';
-  const envRegex = new RegExp(`(?<!\\$|\\$\\$)\\s*(\\\\begin\\{(?:${envNames})\\}[\\s\\S]*?\\\\end\\{(?:${envNames})\\})\\s*(?!\\$|\\$\\$)`, 'g');
-  text = text.replace(envRegex, (match, envBody) => {
-    return `\n\n$$\n${envBody.trim()}\n$$\n\n`;
-  });
-
-  // 7. Fix unclosed/unmatched $$ on a single line (only if line has text + a single $$)
+  // Fix unclosed/unmatched $$ on a single line
   const lines = text.split('\n');
   const fixedLines = lines.map(line => {
     const trimmed = line.trim();
-    if (trimmed === '$$') return line; // Standalone delimiter line is already valid!
+    if (trimmed === '$$') return line;
     const count = (trimmed.match(/\$\$/g) || []).length;
     if (count === 1) {
       if (trimmed.endsWith('$$')) {
@@ -149,10 +195,9 @@ export function cleanMarkdownMath(content: string): string {
   });
   text = fixedLines.join('\n');
 
-  // 8. Clean and sanitize math blocks while strictly protecting LaTeX syntax
-  // Extract and mask math blocks ($$...$$ and $...$) so we don't accidentally mutate valid LaTeX math formulas
+  // 4. MASK MATH TOKENS FIRST so that prose transformations never touch inside math formulas!
   const mathBlocks: string[] = [];
-  const mathTokenRegex = /(\$\$[\s\S]*?\$\$|\$(?:\\.|[^\$\n\\])+\$)/g;
+  const mathTokenRegex = /(\$\$[\s\S]*?\$\$|\$(?!\s)(?:\\.|[^\$\n\\])+?(?<!\s)\$)/g;
 
   let maskedText = text.replace(mathTokenRegex, (match) => {
     let math = match
@@ -174,18 +219,12 @@ export function cleanMarkdownMath(content: string): string {
     }
     math = math.replace(/([^\\])\\\s*\\hline/g, '$1\\\\ \\hline');
     math = math.replace(/(?<!\\)%/g, '\\%');
-    // Normalize double-escaped LaTeX commands (\\cmd -> \cmd) inside math mode
+    // Normalize double-escaped LaTeX commands
     math = math.replace(/\\\\([a-zA-Z]+)/g, (_m, cmd) => '\\' + cmd);
-    // Heal bare symbols that lost backslashes
-    math = math.replace(/(?<=[\s$])Sigma\s+ec\{/g, '\\Sigma \\vec{');
-    math = math.replace(/(?<=[\s$])Sigma\s*\\vec\{/g, '\\Sigma \\vec{');
-    math = math.replace(/(?<=[\s$])Sigma\s*\\tau/g, '\\Sigma \\tau');
-    math = math.replace(/(?<=[\s$])Sigma\s*m\s*r\^2/g, '\\Sigma m r^2');
     math = math.replace(/(?<=[\s$])quad\b/g, '\\quad');
-    // Heal escaped dollar symbols inside math mode to valid KaTeX text dollar (\text{\$})
     math = math.replace(/(?<!\\text\{)\\\$/g, '\\text{\\$}');
-    // Repair accidental extra trailing closing braces after frac or sqrt
-    // Repair accidental extra trailing closing braces only if closing braces exceed opening braces
+
+    // Repair accidental extra trailing closing braces
     const openBraces = (math.match(/\{/g) || []).length;
     const closeBraces = (math.match(/\}/g) || []).length;
     if (closeBraces > openBraces) {
@@ -197,8 +236,71 @@ export function cleanMarkdownMath(content: string): string {
     return `__AP_MATH_TOKEN_${idx}__`;
   });
 
-  // 9. Heal code blocks (fenced ```...``` and inline `...`)
-  // Replace LaTeX comparison/math symbols with authentic programming operators in code blocks
+  // 5. TRANSFORM PROSE OUTSIDE MATH TOKENS (SAFE TO OPERATE ON maskedText)
+  // Auto-wrap calculus functions and derivatives in prose outside math mode (e.g. f'(1), f'(a), f''(x), g'(x)):
+  maskedText = maskedText.replace(/(?<![$\w\\])\b([fghFGH]'{1,3}\([a-zA-Z0-9\+\-]+\))(?![$\w])/g, '$$$1$$');
+  maskedText = maskedText.replace(/(?<![$\w\\])\b([fghFGH]\([a-zA-Z0-9\+\-]+\))(?![$\w])/g, '$$$1$$');
+
+  // Pseudo-code limits & arrow notations in prose
+  maskedText = maskedText.replace(/lim_\{?x\s*->\s*-?\s*(?:inf|infinity)\}?\s*\(([^)]+)\)\/sqrt\(([^)]+)\)\s*=\s*([0-9\-\+]+)\/\(-?sqrt\(([0-9]+)\)\)\s*=\s*(-?[0-9]+\/[0-9]+)/gi,
+    '$$\\lim_{x \\to -\\infty} \\frac{$1}{\\sqrt{$2}} = \\frac{$3}{-\\sqrt{$4}} = $5$$');
+  maskedText = maskedText.replace(/(?<!\$)\blim_\{x\s*->\s*([a-zA-Z0-9]+)(\^[\+\-]|\^\{[\+\-]\})?\}(?!\$)/gi, (_m, val, sign) => {
+    const s = sign ? sign.replace(/[\{\}]/g, '') : '';
+    return `$\\lim_{x \\to ${val}${s ? `^{${s.replace('^', '')}}` : ''}}$`;
+  });
+  maskedText = maskedText.replace(/(?<!\$)\blim_\{x\s*->\s*-?\s*(?:inf|infinity)\}(?!\$)/gi, '$\\lim_{x \\to -\\infty}$');
+  maskedText = maskedText.replace(/(?<!\$)\bx\s*->\s*-?\s*(?:infinity|inf)\b(?!\$)/gi, '$x \\to -\\infty$');
+  maskedText = maskedText.replace(/(?<!\$)\bx\s*->\s*([0-9a-zA-Z]+)\^([\+\-])(?!\$)/gi, '$x \\to $1^{$2}$');
+  maskedText = maskedText.replace(/(?<!\$)\bx\s*->\s*([0-9a-zA-Z]+)(?!\$|\^)/gi, '$x \\to $1$');
+
+  // Bare sqrt in prose
+  maskedText = maskedText.replace(/(?<![\\$a-zA-Z0-9])sqrt\(([^)]+)\)/g, (_m, inner) => {
+    let cleanInner = inner.replace(/\^([0-9a-zA-Z]+)/g, '^{$1}');
+    return `$\\sqrt{${cleanInner}}$`;
+  });
+
+  // Bare d/dx, dy/dx in prose
+  maskedText = maskedText.replace(/(?<!\$)d\/dx\[([^\]]+)\](?!\$)/g, (_m, inner) => {
+    let clean = inner.replace(/\^([0-9a-zA-Z]+)/g, '^{$1}');
+    return `$\\frac{d}{dx}[${clean}]$`;
+  });
+  maskedText = maskedText.replace(/(?<!\$)dy\/dx(?!\$)/g, '$\\frac{dy}{dx}$');
+
+  // Bare integrals in prose
+  maskedText = maskedText.replace(/(?<!\$)integral\(([^)]+)\)(?!\$)/g, (_m, inner) => {
+    let clean = inner.replace(/\^([0-9a-zA-Z\-]+)/g, '^{$1}');
+    return `$\\int (${clean})$`;
+  });
+  maskedText = maskedText.replace(/(?<!\$)\\int(?:_[a-zA-Z0-9^{}]+)?(?:\^[a-zA-Z0-9^{}]+)?\s+[a-zA-Z0-9\(\)\^\-+/*\s]+?d[xyt](?!\$)/g, (match) => {
+    return `$${match.trim()}$`;
+  });
+
+  // Unicode math symbols in prose
+  maskedText = maskedText.replace(/(?<!\$)\bf_avg\s*=\s*1\/\(b-a\)\s*(?:∫|\\u222b|\\int)_?\{?([a-zA-Z0-9]*)\}?\^?\{?([a-zA-Z0-9]*)\}?\s*f\(x\)\s*dx(?!\$)/g,
+    '$$f_{\\text{avg}} = \\frac{1}{b-a} \\int_{$1}^{$2} f(x)\\,dx$$');
+  maskedText = maskedText.replace(/(?:∫|\\u222b)_([a-zA-Z0-9]+)\^([a-zA-Z0-9]+)/g, '\\int_{$1}^{$2}');
+  maskedText = maskedText.replace(/(?:∫|\\u222b)_([a-zA-Z0-9]+)/g, '\\int_{$1}');
+  maskedText = maskedText.replace(/(?:∫|\\u222b)/g, '\\int');
+  maskedText = maskedText.replace(/²|\\u00b2/g, '^2');
+  maskedText = maskedText.replace(/³|\\u00b3/g, '^3');
+  maskedText = maskedText.replace(/(?:√|\\u221a)\(([^)]+)\)/g, '\\sqrt{$1}');
+  maskedText = maskedText.replace(/(?:√|\\u221a)([a-zA-Z0-9])/g, '\\sqrt{$1}');
+  maskedText = maskedText.replace(/(?:π|\\u03c0)(?=\s*\\int|\s*[A-Za-z0-9]|\s*\(|\s*\^|\s*=)/g, '\\pi ');
+  maskedText = maskedText.replace(/(?:∞|\\u221e)/g, '\\infty');
+
+  maskedText = maskedText.replace(/(?<![0-9/$])0\/0(?![0-9/$])/g, '$\\frac{0}{0}$');
+  maskedText = maskedText.replace(/(?<!\$)\\infty\/\\infty(?!\$)/g, '$\\frac{\\infty}{\\infty}$');
+  maskedText = maskedText.replace(/(?<!\$)1\/\\sqrt\{([^}]+)\}(?!\$)/g, '$\\frac{1}{\\sqrt{$1}}$');
+  maskedText = maskedText.replace(/(?<!\$)1\/\((1\+x\^2)\)(?!\$)/g, '$\\frac{1}{$1}$');
+  maskedText = maskedText.replace(/(?<=\s)!=(?=\s)/g, '$\\ne$');
+
+  // Protect currency symbols outside math
+  maskedText = maskedText.replace(/\$([A-Z][a-zA-Z0-9_]*\s*,\s*[A-Z][a-zA-Z0-9_]*)/g, '($1');
+  maskedText = maskedText.replace(/(^|[\s(])\$(\d+(?:,\d{3})*(?:\.\d+)?)(?!\w)/g, (_m, prefix, num) => {
+    return `${prefix}\\$${num}`;
+  });
+
+  // Heal code blocks (fenced and inline)
   maskedText = maskedText.replace(/(```[a-zA-Z0-9_-]*\n[\s\S]*?```)/g, (block) => {
     return block
       .replace(/\\(?:leqslant|le)\b/g, '<=')
@@ -209,7 +311,7 @@ export function cleanMarkdownMath(content: string): string {
       .replace(/\\texttt\{([^{}]*)\}/g, '$1')
       .replace(/\\textbf\{([^{}]*)\}/g, '$1')
       .replace(/\\textit\{([^{}]*)\}/g, '$1')
-      .replace(/\b([a-zA-Z0-9_]+)\s*=\s*null\b/g, '$1 == null'); // Heal accidental assignment inside code conditions
+      .replace(/\b([a-zA-Z0-9_]+)\s*=\s*null\b/g, '$1 == null');
   });
 
   maskedText = maskedText.replace(/`([^`\n]+)`/g, (_m, code) => {
@@ -226,7 +328,7 @@ export function cleanMarkdownMath(content: string): string {
     return '`' + cleanCode + '`';
   });
 
-  // 10. Convert raw LaTeX formatting commands in prose into standard Markdown
+  // Convert raw LaTeX formatting commands in prose into standard Markdown
   let prevMasked = '';
   let iterations = 0;
   while (prevMasked !== maskedText && iterations < 8) {
@@ -241,11 +343,8 @@ export function cleanMarkdownMath(content: string): string {
     maskedText = maskedText.replace(/\\textnormal\{([^{}]*)\}/g, '$1');
     maskedText = maskedText.replace(/\\underline\{([^{}]*)\}/g, '<u>$1</u>');
   }
-  maskedText = maskedText.replace(/\\verb\|([^|\n]+)\|/g, '`$1`');
-  maskedText = maskedText.replace(/\\verb!([^!\n]+)!/g, '`$1`');
-  maskedText = maskedText.replace(/\\verb\+([^+\n]+)\+/g, '`$1`');
 
-  // 11. Heal stray comparison and programming operators in prose outside math mode
+  // Heal operators in prose
   maskedText = maskedText
     .replace(/\\(?:leqslant|le)\b/g, '<=')
     .replace(/\\(?:geqslant|ge)\b/g, '>=')
@@ -258,17 +357,12 @@ export function cleanMarkdownMath(content: string): string {
     .replace(/\\quad\b/g, '  ')
     .replace(/\\qquad\b/g, '    ');
 
-  // Heal accidental single equals in if (var = null) conditions
-  maskedText = maskedText.replace(/\bif\s*\(([^()]+)\)/g, (_m, condition) => {
-    return `if (${condition.replace(/\b([a-zA-Z0-9_]+)\s*=\s*null\b/g, '$1 == null')})`;
-  });
-
-  // 12. Restore protected LaTeX math blocks
+  // 6. RESTORE PROTECTED LATEX MATH BLOCKS
   text = maskedText.replace(/__AP_MATH_TOKEN_(\d+)__/g, (_, idx) => {
     return mathBlocks[Number(idx)] || '';
   });
 
-  // 13. Heal bare superscripts, subscripts, Pandoc syntax, and chemical equations outside math blocks:
+  // 7. Heal bare superscripts, subscripts, Pandoc syntax, and chemical equations outside math blocks:
   text = text
     .replace(/~([a-zA-Z0-9_\+\-]+)~/g, '<sub>$1</sub>')
     .replace(/\^([a-zA-Z0-9_\+\-]+)\^/g, '<sup>$1</sup>');
@@ -337,7 +431,7 @@ export function prepareQuizMath(input: any): string {
       if (isShortFormula) {
         text = `$${text.trim()}$`;
       } else {
-        text = text.replace(/(\\\\(?:lim|int|frac|sqrt|sum|prod)\\b[^\s,?.!]+(?:\s+[^\s,?.!]+)*)/g, (match) => {
+        text = text.replace(/(\\(?:lim|int|frac|sqrt|sum|prod)\b[^\s,?.!]+(?:\s+[^\s,?.!]+)*)/g, (match) => {
           return `$${match.trim()}$`;
         });
       }
@@ -399,7 +493,7 @@ const defaultComponents = {
     if (isInline) {
       return (
         <code
-          className="px-1.5 py-0.5 mx-0.5 rounded-md bg-purple-50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 font-mono text-[12px] font-semibold border border-purple-200/80 dark:border-purple-800/60 break-words"
+          className="px-1.5 py-0.5 mx-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-mono text-[12px] font-semibold break-words"
           {...props}
         >
           {children}

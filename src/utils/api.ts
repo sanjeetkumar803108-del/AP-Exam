@@ -5,12 +5,10 @@ export const getApiUrl = (endpoint: string): string => {
   
   if (typeof window !== 'undefined') {
     const isNative = Capacitor.isNativePlatform();
-    const hostname = window.location.hostname;
-    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '';
-    const isVercelHost = hostname.includes('vercel.app') || hostname.includes('ap-exam-five');
 
-    // If running in web browser on localhost or Vercel, use relative endpoint
-    if (!isNative && (isLocalhost || isVercelHost)) {
+    // If running in any web browser (localhost, 127.0.0.1, 192.168.x.x LAN IP, Vercel, or custom host),
+    // always use relative endpoint so requests stay on the exact host that served the page!
+    if (!isNative) {
       return cleanEndpoint;
     }
   }

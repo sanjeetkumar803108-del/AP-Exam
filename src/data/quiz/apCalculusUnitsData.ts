@@ -176,7 +176,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u2-l1",
             "topicNumber": "Topic 2.1 & 2.2",
             "name": "Instantaneous Rate & Limit Definition",
-            "subtitle": "Difference quotients and defining f'(x)",
+            "subtitle": "Difference quotients and defining $f'(x)$",
             "difficulty": "Easy",
             "rewardCoins": 30,
             "questions": [
@@ -527,7 +527,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u2-l7",
             "topicNumber": "Topic 2.8",
             "name": "The Product Rule",
-            "subtitle": "Derivative of f(x) * g(x)",
+            "subtitle": "Derivative of $f(x) \\cdot g(x)$",
             "difficulty": "Medium",
             "rewardCoins": 30,
             "questions": [
@@ -850,7 +850,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u3-l1",
             "topicNumber": "Topic 3.1",
             "name": "The Chain Rule Foundations",
-            "subtitle": "Derivative of composite function f(g(x))",
+            "subtitle": "Derivative of composite function $f(g(x))$",
             "difficulty": "Easy",
             "rewardCoins": 30,
             "questions": [
@@ -902,7 +902,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u3-l2",
             "topicNumber": "Topic 3.2",
             "name": "Implicit Differentiation",
-            "subtitle": "Curves defined by F(x, y) = 0 and dy/dx",
+            "subtitle": "Curves defined by $F(x, y) = 0$ and $\\frac{dy}{dx}$",
             "difficulty": "Medium",
             "rewardCoins": 30,
             "questions": [
@@ -967,7 +967,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u3-l3",
             "topicNumber": "Topic 3.3",
             "name": "Differentiating Inverse Functions",
-            "subtitle": "(f^-1)'(a) = 1 / f'(f^-1(a))",
+            "subtitle": "$(f^{-1})'(a) = \\frac{1}{f'(f^{-1}(a))}$",
             "difficulty": "Medium",
             "rewardCoins": 30,
             "questions": [
@@ -1032,7 +1032,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u3-l4",
             "topicNumber": "Topic 3.4",
             "name": "Derivatives of Inverse Trig (arcsin, arctan)",
-            "subtitle": "1/\u221a(1-x\u00b2) and 1/(1+x\u00b2)",
+            "subtitle": "$\\frac{1}{\\sqrt{1-x^2}}$ and $\\frac{1}{1+x^2}$",
             "difficulty": "Hard",
             "rewardCoins": 30,
             "questions": [
@@ -1680,7 +1680,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u4-l6",
             "topicNumber": "Topic 4.7",
             "name": "L'H\u00f4pital's Rule for Indeterminate Forms",
-            "subtitle": "0/0 and \u221e/\u221e limit evaluations",
+            "subtitle": "$\\frac{0}{0}$ and $\\frac{\\infty}{\\infty}$ limit evaluations",
             "difficulty": "Medium",
             "rewardCoins": 30,
             "questions": [
@@ -1951,7 +1951,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u5-l3",
             "topicNumber": "Topic 5.3",
             "name": "Intervals of Increase and Decrease",
-            "subtitle": "Sign analysis of f'(x)",
+            "subtitle": "Sign analysis of $f'(x)$",
             "difficulty": "Medium",
             "rewardCoins": 30,
             "questions": [
@@ -2212,7 +2212,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u5-l7",
             "topicNumber": "Topic 5.7",
             "name": "Second Derivative Test for Relative Extrema",
-            "subtitle": "Using f''(c) to classify critical points",
+            "subtitle": "Using $f''(c)$ to classify critical points",
             "difficulty": "Medium",
             "rewardCoins": 30,
             "questions": [
@@ -2795,7 +2795,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u6-l3",
             "topicNumber": "Topic 6.4",
             "name": "Fundamental Theorem of Calculus (Part 1)",
-            "subtitle": "d/dx [\u222b_a^x f(t) dt] = f(x) and chain rule extensions",
+            "subtitle": "$\\frac{d}{dx}\\left[\\int_a^x f(t)\\,dt\\right] = f(x)$ and chain rule extensions",
             "difficulty": "Medium",
             "rewardCoins": 30,
             "questions": [
@@ -2860,7 +2860,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u6-l4",
             "topicNumber": "Topic 6.5",
             "name": "Accumulation Functions Involving Area",
-            "subtitle": "Finding extrema and concavity of g(x) = \u222b f(t) dt",
+            "subtitle": "Finding extrema and concavity of $g(x) = \\int f(t)\\,dt$",
             "difficulty": "Medium",
             "rewardCoins": 30,
             "questions": [
@@ -3378,7 +3378,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u7-l1",
             "topicNumber": "Topic 7.1 & 7.2",
             "name": "Modeling & Verifying Solutions",
-            "subtitle": "Differential equations and verifying y = f(x)",
+            "subtitle": "Differential equations and verifying $y = f(x)$",
             "difficulty": "Easy",
             "rewardCoins": 30,
             "questions": [
@@ -3612,7 +3612,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u7-l5",
             "topicNumber": "Topic 7.6",
             "name": "Separation of Variables: General Solutions",
-            "subtitle": "Rearranging \u222b g(y) dy = \u222b f(x) dx + C",
+            "subtitle": "Rearranging $\\int g(y)\\,dy = \\int f(x)\\,dx + C$",
             "difficulty": "Hard",
             "rewardCoins": 30,
             "questions": [
@@ -3690,7 +3690,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u7-l6",
             "topicNumber": "Topic 7.7",
             "name": "Separation of Variables: Particular Solutions",
-            "subtitle": "Using initial condition (x_0, y_0) to solve for C",
+            "subtitle": "Using initial condition $(x_0, y_0)$ to solve for $C$",
             "difficulty": "Hard",
             "rewardCoins": 30,
             "questions": [
@@ -3870,7 +3870,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u8-l1",
             "topicNumber": "Topic 8.1",
             "name": "Average Value of a Function",
-            "subtitle": "f_avg = 1/(b-a) \u222b_a^b f(x) dx",
+            "subtitle": "$f_{\\text{avg}} = \\frac{1}{b-a} \\int_a^b f(x)\\,dx$",
             "difficulty": "Easy",
             "rewardCoins": 30,
             "questions": [
@@ -4247,7 +4247,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u8-l7",
             "topicNumber": "Topic 8.7",
             "name": "Volumes with Cross Sections: Squares & Rectangles",
-            "subtitle": "\u222b A(x) dx with side length s = f(x) - g(x)",
+            "subtitle": "$\\int A(x)\\,dx$ with side length $s = f(x) - g(x)$",
             "difficulty": "Hard",
             "rewardCoins": 30,
             "questions": [
@@ -4403,7 +4403,7 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
             "uniqueKey": "u8-l9",
             "topicNumber": "Topic 8.9",
             "name": "Volume with Disc & Washer: Coordinate Axes",
-            "subtitle": "\u03c0 \u222b (R\u00b2 - r\u00b2) dx revolving around x or y axis",
+            "subtitle": "$\\pi \\int (R^2 - r^2)\\,dx$ revolving around $x$ or $y$ axis",
             "difficulty": "Hard",
             "rewardCoins": 30,
             "questions": [

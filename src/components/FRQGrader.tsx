@@ -18,7 +18,15 @@ import {
   ChevronRight,
   Sparkles,
   HelpCircle,
-  ListFilter
+  ListFilter,
+  Plus,
+  Trash2,
+  Layers,
+  Eye,
+  X,
+  ZoomIn,
+  History,
+  Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
@@ -28,8 +36,12 @@ import { triggerVibration, hapticImpact, hapticNotification } from '../utils/vib
 import { compressImageToFile } from '../utils/imageCompressor';
 import { getApiUrl } from '../utils/api';
 import { showToast } from '../utils/toast';
-import { pickNativeFiles, takeNativePhoto } from '../utils/mobilePicker';
+import { pickNativeFiles, takeNativePhoto, isMobilePickedFile } from '../utils/mobilePicker';
 import GlobalMarkdown from './GlobalMarkdown';
+import { appendProfileToFormData } from '../utils/profile';
+import { auth, db } from '../lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { getUserHistory, saveUserHistory } from '../utils/userHistory';
 
 export interface FRQStepScore {
   stepTitle?: string;
@@ -42,9 +54,15 @@ export interface FRQStepScore {
   status: 'full' | 'partial' | 'zero';
 }
 
+export interface PageAuditItem {
+  pageNumber: number;
+  detectedType?: 'question_prompt' | 'handwritten_student_work' | 'mixed' | string;
+  summaryOfContent?: string;
+}
+
 export interface FRQGradingResult {
   isValidAcademicAnswer?: boolean;
-  submissionMode?: 'student_answer' | 'question_prompt' | 'question_and_answer';
+  submissionMode?: 'student_answer' | 'question_prompt' | 'question_and_answer' | 'question_prompt_only';
   errorCode?: string;
   errorMessage?: string;
   detectionReason?: string;
@@ -59,10 +77,31 @@ export interface FRQGradingResult {
   predictedAPScaleLabel?: string;
   evaluationSteps?: FRQStepScore[];
   parts?: FRQStepScore[];
+  pagesAudited?: PageAuditItem[];
   chiefReaderSummary?: string;
   keyStrengths?: string[];
   keyMissedOpportunities?: string[];
   howToGetFullPoints?: string[];
+}
+
+export interface FRQHistoryItem {
+  id: string;
+  timestamp: number;
+  title: string;
+  subjectDetected?: string;
+  questionTopic?: string;
+  totalPointsEarned?: number;
+  totalPointsPossible?: number;
+  predictedAPScale?: number;
+  result: FRQGradingResult;
+  previewUrl?: string;
+}
+
+export interface UploadedPage {
+  id: string;
+  file: File;
+  previewUrl: string;
+  name: string;
 }
 
 interface FRQGraderProps {
@@ -73,28 +112,47 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraPermissionError, setCameraPermissionError] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  // Multi-page state
+  const [uploadedPages, setUploadedPages] = useState<UploadedPage[]>([]);
+  const [activePageIndex, setActivePageIndex] = useState(0);
+  const [viewingFullImageUrl, setViewingFullImageUrl] = useState<string | null>(null);
+
   const [isGrading, setIsGrading] = useState(false);
   const [gradingProgress, setGradingProgress] = useState(0);
   const [gradingStepText, setGradingStepText] = useState('');
   const [result, setResult] = useState<FRQGradingResult | null>(null);
   const [copiedTranscription, setCopiedTranscription] = useState(false);
 
+  // FRQ User Evaluation History
+  const [frqHistory, setFrqHistory] = useState<FRQHistoryItem[]>(() => {
+    return getUserHistory<FRQHistoryItem[]>('frq_grader_history', []);
+  });
+  const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleAccountChange = () => {
+      setFrqHistory(getUserHistory<FRQHistoryItem[]>('frq_grader_history', []));
+    };
+    window.addEventListener('user_account_changed', handleAccountChange);
+    return () => window.removeEventListener('user_account_changed', handleAccountChange);
+  }, []);
+
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraCaptureInputRef = useRef<HTMLInputElement | null>(null);
   const resultsContainerRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  // Initialize and auto-open camera on mount
+  // Initialize and auto-open camera on mount when no pages are staged
   useEffect(() => {
     let active = true;
 
     const startCamera = async () => {
-      // Don't start video stream if we are already displaying a captured photo
-      if (imagePreviewUrl) return;
+      // Don't start video stream if we already have staged pages
+      if (uploadedPages.length > 0) return;
 
       try {
         if (Capacitor.isNativePlatform()) {
@@ -142,17 +200,17 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
         streamRef.current = null;
       }
     };
-  }, [imagePreviewUrl]);
+  }, [uploadedPages.length]);
 
-  // Automatic smooth scroll down to evaluation results whenever an image is loaded or evaluation starts
+  // Automatic smooth scroll down to evaluation results whenever evaluation starts or completes
   useEffect(() => {
-    if (imagePreviewUrl || isGrading || result) {
+    if (isGrading || result) {
       const timer = setTimeout(() => {
         resultsContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 200);
       return () => clearTimeout(timer);
     }
-  }, [imagePreviewUrl, isGrading, result]);
+  }, [isGrading, result]);
 
   // Toggle Torch/Flashlight
   const toggleTorch = async () => {
@@ -172,6 +230,44 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
     }
   };
 
+  // Helper to add a new page to the staged list
+  const addPage = (file: File, previewUrl: string, name?: string) => {
+    const newPage: UploadedPage = {
+      id: `page_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      file,
+      previewUrl,
+      name: name || `Page ${uploadedPages.length + 1}`
+    };
+
+    setUploadedPages(prev => {
+      const next = [...prev, newPage];
+      setActivePageIndex(next.length - 1);
+      return next;
+    });
+
+    // Stop camera stream to preserve battery
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+    setCameraActive(false);
+
+    showToast(`Page ${uploadedPages.length + 1} added!`, "info", 1800);
+  };
+
+  // Helper to remove a page from the staged list
+  const removePage = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    triggerVibration(15);
+    setUploadedPages(prev => {
+      const next = prev.filter(p => p.id !== id);
+      if (activePageIndex >= next.length) {
+        setActivePageIndex(Math.max(0, next.length - 1));
+      }
+      return next;
+    });
+  };
+
   // Capture photo from camera stream
   const handleCapturePhoto = async () => {
     triggerVibration(25);
@@ -188,14 +284,7 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
               showToast("Camera Permission Needed: Please allow camera access to scan FRQ answers.", "warning", 4000);
             }
           } else {
-            setImageFile(picked.fileObj);
-            setImagePreviewUrl(picked.dataUrl);
-            if (streamRef.current) {
-              streamRef.current.getTracks().forEach(t => t.stop());
-              streamRef.current = null;
-            }
-            setCameraActive(false);
-            processAndGradeFRQ(picked.fileObj);
+            addPage(picked.fileObj, picked.dataUrl, picked.name);
             return;
           }
         }
@@ -205,8 +294,8 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
     }
 
     if (!videoRef.current) {
-      // Fallback: trigger file picker
-      fileInputRef.current?.click();
+      // Fallback: trigger camera input or file picker
+      cameraCaptureInputRef.current?.click();
       return;
     }
 
@@ -220,34 +309,32 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     canvas.toBlob(async (blob) => {
       if (!blob) return;
-      const file = new File([blob], `frq_answer_${Date.now()}.jpg`, { type: 'image/jpeg' });
+      const file = new File([blob], `frq_page_${uploadedPages.length + 1}_${Date.now()}.jpg`, { type: 'image/jpeg' });
       const previewUrl = URL.createObjectURL(file);
-      setImageFile(file);
-      setImagePreviewUrl(previewUrl);
-
-      // Stop camera stream to preserve battery and RAM
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(t => t.stop());
-        streamRef.current = null;
-      }
-      setCameraActive(false);
-
-      // Trigger grading
-      processAndGradeFRQ(file);
+      addPage(file, previewUrl, file.name);
     }, 'image/jpeg', 0.88);
   };
 
-  // Pick image from Gallery
+  // Pick image(s) from Gallery (supports multiple)
   const handleGalleryClick = async () => {
     triggerVibration(15);
 
     if (Capacitor.isNativePlatform()) {
       try {
-        const picked = await pickNativeFiles({ types: 'image', multiple: false });
+        const picked = await pickNativeFiles({ types: 'image', multiple: true });
         if (picked && picked.length > 0) {
-          const item = picked[0];
-          setImageFile(item.fileObj);
-          setImagePreviewUrl(item.dataUrl);
+          const newPages: UploadedPage[] = picked.map((item, idx) => ({
+            id: `page_${Date.now()}_${idx}_${Math.random().toString(36).slice(2, 6)}`,
+            file: item.fileObj,
+            previewUrl: item.dataUrl,
+            name: item.name || `Page ${uploadedPages.length + idx + 1}`
+          }));
+
+          setUploadedPages(prev => {
+            const next = [...prev, ...newPages];
+            setActivePageIndex(next.length - 1);
+            return next;
+          });
 
           if (streamRef.current) {
             streamRef.current.getTracks().forEach(t => t.stop());
@@ -255,7 +342,7 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
           }
           setCameraActive(false);
 
-          processAndGradeFRQ(item.fileObj);
+          showToast(`${newPages.length} image${newPages.length > 1 ? 's' : ''} added!`, "info", 2000);
           return;
         }
       } catch (err) {
@@ -263,17 +350,27 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
       }
     }
 
-    // Web Fallback
+    // Web Fallback: trigger input file picker
     fileInputRef.current?.click();
   };
 
+  // Web input file change (supports multiple)
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    const previewUrl = URL.createObjectURL(file);
-    setImageFile(file);
-    setImagePreviewUrl(previewUrl);
+    const newPages: UploadedPage[] = Array.from(files).map((file, idx) => ({
+      id: `page_${Date.now()}_${idx}_${Math.random().toString(36).slice(2, 6)}`,
+      file,
+      previewUrl: URL.createObjectURL(file),
+      name: file.name || `Page ${uploadedPages.length + idx + 1}`
+    }));
+
+    setUploadedPages(prev => {
+      const next = [...prev, ...newPages];
+      setActivePageIndex(next.length - 1);
+      return next;
+    });
 
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(t => t.stop());
@@ -281,44 +378,89 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
     }
     setCameraActive(false);
 
-    processAndGradeFRQ(file);
+    showToast(`${newPages.length} page${newPages.length > 1 ? 's' : ''} staged!`, "info", 2000);
+    e.target.value = '';
   };
 
-  // Grade FRQ with Gemini backend
-  const processAndGradeFRQ = async (file: File) => {
+  // Dedicated single camera capture input change for web
+  const handleCameraFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const previewUrl = URL.createObjectURL(file);
+    addPage(file, previewUrl, file.name);
+    e.target.value = '';
+  };
+
+  // Add more pages from camera
+  const handleAddMoreFromCamera = async () => {
+    triggerVibration(15);
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const picked = await takeNativePhoto();
+        if (picked && isMobilePickedFile(picked)) {
+          addPage(picked.fileObj, picked.dataUrl, picked.name);
+          return;
+        }
+      } catch (err) {
+        console.warn("[FRQGrader] Native photo capture error:", err);
+      }
+    }
+    // Web fallback
+    cameraCaptureInputRef.current?.click();
+  };
+
+  // Grade FRQ with Gemini backend (supports multi-page batch)
+  const processAndGradeFRQ = async () => {
+    if (uploadedPages.length === 0) {
+      showToast("Please capture or upload at least 1 page.", "warning");
+      return;
+    }
+
+    triggerVibration(25);
+    hapticImpact('MEDIUM');
     setIsGrading(true);
     setResult(null);
     setGradingProgress(15);
-    setGradingStepText("Deciphering handwriting & equations...");
+    setGradingStepText(`Deciphering ${uploadedPages.length} page${uploadedPages.length > 1 ? 's' : ''} & mathematical steps...`);
 
+    let progressTimer: any = null;
     try {
-      // Step 1: Compress for fast transmission
-      const optimizedFile = await compressImageToFile(file, 1400, 0.82);
+      // Step 1: Compress all pages in parallel for fast mobile transmission
+      const compressedFiles = await Promise.all(
+        uploadedPages.map(p => compressImageToFile(p.file, 1400, 0.82))
+      );
       setGradingProgress(45);
       setGradingStepText("Matching against College Board AP Scoring Guidelines...");
 
       // Step 2: Form Data
       const formData = new FormData();
-      formData.append('image', optimizedFile);
+      compressedFiles.forEach((file, index) => {
+        formData.append('images', file, file.name || `page_${index + 1}.jpg`);
+      });
+      formData.append('totalPages', String(compressedFiles.length));
+      appendProfileToFormData(formData);
 
       // Simulation ticks for smooth UX while waiting for Gemini
-      const progressTimer = setInterval(() => {
+      progressTimer = setInterval(() => {
         setGradingProgress((prev) => {
           if (prev >= 88) {
-            clearInterval(progressTimer);
+            if (progressTimer) clearInterval(progressTimer);
             return 88;
           }
-          return prev + 6;
+          return prev + 5;
         });
       }, 350);
 
       const apiUrl = getApiUrl('/api/grade-frq');
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        body: formData
-      });
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          body: formData
+        });
 
-      clearInterval(progressTimer);
+        if (progressTimer) {
+          clearInterval(progressTimer);
+          progressTimer = null;
+        }
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
@@ -331,16 +473,41 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
       setResult(data);
       setIsGrading(false);
 
+      // Auto-save evaluation to user history
+      const historyItem: FRQHistoryItem = {
+        id: `frq_hist_${Date.now()}`,
+        timestamp: Date.now(),
+        title: data.questionTopic || data.subjectDetected || 'AP FRQ Evaluation',
+        subjectDetected: data.subjectDetected,
+        questionTopic: data.questionTopic,
+        totalPointsEarned: data.totalPointsEarned,
+        totalPointsPossible: data.totalPointsPossible,
+        predictedAPScale: data.predictedAPScale,
+        result: data,
+        previewUrl: uploadedPages[0]?.previewUrl
+      };
+      setFrqHistory(prev => {
+        const updated = [historyItem, ...prev.filter(h => h.id !== historyItem.id)].slice(0, 35);
+        saveUserHistory('frq_grader_history', updated);
+        return updated;
+      });
+
+      // Sync summary to pocket_items if signed in
+      if (auth.currentUser) {
+        addDoc(collection(db, 'pocket_items'), {
+          userId: auth.currentUser.uid,
+          userEmail: auth.currentUser.email || '',
+          type: 'frq_evaluation',
+          title: data.questionTopic || data.subjectDetected || 'FRQ Evaluation',
+          text: `**Subject**: ${data.subjectDetected || 'AP'}\n**Score**: ${data.totalPointsEarned ?? 0}/${data.totalPointsPossible ?? 0} (AP Scale: ${data.predictedAPScale ?? '?'}/5)\n\n${data.chiefReaderSummary || ''}`,
+          createdAt: serverTimestamp()
+        }).catch(err => console.warn('[FRQGrader] Pocket item sync notice:', err));
+      }
+
       // Check if image had no student work or was rejected
       if (data.isValidAcademicAnswer === false) {
         triggerVibration([30, 40, 30]);
-        showToast(
-          data.errorCode === 'MCQ_DETECTED'
-            ? "MCQ detected! FRQ Grader strictly evaluates subjective questions only."
-            : (data.errorMessage || "No handwritten answer detected in photo."),
-          "warning",
-          4500
-        );
+        // The dedicated on-screen card already displays the verification details and guidance cleanly
         return;
       }
 
@@ -359,19 +526,21 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
       console.error("[FRQGrader] Grading Error:", err);
       setIsGrading(false);
       showToast(err.message || "Unable to grade FRQ. Please check connection and try again.", "error");
+    } finally {
+      if (progressTimer) clearInterval(progressTimer);
     }
   };
 
   // Reset and Grade Another Question
   const resetGrader = () => {
     triggerVibration(15);
-    setImagePreviewUrl(null);
-    setImageFile(null);
+    setUploadedPages([]);
+    setActivePageIndex(0);
     setResult(null);
     setIsGrading(false);
     setGradingProgress(0);
 
-    // Scroll smoothly back to camera top inside the scroll container
+    // Scroll smoothly back to top inside the scroll container
     scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -383,6 +552,8 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
     setTimeout(() => setCopiedTranscription(false), 2000);
   };
 
+  const activePage = uploadedPages[activePageIndex] || uploadedPages[0];
+
   return (
     <div className="h-full w-full flex flex-col bg-black text-zinc-900 font-sans antialiased overflow-hidden relative">
       {/* Hidden inputs & canvas for capturing */}
@@ -390,13 +561,57 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
         type="file" 
         ref={fileInputRef} 
         accept="image/*" 
+        multiple
         className="hidden" 
         onChange={handleFileInputChange} 
       />
+      <input 
+        type="file" 
+        ref={cameraCaptureInputRef} 
+        accept="image/*" 
+        capture="environment"
+        className="hidden" 
+        onChange={handleCameraFileInputChange} 
+      />
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* 1. FULLSCREEN CAMERA VIEWFINDER (Active when no image uploaded yet) */}
-      {!imagePreviewUrl ? (
+      {/* FULLSCREEN IMAGE LIGHTBOX MODAL */}
+      <AnimatePresence>
+        {viewingFullImageUrl && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4"
+            onClick={() => setViewingFullImageUrl(null)}
+          >
+            <div className="flex items-center justify-between z-10">
+              <span className="text-xs font-black text-white/80 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-md">
+                Full Page Inspection
+              </span>
+              <button 
+                onClick={() => setViewingFullImageUrl(null)}
+                className="w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 cursor-pointer border-none"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 flex items-center justify-center p-2 overflow-hidden">
+              <img 
+                src={viewingFullImageUrl} 
+                alt="Full Page Preview" 
+                className="max-h-[85vh] max-w-[95vw] object-contain rounded-2xl shadow-2xl"
+              />
+            </div>
+            <p className="text-center text-xs font-semibold text-zinc-400 pb-2">
+              Tap anywhere to close
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 1. FULLSCREEN CAMERA VIEWFINDER (Active when NO pages are uploaded yet) */}
+      {uploadedPages.length === 0 ? (
         <div className="relative w-full h-full flex-1 min-h-0 bg-black overflow-hidden flex flex-col justify-between">
           {/* Video element covering the entire available area */}
           <div className="absolute inset-0 w-full h-full z-0 bg-black overflow-hidden">
@@ -407,21 +622,6 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
               autoPlay
               className="w-full h-full object-cover"
             />
-          </div>
-
-          {/* Central Framing Guide Overlay */}
-          <div className="absolute inset-6 sm:inset-12 border-2 border-dashed border-white/55 rounded-3xl pointer-events-none flex flex-col justify-between p-4 z-10">
-            <div className="flex justify-between items-start">
-              <div className="w-6 h-6 border-t-[3px] border-l-[3px] border-emerald-400 rounded-tl-lg shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
-              <div className="w-6 h-6 border-t-[3px] border-r-[3px] border-emerald-400 rounded-tr-lg shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
-            </div>
-            <p className="text-center text-[11px] sm:text-xs font-bold text-white bg-black/50 backdrop-blur-md px-4 py-1.5 rounded-full mx-auto shadow-lg border border-white/10">
-              Align FRQ question or handwritten answer in frame
-            </p>
-            <div className="flex justify-between items-end">
-              <div className="w-6 h-6 border-b-[3px] border-l-[3px] border-emerald-400 rounded-bl-lg shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
-              <div className="w-6 h-6 border-b-[3px] border-r-[3px] border-emerald-400 rounded-br-lg shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
-            </div>
           </div>
 
           {/* Floating Top Header */}
@@ -437,14 +637,20 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-black text-white tracking-wide">
+              <span className="text-base font-black text-white tracking-wide">
                 FRQ Grader
               </span>
-              <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 backdrop-blur-md">
-                AP Rubric Engine
-              </span>
             </div>
-            <div className="w-10" />
+            <button
+              onClick={() => {
+                triggerVibration(10);
+                setShowHistoryModal(true);
+              }}
+              className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/60 active:scale-95 transition-all shadow-md cursor-pointer"
+              title="Evaluation History"
+            >
+              <History className="w-4 h-4 text-white" />
+            </button>
           </header>
 
           {/* Camera Permission Fallback */}
@@ -456,7 +662,7 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
               <div className="max-w-xs">
                 <h3 className="text-base font-black text-white">Camera Access Needed</h3>
                 <p className="text-xs text-zinc-300 mt-1 leading-relaxed">
-                  Please allow camera permission in browser or device settings, or tap below to upload from your gallery.
+                  Please allow camera permission in device settings, or tap below to upload multi-page answer sheets from your gallery.
                 </p>
               </div>
               <button
@@ -464,7 +670,7 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                 className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black px-6 py-3 rounded-2xl cursor-pointer border-none shadow-lg transition-all flex items-center gap-2"
               >
                 <ImageIcon className="w-4 h-4" />
-                <span>Upload From Gallery</span>
+                <span>Upload From Gallery (Multi-Page)</span>
               </button>
             </div>
           )}
@@ -474,18 +680,18 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
             {/* Gallery Button */}
             <button
               onClick={handleGalleryClick}
-              className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white flex flex-col items-center justify-center active:scale-90 transition-all shadow-lg hover:bg-white/20 cursor-pointer"
+              className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white flex items-center justify-center active:scale-90 transition-all shadow-lg hover:bg-white/20 cursor-pointer"
               title="Upload from Gallery"
+              aria-label="Upload from Gallery"
             >
-              <ImageIcon className="w-5 h-5" />
-              <span className="text-[9px] font-bold mt-0.5">Gallery</span>
+              <ImageIcon className="w-6 h-6" />
             </button>
 
             {/* Shutter Capture Button */}
             <button
               onClick={handleCapturePhoto}
               className="w-20 h-20 rounded-full border-[3.5px] border-emerald-400 p-1 flex items-center justify-center active:scale-95 transition-all shadow-[0_0_30px_rgba(52,211,153,0.6)] cursor-pointer group"
-              aria-label="Capture Answer Sheet"
+              aria-label="Capture Page 1"
             >
               <div className="w-full h-full rounded-full bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 flex items-center justify-center text-white shadow-inner group-hover:from-emerald-400 group-hover:to-teal-500 transition-colors">
                 <Camera className="w-8 h-8" />
@@ -495,20 +701,20 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
             {/* Torch Button */}
             <button
               onClick={toggleTorch}
-              className={`w-14 h-14 rounded-full backdrop-blur-md border flex flex-col items-center justify-center active:scale-90 transition-all shadow-lg cursor-pointer ${
+              className={`w-14 h-14 rounded-full backdrop-blur-md border flex items-center justify-center active:scale-90 transition-all shadow-lg cursor-pointer ${
                 torchOn 
                   ? 'bg-amber-500/30 text-amber-300 border-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.5)]' 
                   : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
               }`}
               title="Toggle Torch"
+              aria-label="Toggle Torch"
             >
-              {torchOn ? <Zap className="w-5 h-5 fill-amber-400 text-amber-400" /> : <ZapOff className="w-5 h-5" />}
-              <span className="text-[9px] font-bold mt-0.5">{torchOn ? "Torch On" : "Torch"}</span>
+              {torchOn ? <Zap className="w-6 h-6 fill-amber-400 text-amber-400" /> : <ZapOff className="w-6 h-6" />}
             </button>
           </div>
         </div>
       ) : (
-        /* 2. RESULTS & EVALUATION CONTAINER (When photo uploaded/captured) */
+        /* 2. STAGING & REVIEW / RESULTS CONTAINER (When >=1 page is uploaded) */
         <div className="h-full w-full flex flex-col bg-[#FAF9F6] text-zinc-900 overflow-hidden">
           {/* Top Header */}
           <header className="shrink-0 sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-zinc-200/80 px-4 py-3 flex items-center justify-between shadow-xs">
@@ -516,72 +722,223 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
               <button 
                 onClick={resetGrader}
                 className="w-9 h-9 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 flex items-center justify-center transition-colors cursor-pointer border-none"
-                aria-label="Retake Photo"
+                aria-label="Start Over"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div>
                 <h1 className="text-base font-black text-zinc-950 tracking-tight leading-none flex items-center gap-2">
                   FRQ Grader
-                  <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                    Evaluation & Score
+                  <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                    result 
+                      ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
+                      : isGrading 
+                      ? 'bg-amber-100 text-amber-800 border-amber-200' 
+                      : 'bg-teal-100 text-teal-800 border-teal-200'
+                  }`}>
+                    {result 
+                      ? 'Evaluation & Score' 
+                      : isGrading 
+                      ? 'Grading in Progress' 
+                      : `${uploadedPages.length} ${uploadedPages.length === 1 ? 'Page' : 'Pages'} Staged`}
                   </span>
                 </h1>
               </div>
             </div>
-            <button
-              onClick={resetGrader}
-              className="text-xs font-black text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-xl transition-all border border-emerald-200/60 cursor-pointer flex items-center gap-1.5"
-            >
-              <Camera className="w-3.5 h-3.5" />
-              <span>Retake</span>
-            </button>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  triggerVibration(10);
+                  setShowHistoryModal(true);
+                }}
+                className="text-xs font-black text-zinc-600 hover:text-zinc-900 bg-zinc-100 hover:bg-zinc-200 px-3 py-1.5 rounded-xl transition-all border border-zinc-200 cursor-pointer flex items-center gap-1.5"
+                title="Evaluation History"
+              >
+                <History className="w-3.5 h-3.5" />
+                <span>History</span>
+              </button>
+
+              <button
+                onClick={resetGrader}
+                className="text-xs font-black text-zinc-600 hover:text-zinc-900 bg-zinc-100 hover:bg-zinc-200 px-3 py-1.5 rounded-xl transition-all border border-zinc-200 cursor-pointer flex items-center gap-1.5"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Reset</span>
+              </button>
+            </div>
           </header>
 
-          {/* Main Scrollable Results Container */}
+          {/* Main Scrollable Content */}
           <main 
             ref={scrollContainerRef} 
-            className="flex-1 overflow-y-auto overscroll-contain p-4 pb-32 space-y-4 w-full touch-pan-y"
+            className="flex-1 overflow-y-auto overscroll-contain p-4 pb-36 space-y-4 w-full touch-pan-y"
           >
             <div className="max-w-xl w-full mx-auto space-y-4">
-              {/* UPLOADED PHOTO PREVIEW */}
-              <div className="bg-white border border-zinc-200 rounded-3xl p-3 shadow-sm flex items-center gap-3.5">
-                <img 
-                  src={imagePreviewUrl} 
-                  alt="Captured FRQ Answer Sheet" 
-                  className="w-20 h-20 rounded-2xl object-cover border border-zinc-200 shrink-0" 
-                />
-                <div className="flex-1 min-w-0">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 block">
-                    Answer Sheet Uploaded
-                  </span>
-                  <p className="text-xs font-bold text-zinc-900 truncate mt-0.5">
-                    {imageFile?.name || 'FRQ_Answer_Photo.jpg'}
-                  </p>
-                  <div className="flex items-center gap-2 mt-2">
+
+              {/* ------------------------------------------------------------------ */}
+              {/* STAGE A: MULTI-PAGE STAGING & REVIEW (Before Grading) */}
+              {/* ------------------------------------------------------------------ */}
+              {!result && !isGrading && (
+                <div className="space-y-4">
+                  {/* Large Active Page Preview Card */}
+                  {activePage && (
+                    <div className="bg-white border-2 border-zinc-200 rounded-3xl p-3.5 shadow-sm space-y-3">
+                      <div className="flex items-center justify-between px-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                            Viewing Page {activePageIndex + 1} of {uploadedPages.length}
+                          </span>
+                          <span className="text-xs font-bold text-zinc-500 truncate max-w-[150px]">
+                            {activePage.name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => setViewingFullImageUrl(activePage.previewUrl)}
+                            className="text-xs font-bold text-zinc-600 hover:text-zinc-900 bg-zinc-100 hover:bg-zinc-200 p-2 rounded-xl transition-colors cursor-pointer border-none flex items-center gap-1"
+                            title="Inspect Full Size"
+                          >
+                            <ZoomIn className="w-3.5 h-3.5" />
+                            <span className="text-[10px]">Inspect</span>
+                          </button>
+                          <button
+                            onClick={(e) => removePage(activePage.id, e)}
+                            className="text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-xl transition-colors cursor-pointer border-none flex items-center gap-1"
+                            title="Delete this page"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span className="text-[10px]">Delete</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Main Preview Image */}
+                      <div 
+                        onClick={() => setViewingFullImageUrl(activePage.previewUrl)}
+                        className="relative w-full h-72 sm:h-80 bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-200 cursor-pointer group"
+                      >
+                        <img 
+                          src={activePage.previewUrl} 
+                          alt={`Page ${activePageIndex + 1}`}
+                          className="w-full h-full object-contain"
+                        />
+                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-bold text-xs gap-1.5 backdrop-blur-xs">
+                          <ZoomIn className="w-4 h-4" />
+                          <span>Tap to view full screen</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Horizontal Thumbnail Strip with Staged Pages */}
+                  <div className="bg-white border border-zinc-200 rounded-3xl p-4 shadow-sm space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-emerald-600" />
+                        <h3 className="text-xs font-black text-zinc-900 uppercase tracking-wider">
+                          Staged Pages ({uploadedPages.length})
+                        </h3>
+                      </div>
+                      <span className="text-[11px] font-semibold text-zinc-500">
+                        Tap page to review
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-1 no-scrollbar">
+                      {uploadedPages.map((page, idx) => {
+                        const isActive = idx === activePageIndex;
+                        return (
+                          <div 
+                            key={page.id}
+                            onClick={() => setActivePageIndex(idx)}
+                            className={`relative shrink-0 w-20 h-24 rounded-2xl overflow-hidden cursor-pointer border-2 transition-all ${
+                              isActive 
+                                ? 'border-emerald-500 shadow-md ring-2 ring-emerald-400/40 scale-102' 
+                                : 'border-zinc-200 opacity-80 hover:opacity-100 hover:border-zinc-400'
+                            }`}
+                          >
+                            <img 
+                              src={page.previewUrl} 
+                              alt={`Page ${idx + 1}`} 
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute bottom-0 inset-x-0 bg-black/75 py-0.5 text-center">
+                              <span className="text-[10px] font-black text-white">
+                                Page {idx + 1}
+                              </span>
+                            </div>
+                            <button
+                              onClick={(e) => removePage(page.id, e)}
+                              className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 hover:bg-red-600 text-white flex items-center justify-center transition-colors border-none cursor-pointer shadow-sm"
+                              title="Delete Page"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Add More Pages Action Buttons */}
+                  <div className="grid grid-cols-2 gap-2.5">
                     <button
-                      onClick={resetGrader}
-                      className="text-[11px] font-bold text-zinc-600 hover:text-zinc-950 bg-zinc-100 hover:bg-zinc-200 px-3 py-1 rounded-lg transition-colors border-none cursor-pointer"
+                      onClick={handleAddMoreFromCamera}
+                      className="bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-900 font-black text-xs py-3.5 px-4 rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                     >
-                      Retake Photo
+                      <Camera className="w-4 h-4 text-emerald-600" />
+                      <span>+ Add Page (Camera)</span>
+                    </button>
+
+                    <button
+                      onClick={handleGalleryClick}
+                      className="bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-900 font-black text-xs py-3.5 px-4 rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                    >
+                      <ImageIcon className="w-4 h-4 text-teal-600" />
+                      <span>+ Add Page (Gallery)</span>
                     </button>
                   </div>
-                </div>
-              </div>
 
-              {/* EVALUATION & RESULTS SECTION (Auto-scrolled into view) */}
-              <div ref={resultsContainerRef} className="space-y-4 pt-1">
-                {/* AI IS THINKING LOADING ANIMATION */}
-                {isGrading && (
+                  {/* Educational Tip */}
+                  <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-3.5 flex items-start gap-2.5 text-xs text-emerald-900">
+                    <Sparkles className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-black">Multi-Page FRQ Tip:</p>
+                      <p className="text-[11px] text-emerald-800 mt-0.5 leading-relaxed">
+                        You can upload the printed exam question on <strong>Page 1</strong>, and your multi-page handwritten solutions on <strong>Page 2 & 3</strong>. The AI will evaluate all steps holistically.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* PRIMARY GRADING CTA BUTTON */}
+                  <button
+                    onClick={processAndGradeFRQ}
+                    className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 active:scale-98 text-white font-black text-sm py-4 px-6 rounded-2xl shadow-lg shadow-emerald-600/30 transition-all flex flex-col items-center justify-center cursor-pointer border-none"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-amber-300 fill-amber-300" />
+                      <span>Grade My FRQ ({uploadedPages.length} {uploadedPages.length === 1 ? 'Page' : 'Pages'})</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-100 mt-0.5">
+                      Official College Board Scoring Guideline Rubric
+                    </span>
+                  </button>
+                </div>
+              )}
+
+              {/* ------------------------------------------------------------------ */}
+              {/* STAGE B: AI GRADING IN PROGRESS */}
+              {/* ------------------------------------------------------------------ */}
+              {isGrading && (
+                <div ref={resultsContainerRef} className="space-y-4 pt-2">
                   <motion.div 
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white border-2 border-emerald-300/80 rounded-3xl p-7 text-center shadow-lg space-y-4 relative overflow-hidden"
+                    className="bg-white border-2 border-emerald-300/80 rounded-3xl p-7 text-center shadow-lg space-y-5 relative overflow-hidden"
                   >
-                    {/* Background ambient glow */}
                     <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-40 h-40 bg-emerald-400/15 rounded-full blur-3xl pointer-events-none" />
 
-                    {/* Pulsing AI Brain / Sparkles Icon */}
                     <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
                       <motion.div
                         animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.7, 0.3] }}
@@ -600,7 +957,6 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                       </motion.div>
                     </div>
 
-                    {/* AI IS THINKING TEXT ANIMATION */}
                     <div className="space-y-1">
                       <motion.h3 
                         animate={{ opacity: [0.7, 1, 0.7] }}
@@ -610,11 +966,11 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                         AI IS THINKING...
                       </motion.h3>
                       <p className="text-xs font-bold text-zinc-600">
-                        {gradingStepText || "Evaluating response against official College Board AP rubrics..."}
+                        {gradingStepText || `Evaluating ${uploadedPages.length} pages against official College Board AP rubrics...`}
                       </p>
                     </div>
 
-                    {/* Animated Progress Bar */}
+                    {/* Progress Bar */}
                     <div className="w-full bg-zinc-100 h-2.5 rounded-full overflow-hidden p-0.5 border border-zinc-200/80">
                       <motion.div 
                         className="bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600 h-full rounded-full transition-all duration-300 shadow-sm"
@@ -624,27 +980,47 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
 
                     <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-emerald-700">
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>AP Chief Reader Engine Processing</span>
+                      <span>AP Chief Reader Engine Processing ({uploadedPages.length} Pages)</span>
+                    </div>
+
+                    {/* Page thumbnails being evaluated */}
+                    <div className="flex items-center justify-center gap-2 pt-1">
+                      {uploadedPages.map((p, idx) => (
+                        <div key={p.id} className="w-10 h-12 rounded-lg overflow-hidden border border-zinc-200 opacity-70">
+                          <img src={p.previewUrl} alt={`P${idx+1}`} className="w-full h-full object-cover" />
+                        </div>
+                      ))}
                     </div>
                   </motion.div>
-                )}
+                </div>
+              )}
 
-                {/* INVALID IMAGE / NO STUDENT WORK DETECTED / MCQ DETECTED ERROR CARD */}
-                {result && result.isValidAcademicAnswer !== true && (
+              {/* ------------------------------------------------------------------ */}
+              {/* STAGE C: REJECTION CARD (Non-academic / MCQ Error) */}
+              {/* ------------------------------------------------------------------ */}
+              {result && result.isValidAcademicAnswer !== true && (
+                <div ref={resultsContainerRef} className="space-y-4 pt-1">
                   <motion.div 
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     className={`bg-white border-2 rounded-3xl p-6 shadow-sm space-y-4 text-center ${
-                      result.errorCode === 'MCQ_DETECTED' ? 'border-amber-300' : 'border-red-200'
+                      result.errorCode === 'NO_STUDENT_WORK_DETECTED'
+                        ? 'border-amber-400/80 bg-gradient-to-b from-amber-50/20 to-white'
+                        : result.errorCode === 'MCQ_DETECTED'
+                        ? 'border-amber-300'
+                        : 'border-red-200'
                     }`}
                   >
-                    {/* ICON */}
                     <div className={`w-16 h-16 rounded-3xl border flex items-center justify-center mx-auto ${
-                      result.errorCode === 'MCQ_DETECTED'
+                      result.errorCode === 'NO_STUDENT_WORK_DETECTED'
+                        ? 'bg-amber-50 border-amber-200 text-amber-600'
+                        : result.errorCode === 'MCQ_DETECTED'
                         ? 'bg-amber-50 border-amber-200 text-amber-600'
                         : 'bg-red-50 border-red-100 text-red-600'
                     }`}>
-                      {result.errorCode === 'MCQ_DETECTED' ? (
+                      {result.errorCode === 'NO_STUDENT_WORK_DETECTED' ? (
+                        <FileText className="w-8 h-8" />
+                      ) : result.errorCode === 'MCQ_DETECTED' ? (
                         <ListFilter className="w-8 h-8" />
                       ) : (
                         <AlertCircle className="w-8 h-8" />
@@ -653,27 +1029,49 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
 
                     <div>
                       <span className={`text-[10px] font-black uppercase tracking-wider block ${
-                        result.errorCode === 'MCQ_DETECTED' ? 'text-amber-700' : 'text-red-600'
+                        result.errorCode === 'NO_STUDENT_WORK_DETECTED'
+                          ? 'text-amber-700'
+                          : result.errorCode === 'MCQ_DETECTED'
+                          ? 'text-amber-700'
+                          : 'text-red-600'
                       }`}>
-                        {result.errorCode === 'MCQ_DETECTED' 
+                        {result.errorCode === 'NO_STUDENT_WORK_DETECTED'
+                          ? '0 Points (No Credit) — No Handwritten Answer'
+                          : result.errorCode === 'MCQ_DETECTED' 
                           ? 'Subjective FRQ Only — No MCQs' 
                           : 'Verification Failed'}
                       </span>
                       <h3 className="text-base font-black text-zinc-950 mt-1">
-                        {result.errorCode === 'MCQ_DETECTED'
+                        {result.errorCode === 'NO_STUDENT_WORK_DETECTED'
+                          ? 'Question Prompt Only Detected'
+                          : result.errorCode === 'MCQ_DETECTED'
                           ? 'Multiple Choice Question (MCQ) Detected'
                           : 'No Academic Question or Answer Detected'}
                       </h3>
                       <p className="text-xs font-semibold text-zinc-600 mt-1.5 leading-relaxed">
                         {result.errorMessage || (
-                          result.errorCode === 'MCQ_DETECTED'
+                          result.errorCode === 'NO_STUDENT_WORK_DETECTED'
+                            ? 'The FRQ Grader is exclusively built to evaluate and grade your handwritten solutions. Since no student handwriting or calculations were found, zero points are awarded.'
+                            : result.errorCode === 'MCQ_DETECTED'
                             ? 'The FRQ Grader is strictly built to evaluate subjective Free Response Questions requiring handwritten calculations or written explanations.'
                             : 'Please capture or upload a clear photo of an academic exam question (FRQ) or your handwritten student answer sheet.'
                         )}
                       </p>
                     </div>
 
-                    {result.detectionReason && (
+                    {/* Official AP Rule Notice */}
+                    {result.errorCode === 'NO_STUDENT_WORK_DETECTED' && (
+                      <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-3.5 text-left space-y-1">
+                        <span className="text-[9px] font-black uppercase tracking-wider text-amber-800 block">
+                          Official College Board Rule: "No Work, No Credit"
+                        </span>
+                        <p className="text-xs text-amber-950 font-medium leading-relaxed">
+                          AP Exam readers can only score student calculations and reasoning shown on the page. To protect academic integrity and prepare you for exam day, the FRQ Grader does not provide homework solutions for blank questions.
+                        </p>
+                      </div>
+                    )}
+
+                    {result.detectionReason && result.errorCode !== 'NO_STUDENT_WORK_DETECTED' && (
                       <div className="bg-zinc-50 border border-zinc-200/80 rounded-2xl p-3 text-left">
                         <span className="text-[9px] font-black uppercase tracking-wider text-zinc-400 block mb-1">
                           Image Analysis:
@@ -684,14 +1082,24 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                       </div>
                     )}
 
-                    {/* Action Buttons */}
+                    {result.suggestion && (
+                      <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-3 text-left">
+                        <span className="text-[9px] font-black uppercase tracking-wider text-emerald-800 block mb-1">
+                          Next Step:
+                        </span>
+                        <p className="text-xs text-emerald-900 font-semibold leading-relaxed">
+                          {result.suggestion}
+                        </p>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-2 gap-2.5 pt-1">
                       <button
                         onClick={resetGrader}
                         className="bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-black text-xs py-3.5 rounded-2xl shadow-sm transition-all cursor-pointer border-none flex items-center justify-center gap-2"
                       >
                         <Camera className="w-4 h-4" />
-                        <span>Retake Photo</span>
+                        <span>Upload Handwritten Work</span>
                       </button>
 
                       <button
@@ -703,15 +1111,90 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                       </button>
                     </div>
                   </motion.div>
-                )}
+                </div>
+              )}
 
-                {/* VALID EVALUATION RESULTS CARD */}
-                {result && result.isValidAcademicAnswer === true && (
+              {/* ------------------------------------------------------------------ */}
+              {/* STAGE D: VALID EVALUATION RESULTS */}
+              {/* ------------------------------------------------------------------ */}
+              {result && result.isValidAcademicAnswer === true && (
+                <div ref={resultsContainerRef} className="space-y-4 pt-1">
                   <motion.div 
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="space-y-4"
                   >
+                    {/* SUBMITTED PAGES BAR */}
+                    <div className="bg-white border border-zinc-200 rounded-3xl p-3.5 shadow-sm flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex -space-x-2">
+                          {uploadedPages.slice(0, 3).map((p, idx) => (
+                            <img 
+                              key={p.id}
+                              src={p.previewUrl} 
+                              alt={`P${idx+1}`}
+                              className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-xs cursor-pointer"
+                              onClick={() => setViewingFullImageUrl(p.previewUrl)}
+                            />
+                          ))}
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 block">
+                            Evaluated Submission
+                          </span>
+                          <span className="text-xs font-bold text-zinc-900">
+                            {uploadedPages.length} {uploadedPages.length === 1 ? 'Page' : 'Pages'} Submitted
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={resetGrader}
+                        className="text-[11px] font-bold text-zinc-600 hover:text-zinc-900 bg-zinc-100 hover:bg-zinc-200 px-3 py-1.5 rounded-xl transition-colors border-none cursor-pointer flex items-center gap-1"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        <span>Grade Another</span>
+                      </button>
+                    </div>
+
+                    {/* ALL PAGES AUDITED BREAKDOWN */}
+                    {result.pagesAudited && result.pagesAudited.length > 0 && (
+                      <div className="bg-white border border-zinc-200 rounded-3xl p-4 shadow-sm space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                            <h4 className="text-xs font-black text-zinc-900 uppercase tracking-wider">
+                              AI Audited All {result.pagesAudited.length} Submitted Pages
+                            </h4>
+                          </div>
+                          <span className="text-[9px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
+                            Full Audit Complete
+                          </span>
+                        </div>
+                        <div className="space-y-1.5 pt-0.5">
+                          {result.pagesAudited.map((audit) => (
+                            <div key={audit.pageNumber} className="flex items-start gap-2.5 text-xs bg-zinc-50 border border-zinc-200/70 p-2.5 rounded-2xl">
+                              <span className="font-mono font-black text-emerald-700 shrink-0 bg-white border border-zinc-200/90 px-2 py-0.5 rounded-lg text-[10px] shadow-xs">
+                                Page {audit.pageNumber}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <span className="font-bold text-zinc-800 capitalize text-[11px] block">
+                                  {audit.detectedType === 'handwritten_student_work' 
+                                    ? '✍️ Handwritten Student Work' 
+                                    : audit.detectedType === 'question_prompt' 
+                                    ? '📄 Question Prompt' 
+                                    : '📝 Problem & Work'}
+                                </span>
+                                <p className="text-zinc-600 text-[11px] mt-0.5 leading-relaxed">
+                                  {audit.summaryOfContent || 'Evaluated against official College Board rubric.'}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {/* PRIMARY SCORE BANNER */}
                     <div className={`bg-white border-2 rounded-3xl p-5 shadow-md relative overflow-hidden ${
                       result.submissionMode === 'question_prompt' 
@@ -963,13 +1446,142 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                       </button>
                     </div>
 
+                    {/* AI Safety Disclaimer */}
+                    <div className="text-center pt-2 pb-1 px-4">
+                      <p className="text-[10px] text-zinc-400 font-medium select-none tracking-tight">
+                        AP Exam AI can make mistakes. Please double check important information.
+                      </p>
+                    </div>
+
                   </motion.div>
-                )}
-              </div>
+                </div>
+              )}
+
             </div>
           </main>
         </div>
       )}
+
+      {/* FRQ EVALUATION HISTORY DRAWER / MODAL */}
+      <AnimatePresence>
+        {showHistoryModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="bg-[#FAF9F6] border border-zinc-200 rounded-3xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+            >
+              {/* Modal Header */}
+              <div className="p-4 border-b border-zinc-200 flex items-center justify-between bg-white shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                    <History className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-zinc-900">FRQ Evaluation History</h3>
+                    <p className="text-[11px] font-semibold text-zinc-500">
+                      {frqHistory.length} saved {frqHistory.length === 1 ? 'evaluation' : 'evaluations'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {frqHistory.length > 0 && (
+                    <button
+                      onClick={() => {
+                        triggerVibration(15);
+                        setFrqHistory([]);
+                        saveUserHistory('frq_grader_history', []);
+                        showToast('FRQ history cleared', 'info');
+                      }}
+                      className="px-2.5 py-1 text-[11px] font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-rose-200"
+                    >
+                      Clear All
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowHistoryModal(false)}
+                    className="p-1.5 rounded-full hover:bg-zinc-100 text-zinc-400 hover:text-zinc-700 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
+                {frqHistory.length === 0 ? (
+                  <div className="text-center py-12 flex flex-col items-center space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 border border-zinc-200">
+                      <Award className="w-5 h-5 text-zinc-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-zinc-800 font-bold">No saved evaluations yet</p>
+                      <p className="text-[10px] text-zinc-500 mt-1 max-w-[220px] mx-auto">
+                        Your graded FRQ answers and score breakdowns will automatically appear here.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  frqHistory.map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => {
+                        triggerVibration(10);
+                        setResult(item.result);
+                        setShowHistoryModal(false);
+                        showToast(`Loaded evaluation: ${item.title}`, 'info');
+                      }}
+                      className="group p-3.5 rounded-2xl bg-white border border-zinc-200 hover:border-emerald-500/50 hover:shadow-md transition-all cursor-pointer flex items-start justify-between gap-3 relative"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            {item.subjectDetected || 'AP FRQ'}
+                          </span>
+                          {item.predictedAPScale && (
+                            <span className="text-[10px] font-bold text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded-md">
+                              AP Scale: {item.predictedAPScale}/5
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="text-xs font-bold text-zinc-900 line-clamp-1 group-hover:text-emerald-700 transition-colors">
+                          {item.title}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-1.5 text-[10px] text-zinc-500 font-medium">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-zinc-400" />
+                            {new Date(item.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          {item.totalPointsPossible ? (
+                            <span>• {item.totalPointsEarned ?? 0}/{item.totalPointsPossible} Pts</span>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          triggerVibration(10);
+                          const updated = frqHistory.filter(h => h.id !== item.id);
+                          setFrqHistory(updated);
+                          saveUserHistory('frq_grader_history', updated);
+                          showToast('Removed evaluation', 'info');
+                        }}
+                        className="p-1.5 rounded-lg text-zinc-300 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { getBattleApiUrl } from '../utils/api';
-import { BattleQuestion } from '../data/quizBattleBank';
+import { BattleQuestion, getBattleQuestions } from '../data/quizBattleBank';
 
 export interface PlayerProfile {
   id: string;
@@ -68,6 +68,43 @@ export class BattleSyncService {
   }
 
   /**
+   * 0.5 Generate brand new AI-powered battle questions with anti-repetition filter
+   */
+  async generateBattleQuestions(
+    subjectId: string,
+    gradeLevel: string = '11th Grade',
+    avoidStems: string[] = []
+  ): Promise<BattleQuestion[]> {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+      const res = await fetch(getBattleApiUrl('/api/battle/generate-questions'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          subjectId,
+          gradeLevel,
+          avoidStems: avoidStems.slice(-100),
+          count: 5
+        })
+      });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.questions && Array.isArray(data.questions) && data.questions.length >= 5) {
+          return data.questions;
+        }
+      }
+    } catch (err) {
+      console.warn('[BattleSync] Dynamic question generation fallback:', err);
+    }
+    return getBattleQuestions(subjectId, 5, avoidStems);
+  }
+
+  /**
    * 1. Try to find a match or enter queue on the live server
    */
   async enterMatchQueue(
@@ -109,11 +146,18 @@ export class BattleSyncService {
   }
 
   /**
-   * 2. Start polling for an opponent while active on radar screen (every 350ms)
+   * 2. Start polling for an opponent while active on radar screen (every 350ms with self-healing heartbeat)
    */
   startQueuePolling(
     playerId: string,
-    onMatched: (roomId: string, opponent: PlayerProfile, questions: BattleQuestion[], isPlayer1: boolean, subjectId?: string) => void
+    onMatched: (roomId: string, opponent: PlayerProfile, questions: BattleQuestion[], isPlayer1: boolean, subjectId?: string) => void,
+    playerContext?: {
+      playerName?: string;
+      playerAvatar?: string;
+      subjectId?: string;
+      gradeLevel?: string;
+      questions?: BattleQuestion[];
+    }
   ): () => void {
     let active = true;
 
@@ -127,7 +171,14 @@ export class BattleSyncService {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           signal: controller.signal,
-          body: JSON.stringify({ playerId })
+          body: JSON.stringify({ 
+            playerId,
+            playerName: playerContext?.playerName,
+            playerAvatar: playerContext?.playerAvatar,
+            subjectId: playerContext?.subjectId,
+            gradeLevel: playerContext?.gradeLevel,
+            questions: playerContext?.questions
+          })
         });
         clearTimeout(timeoutId);
 
@@ -263,22 +314,34 @@ export class BattleSyncService {
     playerId: string,
     score: number,
     hasAnswered: boolean,
-    finished: boolean = false
+    finished: boolean = false,
+    currentQ?: number
   ): Promise<void> {
-    try {
-      await fetch(getBattleApiUrl('/api/battle/action'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          roomId,
-          playerId,
-          score,
-          hasAnswered,
-          finished
-        })
-      });
-    } catch (err) {
-      console.warn('Sync player action error:', err);
+    const payload = JSON.stringify({
+      roomId,
+      playerId,
+      score,
+      hasAnswered,
+      finished,
+      currentQ
+    });
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const res = await fetch(getBattleApiUrl('/api/battle/action'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: payload
+        });
+        clearTimeout(timeoutId);
+        if (res.ok) return;
+      } catch (err) {
+        if (attempt === 2) console.warn('Sync player action error after 3 attempts:', err);
+      }
+      await new Promise(r => setTimeout(r, 150));
     }
   }
 
@@ -307,7 +370,23 @@ export class BattleSyncService {
           const data = await res.json();
           const room: BattleRoom = data.room;
           if (room) {
-            const oppRaw = room.player1.id === myPlayerId ? room.player2 : room.player1;
+            let isMeP1 = false;
+            if (room.player1?.id === myPlayerId) {
+              isMeP1 = true;
+            } else if (room.player2?.id === myPlayerId) {
+              isMeP1 = false;
+            } else if (room.player1?.id && myPlayerId) {
+              const myBase = myPlayerId.split('_tab_')[0].split('_sess_')[0];
+              const p1Base = room.player1.id.split('_tab_')[0].split('_sess_')[0];
+              const p2Base = room.player2?.id ? room.player2.id.split('_tab_')[0].split('_sess_')[0] : '';
+              if (myBase !== 'player' && myBase !== 'student' && myBase === p1Base && myBase !== p2Base) {
+                isMeP1 = true;
+              } else if (myBase !== 'player' && myBase !== 'student' && myBase === p2Base) {
+                isMeP1 = false;
+              }
+            }
+
+            const oppRaw = isMeP1 ? room.player2 : room.player1;
             const opp: PlayerProfile | null = oppRaw ? {
               id: oppRaw.id,
               name: oppRaw.name,
@@ -321,7 +400,9 @@ export class BattleSyncService {
             onRoomUpdate(room, opp);
           }
         }
-      } catch {}
+      } catch (pollErr) {
+        console.warn('[BattleSync Room Poll Notice]:', pollErr);
+      }
 
       if (active) {
         setTimeout(poll, 350);

@@ -27,7 +27,6 @@ import SafePdfViewer from './SafePdfViewer';
 import { saveOfflineNote } from '../utils/offlineNotesStorage';
 import APCalculusABStitchNotes from './APCalculusABStitchNotes';
 import APSubjectStitchNotes from './APSubjectStitchNotes';
-import { renderHtmlNotesToPdfBlob } from '../utils/htmlNotesPdfExporter';
 import { safeGetItem } from '../utils/storage';
 import { GRADE_9_RECOMMENDED_IDS } from '../utils/apCurriculum';
 

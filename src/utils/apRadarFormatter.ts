@@ -17,16 +17,69 @@ export function formatAiAnswerText(input: any): string {
   // Protect LaTeX commands starting with \n (e.g. \neq, \nabla, \notin, \natural, \nearrow, \nwarrow)
   str = str.replace(/\\r\\n/g, '\n\n');
   str = str.replace(/\\n(?!(?:eq|abla|otin|atural|earrow|warrow)\b)/g, '\n\n');
-  str = str.replace(/\\t/g, ' ');
+  // Protect LaTeX commands starting with \t (\times, \text, \theta, \tau, \tan, etc.)
+  str = str.replace(/\\t(?!(?:ext|imes|heta|au|an|ilde|ag|op)\b)/g, ' ');
 
-  // 2. Format Step headers: Step 1 [Concept]: or Step 1: or Step 1 -
-  // Ensure double newlines before and after, with bold formatting
-  str = str.replace(/(?:^|\n|\s*)\b(Step\s*\d+(?:\s*\[[^\]]+\])?(?:\s*[:\-])?)\s*/gi, '\n\n**$1**\n\n');
+  // 2. Heal broken 'imes' back to \times (both inside and outside math mode)
+  str = str.replace(/(^|[\s$(=_])imes(?=[\s$_^0-9A-Za-z\(\[\{])/g, '$1\\times ');
 
-  // 3. Format Part headers: Part A:, Part (a):, Part 1: (strictly require \bPart\b to avoid words like "particle")
-  str = str.replace(/(?:^|\n|\s*)\bPart\b\s*(\([A-Za-z0-9]+\)|[A-Da-d0-9]+)(?:\s*\[[^\]]+\])?(?:\s*[:\-])?\s*/gi, '\n\n**Part $1:**\n\n');
+  // 3. Strip standalone orphaned asterisks on their own lines (e.g. "**\n\nStep 1...\n\n**")
+  str = str.replace(/^\s*\*\*\s*$/gm, '');
+  // Strip orphaned bullet asterisks (e.g. "• **\n" or "- **\n")
+  str = str.replace(/(?:^|\n)\s*[-*•]\s*\*\*\s*(?:\n|$)/g, '\n');
+  // Clean up bullet points starting with empty bold tags like "• **: "
+  str = str.replace(/(?:^|\n)\s*([-*•])\s*\*\*:\s*/g, '\n$1 ');
 
-  // 4. Split "Earns X point(s) for..." into clean bullet points
+  // Heal any stray double asterisks that have a space right after opening (e.g. "** Formulate..." or "* ** Formulate...")
+  str = str.replace(/(^|\n)(\s*[-*•]?\s*)\*\*\s+([A-Za-z0-9])/g, '$1$2$3');
+
+  // Fix missing opening ** on labels like "- Teacher Verdict**: " -> "- **Teacher Verdict:** "
+  str = str.replace(/^(\s*[-*•]\s*)([A-Za-z0-9\s/]+?)\*\*\s*:\s*/gm, '$1**$2:** ');
+
+  // Fix label with colon outside bold like "- **Teacher Verdict**:" -> "- **Teacher Verdict:**"
+  str = str.replace(/^(\s*[-*•]\s*\*\*[^*:\n]+?)\*\*\s*:\s*/gm, '$1:** ');
+
+  // Heal stray trailing ** on list lines (e.g. "- **Total AP Points:** 0 / 4 Points (0%)**")
+  str = str.replace(/^(\s*[-*•]\s*\*\*[^*:\n]+?\*\*:\s*)([^*\n]+?)\*\*\s*$/gm, (_m, prefix, val) => {
+    return `${prefix}**${val.trim().replace(/\*+/g, '')}**`;
+  });
+  str = str.replace(/^(\s*[-*•]\s*\*\*[^*:\n]+?:\s*)([^*\n]+?)\*\*\s*$/gm, (_m, prefix, val) => {
+    return `${prefix}**${val.trim().replace(/\*+/g, '')}**`;
+  });
+
+  // 4. Normalize Step headers with clean bold formatting:
+  // Handles plain, partially bold, or bracketed/parenthetical variations
+  str = str.replace(/^\s*(?:[-*•]\s*)?\*{0,2}\s*(Step\s*\d+(?:\s*(?:\[[^\]]+\]|\([^)]+\)))?(?:\s*[:\-])?)\s*\*{0,2}\s*$/gim, '\n\n**$1**\n\n');
+
+  // 5. Ensure subparts in rubric evaluations are separated on distinct bullet points with generous spacing:
+  // Handles Part (a), Part A, Part a with or without bracketed points, preceded by sentence/punctuation or conjoining dash/bullet
+  const partPattern = /([a-zA-Z0-9\.\)\]\!;])\s*[\-\u2013\u2014•·*]?\s*\b(Part\s*(?:\([a-dA-D0-9]+\)|[a-dA-D0-9]\b)\s*(?:\[[^\]\n]+\]|\([^)\n]+pts?\))?)(?:\s*[:\-])?\s*/gi;
+  str = str.replace(partPattern, (_match, endChar, partLabel) => {
+    return `${endChar}\n\n- **${partLabel.trim()}:** `;
+  });
+
+  // Also handle standalone (b) [X pts] or (b): when preceded by sentence/punctuation
+  const standaloneParenPattern = /([a-zA-Z0-9\.\)\]\!;])\s*[\-\u2013\u2014•·*]?\s*(?<!\b(?:Part|Step)\s*)(\([a-dA-D0-9]\)\s*(?:\[[^\]\n]+\]|:))(?:\s*[:\-])?\s*/gi;
+  str = str.replace(standaloneParenPattern, (_match, endChar, partLabel) => {
+    return `${endChar}\n\n- **${partLabel.replace(/:\s*$/, '').trim()}:** `;
+  });
+
+  // If a line starts with "- Part (a) [X pts]:" or "• Part A:" (without bold), wrap label in bold
+  str = str.replace(/^(\s*[-*•]\s*)((?:Part\s*(?:\([a-dA-D0-9]+\)|[a-dA-D0-9]\b)|\([a-dA-D0-9]\))\s*(?:\[[^\]\n]+\]|\([^)\n]+pts?\))?)\s*:\s*(?!\*)/gim, '$1**$2:** ');
+
+  // If a line starts with "- **Part (a) [X pts]**:", move colon inside bold
+  str = str.replace(/^(\s*[-*•]\s*\*\*(?:Part\s*(?:\([a-dA-D0-9]+\)|[a-dA-D0-9]\b)|\([a-dA-D0-9]\))\s*(?:\[[^\]\n]+\]|\([^)\n]+pts?\))?)\*\*\s*:\s*/gim, '$1:** ');
+  str = str.replace(/:\*\*\s*:/g, ':**');
+  str = str.replace(/\*\*\*\*/g, '**');
+
+  // Clean up any accidental orphaned asterisks
+  str = str.replace(/(?:^|\n)\s*[-*•]\s*[\*\-–—]\s*(?:\n|$)/g, '\n');
+
+  // 6. Clean up empty bold tags without destroying bold key-value pairs
+  str = str.replace(/\*\*\s*\*\*/g, '');
+  str = str.replace(/^\s*\*\*\s*$/gm, '');
+
+  // 7. Split "Earns X point(s) for..." into clean bullet points
   str = str.replace(/(?:^|\.\s+|\n+)(Earns?\s+\d+\s+points?\s+(?:for|if|to|by)\b)/gi, '\n\n- **$1**');
 
   // 5. Intelligent long paragraph breakdown into bullet points:

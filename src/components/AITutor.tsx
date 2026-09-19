@@ -1,5 +1,6 @@
 import { getProfileContext, getUserProfileData } from "../utils/profile";
 import { safeGetItem, safeSetItem } from "../utils/storage";
+import { getUserHistory, saveUserHistory, getCurrentUserIdentifier } from "../utils/userHistory";
 import { triggerVibration, hapticNotification, hapticImpact } from "../utils/vibrate";
 import { detectAndLogMistake } from "../utils/mistakes";
 import { getCoins, deductCoins, isProUser } from "../utils/coins";
@@ -312,28 +313,40 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
   }, [parsedSolution]);
 
   const suggestions = useMemo(() => {
-    if (msg.isError || msg.text.includes("hiccup") || msg.text.includes("network")) {
+    if (msg.isError || msg.text.includes("hiccup") || msg.text.includes("network") || msg.text.includes("breather")) {
       return [];
     }
     // 1. Check if parsed from JSON object (e.g. parsedSolution.suggestions)
     if (parsedSolution?.suggestions && Array.isArray(parsedSolution.suggestions) && parsedSolution.suggestions.length > 0) {
-      return parsedSolution.suggestions
+      const extracted = parsedSolution.suggestions
         .map((s: any) => String(s).replace(/^\[?SUGGESTION:\s*/i, '').replace(/\]$/, '').trim())
         .filter((s: string) => s.length > 0);
+      if (extracted.length > 0) return extracted.slice(0, 3);
     }
     // 2. Check regex in raw text (e.g. [SUGGESTION: ...])
     const matches = [...msg.text.matchAll(/\[SUGGESTION:\s*([^\]]+)\]/g)];
     if (matches.length > 0) {
-      return matches.map(m => m[1].trim()).filter(Boolean);
+      const extracted = matches.map(m => m[1].trim()).filter(Boolean);
+      if (extracted.length > 0) return extracted.slice(0, 3);
     }
-    // 3. Fallback smart contextual suggestions so suggestions ALWAYS appear on every AI answer
+    // 3. Smart contextual suggestions based on topic or content
     if (msg.role === 'model' && (cleanText.length > 10 || parsedSolution)) {
-      const topic = parsedSolution?.topic_title || '';
-      if (topic && topic.length > 2 && showTopicHeader) {
+      const rawTopic = parsedSolution?.topic_title ? String(parsedSolution.topic_title).trim() : '';
+      const cleanTopic = rawTopic
+        .replace(/^(?:concept|topic|problem|chapter|unit|overview)\s*:\s*/i, '')
+        .trim();
+      const isGreeting = !cleanTopic || 
+        cleanTopic.toLowerCase().startsWith('hello') || 
+        cleanTopic.toLowerCase().startsWith('hi') || 
+        cleanTopic.toLowerCase().includes('welcome') ||
+        cleanTopic.toLowerCase().includes('study assistant') ||
+        cleanTopic.toLowerCase().includes('how can i help');
+
+      if (cleanTopic && cleanTopic.length > 2 && !isGreeting) {
         return [
-          `Explain ${topic} with a real-life analogy 💡`,
-          `Test me with 2 practice questions on ${topic} 📝`,
-          `What are common exam mistakes in ${topic}? ⚠️`
+          `Explain ${cleanTopic} with a real-world analogy 💡`,
+          `Test me with 2 quick practice questions on ${cleanTopic} 📝`,
+          `What are common exam traps in ${cleanTopic}? ⚠️`
         ];
       }
       return [
@@ -343,7 +356,7 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
       ];
     }
     return [];
-  }, [msg.text, msg.isError, parsedSolution, cleanText, msg.role, showTopicHeader]);
+  }, [msg.text, msg.isError, parsedSolution, cleanText, msg.role]);
 
   const [displayedText, setDisplayedText] = useState(msg.displayedText || (msg.isTyping ? '' : cleanText));
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -358,6 +371,16 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
 
   // Typewriter effect logic (Word-by-word for high-end professional feel)
   useEffect(() => {
+    // If it is a parsed structured solution, render immediately without delaying typing
+    if (parsedSolution) {
+      setDisplayedText(cleanText);
+      if (msg.isTyping && !hasCompletedRef.current) {
+        hasCompletedRef.current = true;
+        onTypingCompleteRef.current();
+      }
+      return;
+    }
+
     if (!msg.isTyping) {
       setDisplayedText(cleanText);
       hasCompletedRef.current = false;
@@ -387,7 +410,7 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
     }, 20); // Faster, super fluid word typewriter speed
 
     return () => clearTimeout(timer);
-  }, [msg.isTyping, cleanText, currentWordIndex, isHolding]);
+  }, [msg.isTyping, cleanText, currentWordIndex, isHolding, parsedSolution]);
 
   const textToShareOrCopy = useMemo(() => {
     if (parsedSolution) {
@@ -589,20 +612,23 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
         </div>
 
         {/* Dynamic Context Suggestions rendered inside the message for seamless study workflow */}
-        {msg.role === 'model' && !msg.isTyping && suggestions.length > 0 && (
-          <div className="mt-4 pt-3 border-t border-zinc-150 flex flex-col gap-1.5">
-            <span className="text-[10px] text-purple-650 font-bold tracking-wider uppercase">What to do next:</span>
+        {msg.role === 'model' && (!msg.isTyping || Boolean(parsedSolution)) && suggestions.length > 0 && (
+          <div className="mt-4 pt-3.5 border-t border-zinc-200/80 flex flex-col gap-2">
+            <div className="flex items-center gap-1.5 text-purple-700 font-extrabold text-[11px] tracking-wider uppercase">
+              <Sparkles className="w-3.5 h-3.5 text-purple-600 animate-pulse shrink-0" />
+              <span>What to do next:</span>
+            </div>
             <div className="flex flex-wrap gap-2">
               {suggestions.map((sug, sIdx) => (
                 <button
                   key={sIdx}
+                  type="button"
                   onClick={() => onSuggestionClick?.(sug)}
-                  className="text-xs px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 transition-all duration-200 active:scale-95 text-left flex items-center gap-1.5 font-bold"
+                  className="text-xs px-3.5 py-2 rounded-2xl bg-purple-50/90 hover:bg-purple-100 text-purple-900 border border-purple-200/90 hover:border-purple-300 transition-all duration-200 active:scale-95 text-left flex items-center gap-2 font-bold shadow-xs hover:shadow-sm cursor-pointer group"
+                  title="Tap to ask this question next"
                 >
-                  <Sparkles className="w-3 h-3 text-purple-500 shrink-0" />
-                  <span className="[&_.katex]:text-xs [&_.katex-display]:my-0 [&_p]:inline [&_p]:m-0">
-                    <GlobalMarkdown className="inline [&_p]:inline [&_p]:m-0">{sug}</GlobalMarkdown>
-                  </span>
+                  <Sparkles className="w-3.5 h-3.5 text-purple-500 group-hover:text-purple-700 shrink-0 transition-colors" />
+                  <span className="leading-snug">{sug}</span>
                 </button>
               ))}
             </div>
@@ -821,14 +847,7 @@ export default function AITutor({ isVip, isActive = true }: { isVip: boolean; is
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [savedChats, setSavedChats] = useState<SavedChat[]>(() => {
-    const lastUser = safeGetItem('last_logged_in_user');
-    const cached = lastUser ? safeGetItem(`stale_tutor_chats_${lastUser}`) : null;
-    if (cached) {
-      try {
-        return JSON.parse(cached);
-      } catch (e) {}
-    }
-    return [];
+    return getUserHistory<SavedChat[]>('stale_tutor_chats', []);
   });
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [tutorChatId, setTutorChatId] = useState<string | null>(null);
@@ -1179,6 +1198,7 @@ export default function AITutor({ isVip, isActive = true }: { isVip: boolean; is
       userAnswer: string;
     }
   ) => {
+    if (loading) return;
     let activeAttachedFile = overrideFile || attachedFile;
     const activeAttachedType = overrideFileType || attachedFileType;
 
@@ -1497,10 +1517,13 @@ Please evaluate this answer strictly according to your system rubric.`;
         return m;
       });
 
+      // Synchronize messages state with final clean model output and isTyping: false
+      setMessages(finalMessages);
+
       const messagesPayload = finalMessages.map(m => ({
         role: m.role,
-        text: m.text,
-        ...(m.imageUrl ? { imageUrl: m.imageUrl, imageTimestamp: m.imageTimestamp } : {})
+        text: m.text || '',
+        ...(m.imageUrl ? { imageUrl: m.imageUrl, imageTimestamp: m.imageTimestamp ?? Date.now() } : {})
       }));
 
       const existingChatId = tutorChatId || `local_${Date.now()}`;
@@ -1508,7 +1531,7 @@ Please evaluate this answer strictly according to your system rubric.`;
         setTutorChatId(existingChatId);
       }
 
-      // 1. Instantly update local savedChats state & LocalStorage for zero-lag UI
+      // 1. Instantly update local savedChats state & LocalStorage per-user for zero-lag UI
       const nowObj = { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 };
       setSavedChats(prevChats => {
         const safePrev = Array.isArray(prevChats) ? prevChats : [];
@@ -1530,9 +1553,9 @@ Please evaluate this answer strictly according to your system rubric.`;
             createdAt: nowObj,
             updatedAt: nowObj
           };
-          updatedList = [newChat, ...safePrev].slice(0, 15);
+          updatedList = [newChat, ...safePrev].slice(0, 25);
         }
-        safeSetItem(storageKey, JSON.stringify(updatedList));
+        saveUserHistory('stale_tutor_chats', updatedList);
         return updatedList;
       });
 
@@ -1548,6 +1571,7 @@ Please evaluate this answer strictly according to your system rubric.`;
           if (!chatDocId) {
             const docRef = await addDoc(collection(db, 'pocket_items'), {
               userId: auth.currentUser.uid,
+              userEmail: auth.currentUser.email || '',
               type: 'scan_chat',
               title: textTitle.length > 30 ? textTitle.substring(0, 30) + '...' : textTitle,
               text: `**You**: ${userMsgText}\n\n**AI**: ${finalAIResponseText}`,
@@ -1566,6 +1590,7 @@ Please evaluate this answer strictly according to your system rubric.`;
           if (!tutorChatId || tutorChatId.startsWith('local_')) {
             const tutorChatRef = await addDoc(collection(db, 'ai_tutor_chats'), {
               userId: auth.currentUser.uid,
+              userEmail: auth.currentUser.email || '',
               title: sessionTitle,
               messages: messagesPayload,
               createdAt: serverTimestamp(),
@@ -1577,7 +1602,7 @@ Please evaluate this answer strictly according to your system rubric.`;
               const updated = (Array.isArray(prev) ? prev : []).map(c => 
                 c.id === existingChatId ? { ...c, id: newFirestoreId } : c
               );
-              safeSetItem(storageKey, JSON.stringify(updated));
+              saveUserHistory('stale_tutor_chats', updated);
               return updated;
             });
           } else {
@@ -1680,16 +1705,10 @@ Please evaluate this answer strictly according to your system rubric.`;
   };
 
   const fetchChatHistory = async () => {
-    const currentUid = auth.currentUser?.uid || safeGetItem('last_logged_in_user') || 'guest_user';
-    const storageKey = `stale_tutor_chats_${currentUid}`;
-    const cached = safeGetItem(storageKey);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setSavedChats(parsed);
-        }
-      } catch (e) {}
+    // 1. Immediately load local/cached history for the active user identity (never block UI)
+    const localChats = getUserHistory<SavedChat[]>('stale_tutor_chats', []);
+    if (Array.isArray(localChats) && localChats.length > 0) {
+      setSavedChats(localChats);
     }
 
     if (!auth.currentUser) {
@@ -1699,18 +1718,15 @@ Please evaluate this answer strictly according to your system rubric.`;
 
     setLoadingHistory(true);
     try {
-      // NOTE: Do NOT use orderBy('updatedAt') here — Firestore requires a composite index
-      // for where('userId', '==') + orderBy('updatedAt'). Fetching with where('userId', '==')
-      // and sorting in memory avoids index errors and is fast for per-user history.
       const q = query(
         collection(db, 'ai_tutor_chats'),
         where('userId', '==', auth.currentUser.uid)
       );
       const snapshot = await getDocs(q);
-      const chats: SavedChat[] = [];
+      const remoteChats: SavedChat[] = [];
       snapshot.forEach(doc => {
         const data = doc.data();
-        chats.push({
+        remoteChats.push({
           id: doc.id,
           title: data.title || 'Untitled Session',
           messages: data.messages || [],
@@ -1719,6 +1735,16 @@ Please evaluate this answer strictly according to your system rubric.`;
         });
       });
 
+      // Crucial: MERGE remote chats with local chats by ID so local cache is NEVER erased!
+      const mergedMap = new Map<string, SavedChat>();
+      (localChats || []).forEach(c => {
+        if (c && c.id) mergedMap.set(c.id, c);
+      });
+      remoteChats.forEach(c => {
+        if (c && c.id) mergedMap.set(c.id, c);
+      });
+
+      const mergedList = Array.from(mergedMap.values());
       const getChatTime = (chat: SavedChat) => {
         const ts = chat.updatedAt || chat.createdAt;
         if (!ts) return 0;
@@ -1728,30 +1754,16 @@ Please evaluate this answer strictly according to your system rubric.`;
         const parsed = new Date(ts).getTime();
         return isNaN(parsed) ? 0 : parsed;
       };
-      chats.sort((a, b) => getChatTime(b) - getChatTime(a));
+      mergedList.sort((a, b) => getChatTime(b) - getChatTime(a));
 
-      if (chats.length > 15) {
-        const toKeep = chats.slice(0, 15);
-        const toDelete = chats.slice(15);
-        for (const item of toDelete) {
-          try {
-            await deleteDoc(doc(db, 'ai_tutor_chats', item.id));
-          } catch (err) {
-            console.error("Failed to delete old ai_tutor_chats item:", err);
-          }
-        }
-        setSavedChats(toKeep);
-        safeSetItem(storageKey, JSON.stringify(toKeep));
-      } else {
-        setSavedChats(chats);
-        safeSetItem(storageKey, JSON.stringify(chats));
-      }
+      const toKeep = mergedList.slice(0, 25);
+      setSavedChats(toKeep);
+      saveUserHistory('stale_tutor_chats', toKeep);
     } catch (e) {
-      console.error("Failed to load chat history from firestore:", e);
-      if (cached) {
-        try {
-          setSavedChats(JSON.parse(cached));
-        } catch (_) {}
+      console.warn("Failed to load chat history from firestore:", e);
+      // Fallback: keep local history completely safe
+      if (Array.isArray(localChats) && localChats.length > 0) {
+        setSavedChats(localChats);
       }
     } finally {
       setLoadingHistory(false);
@@ -1765,7 +1777,16 @@ Please evaluate this answer strictly according to your system rubric.`;
         fetchChatHistory();
       }
     });
-    return () => unsubscribe();
+
+    const handleAccountChange = () => {
+      fetchChatHistory();
+    };
+    window.addEventListener('user_account_changed', handleAccountChange);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('user_account_changed', handleAccountChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -1775,14 +1796,11 @@ Please evaluate this answer strictly according to your system rubric.`;
   }, [historyOpen]);
 
   const handleLoadChat = (chat: SavedChat) => {
-    const formattedMsgs = (chat.messages || []).map(m => ({
-      ...m,
-      isTyping: false,
-      displayedText: m.text
-    }));
-    setMessages(formattedMsgs);
+    if (!chat || !Array.isArray(chat.messages)) return;
+    setMessages(chat.messages);
     setTutorChatId(chat.id);
     setHistoryOpen(false);
+    showToast(`Loaded "${chat.title}"`, 'info');
   };
 
   const handleDeleteChat = async (id: string, e: React.MouseEvent) => {
@@ -1793,8 +1811,7 @@ Please evaluate this answer strictly according to your system rubric.`;
       }
       setSavedChats(prev => {
         const next = (Array.isArray(prev) ? prev : []).filter(c => c.id !== id);
-        const currentUid = auth.currentUser?.uid || safeGetItem('last_logged_in_user') || 'guest_user';
-        safeSetItem(`stale_tutor_chats_${currentUid}`, JSON.stringify(next));
+        saveUserHistory('stale_tutor_chats', next);
         return next;
       });
       if (tutorChatId === id) {
@@ -1825,7 +1842,7 @@ Please evaluate this answer strictly according to your system rubric.`;
           <div className="relative">
             <button 
               onClick={() => setPersonaModalOpen(!personaModalOpen)}
-              className={`text-[11px] ${personaModalOpen ? 'bg-amber-100 border-amber-400 ring-2 ring-amber-200' : 'bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100'} text-amber-700 border-2 border-amber-200 px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 font-black shadow-sm active:scale-95`}
+              className={`text-[11px] ${personaModalOpen ? 'bg-amber-100 dark:bg-amber-950/60 border-amber-400 dark:border-amber-500 ring-2 ring-amber-200 dark:ring-amber-900/40' : 'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 hover:from-amber-100 hover:to-orange-100 dark:hover:from-amber-900/50 dark:hover:to-orange-900/50'} text-amber-700 dark:text-amber-300 border-2 border-amber-200 dark:border-amber-700/60 px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 font-black shadow-sm active:scale-95`}
               title="Change Tutor Mood/Persona"
             >
               <span className="flex items-center gap-1.5">
@@ -1851,22 +1868,22 @@ Please evaluate this answer strictly according to your system rubric.`;
                     initial={{ opacity: 0, y: 20, scale: 0.95, x: '50%' }}
                     animate={{ opacity: 1, y: 0, scale: 1, x: '0%' }}
                     exit={{ opacity: 0, y: 20, scale: 0.95, x: '0%' }}
-                    className="fixed sm:absolute right-4 sm:right-0 top-20 sm:top-full mt-3 w-[calc(100vw-2rem)] sm:w-85 bg-white border-2 border-amber-200 rounded-[2.5rem] shadow-[0_40px_100px_rgba(0,0,0,0.3)] p-4 z-[1200] overflow-visible"
+                    className="fixed sm:absolute right-4 sm:right-0 top-20 sm:top-full mt-3 w-[calc(100vw-2rem)] sm:w-85 bg-white dark:bg-zinc-900 border-2 border-amber-200 dark:border-amber-500/40 rounded-[2.5rem] shadow-[0_40px_100px_rgba(0,0,0,0.3)] p-4 z-[1200] overflow-visible"
                   >
                     {/* Arrow tip for the dropdown - hidden on mobile */}
-                    <div className="hidden sm:block absolute -top-2.5 right-8 w-5 h-5 bg-white border-t-2 border-l-2 border-amber-200 rotate-45 z-[-1]" />
+                    <div className="hidden sm:block absolute -top-2.5 right-8 w-5 h-5 bg-white dark:bg-zinc-900 border-t-2 border-l-2 border-amber-200 dark:border-amber-500/40 rotate-45 z-[-1]" />
 
-                    <div className="px-5 py-4 border-b border-zinc-100 mb-3 flex items-center justify-between">
+                    <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800 mb-3 flex items-center justify-between">
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-amber-800 uppercase tracking-widest flex items-center gap-2">
+                        <span className="text-[10px] font-black text-amber-800 dark:text-amber-400 uppercase tracking-widest flex items-center gap-2">
                           <Sparkles className="w-4 h-4 text-amber-500" />
                           Tutor Academy Moods
                         </span>
-                        <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-tighter">Choose your learning vibe</p>
+                        <p className="text-[9px] text-zinc-400 dark:text-zinc-300 font-bold uppercase tracking-tighter">Choose your learning vibe</p>
                       </div>
                       <button 
                         onClick={() => setPersonaModalOpen(false)}
-                        className="p-2 rounded-full hover:bg-zinc-100 text-zinc-400 transition-colors"
+                        className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 dark:text-zinc-200 transition-colors"
                       >
                         <X className="w-5 h-5" />
                       </button>
@@ -1891,42 +1908,46 @@ Please evaluate this answer strictly according to your system rubric.`;
                             }}
                             className={`w-full text-left p-4 rounded-[1.5rem] transition-all duration-300 flex items-center gap-4 border-2 relative group overflow-hidden ${
                               isActive 
-                                ? 'bg-amber-50 border-amber-400 text-amber-950 shadow-md ring-4 ring-amber-100/50' 
-                                : 'bg-white border-zinc-100 hover:border-amber-200 hover:bg-amber-50/20 text-zinc-600'
+                                ? 'bg-amber-50 dark:bg-amber-950/50 border-amber-400 dark:border-amber-500 text-amber-950 dark:text-amber-100 shadow-md ring-4 ring-amber-100/50 dark:ring-amber-900/30' 
+                                : 'bg-white dark:bg-zinc-850/80 border-zinc-100 dark:border-zinc-800 hover:border-amber-200 dark:hover:border-amber-500/40 hover:bg-amber-50/20 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200'
                             }`}
                           >
                             {/* Visual highlight for VIP locking */}
                             {!isVip && p.id !== 'owl' && (
                               <div className="absolute top-2 right-2">
-                                <Lock className="w-3 h-3 text-zinc-300" />
+                                <Lock className="w-3 h-3 text-zinc-300 dark:text-zinc-400" />
                               </div>
                             )}
 
-                            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${p.color} flex items-center justify-center text-3xl shrink-0 shadow-lg border-2 border-white group-hover:scale-110 transition-transform duration-500`}>
+                            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${p.color} flex items-center justify-center text-3xl shrink-0 shadow-lg border-2 border-white dark:border-zinc-700 group-hover:scale-110 transition-transform duration-500`}>
                               {p.emoji}
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="text-sm font-black leading-tight mb-1 flex items-center justify-between gap-2">
-                                <span className="truncate">{p.name}</span>
+                                <span className={`truncate font-black ${isActive ? 'text-amber-950 dark:text-amber-100' : 'text-zinc-900 dark:text-white'}`}>
+                                  {p.name}
+                                </span>
                                 {isActive ? (
                                   <div className="shrink-0 flex items-center gap-1 text-[9px] bg-amber-600 text-white px-2.5 py-0.5 rounded-full uppercase tracking-tighter font-black">
                                     <Check className="w-2.5 h-2.5" />
                                     Active
                                   </div>
                                 ) : (!isVip && p.id !== 'owl' && (
-                                  <span className="shrink-0 text-[8px] bg-zinc-100 text-zinc-400 px-2 py-0.5 rounded-full uppercase font-black">Pro</span>
+                                  <span className="shrink-0 text-[8px] bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 px-2 py-0.5 rounded-full uppercase font-black">Pro</span>
                                 ))}
                               </div>
-                              <div className="text-[11px] text-zinc-500 font-medium leading-snug line-clamp-2 italic opacity-80">{p.description}</div>
+                              <div className={`text-[11px] font-medium leading-snug line-clamp-2 italic ${isActive ? 'text-amber-900/80 dark:text-amber-200/90' : 'text-zinc-600 dark:text-zinc-300'}`}>
+                                {p.description}
+                              </div>
                             </div>
                           </button>
                         );
                       })}
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-zinc-100 px-2 pb-1">
-                      <p className="text-[10px] text-zinc-400 font-bold text-center italic leading-tight">
-                        Switching moods changes the AI's personality & teaching style.
+                    <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800 px-2 pb-1">
+                      <p className="text-[10px] text-zinc-400 dark:text-zinc-300 font-bold text-center italic leading-tight">
+                        Switching moods changes the AI's personality &amp; teaching style.
                       </p>
                     </div>
                   </motion.div>
@@ -1993,11 +2014,7 @@ Please evaluate this answer strictly according to your system rubric.`;
                     <Loader2 className="w-6 h-6 text-purple-600 animate-spin" />
                     <span className="text-xs text-zinc-500">Loading history...</span>
                   </div>
-                ) : !auth.currentUser ? (
-                  <div className="text-center py-12">
-                    <p className="text-xs text-zinc-500">Please sign in to view your saved chats.</p>
-                  </div>
-                ) : !Array.isArray(savedChats) || savedChats.length === 0 ? (
+                ) : (!Array.isArray(savedChats) || savedChats.length === 0) ? (
                   <div className="text-center py-12 flex flex-col items-center space-y-3">
                     <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 border border-zinc-200">
                       <BookOpen className="w-5 h-5 text-zinc-400" />
@@ -2005,7 +2022,7 @@ Please evaluate this answer strictly according to your system rubric.`;
                     <div>
                       <p className="text-xs text-zinc-800 font-bold">No saved sessions yet</p>
                       <p className="text-[10px] text-zinc-500 mt-1 max-w-[200px] mx-auto">
-                        Your chats with the AI Tutor will appear here automatically as you study.
+                        Your study chats with the AI Tutor will appear here automatically.
                       </p>
                     </div>
                   </div>
@@ -2569,6 +2586,13 @@ Please evaluate this answer strictly according to your system rubric.`;
               <Send className="w-4 h-4 ml-0.5" />
             </button>
           )}
+        </div>
+
+        {/* AI Safety Disclaimer */}
+        <div className="text-center pt-1.5 pb-0.5 px-3">
+          <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium select-none tracking-tight">
+            AP Exam AI can make mistakes. Please double check important information.
+          </p>
         </div>
       </div>
 

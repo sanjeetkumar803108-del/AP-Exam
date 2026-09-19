@@ -410,7 +410,7 @@ export const AP_CALCULUS_AB_UNIT_1_LEVELS: UnitQuestLevel[] = [
     id: 8,
     topicNumber: 'Topic 1.8 & 1.9',
     name: 'Squeeze Theorem & Special Trig Limits',
-    subtitle: 'Sandwiching Bounds & sin(x)/x Limits',
+    subtitle: 'Sandwiching Bounds & $\\frac{\\sin(x)}{x}$ Limits',
     difficulty: 'Medium',
     rewardCoins: 50,
     questions: [
@@ -536,7 +536,7 @@ export const AP_CALCULUS_AB_UNIT_1_LEVELS: UnitQuestLevel[] = [
     id: 10,
     topicNumber: 'Topic 1.11',
     name: '3-Part Definition of Continuity at a Point',
-    subtitle: 'Checking f(c), Limit Existence & Equality',
+    subtitle: 'Checking $f(c)$, Limit Existence & Equality',
     difficulty: 'Hard',
     rewardCoins: 55,
     questions: [
@@ -612,7 +612,7 @@ export const AP_CALCULUS_AB_UNIT_1_LEVELS: UnitQuestLevel[] = [
     id: 11,
     topicNumber: 'Topic 1.11',
     name: 'Continuity in Piecewise Functions',
-    subtitle: 'Solving for Unknown Parameters (k)',
+    subtitle: 'Solving for Unknown Parameters ($k$)',
     difficulty: 'Hard',
     rewardCoins: 55,
     questions: [
