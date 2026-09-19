@@ -60,48 +60,71 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
   const reasonLabel = reasonObj.label;
 
   // Build the rich pre-filled email subject and body
-  const emailSubject = `[AP Exam] AI Content Report: ${reasonLabel} (${context})`;
+  const getEmailData = (reasonId = selectedReason, userNotes = details) => {
+    const reason = REPORT_REASONS.find(r => r.id === reasonId) || REPORT_REASONS[0];
+    const userMail = studentEmail || currentUser?.email || 'student@ap-exam.app';
+    const emailSubject = `[AP Exam AI Report] ${reason.label} (${context})`;
 
-  const emailBody = [
-    `Hi AP Exam Developer Team,`,
-    ``,
-    `I am reporting an issue with an AI-generated response in the AP Exam App.`,
-    ``,
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-    `📋 REPORT SUMMARY`,
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-    `• Report Type: ${reasonLabel}`,
-    `• Feature / Context: ${context}`,
-    `• Student Email: ${studentEmail || currentUser?.email || 'Anonymous Student'}`,
-    `• Student User ID: ${currentUser?.uid || 'guest_user'}`,
-    `• Date & Time: ${new Date().toLocaleString()}`,
-    `• Extra Notes / Feedback: ${details.trim() || 'None provided'}`,
-    ``,
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-    `🤖 REPORTED AI OUTPUT`,
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-    questionText ? `[Question / Prompt Context]:\n${questionText}\n\n` : '',
-    `${aiOutput}`,
-    ``,
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-    `📱 APP & SYSTEM INFO`,
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-    `• Application: AP Exam Prep (Android / Web)`,
-    `• Recipient: ${DEVELOPER_EMAIL}`,
-    `• Platform: ${Capacitor.isNativePlatform() ? 'Android Native' : 'Web Browser'}`,
-    `• Timestamp: ${new Date().toISOString()}`
-  ].join('\n');
+    // Prevent OS mailto length limitation overflows by capping snippet if extremely long,
+    // while full untruncated content is always sent to backend vault
+    const maxMailtoLen = 1400;
+    const reportedSnippet = aiOutput.length > maxMailtoLen
+      ? `${aiOutput.slice(0, maxMailtoLen)}\n\n... [Full response safely archived in developer database vault]`
+      : aiOutput;
+
+    const emailBody = [
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+      `🚨 AP EXAM APP - AI CONTENT REPORT`,
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+      `• Developer Recipient: ${DEVELOPER_EMAIL}`,
+      `• Sender / Student Email: ${userMail}`,
+      `• Student User ID: ${currentUser?.uid || 'guest_user'}`,
+      `• Report Category: ${reason.label}`,
+      `• App Screen / Feature: ${context}`,
+      `• Date & Time: ${new Date().toLocaleString()}`,
+      ``,
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+      `🤖 REPORTED AI OUTPUT:`,
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+      questionText ? `[Question / Context Prompt]:\n${questionText}\n\n` : '',
+      reportedSnippet,
+      ``,
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+      `💬 STUDENT NOTES / EXPLANATION:`,
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+      userNotes.trim() || 'Please review the reported AI output above for factual, abusive, or rubric inaccuracies.',
+      ``,
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+      `📱 SYSTEM DETAILS:`,
+      `• Application: AP Exam Preparation (Android / Web)`,
+      `• Platform: ${Capacitor.isNativePlatform() ? 'Android Native App' : 'Web Browser'}`,
+      `• Timestamp: ${new Date().toISOString()}`,
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
+    ].join('\n');
+
+    return {
+      reason,
+      userMail,
+      emailSubject,
+      emailBody,
+      mailtoUrl: `mailto:${DEVELOPER_EMAIL}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`,
+      gmailUrl: `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(DEVELOPER_EMAIL)}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`
+    };
+  };
+
+  const { emailSubject, emailBody } = getEmailData();
 
   // Background logging so developer never loses a report even if user closes email app
-  const logReportSilently = async () => {
+  const logReportSilently = async (reasonId = selectedReason) => {
     try {
+      const reason = REPORT_REASONS.find(r => r.id === reasonId) || REPORT_REASONS[0];
       const payload = {
-        reason: reasonLabel,
+        reason: reason.label,
         details: details.trim(),
         aiOutput: aiOutput.trim(),
         context: context.trim(),
         questionText: (questionText || '').trim(),
-        userEmail: (studentEmail || currentUser?.email || 'Anonymous Student').trim(),
+        userEmail: (studentEmail || currentUser?.email || 'student@ap-exam.app').trim(),
         userId: currentUser?.uid || 'guest_user',
         timestamp: new Date().toISOString()
       };
@@ -124,12 +147,12 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
   };
 
   // Launch Default Email App with all fields pre-filled
-  const handleOpenDefaultEmail = (e?: React.FormEvent) => {
+  const handleOpenDefaultEmail = (reasonId = selectedReason, e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setIsOpeningEmail(true);
-    logReportSilently();
+    logReportSilently(reasonId);
 
-    const mailtoUrl = `mailto:${DEVELOPER_EMAIL}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    const { mailtoUrl } = getEmailData(reasonId);
 
     // Open via native window.location or system browser
     if (Capacitor.isNativePlatform()) {
@@ -138,7 +161,7 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
       window.open(mailtoUrl, '_self');
     }
 
-    showToast('📧 Opening your email app with pre-filled report. Tap Send!');
+    showToast('📧 Opening email app with pre-filled report. Tap Send!');
 
     setTimeout(() => {
       setIsOpeningEmail(false);
@@ -147,9 +170,9 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
   };
 
   // Open Directly in Gmail Web (great for browser students who use Gmail)
-  const handleOpenGmailWeb = () => {
-    logReportSilently();
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(DEVELOPER_EMAIL)}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+  const handleOpenGmailWeb = (reasonId = selectedReason) => {
+    logReportSilently(reasonId);
+    const { gmailUrl } = getEmailData(reasonId);
     window.open(gmailUrl, '_blank', 'noopener,noreferrer');
     showToast('🚀 Opening Gmail with pre-filled report. Tap Send!');
     setTimeout(() => {
@@ -162,7 +185,7 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
     try {
       await navigator.clipboard.writeText(`To: ${DEVELOPER_EMAIL}\nSubject: ${emailSubject}\n\n${emailBody}`);
       setCopiedBody(true);
-      showToast('📋 Report details copied to clipboard!');
+      showToast('📋 Pre-filled email copied to clipboard!');
       setTimeout(() => setCopiedBody(false), 2000);
     } catch (_) {}
   };
@@ -188,11 +211,11 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-black text-white tracking-tight">Report AI Output</h3>
                 <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">
-                  Email Developer
+                  Pre-filled Email
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                Send report to: <strong className="text-red-400">{DEVELOPER_EMAIL}</strong>
+                Recipient: <strong className="text-red-400">{DEVELOPER_EMAIL}</strong>
               </p>
             </div>
           </div>
@@ -215,33 +238,46 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
 
           {/* Reason Selector */}
           <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-200 block">
-              1. Select Problem Type <span className="text-red-400">*</span>
-            </label>
-            <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-200 block">
+                1. Select Problem Type <span className="text-red-400">*</span>
+              </label>
+              <span className="text-[10px] text-slate-400">Tap to select</span>
+            </div>
+
+            <div className="space-y-2">
               {REPORT_REASONS.map((r) => {
                 const isSelected = selectedReason === r.id;
                 return (
-                  <button
+                  <div
                     key={r.id}
-                    type="button"
                     onClick={() => setSelectedReason(r.id)}
-                    className={`w-full text-left p-2.5 rounded-xl border transition-all cursor-pointer flex items-start gap-2.5 ${
+                    className={`w-full p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
                       isSelected
-                        ? 'bg-red-500/15 border-red-500/60 text-white shadow-xs'
-                        : 'bg-slate-800/50 border-slate-700/60 text-slate-300 hover:bg-slate-800'
+                        ? 'bg-red-500/15 border-red-500/80 text-white shadow-md ring-1 ring-red-500/50'
+                        : 'bg-slate-800/50 border-slate-700/60 text-slate-300 hover:bg-slate-800 hover:border-slate-600'
                     }`}
                   >
-                    <span className="text-base shrink-0 select-none">{r.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-xs font-bold leading-tight ${isSelected ? 'text-red-300' : 'text-slate-200'}`}>
-                        {r.label}
-                      </p>
-                      <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
-                        {r.desc}
-                      </p>
+                    <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                      <span className="text-lg shrink-0 select-none mt-0.5">{r.icon}</span>
+                      <div className="min-w-0">
+                        <p className={`text-xs font-bold leading-tight ${isSelected ? 'text-red-300' : 'text-slate-200'}`}>
+                          {r.label}
+                        </p>
+                        <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
+                          {r.desc}
+                        </p>
+                      </div>
                     </div>
-                  </button>
+
+                    <div className="shrink-0 flex items-center gap-1.5">
+                      {isSelected && (
+                        <span className="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] font-bold">
+                          ✓
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -250,22 +286,25 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
           {/* Additional Explanation (Optional) */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-200 block">
-              2. Add Extra Notes <span className="text-slate-400 font-normal">(Optional)</span>
+              2. Extra Notes <span className="text-slate-400 font-normal">(Optional)</span>
             </label>
             <textarea
               value={details}
               onChange={(e) => setDetails(e.target.value)}
-              placeholder="Tell developer why this output is wrong, abusive, or buggy..."
+              placeholder="Add any extra detail for the developer (optional)..."
               rows={2}
               className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700/80 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500/80 resize-none transition-colors"
             />
           </div>
 
-          {/* Student Email (Optional) */}
+          {/* Student Email (Pre-filled) */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-200 block">
-              3. Your Email <span className="text-slate-400 font-normal">(Pre-filled)</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-200 block">
+                3. Sender / Student Email
+              </label>
+              <span className="text-[10px] text-emerald-400 font-semibold">Pre-filled</span>
+            </div>
             <input
               type="email"
               value={studentEmail}
@@ -284,14 +323,15 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
             >
               <div className="flex items-center gap-2 truncate">
                 <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span className="truncate">Preview Pre-Filled Email Content</span>
+                <span className="truncate">Preview Email Template (Pre-filled)</span>
               </div>
               {showSnippet ? <ChevronUp className="w-3.5 h-3.5 text-slate-400" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-400" />}
             </button>
 
             {showSnippet && (
-              <div className="p-3 border-t border-slate-800 text-[11px] text-slate-300 max-h-40 overflow-y-auto whitespace-pre-wrap leading-relaxed font-mono bg-black/40">
+              <div className="p-3 border-t border-slate-800 text-[11px] text-slate-300 max-h-48 overflow-y-auto whitespace-pre-wrap leading-relaxed font-mono bg-black/40">
                 <div className="text-red-400 font-bold mb-1">To: {DEVELOPER_EMAIL}</div>
+                <div className="text-sky-300 font-semibold mb-1">From: {studentEmail || currentUser?.email || 'student@ap-exam.app'}</div>
                 <div className="text-amber-300 font-semibold mb-2">Subject: {emailSubject}</div>
                 <div>{emailBody}</div>
               </div>
@@ -299,10 +339,10 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
           </div>
 
           {/* Information Callout */}
-          <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-2.5">
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+          <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-200 text-xs flex items-start gap-2.5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
             <p className="leading-snug text-[11px]">
-              Tapping below will open your email app with <strong>recipient, subject, report type, and AI output already 100% pre-filled</strong>. Just tap <strong>Send</strong>!
+              Tapping <strong>"Open Email App"</strong> below will open your email composer with <strong>recipient, subject, your email, and reported AI response already 100% pre-filled</strong>. Just tap <strong>Send</strong>!
             </p>
           </div>
         </div>
@@ -313,9 +353,9 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
             {/* Primary Action: Open Default Email App */}
             <button
               type="button"
-              onClick={() => handleOpenDefaultEmail()}
+              onClick={() => handleOpenDefaultEmail(selectedReason)}
               disabled={isOpeningEmail}
-              className="w-full py-3 px-4 rounded-xl text-xs font-black text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 active:scale-98 transition-all shadow-md shadow-red-950/40 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-3 px-4 rounded-xl text-xs font-black text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:to-rose-500 active:scale-98 transition-all shadow-lg shadow-red-950/50 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <Mail className="w-4 h-4" />
               <span>Open Email App (Pre-filled)</span>
@@ -324,7 +364,7 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
             {/* Secondary Action: Open Gmail Web */}
             <button
               type="button"
-              onClick={handleOpenGmailWeb}
+              onClick={() => handleOpenGmailWeb(selectedReason)}
               className="w-full py-3 px-4 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 hover:text-white border border-slate-700 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2"
             >
               <ExternalLink className="w-4 h-4 text-red-400" />

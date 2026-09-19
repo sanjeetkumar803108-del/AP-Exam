@@ -14242,11 +14242,11 @@ app.delete("/api/sample-papers/:id", (req, res) => {
     saveSamplePapersToDisk();
     console.log(`[SamplePaperVault] Deleted paper ${id}. Remaining: ${samplePapersVault.length}`);
     res.json({ success: true, count: samplePapersVault.length });
-    registerReportAiRoutes(app);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+registerReportAiRoutes(app);
 async function startServer() {
   const distPath = path2.join(process.cwd(), "dist");
   const hasDist = fs2.existsSync(path2.join(distPath, "index.html"));

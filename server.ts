@@ -4229,14 +4229,13 @@ app.delete("/api/sample-papers/:id", (req, res) => {
     saveSamplePapersToDisk();
     console.log(`[SamplePaperVault] Deleted paper ${id}. Remaining: ${samplePapersVault.length}`);
     res.json({ success: true, count: samplePapersVault.length });
-
-// Register AI content reporting routes (automated developer email dispatch)
-registerReportAiRoutes(app);
-
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Register AI content reporting routes (automated developer email dispatch)
+registerReportAiRoutes(app);
 
 
 async function startServer() {
