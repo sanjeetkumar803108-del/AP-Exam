@@ -33,6 +33,7 @@ import { TOP_10_AP_SUBJECTS, APSubject } from '../utils/apCurriculum';
 import { triggerVibration } from '../utils/vibrate';
 import { safeGetItem, safeSetItem, safeJsonParse } from '../utils/storage';
 import GlobalMarkdown from './GlobalMarkdown';
+import { ReportAiButton } from './ReportAiModal';
 import {
   QuizQuestion,
   UnitQuestLevel,
@@ -1537,8 +1538,15 @@ Please structure your response into these 4 clear sections:
                                         </button>
                                       </div>
 
-                                      {/* AI Safety Disclaimer */}
-                                      <div className="pt-2 text-center">
+                                      {/* AI Safety Disclaimer & Report */}
+                                      <div className="pt-2 text-center flex flex-col items-center gap-1.5">
+                                        <ReportAiButton
+                                          aiOutput={aiExplanationText || ''}
+                                          context="Learning Island AI Guidance"
+                                          questionText={currentQ.stem}
+                                          variant="compact"
+                                          label="Report AI Output"
+                                        />
                                         <p className="text-[10px] text-zinc-400 font-medium select-none tracking-tight">
                                           AP Exam AI can make mistakes. Please double check important information.
                                         </p>
@@ -1562,8 +1570,15 @@ Please structure your response into these 4 clear sections:
                                       </div>
                                     )}
 
-                                    {/* AI Safety Disclaimer */}
-                                    <div className="text-center pt-2 pb-0.5">
+                                    {/* AI Safety Disclaimer & Report */}
+                                    <div className="text-center pt-2 pb-0.5 flex flex-col items-center gap-1.5">
+                                      <ReportAiButton
+                                        aiOutput={`${currentQ.explanation}\n\n${currentQ.distractorTip || ''}`}
+                                        context="Learning Island Explanation"
+                                        questionText={currentQ.stem}
+                                        variant="compact"
+                                        label="Report Explanation"
+                                      />
                                       <p className="text-[10px] text-zinc-400 font-medium select-none tracking-tight">
                                         AP Exam AI can make mistakes. Please double check important information.
                                       </p>

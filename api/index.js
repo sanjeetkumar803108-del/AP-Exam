@@ -1,13 +1,199 @@
 // server.ts
 import dotenv from "dotenv";
 import express from "express";
-import path from "path";
-import fs from "fs";
+import path2 from "path";
+import fs2 from "fs";
 import multer from "multer";
 import cors from "cors";
 import { GoogleGenAI, Modality } from "@google/genai";
 import rateLimit from "express-rate-limit";
+import xss2 from "xss";
+
+// src/server/reportAiRoutes.ts
+import path from "path";
+import fs from "fs";
+import crypto from "crypto";
 import xss from "xss";
+import nodemailer from "nodemailer";
+var DEVELOPER_SUPPORT_EMAIL = "helpyou.ai.support@gmail.com";
+var AI_REPORTS_FILE = path.join(process.cwd(), "data", "ai_reports_vault.json");
+if (!fs.existsSync(path.join(process.cwd(), "data"))) {
+  try {
+    fs.mkdirSync(path.join(process.cwd(), "data"), { recursive: true });
+  } catch (_) {
+  }
+}
+var aiReportsVault = [];
+try {
+  if (fs.existsSync(AI_REPORTS_FILE)) {
+    const raw = fs.readFileSync(AI_REPORTS_FILE, "utf-8");
+    aiReportsVault = JSON.parse(raw);
+    if (!Array.isArray(aiReportsVault)) aiReportsVault = [];
+  }
+} catch (e) {
+  aiReportsVault = [];
+}
+var saveAiReportsToDisk = () => {
+  try {
+    fs.writeFileSync(AI_REPORTS_FILE, JSON.stringify(aiReportsVault, null, 2), "utf-8");
+  } catch (err) {
+    console.warn("[AI Report Vault] Error saving to disk:", err);
+  }
+};
+async function dispatchReportEmail(reportData) {
+  const { id, reason, details, aiOutput, context, userEmail, userId, timestamp } = reportData;
+  const emailSubject = `\u{1F6A8} [AP Exam AI Report] ${reason} - (${context})`;
+  const emailHtml = `
+    <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; border: 1px solid #e4e4e7; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
+      <div style="background: linear-gradient(135deg, #dc2626, #991b1b); padding: 22px; color: #ffffff;">
+        <h2 style="margin: 0; font-size: 20px; font-weight: bold;">\u{1F6A8} AP Exam - AI Content Report</h2>
+        <p style="margin: 6px 0 0 0; opacity: 0.9; font-size: 13px;">Report ID: <strong>${id}</strong> | Timestamp: ${new Date(timestamp).toLocaleString()}</p>
+      </div>
+      <div style="padding: 24px; color: #18181b;">
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 22px;">
+          <tr style="border-bottom: 1px solid #f4f4f5;">
+            <td style="padding: 10px 0; font-weight: bold; color: #71717a; width: 140px;">Report Reason:</td>
+            <td style="padding: 10px 0; font-weight: bold; color: #dc2626; font-size: 15px;">${xss(reason)}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #f4f4f5;">
+            <td style="padding: 10px 0; font-weight: bold; color: #71717a;">Feature / Context:</td>
+            <td style="padding: 10px 0; font-weight: 600; color: #4338ca;">${xss(context)}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #f4f4f5;">
+            <td style="padding: 10px 0; font-weight: bold; color: #71717a;">Student Email:</td>
+            <td style="padding: 10px 0; font-weight: 500;">${xss(userEmail || "Not provided by student")}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #f4f4f5;">
+            <td style="padding: 10px 0; font-weight: bold; color: #71717a;">Student User ID:</td>
+            <td style="padding: 10px 0; font-family: monospace; font-size: 12px; color: #52525b;">${xss(userId || "N/A")}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px 0; font-weight: bold; color: #71717a; vertical-align: top;">Student Explanation:</td>
+            <td style="padding: 10px 0; background: #fef2f2; border-radius: 8px; padding: 12px; color: #991b1b; font-size: 14px; line-height: 1.5;">
+              ${xss(details || "No additional comments provided by student.")}
+            </td>
+          </tr>
+        </table>
+
+        <h4 style="margin: 22px 0 10px 0; color: #1e293b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.6px;">Reported AI Output:</h4>
+        <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; font-size: 13px; line-height: 1.6; color: #334155; max-height: 380px; overflow-y: auto; white-space: pre-wrap; word-break: break-word;">
+${xss(aiOutput)}
+        </div>
+
+        <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f4f4f5; text-align: center; font-size: 12px; color: #a1a1aa;">
+          This automated security & content review report was dispatched directly from the AP Exam System to ${DEVELOPER_SUPPORT_EMAIL}.
+        </div>
+      </div>
+    </div>
+  `;
+  const smtpUser = process.env.SMTP_USER || process.env.GMAIL_USER;
+  const smtpPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD;
+  if (smtpUser && smtpPass) {
+    try {
+      const transporter = nodemailer.createTransport({
+        service: process.env.SMTP_SERVICE || (process.env.GMAIL_USER ? "gmail" : void 0),
+        host: process.env.SMTP_HOST || (process.env.GMAIL_USER ? "smtp.gmail.com" : void 0),
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_SECURE === "true",
+        auth: { user: smtpUser, pass: smtpPass }
+      });
+      await transporter.sendMail({
+        from: `"AP Exam AI Safety" <${smtpUser}>`,
+        to: DEVELOPER_SUPPORT_EMAIL,
+        subject: emailSubject,
+        html: emailHtml,
+        text: `AI Content Report: ${reason}
+Context: ${context}
+Details: ${details}
+Student: ${userEmail}
+AI Output:
+${aiOutput}`
+      });
+      console.log(`[AI Report] Email sent via SMTP to ${DEVELOPER_SUPPORT_EMAIL}`);
+      return { sent: true, method: "smtp" };
+    } catch (smtpErr) {
+      console.warn("[AI Report] SMTP send failed, falling back to FormSubmit relay:", smtpErr?.message);
+    }
+  }
+  try {
+    const relayResponse = await fetch(`https://formsubmit.co/ajax/${DEVELOPER_SUPPORT_EMAIL}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        _subject: emailSubject,
+        _template: "table",
+        _captcha: "false",
+        developer_email: DEVELOPER_SUPPORT_EMAIL,
+        report_id: id,
+        report_reason: reason,
+        feature_context: context,
+        student_feedback: details || "No extra comment",
+        student_email: userEmail || "Anonymous student",
+        student_user_id: userId || "N/A",
+        reported_at: timestamp,
+        ai_output_snippet: aiOutput.length > 3e3 ? aiOutput.substring(0, 3e3) + "... [truncated]" : aiOutput
+      })
+    });
+    const relayResult = await relayResponse.json().catch(() => ({}));
+    if (relayResponse.ok) {
+      console.log(`[AI Report] Email successfully dispatched via FormSubmit to ${DEVELOPER_SUPPORT_EMAIL}`);
+      return { sent: true, method: "formsubmit_relay" };
+    } else {
+      console.warn("[AI Report] FormSubmit relay response not ok:", relayResult);
+      return { sent: false, method: "formsubmit_relay", error: JSON.stringify(relayResult) };
+    }
+  } catch (relayErr) {
+    console.error("[AI Report] Email relay error:", relayErr?.message);
+    return { sent: false, method: "failed", error: relayErr?.message };
+  }
+}
+function registerReportAiRoutes(app2) {
+  app2.post("/api/report-ai-content", async (req, res) => {
+    try {
+      const { reason, details, aiOutput, context, userEmail, userId } = req.body || {};
+      if (!reason || !aiOutput) {
+        return res.status(400).json({ error: "Missing required fields: reason and aiOutput are mandatory." });
+      }
+      const reportId = `report_${Date.now()}_${crypto.randomBytes(3).toString("hex")}`;
+      const timestamp = (/* @__PURE__ */ new Date()).toISOString();
+      const reportRecord = {
+        id: reportId,
+        reason: String(reason).trim(),
+        details: String(details || "").trim(),
+        aiOutput: String(aiOutput).trim(),
+        context: String(context || "General AI Output").trim(),
+        userEmail: String(userEmail || "").trim(),
+        userId: String(userId || "").trim(),
+        timestamp,
+        status: "pending_review",
+        notifiedEmail: DEVELOPER_SUPPORT_EMAIL
+      };
+      aiReportsVault.unshift(reportRecord);
+      if (aiReportsVault.length > 500) aiReportsVault.pop();
+      saveAiReportsToDisk();
+      console.log(`[AI Report] Saved report ${reportId} to disk vault. Total: ${aiReportsVault.length}`);
+      dispatchReportEmail(reportRecord).then((emailStatus) => {
+        console.log(`[AI Report ${reportId}] Email delivery status:`, emailStatus);
+      }).catch((err) => {
+        console.error(`[AI Report ${reportId}] Background email dispatch error:`, err);
+      });
+      return res.json({
+        success: true,
+        reportId,
+        message: `Report received. Notification automatically sent to ${DEVELOPER_SUPPORT_EMAIL}.`
+      });
+    } catch (err) {
+      console.error("[AI Report] Endpoint error:", err);
+      return res.status(500).json({ error: err.message || "Failed to process AI report" });
+    }
+  });
+  app2.get("/api/ai-reports", (_req, res) => {
+    res.json({ success: true, count: aiReportsVault.length, reports: aiReportsVault });
+  });
+}
 
 // src/utils/apArchetypes.ts
 var AP_SUBJECT_ARCHETYPES = {
@@ -10507,7 +10693,7 @@ app.all(["/api/health", "/health", "/api/status"], (req, res) => {
 });
 var sanitizeInput = (obj) => {
   if (typeof obj === "string") {
-    return xss(obj);
+    return xss2(obj);
   }
   if (Array.isArray(obj)) {
     return obj.map((item) => sanitizeInput(item));
@@ -13265,11 +13451,11 @@ ${promptGoal}`;
     return res.status(500).json({ error: error.message || "Failed to explain AP question" });
   }
 });
-var SUBS_FILE_PATH = path.join(process.cwd(), "subscriptions.json");
+var SUBS_FILE_PATH = path2.join(process.cwd(), "subscriptions.json");
 function getStoredSubscriptions() {
   try {
-    if (fs.existsSync(SUBS_FILE_PATH)) {
-      return JSON.parse(fs.readFileSync(SUBS_FILE_PATH, "utf-8"));
+    if (fs2.existsSync(SUBS_FILE_PATH)) {
+      return JSON.parse(fs2.readFileSync(SUBS_FILE_PATH, "utf-8"));
     }
   } catch (error) {
     console.error("Error reading subscriptions from file:", error);
@@ -13278,7 +13464,7 @@ function getStoredSubscriptions() {
 }
 function writeStoredSubscriptions(subs) {
   try {
-    fs.writeFileSync(SUBS_FILE_PATH, JSON.stringify(subs, null, 2), "utf-8");
+    fs2.writeFileSync(SUBS_FILE_PATH, JSON.stringify(subs, null, 2), "utf-8");
   } catch (error) {
     console.error("Error saving subscriptions to file:", error);
   }
@@ -13978,14 +14164,14 @@ app.get("/api/battle/room/:roomId", (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-var PRIMARY_PAPERS_FILE = path.join(process.cwd(), "data", "sample_papers_vault.json");
-var TMP_PAPERS_FILE = path.join("/tmp", "sample_papers_vault.json");
+var PRIMARY_PAPERS_FILE = path2.join(process.cwd(), "data", "sample_papers_vault.json");
+var TMP_PAPERS_FILE = path2.join("/tmp", "sample_papers_vault.json");
 var samplePapersVault = [];
 function loadSamplePapersFromDisk() {
   const papersMap = /* @__PURE__ */ new Map();
   try {
-    if (fs.existsSync(PRIMARY_PAPERS_FILE)) {
-      const raw = fs.readFileSync(PRIMARY_PAPERS_FILE, "utf-8");
+    if (fs2.existsSync(PRIMARY_PAPERS_FILE)) {
+      const raw = fs2.readFileSync(PRIMARY_PAPERS_FILE, "utf-8");
       const list = JSON.parse(raw);
       if (Array.isArray(list)) list.forEach((p) => papersMap.set(p.id, p));
     }
@@ -13993,8 +14179,8 @@ function loadSamplePapersFromDisk() {
     console.warn("[SamplePaperVault] Primary load notice:", err);
   }
   try {
-    if (fs.existsSync(TMP_PAPERS_FILE)) {
-      const raw = fs.readFileSync(TMP_PAPERS_FILE, "utf-8");
+    if (fs2.existsSync(TMP_PAPERS_FILE)) {
+      const raw = fs2.readFileSync(TMP_PAPERS_FILE, "utf-8");
       const list = JSON.parse(raw);
       if (Array.isArray(list)) list.forEach((p) => papersMap.set(p.id, p));
     }
@@ -14009,12 +14195,12 @@ function loadSamplePapersFromDisk() {
 function saveSamplePapersToDisk() {
   const json = JSON.stringify(samplePapersVault, null, 2);
   try {
-    const dir = path.dirname(PRIMARY_PAPERS_FILE);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(PRIMARY_PAPERS_FILE, json, "utf-8");
+    const dir = path2.dirname(PRIMARY_PAPERS_FILE);
+    if (!fs2.existsSync(dir)) fs2.mkdirSync(dir, { recursive: true });
+    fs2.writeFileSync(PRIMARY_PAPERS_FILE, json, "utf-8");
   } catch (primaryErr) {
     try {
-      fs.writeFileSync(TMP_PAPERS_FILE, json, "utf-8");
+      fs2.writeFileSync(TMP_PAPERS_FILE, json, "utf-8");
     } catch (tmpErr) {
       console.warn("[SamplePaperVault] Write notice:", tmpErr);
     }
@@ -14056,17 +14242,18 @@ app.delete("/api/sample-papers/:id", (req, res) => {
     saveSamplePapersToDisk();
     console.log(`[SamplePaperVault] Deleted paper ${id}. Remaining: ${samplePapersVault.length}`);
     res.json({ success: true, count: samplePapersVault.length });
+    registerReportAiRoutes(app);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 async function startServer() {
-  const distPath = path.join(process.cwd(), "dist");
-  const hasDist = fs.existsSync(path.join(distPath, "index.html"));
+  const distPath = path2.join(process.cwd(), "dist");
+  const hasDist = fs2.existsSync(path2.join(distPath, "index.html"));
   const isDevExplicit = (process.env.NODE_ENV || "").toLowerCase() === "development" || process.env.npm_lifecycle_event === "dev";
   if (hasDist && !isDevExplicit) {
     console.log("[Server] Serving production static frontend from:", distPath);
-    app.use("/assets", express.static(path.join(distPath, "assets"), {
+    app.use("/assets", express.static(path2.join(distPath, "assets"), {
       maxAge: "1y",
       immutable: true
     }));
@@ -14078,12 +14265,12 @@ async function startServer() {
       }
     }));
     app.get("*", (req, res) => {
-      const ext = path.extname(req.path);
+      const ext = path2.extname(req.path);
       if (ext || req.path.startsWith("/src") || req.path.startsWith("/api")) {
         return res.status(404).send("Not Found");
       }
       res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-      res.sendFile(path.join(distPath, "index.html"));
+      res.sendFile(path2.join(distPath, "index.html"));
     });
   } else {
     try {

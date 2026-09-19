@@ -18,6 +18,7 @@ import { exportMindMapPDF, shareMindMapPDF } from '../utils/mindMapPdfExporter';
 import { safeGetItem, safeSetItem } from '../utils/storage';
 import SafePdfViewer from './SafePdfViewer';
 import GlobalMarkdown from './GlobalMarkdown';
+import { ReportAiButton } from './ReportAiModal';
 import { APSubjectNoteEntry } from '../data/notes';
 import { GRADE_9_RECOMMENDED_IDS } from '../utils/apCurriculum';
 
@@ -1135,7 +1136,13 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
                 )}
               </div>
 
-              <div className="pt-2 flex items-center gap-2">
+              <div className="pt-2 flex items-center justify-between gap-2">
+                <ReportAiButton
+                  aiOutput={selectedNodeForModal.node.fullContent || selectedNodeForModal.node.detail || selectedNodeForModal.node.title}
+                  context={`AP Mind Map: ${selectedNodeForModal.node.title}`}
+                  variant="compact"
+                  label="Report Content"
+                />
                 <button
                   onClick={() => {
                     const leafId = selectedNodeForModal.node.id;

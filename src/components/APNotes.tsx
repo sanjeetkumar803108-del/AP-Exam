@@ -17,6 +17,7 @@ import {
 } from '../data/notes';
 import { renderToStaticMarkup } from 'react-dom/server';
 import GlobalMarkdown from './GlobalMarkdown';
+import { ReportAiButton } from './ReportAiModal';
 import { renderCalculusDiagramSvg } from './CalculusDiagramSvg';
 import jsPDF from 'jspdf';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
@@ -1795,8 +1796,16 @@ export default function APNotes({ onBack }: APNotesProps) {
               </div>
             </div>
 
-            {/* Actions: Share PDF (Pre-bundled offline notes - no download needed) */}
+            {/* Actions: Share PDF & Report Notes */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <ReportAiButton
+                aiOutput={`Subject: ${currentSubjectEntry.subjectName} (${currentSubjectEntry.shortCode})\nUnit ${currentUnit.unitNumber}: ${currentUnit.title}\nExam Weight: ${currentUnit.examWeight}\nBig Idea: ${currentUnit.bigIdea}`}
+                context={`AP Notes: ${currentSubjectEntry.shortCode} Unit ${currentUnit.unitNumber}`}
+                variant="icon"
+                label="Report Content"
+                className="w-8 h-8 rounded-xl bg-zinc-800 hover:bg-red-500/20 border border-zinc-700 text-zinc-300 hover:text-red-400 flex items-center justify-center transition-all cursor-pointer active:scale-95"
+              />
+
               {/* Share PDF Button */}
               <button
                 onClick={() => handleShareUnitPDF(currentUnit)}

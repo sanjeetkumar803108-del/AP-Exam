@@ -15,6 +15,7 @@ import { getApiUrl } from '../utils/api';
 import { takeNativePhoto, pickNativeFiles } from '../utils/mobilePicker';
 import { Capacitor } from '@capacitor/core';
 import GlobalMarkdown from './GlobalMarkdown';
+import { ReportAiButton } from './ReportAiModal';
 import AdvancedLoader from './AdvancedLoader';
 import AIThinkingLoader from './AIThinkingLoader';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
@@ -2448,9 +2449,17 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                               )}
                             </div>
 
-                            {/* AI Safety Disclaimer */}
+                            {/* AI Safety Disclaimer & Report */}
                             {!inlineAi.loading && !inlineAi.error && (
-                              <div className="text-center pt-2 pb-1 px-4 border-t border-zinc-100 dark:border-zinc-800/40">
+                              <div className="flex flex-col items-center justify-center pt-2 pb-1 px-4 gap-1.5 border-t border-zinc-100 dark:border-zinc-800/40">
+                                <ReportAiButton
+                                  aiOutput={inlineAi.text || ''}
+                                  context="Test Prep AI Explanation"
+                                  questionText={q?.question}
+                                  variant="compact"
+                                  label="Report AI Explanation"
+                                  className="text-zinc-400 hover:text-red-500"
+                                />
                                 <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium select-none tracking-tight">
                                   AP Exam AI can make mistakes. Please double check important information.
                                 </p>
@@ -2910,8 +2919,16 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                               <GlobalMarkdown>{evaluation.text}</GlobalMarkdown>
                             </div>
 
-                            {/* AI Safety Disclaimer */}
-                            <div className="text-center pt-1 pb-1.5 px-4 border-t border-purple-200/50">
+                            {/* AI Safety Disclaimer & Report */}
+                            <div className="flex flex-col items-center justify-center pt-2 pb-1.5 px-4 gap-1.5 border-t border-purple-200/50">
+                              <ReportAiButton
+                                aiOutput={evaluation.text}
+                                context="Test Prep FRQ Evaluation"
+                                questionText={q?.prompt}
+                                variant="compact"
+                                label="Report AI Evaluation"
+                                className="text-zinc-400 hover:text-red-500"
+                              />
                               <p className="text-[10px] text-zinc-400 font-medium select-none tracking-tight">
                                 AP Exam AI can make mistakes. Please double check important information.
                               </p>
@@ -3026,9 +3043,17 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                                 )}
                               </div>
 
-                              {/* AI Safety Disclaimer */}
+                              {/* AI Safety Disclaimer & Report */}
                               {!inlineAi.loading && !inlineAi.error && (
-                                <div className="text-center pt-2 pb-1 px-4 border-t border-zinc-100 dark:border-zinc-800/40">
+                                <div className="flex flex-col items-center justify-center pt-2 pb-1 px-4 gap-1.5 border-t border-zinc-100 dark:border-zinc-800/40">
+                                  <ReportAiButton
+                                    aiOutput={inlineAi.text || ''}
+                                    context="Test Prep FRQ Tutor Breakdown"
+                                    questionText={q?.prompt}
+                                    variant="compact"
+                                    label="Report AI Breakdown"
+                                    className="text-zinc-400 hover:text-red-500"
+                                  />
                                   <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium select-none tracking-tight">
                                     AP Exam AI can make mistakes. Please double check important information.
                                   </p>

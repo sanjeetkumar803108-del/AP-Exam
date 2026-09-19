@@ -42,6 +42,7 @@ import { showToast } from '../utils/toast';
 import { getApiUrl } from '../utils/api';
 import { TOP_10_AP_SUBJECTS, APSubject } from '../utils/apCurriculum';
 import GlobalMarkdown, { prepareQuizMath } from './GlobalMarkdown';
+import { ReportAiButton } from './ReportAiModal';
 import { safeGetItem, safeSetItem, safeJsonParse } from '../utils/storage';
 import { getUserHistory, saveUserHistory } from '../utils/userHistory';
 import { getUserProfileData } from '../utils/profile';
@@ -2235,9 +2236,17 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                               )}
                             </div>
 
-                            {/* AI Safety Disclaimer */}
+                            {/* AI Safety Disclaimer & Report */}
                             {!inlineAi.loading && !inlineAi.error && (
-                              <div className="text-center pt-2 pb-1 px-4 border-t border-zinc-100 dark:border-zinc-800/40">
+                              <div className="flex flex-col items-center justify-center pt-2 pb-1 px-4 gap-1.5 border-t border-zinc-100 dark:border-zinc-800/40">
+                                <ReportAiButton
+                                  aiOutput={inlineAi.text || ''}
+                                  context="AP Trap Radar Analysis"
+                                  questionText={activeQuestion?.prompt || activeQuestion?.stimulus}
+                                  variant="compact"
+                                  label="Report AI Analysis"
+                                  className="text-zinc-400 hover:text-red-500"
+                                />
                                 <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium select-none tracking-tight">
                                   AP Exam AI can make mistakes. Please double check important information.
                                 </p>
@@ -3047,8 +3056,15 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                   })}
                 </div>
 
-                {/* AI Safety Disclaimer */}
-                <div className="text-center pt-3 pb-1 px-4">
+                {/* AI Safety Disclaimer & Report */}
+                <div className="flex flex-col items-center justify-center pt-3 pb-1 px-4 gap-2">
+                  <ReportAiButton
+                    aiOutput={`Scanned Question:\n${scannedResult.question}\n\nConcept Explanation:\n${scannedResult.conceptExplanation}\n\nDisarm Strategy:\n${scannedResult.disarmStrategy}`}
+                    context="Scanned AP Trap Analysis"
+                    questionText={scannedResult.question}
+                    variant="pill"
+                    label="Report AI Scan Result"
+                  />
                   <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium select-none tracking-tight">
                     AP Exam AI can make mistakes. Please double check important information.
                   </p>

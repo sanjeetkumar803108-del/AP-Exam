@@ -26,6 +26,7 @@ import { pickNativeFiles, takeNativePhoto } from '../utils/mobilePicker';
 import { showToast } from '../utils/toast';
 import { compressImageToFile } from '../utils/imageCompressor';
 import { getApiUrl } from '../utils/api';
+import { ReportAiButton } from './ReportAiModal';
 
 interface ChatMessage {
   role: 'user' | 'model';
@@ -675,6 +676,14 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
             >
               <ThumbsDown className={`w-3.5 h-3.5 ${msg.isDisliked ? 'fill-current' : ''}`} />
             </button>
+
+            <ReportAiButton
+              aiOutput={cleanText || displayedText}
+              context="AI Tutor Chat"
+              variant="compact"
+              label="Report"
+              className="hover:text-red-600 hover:bg-red-50 text-zinc-400"
+            />
           </div>
         )}
       </div>

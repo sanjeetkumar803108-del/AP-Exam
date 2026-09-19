@@ -11,6 +11,7 @@ import crypto from "crypto";
 import { YoutubeTranscript } from 'youtube-transcript';
 import rateLimit from "express-rate-limit";
 import xss from "xss";
+import { registerReportAiRoutes } from "./src/server/reportAiRoutes";
 import { getGranularSubjectArchetypes } from "./src/utils/apArchetypes";
 import { getCollegeBoardSubjectGuidelines, getDynamicTopicVariation } from "./src/data/apPromptGuidelines";
 import { getBattleQuestions, AP_BATTLE_SUBJECTS, BattleQuestion, normalizeGrade } from "./src/data/quizBattleBank";
@@ -4228,6 +4229,10 @@ app.delete("/api/sample-papers/:id", (req, res) => {
     saveSamplePapersToDisk();
     console.log(`[SamplePaperVault] Deleted paper ${id}. Remaining: ${samplePapersVault.length}`);
     res.json({ success: true, count: samplePapersVault.length });
+
+// Register AI content reporting routes (automated developer email dispatch)
+registerReportAiRoutes(app);
+
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

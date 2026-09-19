@@ -38,6 +38,7 @@ import { getApiUrl } from '../utils/api';
 import { showToast } from '../utils/toast';
 import { pickNativeFiles, takeNativePhoto, isMobilePickedFile } from '../utils/mobilePicker';
 import GlobalMarkdown from './GlobalMarkdown';
+import { ReportAiButton } from './ReportAiModal';
 import { appendProfileToFormData } from '../utils/profile';
 import { auth, db } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -1446,8 +1447,15 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                       </button>
                     </div>
 
-                    {/* AI Safety Disclaimer */}
-                    <div className="text-center pt-2 pb-1 px-4">
+                    {/* AI Safety Disclaimer & Report */}
+                    <div className="flex flex-col items-center justify-center pt-3 pb-1 px-4 gap-2">
+                      <ReportAiButton
+                        aiOutput={`Total Score: ${result.totalPointsEarned ?? 0}/${result.totalPointsPossible ?? 0}\n\nChief Reader Summary:\n${result.chiefReaderSummary || 'N/A'}\n\nKey Strengths:\n${result.keyStrengths?.join('\n') || 'None'}\n\nAreas to Improve:\n${result.keyMissedOpportunities?.join('\n') || 'None'}`}
+                        context="FRQ Grader Evaluation"
+                        questionText={result.questionStatement}
+                        variant="pill"
+                        label="Report AI Output"
+                      />
                       <p className="text-[10px] text-zinc-400 font-medium select-none tracking-tight">
                         AP Exam AI can make mistakes. Please double check important information.
                       </p>
