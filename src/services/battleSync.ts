@@ -193,7 +193,9 @@ export class BattleSyncService {
               isRealPlayer: true,
               score: data.opponent.score || 0,
               hasAnswered: !!data.opponent.hasAnswered,
-              currentQ: data.opponent.currentQ || 0
+              currentQ: data.opponent.currentQ || 0,
+              gradeLevel: data.opponent.gradeLevel || data.opponent.grade,
+              tagline: data.opponent.tagline
             };
             onMatched(data.roomId, opp, data.questions || [], !!data.isPlayer1, data.subjectId);
             return;
@@ -290,7 +292,9 @@ export class BattleSyncService {
         isRealPlayer: true,
         score: data.opponent.score || 0,
         hasAnswered: !!data.opponent.hasAnswered,
-        currentQ: data.opponent.currentQ || 0
+        currentQ: data.opponent.currentQ || 0,
+        gradeLevel: data.opponent.gradeLevel || data.opponent.grade,
+        tagline: data.opponent.tagline
       };
 
       return {
@@ -315,15 +319,17 @@ export class BattleSyncService {
     score: number,
     hasAnswered: boolean,
     finished: boolean = false,
-    currentQ?: number
-  ): Promise<void> {
+    currentQ?: number,
+    isPlayer1?: boolean
+  ): Promise<{ success: boolean; room?: BattleRoom }> {
     const payload = JSON.stringify({
       roomId,
       playerId,
       score,
       hasAnswered,
       finished,
-      currentQ
+      currentQ,
+      isPlayer1
     });
 
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -337,21 +343,26 @@ export class BattleSyncService {
           body: payload
         });
         clearTimeout(timeoutId);
-        if (res.ok) return;
+        if (res.ok) {
+          const data = await res.json().catch(() => ({}));
+          return { success: true, room: data.room };
+        }
       } catch (err) {
         if (attempt === 2) console.warn('Sync player action error after 3 attempts:', err);
       }
-      await new Promise(r => setTimeout(r, 150));
+      await new Promise(r => setTimeout(r, 100));
     }
+    return { success: false };
   }
 
   /**
-   * 7. Poll room status during battle (every 350ms)
+   * 7. Poll room status during battle (every 250ms)
    */
   subscribeToRoomUpdates(
     roomId: string,
     myPlayerId: string,
-    onRoomUpdate: (room: BattleRoom, opponent: PlayerProfile | null) => void
+    onRoomUpdate: (room: BattleRoom, opponent: PlayerProfile | null, serverTime?: number) => void,
+    isPlayer1Hint?: boolean
   ): () => void {
     let active = true;
 
@@ -359,7 +370,7 @@ export class BattleSyncService {
       if (!active) return;
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
 
         const res = await fetch(getBattleApiUrl(`/api/battle/room/${encodeURIComponent(roomId)}`), {
           signal: controller.signal
@@ -370,12 +381,12 @@ export class BattleSyncService {
           const data = await res.json();
           const room: BattleRoom = data.room;
           if (room) {
-            let isMeP1 = false;
+            let isMeP1 = isPlayer1Hint !== undefined ? isPlayer1Hint : false;
             if (room.player1?.id === myPlayerId) {
               isMeP1 = true;
             } else if (room.player2?.id === myPlayerId) {
               isMeP1 = false;
-            } else if (room.player1?.id && myPlayerId) {
+            } else if (isPlayer1Hint === undefined && room.player1?.id && myPlayerId) {
               const myBase = myPlayerId.split('_tab_')[0].split('_sess_')[0];
               const p1Base = room.player1.id.split('_tab_')[0].split('_sess_')[0];
               const p2Base = room.player2?.id ? room.player2.id.split('_tab_')[0].split('_sess_')[0] : '';
@@ -394,10 +405,12 @@ export class BattleSyncService {
               isRealPlayer: true,
               score: oppRaw.score || 0,
               hasAnswered: !!oppRaw.hasAnswered,
-              currentQ: oppRaw.currentQ || 0
+              currentQ: oppRaw.currentQ || 0,
+              gradeLevel: (oppRaw as any).gradeLevel || (oppRaw as any).grade,
+              tagline: (oppRaw as any).tagline
             } : null;
 
-            onRoomUpdate(room, opp);
+            onRoomUpdate(room, opp, data.serverTime);
           }
         }
       } catch (pollErr) {
@@ -405,11 +418,11 @@ export class BattleSyncService {
       }
 
       if (active) {
-        setTimeout(poll, 350);
+        setTimeout(poll, 250);
       }
     };
 
-    setTimeout(poll, 150);
+    setTimeout(poll, 100);
 
     return () => {
       active = false;

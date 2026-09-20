@@ -1105,22 +1105,8 @@ Please structure your response into these 4 clear sections:
             </div>
           </div>
 
-          {/* Action Controls: User Profile Study XP Points Badge & Subject Selector */}
+          {/* Action Controls: Subject Selector */}
           <div className="flex items-center gap-2">
-            {/* User Profile XP Badge */}
-            {(() => {
-              const lvlDetails = getStudyLevel(studyXP);
-              return (
-                <div
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-50 border border-purple-200/90 text-purple-900 text-xs font-black shadow-xs cursor-default select-none"
-                  title={`Level ${lvlDetails.currentLevel.level}: ${lvlDetails.currentLevel.title} (${studyXP} XP)`}
-                >
-                  <span className="text-sm">{lvlDetails.currentLevel.badge}</span>
-                  <span>{studyXP} XP</span>
-                </div>
-              );
-            })()}
-
             {/* Subject Dropdown Button */}
             <button
               onClick={() => {
@@ -1322,14 +1308,15 @@ Please structure your response into these 4 clear sections:
                 <span className="text-[11px] font-black uppercase tracking-wider text-amber-900 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full">
                   Unit {activeQuizLevel.unitIndex} • Level {activeQuizLevel.levelNumber} ({activeQuizLevel.difficulty})
                 </span>
-                <div className="text-xs sm:text-sm font-black text-zinc-950 mt-0.5 truncate max-w-[220px] sm:max-w-md">
-                  <GlobalMarkdown content={activeQuizLevel.name} className="[&_p]:my-0 [&_p]:inline text-xs sm:text-sm font-black text-zinc-950" />
-                </div>
               </div>
 
-              <div className="text-xs font-black text-zinc-900 bg-zinc-100 px-2.5 py-1 rounded-xl border border-zinc-200">
-                {isQuizCompleted ? 'Complete' : `${currentQuestionIndex + 1} / ${activeQuizLevel.questions.length}`}
-              </div>
+              {!isQuizCompleted ? (
+                <div className="text-xs font-black text-zinc-900 bg-zinc-100 px-2.5 py-1 rounded-xl border border-zinc-200">
+                  {currentQuestionIndex + 1} / {activeQuizLevel.questions.length}
+                </div>
+              ) : (
+                <div className="w-9" />
+              )}
             </header>
 
             {/* Quiz Content Body OR In-Place Completion Screen (Prevents dual-layer GPU compositing crash) */}
@@ -1689,7 +1676,7 @@ Please structure your response into these 4 clear sections:
                       <span className="text-xl">⚡</span>
                       <div className="text-left">
                         <span className="text-xs font-black block text-purple-900">+10 Study XP Earned!</span>
-                        <span className="text-[10px] font-bold text-purple-600 block">Total: {getStudyXP()} XP • {getStudyLevel(getStudyXP()).currentLevel.title}</span>
+                        <span className="text-[10px] font-bold text-purple-600 block">Total: {studyXP} XP • {getStudyLevel(studyXP).currentLevel.title}</span>
                       </div>
                     </div>
 
@@ -1728,17 +1715,7 @@ Please structure your response into these 4 clear sections:
                         <span>{isPassed ? 'Retry Quiz for 3 Stars' : 'Retry Quiz Now'}</span>
                       </button>
 
-                      {/* Return to Map Button */}
-                      <button
-                        onClick={() => {
-                          triggerVibration(10);
-                          setIsQuizCompleted(false);
-                          setActiveQuizLevel(null);
-                        }}
-                        className="w-full py-2.5 rounded-2xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold text-xs transition-all cursor-pointer"
-                      >
-                        Return to Island Map
-                      </button>
+
                     </div>
                   </motion.div>
                 </div>

@@ -832,7 +832,7 @@ export default function APSubjectStitchNotes({
                                 ) : (
                                   <div className="w-2.5 h-2.5 rounded-full shrink-0 mt-1.5 ring-4 ring-blue-50" style={{ backgroundColor: theme.primary }} />
                                 )}
-                                <div className="text-xs text-[#1b1c1d] leading-relaxed font-sans flex-1">
+                                <div className="text-xs text-[#1b1c1d] leading-relaxed font-sans flex-1 min-w-0 w-full overflow-hidden">
                                   <GlobalMarkdown>{displayContent}</GlobalMarkdown>
                                 </div>
                               </div>
@@ -844,10 +844,10 @@ export default function APSubjectStitchNotes({
                   })()}
 
                   {/* Final Answer Banner */}
-                  <div className="p-3.5 rounded-xl border flex items-center justify-between gap-3" style={{ backgroundColor: `${theme.primaryBg}30`, borderColor: `${theme.primary}40` }}>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4" style={{ color: theme.primary }} />
-                      <span className="text-xs font-bold" style={{ color: theme.primary }}>Final College Board Answer:</span>
+                  <div className="p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5" style={{ backgroundColor: `${theme.primaryBg}30`, borderColor: `${theme.primary}40` }}>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: theme.primary }} />
+                      <span className="text-xs font-bold whitespace-nowrap" style={{ color: theme.primary }}>Final College Board Answer:</span>
                     </div>
                     <div className="font-mono font-bold text-xs" style={{ color: theme.primaryText }}>
                       <GlobalMarkdown>{ex.finalAnswer}</GlobalMarkdown>

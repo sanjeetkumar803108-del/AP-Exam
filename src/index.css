@@ -11,6 +11,10 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
+:root {
+  --offline-banner-height: 0px;
+}
+
 @layer base {
   html, body {
     touch-action: manipulation;

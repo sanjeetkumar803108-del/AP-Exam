@@ -583,7 +583,7 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4"
+            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4 pt-[calc(1rem+var(--offline-banner-height,0px))]"
             onClick={() => setViewingFullImageUrl(null)}
           >
             <div className="flex items-center justify-between z-10">

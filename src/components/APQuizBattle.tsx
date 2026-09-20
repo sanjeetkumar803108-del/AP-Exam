@@ -52,6 +52,8 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     user?.uid ? `${user.uid}_${tabSessionId}` : `player_${tabSessionId}`
   ).current;
 
+  const isPlayer1Ref = useRef<boolean>(true);
+
   // 2. Core State
   const [phase, setPhase] = useState<BattlePhase>('LOBBY');
   const phaseRef = useRef<BattlePhase>('LOBBY');
@@ -137,6 +139,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   const [userScore, setUserScore] = useState<number>(0);
   const userScoreRef = useRef<number>(0);
   const [userSelectedOption, setUserSelectedOption] = useState<number | null>(null);
+  const userSelectedOptionRef = useRef<number | null>(null);
   const [userAnswerStatus, setUserAnswerStatus] = useState<'idle' | 'answered'>('idle');
   const userStatusRef = useRef<'idle' | 'answered'>('idle');
 
@@ -168,6 +171,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   const startQuestionRoundRef = useRef<(qIdx: number) => void>(() => {});
   const finishBattleRef = useRef<() => void>(() => {});
   const initBattleArenaRef = useRef<() => void>(() => {});
+  const stuckAnsweredWatchdogRef = useRef<NodeJS.Timeout | null>(null);
 
   const playSound = (soundFn: () => void) => {
     if (soundEnabled) {
@@ -240,16 +244,25 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // Opponent Student Banner / Tagline Badge (Authentic Student Status)
   const getOpponentTagline = () => {
-    if (!opponent) return `${myGrade} • AP Scholar`;
-    const oppGrade = (opponent as any).gradeLevel || myGrade;
-    if ((opponent as any).tagline) {
-      const tag = String((opponent as any).tagline).replace(/[^ -~]/g, ' - ').replace(/Rival/gi, 'Scholar');
-      if (tag.toLowerCase().includes('real online') || tag.toLowerCase().includes('bot')) {
-        return `${oppGrade} • AP Scholar`;
+    if (!opponent) return 'AP Scholar';
+    const rawOppGrade = (opponent as any)?.gradeLevel || (opponent as any)?.grade;
+    const oppGrade = rawOppGrade ? normalizeGrade(rawOppGrade) : null;
+
+    if ((opponent as any)?.tagline) {
+      let tag = String((opponent as any).tagline)
+        .replace(/[^ -~]/g, ' - ')
+        .replace(/Rival/gi, 'Scholar')
+        .replace(/Real Online/gi, 'AP Scholar')
+        .trim();
+
+      // Cleanly remove any old/duplicate grade prefix from tagline so opponent real grade is always shown
+      tag = tag.replace(/^(9th|10th|11th|12th)\s*Grade\s*[•\-\s]*/i, '').trim();
+      if (!tag || tag.toLowerCase() === 'ap scholar' || tag.toLowerCase() === 'scholar') {
+        return oppGrade ? `${oppGrade} • AP Scholar` : 'AP Scholar';
       }
-      return tag.includes(oppGrade) ? tag : `${oppGrade} • ${tag}`;
+      return oppGrade ? `${oppGrade} • ${tag}` : tag;
     }
-    return `${oppGrade} • AP Scholar`;
+    return oppGrade ? `${oppGrade} • AP Scholar` : 'AP Scholar';
   };
 
   // Centralized cleanup: clears all timeouts, polling, and leaves server queue
@@ -260,6 +273,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
     if (opponentTimeoutRef.current) { clearTimeout(opponentTimeoutRef.current); opponentTimeoutRef.current = null; }
     if (roundAdvanceTimeoutRef.current) { clearTimeout(roundAdvanceTimeoutRef.current); roundAdvanceTimeoutRef.current = null; }
+    if (stuckAnsweredWatchdogRef.current) { clearInterval(stuckAnsweredWatchdogRef.current); stuckAnsweredWatchdogRef.current = null; }
     if (searchCountdownIntervalRef.current) { clearInterval(searchCountdownIntervalRef.current); searchCountdownIntervalRef.current = null; }
     if (stopPollingRef.current) {
       stopPollingRef.current();
@@ -284,9 +298,14 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     roomId: string, 
     matchedOpponent: PlayerProfile, 
     matchedQuestions: BattleQuestion[],
-    matchedSubjectId?: string
+    matchedSubjectId?: string,
+    isPlayer1Param?: boolean
   ) => {
     cleanupLocalBattleTimers();
+
+    if (typeof isPlayer1Param === 'boolean') {
+      isPlayer1Ref.current = isPlayer1Param;
+    }
 
     const effectiveSubject = matchedSubjectId || matchedQuestions?.[0]?.subjectId || selectedSubjectId;
     if (effectiveSubject) {
@@ -353,7 +372,8 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
         matchResult.roomId,
         matchResult.opponent,
         matchResult.questions || initialQs,
-        matchResult.subjectId
+        matchResult.subjectId,
+        matchResult.isPlayer1 ?? false
       );
       return;
     }
@@ -362,7 +382,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     const stopPoll = battleSync.startQueuePolling(
       myId, 
       (roomId, matchedOpponent, matchedQuestions, isPlayer1, matchedSubj) => {
-        handleMatchedWithRealPlayer(roomId, matchedOpponent, matchedQuestions, matchedSubj);
+        handleMatchedWithRealPlayer(roomId, matchedOpponent, matchedQuestions, matchedSubj, isPlayer1);
       },
       {
         playerName: myName,
@@ -468,9 +488,9 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
     const stopRoomPolling = battleSync.subscribeToRoomUpdates(roomId, myId, (room, opp) => {
       if (opp && opp.id !== myId) {
-        handleMatchedWithRealPlayer(roomId, opp, initialQs, selectedSubjectId);
+        handleMatchedWithRealPlayer(roomId, opp, initialQs, selectedSubjectId, true);
       }
-    });
+    }, true);
     roomUnsubRef.current = stopRoomPolling;
   };
 
@@ -492,7 +512,9 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       isRealPlayer: true,
       score: 0,
       hasAnswered: false,
-      currentQ: 0
+      currentQ: 0,
+      gradeLevel: myGrade,
+      tagline: `${myGrade} • AP Scholar`
     };
 
     const res = await battleSync.joinFriendRoom(raw, myProfile);
@@ -509,7 +531,8 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       res.roomId,
       res.opponent,
       res.questions || getBattleQuestions(hostSubject, 5, getSeenStems()),
-      hostSubject
+      hostSubject,
+      false
     );
   };
 
@@ -542,12 +565,25 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   const subscribeToLiveBattle = (roomId: string) => {
     if (roomUnsubRef.current) roomUnsubRef.current();
 
-    roomUnsubRef.current = battleSync.subscribeToRoomUpdates(roomId, myId, (room: BattleRoom, opp: PlayerProfile | null) => {
+    roomUnsubRef.current = battleSync.subscribeToRoomUpdates(roomId, myId, (room: BattleRoom, opp: PlayerProfile | null, serverTime?: number) => {
       if (!room) return;
 
       // Sync room subject chosen by the room creator
       if (room.subjectId && room.subjectId !== selectedSubjectId) {
         setSelectedSubjectId(room.subjectId);
+      }
+
+      // Dynamically preserve authentic opponent details (grade, tagline, avatar)
+      if (opp && opp.name) {
+        setOpponent(prev => {
+          if (!prev) return opp;
+          return {
+            ...prev,
+            ...opp,
+            gradeLevel: opp.gradeLevel || prev.gradeLevel,
+            tagline: opp.tagline || prev.tagline
+          };
+        });
       }
 
       // Opponent score & answered status updates (only while round is actively playing)
@@ -573,9 +609,9 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       }
 
       // Self-healing answer sync: If I have locked in my answer locally, ensure the server actually recorded it
-      const myProfileInRoom = room.player1?.id === myId ? room.player1 : (room.player2?.id === myId ? room.player2 : null);
+      const myProfileInRoom = isPlayer1Ref.current ? room.player1 : (room.player2 || null);
       if (myProfileInRoom && userStatusRef.current === 'answered' && !myProfileInRoom.hasAnswered && !roundRevealedRef.current) {
-        battleSync.updatePlayerAction(roomId, myId, userScoreRef.current, true, false, currentQIndexRef.current);
+        battleSync.updatePlayerAction(roomId, myId, userScoreRef.current, true, false, currentQIndexRef.current, isPlayer1Ref.current);
       }
 
       // 0. Synchronized Countdown & Immediate Battle Transition
@@ -603,34 +639,37 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       }
 
       // 2. Synchronized Round Reveal from Server
-      // Only accept reveal if server is on current or future round (reject stale packets from previous rounds)
-      if (room.roundStatus === 'revealed' && room.currentQ >= currentQIndexRef.current) {
+      // Strictly reveal only for the current question; reject stale or future question reveal packets
+      if (room.roundStatus === 'revealed' && room.currentQ === currentQIndexRef.current) {
         if (!roundRevealedRef.current) {
+          setOpponentAnswerStatus('answered');
+          oppStatusRef.current = 'answered';
           triggerRoundRevealRef.current();
         }
       }
 
-      // 3. Synchronize question progression from server with self-healing watchdog
+      // 3. Synchronize question progression from server
+      // Advance ONLY when the server has authoritatively transitioned to a future question!
+      // Never abort an active 2.2s reveal banner while on the same question.
       if (typeof room.currentQ === 'number') {
         if (room.currentQ > currentQIndexRef.current) {
-          advanceToQuestionRef.current(room.currentQ);
-        } else if (room.roundStatus === 'playing' && room.currentQ === currentQIndexRef.current && roundRevealedRef.current) {
-          // Self-healing watchdog: Server is actively playing this round, but client is stuck on reveal banner!
           advanceToQuestionRef.current(room.currentQ);
         }
       }
 
-      // 4. Synchronize remaining round time with server round clock
-      if (room.roundStatus === 'playing' && room.currentQ === currentQIndexRef.current) {
+      // 4. Synchronize remaining round time with server round clock (using serverTime to prevent clock drift)
+      if (room.roundStatus === 'playing' && room.currentQ === currentQIndexRef.current && serverTime) {
         if (room.roundStartTime && phaseRef.current === 'BATTLE' && !roundRevealedRef.current && userStatusRef.current !== 'answered') {
           const currQ = questionsRef.current[room.currentQ] || questions[room.currentQ];
           const maxTime = currQ?.timeLimit || 30;
-          const elapsedSec = Math.floor((Date.now() - room.roundStartTime) / 1000);
-          const remain = Math.max(0, maxTime - elapsedSec);
-          setTimeLeft(prev => Math.abs(prev - remain) > 1 ? remain : prev);
+          const elapsedSec = Math.floor((serverTime - room.roundStartTime) / 1000);
+          if (elapsedSec >= 0 && elapsedSec <= maxTime) {
+            const remain = Math.max(0, maxTime - elapsedSec);
+            setTimeLeft(prev => (prev > remain && (prev - remain) > 3) ? remain : prev);
+          }
         }
       }
-    });
+    }, isPlayer1Ref.current);
   };
 
   // 7. Cancel Matchmaking
@@ -685,6 +724,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     const initialTimeLimit = activeQ?.timeLimit || 30;
     setTimeLeft(initialTimeLimit);
     setUserSelectedOption(null);
+    userSelectedOptionRef.current = null;
     setUserAnswerStatus('idle');
     setOpponentAnswerStatus('thinking');
     setRoundRevealed(false);
@@ -755,6 +795,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
     const isCorrect = optionIndex === currQ.correctIndex;
     setUserSelectedOption(optionIndex);
+    userSelectedOptionRef.current = optionIndex;
     setUserAnswerStatus('answered');
     userStatusRef.current = 'answered';
 
@@ -773,12 +814,80 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     }
 
     if (liveRoomIdRef.current && isRealOpponentRef.current) {
-      battleSync.updatePlayerAction(liveRoomIdRef.current, myId, newScore, true, false, currentQIndexRef.current);
+      battleSync.updatePlayerAction(
+        liveRoomIdRef.current, 
+        myId, 
+        newScore, 
+        true, 
+        false, 
+        currentQIndexRef.current, 
+        isPlayer1Ref.current
+      ).then(res => {
+        if (res?.room) {
+          const r = res.room;
+          const p1Ans = r.player1?.hasAnswered;
+          const p2Ans = r.player2?.hasAnswered;
+          if (r.roundStatus === 'revealed' || (p1Ans && p2Ans)) {
+            setOpponentAnswerStatus('answered');
+            oppStatusRef.current = 'answered';
+            if (!roundRevealedRef.current) {
+              triggerRoundRevealRef.current();
+            }
+          }
+        }
+      }).catch(() => {});
     }
 
     // Auto-reveal if both players have answered (works for both Real Opponent AND Bot!)
     if (oppStatusRef.current === 'answered' && !roundRevealedRef.current) {
       triggerRoundRevealRef.current();
+    } else if (isRealOpponentRef.current) {
+      // Active Anti-Stuck Watchdog: If user locked in, aggressively re-check every 800ms to guarantee never stuck
+      if (stuckAnsweredWatchdogRef.current) {
+        clearInterval(stuckAnsweredWatchdogRef.current);
+        stuckAnsweredWatchdogRef.current = null;
+      }
+      let watchdogTicks = 0;
+      stuckAnsweredWatchdogRef.current = setInterval(() => {
+        watchdogTicks++;
+        if (roundRevealedRef.current || userStatusRef.current !== 'answered') {
+          if (stuckAnsweredWatchdogRef.current) {
+            clearInterval(stuckAnsweredWatchdogRef.current);
+            stuckAnsweredWatchdogRef.current = null;
+          }
+          return;
+        }
+
+        // Re-ping action to ensure server has our state and get latest room snapshot
+        if (liveRoomIdRef.current) {
+          battleSync.updatePlayerAction(
+            liveRoomIdRef.current,
+            myId,
+            userScoreRef.current,
+            true,
+            false,
+            currentQIndexRef.current,
+            isPlayer1Ref.current
+          ).then(res => {
+            if (res?.room) {
+              const r = res.room;
+              const p1Ans = r.player1?.hasAnswered;
+              const p2Ans = r.player2?.hasAnswered;
+              if (r.roundStatus === 'revealed' || (p1Ans && p2Ans)) {
+                setOpponentAnswerStatus('answered');
+                oppStatusRef.current = 'answered';
+                if (!roundRevealedRef.current) {
+                  triggerRoundRevealRef.current();
+                }
+              }
+            }
+          }).catch(() => {});
+        }
+
+        if (oppStatusRef.current === 'answered' && !roundRevealedRef.current) {
+          triggerRoundRevealRef.current();
+        }
+      }, 800);
     }
   };
 
@@ -801,6 +910,10 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       clearTimeout(roundAdvanceTimeoutRef.current);
       roundAdvanceTimeoutRef.current = null;
     }
+    if (stuckAnsweredWatchdogRef.current) {
+      clearInterval(stuckAnsweredWatchdogRef.current);
+      stuckAnsweredWatchdogRef.current = null;
+    }
 
     // Progression after reveal window:
     // Universal 2.2s Reveal Window for BOTH Bot and Real Live Opponent!
@@ -820,7 +933,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     }
 
     if (liveRoomIdRef.current && isRealOpponentRef.current) {
-      battleSync.updatePlayerAction(liveRoomIdRef.current, myId, userScoreRef.current, true, false, currentQIndexRef.current);
+      battleSync.updatePlayerAction(liveRoomIdRef.current, myId, userScoreRef.current, true, false, currentQIndexRef.current, isPlayer1Ref.current);
     }
 
     if (oppStatusRef.current === 'thinking') {
@@ -849,11 +962,16 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       clearTimeout(roundAdvanceTimeoutRef.current);
       roundAdvanceTimeoutRef.current = null;
     }
+    if (stuckAnsweredWatchdogRef.current) {
+      clearInterval(stuckAnsweredWatchdogRef.current);
+      stuckAnsweredWatchdogRef.current = null;
+    }
 
     // Unconditionally clear reveal and answer states to guarantee UI never gets stuck
     setRoundRevealed(false);
     roundRevealedRef.current = false;
     setUserSelectedOption(null);
+    userSelectedOptionRef.current = null;
     setUserAnswerStatus('idle');
     userStatusRef.current = 'idle';
 
@@ -865,7 +983,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
       // Notify live server that this client has advanced to targetIdx
       if (liveRoomIdRef.current && isRealOpponentRef.current) {
-        battleSync.updatePlayerAction(liveRoomIdRef.current, myId, userScoreRef.current, false, false, targetIdx);
+        battleSync.updatePlayerAction(liveRoomIdRef.current, myId, userScoreRef.current, false, false, targetIdx, isPlayer1Ref.current);
       }
     } else {
       if (!battleFinishedRef.current) {
@@ -889,9 +1007,13 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     if (timerRef.current) clearInterval(timerRef.current);
     if (opponentTimeoutRef.current) clearTimeout(opponentTimeoutRef.current);
     if (roundAdvanceTimeoutRef.current) clearTimeout(roundAdvanceTimeoutRef.current);
+    if (stuckAnsweredWatchdogRef.current) {
+      clearInterval(stuckAnsweredWatchdogRef.current);
+      stuckAnsweredWatchdogRef.current = null;
+    }
 
     if (liveRoomIdRef.current) {
-      battleSync.updatePlayerAction(liveRoomIdRef.current, myId, userScoreRef.current, true, true);
+      battleSync.updatePlayerAction(liveRoomIdRef.current, myId, userScoreRef.current, true, true, undefined, isPlayer1Ref.current);
     }
 
     setPhase('VICTORY');
@@ -957,7 +1079,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   // ================= RENDER: LOBBY =================
   if (phase === 'LOBBY') {
     return (
-      <div className="w-full h-full min-h-screen bg-zinc-950 text-white flex flex-col justify-between overflow-y-auto select-none font-sans p-5">
+      <div className="w-full h-full min-h-full bg-zinc-950 text-white flex flex-col justify-between overflow-y-auto select-none font-sans p-5">
         <div className="flex items-center justify-between">
           <button
             onClick={() => {
@@ -1287,7 +1409,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   if (phase === 'MATCHMAKING') {
     const isFriendHostWaiting = !!liveRoomId && liveRoomId.startsWith('room_AP-');
     return (
-      <div className="w-full h-full min-h-screen bg-zinc-950 text-white flex flex-col justify-between items-center p-6 select-none font-sans">
+      <div className="w-full h-full min-h-full bg-zinc-950 text-white flex flex-col justify-between items-center p-6 select-none font-sans">
         <div className="w-full flex items-center justify-between max-w-md">
           <button
             onClick={handleCancelMatchmaking}
@@ -1395,7 +1517,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   // ================= RENDER: 3-2-1 COUNTDOWN & ELECTRIC VERSUS SHOWDOWN =================
   if (phase === 'COUNTDOWN') {
     return (
-      <div className="w-full h-full min-h-screen bg-[#07090E] text-white flex flex-col justify-between items-center p-5 select-none font-sans relative overflow-hidden">
+      <div className="w-full h-full min-h-full bg-[#07090E] text-white flex flex-col justify-between items-center p-5 select-none font-sans relative overflow-hidden">
         {/* Background Electric Ambience */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {/* Cyan Glow Top Left for User */}
@@ -1590,7 +1712,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                 <span className="text-[10px] font-black uppercase tracking-widest text-rose-400">OPPONENT</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
                 <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-400/30">
-                  {((opponent as any)?.gradeLevel || myGrade).toUpperCase()}
+                  {((opponent as any)?.gradeLevel || (opponent as any)?.grade || 'High School').toUpperCase()}
                 </span>
               </div>
               <h3 className="text-base sm:text-lg font-black text-white tracking-wide truncate leading-tight">
@@ -1654,7 +1776,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   // ================= RENDER: BATTLE ARENA =================
   if (phase === 'BATTLE') {
     return (
-      <div className="w-full h-full min-h-screen bg-zinc-950 text-white flex flex-col justify-between p-5 select-none font-sans overflow-y-auto">
+      <div className="w-full h-full min-h-full bg-zinc-950 text-white flex flex-col justify-between p-5 select-none font-sans overflow-y-auto">
         {/* Top Header: Scores & Timer */}
         <div className="max-w-md w-full mx-auto flex flex-col gap-3">
           <div className="flex items-center justify-between">
@@ -1761,26 +1883,31 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           <div className="w-full">
             {roundRevealed ? (
               <div className={`flex items-center justify-center gap-2 py-2 px-4 rounded-xl border text-xs font-bold transition-all ${
-                userSelectedOption === currentQ?.correctIndex
+                (userSelectedOption === currentQ?.correctIndex || userSelectedOptionRef.current === currentQ?.correctIndex)
                   ? 'bg-emerald-950/80 border-emerald-500 text-emerald-300 shadow-md shadow-emerald-900/30'
-                  : userSelectedOption !== null
+                  : (userSelectedOption !== null || userSelectedOptionRef.current !== null)
                   ? 'bg-rose-950/80 border-rose-500 text-rose-300'
                   : 'bg-zinc-900/90 border-zinc-750 text-amber-300'
               }`}>
-                {userSelectedOption === currentQ?.correctIndex ? (
+                {(userSelectedOption === currentQ?.correctIndex || userSelectedOptionRef.current === currentQ?.correctIndex) ? (
                   <>
                     <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                     <span>CORRECT ANSWER! (+10 PTS)</span>
                   </>
-                ) : userSelectedOption !== null ? (
+                ) : (userSelectedOption !== null || userSelectedOptionRef.current !== null) ? (
                   <>
                     <X className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                     <span>INCORRECT • CORRECT ANSWER SHOWN IN GREEN</span>
                   </>
-                ) : (
+                ) : timeLeft <= 1 ? (
                   <>
                     <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                     <span>TIME EXPIRED • CORRECT ANSWER HIGHLIGHTED BELOW</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>ROUND COMPLETE • CORRECT ANSWER HIGHLIGHTED BELOW</span>
                   </>
                 )}
               </div>
@@ -1810,7 +1937,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           {/* Options */}
           <div className="grid grid-cols-1 gap-2.5">
             {currentQ?.options.map((optionText, idx) => {
-              const isSelected = userSelectedOption === idx;
+              const isSelected = userSelectedOption === idx || userSelectedOptionRef.current === idx;
               const isCorrectAnswer = idx === currentQ.correctIndex;
 
               let btnStyle = 'bg-zinc-900/90 border-zinc-800 text-zinc-200 hover:border-zinc-700';
@@ -1903,7 +2030,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   const isTie = userScore === opponentScore;
 
   return (
-    <div className="w-full h-full min-h-screen bg-zinc-950 text-white flex flex-col justify-between p-6 select-none font-sans overflow-y-auto">
+    <div className="w-full h-full min-h-full bg-zinc-950 text-white flex flex-col justify-between p-6 select-none font-sans overflow-y-auto">
       <div className="flex items-center justify-between max-w-md w-full mx-auto">
         <button
           onClick={() => {

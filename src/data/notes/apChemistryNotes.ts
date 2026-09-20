@@ -1030,7 +1030,7 @@ $$q_{\\text{reaction}} = -q_{\\text{solution}} = -(m_{\\text{solution}} \\cdot c
 * **Faraday\'s Law of Electrolysis**:
   $$I = \\frac{q}{t} \\implies q = I \\cdot t$$
   $$\\text{Moles of Electrons } (n_e) = \\frac{q}{F} = \\frac{I \\cdot t}{96{,}485 \\text{ C/mol }e^-}$$
-  $$\\text{Grams Plated} = \\left(\\frac{I \\cdot t}{n \\cdot F}\\right) \\times \\text{Molar Mass}`
+  $$\\text{Grams Plated} = \\left(\\frac{I \\cdot t}{n \\cdot F}\\right) \\times \\text{Molar Mass}$$`
       }
     ],
     workedExamples: [

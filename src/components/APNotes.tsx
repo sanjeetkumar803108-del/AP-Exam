@@ -1912,7 +1912,7 @@ export default function APNotes({ onBack }: APNotesProps) {
 
       {/* Full-Screen Mobile PDF Viewer Modal */}
       {fullScreenPdfData && (
-        <div className="fixed inset-0 z-[100] bg-zinc-950 flex flex-col animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] bg-zinc-950 flex flex-col animate-in fade-in duration-200 pt-[var(--offline-banner-height,0px)]">
           {/* Top Mobile Action Bar */}
           <div className="h-14 px-3 sm:px-5 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between shrink-0 text-white">
             <button

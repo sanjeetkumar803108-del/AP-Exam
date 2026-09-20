@@ -13697,7 +13697,19 @@ Strictly return a raw JSON array of ${requestedCount} objects matching this exac
           subjectId,
           stem: String(item.stem || "").trim(),
           options: Array.isArray(item.options) && item.options.length === 4 ? item.options.map((o) => String(o).trim()) : ["Option A", "Option B", "Option C", "Option D"],
-          correctIndex: typeof item.correctIndex === "number" && item.correctIndex >= 0 && item.correctIndex <= 3 ? item.correctIndex : 0,
+          correctIndex: (() => {
+            if (typeof item.correctIndex === "number" && item.correctIndex >= 0 && item.correctIndex <= 3) {
+              return item.correctIndex;
+            }
+            if (typeof item.correctIndex === "string") {
+              const norm = item.correctIndex.trim().toUpperCase();
+              if (norm === "A" || norm === "0") return 0;
+              if (norm === "B" || norm === "1") return 1;
+              if (norm === "C" || norm === "2") return 2;
+              if (norm === "D" || norm === "3") return 3;
+            }
+            return 0;
+          })(),
           explanation: String(item.explanation || "Verified correct based on AP curriculum standards.").trim(),
           difficulty: item.difficulty === "Easy" || item.difficulty === "Hard" ? item.difficulty : "Medium",
           timeLimit: item.timeLimit === 30 || item.timeLimit === 60 ? item.timeLimit : 45
@@ -13748,7 +13760,7 @@ app.post("/api/battle/match", (req, res) => {
       }
     }
     waitingQueue.delete(playerId);
-    const myNormGrade = normalizeGrade(gradeLevel);
+    const myNormGrade = normalizeGrade(gradeLevel || req.body.grade || req.body.userGrade);
     const myPlayer = {
       id: playerId,
       name: playerName || "Student",
@@ -13856,7 +13868,7 @@ app.post("/api/battle/poll-match", (req, res) => {
     }
     let myTicket = waitingQueue.get(playerId);
     if (!myTicket && subjectId) {
-      const myNormGrade = normalizeGrade(gradeLevel);
+      const myNormGrade = normalizeGrade(gradeLevel || req.body.grade || req.body.userGrade);
       const myPlayer = {
         id: playerId,
         name: playerName || "Student",
@@ -13978,6 +13990,8 @@ app.post("/api/battle/room/create", (req, res) => {
     const displayCode = digits.length >= 4 ? `AP-${digits.slice(-4)}` : `AP-${cleanCode}`;
     const roomId = `room_${displayCode}`;
     let battleQuestions = questions && questions.length >= 5 ? questions : getBattleQuestions(subjectId, 5);
+    const normGrade = player.gradeLevel || player.grade ? normalizeGrade(player.gradeLevel || player.grade) : void 0;
+    const playerTagline = player.tagline || (normGrade ? `${normGrade} \u2022 AP Scholar` : void 0);
     const newRoom = {
       id: roomId,
       code: displayCode,
@@ -13990,7 +14004,9 @@ app.post("/api/battle/room/create", (req, res) => {
         score: 0,
         hasAnswered: false,
         currentQ: 0,
-        lastSeen: now
+        lastSeen: now,
+        gradeLevel: normGrade,
+        tagline: playerTagline
       },
       player2: null,
       questions: battleQuestions,
@@ -14027,6 +14043,8 @@ app.post("/api/battle/room/join", (req, res) => {
       return res.status(400).json({ error: "Room already in progress or full!" });
     }
     const now = Date.now();
+    const guestNormGrade = player.gradeLevel || player.grade ? normalizeGrade(player.gradeLevel || player.grade) : void 0;
+    const guestTagline = player.tagline || (guestNormGrade ? `${guestNormGrade} \u2022 AP Scholar` : void 0);
     room.player2 = {
       id: player.id,
       name: player.name,
@@ -14034,7 +14052,9 @@ app.post("/api/battle/room/join", (req, res) => {
       score: 0,
       hasAnswered: false,
       currentQ: 0,
-      lastSeen: now
+      lastSeen: now,
+      gradeLevel: guestNormGrade,
+      tagline: guestTagline
     };
     room.status = "countdown";
     room.countdownStart = now;
@@ -14055,7 +14075,7 @@ app.post("/api/battle/room/join", (req, res) => {
 });
 app.post("/api/battle/action", (req, res) => {
   try {
-    const { roomId, playerId, score, hasAnswered, finished, currentQ } = req.body;
+    const { roomId, playerId, score, hasAnswered, finished, currentQ, isPlayer1 } = req.body;
     const { room } = findBattleRoom(roomId);
     if (!room) {
       return res.status(404).json({ error: "Room not found" });
@@ -14075,9 +14095,17 @@ app.post("/api/battle/action", (req, res) => {
       }
     }
     const now = Date.now();
-    let target = room.player1.id === playerId ? room.player1 : room.player2?.id === playerId ? room.player2 : null;
+    let target = null;
+    if (typeof isPlayer1 === "boolean") {
+      target = isPlayer1 ? room.player1 : room.player2 || null;
+    }
+    if (!target) {
+      target = room.player1.id === playerId ? room.player1 : room.player2?.id === playerId ? room.player2 : null;
+    }
     if (!target && room.player2) {
-      if (isSameUser(room.player1.id, playerId)) target = room.player1;
+      if (room.player1.id.startsWith(playerId) || playerId.startsWith(room.player1.id)) target = room.player1;
+      else if (room.player2.id.startsWith(playerId) || playerId.startsWith(room.player2.id)) target = room.player2;
+      else if (isSameUser(room.player1.id, playerId)) target = room.player1;
       else if (isSameUser(room.player2.id, playerId)) target = room.player2;
     }
     if (target) {
@@ -14139,7 +14167,7 @@ function stepBattleRoomClock(room, now) {
     }
   }
   if (room.status === "battle" && room.roundStatus === "revealed" && room.revealStartTime) {
-    if (now - room.revealStartTime >= 2e3) {
+    if (now - room.revealStartTime >= 2500) {
       const nextQ = room.currentQ + 1;
       if (nextQ < (room.questions?.length || 5)) {
         room.currentQ = nextQ;
@@ -14161,7 +14189,8 @@ function stepBattleRoomClock(room, now) {
   }
   if (room.status === "battle" && room.roundStatus === "playing") {
     const currQ = room.questions?.[room.currentQ];
-    const qDurationMs = (currQ?.timeLimit || 30) * 1e3 + 500;
+    const qSec = currQ?.timeLimit && typeof currQ.timeLimit === "number" && currQ.timeLimit >= 15 ? currQ.timeLimit : 45;
+    const qDurationMs = qSec * 1e3 + 4e3;
     if (now - room.roundStartTime >= qDurationMs) {
       room.roundStatus = "revealed";
       room.revealStartTime = now;
@@ -14191,8 +14220,9 @@ app.get("/api/battle/room/:roomId", (req, res) => {
     if (!room) {
       return res.status(404).json({ error: "Room not found" });
     }
-    stepBattleRoomClock(room, Date.now());
-    res.json({ room });
+    const now = Date.now();
+    stepBattleRoomClock(room, now);
+    res.json({ room, serverTime: now });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

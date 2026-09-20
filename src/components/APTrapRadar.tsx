@@ -1064,17 +1064,9 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
               <Radar className="w-5 h-5 animate-pulse" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-black tracking-tight text-zinc-900 flex items-center gap-1.5">
-                  AP Trap Radar™
-                </h1>
-                <span className="text-[9px] font-black uppercase tracking-wider bg-amber-100 border border-amber-300 text-amber-800 px-1.5 py-0.5 rounded">
-                  Score 5 Weapon
-                </span>
-              </div>
-              <p className="text-[10px] text-zinc-500 font-medium">
-                College Board Distractor & Trap Disarmer
-              </p>
+              <h1 className="text-base font-black tracking-tight text-zinc-900 flex items-center gap-1.5">
+                AP Trap Radar™
+              </h1>
             </div>
           </div>
         </div>
@@ -1381,7 +1373,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                           : 'bg-zinc-50/80 border-zinc-200 hover:bg-white hover:border-zinc-300'
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${
                             questionFormat === 'objective'
@@ -1390,18 +1382,13 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                           }`}>
                             🎯
                           </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-black text-zinc-900 text-sm tracking-tight">
-                                Objective (MCQ)
-                              </h4>
-                              <span className="text-[10px] font-extrabold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-300">
-                                Section I
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-zinc-500 font-medium mt-0.5">
-                              1 Target + 3 Psychometric Distractor Traps
-                            </p>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-black text-zinc-900 text-sm tracking-tight">
+                              Objective (MCQ)
+                            </h4>
+                            <span className="text-[10px] font-extrabold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-300">
+                              Section I
+                            </span>
                           </div>
                         </div>
 
@@ -1428,7 +1415,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                           : 'bg-zinc-50/80 border-zinc-200 hover:bg-white hover:border-zinc-300'
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${
                             questionFormat === 'subjective'
@@ -1437,18 +1424,13 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                           }`}>
                             ✍️
                           </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-black text-zinc-900 text-sm tracking-tight">
-                                Subjective (FRQ)
-                              </h4>
-                              <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-300">
-                                Section II
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-zinc-500 font-medium mt-0.5">
-                              Multi-Part Prompts, Rubric Traps & Model Answers
-                            </p>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-black text-zinc-900 text-sm tracking-tight">
+                              Subjective (FRQ)
+                            </h4>
+                            <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-300">
+                              Section II
+                            </span>
                           </div>
                         </div>
 
@@ -1470,60 +1452,34 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                     2. How Many Questions?
                   </label>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {questionFormat === 'objective' ? (
-                      [
-                        { count: 3, label: '3 Questions', sub: '⚡ Lightning Blitz (~3m)' },
-                        { count: 5, label: '5 Questions', sub: 'Standard Trap Drill (~7m)' },
-                        { count: 10, label: '10 Questions', sub: 'Trap Gauntlet (~15m)' }
-                      ].map(item => (
-                        <button
-                          key={item.count}
-                          onClick={() => {
-                            triggerVibration(10);
-                            setQuestionCount(item.count);
-                          }}
-                          className={`p-3.5 sm:p-4 rounded-2xl border text-left transition-all cursor-pointer ${
-                            questionCount === item.count
-                              ? 'bg-zinc-900 border-zinc-900 text-white shadow-md ring-2 ring-zinc-900/20'
-                              : 'bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-50'
-                          }`}
-                        >
-                          <div className="font-black text-sm">{item.label}</div>
-                          <div className={`text-[11px] font-medium mt-1 ${
-                            questionCount === item.count ? 'text-zinc-300' : 'text-zinc-500'
-                          }`}>
-                            {item.sub}
-                          </div>
-                        </button>
-                      ))
-                    ) : (
-                      [
-                        { count: 2, label: '2 FRQs', sub: '⚡ Rapid Drill (~6m)' },
-                        { count: 3, label: '3 FRQs', sub: 'Standard Drill (~12m)' },
-                        { count: 5, label: '5 FRQs', sub: 'Full Section II (~25m)' }
-                      ].map(item => (
-                        <button
-                          key={item.count}
-                          onClick={() => {
-                            triggerVibration(10);
-                            setQuestionCount(item.count);
-                          }}
-                          className={`p-3.5 sm:p-4 rounded-2xl border text-left transition-all cursor-pointer ${
-                            questionCount === item.count
-                              ? 'bg-zinc-900 border-zinc-900 text-white shadow-md ring-2 ring-zinc-900/20'
-                              : 'bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-50'
-                          }`}
-                        >
-                          <div className="font-black text-sm">{item.label}</div>
-                          <div className={`text-[11px] font-medium mt-1 ${
-                            questionCount === item.count ? 'text-zinc-300' : 'text-zinc-500'
-                          }`}>
-                            {item.sub}
-                          </div>
-                        </button>
-                      ))
-                    )}
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                    {(questionFormat === 'objective'
+                      ? [
+                          { count: 3, label: '3 Questions' },
+                          { count: 5, label: '5 Questions' },
+                          { count: 10, label: '10 Questions' }
+                        ]
+                      : [
+                          { count: 2, label: '2 FRQs' },
+                          { count: 3, label: '3 FRQs' },
+                          { count: 5, label: '5 FRQs' }
+                        ]
+                    ).map(item => (
+                      <button
+                        key={item.count}
+                        onClick={() => {
+                          triggerVibration(10);
+                          setQuestionCount(item.count);
+                        }}
+                        className={`py-3.5 px-2 sm:px-4 rounded-2xl border text-center transition-all cursor-pointer ${
+                          questionCount === item.count
+                            ? 'bg-zinc-900 border-zinc-900 text-white shadow-md ring-2 ring-zinc-900/20'
+                            : 'bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-50'
+                        }`}
+                      >
+                        <div className="font-black text-xs sm:text-sm">{item.label}</div>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -1545,7 +1501,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                     className="w-2/3 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-emerald-600 to-teal-600 hover:opacity-95 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 active:scale-98 transition-all cursor-pointer"
                   >
                     <Radar className="w-4 h-4" />
-                    <span>Start {questionFormat === 'subjective' ? 'FRQ' : 'MCQ'} Trap Radar ({questionCount} Qs)</span>
+                    <span>GENERATE</span>
                   </button>
                 </div>
               </motion.div>

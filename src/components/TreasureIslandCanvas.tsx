@@ -310,10 +310,10 @@ export const TreasureIslandCanvas: React.FC<TreasureIslandCanvasProps> = ({
             <div className="mt-1.5 flex flex-col items-center text-center max-w-[130px] pointer-events-none">
               <span
                 className={`text-xs font-black tracking-tight leading-tight drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)] ${
-                  unlocked ? 'text-[#3b2516]' : 'text-[#644933]'
+                  unlocked ? 'text-[#3b2516]' : 'text-[#644933] uppercase tracking-wider'
                 }`}
               >
-                {unlocked ? displayName : 'Soon'}
+                {unlocked ? displayName : 'LOCKED'}
               </span>
               {lvl.levelNumber === 1 && (
                 <span className="text-[9px] font-bold text-emerald-800 uppercase tracking-wider bg-emerald-100/90 border border-emerald-300 px-1.5 py-0.2 rounded-full mt-0.5">

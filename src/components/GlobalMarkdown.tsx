@@ -508,7 +508,8 @@ const defaultComponents = {
   },
   pre: ({ node, children, ...props }: any) => (
     <pre
-      className="p-3.5 my-3 rounded-2xl bg-zinc-950 dark:bg-zinc-900 text-zinc-100 font-mono text-xs overflow-x-auto border border-zinc-800/90 shadow-xs leading-relaxed"
+      className="p-3 my-2 rounded-xl bg-zinc-900 text-zinc-100 font-mono text-xs overflow-x-auto max-w-full border border-zinc-800 shadow-xs leading-relaxed"
+      style={{ maxWidth: '100%', boxSizing: 'border-box' }}
       {...props}
     >
       {children}

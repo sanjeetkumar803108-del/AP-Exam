@@ -20,20 +20,69 @@ export interface ToastEvent {
 }
 
 /**
- * Show a global in-app toast notification.
+ * Condense verbose messages into crisp, short 2-3 word toast notifications.
  */
-export function showToast(message: string, type: ToastType = 'info', duration = 3500): void {
-  if (typeof window === 'undefined') return;
-
-  const cleanMessage = String(message || '')
+export function condenseToastMessage(rawMessage: string, type: ToastType = 'info'): string {
+  const clean = String(rawMessage || '')
     .replace(/^(\w+\s*:\s*)+/g, '') // remove prefixes like "Error: "
     .trim();
 
-  if (!cleanMessage) return;
+  if (!clean) return 'Notice';
+
+  const lower = clean.toLowerCase();
+
+  // Known short mappings
+  if (lower.includes('copied') || lower.includes('clipboard')) return 'Copied!';
+  if (lower.includes('saved to') || lower.includes('save to vault') || lower.includes('added to vault')) return 'Saved to Vault';
+  if (lower.includes('saved') || lower.includes('bookmark')) return 'Saved!';
+  if (lower.includes('downloaded') || lower.includes('download complete')) return 'Downloaded!';
+  if (lower.includes('download fail') || lower.includes('failed to download')) return 'Download Failed';
+  if (lower.includes('offline') || lower.includes('no internet') || lower.includes('network connection')) return 'Offline Mode';
+  if (lower.includes('network error') || lower.includes('connection error')) return 'Network Error';
+  if (lower.includes('sync complete') || lower.includes('synced')) return 'Workspace Synced!';
+  if (lower.includes('syncing') || lower.includes('refreshing')) return 'Syncing...';
+  if (lower.includes('permission') || lower.includes('access denied')) return 'Access Needed';
+  if (lower.includes('logged in') || lower.includes('welcome back')) return 'Welcome Back!';
+  if (lower.includes('logged out') || lower.includes('signed out')) return 'Signed Out';
+  if (lower.includes('report sent') || lower.includes('reported')) return 'Report Sent!';
+  if (lower.includes('level unlocked') || lower.includes('unlocked')) return 'Level Unlocked!';
+  if (lower.includes('quiz complete') || lower.includes('victory')) return 'Quiz Completed!';
+  if (lower.includes('streak')) return 'Streak Updated!';
+  if (lower.includes('generating') || lower.includes('synthesizing')) return 'Generating...';
+  if (lower.includes('restored') || lower.includes('auto-heal')) return 'Restored!';
+  if (lower.includes('cleared') || lower.includes('deleted') || lower.includes('purged')) return 'Cleared!';
+
+  // If already 1-3 words and short, preserve it
+  const words = clean.split(/\s+/).filter(Boolean);
+  if (words.length <= 3 && clean.length <= 26) {
+    return clean;
+  }
+
+  // If longer than 3 words, take the first 2-3 words or provide clean type fallback
+  if (words.length >= 2 && words.slice(0, 3).join(' ').length <= 22) {
+    return words.slice(0, 3).join(' ');
+  }
+
+  switch (type) {
+    case 'success': return 'Success!';
+    case 'error': return 'Action Failed';
+    case 'warning': return 'Warning';
+    default: return 'Notice';
+  }
+}
+
+/**
+ * Show a global in-app toast notification.
+ */
+export function showToast(message: string, type: ToastType = 'info', duration = 2200): void {
+  if (typeof window === 'undefined') return;
+
+  const shortMessage = condenseToastMessage(message, type);
+  if (!shortMessage) return;
 
   window.dispatchEvent(
     new CustomEvent<ToastEvent>('show-toast', {
-      detail: { message: cleanMessage, type, duration },
+      detail: { message: shortMessage, type, duration },
     })
   );
 }
@@ -61,7 +110,7 @@ if (typeof window !== 'undefined') {
         type = 'error';
       }
 
-      showToast(formatted, type, 4000);
+      showToast(formatted, type, 2200);
     } catch (e) {
       if (typeof originalAlert === 'function') {
         originalAlert(msg);

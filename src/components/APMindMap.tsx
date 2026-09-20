@@ -378,7 +378,7 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
     });
 
     return (
-      <div className="fixed inset-0 z-40 bg-[#FAF7F2] text-zinc-900 flex flex-col overflow-hidden font-sans select-none">
+      <div className="w-full h-full bg-[#FAF7F2] text-zinc-900 flex flex-col overflow-hidden font-sans select-none">
         {/* Top Header */}
         <header className="shrink-0 z-30 bg-white/90 backdrop-blur-md border-b border-[#ECE6DD] px-4 sm:px-6 py-3.5 flex items-center justify-between shadow-2xs">
           <div className="flex items-center gap-3">
@@ -572,7 +572,7 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
   // =========================================================================
   if (!currentUnit) {
     return (
-      <div className="fixed inset-0 z-40 bg-[#FAF7F2] text-zinc-900 flex flex-col items-center justify-center p-4">
+      <div className="w-full h-full bg-[#FAF7F2] text-zinc-900 flex flex-col items-center justify-center p-4">
         <Loader2 className="w-8 h-8 text-indigo-600 animate-spin mb-3" />
         <p className="text-sm font-bold text-zinc-700">Loading AP Mind Map...</p>
       </div>
@@ -580,7 +580,7 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-40 bg-[#FAF7F2] text-zinc-900 flex flex-col overflow-hidden font-sans select-none">
+    <div className="w-full h-full bg-[#FAF7F2] text-zinc-900 flex flex-col overflow-hidden font-sans select-none">
       {/* Top Header */}
       <header className="shrink-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#ECE6DD] px-3 sm:px-6 py-2.5 flex items-center justify-between shadow-2xs gap-2">
         <div className="flex items-center gap-2.5 min-w-0 pr-1">
@@ -1179,7 +1179,7 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
       {/* FULLSCREEN PDF VIEWER                                                     */}
       {/* ========================================================================= */}
       {fullScreenPdfData && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-zinc-900 text-white">
+        <div className="fixed inset-0 z-50 flex flex-col bg-zinc-900 text-white pt-[var(--offline-banner-height,0px)]">
           <div className="p-3 bg-zinc-800 flex items-center justify-between border-b border-zinc-700">
             <span className="text-sm font-bold truncate max-w-[80vw]">{fullScreenPdfData.title}</span>
             <button

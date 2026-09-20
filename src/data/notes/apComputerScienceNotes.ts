@@ -446,7 +446,7 @@ export const AP_CSA_NOTES: APUnitNote[] = [
           'Step 1: Declare private instance variable: `private double balance;`.',
           'Step 2: Write constructor: `public BankAccount(double initialBalance) { balance = initialBalance; }`.',
           'Step 3: Write accessor method: `public double getBalance() { return balance; }`.',
-          'Step 4: Write mutator method with guard check:\n```java\npublic void deposit(double amount) {\n  if (amount > 0) {\n    balance += amount;\n  }\n}\n```'
+          'Step 4: Write mutator method with guard check: `public void deposit(double amount) { if (amount > 0) { balance += amount; } }`.'
         ],
         finalAnswer: 'A fully encapsulated class meeting College Board FRQ 2 standards.',
         apScoringTip: 'Never declare instance variables as `public`. Always initialize every instance variable inside the constructor.'
@@ -619,7 +619,7 @@ export const AP_CSA_NOTES: APUnitNote[] = [
         solutionSteps: [
           'Step 1: Notice the shift trap: Forward loop skips consecutive target elements.',
           'Step 2: Method A (Backward Loop): Start at `words.size() - 1`, decrement down to 0.',
-          'Step 3: Write code:\n```java\nfor (int i = words.size() - 1; i >= 0; i--) {\n  if (words.get(i).equals("DELETE")) {\n    words.remove(i);\n  }\n}\n```',
+          'Step 3: Write backward traversal loop: `for (int i = words.size() - 1; i >= 0; i--) { if (words.get(i).equals("DELETE")) { words.remove(i); } }`.',
           'Step 4: Verify: When an element at index $i$ is removed, the subsequent elements shift left, but our next check is at $i - 1$, which is unaffected!'
         ],
         finalAnswer: 'Backward loop ensures no elements are skipped when `.remove(i)` shifts elements left.',
@@ -703,7 +703,7 @@ export const AP_CSA_NOTES: APUnitNote[] = [
         solutionSteps: [
           'Step 1: Identify bounds: To traverse down a single column, we iterate through every row $r$ from 0 to `mat.length - 1`.',
           'Step 2: Initialize accumulator: `int total = 0;`.',
-          'Step 3: Write single loop:\n```java\npublic static int colSum(int[][] mat, int col) {\n  int total = 0;\n  for (int r = 0; r < mat.length; r++) {\n    total += mat[r][col];\n  }\n  return total;\n}\n```',
+          'Step 3: Write column traversal loop: `public static int colSum(int[][] mat, int col) { int total = 0; for (int r = 0; r < mat.length; r++) { total += mat[r][col]; } return total; }`.',
           'Step 4: Verify dimensions: `mat[r][col]` accesses row `r` at the fixed column index `col`.'
         ],
         finalAnswer: 'A clean $O(\\text{rows})$ method summing a specific column.',

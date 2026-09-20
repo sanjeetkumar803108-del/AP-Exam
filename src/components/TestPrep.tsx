@@ -3699,7 +3699,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
 
         {/* Fullscreen In-App PDF Preview Reader Modal */}
         {previewPdfUri && (
-          <div className="fixed inset-0 bg-zinc-950 z-50 flex flex-col h-screen w-screen animate-fade-in">
+          <div className="fixed inset-0 bg-zinc-950 z-50 flex flex-col h-screen w-screen animate-fade-in pt-[var(--offline-banner-height,0px)]">
             {/* Top Bar */}
             <div className="bg-zinc-900 border-b border-zinc-800 px-4 py-3.5 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3 min-w-0">
@@ -4485,7 +4485,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-50 w-screen h-screen bg-zinc-950 flex flex-col overflow-hidden select-none"
+              className="fixed inset-0 z-50 w-screen h-screen bg-zinc-950 flex flex-col overflow-hidden select-none pt-[var(--offline-banner-height,0px)]"
             >
               {/* Top Header Navigation & Toolbars */}
               <div className="h-16 px-4 sm:px-6 bg-zinc-900/90 border-b border-zinc-800 flex items-center justify-between shrink-0 z-20 backdrop-blur-md">

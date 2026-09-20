@@ -124,7 +124,7 @@ export default function StreakDetailsPage({ onBack }: StreakDetailsPageProps) {
   const hasPunchedToday = !!lastPunchDate;
 
   return (
-    <div className="w-full h-full min-h-screen bg-[#FAF9F6] text-zinc-900 font-sans flex flex-col relative pb-12">
+    <div className="w-full h-full min-h-full bg-[#FAF9F6] text-zinc-900 font-sans flex flex-col relative pb-12">
       {/* Toast Notification */}
       <AnimatePresence>
         {toast && (

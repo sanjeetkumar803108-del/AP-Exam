@@ -118,6 +118,15 @@ export default function App() {
     isRestored: false
   });
 
+  // Synchronize CSS custom property --offline-banner-height with networkStatus.visible
+  useEffect(() => {
+    if (networkStatus.visible) {
+      document.documentElement.style.setProperty('--offline-banner-height', '34px');
+    } else {
+      document.documentElement.style.setProperty('--offline-banner-height', '0px');
+    }
+  }, [networkStatus.visible]);
+
   // Listen for online/offline events globally across the application
   useEffect(() => {
     let active = true;
@@ -314,11 +323,11 @@ export default function App() {
     const handleShowMobileToast = (e: Event) => {
       const customEvent = e as CustomEvent;
       if (customEvent.detail && customEvent.detail.message) {
-        setMobileToast(customEvent.detail.message);
+        let msg = String(customEvent.detail.message || '').trim();
+        // Automatically sanitize & strip any verbose parentheticals e.g. "(Learning Island...)"
+        msg = msg.replace(/\s*\([^)]*\)/g, '').trim();
+        setMobileToast(msg);
         triggerVibration(15);
-        setTimeout(() => {
-          setMobileToast(null);
-        }, 4000);
       }
     };
     const handleOpenPaywall = (e: Event) => {
@@ -926,7 +935,7 @@ export default function App() {
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className={`w-full py-2 px-4 z-[999] flex items-center justify-center gap-2 text-xs font-bold shadow-md select-none ${
+              className={`w-full py-2 px-4 z-[999] shrink-0 overflow-hidden flex items-center justify-center gap-2 text-xs font-bold shadow-md select-none ${
                 !networkStatus.connected
                   ? 'bg-red-600 text-white dark:bg-red-950 dark:text-red-200 border-b border-red-500/30'
                   : 'bg-emerald-600 text-white dark:bg-emerald-950 dark:text-emerald-200 border-b border-emerald-500/30'
@@ -969,9 +978,9 @@ export default function App() {
         </header>
       )}
       
-      <main className={`w-full ${(Capacitor.isNativePlatform() || activeTool !== null) ? 'max-w-none' : 'max-w-md mx-auto landscape:max-w-none'} flex-1 min-h-0 relative z-0 ${(activeTab === 'frqgrader' || activeTab === 'scanner' || activeTab === 'aitutor' || activeTab === 'teacher' || activeTool !== null) ? 'overflow-hidden flex flex-col h-full' : 'overflow-y-auto pb-20'} bg-[#FAF9F6]`}>
+      <main className={`w-full ${(Capacitor.isNativePlatform() || activeTool !== null) ? 'max-w-none' : 'max-w-md mx-auto landscape:max-w-none'} flex-1 min-h-0 relative z-0 ${(activeTab === 'frqgrader' || activeTab === 'scanner' || activeTab === 'aitutor' || activeTab === 'teacher' || activeTool !== null) ? 'overflow-hidden flex flex-col' : 'overflow-y-auto pb-20'} bg-[#FAF9F6]`}>
         {/* FRQ Grader Tab (Replaces legacy Scan second section) */}
-        <div className={activeTab === 'frqgrader' ? 'h-full flex flex-col' : 'hidden'}>
+        <div className={activeTab === 'frqgrader' ? 'h-full flex flex-col flex-1 min-h-0' : 'hidden'}>
           <ErrorBoundary featureName="FRQ Grader" onClose={() => setActiveTab('notes')}>
             <Suspense fallback={<FullPageSkeleton />}>
               <FRQGrader onBack={() => {
@@ -983,7 +992,7 @@ export default function App() {
         </div>
 
         {/* AI Tutor Tab */}
-        <div className={activeTab === 'aitutor' ? 'h-full flex flex-col' : 'hidden'}>
+        <div className={activeTab === 'aitutor' ? 'h-full flex flex-col flex-1 min-h-0' : 'hidden'}>
           <ErrorBoundary featureName="AI Tutor" onClose={() => setActiveTab('notes')}>
             <Suspense fallback={<FullPageSkeleton />}>
               <AITutor isVip={isVip} isActive={activeTab === 'aitutor'} />
@@ -992,8 +1001,8 @@ export default function App() {
         </div>
 
         {/* Home/Notes Tab */}
-        <div className={activeTab === 'notes' ? 'h-full flex flex-col' : 'hidden'}>
-          <div className={activeTool === null ? "h-full flex flex-col" : "hidden"}>
+        <div className={activeTab === 'notes' ? 'h-full flex flex-col flex-1 min-h-0' : 'hidden'}>
+          <div className={activeTool === null ? "h-full flex flex-col flex-1 min-h-0" : "hidden"}>
             <ErrorBoundary featureName="Home Dashboard" onRetry={() => resetAllLazyChunks()}>
               <Suspense fallback={<FullPageSkeleton />}>
                 <ToolsDashboard 
@@ -1012,14 +1021,15 @@ export default function App() {
           </div>
           {/* Active Tool Rendering isolated and keyed to prevent state/boundary reuse hitch */}
           {activeTool !== null && (
-            <ErrorBoundary 
-              key={`active-tool-boundary-${activeTool}`} 
-              featureName={`Tool: ${activeTool}`} 
-              onClose={() => setActiveTool(null)} 
-              onReset={() => setActiveTool(null)}
-            >
-              <Suspense key={`active-tool-suspense-${activeTool}`} fallback={<FullPageSkeleton />}>
-              {activeTool === 'apnotes' && (
+            <div className="w-full h-full flex flex-col flex-1 min-h-0 overflow-hidden">
+              <ErrorBoundary 
+                key={`active-tool-boundary-${activeTool}`} 
+                featureName={`Tool: ${activeTool}`} 
+                onClose={() => setActiveTool(null)} 
+                onReset={() => setActiveTool(null)}
+              >
+                <Suspense key={`active-tool-suspense-${activeTool}`} fallback={<FullPageSkeleton />}>
+                {activeTool === 'apnotes' && (
                 <ErrorBoundary featureName="AP Notes" onClose={() => setActiveTool(null)}>
                   <APNotes 
                     onBack={() => setActiveTool(null)} 
@@ -1135,13 +1145,14 @@ export default function App() {
                   <StreakDetailsPage onBack={() => setActiveTool(null)} />
                 </ErrorBoundary>
               )}
-              </Suspense>
-            </ErrorBoundary>
+                </Suspense>
+              </ErrorBoundary>
+            </div>
           )}
         </div>
 
         {/* Profile Tab */}
-        <div className={activeTab === 'profile' ? 'h-full flex flex-col' : 'hidden'}>
+        <div className={activeTab === 'profile' ? 'h-full flex flex-col flex-1 min-h-0' : 'hidden'}>
           <ErrorBoundary featureName="Profile" onClose={() => setActiveTab('notes')}>
             <Suspense fallback={<FullPageSkeleton />}>
               <Profile 
@@ -1285,21 +1296,21 @@ export default function App() {
       <AnimatePresence>
         {mobileToast && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            initial={{ opacity: 0, y: 30, scale: 0.92 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 350, damping: 25 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[9999] w-auto max-w-[90vw] bg-zinc-900 text-white px-5 py-3 rounded-2xl shadow-xl border border-zinc-800 flex items-center justify-between gap-3"
+            exit={{ opacity: 0, y: 15, scale: 0.92 }}
+            transition={{ type: "spring", stiffness: 400, damping: 28 }}
+            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[9999] bg-zinc-900/95 dark:bg-zinc-800/95 text-white px-4 py-2 rounded-full shadow-2xl border border-zinc-700/60 backdrop-blur-md flex items-center gap-2.5 whitespace-nowrap pointer-events-auto"
           >
-            <span className="text-xs font-black tracking-wide leading-relaxed">
+            <span className="text-xs font-black tracking-tight whitespace-nowrap">
               {mobileToast}
             </span>
             <button 
               onClick={() => setMobileToast(null)} 
-              className="p-1 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+              className="w-5 h-5 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
               title="Close notification"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-3 h-3" />
             </button>
           </motion.div>
         )}

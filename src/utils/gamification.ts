@@ -63,10 +63,9 @@ export const ALL_BADGES: AchievementBadge[] = [
 export function getStudyXP(): number {
   const xpStr = safeGetItem('study_total_xp');
   if (!xpStr) {
-    safeSetItem('study_total_xp', '150');
-    return 150;
+    return 0;
   }
-  return parseInt(xpStr, 10) || 150;
+  return parseInt(xpStr, 10) || 0;
 }
 
 /**
@@ -177,7 +176,7 @@ export function addStudyXP(
       // Daily Cap already reached
       triggerVibration(10);
       window.dispatchEvent(new CustomEvent('show-mobile-toast', {
-        detail: { message: `⚡ Daily XP Cap reached (150/150 XP today). Great work! 🌟` }
+        detail: { message: `🌟 Daily Cap Reached` }
       }));
       return {
         newXP: currentXP,
@@ -214,13 +213,12 @@ export function addStudyXP(
     } catch (_) {}
 
     window.dispatchEvent(new CustomEvent('show-mobile-toast', {
-      detail: { message: `🎉 LEVEL UP! You reached ${newLevelDetails.currentLevel.title} ${newLevelDetails.currentLevel.badge} (+${effectiveAmount} XP)` }
+      detail: { message: `🎉 Level Up! (+${effectiveAmount} XP)` }
     }));
   } else {
     triggerVibration(10);
-    const capNotice = (newDailyEarned >= MAX_DAILY_XP) ? ' (Max 150 daily XP reached! 🌟)' : '';
     window.dispatchEvent(new CustomEvent('show-mobile-toast', {
-      detail: { message: `⚡ +${effectiveAmount} XP Earned! (${reason})${capNotice}` }
+      detail: { message: `⚡ +${effectiveAmount} XP Earned!` }
     }));
   }
 
