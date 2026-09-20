@@ -36,7 +36,10 @@ export const safeClearAll = (): void => {
   const sessionKeysToClear = [
     'study_session_token',
     'study_user_session_token',
-    'active_temporary_session'
+    'active_temporary_session',
+    'apexam_active_user_session',
+    'last_logged_in_user',
+    'last_logged_in_user_email'
   ];
 
   try {

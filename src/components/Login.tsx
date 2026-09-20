@@ -21,6 +21,7 @@ import {
 } from 'firebase/auth';
 import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import { clearGoogleCredentialState } from '../utils/clearGoogleCredential';
 import appLogo from '../assets/logo.png';
 import DeveloperLoginModal from './DeveloperPortal/DeveloperLoginModal';
 
@@ -106,6 +107,13 @@ export default function Login({
     if (isRoutingRef.current) return;
     isRoutingRef.current = true;
     try {
+      // 1. Confirm and save active session in storage
+      safeSetItem('apexam_active_user_session', 'true');
+      safeSetItem('last_logged_in_user', currentUser.uid);
+      if (currentUser.email) {
+        safeSetItem('last_logged_in_user_email', currentUser.email.toLowerCase().trim());
+      }
+
       // Claim single active session for this device
       await claimUserSession(currentUser.uid);
 
@@ -170,6 +178,7 @@ export default function Login({
     getRedirectResult(auth)
       .then((result) => {
         if (result?.user && userInitiatedAuth.current) {
+          setUser(result.user);
           routeUserAfterAuth(result.user);
         }
       })
@@ -177,15 +186,17 @@ export default function Login({
         console.warn('[Google Redirect Auth Notice]', redirectErr);
       });
 
-    // 2. Listen for active auth state changes — GATED by userInitiatedAuth flag
-    //    This prevents the listener from auto-routing on mount with stale cached sessions.
+    // 2. Listen for active auth state changes — STRICTLY GATED by userInitiatedAuth flag
+    //    This prevents stale cached sessions from auto-routing or blanking the screen on mount.
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
       if (currentUser && userInitiatedAuth.current) {
+        setUser(currentUser);
         const isGoogle = currentUser.providerData?.some(p => p.providerId === 'google.com') || false;
         if (currentUser.emailVerified || isGoogle) {
           routeUserAfterAuth(currentUser);
         }
+      } else if (!currentUser) {
+        setUser(null);
       }
     });
     return () => unsubscribe();
@@ -296,6 +307,13 @@ export default function Login({
           setLoading(false);
           return;
         }
+
+        // Active session confirmed
+        safeSetItem('apexam_active_user_session', 'true');
+        safeSetItem('last_logged_in_user', loggedUser.uid);
+        if (loggedUser.email) {
+          safeSetItem('last_logged_in_user_email', loggedUser.email.toLowerCase().trim());
+        }
       }
       if (auth.currentUser) {
         await routeUserAfterAuth(auth.currentUser);
@@ -351,6 +369,7 @@ export default function Login({
           
           // STEP 1: Clear Firebase JS SDK + native session tokens
           try { await FirebaseAuthentication.signOut(); } catch (_) {}
+          try { await clearGoogleCredentialState(); } catch (_) {}
 
           let result;
           // PRIMARY: Use legacy Google Sign-In (NOT Credential Manager).
@@ -424,6 +443,13 @@ export default function Login({
 
       if (!loggedUser) {
         throw new Error('Google Sign-In did not return a valid user session. Please try again.');
+      }
+      
+      // Save active session token so App.tsx AuthGuard recognizes this explicit sign-in
+      safeSetItem('apexam_active_user_session', 'true');
+      safeSetItem('last_logged_in_user', loggedUser.uid);
+      if (loggedUser.email) {
+        safeSetItem('last_logged_in_user_email', loggedUser.email.toLowerCase().trim());
       }
       
       // Check if user document already exists in Firestore non-blockingly

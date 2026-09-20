@@ -21,6 +21,8 @@ import {
 } from './utils/sessionManager';
 import { triggerVibration } from './utils/vibrate';
 import { Capacitor } from '@capacitor/core';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import { clearGoogleCredentialState } from './utils/clearGoogleCredential';
 import { App as CapApp } from '@capacitor/app';
 import { Network } from '@capacitor/network';
 import { Purchases } from '@revenuecat/purchases-capacitor';
@@ -313,6 +315,10 @@ export default function App() {
       setShowPaywallModal(true);
     };
     const handleOpenLogin = () => {
+      if (auth.currentUser || user) {
+        console.log('[App] User is already authenticated, ignoring open-login-modal');
+        return;
+      }
       console.log('Received open-login-modal event');
       setShowLoginModal(true);
     };
@@ -372,10 +378,37 @@ export default function App() {
   }, [mobileToast]);
 
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
+        // ENFORCE EXPLICIT AUTHENTICATION GATE:
+        // If there is no confirmed active user session saved in storage,
+        // it means the user never logged in during an active session (e.g. fresh install,
+        // restored background cache / IndexedDB persistence, or unauthenticated state).
+        // This stops stale background cache / IndexedDB persistence from auto-logging into
+        // a random/stale email and auto-opening the app dashboard without user consent.
+        const hasActiveSession = 
+          safeGetItem('apexam_active_user_session') === 'true' && 
+          safeGetItem('last_logged_in_user') === currentUser.uid;
+
+        if (!hasActiveSession) {
+          console.log('[Auth Guard] Stale unconfirmed background user session detected. Enforcing clean logout so Login screen is shown.');
+          setUser(null);
+          setIsVip(false);
+          setAuthLoading(false);
+          if (Capacitor.isNativePlatform()) {
+            try { await FirebaseAuthentication.signOut(); } catch (_) {}
+            try { await clearGoogleCredentialState(); } catch (_) {}
+          }
+          try { await signOut(auth); } catch (_) {}
+          return;
+        } else {
+          safeSetItem('apexam_active_user_session', 'true');
+          safeSetItem('last_logged_in_user', currentUser.uid);
+        }
+
         const isGoogle = currentUser.providerData?.some(p => p.providerId === 'google.com') || false;
         if (!currentUser.emailVerified && !isGoogle) {
+          safeRemoveItem('apexam_active_user_session');
           setUser(null);
           signOut(auth).catch(err => console.warn('Sign out on unverified error:', err));
           return;
@@ -575,8 +608,10 @@ export default function App() {
             setAuthLoading(false);
           });
       } else {
-        // Guest user state: reset VIP without wiping guest storage
+        // Guest user state: clean up session and reset state
+        safeRemoveItem('apexam_active_user_session');
         setIsVip(false);
+        setUser(null);
         setAuthLoading(false);
         
         // Log out from RevenueCat
@@ -887,8 +922,12 @@ export default function App() {
   }, []);
 
   const handleOpenLoginFromDashboard = useCallback(() => {
+    if (auth.currentUser || user) {
+      setActiveTab('profile');
+      return;
+    }
     setShowLoginModal(true);
-  }, []);
+  }, [user]);
 
   const handleSelectToolFromDashboard = useCallback((tool: string) => {
     if (tool === 'tab:scanner' || tool === 'tab:frqgrader' || tool === 'frqgrader') {

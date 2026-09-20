@@ -58,25 +58,7 @@ export default function AuthGuard({
     );
   }
 
-  // 3. Isolated Onboarding Stack (Welcome Screen) - Full-screen, no header
-  if (showOnboarding) {
-    return (
-      <div className={containerClass}>
-        <ErrorBoundary>
-          <Suspense fallback={fallbackSkeleton}>
-            <Onboarding 
-              onComplete={() => {
-                setShowOnboarding(false);
-                setShowAcademicSetup(false);
-              }} 
-            />
-          </Suspense>
-        </ErrorBoundary>
-      </div>
-    );
-  }
-
-  // 4. Isolated Auth Stack (Sign In / Sign Up) - Full-screen, no header
+  // 3. Isolated Auth Stack (Sign In / Sign Up) - Full-screen, MUST log in first
   if (!user) {
     return (
       <div className={containerClass}>
@@ -101,6 +83,24 @@ export default function AuthGuard({
                 }
               }} 
               hideClose={true} 
+            />
+          </Suspense>
+        </ErrorBoundary>
+      </div>
+    );
+  }
+
+  // 4. Isolated Onboarding Stack (Welcome Screen) - Shown ONLY after authenticating, for brand new users
+  if (showOnboarding) {
+    return (
+      <div className={containerClass}>
+        <ErrorBoundary>
+          <Suspense fallback={fallbackSkeleton}>
+            <Onboarding 
+              onComplete={() => {
+                setShowOnboarding(false);
+                setShowAcademicSetup(true);
+              }} 
             />
           </Suspense>
         </ErrorBoundary>

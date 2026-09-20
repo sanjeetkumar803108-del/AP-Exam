@@ -1288,6 +1288,9 @@ export default function Profile({
     // Sync any unsynced focus time to Firestore before logging out
     await syncUsageToFirestore();
     setIsVip(false);
+    safeRemoveItem('apexam_active_user_session');
+    safeRemoveItem('last_logged_in_user');
+    safeRemoveItem('last_logged_in_user_email');
     safeClearAll();
     
     // Clear Native Capacitor Google Auth session so that Account Chooser is shown on next login
@@ -1480,6 +1483,9 @@ export default function Profile({
       }
 
       // 5. Clean native authentication & sign out
+      safeRemoveItem('apexam_active_user_session');
+      safeRemoveItem('last_logged_in_user');
+      safeRemoveItem('last_logged_in_user_email');
       if (Capacitor.isNativePlatform()) {
         try {
           await FirebaseAuthentication.signOut();
