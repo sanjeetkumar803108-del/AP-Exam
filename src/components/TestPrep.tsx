@@ -3828,8 +3828,11 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
               <button
                 onClick={async () => {
                   triggerVibration(15);
+                  const uriToShare = previewPdfUri;
+                  const nameToShare = previewPdfName;
+                  setPreviewPdfUri(null);
                   try {
-                    await sharePDFMobile(previewPdfUri, previewPdfName);
+                    await sharePDFMobile(uriToShare, nameToShare);
                   } catch (e: any) {
                     console.error("PDF share error:", e);
                     showToast("Share failed: " + (e.message || e), "error");

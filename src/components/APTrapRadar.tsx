@@ -337,6 +337,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
   const [previewPdfUri, setPreviewPdfUri] = useState<string | null>(null);
   const [previewPdfName, setPreviewPdfName] = useState<string>('AP_Trap_Radar_Practice.pdf');
   const [isPdfDownloaded, setIsPdfDownloaded] = useState<boolean>(false);
+  const [isSharingPdf, setIsSharingPdf] = useState<boolean>(false);
   const [explainingMistakeId, setExplainingMistakeId] = useState<string | number | null>(null);
   const [inlineAiDoctorFixes, setInlineAiDoctorFixes] = useState<Record<string | number, AIMistakeFix>>({});
   const [collapsedInlineFixes, setCollapsedInlineFixes] = useState<Record<string | number, boolean>>({});
@@ -959,7 +960,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
   };
 
   // PDF Export for Trap Challenge Sets
-  const handleExportPDF = async (customQuestions?: TrapQuestion[]) => {
+  const handleExportPDF = async (customQuestions?: TrapQuestion[], options?: { skipPreview?: boolean }) => {
     const listToExport = customQuestions || questions;
     if (!listToExport || listToExport.length === 0) {
       showToast('No questions available to export.', 'warning');
@@ -968,7 +969,9 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
     try {
       triggerVibration(15);
-      showToast('Generating College Board Practice PDF...', 'info');
+      if (!options?.skipPreview) {
+        showToast('Generating College Board Practice PDF...', 'info');
+      }
 
       const effFormat = listToExport[0]?.format || questionFormat;
       const res = await generateTrapRadarPDF({
@@ -980,11 +983,14 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
       if (!res) return;
 
-      setIsPdfDownloaded(false);
-      setPreviewPdfUri(res.blobUrl);
-      setPreviewPdfName(res.filename);
+      // Only open in-app preview reader if NOT skipping preview (e.g. direct native share)
+      if (!options?.skipPreview) {
+        setIsPdfDownloaded(false);
+        setPreviewPdfUri(res.blobUrl);
+        setPreviewPdfName(res.filename);
+        showToast('PDF ready for viewing and sharing!', 'success');
+      }
 
-      showToast('PDF ready for viewing and sharing!', 'success');
       return { blob: res.blob, filename: res.filename };
     } catch (err: any) {
       console.error('Failed to generate Trap Radar PDF:', err);
@@ -993,15 +999,20 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
   };
 
   const handleSharePDF = async (customQuestions?: TrapQuestion[]) => {
+    if (isSharingPdf) return;
+    setIsSharingPdf(true);
     triggerVibration(15);
+    showToast('Preparing PDF to share...', 'info', 2000);
     try {
-      const res = await handleExportPDF(customQuestions);
+      const res = await handleExportPDF(customQuestions, { skipPreview: true });
       if (res && res.blob && res.filename) {
         await sharePDFMobile(res.blob, res.filename);
       }
     } catch (e: any) {
       console.error('Share Trap Radar PDF error:', e);
       showToast('Share failed: ' + (e.message || e), 'error');
+    } finally {
+      setIsSharingPdf(false);
     }
   };
 
@@ -1631,12 +1642,17 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                       <ChevronRight className="w-4 h-4" />
                     </button>
                     <button
+                      disabled={isSharingPdf}
                       onClick={() => handleSharePDF()}
-                      className="px-2.5 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-bold flex items-center gap-1.5 hover:bg-zinc-800 cursor-pointer shadow-xs ml-1"
+                      className="px-2.5 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-bold flex items-center gap-1.5 hover:bg-zinc-800 cursor-pointer shadow-xs ml-1 disabled:opacity-50"
                       title="Share Practice & Distractor Autopsy as PDF"
                     >
-                      <Share2 className="w-3.5 h-3.5 text-amber-400" />
-                      <span className="hidden sm:inline">Share PDF</span>
+                      {isSharingPdf ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                      ) : (
+                        <Share2 className="w-3.5 h-3.5 text-amber-400" />
+                      )}
+                      <span className="hidden sm:inline">{isSharingPdf ? 'Sharing...' : 'Share PDF'}</span>
                     </button>
                   </div>
                 </div>
@@ -3588,8 +3604,12 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
               <button
                 onClick={async () => {
+                  triggerVibration(15);
+                  const uriToShare = previewPdfUri;
+                  const nameToShare = previewPdfName;
+                  setPreviewPdfUri(null);
                   try {
-                    await sharePDFMobile(previewPdfUri, previewPdfName);
+                    await sharePDFMobile(uriToShare, nameToShare);
                   } catch (e) {
                     console.error('PDF share error:', e);
                     showToast('Share failed', 'error');

@@ -337,9 +337,14 @@ export async function sharePDFMobile(pdfData: Blob | ArrayBuffer | string, filen
       triggerVibration(20);
       return true;
     } catch (e: any) {
-      console.error('[MobileSaver] Error in native sharing, falling back to open:', e);
-      // Fallback: try opening/saving it if share fails
-      return await savePDFMobile(pdfData, filename);
+      const errStr = (e?.message || '').toLowerCase();
+      // If user dismissed or cancelled the share dialog, return cleanly without unwanted fallbacks
+      if (errStr.includes('cancel') || errStr.includes('dismiss') || errStr.includes('abort')) {
+        console.log('[MobileSaver] User dismissed native share sheet');
+        return false;
+      }
+      console.error('[MobileSaver] Error in native sharing:', e);
+      return false;
     }
   }
 
@@ -389,9 +394,9 @@ export async function sharePDFMobile(pdfData: Blob | ArrayBuffer | string, filen
   } catch (err: any) {
     if (err && (err.name === 'AbortError' || err.message?.includes('canceled') || err.message?.includes('cancelled'))) {
       console.log('[MobileSaver] Web sharing was cancelled by the user.');
-    } else {
-      console.error('[MobileSaver] Web sharing failed, falling back to save:', err);
+      return false;
     }
+    console.error('[MobileSaver] Web sharing failed, falling back to save:', err);
     return await savePDFMobile(pdfData, filename);
   }
 }
