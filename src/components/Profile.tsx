@@ -1935,14 +1935,8 @@ export default function Profile({
 
                 {/* Passive Usage Line Chart */}
                 <div className="w-full h-52 -mt-1 select-none relative">
-                  {/* Floating Top-Right Corner Indicator */}
-                  <div className="absolute top-1 right-2 z-10 pointer-events-none flex items-center gap-1.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs border border-amber-200/90 dark:border-amber-800/70 px-2.5 py-1 rounded-xl text-[10px] font-black text-amber-700 dark:text-amber-300 shadow-2xs">
-                    <Trophy className="w-3.5 h-3.5 text-amber-500 fill-amber-400 shrink-0" />
-                    <span>Highest Study Time: <strong className="text-zinc-900 dark:text-white font-mono text-[11px]">{highestMins}m</strong> {highestDay ? <span className="text-amber-600 dark:text-amber-400 font-bold">({highestDay})</span> : ''}</span>
-                  </div>
-
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData} margin={{ top: 24, right: 10, left: -30, bottom: 0 }}>
+                    <LineChart data={chartData} margin={{ top: 10, right: 10, left: -30, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" />
                       <XAxis 
                         dataKey="day" 
