@@ -704,8 +704,14 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     const images = frqAttachedImages[qKey] || [];
     const hasStudentWork = draftText.length > 0 || images.length > 0;
 
-    // Subjective (FRQ) Evaluation Path when student provided work
-    if (activeQuestion.format === 'subjective' && hasStudentWork) {
+    // Subjective (FRQ) Evaluation Path: Strictly require student answer before AI evaluation
+    if (activeQuestion.format === 'subjective') {
+      if (!hasStudentWork) {
+        triggerVibration(50);
+        showToast('Please type your answer or attach a photo of your work before checking with AI!', 'warning');
+        return;
+      }
+
       setFrqEvaluating(true);
       setIsScanningAnimation(true);
       triggerVibration(30);
@@ -761,6 +767,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       return;
     }
 
+    // Objective (MCQ) Evaluation Path
     triggerVibration(30);
     setIsScanningAnimation(true);
 
@@ -768,11 +775,6 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     setTimeout(() => {
       setIsScanningAnimation(false);
       setIsRadarRevealed(true);
-
-      if (activeQuestion.format === 'subjective') {
-        triggerVibration([20, 40, 20]);
-        return;
-      }
 
       if (selectedOption) {
         const isCorrect = selectedOption.trim().startsWith(activeQuestion.correctAnswer?.charAt(0) || '') || 
@@ -1653,6 +1655,14 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                   animate={{ opacity: 1, height: 'auto' }}
                                   className="pt-3 border-t border-zinc-200 space-y-3 text-xs"
                                 >
+                                  {/* Informative Banner when student viewed solution without submitting answer */}
+                                  {!frqAiFeedback[String(activeQuestion.id || currentIndex)] && !((userFrqDraft[String(activeQuestion.id || currentIndex)] || '').trim() || (frqAttachedImages[String(activeQuestion.id || currentIndex)] || []).length > 0) && (
+                                    <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs font-medium flex items-center gap-2">
+                                      <Info className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                                      <span>Official Reference Rubric & Common Pitfalls (No student answer was submitted for AI evaluation).</span>
+                                    </div>
+                                  )}
+
                                   {/* Scoring Criteria */}
                                   <div className="p-3.5 rounded-2xl bg-emerald-50/90 border border-emerald-200/90 text-emerald-950 shadow-2xs space-y-1.5">
                                     <div className="font-bold text-emerald-900 mb-1 flex items-center justify-between">
@@ -1880,27 +1890,52 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                       {/* Actions / Disarm Radar Trigger for FRQ */}
                       <div className="pt-2">
                         {!isRadarRevealed ? (
-                          <button
-                            onClick={handleActivateRadar}
-                            disabled={isScanningAnimation || frqEvaluating}
-                            className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-amber-500 hover:opacity-95 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 active:scale-98 transition-all cursor-pointer disabled:opacity-75"
-                          >
-                            {frqEvaluating ? (
-                              <>
-                                <Loader2 className="w-4 h-4 animate-spin text-white" />
-                                <span>AI Chief Reader Grading Your Answer...</span>
-                              </>
-                            ) : (
-                              <>
-                                <Radar className="w-4 h-4" />
-                                <span>
-                                  {((userFrqDraft[String(activeQuestion.id || currentIndex)] || '').trim() || (frqAttachedImages[String(activeQuestion.id || currentIndex)] || []).length > 0)
-                                    ? 'Check My Answer with AI & Reveal Traps'
-                                    : 'Scan Chief Reader Rubric & Expose FRQ Traps'}
+                          <div className="space-y-2.5">
+                            <button
+                              onClick={handleActivateRadar}
+                              disabled={isScanningAnimation || frqEvaluating}
+                              className={`w-full py-4 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md active:scale-98 transition-all cursor-pointer disabled:opacity-75 ${
+                                ((userFrqDraft[String(activeQuestion.id || currentIndex)] || '').trim() || (frqAttachedImages[String(activeQuestion.id || currentIndex)] || []).length > 0)
+                                  ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-amber-500 hover:opacity-95 text-white shadow-emerald-500/20'
+                                  : 'bg-zinc-800 hover:bg-zinc-750 text-zinc-300 border border-zinc-700'
+                              }`}
+                            >
+                              {frqEvaluating ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                                  <span>AI Chief Reader Grading Your Answer...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Radar className="w-4 h-4 text-amber-400" />
+                                  <span>
+                                    {((userFrqDraft[String(activeQuestion.id || currentIndex)] || '').trim() || (frqAttachedImages[String(activeQuestion.id || currentIndex)] || []).length > 0)
+                                      ? 'Check My Answer with AI & Reveal Traps'
+                                      : 'Type or Attach Your Answer to Check with AI'}
+                                  </span>
+                                </>
+                              )}
+                            </button>
+
+                            {!((userFrqDraft[String(activeQuestion.id || currentIndex)] || '').trim() || (frqAttachedImages[String(activeQuestion.id || currentIndex)] || []).length > 0) && (
+                              <div className="flex flex-col items-center gap-1.5 pt-1 text-center">
+                                <span className="text-[11px] text-zinc-500 font-medium">
+                                  ✍️ Please type your solution or attach a photo above so AI can grade your work.
                                 </span>
-                              </>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    triggerVibration(15);
+                                    setIsRadarRevealed(true);
+                                    showToast('Viewing Official Reference Solution & Rubric (No answer submitted).', 'info');
+                                  }}
+                                  className="text-xs font-semibold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 underline underline-offset-4 cursor-pointer py-1 transition-colors"
+                                >
+                                  Skip answering & view official reference solution
+                                </button>
+                              </div>
                             )}
-                          </button>
+                          </div>
                         ) : (
                           <div className="w-full space-y-4">
                             {/* AI Chief Reader Evaluation & Rubric Verdict (When student submitted response) */}
