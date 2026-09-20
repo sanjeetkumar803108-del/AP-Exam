@@ -1363,13 +1363,13 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                               </span>
                             </div>
 
-                            <div className="text-[11px] font-bold text-zinc-600 mb-2">
+                            <div className="text-[11px] font-bold text-zinc-600 mb-2 min-w-0 max-w-full overflow-x-auto">
                               <span className="text-zinc-400 uppercase tracking-wide text-[9px] block">Rubric Criteria:</span>
                               <GlobalMarkdown content={step.criteria} />
                             </div>
 
                             {step.workEvaluated && (
-                              <div className="text-[11px] text-zinc-700 bg-white/80 p-2.5 rounded-xl border border-zinc-200/60 leading-relaxed mb-2">
+                              <div className="text-[11px] text-zinc-700 bg-white/80 p-2.5 rounded-xl border border-zinc-200/60 leading-relaxed mb-2 min-w-0 max-w-full overflow-x-auto">
                                 <span className="font-bold text-zinc-500 text-[9px] block uppercase mb-0.5">
                                   {result.submissionMode === 'question_prompt' ? 'Official Model Solution:' : 'Student Work Identified:'}
                                 </span>
@@ -1377,7 +1377,7 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                               </div>
                             )}
 
-                            <div className="text-[11px] font-medium text-zinc-800">
+                            <div className="text-[11px] font-medium text-zinc-800 min-w-0 max-w-full overflow-x-auto">
                               <span className="font-bold text-emerald-700 text-[9px] block uppercase mb-0.5">
                                 {result.submissionMode === 'question_prompt' ? 'Chief Reader Exam Advice:' : 'Reader Commentary:'}
                               </span>
@@ -1390,11 +1390,11 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
 
                     {/* CHIEF READER EXAMINER SUMMARY */}
                     {result.chiefReaderSummary && (
-                      <div className="bg-white border border-zinc-200 rounded-3xl p-5 shadow-sm space-y-3">
+                      <div className="bg-white border border-zinc-200 rounded-3xl p-5 shadow-sm space-y-3 overflow-hidden">
                         <h4 className="text-xs font-black text-zinc-900 uppercase tracking-wider">
                           Chief Reader Diagnostic
                         </h4>
-                        <div className="text-xs text-zinc-700 leading-relaxed font-medium">
+                        <div className="text-xs text-zinc-700 leading-relaxed font-medium min-w-0 max-w-full overflow-x-auto">
                           <GlobalMarkdown content={result.chiefReaderSummary} />
                         </div>
 

@@ -1068,7 +1068,7 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
                     <div className="w-5 h-5 rounded-full bg-amber-200/80 text-amber-900 font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
                       {idx + 1}
                     </div>
-                    <div className="text-xs text-zinc-800 font-medium flex-1">
+                    <div className="text-xs text-zinc-800 font-medium flex-1 min-w-0 max-w-full overflow-x-auto">
                       <GlobalMarkdown>{bullet}</GlobalMarkdown>
                     </div>
                   </div>
@@ -1122,18 +1122,18 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
                 {selectedNodeForModal.node.workedExampleData ? (
                   <WorkedExampleCard data={selectedNodeForModal.node.workedExampleData} />
                 ) : (
-                  <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 leading-relaxed text-zinc-800 text-xs sm:text-sm overflow-x-auto">
+                  <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 leading-relaxed text-zinc-800 text-xs sm:text-sm overflow-x-auto overflow-hidden min-w-0 max-w-full">
                     <GlobalMarkdown>{selectedNodeForModal.node.fullContent || selectedNodeForModal.node.detail}</GlobalMarkdown>
                   </div>
                 )}
 
                 {/* Formula if present */}
                 {selectedNodeForModal.node.formulaLatex && (
-                  <div className="p-3.5 rounded-2xl bg-purple-50 border border-purple-200">
+                  <div className="p-3.5 rounded-2xl bg-purple-50 border border-purple-200 overflow-hidden">
                     <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 block mb-1">
                       Key Formula / Theorem:
                     </span>
-                    <div className="text-sm text-purple-950 font-bold overflow-x-auto">
+                    <div className="text-sm text-purple-950 font-bold overflow-x-auto min-w-0 max-w-full">
                       <GlobalMarkdown>
                         {selectedNodeForModal.node.formulaLatex.trim().startsWith('$')
                           ? selectedNodeForModal.node.formulaLatex.trim()
@@ -1145,12 +1145,12 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
 
                 {/* Trap alert if present */}
                 {selectedNodeForModal.node.trapAlert && selectedNodeForModal.node.badge !== 'trap' && !selectedNodeForModal.node.workedExampleData && (
-                  <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200">
+                  <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 overflow-hidden">
                     <span className="text-[10px] font-black uppercase tracking-wider text-rose-700 block mb-1 flex items-center gap-1">
                       <AlertTriangle className="w-3.5 h-3.5" />
                       College Board Trap Alert:
                     </span>
-                    <div className="text-xs text-rose-900 font-medium">
+                    <div className="text-xs text-rose-900 font-medium min-w-0 max-w-full overflow-x-auto">
                       <GlobalMarkdown>{selectedNodeForModal.node.trapAlert}</GlobalMarkdown>
                     </div>
                   </div>

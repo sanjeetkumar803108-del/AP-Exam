@@ -1488,7 +1488,7 @@ Please structure your response into these 4 clear sections:
                                 exit={{ opacity: 0, y: -10 }}
                                 className="space-y-3"
                               >
-                                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-indigo-50/90 via-purple-50/40 to-white border-2 border-indigo-400 shadow-md space-y-3 light-surface relative">
+                                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-indigo-50/90 via-purple-50/40 to-white border-2 border-indigo-400 shadow-md space-y-3 light-surface relative overflow-hidden">
                                   {isAILoading ? (
                                     /* Clean, GPU-friendly AI Thinking indicator */
                                     <div className="py-6 px-3 flex flex-col items-center justify-center text-center relative">
@@ -1531,7 +1531,7 @@ Please structure your response into these 4 clear sections:
                                         </button>
                                       </div>
 
-                                      <div className="text-xs sm:text-sm text-zinc-950 font-medium leading-relaxed space-y-3 pt-1">
+                                      <div className="text-xs sm:text-sm text-zinc-950 font-medium leading-relaxed space-y-3 pt-1 min-w-0 max-w-full overflow-x-auto">
                                         <GlobalMarkdown content={aiExplanationText || ''} className="text-zinc-950 font-medium" />
                                       </div>
 
@@ -1567,12 +1567,12 @@ Please structure your response into these 4 clear sections:
                                 </div>
 
                                 {/* 4. COLLEGE BOARD STANDARD STEP-BY-STEP EXPLANATION (Only shown inside showAIExplanation) */}
-                                <div className="bg-zinc-50 border-2 border-zinc-200/90 rounded-2xl p-4 space-y-2 text-zinc-950">
+                                <div className="bg-zinc-50 border-2 border-zinc-200/90 rounded-2xl p-4 space-y-2 text-zinc-950 overflow-hidden">
                                   <div className="flex items-center gap-1.5 font-black text-zinc-950 uppercase tracking-wider text-xs">
                                     <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                                     <span>College Board Step-by-Step Explanation</span>
                                   </div>
-                                  <div className="text-xs sm:text-sm font-medium text-zinc-950 leading-relaxed space-y-2">
+                                  <div className="text-xs sm:text-sm font-medium text-zinc-950 leading-relaxed space-y-2 min-w-0 max-w-full overflow-x-auto">
                                     <GlobalMarkdown content={currentQ.explanation} className="text-zinc-950 font-medium" />
 
                                     {currentQ.distractorTip && (

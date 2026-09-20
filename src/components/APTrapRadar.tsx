@@ -1723,7 +1723,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                           {activeQuestion.parts.map((part, pIdx) => (
                             <div
                               key={pIdx}
-                              className="p-4 rounded-2xl border border-zinc-200 bg-zinc-50/70 space-y-2.5"
+                              className="p-4 rounded-2xl border border-zinc-200 bg-zinc-50/70 space-y-2.5 overflow-hidden"
                             >
                               <div className="flex items-center justify-between">
                                 <span className="text-xs font-black text-emerald-900 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-full">
@@ -1731,7 +1731,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                 </span>
                               </div>
 
-                              <div className="text-xs sm:text-sm font-semibold text-zinc-900 leading-relaxed">
+                              <div className="text-xs sm:text-sm font-semibold text-zinc-900 leading-relaxed min-w-0 max-w-full overflow-x-auto">
                                 <GlobalMarkdown>{part.task}</GlobalMarkdown>
                               </div>
 
@@ -2475,7 +2475,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                               <motion.div
                                 initial={{ opacity: 0, y: 8 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-red-50 to-amber-50 border border-red-200 text-xs shadow-sm"
+                                className="p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-red-50 to-amber-50 border border-red-200 text-xs shadow-sm overflow-hidden"
                               >
                                 {(() => {
                                   const currentAiFix = inlineAiDoctorFixes[activeQuestion.id] || activeQuestion.aiFix;

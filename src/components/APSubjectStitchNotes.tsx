@@ -521,7 +521,7 @@ export default function APSubjectStitchNotes({
                       <span className="text-[10px] font-bold uppercase tracking-wider text-[#737785] block font-mono">
                         Hypothesis / Required Conditions
                       </span>
-                      <div className="text-xs text-[#1b1c1d] leading-relaxed font-medium">
+                      <div className="text-xs text-[#1b1c1d] leading-relaxed font-medium min-w-0 max-w-full overflow-x-auto">
                         <GlobalMarkdown>{thm.conditions}</GlobalMarkdown>
                       </div>
                     </div>
@@ -530,7 +530,7 @@ export default function APSubjectStitchNotes({
                       <span className="text-[10px] font-bold uppercase tracking-wider block font-mono" style={{ color: theme.primary }}>
                         Guaranteed Conclusion
                       </span>
-                      <div className="text-xs font-semibold leading-relaxed" style={{ color: theme.primaryText }}>
+                      <div className="text-xs font-semibold leading-relaxed min-w-0 max-w-full overflow-x-auto" style={{ color: theme.primaryText }}>
                         <GlobalMarkdown>{thm.conclusion}</GlobalMarkdown>
                       </div>
                     </div>
@@ -543,7 +543,7 @@ export default function APSubjectStitchNotes({
                       <span className="text-[10px] font-bold uppercase tracking-wider block mb-0.5" style={{ color: theme.accentAmberText }}>
                         College Board Scoring Tip
                       </span>
-                      <div className="text-xs text-[#1b1c1d] leading-relaxed font-sans">
+                      <div className="text-xs text-[#1b1c1d] leading-relaxed font-sans min-w-0 max-w-full overflow-x-auto">
                         <GlobalMarkdown>{thm.apTip}</GlobalMarkdown>
                       </div>
                     </div>
@@ -657,7 +657,7 @@ export default function APSubjectStitchNotes({
                       <div className="p-3 rounded-xl border font-mono text-xs overflow-x-auto" style={{ backgroundColor: `${theme.primaryBg}30`, borderColor: `${theme.primary}30`, color: theme.primary }}>
                         <GlobalMarkdown>{`$$\n${(f.latex || '').trim().replace(/^(\$\$|\$)/, '').replace(/(\$\$|\$)$/, '').trim()}\n$$`}</GlobalMarkdown>
                       </div>
-                      <div className="text-xs text-[#434653] leading-relaxed font-sans">
+                      <div className="text-xs text-[#434653] leading-relaxed font-sans min-w-0 max-w-full overflow-x-auto">
                         <GlobalMarkdown>{f.explanation}</GlobalMarkdown>
                       </div>
                     </div>
@@ -677,7 +677,7 @@ export default function APSubjectStitchNotes({
                     Topic {si + 1}
                   </span>
                 </div>
-                <div className="text-xs text-[#434653] leading-relaxed font-sans prose prose-sm max-w-none">
+                <div className="text-xs text-[#434653] leading-relaxed font-sans prose prose-sm max-w-none min-w-0 max-w-full overflow-x-auto">
                   <GlobalMarkdown>{sec.content}</GlobalMarkdown>
                 </div>
               </div>
@@ -832,7 +832,7 @@ export default function APSubjectStitchNotes({
                                 ) : (
                                   <div className="w-2.5 h-2.5 rounded-full shrink-0 mt-1.5 ring-4 ring-blue-50" style={{ backgroundColor: theme.primary }} />
                                 )}
-                                <div className="text-xs text-[#1b1c1d] leading-relaxed font-sans flex-1 min-w-0 w-full overflow-hidden">
+                                <div className="text-xs text-[#1b1c1d] leading-relaxed font-sans flex-1 min-w-0 w-full overflow-hidden overflow-x-auto">
                                   <GlobalMarkdown>{displayContent}</GlobalMarkdown>
                                 </div>
                               </div>
@@ -849,7 +849,7 @@ export default function APSubjectStitchNotes({
                       <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: theme.primary }} />
                       <span className="text-xs font-bold whitespace-nowrap" style={{ color: theme.primary }}>Final College Board Answer:</span>
                     </div>
-                    <div className="font-mono font-bold text-xs" style={{ color: theme.primaryText }}>
+                    <div className="font-mono font-bold text-xs min-w-0 max-w-full overflow-x-auto" style={{ color: theme.primaryText }}>
                       <GlobalMarkdown>{ex.finalAnswer}</GlobalMarkdown>
                     </div>
                   </div>

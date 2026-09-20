@@ -2399,7 +2399,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                         <motion.div
                           initial={{ opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="mt-3 p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex flex-col gap-2"
+                          className="mt-3 p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex flex-col gap-2 overflow-hidden shadow-2xs"
                         >
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-black uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
@@ -2522,7 +2522,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                                   </button>
                                 </div>
                               ) : (
-                                <div className="text-zinc-800 space-y-2">
+                                <div className="text-zinc-800 space-y-2 min-w-0 max-w-full overflow-x-auto">
                                   <GlobalMarkdown>{inlineAi.text || ''}</GlobalMarkdown>
                                 </div>
                               )}
@@ -2994,7 +2994,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                                 </span>
                               )}
                             </div>
-                            <div className="p-3.5 text-xs text-zinc-800 leading-relaxed">
+                            <div className="p-3.5 text-xs text-zinc-800 leading-relaxed min-w-0 max-w-full overflow-x-auto">
                               <GlobalMarkdown>{evaluation.text}</GlobalMarkdown>
                             </div>
 
@@ -3116,7 +3116,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                                     </button>
                                   </div>
                                 ) : (
-                                  <div className="text-zinc-800 space-y-2">
+                                  <div className="text-zinc-800 space-y-2 min-w-0 max-w-full overflow-x-auto">
                                     <GlobalMarkdown>{inlineAi.text || ''}</GlobalMarkdown>
                                   </div>
                                 )}
