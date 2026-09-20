@@ -139,10 +139,12 @@ export function getApExamDurationSeconds(subjectId: string, qType: 'objective' |
   return Math.max(perQuestion * Math.max(count, 1), 60);
 }
 
-export function getQuestionRealPoints(q?: APSubjectiveQuestion | null): number {
+export function getQuestionRealPoints(q?: APSubjectiveQuestion | null, subjectId?: string): number {
   if (!q) return 6;
 
-  // 1. Calculate sum from scoringRubric point specifications (e.g. "Part (a) [1 pt]", "Part (b) [2 points]")
+  const sId = (subjectId || '').toLowerCase();
+
+  // 1. Calculate sum from scoringRubric point specifications (e.g. "Part (a) [1 pt]", "Part (b) [2 points]", "+1 pt for...")
   if (Array.isArray(q.scoringRubric) && q.scoringRubric.length > 0) {
     let sum = 0;
     let foundExplicit = false;
@@ -154,7 +156,7 @@ export function getQuestionRealPoints(q?: APSubjectiveQuestion | null): number {
         sum += parseInt(bracketMatch[1], 10);
         foundExplicit = true;
       } else {
-        const anyMatch = str.match(/\+?\b(\d+)\s*(?:points|point|pts|pt)\b/i);
+        const anyMatch = str.match(/(?:earn|worth|\+)?\s*\b(\d+)\s*(?:points|point|pts|pt)\b/i);
         if (anyMatch) {
           sum += parseInt(anyMatch[1], 10);
           foundExplicit = true;
@@ -173,20 +175,66 @@ export function getQuestionRealPoints(q?: APSubjectiveQuestion | null): number {
     }
   }
 
-  // 3. Check explicit totalPoints, guarding against generic uncalibrated 9 defaults on short questions
+  // 3. Subject-specific authentic College Board standards
   const partCount = typeof q.prompt === 'string' ? (q.prompt.match(/\([a-d]\)/gi) || []).length : 0;
   const raw = Number(q.totalPoints);
+
+  if (sId.includes('stat')) {
+    // AP Statistics FRQs are strictly 4 points
+    return 4;
+  }
+
+  if (sId.includes('history') || sId.includes('apush') || sId.includes('euro') || sId.includes('world')) {
+    if (partCount <= 3 && !q.prompt?.toLowerCase().includes('document')) return 3; // SAQ
+    if (q.prompt?.toLowerCase().includes('document') || raw === 7) return 7; // DBQ
+    return 6; // LEQ
+  }
+
+  if (sId.includes('gov')) {
+    if (partCount <= 3) return 3;
+    if (partCount === 4) return 4;
+    return 6;
+  }
+
+  if (sId.includes('econ')) {
+    if (partCount <= 3) return 5; // Short FRQ
+    return 9; // Long FRQ
+  }
+
+  if (sId.includes('chem')) {
+    if (partCount <= 3) return 4; // Short FRQ
+    return 10; // Long FRQ
+  }
+
+  if (sId.includes('bio')) {
+    if (partCount <= 3) return 4; // Short FRQ
+    return 8; // Long FRQ
+  }
+
+  if (sId.includes('physic')) {
+    if (partCount <= 3) return 7; // Short FRQ
+    return 12; // Long FRQ
+  }
+
+  if (sId.includes('lit') || sId.includes('lang')) {
+    return 6; // AP English 6-point analytic rubric
+  }
+
+  // 4. Honor explicit totalPoints if valid and calibrated
   if (!isNaN(raw) && raw >= 1 && raw <= 15) {
     if (partCount === 1 && raw > 4) return 2;
     if (partCount === 2 && raw > 6) return 4;
+    if (partCount === 3 && raw > 7) return 6;
     return raw;
   }
 
-  // 4. Default calibrated to subparts count (College Board standards)
-  if (partCount >= 4) return 9;
-  if (partCount === 3) return 6;
-  if (partCount === 2) return 4;
+  // 5. Default calibrated to subparts count (AP Calculus & other STEM)
   if (partCount === 1) return 2;
+  if (partCount === 2) return 4;
+  if (partCount === 3) return 6;
+  if (partCount >= 4) {
+    return raw && raw >= 6 && raw <= 9 ? raw : 8;
+  }
 
   return 6;
 }
@@ -536,7 +584,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     let evaluatedCount = 0;
 
     subjectiveQuestions.forEach((q, idx) => {
-      const qMax = getQuestionRealPoints(q);
+      const qMax = getQuestionRealPoints(q, selectedSubject.id);
       if (subjectiveScores[idx]) {
         earnedTotal += subjectiveScores[idx].earned;
         maxTotal += subjectiveScores[idx].total || qMax;
@@ -560,18 +608,18 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     } else if (percentage >= 60) {
       score = 4;
       label = 'Well Qualified (College Credit Ready)';
-      color = 'text-blue-700';
-      bg = 'bg-blue-50 border-blue-300';
+      color = 'text-teal-700';
+      bg = 'bg-teal-50 border-teal-300';
     } else if (percentage >= 45) {
       score = 3;
-      label = 'Qualified (College Board Passing Standard)';
-      color = 'text-amber-700';
-      bg = 'bg-amber-50 border-amber-300';
+      label = 'Qualified (Passing Standard)';
+      color = 'text-indigo-700';
+      bg = 'bg-indigo-50 border-indigo-300';
     } else if (percentage >= 30) {
       score = 2;
       label = 'Possibly Qualified (Targeted Practice Needed)';
-      color = 'text-orange-700';
-      bg = 'bg-orange-50 border-orange-300';
+      color = 'text-amber-700';
+      bg = 'bg-amber-50 border-amber-300';
     }
 
     return {
@@ -584,7 +632,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
       color,
       bg
     };
-  }, [subjectiveQuestions, subjectiveScores]);
+  }, [subjectiveQuestions, subjectiveScores, selectedSubject.id]);
 
 
 
@@ -1275,7 +1323,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
       [index]: { text: '', loading: true }
     }));
 
-    const realPoints = getQuestionRealPoints(q);
+    const realPoints = getQuestionRealPoints(q, selectedSubject.id);
 
     try {
       const response = await fetch(getApiUrl('/api/evaluate-answer'), {
@@ -1643,16 +1691,11 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-black uppercase tracking-wider bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-md">
-                AP® EXAM
-              </span>
-              <h1 className="font-black text-zinc-900 text-sm tracking-tight">
-                {step === 'select-subject' && (isGrade9Student ? 'Grade 9 AP Subjects' : 'Top AP Subjects')}
-                {step === 'configure' && 'Exam Configuration'}
-                {step === 'practice' && `${selectedSubject.shortCode} Practice`}
-              </h1>
-            </div>
+            <h1 className="font-black text-zinc-900 text-sm tracking-tight">
+              {step === 'select-subject' && (isGrade9Student ? 'Grade 9 AP Subjects' : 'Top AP Subjects')}
+              {step === 'configure' && 'Exam Configuration'}
+              {step === 'practice' && `${selectedSubject.shortCode} Practice`}
+            </h1>
           </div>
         </div>
 
@@ -2632,7 +2675,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                 <div className="flex items-center justify-between text-xs font-bold text-zinc-500">
                   <span>{isComputerSubject(selectedSubject) ? 'Create Performance Task Prompt' : 'Free Response Question'} {currentSubIndex + 1} of {subjectiveQuestions.length}</span>
                   <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-black text-[10px]">
-                    {getQuestionRealPoints(subjectiveQuestions[currentSubIndex])} Points Max
+                    {getQuestionRealPoints(subjectiveQuestions[currentSubIndex], selectedSubject.id)} Points Max
                   </span>
                 </div>
 

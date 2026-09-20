@@ -89,14 +89,9 @@ export default function APSamplePapers({ onBack, isVip }: APSamplePapersProps) {
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-black uppercase tracking-wider bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-md">
-                AP® EXAM
-              </span>
-              <h1 className="font-black text-zinc-900 text-sm tracking-tight">
-                AP Sample Papers Set
-              </h1>
-            </div>
+            <h1 className="font-black text-zinc-900 text-sm tracking-tight">
+              AP Sample Papers Set
+            </h1>
           </div>
         </div>
       </header>

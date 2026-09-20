@@ -12509,13 +12509,21 @@ CRITICAL CODE, MATH & LATEX FORMATTING:
     NEVER write raw unescaped pseudo-code like 'f(x) = { ... }' or '<=' inside math equations that breaks KaTeX!
   * Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\to, \\\\infty, \\\\begin{cases}, \\\\end{cases}, \\\\begin{array}, \\\\end{array}.
 
-STRICT SCORING RUBRIC & REAL TOTAL POINTS RULES:
-- In official College Board AP Free Response Questions, each subpart has an exact point allocation.
-- For AP Calculus AB & BC, full 4-part FRQs (parts a, b, c, d) are worth 9 points. Shorter analytical prompts are worth 4 to 6 points.
+STRICT SCORING RUBRIC & AUTHENTIC TOTAL POINTS RULES:
+- In official College Board AP Free Response Questions, every question has its own authentic point total calibrated to its subparts and subject standard:
+  * AP Statistics: ALL FRQs are strictly 4 Points Max (College Board E/P/I 4-point scale).
+  * AP Chemistry: Short FRQs are 4 Points Max; Long FRQs are 10 Points Max.
+  * AP Biology: Short FRQs are 4 Points Max; Long FRQs are 8 to 10 Points Max.
+  * AP History (US, World, Euro): SAQs with (a), (b), (c) are strictly 3 Points Max (1 pt each); LEQs are 6 Points Max; DBQs are 7 Points Max.
+  * AP Government: Concept Application is 3 Points Max; Quantitative/SCOTUS is 4 Points Max; Argument Essay is 6 Points Max.
+  * AP Economics (Macro/Micro): Short FRQs are 5 Points Max; Long FRQs are 9 or 10 Points Max.
+  * AP English (Lang/Lit): Essays are strictly 6 Points Max.
+  * AP Physics: Short FRQs are 7 Points Max; Long FRQs are 12 Points Max (Physics C: 15 Points Max).
+  * AP Calculus AB & BC: Provide realistic point diversity! 2-part focused problems (3-4 points), 3-part medium problems (5-6 points), and full-length FRQs (7-9 points). DO NOT blindly set 9 points for every single question!
 - "totalPoints" MUST BE A STRICT INTEGER EQUAL TO THE EXACT MATHEMATICAL SUM OF THE POINTS ALLOCATED IN "scoringRubric"!
-- In "scoringRubric", explicitly specify the points for each sub-part or criterion:
-  e.g. ["Part (a) [2 points]: 1 point for limit setup, 1 point for evaluation", "Part (b) [3 points]: 1 point for derivative, 2 points for justification", "Part (c) [2 points]: 1 point for formula, 1 point for conclusion", "Part (d) [2 points]: 1 point for MVT hypothesis, 1 point for answer"] (Total: 9 points).
-- NEVER output a mismatched totalPoints! If the rubric points sum to 4, totalPoints MUST be 4. If they sum to 9, totalPoints MUST be 9.
+- In "scoringRubric", ALWAYS explicitly state the points for each sub-part in brackets:
+  e.g. ["Part (a) [2 points]: 1 point for limit setup, 1 point for evaluation", "Part (b) [2 points]: 1 point for derivative, 1 point for solving", "Part (c) [2 points]: 1 point for conclusion"] (Total: 6 points).
+- NEVER output a mismatched totalPoints! If the rubric points sum to 4, totalPoints MUST be 4. If they sum to 6, totalPoints MUST be 6.
 
 STRICT JSON OUTPUT:
 Return ONLY a valid JSON object with key "questions" containing an array of objects:
@@ -12637,15 +12645,48 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
               if (sum > 0) return sum;
             }
           }
+          const sLower = String(subject || "").toLowerCase();
+          const partCount = typeof q.prompt === "string" ? (q.prompt.match(/\([a-d]\)/gi) || []).length : 0;
           const raw = Number(q.totalPoints);
+          if (sLower.includes("stat")) return 4;
+          if (sLower.includes("history") || sLower.includes("apush") || sLower.includes("euro") || sLower.includes("world")) {
+            if (partCount <= 3 && !q.prompt?.toLowerCase().includes("document")) return 3;
+            if (q.prompt?.toLowerCase().includes("document") || raw === 7) return 7;
+            return 6;
+          }
+          if (sLower.includes("gov")) {
+            if (partCount <= 3) return 3;
+            if (partCount === 4) return 4;
+            return 6;
+          }
+          if (sLower.includes("econ")) {
+            if (partCount <= 3) return 5;
+            return 9;
+          }
+          if (sLower.includes("chem")) {
+            if (partCount <= 3) return 4;
+            return 10;
+          }
+          if (sLower.includes("bio")) {
+            if (partCount <= 3) return 4;
+            return 8;
+          }
+          if (sLower.includes("physic")) {
+            if (partCount <= 3) return 7;
+            return 12;
+          }
+          if (sLower.includes("lit") || sLower.includes("lang")) return 6;
           if (!isNaN(raw) && raw >= 1 && raw <= 15) {
+            if (partCount === 1 && raw > 4) return 2;
+            if (partCount === 2 && raw > 6) return 4;
+            if (partCount === 3 && raw > 7) return 6;
             return raw;
           }
-          if (typeof q.prompt === "string") {
-            const partCount = (q.prompt.match(/\([a-d]\)/gi) || []).length;
-            if (partCount >= 4) return 9;
-            if (partCount === 3) return 6;
-            if (partCount === 2) return 4;
+          if (partCount === 1) return 2;
+          if (partCount === 2) return 4;
+          if (partCount === 3) return 6;
+          if (partCount >= 4) {
+            return raw && raw >= 6 && raw <= 9 ? raw : 8;
           }
           return 6;
         };
