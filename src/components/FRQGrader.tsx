@@ -728,21 +728,8 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div>
-                <h1 className="text-base font-black text-zinc-950 tracking-tight leading-none flex items-center gap-2">
+                <h1 className="text-base font-black text-zinc-950 tracking-tight leading-none">
                   FRQ Grader
-                  <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${
-                    result 
-                      ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
-                      : isGrading 
-                      ? 'bg-amber-100 text-amber-800 border-amber-200' 
-                      : 'bg-teal-100 text-teal-800 border-teal-200'
-                  }`}>
-                    {result 
-                      ? 'Evaluation & Score' 
-                      : isGrading 
-                      ? 'Grading in Progress' 
-                      : `${uploadedPages.length} ${uploadedPages.length === 1 ? 'Page' : 'Pages'} Staged`}
-                  </span>
                 </h1>
               </div>
             </div>
@@ -753,19 +740,20 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                   triggerVibration(10);
                   setShowHistoryModal(true);
                 }}
-                className="text-xs font-black text-zinc-600 hover:text-zinc-900 bg-zinc-100 hover:bg-zinc-200 px-3 py-1.5 rounded-xl transition-all border border-zinc-200 cursor-pointer flex items-center gap-1.5"
+                className="w-9 h-9 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 flex items-center justify-center transition-all border border-zinc-200/80 cursor-pointer active:scale-95 shadow-2xs"
                 title="Evaluation History"
+                aria-label="Evaluation History"
               >
-                <History className="w-3.5 h-3.5" />
-                <span>History</span>
+                <History className="w-4 h-4" />
               </button>
 
               <button
                 onClick={resetGrader}
-                className="text-xs font-black text-zinc-600 hover:text-zinc-900 bg-zinc-100 hover:bg-zinc-200 px-3 py-1.5 rounded-xl transition-all border border-zinc-200 cursor-pointer flex items-center gap-1.5"
+                className="w-9 h-9 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 flex items-center justify-center transition-all border border-zinc-200/80 cursor-pointer active:scale-95 shadow-2xs"
+                title="Reset"
+                aria-label="Reset"
               >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Reset</span>
+                <RefreshCw className="w-4 h-4" />
               </button>
             </div>
           </header>
