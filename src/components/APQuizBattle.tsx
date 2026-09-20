@@ -1442,7 +1442,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           </div>
 
           <h2 className="text-xl font-extrabold text-white mb-1">
-            {isFriendHostWaiting || isFriendRoomHost ? 'Waiting for Friend...' : 'Finding Real AP Opponent...'}
+            {isFriendHostWaiting || isFriendRoomHost ? 'Waiting for Friend...' : 'Finding Opponent...'}
           </h2>
           <p className="text-xs text-zinc-400 mb-4">
             {isFriendHostWaiting || isFriendRoomHost
