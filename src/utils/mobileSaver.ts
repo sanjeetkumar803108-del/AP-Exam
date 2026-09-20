@@ -329,7 +329,8 @@ export async function sharePDFMobile(pdfData: Blob | ArrayBuffer | string, filen
       // Trigger native share sheet with file uri
       await Share.share({
         title: cleanFilename,
-        text: `Access your saved PDF: ${cleanFilename}`,
+        text: `AP Exam: ${cleanFilename}`,
+        files: [tempFile.uri],
         url: tempFile.uri,
         dialogTitle: 'Share PDF Document',
       });
@@ -373,7 +374,7 @@ export async function sharePDFMobile(pdfData: Blob | ArrayBuffer | string, filen
       await navigator.share({
         files: [file],
         title: cleanFilename,
-        text: `Access your saved PDF: ${cleanFilename}`,
+        text: `AP Exam: ${cleanFilename}`,
       });
       triggerVibration(20);
       return true;
@@ -382,22 +383,23 @@ export async function sharePDFMobile(pdfData: Blob | ArrayBuffer | string, filen
       const objectUrl = URL.createObjectURL(blob);
       await navigator.share({
         title: cleanFilename,
-        text: `Access your saved PDF: ${cleanFilename}`,
+        text: `AP Exam: ${cleanFilename}`,
         url: objectUrl,
       });
       triggerVibration(20);
       return true;
     } else {
-      // If Web Share is not supported, fall back to standard saving
-      return await savePDFMobile(pdfData, filename);
+      // If Web Share is not supported, do not trigger an unintended save/vault toast
+      console.warn('[MobileSaver] Web Share API not supported on this browser.');
+      return false;
     }
   } catch (err: any) {
     if (err && (err.name === 'AbortError' || err.message?.includes('canceled') || err.message?.includes('cancelled'))) {
       console.log('[MobileSaver] Web sharing was cancelled by the user.');
       return false;
     }
-    console.error('[MobileSaver] Web sharing failed, falling back to save:', err);
-    return await savePDFMobile(pdfData, filename);
+    console.error('[MobileSaver] Web sharing failed:', err);
+    return false;
   }
 }
 

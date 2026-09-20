@@ -33,7 +33,8 @@ export function condenseToastMessage(rawMessage: string, type: ToastType = 'info
 
   // Known short mappings
   if (lower.includes('copied') || lower.includes('clipboard')) return 'Copied!';
-  if (lower.includes('saved to') || lower.includes('save to vault') || lower.includes('added to vault')) return 'Saved to Vault';
+  if (lower.includes('save to vault') || lower.includes('saved to vault') || lower.includes('added to vault')) return 'Saved to Vault';
+  if (lower.includes('saved to device') || lower.includes('saved offline') || lower.includes('download')) return 'Saved to Device';
   if (lower.includes('saved') || lower.includes('bookmark')) return 'Saved!';
   if (lower.includes('downloaded') || lower.includes('download complete')) return 'Downloaded!';
   if (lower.includes('download fail') || lower.includes('failed to download')) return 'Download Failed';

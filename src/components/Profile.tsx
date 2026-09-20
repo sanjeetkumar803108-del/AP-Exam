@@ -732,6 +732,7 @@ export default function Profile({
         await Share.share({
           title: 'My Study Streak',
           text: originalText,
+          files: [tempFile.uri],
           url: tempFile.uri,
           dialogTitle: 'Share your Study Streak'
         });
@@ -1171,6 +1172,7 @@ export default function Profile({
           await Share.share({
             title: 'AP Exam Study Focus Tracker',
             text: shareText,
+            files: [tempFile.uri],
             url: tempFile.uri,
             dialogTitle: 'Share Usage Tracker'
           });
