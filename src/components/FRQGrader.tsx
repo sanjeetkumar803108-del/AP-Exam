@@ -774,32 +774,17 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                   {activePage && (
                     <div className="bg-white border-2 border-zinc-200 rounded-3xl p-3.5 shadow-sm space-y-3">
                       <div className="flex items-center justify-between px-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                            Viewing Page {activePageIndex + 1} of {uploadedPages.length}
-                          </span>
-                          <span className="text-xs font-bold text-zinc-500 truncate max-w-[150px]">
-                            {activePage.name}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => setViewingFullImageUrl(activePage.previewUrl)}
-                            className="text-xs font-bold text-zinc-600 hover:text-zinc-900 bg-zinc-100 hover:bg-zinc-200 p-2 rounded-xl transition-colors cursor-pointer border-none flex items-center gap-1"
-                            title="Inspect Full Size"
-                          >
-                            <ZoomIn className="w-3.5 h-3.5" />
-                            <span className="text-[10px]">Inspect</span>
-                          </button>
-                          <button
-                            onClick={(e) => removePage(activePage.id, e)}
-                            className="text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-xl transition-colors cursor-pointer border-none flex items-center gap-1"
-                            title="Delete this page"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            <span className="text-[10px]">Delete</span>
-                          </button>
-                        </div>
+                        <span className="text-xs font-bold text-zinc-600 truncate max-w-[240px]">
+                          {activePage.name}
+                        </span>
+                        <button
+                          onClick={(e) => removePage(activePage.id, e)}
+                          className="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 flex items-center justify-center transition-all border border-red-200/60 cursor-pointer active:scale-95 shadow-2xs"
+                          title="Delete this page"
+                          aria-label="Delete this page"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
 
                       {/* Main Preview Image */}
