@@ -29,16 +29,112 @@
 
 /* KaTeX Math Responsive Overflow Safeguard */
 .katex-display {
-  @apply max-w-full overflow-x-auto overflow-y-hidden py-1;
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 0.25rem 0;
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding: 0.35rem 0 !important;
+  margin: 0.5em 0 !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-x pan-y !important;
+  box-sizing: border-box !important;
 }
 
+.katex-display > .katex {
+  display: block !important;
+  text-align: left !important;
+  max-width: none !important;
+  white-space: nowrap !important;
+  overflow-x: visible !important;
+}
+
+/* Inline KaTeX: if a formula exceeds available container width, it scrolls horizontally inside its line instead of spilling outside parent cards */
 .katex {
-  @apply max-w-full;
-  max-width: 100%;
+  max-width: 100% !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-x pan-y !important;
+  padding: 0.1em 0 !important;
+  box-sizing: border-box !important;
+}
+
+.katex-html {
+  max-width: 100% !important;
+  overflow-x: visible !important;
+}
+
+/* Global Markdown Body Safety & Overflow Control */
+.markdown-body {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  -webkit-overflow-scrolling: touch !important;
+  box-sizing: border-box !important;
+}
+
+.markdown-body p,
+.markdown-body li,
+.markdown-body div,
+.markdown-body span,
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  box-sizing: border-box !important;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: touch !important;
+  box-sizing: border-box !important;
+}
+
+.markdown-body pre,
+.markdown-body code {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  box-sizing: border-box !important;
+}
+
+/* Slim subtle mobile scrollbars so KaTeX math scrolling looks native and clean */
+.katex::-webkit-scrollbar,
+.katex-display::-webkit-scrollbar,
+.markdown-body::-webkit-scrollbar,
+.markdown-body ul::-webkit-scrollbar,
+.markdown-body ol::-webkit-scrollbar {
+  height: 3px !important;
+}
+.katex::-webkit-scrollbar-track,
+.katex-display::-webkit-scrollbar-track,
+.markdown-body::-webkit-scrollbar-track,
+.markdown-body ul::-webkit-scrollbar-track,
+.markdown-body ol::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+.katex::-webkit-scrollbar-thumb,
+.katex-display::-webkit-scrollbar-thumb,
+.markdown-body::-webkit-scrollbar-thumb,
+.markdown-body ul::-webkit-scrollbar-thumb,
+.markdown-body ol::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4) !important;
+  border-radius: 9999px !important;
 }
 
 @layer utilities {

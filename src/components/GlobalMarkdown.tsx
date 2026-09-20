@@ -471,16 +471,16 @@ const defaultComponents = {
     <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-200 mt-2 mb-1 tracking-tight leading-snug break-words" {...props} />
   ),
   p: ({ node, ...props }: any) => (
-    <p className="text-xs sm:text-[13px] text-zinc-950 dark:text-zinc-100 font-medium leading-relaxed my-2.5 break-words" {...props} />
+    <p className="text-xs sm:text-[13px] text-zinc-950 dark:text-zinc-100 font-medium leading-relaxed my-2.5 break-words min-w-0 max-w-full" {...props} />
   ),
   ul: ({ node, ...props }: any) => (
-    <ul className="list-disc pl-4 space-y-2 my-2.5 text-xs sm:text-[13px] text-zinc-950 dark:text-zinc-100 font-medium leading-relaxed" {...props} />
+    <ul className="list-disc pl-4 space-y-2 my-2.5 text-xs sm:text-[13px] text-zinc-950 dark:text-zinc-100 font-medium leading-relaxed min-w-0 max-w-full overflow-x-auto" {...props} />
   ),
   ol: ({ node, ...props }: any) => (
-    <ol className="list-decimal pl-4 space-y-2 my-2.5 text-xs sm:text-[13px] text-zinc-950 dark:text-zinc-100 font-medium leading-relaxed" {...props} />
+    <ol className="list-decimal pl-4 space-y-2 my-2.5 text-xs sm:text-[13px] text-zinc-950 dark:text-zinc-100 font-medium leading-relaxed min-w-0 max-w-full overflow-x-auto" {...props} />
   ),
   li: ({ node, ...props }: any) => (
-    <li className="leading-relaxed text-zinc-950 dark:text-zinc-100 font-medium my-1" {...props} />
+    <li className="leading-relaxed text-zinc-950 dark:text-zinc-100 font-medium my-1 min-w-0 max-w-full break-words" {...props} />
   ),
   sub: ({ node, ...props }: any) => (
     <sub className="text-[0.8em] font-bold align-sub" {...props} />
@@ -493,7 +493,7 @@ const defaultComponents = {
     if (isInline) {
       return (
         <code
-          className="px-1.5 py-0.5 mx-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-mono text-[12px] font-semibold break-words"
+          className="px-1.5 py-0.5 mx-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-mono text-[12px] font-semibold break-words max-w-full"
           {...props}
         >
           {children}
@@ -501,7 +501,7 @@ const defaultComponents = {
       );
     }
     return (
-      <code className={`font-mono text-xs text-zinc-100 ${className || ''}`} {...props}>
+      <code className={`font-mono text-xs text-zinc-100 break-words ${className || ''}`} {...props}>
         {children}
       </code>
     );
@@ -516,10 +516,10 @@ const defaultComponents = {
     </pre>
   ),
   blockquote: ({ node, ...props }: any) => (
-    <blockquote className="border-l-4 border-purple-500 pl-3.5 my-2.5 text-zinc-700 dark:text-zinc-300 italic text-xs sm:text-sm bg-purple-50/40 dark:bg-purple-950/20 py-1.5 rounded-r-xl" {...props} />
+    <blockquote className="border-l-4 border-purple-500 pl-3.5 my-2.5 text-zinc-700 dark:text-zinc-300 italic text-xs sm:text-sm bg-purple-50/40 dark:bg-purple-950/20 py-1.5 rounded-r-xl min-w-0 max-w-full overflow-x-auto" {...props} />
   ),
   table: ({ node, ...props }: any) => (
-    <div className="overflow-x-auto my-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-2xs">
+    <div className="overflow-x-auto my-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-2xs max-w-full">
       <table className="w-full text-left border-collapse text-xs sm:text-sm" {...props} />
     </div>
   ),
@@ -536,7 +536,7 @@ const defaultComponents = {
     <tr className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50 transition-colors" {...props} />
   ),
   stepbox: ({ node, ...props }: any) => (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs rounded-2xl p-4 my-3 font-sans text-zinc-800 dark:text-zinc-200" {...props} />
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs rounded-2xl p-4 my-3 font-sans text-zinc-800 dark:text-zinc-200 min-w-0 max-w-full overflow-x-auto" {...props} />
   ),
 };
 
@@ -556,7 +556,7 @@ function GlobalMarkdown({ children, content, className = '', components = {} }: 
   }, [components]);
 
   return (
-    <div className={`markdown-body ${className}`}>
+    <div className={`markdown-body w-full max-w-full min-w-0 overflow-x-auto ${className}`}>
       <Markdown
         remarkPlugins={remarkPluginsList}
         rehypePlugins={rehypePluginsList}
