@@ -895,7 +895,7 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                     <div>
                       <p className="font-black">Multi-Page FRQ Tip:</p>
                       <p className="text-[11px] text-emerald-800 mt-0.5 leading-relaxed">
-                        You can upload the printed exam question on <strong>Page 1</strong>, and your multi-page handwritten solutions on <strong>Page 2 & 3</strong>. The AI will evaluate all steps holistically.
+                        Upload question and handwritten solutions.
                       </p>
                     </div>
                   </div>
