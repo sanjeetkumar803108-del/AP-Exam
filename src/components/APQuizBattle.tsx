@@ -291,6 +291,29 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     battleSync.leaveQueue(myId, liveRoomIdRef.current || undefined);
   };
 
+  // Hardware Android Back Button Navigation (Step-by-step)
+  useEffect(() => {
+    const handleHardwareBack = (e: Event) => {
+      if (showSubjectPicker) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowSubjectPicker(false);
+      } else if (phase !== 'LOBBY') {
+        e.preventDefault();
+        triggerVibration(10);
+        leaveServerQueueAndReset();
+        setPhase('LOBBY');
+      } else {
+        e.preventDefault();
+        triggerVibration(10);
+        leaveServerQueueAndReset();
+        onBack();
+      }
+    };
+    window.addEventListener('appBackButton', handleHardwareBack);
+    return () => window.removeEventListener('appBackButton', handleHardwareBack);
+  }, [showSubjectPicker, phase, onBack]);
+
   // ================= MATCHMAKING & PAIRING =================
 
   // 1. Matched with Real Player

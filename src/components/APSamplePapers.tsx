@@ -42,6 +42,21 @@ export default function APSamplePapers({ onBack, isVip }: APSamplePapersProps) {
     return () => window.removeEventListener('sample-papers-updated', handleUpdate);
   }, []);
 
+  // Hardware Android Back Button Navigation (Step-by-step)
+  useEffect(() => {
+    const handleHardwareBack = (e: Event) => {
+      e.preventDefault();
+      triggerVibration(10);
+      if (previewPaper) {
+        setPreviewPaper(null);
+      } else {
+        onBack();
+      }
+    };
+    window.addEventListener('appBackButton', handleHardwareBack);
+    return () => window.removeEventListener('appBackButton', handleHardwareBack);
+  }, [previewPaper, onBack]);
+
   const loadPapers = async () => {
     setLoading(true);
     const data = await fetchSamplePapers();

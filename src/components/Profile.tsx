@@ -354,6 +354,29 @@ export default function Profile({
     };
   }, []);
 
+  // Hardware Android Back Button Navigation (Step-by-step)
+  useEffect(() => {
+    const handleHardwareBack = (e: Event) => {
+      if (showOptimizationModal) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowOptimizationModal(false);
+      } else if (activeModal) {
+        e.preventDefault();
+        triggerVibration(10);
+        setActiveModal(null);
+      } else if (isGradeDropdownOpen || isTrackDropdownOpen || isSupportDropdownOpen) {
+        e.preventDefault();
+        triggerVibration(10);
+        setIsGradeDropdownOpen(false);
+        setIsTrackDropdownOpen(false);
+        setIsSupportDropdownOpen(false);
+      }
+    };
+    window.addEventListener('appBackButton', handleHardwareBack);
+    return () => window.removeEventListener('appBackButton', handleHardwareBack);
+  }, [showOptimizationModal, activeModal, isGradeDropdownOpen, isTrackDropdownOpen, isSupportDropdownOpen]);
+
   // 7-Day Passive App Usage Tracker State
   const [chartData, setChartData] = useState<PassiveUsageItem[]>(() => {
     const stored = cleanAndGetUsageData();

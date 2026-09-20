@@ -139,6 +139,35 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
     return () => window.removeEventListener('user_account_changed', handleAccountChange);
   }, []);
 
+  // Hardware Android Back Button Navigation (Step-by-step)
+  useEffect(() => {
+    const handleHardwareBack = (e: Event) => {
+      if (viewingFullImageUrl) {
+        e.preventDefault();
+        triggerVibration(10);
+        setViewingFullImageUrl(null);
+      } else if (showHistoryModal) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowHistoryModal(false);
+      } else if (result) {
+        e.preventDefault();
+        triggerVibration(10);
+        setResult(null);
+      } else if (uploadedPages.length > 0) {
+        e.preventDefault();
+        triggerVibration(10);
+        resetGrader();
+      } else {
+        e.preventDefault();
+        triggerVibration(10);
+        onBack();
+      }
+    };
+    window.addEventListener('appBackButton', handleHardwareBack);
+    return () => window.removeEventListener('appBackButton', handleHardwareBack);
+  }, [viewingFullImageUrl, showHistoryModal, result, uploadedPages.length, onBack]);
+
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);

@@ -890,10 +890,22 @@ export default function AITutor({ isVip, isActive = true }: { isVip: boolean; is
 
   // File Upload & Plus Menu States
   const [showPlusMenu, setShowPlusMenu] = useState(false);
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [attachedFilePreview, setAttachedFilePreview] = useState<string | null>(null);
+  const [attachedFileType, setAttachedFileType] = useState<'image' | 'document' | null>(null);
+  const [fullscreenPreviewUrl, setFullscreenPreviewUrl] = useState<string | null>(null);
+  const [failedAttachment, setFailedAttachment] = useState<File | null>(null);
+  const [failedAttachmentPreview, setFailedAttachmentPreview] = useState<string | null>(null);
+  const [failedAttachmentType, setFailedAttachmentType] = useState<'image' | 'document' | null>(null);
+  const [documentContent, setDocumentContent] = useState<string>('');
 
   useEffect(() => {
     const handleBackButton = (e: Event) => {
-      if (historyOpen) {
+      if (fullscreenPreviewUrl) {
+        e.preventDefault();
+        triggerVibration(10);
+        setFullscreenPreviewUrl(null);
+      } else if (historyOpen) {
         e.preventDefault();
         triggerVibration(10);
         setHistoryOpen(false);
@@ -909,16 +921,7 @@ export default function AITutor({ isVip, isActive = true }: { isVip: boolean; is
     };
     window.addEventListener('appBackButton', handleBackButton);
     return () => window.removeEventListener('appBackButton', handleBackButton);
-  }, [historyOpen, personaModalOpen, showPlusMenu]);
-
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
-  const [attachedFilePreview, setAttachedFilePreview] = useState<string | null>(null);
-  const [attachedFileType, setAttachedFileType] = useState<'image' | 'document' | null>(null);
-  const [fullscreenPreviewUrl, setFullscreenPreviewUrl] = useState<string | null>(null);
-  const [failedAttachment, setFailedAttachment] = useState<File | null>(null);
-  const [failedAttachmentPreview, setFailedAttachmentPreview] = useState<string | null>(null);
-  const [failedAttachmentType, setFailedAttachmentType] = useState<'image' | 'document' | null>(null);
-  const [documentContent, setDocumentContent] = useState<string>('');
+  }, [fullscreenPreviewUrl, historyOpen, personaModalOpen, showPlusMenu]);
 
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);

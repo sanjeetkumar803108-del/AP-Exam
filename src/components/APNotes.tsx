@@ -498,6 +498,31 @@ export default function APNotes({ onBack }: APNotesProps) {
   const [selectedDiagram, setSelectedDiagram] = useState<APNoteDiagram | null>(null);
   const [fullScreenPdfData, setFullScreenPdfData] = useState<{ uri: string; title: string; unitNumber: number } | null>(null);
 
+  // Hardware Android Back Button Navigation (Step-by-step)
+  useEffect(() => {
+    const handleHardwareBack = (e: Event) => {
+      if (fullScreenPdfData) {
+        e.preventDefault();
+        triggerVibration(10);
+        setFullScreenPdfData(null);
+      } else if (selectedDiagram) {
+        e.preventDefault();
+        triggerVibration(10);
+        setSelectedDiagram(null);
+      } else if (step === 'reading') {
+        e.preventDefault();
+        triggerVibration(10);
+        setStep('select-subject');
+      } else {
+        e.preventDefault();
+        triggerVibration(10);
+        onBack();
+      }
+    };
+    window.addEventListener('appBackButton', handleHardwareBack);
+    return () => window.removeEventListener('appBackButton', handleHardwareBack);
+  }, [fullScreenPdfData, selectedDiagram, step, onBack]);
+
 
   const allSupportedSubjects = getAllSupportedNoteSubjects();
   const currentSubjectEntry: APSubjectNoteEntry = AP_NOTES_REGISTRY[selectedSubjectId] || AP_NOTES_REGISTRY['ap-calculus-ab'];

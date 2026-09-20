@@ -257,6 +257,27 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [fullScreenPdfData, setFullScreenPdfData] = useState<{ uri: string; title: string; unitNumber: number } | null>(null);
 
+  // Hardware Android Back Button Navigation (Step-by-step)
+  useEffect(() => {
+    const handleHardwareBack = (e: Event) => {
+      e.preventDefault();
+      triggerVibration(10);
+      if (fullScreenPdfData) {
+        setFullScreenPdfData(null);
+      } else if (selectedNodeForModal) {
+        setSelectedNodeForModal(null);
+      } else if (showCramSheet) {
+        setShowCramSheet(false);
+      } else if (step === 'view-map') {
+        setStep('select-subject');
+      } else {
+        onBack();
+      }
+    };
+    window.addEventListener('appBackButton', handleHardwareBack);
+    return () => window.removeEventListener('appBackButton', handleHardwareBack);
+  }, [fullScreenPdfData, selectedNodeForModal, showCramSheet, step, onBack]);
+
   // Resiliently open selected unit mind map
   const openUnitMap = (subjectId: string, unitId: string, unitNum: number) => {
     triggerVibration(15);

@@ -800,6 +800,8 @@ export default function App() {
   });
 
   // Native back button navigation handler - attached ONCE on mount to eliminate bridge race conditions
+  const lastBackPressRef = useRef<number>(0);
+
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
 
@@ -840,7 +842,15 @@ export default function App() {
         return;
       }
 
-      CapApp.minimizeApp();
+      // Root Home Screen: Protect against accidental app kill with double-press confirmation
+      const now = Date.now();
+      if (now - lastBackPressRef.current < 2000) {
+        CapApp.minimizeApp();
+      } else {
+        lastBackPressRef.current = now;
+        triggerVibration(15);
+        showToast('Press back again to exit', 'info', 1500);
+      }
     };
 
     const backButtonListener = CapApp.addListener('backButton', () => {

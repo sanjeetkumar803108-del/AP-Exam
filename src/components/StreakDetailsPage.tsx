@@ -53,6 +53,21 @@ export default function StreakDetailsPage({ onBack }: StreakDetailsPageProps) {
     };
   }, []);
 
+  // Hardware Android Back Button Navigation (Step-by-step)
+  useEffect(() => {
+    const handleHardwareBack = (e: Event) => {
+      e.preventDefault();
+      triggerVibration(10);
+      if (showExplanation) {
+        setShowExplanation(false);
+      } else {
+        onBack();
+      }
+    };
+    window.addEventListener('appBackButton', handleHardwareBack);
+    return () => window.removeEventListener('appBackButton', handleHardwareBack);
+  }, [showExplanation, onBack]);
+
   const showToast = (message: string) => {
     setToast(message);
     setTimeout(() => setToast(null), 3000);

@@ -443,6 +443,77 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     error?: string;
   }>>({});
 
+  // Hardware Android Back Button Navigation (Step-by-step)
+  useEffect(() => {
+    const handleHardwareBack = (e: Event) => {
+      if (previewPdfUri) {
+        e.preventDefault();
+        triggerVibration(10);
+        setPreviewPdfUri(null);
+      } else if (askAiModalQuestion) {
+        e.preventDefault();
+        triggerVibration(10);
+        setAskAiModalQuestion(null);
+      } else if (showSubjectModal) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowSubjectModal(false);
+      } else if (showUnitModal) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowUnitModal(false);
+      } else if (showHistoryModal) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowHistoryModal(false);
+      } else if (showFrqPlusMenu) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowFrqPlusMenu(false);
+      } else if (showPlusMenu) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowPlusMenu(false);
+      } else if (scannedResult) {
+        e.preventDefault();
+        triggerVibration(10);
+        setScannedResult(null);
+      } else if (activeTab === 'challenge') {
+        if (challengeStep === 'active') {
+          e.preventDefault();
+          triggerVibration(10);
+          setChallengeStep('configure');
+        } else if (challengeStep === 'configure') {
+          e.preventDefault();
+          triggerVibration(10);
+          setChallengeStep('select');
+        } else {
+          e.preventDefault();
+          triggerVibration(10);
+          onBack();
+        }
+      } else {
+        e.preventDefault();
+        triggerVibration(10);
+        setActiveTab('challenge');
+      }
+    };
+    window.addEventListener('appBackButton', handleHardwareBack);
+    return () => window.removeEventListener('appBackButton', handleHardwareBack);
+  }, [
+    previewPdfUri,
+    askAiModalQuestion,
+    showSubjectModal,
+    showUnitModal,
+    showHistoryModal,
+    showFrqPlusMenu,
+    showPlusMenu,
+    scannedResult,
+    activeTab,
+    challengeStep,
+    onBack
+  ]);
+
   // Open 2-Suggestion Ask AI Modal
   const handleOpenAITutor = (q: TrapQuestion) => {
     triggerVibration(10);

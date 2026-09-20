@@ -968,6 +968,22 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         e.preventDefault();
         triggerVibration(10);
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      } else if (previewPdfUri) {
+        e.preventDefault();
+        triggerVibration(10);
+        setPreviewPdfUri(null);
+      } else if (showDrawingCanvas) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowDrawingCanvas(false);
+      } else if (showCalculator) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowCalculator(false);
+      } else if (showPlusMenuIndex !== null) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowPlusMenuIndex(null);
       } else if (showFormulaModal) {
         e.preventDefault();
         triggerVibration(10);
@@ -1001,11 +1017,31 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         e.preventDefault();
         triggerVibration(10);
         setStep('select-subject');
+      } else if (step === 'select-subject') {
+        e.preventDefault();
+        triggerVibration(10);
+        onBack();
       }
     };
     window.addEventListener('appBackButton', handleHardwareBack);
     return () => window.removeEventListener('appBackButton', handleHardwareBack);
-  }, [confirmModal.isOpen, showFormulaModal, askAiModalData, inlineAiExplanations, currentObjIndex, currentSubIndex, fullscreenSvg, showHistoryModal, showTimesUpModal, step]);
+  }, [
+    confirmModal.isOpen,
+    previewPdfUri,
+    showDrawingCanvas,
+    showCalculator,
+    showPlusMenuIndex,
+    showFormulaModal,
+    askAiModalData,
+    inlineAiExplanations,
+    currentObjIndex,
+    currentSubIndex,
+    fullscreenSvg,
+    showHistoryModal,
+    showTimesUpModal,
+    step,
+    onBack
+  ]);
 
   // API Call to Generate Questions
   const handleGenerateQuestions = async () => {

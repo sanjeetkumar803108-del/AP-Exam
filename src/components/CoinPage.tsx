@@ -66,6 +66,21 @@ export default function CoinPage({ onClose, onSelectTool, isVip: propIsVip }: Co
     }
   }, [propIsVip]);
 
+  // Hardware Android Back Button Navigation (Step-by-step)
+  useEffect(() => {
+    const handleHardwareBack = (e: Event) => {
+      e.preventDefault();
+      triggerVibration(10);
+      if (showHistoryModal) {
+        setShowHistoryModal(false);
+      } else {
+        onClose();
+      }
+    };
+    window.addEventListener('appBackButton', handleHardwareBack);
+    return () => window.removeEventListener('appBackButton', handleHardwareBack);
+  }, [showHistoryModal, onClose]);
+
   const handleClaimReward = () => {
     if (isClaimedToday || isPro) return;
 

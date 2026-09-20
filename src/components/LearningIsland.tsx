@@ -357,6 +357,30 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
     };
   }, []);
 
+  // Hardware Android Back Button Navigation (Step-by-step)
+  useEffect(() => {
+    const handleHardwareBack = (e: Event) => {
+      e.preventDefault();
+      triggerVibration(10);
+      if (showSubjectModal) {
+        setShowSubjectModal(false);
+      } else if (selectedLevel) {
+        setSelectedLevel(null);
+      } else if (showAIExplanation) {
+        setShowAIExplanation(false);
+      } else if (activeQuizLevel) {
+        setActiveQuizLevel(null);
+        setIsQuizCompleted(false);
+        setSelectedOptionIndex(null);
+        setIsAnswerSubmitted(false);
+      } else {
+        onBack();
+      }
+    };
+    window.addEventListener('appBackButton', handleHardwareBack);
+    return () => window.removeEventListener('appBackButton', handleHardwareBack);
+  }, [showSubjectModal, selectedLevel, showAIExplanation, activeQuizLevel, onBack]);
+
   // Map Scroll Reference
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
