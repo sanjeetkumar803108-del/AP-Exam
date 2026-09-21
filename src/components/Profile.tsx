@@ -1289,6 +1289,8 @@ export default function Profile({
     await syncUsageToFirestore();
     setIsVip(false);
     safeRemoveItem('apexam_active_user_session');
+    safeRemoveItem('apexam_user_authenticated');
+    safeRemoveItem('apexam_login_in_progress');
     safeRemoveItem('last_logged_in_user');
     safeRemoveItem('last_logged_in_user_email');
     safeClearAll();
@@ -1484,6 +1486,8 @@ export default function Profile({
 
       // 5. Clean native authentication & sign out
       safeRemoveItem('apexam_active_user_session');
+      safeRemoveItem('apexam_user_authenticated');
+      safeRemoveItem('apexam_login_in_progress');
       safeRemoveItem('last_logged_in_user');
       safeRemoveItem('last_logged_in_user_email');
       if (Capacitor.isNativePlatform()) {

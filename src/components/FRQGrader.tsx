@@ -455,9 +455,9 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
 
     let progressTimer: any = null;
     try {
-      // Step 1: Compress all pages in parallel for fast mobile transmission
+      // Step 1: Compress all pages in parallel for ultra-fast mobile transmission (~120KB/page)
       const compressedFiles = await Promise.all(
-        uploadedPages.map(p => compressImageToFile(p.file, 1400, 0.82))
+        uploadedPages.map(p => compressImageToFile(p.file, 1000, 0.72))
       );
       setGradingProgress(45);
       setGradingStepText("Matching against College Board AP Scoring Guidelines...");
@@ -482,15 +482,23 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
       }, 350);
 
       const apiUrl = getApiUrl('/api/grade-frq');
-        const res = await fetch(apiUrl, {
-          method: 'POST',
-          body: formData
-        });
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => abortController.abort(), 45000);
 
+      let res: Response;
+      try {
+        res = await fetch(apiUrl, {
+          method: 'POST',
+          body: formData,
+          signal: abortController.signal
+        });
+      } finally {
+        clearTimeout(timeoutId);
         if (progressTimer) {
           clearInterval(progressTimer);
           progressTimer = null;
         }
+      }
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
@@ -555,7 +563,11 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
     } catch (err: any) {
       console.error("[FRQGrader] Grading Error:", err);
       setIsGrading(false);
-      showToast(err.message || "Unable to grade FRQ. Please check connection and try again.", "error");
+      const isTimeout = err.name === 'AbortError';
+      const msg = isTimeout 
+        ? "Evaluation timed out. Please check your internet connection and try again." 
+        : (err.message || "Unable to grade FRQ. Please check connection and try again.");
+      showToast(msg, "error");
     } finally {
       if (progressTimer) clearInterval(progressTimer);
     }

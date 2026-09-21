@@ -38,6 +38,8 @@ export const safeClearAll = (): void => {
     'study_user_session_token',
     'active_temporary_session',
     'apexam_active_user_session',
+    'apexam_user_authenticated',
+    'apexam_login_in_progress',
     'last_logged_in_user',
     'last_logged_in_user_email'
   ];

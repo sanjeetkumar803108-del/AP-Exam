@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { X, UserPlus, LogIn, Chrome, LogOut, Loader2, Eye, EyeOff, Check, ShieldAlert } from 'lucide-react';
 import { auth, googleProvider, db } from '../lib/firebase';
-import { safeClearAll, safeSetItem, safeGetItem } from '../utils/storage';
+import { safeClearAll, safeSetItem, safeGetItem, safeRemoveItem } from '../utils/storage';
 import { claimUserSession, releaseUserSession } from '../utils/sessionManager';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { 
@@ -108,8 +108,10 @@ export default function Login({
     isRoutingRef.current = true;
     try {
       // 1. Confirm and save active session in storage
+      safeSetItem('apexam_user_authenticated', 'true');
       safeSetItem('apexam_active_user_session', 'true');
       safeSetItem('last_logged_in_user', currentUser.uid);
+      safeRemoveItem('apexam_login_in_progress');
       if (currentUser.email) {
         safeSetItem('last_logged_in_user_email', currentUser.email.toLowerCase().trim());
       }
@@ -207,6 +209,7 @@ export default function Login({
     setError(null);
     // Mark that the user actively initiated authentication
     userInitiatedAuth.current = true;
+    safeSetItem('apexam_login_in_progress', 'true');
 
     const cleanEmail = email.trim();
     if (!cleanEmail) {
@@ -309,8 +312,10 @@ export default function Login({
         }
 
         // Active session confirmed
+        safeSetItem('apexam_user_authenticated', 'true');
         safeSetItem('apexam_active_user_session', 'true');
         safeSetItem('last_logged_in_user', loggedUser.uid);
+        safeRemoveItem('apexam_login_in_progress');
         if (loggedUser.email) {
           safeSetItem('last_logged_in_user_email', loggedUser.email.toLowerCase().trim());
         }
@@ -322,6 +327,7 @@ export default function Login({
         onClose();
       }
     } catch (err: any) {
+      safeRemoveItem('apexam_login_in_progress');
       console.warn('[Auth Error]', err?.code, err?.message);
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
         const errMsg = 'Incorrect password, or this email is registered via Google Sign-In. Please use the Google button below.';
@@ -355,6 +361,7 @@ export default function Login({
     setLoading(true);
     // Mark that the user actively initiated authentication before any async call
     userInitiatedAuth.current = true;
+    safeSetItem('apexam_login_in_progress', 'true');
     const googleLoadingTimer = setTimeout(() => {
       setLoading(false);
     }, 15000);
@@ -414,6 +421,7 @@ export default function Login({
           // User genuinely clicked outside/cancelled the dialog
           if (errMsg.includes('12501') || errMsg.toLowerCase().includes('cancel')) {
             clearTimeout(googleLoadingTimer);
+            safeRemoveItem('apexam_login_in_progress');
             setLoading(false);
             return;
           }
@@ -446,8 +454,10 @@ export default function Login({
       }
       
       // Save active session token so App.tsx AuthGuard recognizes this explicit sign-in
+      safeSetItem('apexam_user_authenticated', 'true');
       safeSetItem('apexam_active_user_session', 'true');
       safeSetItem('last_logged_in_user', loggedUser.uid);
+      safeRemoveItem('apexam_login_in_progress');
       if (loggedUser.email) {
         safeSetItem('last_logged_in_user_email', loggedUser.email.toLowerCase().trim());
       }

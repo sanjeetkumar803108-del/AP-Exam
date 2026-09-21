@@ -386,12 +386,14 @@ export default function App() {
         // restored background cache / IndexedDB persistence, or unauthenticated state).
         // This stops stale background cache / IndexedDB persistence from auto-logging into
         // a random/stale email and auto-opening the app dashboard without user consent.
-        const hasActiveSession = 
-          safeGetItem('apexam_active_user_session') === 'true' && 
+        const isExplicitlyAuthenticated = 
+          safeGetItem('apexam_user_authenticated') === 'true' && 
           safeGetItem('last_logged_in_user') === currentUser.uid;
 
-        if (!hasActiveSession) {
-          console.log('[Auth Guard] Stale unconfirmed background user session detected. Enforcing clean logout so Login screen is shown.');
+        const isLoginInProgress = safeGetItem('apexam_login_in_progress') === 'true';
+
+        if (!isExplicitlyAuthenticated && !isLoginInProgress) {
+          console.log('[Auth Guard] Stale or unauthenticated session detected on app open. Enforcing clean logout so Login screen is shown.');
           setUser(null);
           setIsVip(false);
           setAuthLoading(false);
@@ -402,6 +404,8 @@ export default function App() {
           try { await signOut(auth); } catch (_) {}
           return;
         } else {
+          safeRemoveItem('apexam_login_in_progress');
+          safeSetItem('apexam_user_authenticated', 'true');
           safeSetItem('apexam_active_user_session', 'true');
           safeSetItem('last_logged_in_user', currentUser.uid);
         }
@@ -434,6 +438,9 @@ export default function App() {
             sessionRevokeUnsubRef.current = null;
           }
           clearLocalSessionToken();
+          safeRemoveItem('apexam_user_authenticated');
+          safeRemoveItem('apexam_active_user_session');
+          safeRemoveItem('last_logged_in_user');
           setUser(null);
           signOut(auth).catch(console.warn);
           setSessionRevokedNotice('Your account was just logged in on another device. For subscription integrity, only 1 active device is permitted at a time.');

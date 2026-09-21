@@ -89,8 +89,8 @@ export async function claimUserSession(userId: string): Promise<string> {
   try {
     const userRef = doc(db, 'users', userId);
     await setDoc(userRef, {
-      activeSessionId: token,
-      lastSessionLoginAt: new Date().toISOString(),
+      activeSessionId_apexam: token,
+      lastSessionLoginAt_apexam: new Date().toISOString(),
       lastDevicePlatform: Capacitor.getPlatform(),
       lastDeviceId: getPersistentDeviceId()
     }, { merge: true });
@@ -112,8 +112,8 @@ export async function releaseUserSession(userId: string): Promise<void> {
   try {
     const userRef = doc(db, 'users', userId);
     await setDoc(userRef, {
-      activeSessionId: '',
-      lastSessionLogoutAt: new Date().toISOString()
+      activeSessionId_apexam: '',
+      lastSessionLogoutAt_apexam: new Date().toISOString()
     }, { merge: true });
     console.log(`[SingleSession] Cleanly released session in Firestore for ${userId}`);
   } catch (err) {
@@ -139,7 +139,7 @@ export function subscribeToSessionRevocation(
     if (!snapshot.exists()) return;
 
     const data = snapshot.data();
-    const remoteSessionId = data?.activeSessionId;
+    const remoteSessionId = data?.activeSessionId_apexam;
     const localSessionId = getLocalSessionToken();
 
     // 1. If local session token is empty, this client hasn't established an active login yet
@@ -167,7 +167,7 @@ export function subscribeToSessionRevocation(
     // activeSessionId in Firestore will now point to that other device's token.
     if (remoteSessionId && remoteSessionId !== localSessionId) {
       console.warn(`[SingleSession] REVOKED! Remote: ${remoteSessionId} vs Local: ${localSessionId}`);
-      onRevoked(data?.lastSessionLoginAt);
+      onRevoked(data?.lastSessionLoginAt_apexam || data?.lastSessionLoginAt);
     }
   }, (err) => {
     console.warn('[SingleSession] Firestore snapshot notice:', err?.message || err);
