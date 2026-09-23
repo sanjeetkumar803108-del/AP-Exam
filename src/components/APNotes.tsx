@@ -333,8 +333,8 @@ function MathDiagramView({ diagram, onExpand }: { diagram: APNoteDiagram; onExpa
       </div>
 
       <p className="text-xs text-zinc-600 leading-relaxed font-normal">{diagram.description}</p>
-      <div className="p-3 rounded-xl bg-amber-50 border border-amber-200/70 text-xs text-amber-950 font-medium">
-        💡 <strong>AP Exam Takeaway:</strong> {diagram.takeaway}
+      <div className="text-xs text-zinc-700 leading-relaxed">
+        <span className="font-bold text-zinc-900">💡 AP Exam Takeaway: </span>{diagram.takeaway}
       </div>
     </div>
   );
@@ -434,12 +434,12 @@ function DiagramFullPageModal({
             </p>
           </div>
 
-          {/* AP Exam Scoring Takeaway */}
-          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs sm:text-sm text-amber-950 font-medium space-y-1.5">
-            <div className="font-bold flex items-center gap-1.5 text-amber-900 text-xs uppercase tracking-wider">
+          {/* AP Exam Takeaway */}
+          <div className="text-xs sm:text-sm text-zinc-700 leading-relaxed space-y-1">
+            <p className="font-bold text-zinc-900 flex items-center gap-1.5 text-xs uppercase tracking-wider">
               <span>💡</span>
               <span>AP Exam Scoring Takeaway & Traps</span>
-            </div>
+            </p>
             <p className="leading-relaxed">
               {diagram.takeaway}
             </p>

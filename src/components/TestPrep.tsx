@@ -467,6 +467,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   const [timeRemainingSeconds, setTimeRemainingSeconds] = useState<number>(0);
   const [totalAllocatedSeconds, setTotalAllocatedSeconds] = useState<number>(0);
   const [isTimerActive, setIsTimerActive] = useState<boolean>(false);
+  const [hasUserStartedTimer, setHasUserStartedTimer] = useState<boolean>(false);
+  const [secondsElapsedWithTimer, setSecondsElapsedWithTimer] = useState<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Subjective Practice State
@@ -726,7 +728,9 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   // College Board Standard AP Exam Countdown Timer Effect (Both Objective & Subjective)
   useEffect(() => {
     if (step === 'practice' && isTimerActive && !isExamCompleted && !loading) {
+      setHasUserStartedTimer(true);
       timerRef.current = setInterval(() => {
+        setSecondsElapsedWithTimer(prev => prev + 1);
         setTimeRemainingSeconds(prev => {
           if (prev <= 1) {
             triggerVibration([80, 100, 80, 100]);
@@ -1068,6 +1072,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
           setTotalAllocatedSeconds(allocatedTime);
           setTimeRemainingSeconds(allocatedTime);
           setIsTimerActive(false);
+          setHasUserStartedTimer(false);
+          setSecondsElapsedWithTimer(0);
           setStep('practice');
           showToast("Loaded saved offline practice test from History.", "info");
           return;
@@ -1083,6 +1089,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
           setTotalAllocatedSeconds(allocatedTime);
           setTimeRemainingSeconds(allocatedTime);
           setIsTimerActive(false);
+          setHasUserStartedTimer(false);
+          setSecondsElapsedWithTimer(0);
           setStep('practice');
           showToast("Loaded saved offline practice test from History.", "info");
           return;
@@ -1174,6 +1182,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         setTotalAllocatedSeconds(allocatedTime);
         setTimeRemainingSeconds(allocatedTime);
         setIsTimerActive(false);
+        setHasUserStartedTimer(false);
+        setSecondsElapsedWithTimer(0);
 
         // Auto-save generated questions to History line-wise
         const newHistoryItem: APTestPrepHistoryItem = {
@@ -1220,6 +1230,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         setTotalAllocatedSeconds(allocatedTime);
         setTimeRemainingSeconds(allocatedTime);
         setIsTimerActive(false);
+        setHasUserStartedTimer(false);
+        setSecondsElapsedWithTimer(0);
 
         // Auto-save generated questions to History line-wise
         const newHistoryItem: APTestPrepHistoryItem = {
@@ -1662,6 +1674,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
     setTotalAllocatedSeconds(allocatedTime);
     setTimeRemainingSeconds(allocatedTime);
     setIsTimerActive(false);
+    setHasUserStartedTimer(false);
+    setSecondsElapsedWithTimer(0);
 
     if (item.questionType === 'objective' && item.objectiveQuestions && item.objectiveQuestions.length > 0) {
       const balancedLoaded = shuffleAndBalanceObjectiveQuestions(item.objectiveQuestions);
@@ -1812,8 +1826,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
             </>
           )}
 
-          {/* Timer Setup & Active Countdown Button (Shown only during active Practice, NEVER on configure or while generating questions) */}
-          {!loading && step === 'practice' && (
+          {/* Timer Setup & Active Countdown Button (Shown only during active Practice solving, NEVER on scorecard or configure or while generating questions) */}
+          {!loading && step === 'practice' && !isExamCompleted && (
             <button
               type="button"
               onClick={() => {
@@ -1825,16 +1839,20 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                   ? timeRemainingSeconds <= 60
                     ? 'bg-red-600 text-white border-red-700 animate-pulse'
                     : 'bg-amber-500 text-white border-amber-600 shadow-amber-500/20'
+                  : hasUserStartedTimer && timeRemainingSeconds > 0
+                  ? 'bg-amber-50 text-amber-900 border-amber-300'
                   : 'bg-white hover:bg-zinc-100 text-zinc-700 border-zinc-250'
               }`}
               title="Timer Settings & Countdown"
               aria-label="Timer Settings"
             >
               <Timer className={`w-4 h-4 ${isTimerActive && timeRemainingSeconds > 0 ? 'text-white' : 'text-amber-600'}`} />
-              {isTimerActive && timeRemainingSeconds > 0 && (
+              {timeRemainingSeconds > 0 && hasUserStartedTimer ? (
                 <span className="font-mono font-black text-[11px]">
                   {formatTime(timeRemainingSeconds)}
                 </span>
+              ) : (
+                <span className="text-[11px] font-bold text-zinc-600 hidden xs:inline">Timer</span>
               )}
             </button>
           )}
@@ -2183,29 +2201,25 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
 
               <div className="grid grid-cols-2 gap-2.5">
                 {[
-                  { count: 5, label: '5 Questions', sub: 'Quick Drill (~10m)' },
-                  { count: 10, label: '10 Questions', sub: 'Standard Set (~20m)' },
-                  { count: 15, label: '15 Questions', sub: 'Intensive Review (~30m)' },
-                  { count: 20, label: '20 Questions', sub: 'Full Section (~45m)' }
+                  { count: 5, label: '5 Questions' },
+                  { count: 10, label: '10 Questions' },
+                  { count: 15, label: '15 Questions' },
+                  { count: 20, label: '20 Questions' }
                 ].map(item => (
                   <button
                     key={item.count}
+                    type="button"
                     onClick={() => {
                       triggerVibration(10);
                       setQuestionCount(item.count);
                     }}
-                    className={`p-3.5 rounded-2xl border text-left transition-all ${
+                    className={`py-3.5 px-4 rounded-2xl border text-center transition-all cursor-pointer ${
                       questionCount === item.count
-                        ? 'bg-zinc-900 border-zinc-900 text-white shadow-md'
-                        : 'bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-50'
+                        ? 'bg-zinc-900 border-zinc-900 text-white shadow-md ring-2 ring-zinc-900/10'
+                        : 'bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-50 hover:border-zinc-300'
                     }`}
                   >
                     <div className="font-black text-sm">{item.label}</div>
-                    <div className={`text-[11px] font-medium mt-0.5 ${
-                      questionCount === item.count ? 'text-zinc-300' : 'text-zinc-500'
-                    }`}>
-                      {item.sub}
-                    </div>
                   </button>
                 ))}
               </div>
@@ -2617,7 +2631,11 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                     {selectedSubject.name} • {objectiveQuestions.length} Questions
                   </p>
 
-                  <div className="my-5 p-4 rounded-2xl w-full border text-left flex items-center justify-between bg-zinc-50 border-zinc-200">
+                  <div className={`my-5 p-4 rounded-2xl w-full border text-left bg-zinc-50 border-zinc-200 ${
+                    hasUserStartedTimer && secondsElapsedWithTimer > 0
+                      ? 'grid grid-cols-3 gap-2'
+                      : 'grid grid-cols-2 gap-4'
+                  }`}>
                     <div>
                       <div className="text-xs font-bold text-zinc-500">Correct Answers</div>
                       <div className="text-2xl font-black text-zinc-900">
@@ -2630,12 +2648,14 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                         {Math.round((objectiveScore / objectiveQuestions.length) * 100)}%
                       </div>
                     </div>
-                    <div>
-                      <div className="text-xs font-bold text-zinc-500">Time Taken</div>
-                      <div className="text-2xl font-black text-zinc-900">
-                        {formatTime(Math.max(0, totalAllocatedSeconds - timeRemainingSeconds))}
+                    {hasUserStartedTimer && secondsElapsedWithTimer > 0 && (
+                      <div>
+                        <div className="text-xs font-bold text-zinc-500">Time Taken</div>
+                        <div className="text-2xl font-black text-zinc-900">
+                          {formatTime(secondsElapsedWithTimer)}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* AP 1-5 Predicted Scale */}
@@ -2678,6 +2698,9 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                         setSelectedAnswers({});
                         setShowExplanation({});
                         setTimeRemainingSeconds(totalAllocatedSeconds);
+                        setIsTimerActive(false);
+                        setHasUserStartedTimer(false);
+                        setSecondsElapsedWithTimer(0);
                       }}
                       className="py-3 rounded-xl border border-zinc-200 bg-white font-bold text-xs text-zinc-700 flex items-center justify-center gap-1.5"
                     >
@@ -3231,7 +3254,11 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                     {selectedSubject.name} • {subjectiveQuestions.length} {isComputerSubject(selectedSubject) ? 'Create Performance Tasks' : 'Free Response Questions'}
                   </p>
 
-                  <div className="my-5 p-4 rounded-2xl w-full border text-left flex items-center justify-between bg-zinc-50 border-zinc-200">
+                  <div className={`my-5 p-4 rounded-2xl w-full border text-left bg-zinc-50 border-zinc-200 ${
+                    hasUserStartedTimer && secondsElapsedWithTimer > 0
+                      ? 'grid grid-cols-3 gap-2'
+                      : 'grid grid-cols-2 gap-4'
+                  }`}>
                     <div>
                       <div className="text-xs font-bold text-zinc-500">Points Earned</div>
                       <div className="text-2xl font-black text-zinc-900">
@@ -3244,12 +3271,14 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                         {frqScoreSummary.percentage}%
                       </div>
                     </div>
-                    <div>
-                      <div className="text-xs font-bold text-zinc-500">Time Taken</div>
-                      <div className="text-2xl font-black text-zinc-900">
-                        {formatTime(Math.max(0, totalAllocatedSeconds - timeRemainingSeconds))}
+                    {hasUserStartedTimer && secondsElapsedWithTimer > 0 && (
+                      <div>
+                        <div className="text-xs font-bold text-zinc-500">Time Taken</div>
+                        <div className="text-2xl font-black text-zinc-900">
+                          {formatTime(secondsElapsedWithTimer)}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* AP 1-5 Predicted Scale */}
@@ -3340,6 +3369,9 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                         setSubjectiveScores({});
                         setAttachedImages({});
                         setTimeRemainingSeconds(totalAllocatedSeconds);
+                        setIsTimerActive(false);
+                        setHasUserStartedTimer(false);
+                        setSecondsElapsedWithTimer(0);
                       }}
                       className="py-3 rounded-xl border border-zinc-200 bg-white font-bold text-xs text-zinc-700 flex items-center justify-center gap-1.5 cursor-pointer hover:bg-zinc-50"
                     >
@@ -4010,30 +4042,37 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                   </div>
 
                   {/* Preset 1: Official AP Exam Recommendation */}
-                  {totalAllocatedSeconds > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        triggerVibration(10);
-                        setTimeRemainingSeconds(totalAllocatedSeconds);
-                        setIsTimerActive(true);
-                        setShowTimerSetupModal(false);
-                      }}
-                      className="p-3.5 rounded-2xl border-2 border-indigo-200 bg-indigo-50/60 hover:border-indigo-400 text-left flex items-center justify-between transition-all cursor-pointer"
-                    >
-                      <div>
-                        <div className="text-xs font-black text-indigo-950">
-                          Official AP® Exam Standard Time
+                  {(() => {
+                    const recSecs = totalAllocatedSeconds > 0 
+                      ? totalAllocatedSeconds 
+                      : getApExamDurationSeconds(selectedSubject.id, questionType, (questionType === 'objective' ? objectiveQuestions.length : subjectiveQuestions.length) || 5);
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          triggerVibration(10);
+                          setTotalAllocatedSeconds(recSecs);
+                          setTimeRemainingSeconds(recSecs);
+                          setHasUserStartedTimer(true);
+                          setIsTimerActive(true);
+                          setShowTimerSetupModal(false);
+                        }}
+                        className="p-3.5 rounded-2xl border-2 border-indigo-200 bg-indigo-50/60 hover:border-indigo-400 text-left flex items-center justify-between transition-all cursor-pointer"
+                      >
+                        <div>
+                          <div className="text-xs font-black text-indigo-950">
+                            Official AP® Exam Standard Time
+                          </div>
+                          <div className="text-[11px] text-indigo-700 font-medium">
+                            {formatTime(recSecs)} (College Board Recommended Pace)
+                          </div>
                         </div>
-                        <div className="text-[11px] text-indigo-700 font-medium">
-                          {formatTime(totalAllocatedSeconds)} (College Board Recommended Pace)
-                        </div>
-                      </div>
-                      <span className="px-3 py-1.5 rounded-xl bg-indigo-600 text-white font-black text-xs shadow-xs">
-                        Start
-                      </span>
-                    </button>
-                  )}
+                        <span className="px-3 py-1.5 rounded-xl bg-indigo-600 text-white font-black text-xs shadow-xs">
+                          Start
+                        </span>
+                      </button>
+                    );
+                  })()}
 
                   {/* Quick Minute Presets */}
                   <div>
@@ -4050,6 +4089,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                             const secs = mins * 60;
                             setTotalAllocatedSeconds(secs);
                             setTimeRemainingSeconds(secs);
+                            setHasUserStartedTimer(true);
                             setIsTimerActive(true);
                             setShowTimerSetupModal(false);
                           }}
@@ -4085,6 +4125,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                             const secs = m * 60;
                             setTotalAllocatedSeconds(secs);
                             setTimeRemainingSeconds(secs);
+                            setHasUserStartedTimer(true);
                             setIsTimerActive(true);
                             setShowTimerSetupModal(false);
                           }
@@ -4103,7 +4144,11 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                         type="button"
                         onClick={() => {
                           triggerVibration(10);
-                          setIsTimerActive(prev => !prev);
+                          setIsTimerActive(prev => {
+                            const next = !prev;
+                            if (next) setHasUserStartedTimer(true);
+                            return next;
+                          });
                         }}
                         className={`flex-1 py-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                           isTimerActive 
@@ -4121,6 +4166,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                           triggerVibration(10);
                           setIsTimerActive(false);
                           setTimeRemainingSeconds(0);
+                          setHasUserStartedTimer(false);
+                          setSecondsElapsedWithTimer(0);
                           stopAlarmSound();
                           setShowTimerSetupModal(false);
                         }}
@@ -4192,6 +4239,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                       stopAlarmSound();
                       setTimeRemainingSeconds(300);
                       setTotalAllocatedSeconds(prev => prev + 300);
+                      setHasUserStartedTimer(true);
                       setIsTimerActive(true);
                       setShowTimesUpModal(false);
                     }}

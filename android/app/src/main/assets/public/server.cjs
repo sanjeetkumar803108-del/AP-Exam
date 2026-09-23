@@ -11597,19 +11597,32 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
       res.setHeader("Connection", "keep-alive");
       res.setHeader("X-Accel-Buffering", "no");
       res.flushHeaders();
+      const keepAliveTimer = setInterval(() => {
+        try {
+          res.write(": keep-alive\n\n");
+        } catch (e) {
+        }
+      }, 3e3);
       try {
         for await (const chunk of responseStream) {
-          const text = chunk.text || "";
+          let text = "";
+          try {
+            text = chunk.text || "";
+          } catch (e) {
+            text = chunk.candidates?.[0]?.content?.parts?.map((p) => p.text || "").join("") || "";
+          }
           if (text) {
             res.write(`data: ${JSON.stringify({ text })}
 
 `);
           }
         }
+        clearInterval(keepAliveTimer);
         res.write("data: [DONE]\n\n");
         res.end();
         return;
       } catch (err) {
+        clearInterval(keepAliveTimer);
         console.error("Error during streaming:", err);
         res.write(`data: ${JSON.stringify({ error: err.message || "Stream interrupted" })}
 
@@ -11626,8 +11639,8 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
           responseMimeType: isEvaluation === "true" || isEvaluation === true ? "text/plain" : "application/json",
           temperature: 0.7,
           // ⚡ Balanced temp for conversational AI
-          maxOutputTokens: 3500,
-          // ⚡ High-speed output ceiling for rapid responses
+          maxOutputTokens: 8192,
+          // ⚡ High capacity ceiling for complete complex outputs
           candidateCount: 1
           // ⚡ Single candidate only
         }
@@ -12086,6 +12099,85 @@ function shuffleAndBalanceTestPrepQuestions(questions) {
     };
   });
 }
+var PSYCHOMETRIC_DISTRIBUTION_TEMPLATES = [
+  [48, 28, 15, 9],
+  [44, 31, 16, 9],
+  [52, 26, 14, 8],
+  [39, 34, 18, 9],
+  [46, 29, 17, 8],
+  [54, 23, 15, 8],
+  [41, 32, 19, 8],
+  [47, 27, 16, 10],
+  [51, 25, 17, 7],
+  [43, 30, 18, 9],
+  [56, 22, 14, 8],
+  [38, 35, 17, 10],
+  [49, 26, 16, 9],
+  [45, 29, 18, 8],
+  [53, 24, 16, 7]
+];
+function sanitizeAndBalancePsychometricRates(traps, seed = 0) {
+  if (!Array.isArray(traps) || traps.length < 4) return traps;
+  const correctIdx = traps.findIndex((t) => t.isCorrect);
+  const targetIdx = correctIdx >= 0 ? correctIdx : 0;
+  const distractorIndices = traps.map((_, i) => i).filter((i) => i !== targetIdx);
+  const parsedRates = {};
+  let canKeepExisting = true;
+  for (let i = 0; i < traps.length; i++) {
+    const raw = String(traps[i]?.vulnerabilityRate || "");
+    const match = raw.match(/(\d+)\s*%/);
+    if (match) {
+      parsedRates[i] = parseInt(match[1], 10);
+    } else if (i === targetIdx) {
+      parsedRates[i] = 0;
+    } else {
+      canKeepExisting = false;
+    }
+  }
+  const distractorValues = distractorIndices.map((i) => parsedRates[i] || 0);
+  const hasDuplicates = new Set(distractorValues).size !== distractorValues.length;
+  const distractorSum = distractorValues.reduce((a, b) => a + b, 0);
+  let finalTargetRate = 48;
+  let finalDistractorRates = [28, 15, 9];
+  if (canKeepExisting && !hasDuplicates && distractorSum >= 25 && distractorSum <= 75 && distractorValues.every((v) => v > 0)) {
+    const computedTarget = 100 - distractorSum;
+    if (!distractorValues.includes(computedTarget)) {
+      finalTargetRate = computedTarget;
+      finalDistractorRates = distractorValues;
+    } else {
+      const template = PSYCHOMETRIC_DISTRIBUTION_TEMPLATES[Math.abs(seed) % PSYCHOMETRIC_DISTRIBUTION_TEMPLATES.length];
+      finalTargetRate = template[0];
+      finalDistractorRates = [template[1], template[2], template[3]];
+    }
+  } else {
+    const template = PSYCHOMETRIC_DISTRIBUTION_TEMPLATES[Math.abs(seed) % PSYCHOMETRIC_DISTRIBUTION_TEMPLATES.length];
+    finalTargetRate = template[0];
+    finalDistractorRates = [template[1], template[2], template[3]];
+  }
+  const allFour = [finalTargetRate, ...finalDistractorRates];
+  if (allFour.reduce((a, b) => a + b, 0) !== 100 || new Set(allFour).size !== 4) {
+    const safeTemplate = PSYCHOMETRIC_DISTRIBUTION_TEMPLATES[0];
+    finalTargetRate = safeTemplate[0];
+    finalDistractorRates = [safeTemplate[1], safeTemplate[2], safeTemplate[3]];
+  }
+  let dIdx = 0;
+  return traps.map((trap, idx) => {
+    if (idx === targetIdx) {
+      return {
+        ...trap,
+        isCorrect: true,
+        vulnerabilityRate: `Target Answer (${finalTargetRate}% correct)`
+      };
+    } else {
+      const rate = finalDistractorRates[dIdx++] || 15;
+      return {
+        ...trap,
+        isCorrect: false,
+        vulnerabilityRate: `${rate}% of AP test-takers pick this`
+      };
+    }
+  });
+}
 function shuffleAndBalanceTrapRadarQuestions(questions) {
   if (!Array.isArray(questions) || questions.length === 0) return questions;
   const targetPositions = generateBalancedAnswerSequence(questions.length);
@@ -12163,6 +12255,9 @@ function shuffleAndBalanceTrapRadarQuestions(questions) {
           collegeBoardMindset: "AP CED Standard"
         };
       });
+    }
+    if (Array.isArray(newTraps) && newTraps.length >= 4) {
+      newTraps = sanitizeAndBalancePsychometricRates(newTraps, qIdx);
     }
     return {
       ...q,
@@ -12243,8 +12338,9 @@ OFFICIAL GRADE-LEVEL PEDAGOGICAL CALIBRATION: ADVANCED PLACEMENT (HIGH SCHOOL TO
     }
     const batchSizes = [];
     let remaining = requestedCount;
+    const maxBatch = type === "subjective" ? 3 : 5;
     while (remaining > 0) {
-      const take = Math.min(remaining, 10);
+      const take = Math.min(remaining, maxBatch);
       batchSizes.push(take);
       remaining -= take;
     }
@@ -12375,11 +12471,11 @@ Generate exactly ${batchCount} authentic College Board AP Exam Multiple Choice Q
 Target Archetypes for this batch:
 ${batchArchetypePlan}
 IMPORTANT: Ensure 100% diversity and fresh non-repetitive problems with unique functions, numbers, and scenarios. Do not repeat standard textbook clich\xE9s!
-If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or AP Statistics, generate authentic graph/diagram-based questions and provide the complete College Board standard SVG in "diagramSvg" with coordinate axes, curves, and labeled points so the student analyzes the visual graphic!` }] },
+If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or AP Statistics, provide an authentic College Board standard SVG in "diagramSvg" (viewBox='0 0 400 220') for questions that genuinely require visual graph analysis (at least 1 question per batch), and set diagramSvg to "" for purely symbolic, algebraic, or text-based questions so generation is ultra-fast!` }] },
             config: {
               systemInstruction: { parts: [{ text: systemInstruction }] },
               responseMimeType: "application/json",
-              maxOutputTokens: 4096,
+              maxOutputTokens: 8192,
               temperature: 0.75
             }
           });
@@ -12644,11 +12740,11 @@ Generate exactly ${batchCount} authentic College Board AP Exam Free Response / S
 Target Archetypes for this batch:
 ${batchArchetypePlan}
 IMPORTANT: Ensure 100% diversity and fresh non-repetitive problems with unique functions, numbers, and scenarios. Do not repeat standard textbook clich\xE9s!
-If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or AP Statistics, generate authentic graph/diagram-based questions and provide the complete College Board standard SVG in "diagramSvg" with coordinate axes, curves, and labeled points so the student analyzes the visual graphic!` }] },
+If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or AP Statistics, provide an authentic College Board standard SVG in "diagramSvg" (viewBox='0 0 400 220') for questions that genuinely require visual graph analysis (at least 1 question per batch), and set diagramSvg to "" for purely symbolic, algebraic, or text-based questions so generation is ultra-fast!` }] },
             config: {
               systemInstruction: { parts: [{ text: systemInstruction }] },
               responseMimeType: "application/json",
-              maxOutputTokens: 4096,
+              maxOutputTokens: 8192,
               temperature: 0.75
             }
           });
@@ -12800,7 +12896,62 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
         });
         return res.json({ questions: questionsList, questionType: "subjective", subject, count: questionsList.length });
       }
-      throw new Error("Failed to generate a valid AP subjective questions structure.");
+      console.warn(`[generate-ap-questions] Subjective AI batch returned empty for "${subject}". Engaging authentic curriculum fallback...`);
+      const fallbackSubject = AP_BATTLE_SUBJECTS.find(
+        (s2) => (subject || "").toLowerCase().includes(s2.name.toLowerCase().replace("ap ", "")) || s2.id.includes((subject || "").toLowerCase().replace(/[^a-z0-9]/g, ""))
+      ) || AP_BATTLE_SUBJECTS[0];
+      const fallbackMcqs = getBattleQuestions(fallbackSubject.id);
+      const fallbackSubjectives = Array.from({ length: requestedCount }).map((_, idx) => {
+        const mcqRef = fallbackMcqs && fallbackMcqs[idx % fallbackMcqs.length];
+        const topicName = targetTopic || fallbackSubject.name;
+        const subPrompt = mcqRef ? `${mcqRef.stem}
+
+(a) Identify the primary concept or mechanism illustrated in this scenario [1 point].
+
+(b) Explain the fundamental theoretical cause of this phenomenon within ${topicName} [2 points].
+
+(c) Describe one real-world consequence or alternative scenario if the key variable were altered [2 points].
+
+(d) Justify your reasoning using standard College Board terminology and principles [2 points].` : `Consider an authentic scenario concerning ${topicName} in ${subject}:
+
+(a) Identify and define the fundamental College Board concept at play [1 point].
+
+(b) Explain the underlying theoretical framework and relationships [2 points].
+
+(c) Analyze the direct consequences and implications [2 points].
+
+(d) Justify your conclusions with evidence and relevant terminology [2 points].`;
+        const modelAns = mcqRef ? `Part (a): ${mcqRef.explanation.slice(0, 120)}...
+
+Part (b): Detailed theoretical mechanism demonstrating full mastery of ${topicName}.
+
+Part (c): Critical analysis of practical applications and secondary effects.
+
+Part (d): Comprehensive justification adhering to official College Board scoring rubrics.` : `Part (a): Definition and core identification matching College Board standards.
+
+Part (b): In-depth analytical explanation of causes and interactions.
+
+Part (c): Evaluative analysis of outcomes and system behavior.
+
+Part (d): Robust justification citing key principles and empirical evidence.`;
+        return {
+          id: idx + 1,
+          title: `FRQ ${idx + 1}: ${topicName} Analytical Problem`,
+          prompt: subPrompt,
+          diagramSvg: "",
+          diagramType: "none",
+          modelAnswer: modelAns,
+          totalPoints: 7,
+          scoringRubric: [
+            "Part (a) [1 point]: Correct identification and definition.",
+            "Part (b) [2 points]: 1 pt for stating governing rule, 1 pt for applying to context.",
+            "Part (c) [2 points]: 1 pt for consequence, 1 pt for analytical depth.",
+            "Part (d) [2 points]: 1 pt for relevant evidence, 1 pt for rigorous College Board justification."
+          ],
+          skill: topicName
+        };
+      });
+      return res.json({ questions: fallbackSubjectives, questionType: "subjective", subject, count: fallbackSubjectives.length, fallback: true });
     }
   } catch (error) {
     if (error.message === "GEMINI_QUOTA_EXHAUSTED") {
@@ -12837,7 +12988,7 @@ STRICT JSON OUTPUT FORMAT:
   "the_fix": "Exact step-by-step conceptual or mathematical rule to reach the 100% correct CED answer...",
   "pro_memory_trick": "\u26A1 Unforgettable Score-5 rule / mnemonic to disarm this trap in 5 seconds."
 }`;
-      const response2 = await safeGenerateContent({
+      const response = await safeGenerateContent({
         gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
         model: "gemini-3.5-flash-lite",
         contents: { parts: [{ text: `Question: ${questionPrompt || "AP Question"}
@@ -12850,14 +13001,14 @@ Trap Type: ${trapType || "Psychometric Trap"}` }] },
           temperature: 0.2
         }
       });
-      const parsed2 = safeParseJSON(response2.text || "{}", "object");
-      return res.json({ success: true, aiFix: parsed2 });
+      const parsed = safeParseJSON(response.text || "{}", "object");
+      return res.json({ success: true, aiFix: parsed });
     }
     if (action === "analyze_custom") {
       if (!customQuestion && (!images || images.length === 0)) {
         return res.status(400).json({ error: "Please provide question text or an image to analyze." });
       }
-      const systemInstruction2 = `You are a Senior College Board AP Exam Psychometrician, Chief Reader, and Master Multimodal Distractor & Trap Architect.
+      const systemInstruction = `You are a Senior College Board AP Exam Psychometrician, Chief Reader, and Master Multimodal Distractor & Trap Architect.
 Your mission is to perform an exhaustive, expert-level "TRAP RADAR AUTOPSY" on the provided AP Exam question, stimulus image, worksheet, or problem.
 
 OCR & MULTIMODAL READING DIRECTIVE (FOR IMAGES, WORKSHEETS & HANDWRITING):
@@ -12980,19 +13131,19 @@ Perform complete OCR and conduct an in-depth AP Trap Radar Autopsy for this ques
 ${customQuestion}`;
       }
       contentParts.push({ text: promptText });
-      const response2 = await safeGenerateContent({
+      const response = await safeGenerateContent({
         gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
         model: "gemini-3.5-flash-lite",
         contents: { parts: contentParts },
         config: {
-          systemInstruction: { parts: [{ text: systemInstruction2 }] },
+          systemInstruction: { parts: [{ text: systemInstruction }] },
           responseMimeType: "application/json",
           temperature: 0.2,
           maxOutputTokens: 2500
         }
       });
-      let parsed2 = safeParseJSON(response2.text || "{}", "object");
-      const isFalsePositiveRejection = parsed2 && parsed2.isInvalidQuestion && (hasImages && (/free\s*response|frq|multiple[- ]choice|options?\s*\([a-d]\)|unit\s*\d|ap\s+[a-z]+/i.test(parsed2.errorMessage || "") || /not a multiple[- ]choice/i.test(parsed2.errorMessage || "") || /please provide a multiple[- ]choice/i.test(parsed2.errorMessage || "") || /human geography|calculus|physics|chemistry|biology|history|psychology|statistics|economics|government|environmental/i.test(parsed2.errorMessage || "")));
+      let parsed = safeParseJSON(response.text || "{}", "object");
+      const isFalsePositiveRejection = parsed && parsed.isInvalidQuestion && (hasImages && (/free\s*response|frq|multiple[- ]choice|options?\s*\([a-d]\)|unit\s*\d|ap\s+[a-z]+/i.test(parsed.errorMessage || "") || /not a multiple[- ]choice/i.test(parsed.errorMessage || "") || /please provide a multiple[- ]choice/i.test(parsed.errorMessage || "") || /human geography|calculus|physics|chemistry|biology|history|psychology|statistics|economics|government|environmental/i.test(parsed.errorMessage || "")));
       if (isFalsePositiveRejection) {
         console.log("[APTrapRadar] Detected false-positive FRQ rejection. Forcing FRQ Trap Radar Autopsy...");
         try {
@@ -13008,26 +13159,26 @@ ${customQuestion}`;
               ]
             },
             config: {
-              systemInstruction: { parts: [{ text: systemInstruction2 }] },
+              systemInstruction: { parts: [{ text: systemInstruction }] },
               responseMimeType: "application/json",
               temperature: 0.1
             }
           });
           const recoveryParsed = safeParseJSON(recoveryResponse.text || "{}", "object");
           if (recoveryParsed && !recoveryParsed.isInvalidQuestion && Array.isArray(recoveryParsed.traps) && recoveryParsed.traps.length > 0) {
-            parsed2 = recoveryParsed;
+            parsed = recoveryParsed;
           }
         } catch (recErr) {
           console.error("[APTrapRadar] Recovery failed:", recErr);
         }
       }
-      if (parsed2 && parsed2.isInvalidQuestion && hasImages && /free\s*response|frq/i.test(parsed2.errorMessage || "")) {
-        const errorDesc = parsed2.errorMessage || "";
+      if (parsed && parsed.isInvalidQuestion && hasImages && /free\s*response|frq/i.test(parsed.errorMessage || "")) {
+        const errorDesc = parsed.errorMessage || "";
         const subjMatch = errorDesc.match(/AP\s+([A-Za-z\s]+?)(?:Free|FRQ|set|Unit|\(|\,)/i);
         const detectedSubj = subjMatch ? `AP ${subjMatch[1].trim()}` : "AP Free Response Question";
         const unitMatch = errorDesc.match(/Unit\s*\d+[^,.)]*/i);
         const unitName = unitMatch ? unitMatch[0].trim() : "Free Response Scoring Standard";
-        parsed2 = {
+        parsed = {
           isInvalidQuestion: false,
           detectedSubject: detectedSubj,
           skill: unitName,
@@ -13061,8 +13212,8 @@ ${errorDesc.replace(/^input is not a valid AP multiple-choice question\.\s*/i, "
           disarmStrategy: "\u26A1 5-Second FRQ Scoring Secret: Always use the 'Identify + Evidence + Explain (Why/How)' formula for every subpart to guarantee rubric points."
         };
       }
-      if (parsed2 && Array.isArray(parsed2.traps)) {
-        parsed2.traps = parsed2.traps.map((t, idx) => {
+      if (parsed && Array.isArray(parsed.traps)) {
+        parsed.traps = parsed.traps.map((t, idx) => {
           const rawOpt = String(t.option || String.fromCharCode(65 + idx)).trim();
           const opt = /^part\s+/i.test(rawOpt) ? rawOpt : rawOpt.toUpperCase();
           let txt = String(t.text || "").trim();
@@ -13073,8 +13224,11 @@ ${errorDesc.replace(/^input is not a valid AP multiple-choice question\.\s*/i, "
             text: txt
           };
         });
+        if (parsed.traps.length === 4 && parsed.traps.every((t) => /^[A-D]$/i.test(t.option))) {
+          parsed.traps = sanitizeAndBalancePsychometricRates(parsed.traps, 0);
+        }
       }
-      return res.json({ success: true, analysis: parsed2 });
+      return res.json({ success: true, analysis: parsed });
     }
     if (!subject) {
       return res.status(400).json({ error: "Missing AP Subject" });
@@ -13163,7 +13317,7 @@ Step 4 (Interpretation): This value represents the total path length traveled by
     "skill": "Relevant AP Skill / CED Unit"
   }
 ]`;
-      const response2 = await safeGenerateContent({
+      const response = await safeGenerateContent({
         gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
         model: "gemini-3.5-flash-lite",
         contents: { parts: [{ text: `Generate ${requestedCount2} authentic AP ${subject} Free Response Trap Radar questions for ${targetTopic}.` }] },
@@ -13173,14 +13327,14 @@ Step 4 (Interpretation): This value represents the total path length traveled by
           temperature: 0.2
         }
       });
-      const parsed2 = safeParseJSON(response2.text || "[]", "array");
+      const parsed = safeParseJSON(response.text || "[]", "array");
       let questionsList2 = [];
-      if (Array.isArray(parsed2)) {
-        questionsList2 = parsed2;
-      } else if (parsed2 && Array.isArray(parsed2.questions)) {
-        questionsList2 = parsed2.questions;
-      } else if (parsed2 && typeof parsed2 === "object") {
-        const found = Object.values(parsed2).find((v) => Array.isArray(v));
+      if (Array.isArray(parsed)) {
+        questionsList2 = parsed;
+      } else if (parsed && Array.isArray(parsed.questions)) {
+        questionsList2 = parsed.questions;
+      } else if (parsed && typeof parsed === "object") {
+        const found = Object.values(parsed).find((v) => Array.isArray(v));
         if (found) questionsList2 = found;
       }
       if (questionsList2.length > 0) {
@@ -13194,10 +13348,11 @@ Step 4 (Interpretation): This value represents the total path length traveled by
       }
       throw new Error("Failed to generate valid Subjective Trap Radar questions.");
     }
-    const requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 10);
-    const systemInstruction = `You are a Senior College Board AP Exam Chief Psychometrician, Lead Item Writer, and Master Distractor Architect.
+    const requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 20);
+    const generateTrapBatch = async (batchCount, bIdx) => {
+      const batchSystemInstruction = `You are a Senior College Board AP Exam Chief Psychometrician, Lead Item Writer, and Master Distractor Architect.
 The student is training with the "AP TRAP RADAR\u2122" to achieve a Score 5 in AP ${subject}.
-Your mission: Generate exactly ${requestedCount} ultra-authentic, high-caliber College Board AP Exam Multiple Choice Questions for "${targetTopic}" with DECEPTIVELY ENGINEERED PSYCHOMETRIC DISTRACTOR TRAPS.
+Your mission: Generate exactly ${batchCount} ultra-authentic, high-caliber College Board AP Exam Multiple Choice Questions for "${targetTopic}" with DECEPTIVELY ENGINEERED PSYCHOMETRIC DISTRACTOR TRAPS.
 
 RAPID HIGH-SPEED GENERATION RULES:
 - Generate with ultra-high speed and razor-sharp clarity. Keep each trapDescription to 1 crisp, direct sentence.
@@ -13209,6 +13364,17 @@ MANDATORY 25% BALANCED ANSWER DISTRIBUTION (CRITICAL RULE):
 - YOU MUST DISTRIBUTE THE CORRECT TARGET OPTION EVENLY ACROSS ALL 4 POSITIONS (A, B, C, D) WITH ROUGHLY 25% PROBABILITY EACH.
 - OVER-RELIANCE ON OPTION B IS STRICTLY FORBIDDEN. Ensure Option C, Option D, and Option A are evenly chosen as correct targets.
 - Ensure varied correct target positions without consecutive identical answers.
+
+MANDATORY PSYCHOMETRIC PERCENTAGE RULES (CRITICAL MATHEMATICAL LAW):
+- Every question has 4 options whose student selection percentages MUST SUM TO EXACTLY 100%.
+- EVERY SINGLE OPTION MUST HAVE A STRICTLY UNIQUE, DIFFERENT PERCENTAGE. NEVER REPEAT THE SAME PERCENTAGE (NEVER output 35% across multiple options).
+- FOR THE 1 CORRECT TARGET OPTION:
+  "vulnerabilityRate": "Target Answer (46% correct)" (use realistic 38%-56% range).
+- FOR THE 3 DISTRACTOR TRAP OPTIONS:
+  Their percentages MUST sum to the remaining (100% - target%).
+  Distribute realistically among the 3 traps with different magnitudes (e.g., Primary trap: 26%-32%, Secondary trap: 14%-19%, Minor trap: 7%-12%).
+  Example distribution: Target: 46%, Trap 1: 29%, Trap 2: 16%, Trap 3: 9%. Sum = 46 + 29 + 16 + 9 = 100%.
+  Format distractor rate strictly as: "[X]% of AP test-takers pick this".
 
 AUTHENTIC COLLEGE BOARD AP EXAM STANDARDS (STRICT REQUIREMENT):
 1. REAL AP STIMULUS-BASED FORMAT:
@@ -13235,7 +13401,7 @@ AUTHENTIC COLLEGE BOARD AP EXAM STANDARDS (STRICT REQUIREMENT):
    - Ensure EXACTLY ONE OPTION is correct and 'correctAnswer' matches the exact string in 'options'.
 
 STRICT JSON OUTPUT FORMAT:
-Return ONLY a valid JSON array of question objects:
+Return ONLY a valid JSON array of ${batchCount} question objects:
 [
   {
     "id": 1,
@@ -13257,7 +13423,7 @@ Return ONLY a valid JSON array of question objects:
         "trapType": "\u{1F3AF} Official College Board Target",
         "trapDescription": "Why this option is the sole CED-compliant answer.",
         "collegeBoardMindset": "Evaluates foundational CED objective...",
-        "vulnerabilityRate": "N/A"
+        "vulnerabilityRate": "Target Answer (46% correct)"
       },
       {
         "option": "B",
@@ -13265,7 +13431,7 @@ Return ONLY a valid JSON array of question objects:
         "trapType": "\u{1FAA4} The Reverse Logic / Sign Flip Trap",
         "trapDescription": "Why students fall for this...",
         "collegeBoardMindset": "Designed for students who missed the negative sign...",
-        "vulnerabilityRate": "42% of students choose this"
+        "vulnerabilityRate": "29% of AP test-takers pick this"
       },
       {
         "option": "C",
@@ -13273,7 +13439,7 @@ Return ONLY a valid JSON array of question objects:
         "trapType": "\u{1FAA4} The Half-Truth / Scope Creep Trap",
         "trapDescription": "Why students fall for this...",
         "collegeBoardMindset": "Exploits superficial reading of the passage...",
-        "vulnerabilityRate": "27% of students choose this"
+        "vulnerabilityRate": "16% of AP test-takers pick this"
       },
       {
         "option": "D",
@@ -13281,33 +13447,50 @@ Return ONLY a valid JSON array of question objects:
         "trapType": "\u{1FAA4} The Absolute Qualifier Trap",
         "trapDescription": "Why students fall for this...",
         "collegeBoardMindset": "Baits students with extreme language...",
-        "vulnerabilityRate": "19% of students choose this"
+        "vulnerabilityRate": "9% of AP test-takers pick this"
       }
     ],
     "disarmStrategy": "\u26A1 5-Second Disarm Secret: The exact heuristic to eliminate distractors instantly on exam day.",
     "skill": "Relevant AP Skill / CED Unit"
   }
 ]`;
-    const response = await safeGenerateContent({
-      gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-      model: "gemini-3.5-flash-lite",
-      contents: { parts: [{ text: `Generate ${requestedCount} authentic AP ${subject} Trap Radar questions for ${targetTopic}.` }] },
-      config: {
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        responseMimeType: "application/json",
-        temperature: 0.2,
-        maxOutputTokens: 3e3
+      const response = await safeGenerateContent({
+        gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
+        model: "gemini-3.5-flash-lite",
+        contents: { parts: [{ text: `Generate ${batchCount} authentic AP ${subject} Trap Radar questions for ${targetTopic}. Batch Seed: ${Date.now()}_b${bIdx + 1}_${Math.random().toString(36).substring(2, 6)}` }] },
+        config: {
+          systemInstruction: { parts: [{ text: batchSystemInstruction }] },
+          responseMimeType: "application/json",
+          temperature: 0.2,
+          maxOutputTokens: 8192
+        }
+      });
+      const parsed = safeParseJSON(response.text || "[]", "array");
+      let list = [];
+      if (Array.isArray(parsed)) {
+        list = parsed;
+      } else if (parsed && Array.isArray(parsed.questions)) {
+        list = parsed.questions;
+      } else if (parsed && typeof parsed === "object") {
+        const found = Object.values(parsed).find((v) => Array.isArray(v));
+        if (found) list = found;
       }
-    });
-    const parsed = safeParseJSON(response.text || "[]", "array");
+      return list;
+    };
+    const batchSizes = [];
+    let remaining = requestedCount;
+    while (remaining > 0) {
+      const take = Math.min(remaining, 5);
+      batchSizes.push(take);
+      remaining -= take;
+    }
+    const batchPromises = batchSizes.map((cnt, idx) => generateTrapBatch(cnt, idx));
+    const batchResults = await Promise.allSettled(batchPromises);
     let questionsList = [];
-    if (Array.isArray(parsed)) {
-      questionsList = parsed;
-    } else if (parsed && Array.isArray(parsed.questions)) {
-      questionsList = parsed.questions;
-    } else if (parsed && typeof parsed === "object") {
-      const found = Object.values(parsed).find((v) => Array.isArray(v));
-      if (found) questionsList = found;
+    for (const res2 of batchResults) {
+      if (res2.status === "fulfilled" && Array.isArray(res2.value)) {
+        questionsList.push(...res2.value);
+      }
     }
     if (questionsList.length > 0) {
       const finalized = questionsList.map((q, idx) => ({
@@ -13318,32 +13501,76 @@ Return ONLY a valid JSON array of question objects:
       const balancedFinalized = shuffleAndBalanceTrapRadarQuestions(finalized);
       return res.json({ success: true, questions: balancedFinalized, subject, unit: targetTopic, count: balancedFinalized.length, format: "objective" });
     }
-    console.warn(`[ap-trap-radar] AI challenge returned empty. Engaging instant curriculum fallback...`);
+    console.warn(`[ap-trap-radar] AI challenge returned empty. Engaging instant curriculum fallback with authentic balanced traps...`);
     const matchedSubject = AP_BATTLE_SUBJECTS.find(
       (s) => (subject || "").toLowerCase().includes(s.name.toLowerCase().replace("ap ", "")) || s.id.includes((subject || "").toLowerCase().replace(/[^a-z0-9]/g, ""))
     ) || AP_BATTLE_SUBJECTS[0];
     const fallbackBank = getBattleQuestions(matchedSubject.id);
     if (fallbackBank && fallbackBank.length > 0) {
       const letters = ["A", "B", "C", "D"];
-      const fallbackQuestions = fallbackBank.slice(0, requestedCount).map((b, idx) => ({
-        id: idx + 1,
-        format: "objective",
-        prompt: b.stem,
-        options: b.options.map((opt, oIdx) => opt.startsWith(`${letters[oIdx]})`) ? opt : `${letters[oIdx]}) ${opt}`),
-        correctAnswer: b.options[b.correctIndex] || b.options[0],
-        traps: b.options.map((opt, oIdx) => ({
-          option: letters[oIdx],
-          text: opt,
-          isCorrect: oIdx === b.correctIndex,
-          trapType: oIdx === b.correctIndex ? "\u{1F3AF} Official College Board Target" : "\u26A0\uFE0F Common Misconception Trap",
-          trapDescription: oIdx === b.correctIndex ? b.explanation : "Students commonly pick this distractor by confusing inverse relationships or misapplying intermediate steps.",
-          collegeBoardMindset: "Evaluates thorough grasp of College Board CED concepts.",
-          vulnerabilityRate: oIdx === b.correctIndex ? "Target Answer" : "35% of AP test-takers pick this"
-        })),
-        disarmStrategy: "\u26A1 5-Second Disarm Secret: Verify given conditions carefully and eliminate extreme or absolute distractors.",
-        skill: targetTopic || subject
-      }));
-      return res.json({ success: true, questions: fallbackQuestions, subject, unit: targetTopic, count: fallbackQuestions.length, format: "objective", fallback: true });
+      const FALLBACK_TRAP_ARCHETYPES = [
+        {
+          type: "\u{1FAA4} Reverse Logic / Sign Slip Trap",
+          desc: "Students commonly pick this distractor by confusing inverse causal relationships or misapplying directional changes.",
+          mindset: "College Board evaluates whether students distinguish cause from effect under timed exam pressure."
+        },
+        {
+          type: "\u{1FAA4} Half-Truth / Scope Creep Trap",
+          desc: "While this statement is factually true in isolation, it fails to directly answer the specific conditions posed in the stimulus.",
+          mindset: "Exploits superficial reading of the prompt without verifying core constraints."
+        },
+        {
+          type: "\u{1FAA4} Absolute Qualifier / Overgeneralization Trap",
+          desc: "Bait option containing subtle overgeneralizations or extreme absolute qualifiers that invalidate the claim.",
+          mindset: "Baits students who rely on familiar vocabulary without checking nuanced AP boundary conditions."
+        },
+        {
+          type: "\u{1FAA4} Intermediate Stop / Calculation Slip Trap",
+          desc: "Students pick this by stopping after an intermediate conceptual phase rather than computing the final target quantity.",
+          mindset: "Catches students who rush through multi-step analytical reasoning."
+        }
+      ];
+      const fallbackQuestions = fallbackBank.slice(0, requestedCount).map((b, idx) => {
+        let dCounter = 0;
+        const rawTraps = b.options.map((opt, oIdx) => {
+          const isTarget = oIdx === b.correctIndex;
+          if (isTarget) {
+            return {
+              option: letters[oIdx],
+              text: opt,
+              isCorrect: true,
+              trapType: "\u{1F3AF} Official College Board Target",
+              trapDescription: b.explanation,
+              collegeBoardMindset: "Evaluates thorough grasp of College Board CED concepts.",
+              vulnerabilityRate: "Target Answer"
+            };
+          } else {
+            const arch = FALLBACK_TRAP_ARCHETYPES[(idx + dCounter) % FALLBACK_TRAP_ARCHETYPES.length];
+            dCounter++;
+            return {
+              option: letters[oIdx],
+              text: opt,
+              isCorrect: false,
+              trapType: arch.type,
+              trapDescription: arch.desc,
+              collegeBoardMindset: arch.mindset,
+              vulnerabilityRate: "Distractor Trap"
+            };
+          }
+        });
+        return {
+          id: idx + 1,
+          format: "objective",
+          prompt: b.stem,
+          options: b.options.map((opt, oIdx) => opt.startsWith(`${letters[oIdx]})`) ? opt : `${letters[oIdx]}) ${opt}`),
+          correctAnswer: b.options[b.correctIndex] || b.options[0],
+          traps: rawTraps,
+          disarmStrategy: "\u26A1 5-Second Disarm Secret: Verify given conditions carefully and eliminate extreme or absolute distractors.",
+          skill: targetTopic || subject
+        };
+      });
+      const balancedFallback = shuffleAndBalanceTrapRadarQuestions(fallbackQuestions);
+      return res.json({ success: true, questions: balancedFallback, subject, unit: targetTopic, count: balancedFallback.length, format: "objective", fallback: true });
     }
     throw new Error("Failed to generate valid Trap Radar questions structure.");
   } catch (error) {

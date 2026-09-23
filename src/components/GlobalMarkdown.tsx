@@ -195,6 +195,51 @@ export function cleanMarkdownMath(content: string): string {
   });
   text = fixedLines.join('\n');
 
+  // 3.5. CRITICAL LATEX HEALING: Auto-detect and wrap bare LaTeX formulas, parenthetical math & equations outside $...$
+  const latexMathKeywords = [
+    'frac', 'dfrac', 'cfrac', 'sqrt', 'lim', 'int', 'iint', 'iiint', 'oint', 'sum', 'prod',
+    'sin', 'cos', 'tan', 'cot', 'sec', 'csc', 'arcsin', 'arccos', 'arctan',
+    'ln', 'log', 'exp', 'infty', 'theta', 'alpha', 'beta', 'gamma', 'delta',
+    'epsilon', 'lambda', 'mu', 'pi', 'sigma', 'tau', 'phi', 'omega',
+    'Delta', 'Sigma', 'Omega', 'to', 'rightarrow', 'leftarrow', 'times',
+    'div', 'pm', 'mp', 'le', 'ge', 'ne', 'approx', 'equiv', 'cdot',
+    'partial', 'nabla', 'forall', 'exists', 'in', 'notin', 'subset', 'subseteq',
+    'quad', 'qquad', 'boxed', 'vec', 'hat', 'bar', 'mathbf', 'mathrm'
+  ];
+
+  // A. Standalone pure math formulas/identities without '$' (e.g. key_formula: "V = 2\pi \int_{a}^{b} x f(x) dx, \quad A(w) = w \cdot h(w)")
+  if (!text.includes('$')) {
+    const trimmed = text.trim();
+    const hasMathCmd = new RegExp(`\\\\(?:${latexMathKeywords.join('|')})(?![a-zA-Z])`).test(trimmed);
+    if (hasMathCmd) {
+      const words = trimmed.match(/\b[a-zA-Z]{3,}\b/g) || [];
+      const mathTerms = new Set([...latexMathKeywords, 'sin', 'cos', 'tan', 'sec', 'csc', 'cot', 'arcsin', 'arccos', 'arctan', 'log', 'exp']);
+      const proseWords = words.filter(w => !mathTerms.has(w.toLowerCase()));
+      if (proseWords.length <= 1) {
+        text = `$$\n${trimmed}\n$$`;
+      }
+    }
+  }
+
+  // B. Parenthetical or bracketed math expressions with LaTeX commands: (2\pi x h(x)) -> ($2\pi x h(x)$)
+  const nestedParenRegex = new RegExp(`(?<!\\$)\\(((?:[^()\\n]|\\([^()\\n]*\\))*?\\\\(?:${latexMathKeywords.join('|')})(?![a-zA-Z])(?:[^()\\n]|\\([^()\\n]*\\))*?)\\)(?!\\$)`, 'g');
+  text = text.replace(nestedParenRegex, (match, inner) => {
+    const commonWords = /\b(the|is|are|was|were|because|since|always|never|remember|note)\b/i;
+    if (!commonWords.test(inner)) {
+      return `($${inner.trim()}$)`;
+    }
+    return match;
+  });
+
+  const nestedBracketRegex = new RegExp(`(?<!\\$)\\[([^\\]\\n]*?\\\\(?:${latexMathKeywords.join('|')})(?![a-zA-Z])[^\\]\\n]*?)\\](?!\\$)`, 'g');
+  text = text.replace(nestedBracketRegex, (match, inner) => {
+    const commonWords = /\b(the|is|are|was|were|because|since)\b/i;
+    if (!commonWords.test(inner)) {
+      return `[$${inner.trim()}$]`;
+    }
+    return match;
+  });
+
   // 4. MASK MATH TOKENS FIRST so that prose transformations never touch inside math formulas!
   const mathBlocks: string[] = [];
   const mathTokenRegex = /(\$\$[\s\S]*?\$\$|\$(?!\s)(?:\\.|[^\$\n\\])+?(?<!\s)\$)/g;
@@ -271,8 +316,18 @@ export function cleanMarkdownMath(content: string): string {
     let clean = inner.replace(/\^([0-9a-zA-Z\-]+)/g, '^{$1}');
     return `$\\int (${clean})$`;
   });
-  maskedText = maskedText.replace(/(?<!\$)\\int(?:_[a-zA-Z0-9^{}]+)?(?:\^[a-zA-Z0-9^{}]+)?\s+[a-zA-Z0-9\(\)\^\-+/*\s]+?d[xyt](?!\$)/g, (match) => {
+  maskedText = maskedText.replace(/(?<!\$)\\int(?![a-zA-Z])(?:_[a-zA-Z0-9^{}\\]+)?(?:\^[a-zA-Z0-9^{}\\]+)?\s+[^\n,;:.!?$]*?\bd[xytuvz]\b(?:\s*=\s*[^\n,;:.!?$]+)?(?!\$)/g, (match) => {
     return `$${match.trim()}$`;
+  });
+
+  // Bare equations with fractions/roots in prose (e.g. x = \frac{1}{\sqrt{2}} or \frac{a}{b})
+  maskedText = maskedText.replace(/(?<![$\w\\])(?:([a-zA-Z0-9_'\(\)]+\s*[=<>≤≥≠≈]\s*))?(\\(?:frac|dfrac|cfrac|sqrt|boxed)\b(?:\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})+(?:\s*[\+\-\*\/\^=]\s*(?:[0-9a-zA-Z]+|\\[a-zA-Z]+(?:\{[^{}]*\})*))?(?:\s*d[xytuv])?)(?!\$)/g, (_m, lhs, rhs) => {
+    return `$${(lhs || '') + rhs.trim()}$`;
+  });
+
+  // Bare Greek letters & math symbols in prose outside math mode (e.g. \pi, \theta, \alpha, \beta, \infty)
+  maskedText = maskedText.replace(/(?<![$\w\\])(\d*\\(?:pi|theta|alpha|beta|gamma|delta|epsilon|lambda|mu|sigma|tau|phi|omega|Delta|Sigma|Omega|infty|cdot)\b(?:\s*[\^=<>+\-*/]\s*[a-zA-Z0-9]+)?)(?![$\w])/g, (_m, expr) => {
+    return `$${expr.trim()}$`;
   });
 
   // Unicode math symbols in prose

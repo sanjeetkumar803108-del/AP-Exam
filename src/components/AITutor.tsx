@@ -96,8 +96,8 @@ FORMAT:
 {
   "topic_title": "Subject or Topic of the problem (e.g. 'Definite Integrals via Integration by Parts')",
   "format_type": "steps",
-  "key_formula": "The primary theoretical formula in LaTeX (e.g. $$\\int u \\, dv = uv - \\int v \\, du$$)",
-  "exam_trap": "A brief 1-2 sentence high-yield warning about common calculation traps, sign errors, or misconceptions",
+  "key_formula": "The primary theoretical formula in LaTeX enclosed in $$ ... $$ (e.g. \"$$V = 2\\\\pi \\\\int_{a}^{b} x f(x)\\\\,dx, \\\\quad A(w) = w \\\\cdot h(w)$$\", or null if not applicable)",
+  "exam_trap": "A brief 1-2 sentence high-yield warning about common calculation traps or sign errors. Wrap any math expressions, variables, or functions in single $ delimiters (e.g. \"($2\\\\pi x h(x))\", \"$y = f(x)$\")",
   "solution_steps": [
     {
       "step_id": 1,
@@ -125,7 +125,7 @@ FORMAT:
 {
   "topic_title": "Topic or Concept Title",
   "format_type": "conversational",
-  "markdown_content": "Full markdown response with clear headings, bullet points, explanations, or tables.",
+  "markdown_content": "Full markdown response with clear headings, bullet points, explanations, or tables. Wrap all inline math expressions in single $...$ and standalone equations in $$...$$.",
   "suggestions": [
     "Follow-up question 1",
     "Follow-up question 2",
@@ -135,7 +135,11 @@ FORMAT:
 
 RULES:
 - Always populate "suggestions" with 3 context-aware study follow-up ideas.
-- Whenever using LaTeX for formulas, wrap in $$ or $ and double-escape backslashes in JSON (\\\\frac, \\\\sqrt, \\\\text).`;
+- MANDATORY LATEX RULES (ZERO UNRENDERED LATEX):
+  * Standalone formulas, equations, and identities MUST be wrapped in $$ ... $$ block delimiters (e.g. key_formula: "$$V = 2\\\\pi \\\\int_a^b x f(x)\\\\,dx$$").
+  * All inline variables, math expressions, functions, and symbols MUST be wrapped in single $ ... $ delimiters (e.g. "$2\\\\pi x h(x)$", "$x = \\\\frac{1}{\\\\sqrt{2}}$", "$f'(x) = 0$").
+  * NEVER output bare LaTeX commands without $ or $$ delimiters!
+  * Always double-escape backslashes in JSON output: \\\\frac, \\\\sqrt, \\\\int, \\\\pi, \\\\theta, \\\\text, \\\\boxed, \\\\cdot, \\\\quad.`;
 
 // Used when the student types a question/message WITHOUT an image
 const SYSTEM_INSTRUCTION_TEXT_CHAT = `You are an elite, polyglot AI Master Educator and Academic Tutor for AP Exam App. You are intellectually brilliant, deeply empathetic, and dynamically adaptive to student needs.
@@ -162,6 +166,24 @@ CRITICAL GOVERNING PROTOCOLS (HIGHEST PRIORITY):
    - PASS 2: Step-by-step PEMDAS execution with exact radicals/fractions and decimal precision.
    - PASS 3: Sanity and boundary check. Ensure 100% mathematical accuracy.
 
+6. COMPLETE OUTPUT MANDATE (ZERO PREMATURE TRUNCATION):
+   - You MUST generate complete, thorough, fully resolved answers. NEVER stop midway, omit steps, or truncate explanations.
+   - For long or complex multi-step derivations, calculations, and explanations, write out every single step from first principles to the final conclusion without rushing or abbreviating.
+
+7. PRACTICE QUIZZES & MULTIPLE CHOICE QUESTIONS (MCQs):
+   - When the student asks for a practice quiz, pop quiz, or multiple-choice question:
+     Use format_type = "conversational".
+     Write the complete question, scenario, and ALL choices (A, B, C, D) directly inside "markdown_content".
+     NEVER output only a greeting or catchphrase (e.g. "Hoot hoot!") without including the complete question and choices!
+     Format the question clearly with bold text and list the choices with bullet points (e.g. * **A)** ..., * **B)** ...).
+     Do NOT reveal the answer until the student replies.
+
+8. STUDENT ANSWER VERIFICATION & EXPLANATION:
+   - When the student answers a quiz or submits an option (e.g., "A", "B", "C", "D" or a calculation):
+     Evaluate their response clearly: state whether they are correct or incorrect.
+     Provide the full, rigorous conceptual explanation of why the correct option is right, why other choices are misconceptions, and the underlying principle directly inside "markdown_content" (or "solution_steps" if numerical).
+     NEVER output only a greeting or catchphrase without the complete explanation and solution breakdown!
+
 ================================================================
 MANDATORY JSON OUTPUT STRUCTURE (NO RAW TEXT OUTSIDE JSON):
 ================================================================
@@ -172,8 +194,8 @@ Use this whenever the problem is a mathematical equation, calculus, trigonometry
 {
   "topic_title": "3–6 word topic title (e.g. 'Quadratic Roots via Formula', 'Trigonometric Ladder Problem')",
   "format_type": "steps",
-  "key_formula": "Primary formula or identity in LaTeX (e.g. $$\\sin(\\theta) = \\frac{\\text{Opposite}}{\\text{Hypotenuse}}$$, or null if not applicable)",
-  "exam_trap": "Brief 1-2 sentence high-yield warning about common exam traps or sign mistakes (or null)",
+  "key_formula": "Primary formula or identity in LaTeX enclosed in $$ ... $$ (e.g. \"$$\\\\sin(\\\\theta) = \\\\frac{\\\\text{Opposite}}{\\\\text{Hypotenuse}}$$\", or null if not applicable)",
+  "exam_trap": "Brief 1-2 sentence high-yield warning about common exam traps or sign mistakes. Wrap any math expressions, variables, or functions in single $ delimiters (e.g. \"($2\\\\pi x h(x))\", \"$f'(x) = 0$\") (or null)",
   "solution_steps": [
     {
       "step_id": 1,
@@ -195,12 +217,12 @@ Use this whenever the problem is a mathematical equation, calculus, trigonometry
   ]
 }
 
---- FORMAT TYPE B: "conversational" (For Greetings, Bullet Points, Concepts, Tables, Roleplays, Essays, Small Talk) ---
-Use this for greetings, conceptual questions, bullet-point lists, comparison tables, summaries, humanities, and roleplay/custom persona requests.
+--- FORMAT TYPE B: "conversational" (For Greetings, Quizzes, Bullet Points, Concepts, Tables, Roleplays, Essays, Small Talk) ---
+Use this for greetings, pop quizzes, conceptual questions, bullet-point lists, comparison tables, summaries, humanities, and roleplay/custom persona requests.
 {
   "topic_title": "Short Topic Title (or null for simple greetings/small talk)",
   "format_type": "conversational",
-  "markdown_content": "Your rich, formatted markdown response. Use standard markdown: bullet points (- or *), bold text (**text**), numbered lists (1. 2.), markdown tables, and LaTeX math ($...$ or $$...$$) where applicable. Embody user's requested persona and strictly obey their formatting instructions.",
+  "markdown_content": "Your rich, formatted markdown response. Use standard markdown: bullet points (- or *), bold text (**text**), numbered lists (1. 2.), markdown tables, and LaTeX math ($...$ or $$...$$) where applicable. For quizzes, include the FULL question and ALL options (A, B, C, D) inside this field. Embody user's requested persona and strictly obey their formatting instructions.",
   "suggestions": [
     "Context-aware follow-up suggestion 1",
     "Context-aware follow-up suggestion 2",
@@ -210,7 +232,12 @@ Use this for greetings, conceptual questions, bullet-point lists, comparison tab
 
 RULES:
 - The JSON object must be valid raw JSON.
-- Double-escape backslashes for all LaTeX inside JSON (\\\\frac, \\\\sqrt, \\\\sin, \\\\boxed).
+- Never invent separate keys like 'question', 'options', 'intro', or 'quiz'; put all conversational text and questions directly inside 'markdown_content'.
+- MANDATORY LATEX RULES (ZERO UNRENDERED LATEX):
+  * Standalone formulas, equations, and identities MUST be wrapped in $$ ... $$ block delimiters (e.g. key_formula: "$$V = 2\\\\pi \\\\int_a^b x f(x)\\\\,dx$$").
+  * All inline variables, math expressions, functions, and symbols MUST be wrapped in single $ ... $ delimiters (e.g. "$2\\\\pi x h(x)$", "$x = \\\\frac{1}{\\\\sqrt{2}}$", "$f'(x) = 0$").
+  * NEVER output bare LaTeX commands without $ or $$ delimiters!
+  * Always double-escape backslashes in JSON output: \\\\frac, \\\\sqrt, \\\\sin, \\\\boxed, \\\\pi, \\\\theta, \\\\int, \\\\cdot, \\\\quad.
 - Always include 3 high-value suggestions in the "suggestions" array.`;
 
 // ----------------------------------------------------
@@ -274,6 +301,14 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
 
   const isConversational = useMemo(() => {
     if (!parsedSolution) return false;
+    // If explicit multi-step problem with 2+ solution steps, prioritize step cards!
+    if (Array.isArray(parsedSolution.solution_steps) && parsedSolution.solution_steps.length > 1) {
+      return false;
+    }
+    // If only 1 step, but has key_formula or exam_trap, keep step cards
+    if (Array.isArray(parsedSolution.solution_steps) && parsedSolution.solution_steps.length === 1 && (parsedSolution.key_formula || parsedSolution.exam_trap)) {
+      return false;
+    }
     if (parsedSolution.format_type === 'conversational' || parsedSolution.format_type === 'markdown' || parsedSolution.format_type === 'chat') {
       return true;
     }
@@ -284,7 +319,7 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
       return true;
     }
     // If only 1 step and not an explicit multi-step problem solver
-    if (parsedSolution.solution_steps.length === 1 && parsedSolution.format_type !== 'steps' && !parsedSolution.key_formula && !parsedSolution.exam_trap) {
+    if (parsedSolution.solution_steps.length === 1 && parsedSolution.format_type !== 'steps') {
       return true;
     }
     return false;
@@ -292,13 +327,56 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
 
   const conversationalText = useMemo(() => {
     if (!parsedSolution) return cleanText;
-    if (parsedSolution.markdown_content) return parsedSolution.markdown_content;
-    if (parsedSolution.content) return parsedSolution.content;
-    if (parsedSolution.explanation) return parsedSolution.explanation;
-    if (parsedSolution.response) return parsedSolution.response;
-    if (parsedSolution.solution_steps && parsedSolution.solution_steps.length === 1) {
-      return parsedSolution.solution_steps[0].content || parsedSolution.solution_steps[0].title || cleanText;
+
+    const parts: string[] = [];
+
+    // 1. Primary markdown content or response
+    const mainText = parsedSolution.markdown_content || parsedSolution.content || parsedSolution.response || '';
+    if (mainText && typeof mainText === 'string') {
+      parts.push(mainText.trim());
     }
+
+    // 2. Distinct question / problem field
+    const questionText = parsedSolution.question || parsedSolution.problem || parsedSolution.prompt;
+    if (questionText && typeof questionText === 'string' && !mainText.includes(questionText.trim())) {
+      parts.push(`### Question\n${questionText.trim()}`);
+    }
+
+    // 3. Distinct options field (e.g. for quiz / practice questions)
+    if (parsedSolution.options) {
+      let optionsMd = '';
+      if (Array.isArray(parsedSolution.options)) {
+        optionsMd = parsedSolution.options.map((opt: any) => `- ${String(opt).trim()}`).join('\n');
+      } else if (typeof parsedSolution.options === 'string') {
+        optionsMd = parsedSolution.options.trim();
+      }
+      if (optionsMd && !mainText.includes(optionsMd)) {
+        parts.push(`**Options:**\n${optionsMd}`);
+      }
+    }
+
+    // 4. Distinct explanation / solution / feedback
+    const explText = parsedSolution.explanation || parsedSolution.solution || parsedSolution.feedback || parsedSolution.answer;
+    if (explText && typeof explText === 'string' && !mainText.includes(explText.trim())) {
+      parts.push(`**Explanation:**\n${explText.trim()}`);
+    }
+
+    // 5. If solution_steps are present while rendering conversationally, append step content
+    if (Array.isArray(parsedSolution.solution_steps) && parsedSolution.solution_steps.length > 0) {
+      const stepsMd = parsedSolution.solution_steps.map((st: any, sIdx: number) => {
+        const stepNum = st.step_id || sIdx + 1;
+        const title = st.title ? `**Step ${stepNum}: ${st.title}**\n` : `**Step ${stepNum}**\n`;
+        return `${title}${st.content || ''}`.trim();
+      }).join('\n\n');
+
+      if (stepsMd && !mainText.includes(stepsMd)) {
+        parts.push(stepsMd);
+      }
+    }
+
+    const assembled = parts.join('\n\n').trim();
+    if (assembled) return assembled;
+
     return cleanText;
   }, [parsedSolution, cleanText]);
 
@@ -420,6 +498,7 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
       }
       let formatted = '';
       if (parsedSolution.topic_title && showTopicHeader) formatted += `### ${parsedSolution.topic_title}\n\n`;
+      if (parsedSolution.markdown_content) formatted += `${parsedSolution.markdown_content}\n\n`;
       if (parsedSolution.key_formula) formatted += `**Key Formula:** ${parsedSolution.key_formula}\n\n`;
       if (Array.isArray(parsedSolution.solution_steps)) {
         parsedSolution.solution_steps.forEach((step: any, sIdx: number) => {
@@ -505,6 +584,12 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
                 </div>
               ) : (
                 <div className="space-y-3 max-w-full overflow-hidden">
+                  {/* If AI provided an introductory greeting or context along with steps, display it cleanly above the step cards */}
+                  {parsedSolution?.markdown_content && (
+                    <div className="p-3.5 rounded-2xl bg-indigo-50/40 border border-indigo-100/60 text-sm text-zinc-800 leading-relaxed mb-1">
+                      <GlobalMarkdown>{parsedSolution.markdown_content}</GlobalMarkdown>
+                    </div>
+                  )}
                   {Array.isArray(parsedSolution?.solution_steps) && parsedSolution.solution_steps.map((step: any, sIdx: number) => {
                     const stepsLen = parsedSolution.solution_steps.length;
                     const isCurrentStep = msg.isTyping && (sIdx === stepsLen - 1);
@@ -574,12 +659,16 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
                         </span>
                       </div>
                       <div className="text-sm font-semibold text-zinc-900 overflow-x-auto py-0.5">
-                        <GlobalMarkdown>{parsedSolution.key_formula}</GlobalMarkdown>
+                        <GlobalMarkdown>{
+                          parsedSolution.key_formula.trim().startsWith('$')
+                            ? parsedSolution.key_formula
+                            : `$$${parsedSolution.key_formula.trim()}$$`
+                        }</GlobalMarkdown>
                       </div>
                     </motion.div>
                   )}
 
-                  {/* Exam Trap Alert Banner */}
+                  {/* Exam Trap */}
                   {parsedSolution?.exam_trap && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.98 }}
@@ -592,9 +681,9 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
                           Exam Trap to Avoid
                         </span>
                       </div>
-                      <p className="text-xs text-amber-900 font-medium leading-relaxed m-0">
-                        {parsedSolution.exam_trap}
-                      </p>
+                      <div className="text-xs text-amber-900 font-medium leading-relaxed m-0">
+                        <GlobalMarkdown>{parsedSolution.exam_trap}</GlobalMarkdown>
+                      </div>
                     </motion.div>
                   )}
                 </div>
@@ -1415,75 +1504,79 @@ Please evaluate this answer strictly according to your system rubric.`;
         setMessages([...updatedMessages, initialModelMessage]);
 
         let buffer = "";
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
+        try {
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
 
-          const chunk = decoder.decode(value, { stream: true });
-          buffer += chunk;
+            const chunk = decoder.decode(value, { stream: true });
+            buffer += chunk;
 
-          const lines = buffer.split("\n");
-          buffer = lines.pop() || "";
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || "";
 
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed) continue;
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed || trimmed.startsWith(":")) continue; // Skip heartbeats or empty lines
 
-            if (trimmed.startsWith("data: ")) {
-              const dataStr = trimmed.slice(6).trim();
-              if (dataStr === "[DONE]") {
-                break;
-              }
-
-              try {
-                const parsed = JSON.parse(dataStr);
-                if (parsed.error) {
-                  throw new Error(parsed.error);
+              if (trimmed.startsWith("data: ")) {
+                const dataStr = trimmed.slice(6).trim();
+                if (dataStr === "[DONE]") {
+                  break;
                 }
-                if (parsed.text) {
-                  finalAIResponseText += parsed.text;
 
-                  setMessages(prev => {
-                    const next = [...prev];
-                    if (next[modelMessageIdx]) {
-                      const text = finalAIResponseText;
-                      const isJson = text.trim().startsWith('{') || text.trim().includes('"solution_steps"') || text.trim().includes('"markdown_content"') || text.trim().includes('"format_type"');
-                      next[modelMessageIdx] = {
-                        ...next[modelMessageIdx],
-                        text,
-                        displayedText: isJson ? text : '',
-                        isTyping: !isJson
-                      };
-                    }
-                    return next;
-                  });
+                try {
+                  const parsed = JSON.parse(dataStr);
+                  if (parsed.error) {
+                    throw new Error(parsed.error);
+                  }
+                  if (parsed.text) {
+                    finalAIResponseText += parsed.text;
 
-                  // Scroll container down if user is not actively scrolling up
-                  if (!isUserScrollingRef.current) {
-                    const scrollAnchor = document.getElementById('ai-chat-scroll-anchor');
-                    if (scrollAnchor) {
-                      scrollAnchor.scrollIntoView({ behavior: 'auto' });
+                    setMessages(prev => {
+                      const next = [...prev];
+                      if (next[modelMessageIdx]) {
+                        const text = finalAIResponseText;
+                        const isJson = text.trim().startsWith('{') || text.trim().includes('"solution_steps"') || text.trim().includes('"markdown_content"') || text.trim().includes('"format_type"');
+                        next[modelMessageIdx] = {
+                          ...next[modelMessageIdx],
+                          text,
+                          displayedText: isJson ? text : '',
+                          isTyping: !isJson
+                        };
+                      }
+                      return next;
+                    });
+
+                    // Scroll container down if user is not actively scrolling up
+                    if (!isUserScrollingRef.current) {
+                      const scrollAnchor = document.getElementById('ai-chat-scroll-anchor');
+                      if (scrollAnchor) {
+                        scrollAnchor.scrollIntoView({ behavior: 'auto' });
+                      }
                     }
                   }
+                } catch (e) {
+                  console.warn("Error parsing stream chunk:", e);
                 }
-              } catch (e) {
-                console.warn("Error parsing stream chunk:", e);
               }
             }
           }
+        } catch (streamErr) {
+          console.warn("Streaming connection ended or interrupted:", streamErr);
+        } finally {
+          // Set isTyping to false once stream is fully complete or ended
+          setMessages(prev => {
+            const next = [...prev];
+            if (next[modelMessageIdx]) {
+              next[modelMessageIdx] = {
+                ...next[modelMessageIdx],
+                isTyping: false
+              };
+            }
+            return next;
+          });
         }
-
-        // Set isTyping to false once stream is fully complete
-        setMessages(prev => {
-          const next = [...prev];
-          if (next[modelMessageIdx]) {
-            next[modelMessageIdx] = {
-              ...next[modelMessageIdx],
-              isTyping: false
-            };
-          }
-          return next;
-        });
 
       } else {
         // Fallback for standard JSON responses
@@ -2322,22 +2415,6 @@ Please evaluate this answer strictly according to your system rubric.`;
         </AnimatePresence>
       </div>
 
-      {/* Floating Scroll to Bottom button (WhatsApp style) */}
-      <AnimatePresence>
-        {isUserScrolling && (
-          <motion.button
-            key="scroll-to-bottom-btn"
-            initial={{ opacity: 0, scale: 0.8, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 10 }}
-            onClick={scrollToBottom}
-            className="absolute bottom-40 right-5 z-30 w-10 h-10 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shadow-lg transition-colors active:scale-95 border border-purple-400"
-            title="Scroll to bottom"
-          >
-            <ChevronDown className="w-5 h-5" />
-          </motion.button>
-        )}
-      </AnimatePresence>
 
       {/* Hidden file inputs for Option Menu */}
       <input type="file" ref={galleryInputRef} accept="image/*" onChange={handleImageUpload} className="hidden" />

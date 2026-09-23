@@ -1576,8 +1576,8 @@ Please structure your response into these 4 clear sections:
                                     <GlobalMarkdown content={currentQ.explanation} className="text-zinc-950 font-medium" />
 
                                     {currentQ.distractorTip && (
-                                      <div className="text-[11px] font-semibold text-rose-950 bg-rose-50 border-2 border-rose-200/90 p-2.5 rounded-xl mt-2 leading-relaxed">
-                                        <GlobalMarkdown content={currentQ.distractorTip} className="text-rose-950 font-semibold" />
+                                      <div className="text-[11px] font-semibold text-zinc-700 mt-2 leading-relaxed">
+                                        <GlobalMarkdown content={currentQ.distractorTip} className="text-zinc-700 font-semibold" />
                                       </div>
                                     )}
 

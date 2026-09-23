@@ -21,8 +21,8 @@ export function sanitizeLaTeXInJSON(raw: string): string {
         // We are right after a backslash
         isEscaped = false;
         
-        // Standard JSON escape characters: ", \, /, b, f, n, r, t, u
-        if (char === '"' || char === '\\' || char === '/' || char === 'b' || char === 'f' || char === 'n' || char === 'r' || char === 't') {
+        // Standard JSON escape characters: ", \, /
+        if (char === '"' || char === '\\' || char === '/') {
           out += '\\' + char;
         } else if (char === 'u') {
           // Check if followed by 4 hex digits
@@ -33,8 +33,26 @@ export function sanitizeLaTeXInJSON(raw: string): string {
             // Not a valid unicode escape, escape the backslash: \\u
             out += '\\\\u';
           }
+        } else if (char === 'b' || char === 'f' || char === 'n' || char === 'r' || char === 't') {
+          // Distinguish LaTeX commands (e.g. \frac, \theta, \beta, \rightarrow, \neq, \times, \boxed) from JSON escapes (\n, \t, etc.)
+          const restOfWord = (raw.slice(i + 1, i + 12).match(/^[a-zA-Z]+/)?.[0] || '').toLowerCase();
+          const word = char + restOfWord;
+          const isLatexCmd = (
+            (char === 'f' && /^(frac|dfrac|cfrac|forall|flat|foot)/.test(word)) ||
+            (char === 'b' && /^(beta|begin|bar|big|boldsymbol|binom|bot|bullet|boxed|bf|bmod)/.test(word)) ||
+            (char === 'r' && /^(rightarrow|rho|right|rangle|real|rm|root|rceil|rfloor)/.test(word)) ||
+            (char === 't' && /^(theta|text|times|tan|tau|to|tilde|tag|top|textbf|textit|texttt|tanh)/.test(word)) ||
+            (char === 'n' && /^(neq|ne|nabla|notin|natural|nearrow|nwarrow|not|nu)/.test(word))
+          );
+
+          if (isLatexCmd) {
+            // Double-escape LaTeX command so JSON.parse preserves literal \frac, \theta, etc.
+            out += '\\\\' + char;
+          } else {
+            out += '\\' + char;
+          }
         } else {
-          // It was a LaTeX command or symbol (e.g. \frac, \sqrt, \alpha, \pm, \{, etc.)
+          // It was another LaTeX command or symbol (e.g. \pi, \int, \sqrt, \alpha, \pm, \{, etc.)
           // Double-escape the backslash so JSON.parse sees literal \char
           out += '\\\\' + char;
         }
@@ -76,11 +94,12 @@ export function sanitizeLaTeXInJSON(raw: string): string {
  * Fallback regex extractor to rescue data if JSON.parse fails on malformed input.
  */
 function extractWithRegex(cleaned: string): any {
+  const source = sanitizeLaTeXInJSON(cleaned);
   try {
-    const topicMatch = cleaned.match(/"topic_title"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/i);
+    const topicMatch = source.match(/"topic_title"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/i);
     const topic_title = topicMatch ? JSON.parse(`"${topicMatch[1]}"`) : "Math & Science Solution";
 
-    const formatMatch = cleaned.match(/"format_type"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/i);
+    const formatMatch = source.match(/"format_type"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/i);
     const format_type = formatMatch ? formatMatch[1] : "steps";
 
     // Extract solution steps
@@ -88,7 +107,7 @@ function extractWithRegex(cleaned: string): any {
     const stepRegex = /\{\s*"step_id"\s*:\s*(\d+)[^}]*?"title"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"[^}]*?"content"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"(?:[^}]*?"is_final_answer"\s*:\s*(true|false))?/gis;
     
     let match;
-    while ((match = stepRegex.exec(cleaned)) !== null) {
+    while ((match = stepRegex.exec(source)) !== null) {
       try {
         const step_id = parseInt(match[1], 10);
         const title = JSON.parse(`"${match[2]}"`);
@@ -108,7 +127,7 @@ function extractWithRegex(cleaned: string): any {
 
     // Extract suggestions
     const suggestions: string[] = [];
-    const sugMatch = cleaned.match(/"suggestions"\s*:\s*\[([\s\S]*?)\]/i);
+    const sugMatch = source.match(/"suggestions"\s*:\s*\[([\s\S]*?)\]/i);
     if (sugMatch) {
       const items = sugMatch[1].match(/"([^"\\]*(?:\\.[^"\\]*)*)"/g);
       if (items) {
@@ -124,34 +143,59 @@ function extractWithRegex(cleaned: string): any {
 
     // Extract key_formula & exam_trap if present
     let key_formula: string | undefined;
-    const formulaMatch = cleaned.match(/"key_formula"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/i);
+    const formulaMatch = source.match(/"key_formula"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/i);
     if (formulaMatch) {
       try { key_formula = JSON.parse(`"${formulaMatch[1]}"`); } catch { key_formula = formulaMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"'); }
     }
 
     let exam_trap: string | undefined;
-    const trapMatch = cleaned.match(/"exam_trap"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/i);
+    const trapMatch = source.match(/"exam_trap"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/i);
     if (trapMatch) {
       try { exam_trap = JSON.parse(`"${trapMatch[1]}"`); } catch { exam_trap = trapMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"'); }
     }
 
     // Extract markdown_content / content / explanation if present
     let markdown_content: string | undefined;
-    const mdMatch = cleaned.match(/"(?:markdown_content|content|explanation|response)"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/i);
+    const mdMatch = source.match(/"(?:markdown_content|content|explanation|response)"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/i);
     if (mdMatch) {
       try {
         markdown_content = JSON.parse(`"${mdMatch[1]}"`);
       } catch {
         markdown_content = mdMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
       }
+    } else {
+      // Incomplete streaming markdown content recovery
+      const streamMdMatch = source.match(/"(?:markdown_content|content|explanation|response)"\s*:\s*"([\s\S]*)$/i);
+      if (streamMdMatch) {
+        markdown_content = streamMdMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/"\s*,\s*"[^"]*$/, '').trim();
+      }
+    }
+
+    // Extract question if present in separate key
+    let question: string | undefined;
+    const qMatch = cleaned.match(/"(?:question|problem|prompt)"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/i);
+    if (qMatch) {
+      try { question = JSON.parse(`"${qMatch[1]}"`); } catch { question = qMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"'); }
+    }
+
+    // Extract options array if present in separate key
+    let options: string[] | undefined;
+    const optMatch = cleaned.match(/"options"\s*:\s*\[([\s\S]*?)\]/i);
+    if (optMatch) {
+      const items = optMatch[1].match(/"([^"\\]*(?:\\.[^"\\]*)*)"/g);
+      if (items) {
+        options = items.map(it => {
+          try { return JSON.parse(it); } catch { return it.replace(/^"|"$/g, '').replace(/\\n/g, '\n').replace(/\\"/g, '"'); }
+        });
+      }
     }
 
     if (steps.length > 0) {
-      return { topic_title, format_type, key_formula, exam_trap, solution_steps: steps, suggestions, markdown_content };
+      return { topic_title, format_type, key_formula, exam_trap, solution_steps: steps, suggestions, markdown_content, question, options };
     }
 
-    if (markdown_content) {
-      return { topic_title, format_type: format_type || 'conversational', markdown_content, suggestions, key_formula, exam_trap };
+    if (markdown_content || question || (options && options.length > 0)) {
+      return { topic_title, format_type: format_type || 'conversational', markdown_content, suggestions, key_formula, exam_trap, question, options };
     }
   } catch (err) {
     console.warn("Regex extraction failed:", err);

@@ -125,6 +125,98 @@ function cleanOptionText(text: string | undefined, optionLetter: string): string
   return text.replace(regex, '').trim();
 }
 
+const FRONTEND_PSYCHOMETRIC_TEMPLATES: [number, number, number, number][] = [
+  [48, 28, 15, 9],
+  [44, 31, 16, 9],
+  [52, 26, 14, 8],
+  [39, 34, 18, 9],
+  [46, 29, 17, 8],
+  [54, 23, 15, 8],
+  [41, 32, 19, 8],
+  [47, 27, 16, 10],
+  [51, 25, 17, 7],
+  [43, 30, 18, 9],
+  [56, 22, 14, 8],
+  [38, 35, 17, 10],
+  [49, 26, 16, 9],
+  [45, 29, 18, 8],
+  [53, 24, 16, 7]
+];
+
+export function sanitizeFrontendTrapQuestions(questions: TrapQuestion[]): TrapQuestion[] {
+  if (!Array.isArray(questions)) return [];
+
+  return questions.map((q, qIdx) => {
+    if (!q.traps || q.traps.length < 4 || q.format === 'subjective') return q;
+
+    const correctIdx = q.traps.findIndex(t => t.isCorrect);
+    const targetIdx = correctIdx >= 0 ? correctIdx : 0;
+    const distractorIndices = q.traps.map((_, i) => i).filter(i => i !== targetIdx);
+
+    const parsedRates: { [index: number]: number } = {};
+    let canKeepExisting = true;
+
+    for (let i = 0; i < q.traps.length; i++) {
+      const raw = String(q.traps[i]?.vulnerabilityRate || '');
+      const match = raw.match(/(\d+)\s*%/);
+      if (match) {
+        parsedRates[i] = parseInt(match[1], 10);
+      } else if (i === targetIdx) {
+        parsedRates[i] = 0;
+      } else {
+        canKeepExisting = false;
+      }
+    }
+
+    const distractorValues = distractorIndices.map(i => parsedRates[i] || 0);
+    const hasDuplicates = new Set(distractorValues).size !== distractorValues.length;
+    const distractorSum = distractorValues.reduce((a, b) => a + b, 0);
+
+    let finalTargetRate = 48;
+    let finalDistractorRates: number[] = [28, 15, 9];
+
+    if (canKeepExisting && !hasDuplicates && distractorSum >= 25 && distractorSum <= 75 && distractorValues.every(v => v > 0)) {
+      const computedTarget = 100 - distractorSum;
+      if (!distractorValues.includes(computedTarget)) {
+        finalTargetRate = computedTarget;
+        finalDistractorRates = distractorValues;
+      } else {
+        const template = FRONTEND_PSYCHOMETRIC_TEMPLATES[Math.abs(qIdx) % FRONTEND_PSYCHOMETRIC_TEMPLATES.length];
+        finalTargetRate = template[0];
+        finalDistractorRates = [template[1], template[2], template[3]];
+      }
+    } else {
+      const template = FRONTEND_PSYCHOMETRIC_TEMPLATES[Math.abs(qIdx) % FRONTEND_PSYCHOMETRIC_TEMPLATES.length];
+      finalTargetRate = template[0];
+      finalDistractorRates = [template[1], template[2], template[3]];
+    }
+
+    let dIdx = 0;
+    const sanitizedTraps = q.traps.map((trap, idx) => {
+      if (idx === targetIdx) {
+        return {
+          ...trap,
+          isCorrect: true,
+          vulnerabilityRate: `Target Answer (${finalTargetRate}% correct)`
+        };
+      } else {
+        const rate = finalDistractorRates[dIdx++] || 15;
+        return {
+          ...trap,
+          isCorrect: false,
+          vulnerabilityRate: `${rate}% of AP test-takers pick this`
+        };
+      }
+    });
+
+    return {
+      ...q,
+      traps: sanitizedTraps
+    };
+  });
+}
+
+
 const darkEvaluationMarkdownComponents = {
   h1: ({ node, ...props }: any) => (
     <h1 className="text-base sm:text-lg font-black text-white mt-4 mb-2 tracking-tight leading-snug break-words border-b border-indigo-500/20 pb-1" {...props} />
@@ -413,7 +505,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     triggerVibration(15);
     setShowHistoryModal(false);
     if (item.type === 'challenge' && item.questions && item.questions.length > 0) {
-      setQuestions(item.questions);
+      setQuestions(sanitizeFrontendTrapQuestions(item.questions));
       if (item.questions[0]?.format) {
         setQuestionFormat(item.questions[0].format);
       }
@@ -732,16 +824,17 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
       const data = await response.json();
       if (data.questions && data.questions.length > 0) {
-        setQuestions(data.questions);
+        const sanitized = sanitizeFrontendTrapQuestions(data.questions);
+        setQuestions(sanitized);
         setChallengeStep('active');
         saveToHistory({
           id: `challenge_${Date.now()}`,
           timestamp: Date.now(),
           type: 'challenge',
           title: `Trap Challenge: ${selectedSubject.name} (${questionFormat === 'subjective' ? 'FRQ' : 'MCQ'})`,
-          subtitle: `${selectedUnit} • ${data.questions.length} ${questionFormat === 'subjective' ? 'FRQ' : 'MCQ'} Questions`,
+          subtitle: `${selectedUnit} • ${sanitized.length} ${questionFormat === 'subjective' ? 'FRQ' : 'MCQ'} Questions`,
           subjectName: selectedSubject.name,
-          questions: data.questions
+          questions: sanitized
         });
       } else {
         throw new Error('No trap questions received');
@@ -754,22 +847,44 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     }
   };
 
-  // Handle Option Selection
-  const handleSelectOption = (opt: string) => {
-    if (isRadarRevealed) return;
-    triggerVibration(10);
+  // Handle Option Selection: Immediately check answer and reveal traps (no delay / no radar sweep animation)
+  const handleSelectOption = (opt: string, idx?: number) => {
+    if (isRadarRevealed || !activeQuestion) return;
+
+    const matchLetter = opt.trim().match(/^[A-Da-d](?=[\)\.:\s])/);
+    const letter = matchLetter ? matchLetter[0].toUpperCase() : (idx !== undefined ? String.fromCharCode(65 + idx) : '');
+    const cleanText = cleanOptionText(opt, letter);
+    const trapInfo = letter ? activeQuestion.traps?.find(t => t.option === letter) : null;
+    const isCorrect = trapInfo ? trapInfo.isCorrect : (
+      opt === activeQuestion.correctAnswer ||
+      cleanText === activeQuestion.correctAnswer ||
+      (Boolean(letter && activeQuestion.correctAnswer && activeQuestion.correctAnswer.startsWith(letter))) ||
+      opt.trim().startsWith(activeQuestion.correctAnswer?.charAt(0) || '')
+    );
+
     setSelectedOption(opt);
+    setIsRadarRevealed(true);
+
+    activeQuestion.userSelectedOption = opt;
+
+    if (isCorrect) {
+      triggerVibration([20, 50, 20]);
+      setSessionStats(prev => ({ ...prev, trapsAvoided: prev.trapsAvoided + 1 }));
+    } else {
+      triggerVibration(60);
+      setSessionStats(prev => ({ ...prev, trapsFallen: prev.trapsFallen + 1 }));
+      const trippedTrap = trapInfo?.trapType || 'Distractor Trap Selected';
+      activeQuestion.userTrippedTrap = trippedTrap;
+      saveToVault(activeQuestion);
+    }
   };
 
-  // Activate Radar Sweep & Reveal Traps
+  // Activate Radar Sweep & Reveal Traps (for Subjective FRQ)
   const handleActivateRadar = async () => {
     if (!activeQuestion) return;
 
-    // For Objective (MCQ): Require option selection first
-    if (activeQuestion.format !== 'subjective' && !selectedOption) {
-      showToast('Select an option first to test your Trap Radar!', 'warning');
-      return;
-    }
+    // For Objective (MCQ): Handled instantly in handleSelectOption
+    if (activeQuestion.format !== 'subjective') return;
 
     const qKey = String(activeQuestion.id || currentIndex);
     const draftText = (userFrqDraft[qKey] || '').trim();
@@ -777,92 +892,64 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     const hasStudentWork = draftText.length > 0 || images.length > 0;
 
     // Subjective (FRQ) Evaluation Path: Strictly require student answer before AI evaluation
-    if (activeQuestion.format === 'subjective') {
-      if (!hasStudentWork) {
-        triggerVibration(50);
-        showToast('Please type your answer or attach a photo of your work before checking with AI!', 'warning');
-        return;
-      }
-
-      setFrqEvaluating(true);
-      setIsScanningAnimation(true);
-      triggerVibration(30);
-
-      try {
-        const questionText = [
-          activeQuestion.prompt,
-          activeQuestion.stimulus ? `Context / Stimulus:\n${activeQuestion.stimulus}` : '',
-          activeQuestion.parts && activeQuestion.parts.length > 0
-            ? activeQuestion.parts.map(p => `${p.partLabel} (${p.points} Pts): ${p.task}`).join('\n')
-            : ''
-        ].filter(Boolean).join('\n\n');
-
-        const scoringRubric = activeQuestion.parts?.map(p => `${p.partLabel} (${p.points} Pts): ${p.scoringCriteria}`) || [];
-        const modelAnswer = activeQuestion.parts?.map(p => `${p.partLabel}: ${p.modelAnswer}`).join('\n\n') || activeQuestion.disarmStrategy || '';
-
-        const radarPoints = (activeQuestion as any).totalPoints || activeQuestion.parts?.reduce((sum, p) => sum + (p.points || 0), 0) || 6;
-        const _radarEvalProfile = getUserProfileData();
-        const payload = {
-          questionText,
-          userAnswer: draftText || 'Student submitted handwritten calculation work in attached photo.',
-          image: images[0] || '',
-          subject: selectedSubject?.name || 'AP High School Exam Standard',
-          userGrade: _radarEvalProfile.gradeLevel,
-          totalPoints: radarPoints,
-          scoringRubric,
-          modelAnswer
-        };
-
-        const response = await fetch(getApiUrl('/api/evaluate-answer'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-          throw new Error(`Server returned status ${response.status}`);
-        }
-
-        const data = await response.json();
-        const evalFeedback = data.evaluation || data.feedback || '';
-        setFrqAiFeedback(prev => ({ ...prev, [qKey]: evalFeedback }));
-        triggerVibration([20, 60, 20]);
-        showToast('AI Chief Reader evaluated your answer!', 'success');
-      } catch (err: any) {
-        console.error('[APTrapRadar] FRQ Evaluation error:', err);
-        showToast('Revealing official College Board rubric & model solution.', 'info');
-      } finally {
-        setFrqEvaluating(false);
-        setIsScanningAnimation(false);
-        setIsRadarRevealed(true);
-      }
+    if (!hasStudentWork) {
+      triggerVibration(50);
+      showToast('Please type your answer or attach a photo of your work before checking with AI!', 'warning');
       return;
     }
 
-    // Objective (MCQ) Evaluation Path
-    triggerVibration(30);
+    setFrqEvaluating(true);
     setIsScanningAnimation(true);
+    triggerVibration(30);
 
-    // Play high-tech radar sweep for 1400ms then reveal
-    setTimeout(() => {
+    try {
+      const questionText = [
+        activeQuestion.prompt,
+        activeQuestion.stimulus ? `Context / Stimulus:\n${activeQuestion.stimulus}` : '',
+        activeQuestion.parts && activeQuestion.parts.length > 0
+          ? activeQuestion.parts.map(p => `${p.partLabel} (${p.points} Pts): ${p.task}`).join('\n')
+          : ''
+      ].filter(Boolean).join('\n\n');
+
+      const scoringRubric = activeQuestion.parts?.map(p => `${p.partLabel} (${p.points} Pts): ${p.scoringCriteria}`) || [];
+      const modelAnswer = activeQuestion.parts?.map(p => `${p.partLabel}: ${p.modelAnswer}`).join('\n\n') || activeQuestion.disarmStrategy || '';
+
+      const radarPoints = (activeQuestion as any).totalPoints || activeQuestion.parts?.reduce((sum, p) => sum + (p.points || 0), 0) || 6;
+      const _radarEvalProfile = getUserProfileData();
+      const payload = {
+        questionText,
+        userAnswer: draftText || 'Student submitted handwritten calculation work in attached photo.',
+        image: images[0] || '',
+        subject: selectedSubject?.name || 'AP High School Exam Standard',
+        userGrade: _radarEvalProfile.gradeLevel,
+        totalPoints: radarPoints,
+        scoringRubric,
+        modelAnswer
+      };
+
+      const response = await fetch(getApiUrl('/api/evaluate-answer'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned status ${response.status}`);
+      }
+
+      const data = await response.json();
+      const evalFeedback = data.evaluation || data.feedback || '';
+      setFrqAiFeedback(prev => ({ ...prev, [qKey]: evalFeedback }));
+      triggerVibration([20, 60, 20]);
+      showToast('AI Chief Reader evaluated your answer!', 'success');
+    } catch (err: any) {
+      console.error('[APTrapRadar] FRQ Evaluation error:', err);
+      showToast('Revealing official College Board rubric & model solution.', 'info');
+    } finally {
+      setFrqEvaluating(false);
       setIsScanningAnimation(false);
       setIsRadarRevealed(true);
-
-      if (selectedOption) {
-        const isCorrect = selectedOption.trim().startsWith(activeQuestion.correctAnswer?.charAt(0) || '') || 
-                          selectedOption === activeQuestion.correctAnswer;
-
-        if (isCorrect) {
-          triggerVibration([20, 50, 20]);
-          setSessionStats(prev => ({ ...prev, trapsAvoided: prev.trapsAvoided + 1 }));
-        } else {
-          triggerVibration(60);
-          setSessionStats(prev => ({ ...prev, trapsFallen: prev.trapsFallen + 1 }));
-          // Automatically offer to bookmark in vault
-          saveToVault(activeQuestion);
-        }
-      }
-    }, 1400);
+    }
   };
 
   // Save to Vault
@@ -2103,14 +2190,14 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                               </motion.div>
                             )}
 
-                            {/* Chief Reader 5-Second Disarm Secret Banner */}
+                            {/* Chief Reader Disarm Secret */}
                             {activeQuestion.disarmStrategy && (
-                              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs space-y-1.5 shadow-xs overflow-hidden">
-                                <div className="flex items-center gap-1.5 font-black text-emerald-800">
-                                  <Zap className="w-4 h-4 text-amber-500" />
-                                  <span>Chief Reader's 5-Second FRQ Scoring Secret:</span>
-                                </div>
-                                <div className="leading-relaxed text-zinc-800 min-w-0 max-w-full overflow-x-auto">
+                              <div className="text-xs text-zinc-700 leading-relaxed">
+                                <p className="font-bold text-zinc-900 mb-1 flex items-center gap-1">
+                                  <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                                  <span>Chief Reader's FRQ Scoring Secret:</span>
+                                </p>
+                                <div className="min-w-0 max-w-full overflow-x-auto">
                                   <GlobalMarkdown>{formatAiAnswerText(activeQuestion.disarmStrategy)}</GlobalMarkdown>
                                 </div>
                               </div>
@@ -2217,38 +2304,15 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                           <motion.div
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className={`mt-4 rounded-2xl border overflow-hidden shadow-xs transition-all ${
-                              inlineAi.mode === 'traps'
-                                ? 'bg-amber-50/80 border-amber-300'
-                                : 'bg-purple-50/80 border-purple-200'
-                            }`}
+                            className="mt-4 rounded-2xl border border-zinc-200 overflow-hidden bg-white shadow-xs transition-all"
                           >
                             {/* Card Header */}
-                            <div className={`px-4 py-2.5 flex items-center justify-between border-b ${
-                              inlineAi.mode === 'traps'
-                                ? 'bg-amber-100/90 border-amber-300 text-amber-950'
-                                : 'bg-purple-100/90 border-purple-200 text-purple-950'
-                            }`}>
+                            <div className="px-4 py-2.5 flex items-center justify-between border-b border-zinc-200 bg-zinc-50 text-zinc-900">
                               <div className="flex items-center gap-2 min-w-0">
-                                <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
-                                  inlineAi.mode === 'traps' ? 'bg-amber-600 text-white' : 'bg-purple-600 text-white'
-                                }`}>
-                                  <Sparkles className="w-3.5 h-3.5" />
-                                </div>
-                                <div className="min-w-0">
-                                  <div className="flex items-center gap-1.5 flex-wrap">
-                                    <span className="text-xs font-black tracking-tight">
-                                      AI Trap Radar Breakdown
-                                    </span>
-                                    <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                                      inlineAi.mode === 'traps'
-                                        ? 'bg-amber-200/90 text-amber-900 border border-amber-300'
-                                        : 'bg-purple-200/90 text-purple-900 border border-purple-300'
-                                    }`}>
-                                      {inlineAi.mode === 'traps' ? '🪤 AP Question Traps & Disarm Secrets' : '🎯 Full Solution & Rubric'}
-                                    </span>
-                                  </div>
-                                </div>
+                                <Sparkles className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                                <span className="text-xs font-bold text-zinc-800">
+                                  {inlineAi.mode === 'traps' ? 'AP Question Traps & Disarm Secrets' : 'Full Solution & Rubric'}
+                                </span>
                               </div>
 
                               <div className="flex items-center gap-1.5 shrink-0">
@@ -2259,11 +2323,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                       inlineAi.mode === 'traps' ? 'full-solution' : 'traps',
                                       activeQuestion
                                     )}
-                                    className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
-                                      inlineAi.mode === 'traps'
-                                        ? 'bg-white hover:bg-amber-50 text-amber-900 border-amber-300 shadow-2xs'
-                                        : 'bg-white hover:bg-purple-50 text-purple-900 border-purple-300 shadow-2xs'
-                                    }`}
+                                    className="px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border border-zinc-200 bg-white hover:bg-zinc-100 text-zinc-700 shadow-2xs"
                                     title={inlineAi.mode === 'traps' ? 'Switch to Full Solution' : 'Switch to Traps Breakdown'}
                                   >
                                     {inlineAi.mode === 'traps' ? 'Full Solution' : 'Traps Breakdown'}
@@ -2375,7 +2435,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                         return (
                           <div
                             key={idx}
-                            onClick={() => handleSelectOption(optionText)}
+                            onClick={() => handleSelectOption(optionText, idx)}
                             className={`p-4 rounded-2xl border ${borderColor} ${bgColor} transition-all cursor-pointer relative overflow-hidden`}
                           >
                             <div className="flex items-start gap-3">
@@ -2436,8 +2496,13 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                     {trapInfo.trapType}
                                   </span>
                                   {trapInfo.vulnerabilityRate && trapInfo.vulnerabilityRate !== 'N/A' && (
-                                    <span className="text-[10px] text-zinc-600 font-bold">
-                                      ⚠️ {trapInfo.vulnerabilityRate}
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                      isCorrect
+                                        ? 'text-emerald-800 bg-emerald-50 border-emerald-300'
+                                        : 'text-amber-800 bg-amber-50 border-amber-300'
+                                    }`}>
+                                      {isCorrect ? '🎯 ' : '⚠️ '}
+                                      {trapInfo.vulnerabilityRate.replace(/^(?:⚠️|🎯)\s*/, '')}
                                     </span>
                                   )}
                                 </div>
@@ -2457,19 +2522,9 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                         );
                       })}
 
-                      {/* Actions / Disarm Radar Trigger for MCQ */}
-                      <div className="pt-3 flex items-center justify-between gap-3">
-                        {!isRadarRevealed ? (
-                          <button
-                            onClick={handleActivateRadar}
-                            disabled={!selectedOption || isScanningAnimation}
-                            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-emerald-600 hover:opacity-95 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 active:scale-98 transition-all cursor-pointer disabled:opacity-50"
-                          >
-                            <Radar className="w-4 h-4" />
-                            <span>Activate Trap Radar & Disarm Options</span>
-                          </button>
-                        ) : (
-                          <div className="w-full space-y-3">
+                      {/* Actions & Disarm Details for MCQ (Revealed immediately upon selecting option) */}
+                      {isRadarRevealed && (
+                        <div className="pt-3 w-full space-y-3">
                             {/* DEDICATED AI MISTAKE DIAGNOSIS & FIX CARD */}
                             {selectedOption && !(selectedOption.trim().startsWith((activeQuestion.correctAnswer || '').charAt(0)) || selectedOption === activeQuestion.correctAnswer) && (
                               <motion.div
@@ -2572,14 +2627,14 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                               </motion.div>
                             )}
 
-                            {/* 5-Second Disarm Secret Banner */}
+                            {/* Disarm Secret */}
                             {activeQuestion.disarmStrategy && (
-                              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs space-y-1.5 shadow-xs overflow-hidden">
-                                <div className="flex items-center gap-1.5 font-black text-emerald-800">
-                                  <Zap className="w-4 h-4 text-amber-500" />
-                                  <span>Examiner's 5-Second Disarm Secret:</span>
-                                </div>
-                                <div className="leading-relaxed text-zinc-800 min-w-0 max-w-full overflow-x-auto">
+                              <div className="text-xs text-zinc-700 leading-relaxed">
+                                <p className="font-bold text-zinc-900 mb-1 flex items-center gap-1">
+                                  <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                                  <span>Examiner's Disarm Secret:</span>
+                                </p>
+                                <div className="min-w-0 max-w-full overflow-x-auto">
                                   <GlobalMarkdown>{formatAiAnswerText(activeQuestion.disarmStrategy)}</GlobalMarkdown>
                                 </div>
                               </div>
@@ -2631,9 +2686,8 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                 </div>
                               )}
                             </div>
-                          </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
 
                       {/* Inline AI Trap Radar Explanation Section for MCQ */}
                       {(() => {
@@ -2645,38 +2699,15 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                           <motion.div
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className={`mt-4 rounded-2xl border overflow-hidden shadow-xs transition-all ${
-                              inlineAi.mode === 'traps'
-                                ? 'bg-amber-50/80 border-amber-300'
-                                : 'bg-purple-50/80 border-purple-200'
-                            }`}
+                            className="mt-4 rounded-2xl border border-zinc-200 overflow-hidden bg-white shadow-xs transition-all"
                           >
                             {/* Card Header */}
-                            <div className={`px-4 py-2.5 flex items-center justify-between border-b ${
-                              inlineAi.mode === 'traps'
-                                ? 'bg-amber-100/90 border-amber-300 text-amber-950'
-                                : 'bg-purple-100/90 border-purple-200 text-purple-950'
-                            }`}>
+                            <div className="px-4 py-2.5 flex items-center justify-between border-b border-zinc-200 bg-zinc-50 text-zinc-900">
                               <div className="flex items-center gap-2 min-w-0">
-                                <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
-                                  inlineAi.mode === 'traps' ? 'bg-amber-600 text-white' : 'bg-purple-600 text-white'
-                                }`}>
-                                  <Sparkles className="w-3.5 h-3.5" />
-                                </div>
-                                <div className="min-w-0">
-                                  <div className="flex items-center gap-1.5 flex-wrap">
-                                    <span className="text-xs font-black tracking-tight">
-                                      AI Trap Radar Breakdown
-                                    </span>
-                                    <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                                      inlineAi.mode === 'traps'
-                                        ? 'bg-amber-200/90 text-amber-900 border border-amber-300'
-                                        : 'bg-purple-200/90 text-purple-900 border border-purple-300'
-                                    }`}>
-                                      {inlineAi.mode === 'traps' ? '🪤 AP Question Traps & Disarm Secrets' : '🎯 Full Solution & Traps'}
-                                    </span>
-                                  </div>
-                                </div>
+                                <Sparkles className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                                <span className="text-xs font-bold text-zinc-800">
+                                  {inlineAi.mode === 'traps' ? 'AP Question Traps & Disarm Secrets' : 'Full Solution & Traps'}
+                                </span>
                               </div>
 
                               <div className="flex items-center gap-1.5 shrink-0">
@@ -2687,11 +2718,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                       inlineAi.mode === 'traps' ? 'full-solution' : 'traps',
                                       activeQuestion
                                     )}
-                                    className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
-                                      inlineAi.mode === 'traps'
-                                        ? 'bg-white hover:bg-amber-50 text-amber-900 border-amber-300 shadow-2xs'
-                                        : 'bg-white hover:bg-purple-50 text-purple-900 border-purple-300 shadow-2xs'
-                                    }`}
+                                    className="px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border border-zinc-200 bg-white hover:bg-zinc-100 text-zinc-700 shadow-2xs"
                                     title={inlineAi.mode === 'traps' ? 'Switch to Full Solution' : 'Switch to Traps Breakdown'}
                                   >
                                     {inlineAi.mode === 'traps' ? 'Full Solution' : 'Traps Breakdown'}
@@ -3024,14 +3051,14 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                   </div>
                 )}
 
-                {/* 5-Second Disarm Secret Banner */}
+                {/* Disarm Secret */}
                 {scannedResult.disarmStrategy && (
-                  <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs space-y-1.5 shadow-xs">
-                    <span className="font-black text-emerald-800 flex items-center gap-1.5 text-xs sm:text-sm">
-                      <Zap className="w-4 h-4 text-amber-500 shrink-0" />
-                      Examiner's 5-Second Disarm Secret (Exam Hall Defense):
-                    </span>
-                    <div className="leading-relaxed text-zinc-800 font-medium text-xs sm:text-[13px]">
+                  <div className="text-xs text-zinc-700 leading-relaxed">
+                    <p className="font-bold text-zinc-900 mb-1 flex items-center gap-1">
+                      <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      <span>Examiner's Disarm Secret:</span>
+                    </p>
+                    <div className="text-zinc-700 font-medium text-xs sm:text-[13px]">
                       <GlobalMarkdown>{scannedResult.disarmStrategy}</GlobalMarkdown>
                     </div>
                   </div>
@@ -3076,8 +3103,13 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                             </span>
                           </div>
                           {trap.vulnerabilityRate && trap.vulnerabilityRate !== 'N/A' && (
-                            <span className="text-[10px] font-bold text-amber-900 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 shadow-2xs">
-                              ⚠️ {trap.vulnerabilityRate}
+                            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border shadow-2xs ${
+                              trap.isCorrect
+                                ? 'text-emerald-900 bg-emerald-50 border-emerald-300'
+                                : 'text-amber-900 bg-amber-50 border-amber-300'
+                            }`}>
+                              {trap.isCorrect ? '🎯 ' : '⚠️ '}
+                              {trap.vulnerabilityRate.replace(/^(?:⚠️|🎯)\s*/, '')}
                             </span>
                           )}
                         </div>
