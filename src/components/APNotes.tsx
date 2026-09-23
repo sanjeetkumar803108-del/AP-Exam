@@ -1142,7 +1142,17 @@ export default function APNotes({ onBack }: APNotesProps) {
       // ── Rasterize the SVG from CalculusDiagramSvg (works for ALL subjects) ──
       const imgY = currentY + titleHeight + 4;
       try {
-        const svgNode = renderCalculusDiagramSvg(diagram.type) || renderCalculusDiagramSvg(diagram.id);
+        let svgNode = renderCalculusDiagramSvg(diagram.type) || renderCalculusDiagramSvg(diagram.id);
+        if (!svgNode) {
+          const innerContent = renderDiagramSvgContent(diagram.type);
+          if (innerContent) {
+            svgNode = (
+              <svg viewBox="0 0 300 160" xmlns="http://www.w3.org/2000/svg" width="300" height="160">
+                {innerContent}
+              </svg>
+            );
+          }
+        }
         if (svgNode) {
           const svgString = renderToStaticMarkup(svgNode as React.ReactElement);
           

@@ -46,6 +46,9 @@ import { registerReportAiRoutes } from "./src/server/reportAiRoutes";
 import { getGranularSubjectArchetypes } from "./src/utils/apArchetypes";
 import { getCollegeBoardSubjectGuidelines, getDynamicTopicVariation } from "./src/data/apPromptGuidelines";
 import { getBattleQuestions, AP_BATTLE_SUBJECTS, BattleQuestion, normalizeGrade } from "./src/data/quizBattleBank";
+import { extractDiagramAndCleanText } from "./src/utils/svgHelper";
+import { validateAndHealApQuestion, createUsedConceptsTracker, calculateRealTotalPoints } from "./src/utils/apSubjectValidator";
+import { getSubjectWhitelist } from "./src/data/apSubjectWhitelists";
 
 
 process.on("unhandledRejection", (reason, promise) => {
@@ -865,13 +868,13 @@ DO NOT use any markdown bolding syntax like "**" or emojis inside latex delimite
 {
   "topic_title": "Subject or Topic of the problem",
   "format_type": "steps",
-  "key_formula": "The primary theoretical formula, law, or identity used in LaTeX (e.g. $$\\sin(A \\pm B) = \\sin A \\cos B \\pm \\cos A \\sin B$$)",
-  "exam_trap": "A brief 1-2 sentence high-yield warning about common calculation traps, sign errors, or misunderstandings students must avoid in exams",
+  "key_formula": "The primary theoretical formula, law, or identity used in LaTeX wrapped in $$ ... $$ (e.g. \"$$V = 2\\\\pi \\\\int_{a}^{b} x f(x)\\\\,dx, \\\\quad A(w) = w \\\\cdot h(w)$$\", or null if not applicable)",
+  "exam_trap": "A brief 1-2 sentence high-yield warning about common calculation traps, sign errors, or misunderstandings. Wrap any math expressions or variables in single $ delimiters (e.g. \"($2\\\\pi x h(x))\", \"$y = f(x)$\") (or null)",
   "solution_steps": [
     {
       "step_id": 1,
       "title": "Clear concise step title",
-      "content": "A detailed, encouraging explanation with formulas and step-by-step calculations. Whenever generating mathematical numbers, formulas, symbols, or equations/chemical reactions, you must strictly wrap them in LaTeX delimiters. Use single '$' for inline math and double '$$' for block math equations (e.g. $$2H_2O \\rightarrow 2H_2 + O_2$$). Always double-escape backslashes in JSON (e.g. \\\\rightarrow, \\\\frac, \\\\sqrt, \\\\text) so that equations render beautifully for students.",
+      "content": "A detailed, encouraging explanation with formulas and step-by-step calculations. Whenever generating mathematical numbers, formulas, symbols, or equations/chemical reactions, you must strictly wrap them in LaTeX delimiters. Use single '$' for inline math and double '$$' for block math equations (e.g. $$2H_2O \\rightarrow 2H_2 + O_2$$). NEVER output bare LaTeX commands without $ or $$ delimiters! Always double-escape backslashes in JSON (e.g. \\\\rightarrow, \\\\frac, \\\\sqrt, \\\\text, \\\\pi, \\\\theta, \\\\int, \\\\cdot, \\\\quad) so that equations render beautifully for students.",
       "is_final_answer": false
     }
   ],
@@ -1991,12 +1994,12 @@ function shuffleAndBalanceTrapRadarQuestions(questions: any[]): any[] {
 
 app.post("/api/generate-ap-questions", async (req, res) => {
   try {
-    const { subject, unit, topic, questionType, count, gradeLevel, avoidPrompts, randomSeed } = req.body;
+    const { subject, unit, topic, questionType, type: rawType, count, gradeLevel, avoidPrompts, randomSeed, examMode } = req.body;
     if (!subject) {
       return res.status(400).json({ error: "Missing AP Subject" });
     }
 
-    const type = questionType === 'subjective' ? 'subjective' : 'objective';
+    const type = (questionType === 'subjective' || rawType === 'subjective') ? 'subjective' : 'objective';
     const requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 20);
     const targetTopic = [topic, unit, subject].filter(Boolean).join(" - ");
     const subjectGuidelines = getCollegeBoardSubjectGuidelines(subject, type);
@@ -2333,11 +2336,28 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
             }
           }
 
+          let promptStr = q.prompt || q.question || q.text || q.scenario || "";
+          let stimulusStr = q.stimulus || "";
+          let diagramSvg = q.diagramSvg || "";
+
+          // Extract embedded SVG from prompt or stimulus if present
+          if (!diagramSvg && stimulusStr) {
+            const ext = extractDiagramAndCleanText(stimulusStr);
+            stimulusStr = ext.cleanText;
+            if (ext.diagramSvg) diagramSvg = ext.diagramSvg;
+          }
+          const extQ = extractDiagramAndCleanText(promptStr, diagramSvg);
+          promptStr = extQ.cleanText;
+          if (extQ.diagramSvg) diagramSvg = extQ.diagramSvg;
+
           return {
             ...q,
             id: idx + 1,
             title: q.title || `Question ${idx + 1}`,
-            prompt: q.prompt || q.question || q.text || q.scenario || "",
+            question: promptStr,
+            prompt: promptStr,
+            stimulus: stimulusStr,
+            diagramSvg: diagramSvg,
             options: formattedOptions,
             correctAnswer: resolvedAnswer
           };
@@ -2374,7 +2394,10 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
 
       throw new Error("Failed to generate a valid AP objective questions structure.");
     } else {
-      // Subjective (FRQ / DBQ / LEQ / SAQ) with parallel batching, retries & auto-backfill
+      // Subjective (FRQ / DBQ / LEQ / SAQ) with parallel batching, retries, curriculum validation & anti-repetition tracking
+      const usedTracker = createUsedConceptsTracker();
+      const whitelist = getSubjectWhitelist(subject);
+
       const generateSubjectiveBatch = async (batchCount: number, bIdx: number, extraAvoid: string[] = []): Promise<any[]> => {
         const batchOffset = bIdx >= 80 ? 0 : batchSizes.slice(0, bIdx).reduce((a, b) => a + b, 0);
         const batchArchetypes = allArchetypes.slice(batchOffset, batchOffset + batchCount);
@@ -2387,43 +2410,46 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
           combinedAntiRepetition += `\n\nSTRICT PREVIOUS QUESTIONS AVOIDANCE (NO DUPLICATES):\n${avoidLines}`;
         }
 
+        // Bug #7 Fix: Dynamic anti-repetition of already covered concepts in this session
+        const usedConceptsList = Object.keys(usedTracker.usedConceptCounts);
+        if (usedConceptsList.length > 0) {
+          combinedAntiRepetition += `\n\nALREADY TESTED CONCEPTS IN THIS SESSION (DEPRIORITIZE REPEATS - SPAN WIDER TOPIC LIST):\n- ${usedConceptsList.slice(-12).join(', ')}`;
+        }
+
+        const isSocialOrGeog = s.includes('geography') || s.includes('aphg') || s.includes('human') || s.includes('history') || s.includes('gov');
+        const isApes = s.includes('environmental') || s.includes('apes');
+
         const systemInstruction = `You are an AP Exam Chief Reader and Author of official College Board Scoring Guidelines.
 The student is preparing for the AP ${subject} Exam.
 Your task is to generate exactly ${batchCount} authentic, high-yield AP Exam FREE RESPONSE / SUBJECTIVE QUESTIONS for: "${targetTopic}".
 
 CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
-1. AUTHENTIC MULTI-PART STRUCTURE: AP Free Response Questions always consist of clearly delineated sub-parts: (a), (b), (c) (and optionally (d)). Each sub-part must clearly test specific College Board cognitive skills (e.g., Identify, Calculate, Justify, Explain, Describe, Graph, Show).
-2. CLEAR LINE BREAKS: Separate each part with a double newline '\\n\\n' so each part starts clearly on a new line.
-3. OFFICIAL SCORING GUIDELINES & POINT BREAKDOWN: Provide a precise, point-by-point College Board Reader rubric in an array 'scoringRubric'. Each item should state what earns the point (e.g., '+1 pt for applying product rule', '+1 pt for correctly stating units', '+1 pt for citing historical document').
-4. STEP-BY-STEP EXEMPLARY MODEL ANSWER (CRITICAL):
-   Provide a complete, maximum-points exemplary student response in 'modelAnswer'.
-   - ALWAYS format each sub-part with a clear label and double newlines ('\\n\\n'):
-     Part (a): [Step-by-step mathematical/conceptual setup, formula substitution, and complete concluding sentence.]\\n\\nPart (b): [Step-by-step reasoning, calculations, and final value with units.]\\n\\nPart (c): [Thorough analytical justification and conclusion.]
-   - NEVER glue parts or sentences together (NEVER output things like 'holds.(b)' or 'x=2.(c)'). ALWAYS leave clean double newlines and spaces between words, sentences, and sub-parts!
-5. TOTAL POINTS: Total point value for this problem (e.g. 9 points for Calculus/CSA, 10 points for Chem, 7 points for DBQ, 4 points for Short FRQ).
-6. MANDATORY COLLEGE BOARD SVG DIAGRAMS & GRAPHS (CRITICAL):
-   For all graphical, experimental, and visual subjects/units:
-   - AP Calculus (Limits & Continuity, piecewise functions with holes/discontinuities, derivatives, tangent lines, graphs of f'(x), Riemann sum areas, slope fields).
-   - AP Physics (kinematics v-t/x-t graphs, Free-Body Force Diagrams with labeled force vectors, projectile trajectories, electric circuit schematics).
-   - AP Chemistry (reaction coordinate energy profiles with Delta H & Ea, acid-base titration curves with equivalence point, PES spectra).
-   - AP Biology (pedigree charts, enzyme kinetics curves, cell signaling feedback loops).
-   - AP Micro/Macroeconomics (supply & demand equilibrium shifts, PPC, Phillips curves).
-   - AP Statistics (box plots with 5-number summary & outliers, normal distribution bell curves).
+1. CURRICULUM BOUNDARY ENFORCEMENT (CRITICAL - ZERO WRONG-SUBJECT LEAKAGE):
+   - You MUST generate content STRICTLY AND EXCLUSIVELY belonging to the College Board Course and Exam Description (CED) for AP ${subject}.
+   ${whitelist && whitelist.forbiddenSignatures.length > 0 ? `- STRICTLY FORBIDDEN: Under NO circumstances include mathematical calculus formulas (derivatives, integrals, slope fields, limits, volume of revolution) or concepts from other AP courses into AP ${subject}!` : ''}
+   - Every question must test legitimate, authentic concepts from AP ${subject} Units and Skills.
 
-   The question prompt MUST refer to the visual diagram naturally using varied lead-ins (e.g. "In the experiment depicted in the accompanying figure...", "Based on the plotted data in the graph above...", "A researcher examines the model shown in the figure...", "According to the diagram provided..."). NEVER begin every question with the exact same repetitive formulaic words.
-   
-   SVG TECHNICAL REQUIREMENTS (MANDATORY SAFE BOUNDS - ZERO CLIPPING):
-   - Root tag: <svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>...</svg>
-   - Dark contrast container: <rect width='400' height='220' fill='#09090b' rx='12' stroke='#27272a' stroke-width='1'/>
-   - STRICT SAFE DRAWING ZONE (CRITICAL):
-     * Keep ALL curves, plotted points, coordinate axes, and labels strictly within the inner bounding box: x between 25 and 375, and y between 25 and 195.
-     * NEVER draw any curve peak, inflection point, asymptote, or circle where y < 20 or y > 200, so curves NEVER touch or get cut off by the border!
-   - Coordinate Axes: stroke='#94a3b8' stroke-width='2' with arrowheads and axis labels (e.g. 'x', 'y = f(x)').
-   - Grid lines: stroke='#1e293b' stroke-dasharray='2,2'.
-   - Calculus Discontinuities / Holes: Use hollow circles for removable holes (<circle cx='...' cy='...' r='4.5' fill='#09090b' stroke='#38bdf8' stroke-width='2.5'/>) and solid dots for defined points (<circle cx='...' cy='...' r='4.5' fill='#38bdf8'/>).
-   - Curves / Shapes: High-contrast stroke='#38bdf8' or stroke='#818cf8' stroke-width='2.5' fill='none'.
-   - Text labels: fill='#f8fafc' font-size='12' font-family='sans-serif' font-weight='bold'.
-   - Only set diagramSvg to "" if the subject is purely literary/historical (e.g. AP English Lit, AP History).
+2. AUTHENTIC MULTI-PART STRUCTURE & POINT VALUES:
+   - For AP Human Geography: Real Section II FRQs typically have 4 to 7 distinct sub-parts labeled (a) through (g) or (a) through (e), testing command verbs: "Identify", "Define", "Describe", and "Explain".
+   - For AP Calculus / Science: Multi-part problems typically have (a), (b), (c), (d).
+   - "totalPoints" MUST BE AN EXACT INTEGER EQUAL TO THE SUM OF ALL SUB-PARTS (e.g. 7 points for a 7-part question). NEVER set totalPoints to 1 when a question has 4 to 7 sub-parts!
+   - In "scoringRubric", provide a precise, point-by-point rubric matching each subpart:
+     e.g. ["Part (a) [1 point]: 1 pt for correctly identifying...", "Part (b) [1 point]: 1 pt for defining...", "Part (c) [2 points]: 1 pt for describing..., 1 pt for explaining..."]
+
+3. REALISTIC STIMULUS VARIATION (MATCHING REAL COLLEGE BOARD EXAM FORMAT):
+   - Real AP exams use 3 stimulus categories:
+     * Category 1: No Stimulus (conceptual application, theory, synthesis).
+     * Category 2: Single Stimulus (authentic demographic/spatial data table, population pyramid, or textbook model diagram such as Demographic Transition Model, Von Thünen rings, or Burgess Concentric Zone).
+     * Category 3: Two Stimuli (comparative data sets, paired maps, or dual charts).
+   - When a question requires a visual model or chart, provide an authentic College Board standard SVG in "diagramSvg" (viewBox='0 0 400 220') or format a clean Markdown/LaTeX data table in the prompt.
+   - The question prompt MUST reference specific details from the stimulus in its sub-parts (e.g., "Referring to the data in Table 1...", "Based on Stage 2 in the accompanying diagram...").
+
+4. CLEAR FORMATTING & EXEMPLARY MODEL ANSWER:
+   - Separate each part with a double newline '\\n\\n' so each part starts on a new line.
+   - Provide a complete, maximum-points exemplary student response in 'modelAnswer' with explicit labels:
+     Part (a): [Step-by-step reasoning and complete response.]\\n\\nPart (b): [Full explanation...]\\n\\nPart (c): [Justification...]
+   - NEVER glue parts together.
+   - NEVER leak raw <svg> markup into the text of 'prompt' or 'modelAnswer'. All SVG code must be strictly in the 'diagramSvg' property!
 
 ${subjectGuidelines}
 ${gradeCalibrationInstruction}
@@ -2433,35 +2459,9 @@ BATCH TARGET ARCHETYPES:
 ${batchArchetypePlan}
 
 CRITICAL CODE, MATH & LATEX FORMATTING:
-- FOR COMPUTER SCIENCE / PROGRAMMING (AP Computer Science A, AP Computer Science Principles):
-  * Always format code snippets inside standard Markdown fenced code blocks (\`\`\`java ... \`\`\`).
-  * In code blocks and programming expressions, ALWAYS use standard programming operators: '<=', '>=', '!=', '==', '&&', '||', '<', '>'. NEVER substitute LaTeX symbols like \\leqslant, \\le, \\ge, \\times into code!
-  * For inline variable names, methods, or keywords in question text (e.g. \`reverseString("APCS")\`, \`true\`, \`false\`, \`StackOverflowError\`), ALWAYS use Markdown backticks (\`code\`) and NEVER raw LaTeX like \\texttt{...}.
-- FOR MATHEMATICS & SCIENCE (AP Calculus, AP Physics, AP Chemistry, AP Statistics):
-  * Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for block.
-  * For data tables and matrices, ALWAYS wrap in $$ block delimiters:
-    $$\\begin{array}{c|ccccc} x & -1 & 0 & 2 & 3 & 4 \\\\ \\hline g(x) & -5 & 3 & -2 & 7 & 10 \\end{array}$$
-    NEVER output bare \\begin{array} without $$...$$ delimiters!
-  * For piecewise functions, ALWAYS use clean LaTeX with $$:
-    $$f(x) = \\begin{cases} g(x) & \\text{for } x < c \\\\ h(x) & \\text{for } x \\ge c \\end{cases}$$
-    NEVER write raw unescaped pseudo-code like 'f(x) = { ... }' or '<=' inside math equations that breaks KaTeX!
-  * Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\to, \\\\infty, \\\\begin{cases}, \\\\end{cases}, \\\\begin{array}, \\\\end{array}.
-
-STRICT SCORING RUBRIC & AUTHENTIC TOTAL POINTS RULES:
-- In official College Board AP Free Response Questions, every question has its own authentic point total calibrated to its subparts and subject standard:
-  * AP Statistics: ALL FRQs are strictly 4 Points Max (College Board E/P/I 4-point scale).
-  * AP Chemistry: Short FRQs are 4 Points Max; Long FRQs are 10 Points Max.
-  * AP Biology: Short FRQs are 4 Points Max; Long FRQs are 8 to 10 Points Max.
-  * AP History (US, World, Euro): SAQs with (a), (b), (c) are strictly 3 Points Max (1 pt each); LEQs are 6 Points Max; DBQs are 7 Points Max.
-  * AP Government: Concept Application is 3 Points Max; Quantitative/SCOTUS is 4 Points Max; Argument Essay is 6 Points Max.
-  * AP Economics (Macro/Micro): Short FRQs are 5 Points Max; Long FRQs are 9 or 10 Points Max.
-  * AP English (Lang/Lit): Essays are strictly 6 Points Max.
-  * AP Physics: Short FRQs are 7 Points Max; Long FRQs are 12 Points Max (Physics C: 15 Points Max).
-  * AP Calculus AB & BC: Provide realistic point diversity! 2-part focused problems (3-4 points), 3-part medium problems (5-6 points), and full-length FRQs (7-9 points). DO NOT blindly set 9 points for every single question!
-- "totalPoints" MUST BE A STRICT INTEGER EQUAL TO THE EXACT MATHEMATICAL SUM OF THE POINTS ALLOCATED IN "scoringRubric"!
-- In "scoringRubric", ALWAYS explicitly state the points for each sub-part in brackets:
-  e.g. ["Part (a) [2 points]: 1 point for limit setup, 1 point for evaluation", "Part (b) [2 points]: 1 point for derivative, 1 point for solving", "Part (c) [2 points]: 1 point for conclusion"] (Total: 6 points).
-- NEVER output a mismatched totalPoints! If the rubric points sum to 4, totalPoints MUST be 4. If they sum to 6, totalPoints MUST be 6.
+- For Computer Science: standard Markdown fenced code blocks (\`\`\`java ... \`\`\`), standard operators '<=', '>=', '!=', '=='.
+- For Mathematics & Science: valid LaTeX syntax ($...$ or $$...$$). Wrap data tables in $$\\begin{array}{c|ccccc}...\\end{array}$$.
+- Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge.
 
 STRICT JSON OUTPUT:
 Return ONLY a valid JSON object with key "questions" containing an array of objects:
@@ -2470,18 +2470,21 @@ Return ONLY a valid JSON object with key "questions" containing an array of obje
     {
       "id": 1,
       "title": "FRQ 1: Multi-Part Analytical Problem",
-      "prompt": "Scenario/stimulus referencing the diagram above followed by:\\n\\n(a) Sub-part A prompt...\\n\\n(b) Sub-part B prompt...\\n\\n(c) Sub-part C prompt...\\n\\n(d) Sub-part D prompt...",
+      "prompt": "Scenario/stimulus description followed by:\\n\\n(a) Sub-part A prompt [1 point]...\\n\\n(b) Sub-part B prompt [1 point]...\\n\\n(c) Sub-part C prompt [1 point]...\\n\\n(d) Sub-part D prompt [1 point]...\\n\\n(e) Sub-part E prompt [1 point]...\\n\\n(f) Sub-part F prompt [1 point]...\\n\\n(g) Sub-part G prompt [1 point]...",
       "diagramSvg": "<svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg'>...</svg>",
-      "diagramType": "piecewise_graph",
-      "totalPoints": 9,
-      "modelAnswer": "(a) Full exemplary solution for part a...\\n\\n(b) Full exemplary solution for part b...\\n\\n(c) Full exemplary solution for part c...\\n\\n(d) Full exemplary solution for part d...",
+      "diagramType": "standardized_model",
+      "totalPoints": 7,
+      "modelAnswer": "(a) Full exemplary solution for part a...\\n\\n(b) Full exemplary solution for part b...\\n\\n(c) Full exemplary solution for part c...",
       "scoringRubric": [
-        "Part (a) [2 points]: 1 point for setting up the governing formula, 1 point for evaluation.",
-        "Part (b) [3 points]: 1 point for chain rule, 1 point for equating f'(x)=0, 1 point for justification.",
-        "Part (c) [2 points]: 1 point for FTC integral setup, 1 point for final calculation.",
-        "Part (d) [2 points]: 1 point for Mean Value Theorem hypothesis, 1 point for conclusion."
+        "Part (a) [1 point]: 1 point for identifying...",
+        "Part (b) [1 point]: 1 point for defining...",
+        "Part (c) [1 point]: 1 point for describing...",
+        "Part (d) [1 point]: 1 point for explaining...",
+        "Part (e) [1 point]: 1 point for explaining...",
+        "Part (f) [1 point]: 1 point for evaluating...",
+        "Part (g) [1 point]: 1 point for justifying..."
       ],
-      "skill": "Relevant AP Unit / Skill Tag"
+      "skill": "Unit X: Topic Name"
     }
   ]
 }
@@ -2496,8 +2499,7 @@ NEVER include multiple-choice options A/B/C/D in subjective output.`;
 Generate exactly ${batchCount} authentic College Board AP Exam Free Response / Subjective Questions for this batch.
 Target Archetypes for this batch:
 ${batchArchetypePlan}
-IMPORTANT: Ensure 100% diversity and fresh non-repetitive problems with unique functions, numbers, and scenarios. Do not repeat standard textbook clichés!
-If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or AP Statistics, provide an authentic College Board standard SVG in "diagramSvg" (viewBox='0 0 400 220') for questions that genuinely require visual graph analysis (at least 1 question per batch), and set diagramSvg to "" for purely symbolic, algebraic, or text-based questions so generation is ultra-fast!` }] },
+Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP ${subject} curriculum!` }] },
             config: {
               systemInstruction: { parts: [{ text: systemInstruction }] },
               responseMimeType: "application/json",
@@ -2539,162 +2541,104 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
 
       const batchPromises = batchSizes.map((batchCount, bIdx) => generateSubjectiveBatch(batchCount, bIdx));
       const batchResults = await Promise.allSettled(batchPromises);
-      let combinedQuestions: any[] = [];
+      let rawGeneratedQuestions: any[] = [];
       for (const res of batchResults) {
         if (res.status === 'fulfilled' && Array.isArray(res.value)) {
-          combinedQuestions.push(...res.value);
+          rawGeneratedQuestions.push(...res.value);
         } else if (res.status === 'rejected') {
           console.warn('[generate-ap-questions] Subjective batch error:', res.reason);
         }
       }
 
-      // Guaranteed auto-backfill loop: if fewer questions than requested were generated, backfill the deficit
+      // Bug #1 & Bug #5 Fix: Run Subject Whitelist Validation & Sanitization Pass
+      let validatedQuestions: any[] = [];
+      for (const rawQ of rawGeneratedQuestions) {
+        const vResult = validateAndHealApQuestion(rawQ, subject, targetTopic, usedTracker);
+        if (!vResult.isValid) {
+          // Bug #1 requirement 5: Log every rejected question (subject, unit, reason)
+          console.warn(`[generate-ap-questions] REJECTED off-subject question for "${subject}": ${vResult.rejectionReason}`);
+          continue; // Discard off-subject content
+        }
+        validatedQuestions.push(vResult.sanitizedQuestion);
+      }
+
+      // Guaranteed auto-backfill loop: if valid questions are fewer than requested, backfill the deficit
       let backfillAttempts = 0;
-      while (combinedQuestions.length < requestedCount && backfillAttempts < 2) {
+      while (validatedQuestions.length < requestedCount && backfillAttempts < 3) {
         backfillAttempts++;
-        const missingCount = requestedCount - combinedQuestions.length;
-        console.warn(`[generate-ap-questions] Subjective questions deficit: got ${combinedQuestions.length}/${requestedCount}. Backfilling ${missingCount} questions (attempt ${backfillAttempts})...`);
+        const missingCount = requestedCount - validatedQuestions.length;
+        console.warn(`[generate-ap-questions] Subjective questions deficit: got ${validatedQuestions.length}/${requestedCount} valid questions. Backfilling ${missingCount} questions (attempt ${backfillAttempts})...`);
         try {
-          const existingPrompts = combinedQuestions.map((q: any) =>
+          const existingPrompts = validatedQuestions.map((q: any) =>
             (typeof q === 'string' ? q : (q.prompt || q.question || q.title || '')).slice(0, 140)
           ).filter(Boolean);
           const backfillResult = await generateSubjectiveBatch(missingCount, 80 + backfillAttempts, existingPrompts);
           if (Array.isArray(backfillResult) && backfillResult.length > 0) {
-            combinedQuestions.push(...backfillResult);
+            for (const bq of backfillResult) {
+              const bvResult = validateAndHealApQuestion(bq, subject, targetTopic, usedTracker);
+              if (bvResult.isValid) {
+                validatedQuestions.push(bvResult.sanitizedQuestion);
+              } else {
+                console.warn(`[generate-ap-questions] Backfilled question rejected: ${bvResult.rejectionReason}`);
+              }
+            }
           }
         } catch (bfErr) {
           console.warn('[generate-ap-questions] Subjective backfill attempt failed:', bfErr);
         }
       }
 
-      if (combinedQuestions.length > 0) {
-        const resolveRealTotalPoints = (q: any): number => {
-          // 1. Calculate sum from scoringRubric point specifications
-          if (Array.isArray(q.scoringRubric) && q.scoringRubric.length > 0) {
-            let sum = 0;
-            let foundExplicit = false;
-            for (const item of q.scoringRubric) {
-              const str = String(item || '');
-              const match = str.match(/(?:\[|\()?\s*(\d+)\s*(?:points|point|pts|pt|marks|mark)\b/i)
-                || str.match(/\b(\d+)\s*(?:points|point|pts|pt)\b/i);
-              if (match) {
-                sum += parseInt(match[1], 10);
-                foundExplicit = true;
-              } else {
-                sum += 1;
-              }
-            }
-            if (foundExplicit && sum > 0) return sum;
-          }
+      if (validatedQuestions.length > 0) {
+        const questionsList = validatedQuestions.slice(0, requestedCount).map((q: any, idx: number) => {
+          const realPoints = calculateRealTotalPoints(q, subject);
+          let promptStr = q.prompt || q.question || q.text || q.scenario || "";
+          let stimulusStr = q.stimulus || "";
+          let diagramSvg = q.diagramSvg || "";
 
-          // 2. Calculate sum from prompt subparts like [1 point], [2 pts]
-          if (typeof q.prompt === 'string') {
-            const matches = [...q.prompt.matchAll(/\([a-d]\)[^[]*?\[\s*(\d+)\s*(?:points|point|pts|pt)\s*\]/gi)];
-            if (matches.length > 0) {
-              const sum = matches.reduce((acc, m) => acc + parseInt(m[1], 10), 0);
-              if (sum > 0) return sum;
-            }
+          // Extract embedded SVG from prompt or stimulus if present
+          if (!diagramSvg && stimulusStr) {
+            const ext = extractDiagramAndCleanText(stimulusStr);
+            stimulusStr = ext.cleanText;
+            if (ext.diagramSvg) diagramSvg = ext.diagramSvg;
           }
+          const extP = extractDiagramAndCleanText(promptStr, diagramSvg);
+          promptStr = extP.cleanText;
+          if (extP.diagramSvg) diagramSvg = extP.diagramSvg;
 
-          // 3. Subject-based authentic calibration
-          const sLower = String(subject || '').toLowerCase();
-          const partCount = typeof q.prompt === 'string' ? (q.prompt.match(/\([a-d]\)/gi) || []).length : 0;
-          const raw = Number(q.totalPoints);
-
-          if (sLower.includes('stat')) return 4;
-          if (sLower.includes('history') || sLower.includes('apush') || sLower.includes('euro') || sLower.includes('world')) {
-            if (partCount <= 3 && !q.prompt?.toLowerCase().includes('document')) return 3;
-            if (q.prompt?.toLowerCase().includes('document') || raw === 7) return 7;
-            return 6;
-          }
-          if (sLower.includes('gov')) {
-            if (partCount <= 3) return 3;
-            if (partCount === 4) return 4;
-            return 6;
-          }
-          if (sLower.includes('econ')) {
-            if (partCount <= 3) return 5;
-            return 9;
-          }
-          if (sLower.includes('chem')) {
-            if (partCount <= 3) return 4;
-            return 10;
-          }
-          if (sLower.includes('bio')) {
-            if (partCount <= 3) return 4;
-            return 8;
-          }
-          if (sLower.includes('physic')) {
-            if (partCount <= 3) return 7;
-            return 12;
-          }
-          if (sLower.includes('lit') || sLower.includes('lang')) return 6;
-
-          // 4. Honor explicit totalPoints if calibrated
-          if (!isNaN(raw) && raw >= 1 && raw <= 15) {
-            if (partCount === 1 && raw > 4) return 2;
-            if (partCount === 2 && raw > 6) return 4;
-            if (partCount === 3 && raw > 7) return 6;
-            return raw;
-          }
-
-          // 5. Default based on subparts in prompt (a, b, c, d)
-          if (partCount === 1) return 2;
-          if (partCount === 2) return 4;
-          if (partCount === 3) return 6;
-          if (partCount >= 4) {
-            return raw && raw >= 6 && raw <= 9 ? raw : 8;
-          }
-
-          return 6;
-        };
-
-        const questionsList = combinedQuestions.slice(0, requestedCount).map((q: any, idx: number) => {
-          if (typeof q === 'string') {
-            return {
-              id: idx + 1,
-              title: `FRQ ${idx + 1}: Multi-Part Analytical Problem`,
-              prompt: q,
-              diagramSvg: "",
-              diagramType: "none",
-              modelAnswer: "",
-              totalPoints: 6,
-              scoringRubric: []
-            };
-          }
-          const realPoints = resolveRealTotalPoints(q);
           return {
             ...q,
             id: idx + 1,
             totalPoints: realPoints,
-            title: q.title || `FRQ ${idx + 1}: Multi-Part Analytical Problem`,
-            prompt: q.prompt || q.question || q.text || q.scenario || ""
+            title: q.title || `FREE RESPONSE QUESTION ${idx + 1}  [${realPoints} POINTS]`,
+            question: promptStr,
+            prompt: promptStr,
+            stimulus: stimulusStr,
+            diagramSvg: diagramSvg,
+            unitNumber: q.unitNumber,
+            unitTitle: q.unitTitle,
+            skill: q.skill || `Unit ${q.unitNumber || 1}: ${q.unitTitle || targetTopic || subject}`
           };
         });
         return res.json({ questions: questionsList, questionType: 'subjective', subject, count: questionsList.length });
       }
 
       console.warn(`[generate-ap-questions] Subjective AI batch returned empty for "${subject}". Engaging authentic curriculum fallback...`);
-      const fallbackSubject = AP_BATTLE_SUBJECTS.find(s => 
-        (subject || '').toLowerCase().includes(s.name.toLowerCase().replace('ap ', '')) ||
-        s.id.includes((subject || '').toLowerCase().replace(/[^a-z0-9]/g, ''))
-      ) || AP_BATTLE_SUBJECTS[0];
-      const fallbackMcqs = getBattleQuestions(fallbackSubject.id);
+      const canonicalUnits = whitelist?.canonicalUnits || [
+        { unitNumber: 1, title: 'Foundational Principles', keywords: ['concepts'] },
+        { unitNumber: 2, title: 'Systems & Interactions', keywords: ['processes'] },
+        { unitNumber: 3, title: 'Advanced Analysis', keywords: ['applications'] }
+      ];
 
       const fallbackSubjectives = Array.from({ length: requestedCount }).map((_, idx) => {
-        const mcqRef = fallbackMcqs && fallbackMcqs[idx % fallbackMcqs.length];
-        const topicName = targetTopic || fallbackSubject.name;
-        const subPrompt = mcqRef
-          ? `${mcqRef.stem}\n\n(a) Identify the primary concept or mechanism illustrated in this scenario [1 point].\n\n(b) Explain the fundamental theoretical cause of this phenomenon within ${topicName} [2 points].\n\n(c) Describe one real-world consequence or alternative scenario if the key variable were altered [2 points].\n\n(d) Justify your reasoning using standard College Board terminology and principles [2 points].`
-          : `Consider an authentic scenario concerning ${topicName} in ${subject}:\n\n(a) Identify and define the fundamental College Board concept at play [1 point].\n\n(b) Explain the underlying theoretical framework and relationships [2 points].\n\n(c) Analyze the direct consequences and implications [2 points].\n\n(d) Justify your conclusions with evidence and relevant terminology [2 points].`;
+        const unitRef = canonicalUnits[idx % canonicalUnits.length];
+        const topicName = targetTopic || unitRef.title;
+        const subPrompt = `Consider an authentic scenario concerning ${topicName} in AP ${subject}:\n\n(a) Identify and define the fundamental College Board concept at play [1 point].\n\n(b) Explain the underlying theoretical framework and real-world mechanisms [1 point].\n\n(c) Describe one observable spatial or empirical pattern resulting from this process [1 point].\n\n(d) Explain how changing a primary variable alters system outcomes [1 point].\n\n(e) Compare this scenario with an alternative institutional or regional context [1 point].\n\n(f) Evaluate the long-term consequences for affected stakeholders or environments [1 point].\n\n(g) Justify your conclusions citing authoritative course principles and empirical evidence [1 point].`;
 
-        const modelAns = mcqRef
-          ? `Part (a): ${mcqRef.explanation.slice(0, 120)}...\n\nPart (b): Detailed theoretical mechanism demonstrating full mastery of ${topicName}.\n\nPart (c): Critical analysis of practical applications and secondary effects.\n\nPart (d): Comprehensive justification adhering to official College Board scoring rubrics.`
-          : `Part (a): Definition and core identification matching College Board standards.\n\nPart (b): In-depth analytical explanation of causes and interactions.\n\nPart (c): Evaluative analysis of outcomes and system behavior.\n\nPart (d): Robust justification citing key principles and empirical evidence.`;
+        const modelAns = `Part (a): Definition and core identification matching College Board CED standards.\n\nPart (b): In-depth analytical explanation of causes and interactions.\n\nPart (c): Clear empirical description of observable spatial trends.\n\nPart (d): Cause-and-effect breakdown of altered parameters.\n\nPart (e): Comparative evaluation contrasting two relevant models or regions.\n\nPart (f): Longitudinal assessment of socio-economic or environmental impacts.\n\nPart (g): Robust justification citing key CED principles and verifiable evidence.`;
 
         return {
           id: idx + 1,
-          title: `FRQ ${idx + 1}: ${topicName} Analytical Problem`,
+          title: `FREE RESPONSE QUESTION ${idx + 1}  [7 POINTS]`,
           prompt: subPrompt,
           diagramSvg: "",
           diagramType: "none",
@@ -2702,11 +2646,16 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
           totalPoints: 7,
           scoringRubric: [
             "Part (a) [1 point]: Correct identification and definition.",
-            "Part (b) [2 points]: 1 pt for stating governing rule, 1 pt for applying to context.",
-            "Part (c) [2 points]: 1 pt for consequence, 1 pt for analytical depth.",
-            "Part (d) [2 points]: 1 pt for relevant evidence, 1 pt for rigorous College Board justification."
+            "Part (b) [1 point]: Thorough explanation of governing mechanisms.",
+            "Part (c) [1 point]: Accurate description of observable trends.",
+            "Part (d) [1 point]: Logical cause-and-effect relationship.",
+            "Part (e) [1 point]: Sound comparative contextualization.",
+            "Part (f) [1 point]: Evaluative analysis of consequences.",
+            "Part (g) [1 point]: Rigorous justification with course evidence."
           ],
-          skill: topicName
+          unitNumber: unitRef.unitNumber,
+          unitTitle: unitRef.title,
+          skill: `Unit ${unitRef.unitNumber}: ${unitRef.title}`
         };
       });
 

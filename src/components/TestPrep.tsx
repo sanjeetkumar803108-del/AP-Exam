@@ -20,8 +20,9 @@ import AdvancedLoader from './AdvancedLoader';
 import AIThinkingLoader from './AIThinkingLoader';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
 import { showToast } from '../utils/toast';
-import { sanitizeSvg, getDiagramTypeLabel } from '../utils/svgHelper';
+import { sanitizeSvg, getDiagramTypeLabel, extractDiagramAndCleanText } from '../utils/svgHelper';
 import { generateTestPrepPDF } from '../utils/apQuestionPaperPdfExporter';
+import { calculateRealTotalPoints } from '../utils/apSubjectValidator';
 import SafePdfViewer from './SafePdfViewer';
 import { safeGetItem, safeSetItem, safeJsonParse } from '../utils/storage';
 import { getUserHistory, saveUserHistory } from '../utils/userHistory';
@@ -141,102 +142,7 @@ export function getApExamDurationSeconds(subjectId: string, qType: 'objective' |
 
 export function getQuestionRealPoints(q?: APSubjectiveQuestion | null, subjectId?: string): number {
   if (!q) return 6;
-
-  const sId = (subjectId || '').toLowerCase();
-
-  // 1. Calculate sum from scoringRubric point specifications (e.g. "Part (a) [1 pt]", "Part (b) [2 points]", "+1 pt for...")
-  if (Array.isArray(q.scoringRubric) && q.scoringRubric.length > 0) {
-    let sum = 0;
-    let foundExplicit = false;
-    for (const item of q.scoringRubric) {
-      const str = String(item || '');
-      const bracketMatch = str.match(/\[\s*(?:\d+\s*\/\s*)?(\d+)\s*(?:points|point|pts|pt)\s*\]/i)
-        || str.match(/\(\s*(?:\d+\s*\/\s*)?(\d+)\s*(?:points|point|pts|pt)\s*\)/i);
-      if (bracketMatch) {
-        sum += parseInt(bracketMatch[1], 10);
-        foundExplicit = true;
-      } else {
-        const anyMatch = str.match(/(?:earn|worth|\+)?\s*\b(\d+)\s*(?:points|point|pts|pt)\b/i);
-        if (anyMatch) {
-          sum += parseInt(anyMatch[1], 10);
-          foundExplicit = true;
-        }
-      }
-    }
-    if (foundExplicit && sum > 0) return sum;
-  }
-
-  // 2. Calculate sum from prompt sub-parts (e.g. "(a) ... [1 pt]")
-  if (typeof q.prompt === 'string') {
-    const matches = [...q.prompt.matchAll(/\([a-d]\)[^[]*?\[\s*(\d+)\s*(?:points|point|pts|pt)\s*\]/gi)];
-    if (matches.length > 0) {
-      const sum = matches.reduce((acc, m) => acc + parseInt(m[1], 10), 0);
-      if (sum > 0) return sum;
-    }
-  }
-
-  // 3. Subject-specific authentic College Board standards
-  const partCount = typeof q.prompt === 'string' ? (q.prompt.match(/\([a-d]\)/gi) || []).length : 0;
-  const raw = Number(q.totalPoints);
-
-  if (sId.includes('stat')) {
-    // AP Statistics FRQs are strictly 4 points
-    return 4;
-  }
-
-  if (sId.includes('history') || sId.includes('apush') || sId.includes('euro') || sId.includes('world')) {
-    if (partCount <= 3 && !q.prompt?.toLowerCase().includes('document')) return 3; // SAQ
-    if (q.prompt?.toLowerCase().includes('document') || raw === 7) return 7; // DBQ
-    return 6; // LEQ
-  }
-
-  if (sId.includes('gov')) {
-    if (partCount <= 3) return 3;
-    if (partCount === 4) return 4;
-    return 6;
-  }
-
-  if (sId.includes('econ')) {
-    if (partCount <= 3) return 5; // Short FRQ
-    return 9; // Long FRQ
-  }
-
-  if (sId.includes('chem')) {
-    if (partCount <= 3) return 4; // Short FRQ
-    return 10; // Long FRQ
-  }
-
-  if (sId.includes('bio')) {
-    if (partCount <= 3) return 4; // Short FRQ
-    return 8; // Long FRQ
-  }
-
-  if (sId.includes('physic')) {
-    if (partCount <= 3) return 7; // Short FRQ
-    return 12; // Long FRQ
-  }
-
-  if (sId.includes('lit') || sId.includes('lang')) {
-    return 6; // AP English 6-point analytic rubric
-  }
-
-  // 4. Honor explicit totalPoints if valid and calibrated
-  if (!isNaN(raw) && raw >= 1 && raw <= 15) {
-    if (partCount === 1 && raw > 4) return 2;
-    if (partCount === 2 && raw > 6) return 4;
-    if (partCount === 3 && raw > 7) return 6;
-    return raw;
-  }
-
-  // 5. Default calibrated to subparts count (AP Calculus & other STEM)
-  if (partCount === 1) return 2;
-  if (partCount === 2) return 4;
-  if (partCount === 3) return 6;
-  if (partCount >= 4) {
-    return raw && raw >= 6 && raw <= 9 ? raw : 8;
-  }
-
-  return 6;
+  return calculateRealTotalPoints(q, subjectId);
 }
 
 type QuestionType = 'objective' | 'subjective';
@@ -449,6 +355,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   // Configuration States
   const [questionType, setQuestionType] = useState<QuestionType>('objective');
   const [questionCount, setQuestionCount] = useState<number>(5);
+  const [examMode, setExamMode] = useState<'practice_bank' | 'mock_exam'>('practice_bank');
 
   // Practice & Results States
   const [loading, setLoading] = useState<boolean>(false);
@@ -1159,7 +1066,27 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
       }
 
       if (questionType === 'objective') {
-        const rawList: APObjectiveQuestion[] = Array.isArray(data.questions) ? data.questions : [];
+        const rawList: APObjectiveQuestion[] = (Array.isArray(data.questions) ? data.questions : []).map(q => {
+          let questionText = q.question || (q as any).prompt || '';
+          let stimulusText = q.stimulus || '';
+          let diagramSvg = q.diagramSvg;
+
+          if (!diagramSvg && stimulusText) {
+            const ext = extractDiagramAndCleanText(stimulusText);
+            stimulusText = ext.cleanText;
+            if (ext.diagramSvg) diagramSvg = ext.diagramSvg;
+          }
+          const extQ = extractDiagramAndCleanText(questionText, diagramSvg);
+          questionText = extQ.cleanText;
+          if (extQ.diagramSvg) diagramSvg = extQ.diagramSvg;
+
+          return {
+            ...q,
+            question: questionText,
+            stimulus: stimulusText,
+            diagramSvg: diagramSvg
+          };
+        });
         if (rawList.length === 0) {
           throw new Error('Received empty question set from server.');
         }
@@ -1206,7 +1133,27 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
           return updated;
         });
       } else {
-        const questionsList: APSubjectiveQuestion[] = Array.isArray(data.questions) ? data.questions : [];
+        const questionsList: APSubjectiveQuestion[] = (Array.isArray(data.questions) ? data.questions : []).map(q => {
+          let promptText = q.prompt || (q as any).question || '';
+          let stimulusText = q.stimulus || '';
+          let diagramSvg = q.diagramSvg;
+
+          if (!diagramSvg && stimulusText) {
+            const ext = extractDiagramAndCleanText(stimulusText);
+            stimulusText = ext.cleanText;
+            if (ext.diagramSvg) diagramSvg = ext.diagramSvg;
+          }
+          const extP = extractDiagramAndCleanText(promptText, diagramSvg);
+          promptText = extP.cleanText;
+          if (extP.diagramSvg) diagramSvg = extP.diagramSvg;
+
+          return {
+            ...q,
+            prompt: promptText,
+            stimulus: stimulusText,
+            diagramSvg: diagramSvg
+          };
+        });
         if (questionsList.length === 0) {
           throw new Error('Received empty free response questions from server.');
         }
@@ -1610,6 +1557,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         questionType: qType,
         objectiveQuestions: objQs,
         subjectiveQuestions: subQs,
+        examMode: examMode
       });
 
       if (!res) return;
@@ -2193,36 +2141,101 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
               </div>
             </div>
 
-            {/* Section 2: Question Count */}
+            {/* Section 2: Generation Mode & Question Count */}
             <div className="flex flex-col gap-3">
               <label className="text-xs font-black uppercase tracking-wider text-zinc-500">
-                2. How Many Questions?
+                2. Practice Mode & Structure
               </label>
 
-              <div className="grid grid-cols-2 gap-2.5">
-                {[
-                  { count: 5, label: '5 Questions' },
-                  { count: 10, label: '10 Questions' },
-                  { count: 15, label: '15 Questions' },
-                  { count: 20, label: '20 Questions' }
-                ].map(item => (
-                  <button
-                    key={item.count}
-                    type="button"
-                    onClick={() => {
-                      triggerVibration(10);
-                      setQuestionCount(item.count);
-                    }}
-                    className={`py-3.5 px-4 rounded-2xl border text-center transition-all cursor-pointer ${
-                      questionCount === item.count
-                        ? 'bg-zinc-900 border-zinc-900 text-white shadow-md ring-2 ring-zinc-900/10'
-                        : 'bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-50 hover:border-zinc-300'
-                    }`}
-                  >
-                    <div className="font-black text-sm">{item.label}</div>
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerVibration(10);
+                    setExamMode('practice_bank');
+                  }}
+                  className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                    examMode === 'practice_bank'
+                      ? 'bg-zinc-900 border-zinc-900 text-white shadow-md'
+                      : 'bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-black text-xs">📚 Practice Question Bank</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      examMode === 'practice_bank' ? 'bg-zinc-800 text-zinc-200' : 'bg-zinc-100 text-zinc-600'
+                    }`}>Flexible Bank</span>
+                  </div>
+                  <p className={`text-[11px] mt-1 ${examMode === 'practice_bank' ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                    Concept mastery across curriculum units (5 to 20 questions).
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerVibration(15);
+                    setExamMode('mock_exam');
+                    setQuestionType('subjective');
+                    // Real College Board Section II: 3 FRQs for APHG / 3 for most social sciences
+                    setQuestionCount(3);
+                  }}
+                  className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                    examMode === 'mock_exam'
+                      ? 'bg-gradient-to-r from-purple-700 to-indigo-700 border-purple-700 text-white shadow-md'
+                      : 'bg-white border-zinc-200 text-zinc-800 hover:bg-purple-50/50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-black text-xs">⏱️ Section II Exam Simulation</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      examMode === 'mock_exam' ? 'bg-purple-900 text-purple-200' : 'bg-purple-50 text-purple-700'
+                    }`}>Official Format</span>
+                  </div>
+                  <p className={`text-[11px] mt-1 ${examMode === 'mock_exam' ? 'text-purple-100' : 'text-zinc-500'}`}>
+                    {selectedSubject.id === 'ap-human-geography' || selectedSubject.name.toLowerCase().includes('geography')
+                      ? '3 FRQs in 75 min (1 No-Stimulus, 1 Single-Stimulus, 1 Two-Stimuli).'
+                      : '3 authentic Section II Free Response Questions with official timing.'}
+                  </p>
+                </button>
               </div>
+
+              {examMode === 'practice_bank' ? (
+                <div className="grid grid-cols-2 gap-2.5 mt-1">
+                  {[
+                    { count: 5, label: '5 Questions' },
+                    { count: 10, label: '10 Questions' },
+                    { count: 15, label: '15 Questions' },
+                    { count: 20, label: '20 Questions' }
+                  ].map(item => (
+                    <button
+                      key={item.count}
+                      type="button"
+                      onClick={() => {
+                        triggerVibration(10);
+                        setQuestionCount(item.count);
+                      }}
+                      className={`py-3 px-4 rounded-2xl border text-center transition-all cursor-pointer ${
+                        questionCount === item.count
+                          ? 'bg-zinc-900 border-zinc-900 text-white shadow-md ring-2 ring-zinc-900/10'
+                          : 'bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-50 hover:border-zinc-300'
+                      }`}
+                    >
+                      <div className="font-black text-sm">{item.label}</div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-3 rounded-2xl bg-purple-50/80 border border-purple-200 flex items-center justify-between">
+                  <div className="text-xs">
+                    <span className="font-black text-purple-900 block">Section II Structure: 3 Questions</span>
+                    <span className="text-[11px] text-purple-600">College Board Section II standard time (75 minutes)</span>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full bg-purple-600 text-white text-[11px] font-black">
+                    3 FRQs Fixed
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}

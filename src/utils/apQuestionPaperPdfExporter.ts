@@ -1,7 +1,9 @@
 import { jsPDF } from 'jspdf';
 import { sanitizePdfText, formatMathForPdf, parseSolutionStepsForPdf } from './pdfSanitizer';
 import { drawRichTextWithTables, drawTextWithElevatedPowers } from './pdfTableDrawer';
-import { rasterizeSvgToDataUrl } from './svgHelper';
+import { rasterizeSvgToDataUrl, extractDiagramAndCleanText } from './svgHelper';
+import { calculateRealTotalPoints, resolveCanonicalUnit, stripRawSvgMarkup } from './apSubjectValidator';
+import { getStandardizedModelSvg } from './standardizedApDiagrams';
 
 export interface APPdfSubject {
   name: string;
@@ -18,6 +20,8 @@ export interface APObjectiveQuestionItem {
   skill?: string;
   stimulus?: string;
   diagramSvg?: string;
+  unitNumber?: number;
+  unitTitle?: string;
 }
 
 export interface APSubjectiveQuestionItem {
@@ -28,6 +32,10 @@ export interface APSubjectiveQuestionItem {
   skill?: string;
   stimulus?: string;
   diagramSvg?: string;
+  totalPoints?: number;
+  unitNumber?: number;
+  unitTitle?: string;
+  stimulusCategory?: 'none' | 'single' | 'two';
 }
 
 export interface TrapInfoItem {
@@ -84,34 +92,9 @@ export const isComputerSubject = (subj?: APPdfSubject | null): boolean => {
          (name.includes('principles') && name.includes('computer'));
 };
 
-export function getQuestionRealPoints(q?: APSubjectiveQuestionItem | null): number {
+export function getQuestionRealPoints(q?: APSubjectiveQuestionItem | null, subjectId?: string): number {
   if (!q) return 6;
-
-  if (Array.isArray(q.scoringRubric) && q.scoringRubric.length > 0) {
-    let sum = 0;
-    let foundExplicit = false;
-    for (const item of q.scoringRubric) {
-      const str = String(item || '');
-      const bracketMatch = str.match(/\[\s*(?:\d+\s*\/\s*)?(\d+)\s*(?:points|point|pts|pt)\s*\]/i)
-        || str.match(/\(\s*(?:\d+\s*\/\s*)?(\d+)\s*(?:points|point|pts|pt)\s*\)/i);
-      if (bracketMatch) {
-        sum += parseInt(bracketMatch[1], 10);
-        foundExplicit = true;
-      }
-    }
-    if (foundExplicit && sum > 0) return sum;
-  }
-
-  const promptText = (q.prompt || '') + ' ' + (q.modelAnswer || '');
-  const partsMatch = promptText.match(/\((a|b|c|d|e|f|g)\)/gi);
-  if (partsMatch) {
-    const uniqueParts = new Set(partsMatch.map(p => p.toLowerCase()));
-    if (uniqueParts.size >= 3) {
-      return uniqueParts.size;
-    }
-  }
-
-  return 6;
+  return calculateRealTotalPoints(q, subjectId);
 }
 
 export interface GenerateTestPrepPDFOptions {
@@ -120,6 +103,7 @@ export interface GenerateTestPrepPDFOptions {
   questionType: 'objective' | 'subjective';
   objectiveQuestions?: APObjectiveQuestionItem[];
   subjectiveQuestions?: APSubjectiveQuestionItem[];
+  examMode?: 'practice_bank' | 'mock_exam';
 }
 
 export interface GeneratedPdfResult {
@@ -161,12 +145,19 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
       doc.setTextColor(251, 191, 36); // Gold Amber
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(8.5);
-      doc.text('AP EXAM APP  |  ADVANCED PLACEMENT EXAM PREPARATION', margin, 24);
+      const isMock = options.examMode === 'mock_exam' || (subQs.length === 3 && (subject.id?.includes('geography') || subject.name?.toLowerCase().includes('geography')));
+      const headerSuper = isMock
+        ? 'AP EXAM APP  |  OFFICIAL COLLEGE BOARD TIMED EXAM SIMULATION'
+        : 'AP EXAM APP  |  ADVANCED PLACEMENT EXAM PREPARATION';
+      doc.text(headerSuper, margin, 24);
 
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(15);
-      doc.text(`AP ${sanitizePdfText(subject.name)} Practice Set`, margin, 45);
+      const mainTitle = isMock
+        ? `AP ${sanitizePdfText(subject.name)} Section II Mock Exam`
+        : `AP ${sanitizePdfText(subject.name)} Topic & Concept Practice Bank`;
+      doc.text(mainTitle, margin, 45);
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
@@ -176,7 +167,10 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
         ? 'Section I (Multiple Choice)' 
         : (isComp ? 'Section II (Create Performance Task)' : 'Section II (Free Response)');
       const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-      doc.text(`Format: ${formatSection}   |   Unit: ${sanitizePdfText(unitTitle)}   |   ${dateStr}`, margin, 62);
+      const subtitle = isMock
+        ? `Structure: 3 Real Exam FRQs (75 Minutes • Timed Simulation)   |   ${dateStr}`
+        : `Format: ${formatSection} (CED Aligned Practice)   |   Unit: ${sanitizePdfText(unitTitle)}   |   ${dateStr}`;
+      doc.text(subtitle, margin, 62);
 
       currentY = 96;
     } else {
@@ -251,8 +245,23 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
 
       currentY += 28;
 
-      if (q.stimulus && q.stimulus.trim()) {
-        currentY = drawRichTextWithTables(doc, q.stimulus.trim(), margin + 10, currentY, contentWidth - 20, {
+      let questionText = q.question || (q as any).prompt || '';
+      let stimulusText = q.stimulus || '';
+      let diagramSvg = q.diagramSvg;
+
+      // Automatically extract diagram if embedded in stimulus or question text
+      if (!diagramSvg && stimulusText) {
+        const ext = extractDiagramAndCleanText(stimulusText);
+        stimulusText = ext.cleanText;
+        if (ext.diagramSvg) diagramSvg = ext.diagramSvg;
+      }
+
+      const extQ = extractDiagramAndCleanText(questionText, diagramSvg);
+      questionText = extQ.cleanText;
+      if (extQ.diagramSvg) diagramSvg = extQ.diagramSvg;
+
+      if (stimulusText && stimulusText.trim()) {
+        currentY = drawRichTextWithTables(doc, stimulusText.trim(), margin + 10, currentY, contentWidth - 20, {
           fontName: 'times',
           fontStyle: 'italic',
           fontSize: 9,
@@ -262,7 +271,7 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
         currentY += 8;
       }
 
-      currentY = drawRichTextWithTables(doc, q.question, margin, currentY, contentWidth, {
+      currentY = drawRichTextWithTables(doc, questionText, margin, currentY, contentWidth, {
         fontName: 'helvetica',
         fontStyle: 'bold',
         fontSize: 10.5,
@@ -271,9 +280,9 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
       });
       currentY += 10;
 
-      if (q.diagramSvg) {
+      if (diagramSvg) {
         try {
-          const diagramImg = await rasterizeSvgToDataUrl(q.diagramSvg, 1000, 550);
+          const diagramImg = await rasterizeSvgToDataUrl(diagramSvg, 1000, 550);
           if (diagramImg) {
             const diagH = 185;
             const diagW = Math.min(contentWidth, diagH * (400 / 220));
@@ -384,14 +393,38 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
     // Subjective (FRQ)
     for (let idx = 0; idx < subQs.length; idx++) {
       const q = subQs[idx];
-      const cleanPrompt = sanitizePdfText(q.prompt);
+      let promptText = stripRawSvgMarkup(q.prompt || (q as any).question || '');
+      let stimulusText = stripRawSvgMarkup(q.stimulus || '');
+      let diagramSvg = q.diagramSvg;
+
+      // Bug #5 Fix: Check for standardized textbook diagrams (DTM, Von Thünen, Burgess, Hoyt)
+      const standardModelSvg = getStandardizedModelSvg(promptText + ' ' + (q.skill || ''), subject.id || '');
+      if (standardModelSvg) {
+        diagramSvg = standardModelSvg;
+      }
+
+      // Automatically extract diagram if embedded in stimulus or prompt text
+      if (!diagramSvg && stimulusText) {
+        const ext = extractDiagramAndCleanText(stimulusText);
+        stimulusText = stripRawSvgMarkup(ext.cleanText);
+        if (ext.diagramSvg) diagramSvg = ext.diagramSvg;
+      }
+
+      const extP = extractDiagramAndCleanText(promptText, diagramSvg);
+      promptText = stripRawSvgMarkup(extP.cleanText);
+      if (extP.diagramSvg) diagramSvg = extP.diagramSvg;
+
+      const qPoints = getQuestionRealPoints(q, subject.id);
+      const canonicalUnit = resolveCanonicalUnit(subject.id || '', (q as any).unitNumber || q.skill || unitTitle);
+
+      const cleanPrompt = sanitizePdfText(promptText);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10.5);
       const promptLines = doc.splitTextToSize(cleanPrompt, contentWidth);
       const promptH = (promptLines.length * 13) + 16;
-      const bannerH = 22;
-      const bannerSpacing = 8;
-      const diagEstimateH = q.diagramSvg ? 155 : 0;
+      const bannerH = 34; // 2-line programmatic banner (Bug #6)
+      const bannerSpacing = 10;
+      const diagEstimateH = diagramSvg ? 165 : 0;
       const totalHeaderAndPrompt = bannerH + bannerSpacing + promptH + diagEstimateH + 16;
       const maxUsablePageH = pageHeight - 40 - 46;
 
@@ -399,27 +432,46 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
 
       const isComp = isComputerSubject(subject);
       doc.setFillColor(243, 232, 255);
-      doc.roundedRect(margin, currentY, contentWidth, bannerH, 3, 3, 'F');
+      doc.roundedRect(margin, currentY, contentWidth, bannerH, 4, 4, 'F');
 
+      // Line 1: FREE RESPONSE QUESTION {n}  [{points} POINTS]
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
       doc.setTextColor(107, 33, 168);
-      const qPoints = getQuestionRealPoints(q);
       const bannerText = isComp 
         ? `CREATE PERFORMANCE TASK PROMPT ${idx + 1}  [${qPoints} POINTS]`
         : `FREE RESPONSE QUESTION ${idx + 1}  [${qPoints} POINTS]`;
-      doc.text(bannerText, margin + 8, currentY + 15);
+      doc.text(bannerText, margin + 10, currentY + 14);
 
-      if (q.skill) {
-        doc.setFont('helvetica', 'italic');
-        doc.setFontSize(8);
-        doc.setTextColor(126, 34, 206);
-        doc.text(sanitizePdfText(q.skill), pageWidth - margin - 8, currentY + 15, { align: 'right' });
-      }
+      // Stimulus Category tag on right (Bug #3)
+      const stimCategory = (q as any).stimulusCategory || (diagramSvg ? 'single' : 'none');
+      const stimLabel = stimCategory === 'two' ? '[Two Stimuli]' : (stimCategory === 'single' ? '[Single Stimulus]' : '[No Stimulus]');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(147, 51, 234);
+      doc.text(stimLabel, pageWidth - margin - 10, currentY + 14, { align: 'right' });
+
+      // Line 2: Unit {unit_number}: {unit_title} (Bug #6)
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(126, 34, 206);
+      const unitLine = `Unit ${canonicalUnit.unitNumber}: ${canonicalUnit.title}`;
+      doc.text(sanitizePdfText(unitLine), margin + 10, currentY + 27);
 
       currentY += bannerH + bannerSpacing;
 
-      currentY = drawRichTextWithTables(doc, q.prompt, margin, currentY, contentWidth, {
+      if (stimulusText && stimulusText.trim()) {
+        currentY = drawRichTextWithTables(doc, stimulusText.trim(), margin + 10, currentY, contentWidth - 20, {
+          fontName: 'times',
+          fontStyle: 'italic',
+          fontSize: 9,
+          textColor: [51, 65, 85],
+          checkPageBreak
+        });
+        currentY += 8;
+      }
+
+      currentY = drawRichTextWithTables(doc, promptText, margin, currentY, contentWidth, {
         fontName: 'helvetica',
         fontStyle: 'bold',
         fontSize: 10.5,
@@ -428,9 +480,9 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
       });
       currentY += 12;
 
-      if (q.diagramSvg) {
+      if (diagramSvg) {
         try {
-          const diagramImg = await rasterizeSvgToDataUrl(q.diagramSvg, 1000, 550);
+          const diagramImg = await rasterizeSvgToDataUrl(diagramSvg, 1000, 550);
           if (diagramImg) {
             const diagH = 185;
             const diagW = Math.min(contentWidth, diagH * (400 / 220));
@@ -441,6 +493,32 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
           }
         } catch (err) {
           console.warn('Could not rasterize SVG diagram for PDF:', err);
+        }
+      }
+
+      const parts = (q as any).parts;
+      if (Array.isArray(parts) && parts.length > 0) {
+        for (const part of parts) {
+          checkPageBreak(35);
+          const partLabel = part.partLabel ? `Part ${part.partLabel}` : (part.label || 'Part');
+          const partPts = part.points ? ` (${part.points} Point${part.points > 1 ? 's' : ''})` : '';
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9.5);
+          doc.setTextColor(88, 28, 135);
+          doc.text(`${partLabel}${partPts}:`, margin + 6, currentY + 10);
+          currentY += 14;
+
+          const partTask = part.task || part.prompt || '';
+          if (partTask) {
+            currentY = drawRichTextWithTables(doc, partTask, margin + 10, currentY, contentWidth - 14, {
+              fontName: 'helvetica',
+              fontStyle: 'normal',
+              fontSize: 9,
+              textColor: [30, 41, 59],
+              checkPageBreak
+            });
+            currentY += 8;
+          }
         }
       }
 
@@ -506,7 +584,8 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
           currentY += 13;
         }
 
-        currentY = drawRichTextWithTables(doc, st.content, margin + 8, currentY, contentWidth - 16, {
+        const cleanStepContent = stripRawSvgMarkup(st.content);
+        currentY = drawRichTextWithTables(doc, cleanStepContent, margin + 8, currentY, contentWidth - 16, {
           fontName: 'helvetica',
           fontStyle: 'normal',
           fontSize: 8.5,
@@ -526,7 +605,8 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
       currentY += 12;
 
       q.scoringRubric.forEach(rubricItem => {
-        currentY = drawRichTextWithTables(doc, `• ${rubricItem}`, margin + 6, currentY, contentWidth - 12, {
+        const cleanRubricItem = stripRawSvgMarkup(rubricItem);
+        currentY = drawRichTextWithTables(doc, `• ${cleanRubricItem}`, margin + 6, currentY, contentWidth - 12, {
           fontName: 'helvetica',
           fontStyle: 'normal',
           fontSize: 8.5,
@@ -643,7 +723,8 @@ export async function generateTrapRadarPDF(options: GenerateTrapRadarPDFOptions)
   doc.line(margin, y, margin + contentWidth, y);
   y += 6;
 
-  questions.forEach((q, idx) => {
+  for (let idx = 0; idx < questions.length; idx++) {
+    const q = questions[idx];
     checkPageBreak(35);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
@@ -651,11 +732,26 @@ export async function generateTrapRadarPDF(options: GenerateTrapRadarPDFOptions)
     doc.text(`Question ${idx + 1} ${q.skill ? `[${sanitizePdfText(q.skill)}]` : ''}`, margin, y);
     y += 5;
 
+    let promptText = q.prompt || '';
+    let stimulusText = q.stimulus || '';
+    let diagramSvg = (q as any).diagramSvg;
+
+    // Automatically extract diagram if embedded in stimulus or prompt text
+    if (!diagramSvg && stimulusText) {
+      const ext = extractDiagramAndCleanText(stimulusText);
+      stimulusText = ext.cleanText;
+      if (ext.diagramSvg) diagramSvg = ext.diagramSvg;
+    }
+
+    const extP = extractDiagramAndCleanText(promptText, diagramSvg);
+    promptText = extP.cleanText;
+    if (extP.diagramSvg) diagramSvg = extP.diagramSvg;
+
     // Stimulus (with rich table and math support)
-    if (q.stimulus && q.stimulus.trim().length > 0) {
+    if (stimulusText && stimulusText.trim().length > 0) {
       checkPageBreak(25);
-      if (q.stimulus.includes('|')) {
-        y = drawRichTextWithTables(doc, q.stimulus.trim(), margin + 2, y, contentWidth - 4, {
+      if (stimulusText.includes('|')) {
+        y = drawRichTextWithTables(doc, stimulusText.trim(), margin + 2, y, contentWidth - 4, {
           fontName: 'helvetica',
           fontStyle: 'normal',
           fontSize: 8.5,
@@ -666,7 +762,7 @@ export async function generateTrapRadarPDF(options: GenerateTrapRadarPDFOptions)
       } else {
         doc.setFillColor(248, 250, 252);
         doc.setDrawColor(226, 232, 240);
-        const cleanStim = sanitizePdfText(formatMathForPdf(q.stimulus));
+        const cleanStim = sanitizePdfText(formatMathForPdf(stimulusText));
         const stimLines = doc.splitTextToSize(cleanStim, contentWidth - 8);
         const boxHeight = stimLines.length * 4.5 + 6;
         doc.rect(margin, y, contentWidth, boxHeight, 'FD');
@@ -684,7 +780,7 @@ export async function generateTrapRadarPDF(options: GenerateTrapRadarPDFOptions)
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9.5);
     doc.setTextColor(15, 23, 42);
-    const cleanPrompt = sanitizePdfText(formatMathForPdf(q.prompt));
+    const cleanPrompt = sanitizePdfText(formatMathForPdf(promptText));
     const promptLines = doc.splitTextToSize(cleanPrompt, contentWidth);
     checkPageBreak(promptLines.length * 5 + 4);
     promptLines.forEach((pL: string) => {
@@ -692,6 +788,23 @@ export async function generateTrapRadarPDF(options: GenerateTrapRadarPDFOptions)
       y += 5;
     });
     y += 3;
+
+    // Visual Diagram / Graph if present
+    if (diagramSvg) {
+      try {
+        const diagramImg = await rasterizeSvgToDataUrl(diagramSvg, 800, 440);
+        if (diagramImg) {
+          const diagH = 50; // mm
+          const diagW = Math.min(contentWidth, diagH * (400 / 220));
+          const diagX = margin + (contentWidth - diagW) / 2;
+          checkPageBreak(diagH + 5);
+          doc.addImage(diagramImg, 'PNG', diagX, y, diagW, diagH);
+          y += diagH + 4;
+        }
+      } catch (err) {
+        console.warn('Could not rasterize SVG diagram for Trap Radar PDF:', err);
+      }
+    }
 
     // Options (for MCQ)
     if (q.options && q.options.length > 0) {
@@ -716,18 +829,29 @@ export async function generateTrapRadarPDF(options: GenerateTrapRadarPDFOptions)
         doc.setTextColor(30, 41, 59);
         doc.text(`Part ${sanitizePdfText(part.partLabel)} (${part.points} Point${part.points > 1 ? 's' : ''}):`, margin + 4, y);
         y += 4.5;
-        doc.setFont('helvetica', 'normal');
-        const cleanTask = sanitizePdfText(formatMathForPdf(part.task));
-        const taskLines = doc.splitTextToSize(cleanTask, contentWidth - 8);
-        taskLines.forEach((tL: string) => {
-          drawTextWithElevatedPowers(doc, tL, margin + 6, y, 8.5);
-          y += 4.5;
-        });
-        y += 3;
+        if (part.task.includes('|')) {
+          y = drawRichTextWithTables(doc, part.task, margin + 4, y, contentWidth - 8, {
+            fontName: 'helvetica',
+            fontStyle: 'normal',
+            fontSize: 8.5,
+            textColor: [30, 41, 59],
+            checkPageBreak
+          });
+          y += 3;
+        } else {
+          doc.setFont('helvetica', 'normal');
+          const cleanTask = sanitizePdfText(formatMathForPdf(part.task));
+          const taskLines = doc.splitTextToSize(cleanTask, contentWidth - 8);
+          taskLines.forEach((tL: string) => {
+            drawTextWithElevatedPowers(doc, tL, margin + 6, y, 8.5);
+            y += 4.5;
+          });
+          y += 3;
+        }
       });
     }
     y += 5;
-  });
+  }
 
   // Answer Key & Distractor Autopsy Section on New Page
   doc.addPage();

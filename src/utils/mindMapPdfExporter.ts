@@ -55,8 +55,9 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(7.5);
     doc.setTextColor(110, 110, 115);
+    const headerUnitTitle = unit.unitTitle || (unit as any).title || '';
     doc.text(
-      `${subjectHeader} CONCEPT MIND MAP - UNIT ${unit.unitNumber}: ${sanitizePdfText(stripMarkdownFormatting(unit.unitTitle)).toUpperCase()}`,
+      `${subjectHeader} CONCEPT MIND MAP - UNIT ${unit.unitNumber}: ${sanitizePdfText(stripMarkdownFormatting(headerUnitTitle)).toUpperCase()}`,
       margin,
       10
     );
@@ -109,8 +110,10 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
 
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(8.5);
+  const bannerTitle = sanitizePdfText(stripMarkdownFormatting(unit.unitTitle || (unit as any).title || ''));
+  const weightText = unit.examWeight ? `  |  Exam Weight: ${sanitizePdfText(unit.examWeight)}` : '';
   doc.text(
-    `${sanitizePdfText(stripMarkdownFormatting(unit.unitTitle))}  |  Exam Weight: ${sanitizePdfText(unit.examWeight)}`,
+    `${bannerTitle}${weightText}`,
     margin + 4.5,
     currentY + 13.0
   );
@@ -260,7 +263,7 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
     doc.setTextColor(24, 24, 27);
     let lineCursorY = currentY + topPad + 2.8;
     for (const tL of titleLines) {
-      doc.text(tL, margin + 7.5, lineCursorY);
+      drawTextWithElevatedPowers(doc, tL, margin + 7.5, lineCursorY, 8.5);
       lineCursorY += titleLineH;
     }
 
@@ -271,7 +274,7 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
       doc.setFontSize(7.5);
       doc.setTextColor(100, 116, 139);
       for (const sL of subtitleLines) {
-        doc.text(sL, margin + 7.5, lineCursorY);
+        drawTextWithElevatedPowers(doc, sL, margin + 7.5, lineCursorY, 7.5);
         lineCursorY += subLineH;
       }
     }
@@ -296,7 +299,7 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
         doc.setFillColor(79, 70, 229);
         doc.circle(margin + 2.5, currentY + 2.5, 1.2, 'F');
         doc.setTextColor(30, 41, 59);
-        doc.text(cleanTitle, margin + 5.5, currentY + 3.5);
+        drawTextWithElevatedPowers(doc, cleanTitle, margin + 5.5, currentY + 3.5, 8.5);
 
         if (badgeText) {
           doc.setFontSize(7.2);
@@ -310,7 +313,7 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
         doc.circle(margin + 2.5, currentY + 2.5, 1.2, 'F');
         doc.setTextColor(30, 41, 59);
         for (let tlIdx = 0; tlIdx < titleLines.length; tlIdx++) {
-          doc.text(titleLines[tlIdx], margin + 5.5, currentY + 3.5);
+          drawTextWithElevatedPowers(doc, titleLines[tlIdx], margin + 5.5, currentY + 3.5, 8.5);
           currentY += 4.0;
         }
         if (badgeText) {
@@ -349,7 +352,9 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
         doc.setFont('Helvetica', 'normal');
         doc.setFontSize(7);
         doc.setTextColor(15, 23, 42);
-        doc.text(qLines, margin + 4.5, currentY + 7.2);
+        qLines.forEach((ql: string, qi: number) => {
+          drawTextWithElevatedPowers(doc, ql, margin + 4.5, currentY + 7.2 + (qi * 3.0), 7);
+        });
         currentY += qBoxH + 3;
 
         // 2. Step-by-Step Analytical Solution Header Badge
@@ -569,8 +574,8 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
   // Export PDF Blob and Data URI
   const blob = doc.output('blob');
   const dataUri = doc.output('datauristring');
-  const safeSubject = (unit.subjectName || 'AP_Course').replace(/[^a-zA-Z0-9_-]/g, '_');
-  const safeTitle = unit.unitTitle.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const safeSubject = (unit.subjectName || (unit as any).subject || 'AP_Course').replace(/[^a-zA-Z0-9_-]/g, '_');
+  const safeTitle = (unit.unitTitle || (unit as any).title || `Unit_${unit.unitNumber || 1}`).replace(/[^a-zA-Z0-9_-]/g, '_');
   const fileName = `${safeSubject}_Unit_${unit.unitNumber}_${safeTitle}_MindMap.pdf`;
 
   return { doc, blob, dataUri, fileName };

@@ -158,7 +158,11 @@ function parseRadicals(input: string): string {
 
 export function formatLatexToAscii(latex: string): string {
   if (!latex) return '';
-  let str = String(latex);
+  let str = String(latex)
+    .replace(/```(?:xml|svg|html)?\s*<svg[\s\S]*?<\/svg>\s*```/gi, '')
+    .replace(/<svg[\s\S]*?<\/svg>/gi, '')
+    .replace(/&lt;svg[\s\S]*?&lt;\/svg&gt;/gi, '')
+    .replace(/```(?:xml|svg)\s*[\s\S]*?```/gi, '');
 
   // 0a. Repair control characters resulting from JS string/JSON escapes (\t, \r, \f, \x08, \n) and corrupted prefixes
   str = str
@@ -686,7 +690,11 @@ export function formatMathForPdf(text: string): string {
 export function sanitizePdfText(text: string): string {
   if (!text) return '';
 
-  let str = String(text);
+  let str = String(text)
+    .replace(/```(?:xml|svg|html)?\s*<svg[\s\S]*?<\/svg>\s*```/gi, '')
+    .replace(/<svg[\s\S]*?<\/svg>/gi, '')
+    .replace(/&lt;svg[\s\S]*?&lt;\/svg&gt;/gi, '')
+    .replace(/```(?:xml|svg)\s*[\s\S]*?```/gi, '');
 
   // 0. Comprehensive LaTeX math to clean ASCII / CP1252 conversion
   str = formatLatexToAscii(str);

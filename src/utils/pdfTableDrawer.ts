@@ -17,6 +17,13 @@ export interface DrawTextOptions {
 export function stripMarkdownFormatting(text: string): string {
   if (!text) return '';
   let str = text
+    .replace(/```(?:xml|svg|html)?\s*<svg[\s\S]*?<\/svg>\s*```/gi, '')
+    .replace(/<svg[\s\S]*?<\/svg>/gi, '')
+    .replace(/&lt;svg[\s\S]*?&lt;\/svg&gt;/gi, '')
+    .replace(/```(?:xml|svg)\s*[\s\S]*?```/gi, '')
+    .replace(/<\?xml[\s\S]*?\?>/gi, '')
+    .replace(/<svg[\s\S]*$/gi, '')
+    .replace(/&lt;svg[\s\S]*$/gi, '')
     .replace(/\*\*(.*?)\*\*/g, '$1')
     .replace(/\*([^\*]+)\*/g, '$1')
     .replace(/__([^_]+)__/g, '$1')
@@ -44,6 +51,68 @@ export function isTableLine(line: string): boolean {
 }
 
 /**
+ * Calculates the exact rendered horizontal width of a text string including elevated powers,
+ * allowing precise centering and right-alignment in table cells and headings.
+ */
+export function getTextWithElevatedPowersWidth(
+  doc: jsPDF,
+  text: string,
+  baseFontSize: number = 9.5
+): number {
+  if (!text) return 0;
+
+  if (!text.includes('^') && !text.includes('²') && !text.includes('³') && !text.includes('¹')) {
+    doc.setFontSize(baseFontSize);
+    return doc.getTextWidth(text);
+  }
+
+  const powerRegex = /(?:(?<=[^\s+\-*\/=,;:(<>&])|^|(?<=[\s(\[{]))\^(?:\{([a-zA-Z0-9\+\-\/ .!^\u00B2\u00B3\u00B9]+)\}|\(([^()]+)\)|([\-]?[0-9]+(?![0-9a-zA-Z])|[\-]?[a-zA-Z](?![a-zA-Z])|[\-]?[a-zA-Z0-9]+))|([\u00B2\u00B3\u00B9])/g;
+
+  let totalW = 0;
+  let lastIdx = 0;
+  let match: RegExpExecArray | null;
+  const scaleFactor = doc.internal.scaleFactor || 1;
+  const superSize = Math.max(5.5, baseFontSize * 0.70);
+  const tinySpacer = (baseFontSize * 0.04) / scaleFactor;
+
+  while ((match = powerRegex.exec(text)) !== null) {
+    const matchStart = match.index;
+    const matchEnd = powerRegex.lastIndex;
+
+    if (matchStart > lastIdx) {
+      const normalChunk = text.substring(lastIdx, matchStart);
+      doc.setFontSize(baseFontSize);
+      totalW += doc.getTextWidth(normalChunk);
+    }
+
+    const rawPower = match[1] || match[2] || match[3] || match[4] || '';
+    const powerText = rawPower === '²'
+      ? '2'
+      : rawPower === '³'
+        ? '3'
+        : rawPower === '¹'
+          ? '1'
+          : rawPower.replace(/\^2/g, '²').replace(/\^3/g, '³').replace(/\^1/g, '¹');
+
+    if (powerText) {
+      doc.setFontSize(superSize);
+      totalW += doc.getTextWidth(powerText) + tinySpacer;
+    }
+
+    lastIdx = matchEnd;
+  }
+
+  if (lastIdx < text.length) {
+    const remainingChunk = text.substring(lastIdx);
+    doc.setFontSize(baseFontSize);
+    totalW += doc.getTextWidth(remainingChunk);
+  }
+
+  doc.setFontSize(baseFontSize);
+  return totalW;
+}
+
+/**
  * Draws text with elevated superscripts (², ³, ¹) for textbook-grade mathematical power height.
  */
 export function drawTextWithElevatedPowers(
@@ -63,7 +132,7 @@ export function drawTextWithElevatedPowers(
   }
 
   // Regex: Group 1=^{...}, Group 2=^(...), Group 3=^x, Group 4=WinAnsi legacy
-  const powerRegex = /(?<=[^\s+\-*\/=,;:(<>&])\^(?:\{([a-zA-Z0-9\+\-\/ .!^\u00B2\u00B3\u00B9]+)\}|\(([^()]+)\)|([\-]?[a-zA-Z0-9]+))|([\u00B2\u00B3\u00B9])/g;
+  const powerRegex = /(?:(?<=[^\s+\-*\/=,;:(<>&])|^|(?<=[\s(\[{]))\^(?:\{([a-zA-Z0-9\+\-\/ .!^\u00B2\u00B3\u00B9]+)\}|\(([^()]+)\)|([\-]?[0-9]+(?![0-9a-zA-Z])|[\-]?[a-zA-Z](?![a-zA-Z])|[\-]?[a-zA-Z0-9]+))|([\u00B2\u00B3\u00B9])/g;
 
   let curX = x;
   let lastIdx = 0;
@@ -244,7 +313,7 @@ export function drawPdfGridTable(
         doc.rect(cellX, currentY, cellW, Math.max(0.8, 1.2 / scaleFactor), 'F');
       }
 
-      // Draw Cell Text
+      // Draw Cell Text with elevated powers
       const isCol0Bold = !isHeader && cIdx === 0 && cellText.includes('**');
       doc.setFont('Helvetica', isHeader || isCol0Bold ? 'bold' : 'normal');
       doc.setFontSize(fontSize);
@@ -256,9 +325,11 @@ export function drawPdfGridTable(
       cellLines.forEach(cl => {
         const isNumeric = /^[0-9.,%$+\-><=^/°±]+$/.test(cl.trim());
         if (isHeader || isNumeric) {
-          doc.text(cl, cellX + cellW / 2, textY, { align: 'center' });
+          const textW = getTextWithElevatedPowersWidth(doc, cl, fontSize);
+          const startX = cellX + Math.max(1.5 / scaleFactor, (cellW - textW) / 2);
+          drawTextWithElevatedPowers(doc, cl, startX, textY, fontSize);
         } else {
-          doc.text(cl, cellX + (3 / scaleFactor), textY);
+          drawTextWithElevatedPowers(doc, cl, cellX + (3 / scaleFactor), textY, fontSize);
         }
         textY += cellLineH;
       });

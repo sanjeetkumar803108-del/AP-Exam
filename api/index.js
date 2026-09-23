@@ -610,19 +610,189 @@ var AP_SUBJECT_ARCHETYPES = {
         "Money market and Loanable funds market: Federal funds interest rate determination, open market operations, and crowding-out effect"
       ]
     }
+  },
+  human_geography: {
+    general: [
+      "Spatial pattern evaluation: Identifying clustering, dispersion, and regional density from geospatial maps and thematic projections",
+      "Scale of analysis: Contrasting global, national, regional, and local demographic and economic data patterns to uncover hidden spatial variations",
+      "Demographic stimulus interpretation: Evaluating Stage 2 vs Stage 4 population pyramids, dependency ratios, and sex ratio imbalances",
+      "Geospatial model application: Testing real-world deviations from isotropic assumptions in concentric, sectoral, and agricultural models",
+      "Cultural landscape analysis: Explaining visible religious, architectural, and linguistic imprints on urban centers and rural hearths",
+      "Geopolitical border impacts: Devolutionary pressures, supranational governance, and UNCLOS maritime boundaries influencing state sovereignty"
+    ],
+    units: {
+      "1": [
+        "Geospatial technologies: Analyzing GIS overlay layers, GPS navigation coordinates, and satellite remote sensing for environmental disaster management",
+        "Spatial concepts: Distance decay vs time-space compression driven by telecommunications and jet transportation",
+        "Regional analysis: Formal (uniform climatic/legislative) vs Functional (nodal broadcast/newspaper) vs Vernacular (perceptual cultural identity) regions",
+        "Human-environmental interaction: Environmental determinism vs possibilism in agricultural development and arid urbanization",
+        "Map projections & distortion: Mercator preservation of directional lines for navigation vs polar areal distortion vs Peters equal-area balance",
+        "Thematic mapping types: Choropleth density gradients, dot density distributions, isoline topographic contours, and proportional symbol maps"
+      ],
+      "2": [
+        "Demographic Transition Model (DTM): Stage 1 high fluctuating equilibrium vs Stage 2 Industrial/Medical revolution CDR collapse and population explosion",
+        "DTM Late Stages: Stage 3 fertility decline via urbanization and female education vs Stage 4 low stable equilibrium and Stage 5 natural decrease",
+        "Epidemiological Transition Model: Stage 1 pestilence and famine vs Stage 2 receding pandemics vs Stage 3/4 degenerative human-made diseases",
+        "Population Pyramids: Broad expansive base (rapid growth, high youth dependency) vs columnar aging demographic (caregiver deficits and pension strain)",
+        "Malthusian population theory: Arithmetic food growth vs exponential population growth, positive vs preventative checks, and Boserup agricultural intensification rebuttal",
+        "Migration push and pull factors: Economic employment, political persecution, environmental desertification, and Ravenstein's laws of migration",
+        "Forced vs voluntary displacement: Refugees vs internally displaced persons (IDPs) vs asylum seekers under international UNHCR protocols",
+        "Pro-natalist vs anti-natalist government policies: Singapore tax rebates and parental leave vs China's historic One-Child Policy gender imbalance"
+      ],
+      "3": [
+        "Types of cultural diffusion: Relocation (physical migration) vs Expansion diffusion (contagious social media, hierarchical fashion/capitals, stimulus adaptations)",
+        "Religious distribution & hearths: Universalizing faiths (Christianity, Islam, Buddhism) seeking global converts vs Ethnic faiths (Judaism, Hinduism) anchored to sacred hearth landscapes",
+        "Linguistic geography: Indo-European language family evolution, Romance/Germanic branches, isoglosses, dialects, and English as global lingua franca",
+        "Cultural landscape imprint: Toponyms, religious architecture (minarets, steeples, shrines), and indigenous vs colonial land-use patterns",
+        "Cultural identity processes: Acculturation (adopting traits while maintaining identity) vs Assimilation (complete cultural absorption) vs Syncretism (blended traditions)",
+        "Centripetal vs centrifugal cultural forces: Shared national language/patriotism unifying a populace vs ethnic sectarian linguistic cleavages driving fragmentation"
+      ],
+      "4": [
+        "Political entity types: Nation-states (Japan, Iceland), stateless nations (Kurds, Palestinians), multinational states (UK, Canada), and autonomous regions",
+        "Colonial borders and historical boundaries: Berlin Conference (1884) superimposed borders ignoring African ethnic lines, antecedent boundaries, and relic boundaries (Berlin Wall)",
+        "Boundary dispute categories: Definitional (treaty wording), locational (border cartography), operational (immigration/customs), and allocational (oil/aquifer resource extraction)",
+        "Law of the Sea (UNCLOS): 12-nautical-mile territorial sea sovereignty, 24nm contiguous enforcement zone, and 200nm Exclusive Economic Zone (EEZ) resource rights",
+        "Internal political boundaries: Gerrymandering techniques (packing opposition into single districts vs cracking across multiple districts) and redistricting reapportionment",
+        "Devolutionary forces: Physical geography barriers, ethnic separatism (Basques, Catalans), economic disparities, and terrorism causing state decentralization",
+        "Supranational organizations: European Union (EU), United Nations (UN), NATO, and ASEAN balancing sovereign independence against collective trade and defense"
+      ],
+      "5": [
+        "Von Th\xFCnen Agricultural Land-Use Model: Concentric rings determined by land rent and perishability/transport weight (Dairying -> Timber -> Grains -> Livestock)",
+        "Bid-Rent Theory in agriculture: Highest land cost near urban market favoring intensive farming vs low rent per hectare on periphery favoring extensive grazing",
+        "First, Second, and Third (Green) Agricultural Revolutions: High-yield variety (HYV) wheat/rice strains, synthetic nitrogen fertilizers, and mechanized irrigation",
+        "Intensive vs Extensive agricultural systems: Market gardening, plantation agriculture, and mixed crop-livestock vs nomadic herding and shifting cultivation",
+        "Cadastral rural survey systems: English Metes and Bounds (natural landmarks) vs French Long Lots (riverfront access) vs Township and Range rectangular grids",
+        "Global agricultural supply chains: Agribusiness corporate consolidation, commodity chains, fair trade certification, and export monoculture vulnerabilities"
+      ],
+      "6": [
+        "Classic North American Urban Models: Burgess Concentric Zone (CBD outward) vs Hoyt Sector (transit corridor wedges) vs Harris-Ullman Multiple Nuclei",
+        "Galactic City and Edge Cities: Suburban nodes, beltways, office parks, and polycentric urban agglomerations",
+        "Christaller's Central Place Theory: Hexagonal market areas, threshold (minimum customer base to sustain a business), and range (maximum distance consumers travel)",
+        "Urban settlement hierarchies: Primate city rule (disproportionate economic/political dominance) vs Rank-Size rule (nth city is 1/n size of largest city)",
+        "Urban challenges & gentrification: Displacement of lower-income residents, property tax inflation, suburban sprawl, infrastructure deficits, and food deserts",
+        "Socio-spatial urban inequalities: Redlining, blockbusting, racial steering, and peripheral squatter settlements / favelas in developing megacities"
+      ],
+      "7": [
+        "Wallerstein's World Systems Theory: Core (capital-intensive, high-value manufacturing), Periphery (raw material extraction, low wages), and Semiperiphery",
+        "Rostow's Stages of Economic Growth: Traditional society -> Preconditions for takeoff -> Takeoff -> Drive to maturity -> Age of high mass consumption",
+        "Weber's Least Cost Theory: Raw material index, bulk-reducing industries (copper smelting near mine) vs bulk-gaining industries (beverage bottling near market)",
+        "Human Development Index (HDI): Composite metric evaluating GDP per capita (PPP), mean years of schooling, and life expectancy at birth",
+        "Gender and Economic Development: Gender Inequality Index (GII), microfinance small-business lending, and female labor force participation empowerment",
+        "Post-Fordism and globalization: Offshoring, maquiladoras, Export Processing Zones (EPZs), just-in-time logistics, and Rust Belt deindustrialization"
+      ]
+    }
+  },
+  environmental_science: {
+    general: [
+      "Ecological systems analysis: Trophic energy transfers, 10% ecological efficiency rule, and nutrient cycling disruptions",
+      "Environmental quantitative calculations: LD50 toxicology thresholds, Rule of 70 doubling times, and per-capita resource consumption",
+      "Anthropogenic impact evaluation: Ocean acidification, stratospheric ozone depletion, and habitat fragmentation",
+      "Sustainable resource stewardship: Renewable energy trade-offs, integrated pest management, and aquifer recharge equilibrium"
+    ],
+    units: {
+      "1": ["Carbon, nitrogen, and phosphorus biogeochemical cycles", "Primary productivity: GPP vs NPP calculations in terrestrial and aquatic biomes"],
+      "2": ["Ecosystem biodiversity: Species richness vs evenness, ecosystem services, and island biogeography theory"],
+      "3": ["Population ecology: r-selected vs K-selected species, Type I/II/III survivorship curves, and carrying capacity K overshoot"],
+      "4": ["Earth systems: Plate tectonics, soil texture triangle classification, atmospheric Hadley cells, and El Ni\xF1o-Southern Oscillation (ENSO)"],
+      "5": ["Land and water use: Tragedy of the commons, Green Revolution impacts, irrigation salinization, and integrated pest management (IPM)"],
+      "6": ["Energy resources: Fossil fuel extraction, nuclear fission half-life calculations, photovoltaic solar, and wind turbine generation"],
+      "7": ["Atmospheric pollution: Photochemical smog formation, thermal inversions, acid deposition, and catalytic converters"],
+      "8": ["Aquatic and terrestrial pollution: Cultural eutrophication, biochemical oxygen demand (BOD) oxygen sag curves, and endocrine disruptors"],
+      "9": ["Global change: Stratospheric ozone chlorofluorocarbons (CFCs), greenhouse gas warming potentials, ocean acidification, and invasive species"]
+    }
+  },
+  csp: {
+    general: [
+      "Algorithmic analysis: Selection, sequencing, and iteration efficiency and correctness",
+      "Data abstraction & representation: Binary encoding, hexadecimal conversion, lossy vs lossless compression",
+      "Internet architecture: Packet routing, TCP/IP protocols, DNS hierarchy, and fault-tolerant network topologies",
+      "Societal impacts of computing: Digital divide, facial recognition bias, intellectual property, and crowdsourcing citizen science"
+    ],
+    units: {
+      "1": ["Iterative software development process: Program design, user testing, debugging logic errors vs syntax errors"],
+      "2": ["Binary numbers, bytes, overflow errors, metadata, and analog-to-digital sampling rates"],
+      "3": ["Robot grid path traversals, list manipulations, linear vs binary search operations, and modular procedural abstraction with parameters"],
+      "4": ["The Internet, IPv4 vs IPv6 addressing, router redundancy, bandwidth vs latency, and public-key encryption (RSA)"],
+      "5": ["Computing innovations, digital divide, creative commons licensing, open-source software, phishing, malware, and multi-factor authentication"]
+    }
+  },
+  government: {
+    general: [
+      "Foundational document textual analysis: Federalist No. 10, Brutus No. 1, Federalist No. 78, Letter from Birmingham Jail",
+      "SCOTUS case precedent and selective incorporation: McCulloch v. Maryland, US v. Lopez, Tinker v. Des Moines, Brown v. Board",
+      "Interactions among branches: Congressional checks, presidential executive orders, judicial review, and bureaucratic administrative rulemaking",
+      "Political participation & public opinion: Polling methodology, voting rights legislation, campaign finance, and media agenda setting"
+    ],
+    units: {
+      "1": ["Constitutional foundations: Separation of powers, checks and balances, federalism, Commerce Clause, and Tenth Amendment reserved powers"],
+      "2": ["Institutions of national government: House vs Senate procedural rules (filibuster, rules committee), executive veto power, judicial appointments, iron triangles"],
+      "3": ["Civil liberties & civil rights: First Amendment Free Exercise vs Establishment Clause, Fourteenth Amendment Equal Protection, selective incorporation"],
+      "4": ["American political ideologies: Liberalism vs conservatism vs libertarianism, political socialization agents, and Keynesian vs supply-side fiscal policy"],
+      "5": ["Political participation: Electoral College mechanisms, Citizens United v. FEC independent expenditures, interest group lobbying, and primary voting systems"]
+    }
+  },
+  statistics: {
+    general: [
+      "Data display interpretation: Histograms, stemplots, boxplots with 1.5*IQR outlier criterion, and normal probability plots",
+      "Bivariate relationship analysis: Least-squares regression line (LSRL), correlation coefficient r, and residual plot diagnostic patterns",
+      "Experimental and survey design: Simple random sampling, stratified sampling, blocking, confounding variables, and placebo double-blinding",
+      "Statistical inference: Null vs alternative hypotheses, Type I vs Type II errors, p-value interpretation, and confidence intervals"
+    ],
+    units: {
+      "1": ["Exploring One-Variable Data: Center, shape, spread, standard deviation formula, z-score transformations, empirical 68-95-99.7 rule"],
+      "2": ["Exploring Two-Variable Data: LSRL y-hat = a + bx, slope and intercept contextual interpretations, coefficient of determination r^2, influential points"],
+      "3": ["Collecting Data: Observational study vs randomized controlled experiment, voluntary response bias, nonresponse bias, and completely randomized designs"],
+      "4": ["Probability and distributions: Addition/multiplication probability rules, conditional probability P(A|B), binomial B(n,p) vs geometric distributions"],
+      "5": ["Sampling Distributions: Central Limit Theorem (CLT), sampling distribution of sample mean x-bar and sample proportion p-hat, standard error"],
+      "6": ["Inference for Categorical Proportions: One-sample and two-sample z-intervals and z-tests, normal approximation conditions np >= 10 and n(1-p) >= 10"],
+      "7": ["Inference for Quantitative Means: One-sample and two-sample t-procedures, degrees of freedom, matched-pairs t-tests, robustness to normality"],
+      "8": ["Chi-Square Inference: Chi-Square goodness-of-fit test, test of independence, test of homogeneity, expected cell count requirements"],
+      "9": ["Inference for Regression Slopes: t-test for population regression slope beta, standard error of the slope SE_b, linear regression condition checks"]
+    }
+  },
+  general_academic: {
+    general: [
+      "Conceptual definition and contextualization: Defining core domain terminology and situating the phenomenon within its broader academic framework",
+      "Cause-and-effect explanatory analysis: Demonstrating step-by-step how an initial change or stimulus leads directly to observed secondary consequences",
+      "Comparative critical evaluation: Contrasting two competing theories, institutional models, or empirical outcomes to assess relative efficacy",
+      "Claim justification using empirical evidence: Formulating a defensible analytical thesis supported by authentic course-specific data or principles"
+    ],
+    units: {
+      "1": ["Foundational domain principles: Core taxonomic concepts, historical precedents, and primary analytical frameworks"],
+      "2": ["System dynamics and interactions: Analyzing functional relationships between interdependent components within the field"],
+      "3": ["Advanced contextual evaluation: Assessing real-world case studies, regulatory interventions, and empirical validations"]
+    }
   }
 };
 function getGranularSubjectArchetypes(subject, unitOrTopic, count) {
   const s = (subject || "").toLowerCase();
   const u = (unitOrTopic || "").toLowerCase();
-  let bundle = AP_SUBJECT_ARCHETYPES.calculus;
-  if (s.includes("biology")) bundle = AP_SUBJECT_ARCHETYPES.biology;
-  else if (s.includes("chemistry")) bundle = AP_SUBJECT_ARCHETYPES.chemistry;
-  else if (s.includes("physics")) bundle = AP_SUBJECT_ARCHETYPES.physics;
-  else if (s.includes("history") || s.includes("apush")) bundle = AP_SUBJECT_ARCHETYPES.history;
-  else if (s.includes("psych")) bundle = AP_SUBJECT_ARCHETYPES.psychology;
-  else if (s.includes("econ")) bundle = AP_SUBJECT_ARCHETYPES.economics;
-  else if (s.includes("calculus")) bundle = AP_SUBJECT_ARCHETYPES.calculus;
+  let bundle = AP_SUBJECT_ARCHETYPES.general_academic;
+  if (s.includes("geography") || s.includes("aphg") || s.includes("human")) {
+    bundle = AP_SUBJECT_ARCHETYPES.human_geography;
+  } else if (s.includes("environmental") || s.includes("apes")) {
+    bundle = AP_SUBJECT_ARCHETYPES.environmental_science;
+  } else if (s.includes("principles") || s.includes("csp")) {
+    bundle = AP_SUBJECT_ARCHETYPES.csp;
+  } else if (s.includes("gov") || s.includes("politics")) {
+    bundle = AP_SUBJECT_ARCHETYPES.government;
+  } else if (s.includes("stat")) {
+    bundle = AP_SUBJECT_ARCHETYPES.statistics;
+  } else if (s.includes("calculus")) {
+    bundle = AP_SUBJECT_ARCHETYPES.calculus;
+  } else if (s.includes("biology")) {
+    bundle = AP_SUBJECT_ARCHETYPES.biology;
+  } else if (s.includes("chemistry")) {
+    bundle = AP_SUBJECT_ARCHETYPES.chemistry;
+  } else if (s.includes("physics")) {
+    bundle = AP_SUBJECT_ARCHETYPES.physics;
+  } else if (s.includes("history") || s.includes("apush") || s.includes("euro") || s.includes("world")) {
+    bundle = AP_SUBJECT_ARCHETYPES.history;
+  } else if (s.includes("psych")) {
+    bundle = AP_SUBJECT_ARCHETYPES.psychology;
+  } else if (s.includes("econ")) {
+    bundle = AP_SUBJECT_ARCHETYPES.economics;
+  }
   const unitMatch = u.match(/(?:unit|period|chapter|u|p)\s*([0-9]+)/i);
   const detectedUnit = unitMatch ? unitMatch[1] : null;
   let candidatePool = [];
@@ -10661,6 +10831,744 @@ function getBattleQuestions(subjectId, count = 5, avoidStems = []) {
   return selected;
 }
 
+// src/utils/svgHelper.ts
+function extractDiagramAndCleanText(text, existingSvg) {
+  if (!text) return { cleanText: "", diagramSvg: existingSvg };
+  let extractedSvg = existingSvg && existingSvg.trim() ? existingSvg.trim() : void 0;
+  let clean = text;
+  const codeBlockMatch = clean.match(/```(?:xml|svg|html)?\s*(<svg[\s\S]*?<\/svg>)\s*```/i);
+  if (codeBlockMatch) {
+    if (!extractedSvg) {
+      extractedSvg = codeBlockMatch[1].trim();
+    }
+    clean = clean.replace(codeBlockMatch[0], "").trim();
+  }
+  const rawSvgMatch = clean.match(/<svg[\s\S]*?<\/svg>/i);
+  if (rawSvgMatch) {
+    if (!extractedSvg) {
+      extractedSvg = rawSvgMatch[0].trim();
+    }
+    clean = clean.replace(rawSvgMatch[0], "").trim();
+  }
+  const escapedSvgMatch = clean.match(/&lt;svg[\s\S]*?&lt;\/svg&gt;/i);
+  if (escapedSvgMatch) {
+    if (!extractedSvg) {
+      extractedSvg = escapedSvgMatch[0].replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&").trim();
+    }
+    clean = clean.replace(escapedSvgMatch[0], "").trim();
+  }
+  clean = clean.replace(/```(?:xml|svg|html)?\s*```/gi, "").trim();
+  clean = clean.replace(/\n{3,}/g, "\n\n").trim();
+  if (extractedSvg) {
+    const innerMatch = extractedSvg.match(/<svg[\s\S]*?<\/svg>/i);
+    if (innerMatch) {
+      extractedSvg = innerMatch[0].trim();
+    }
+  }
+  return { cleanText: clean, diagramSvg: extractedSvg };
+}
+
+// src/data/apSubjectWhitelists.ts
+var AP_SUBJECT_WHITELISTS = {
+  "ap-human-geography": {
+    subjectId: "ap-human-geography",
+    subjectName: "AP Human Geography",
+    category: "social_science",
+    mathExpected: false,
+    canonicalUnits: [
+      { unitNumber: 1, title: "Thinking Geographically", keywords: ["gis", "gps", "remote sensing", "scale of analysis", "formal region", "functional region", "vernacular region", "environmental determinism", "possibilism", "distance decay", "time-space compression", "map projection", "choropleth"] },
+      { unitNumber: 2, title: "Population & Migration Patterns", keywords: ["demographic transition model", "dtm", "crude birth rate", "cbr", "crude death rate", "cdr", "natural increase rate", "nir", "population pyramid", "dependency ratio", "malthus", "boserup", "ravenstein", "push factor", "pull factor", "refugee", "idp", "asylum", "pronatalist", "antinatalist", "epidemiological transition"] },
+      { unitNumber: 3, title: "Cultural Patterns & Processes", keywords: ["cultural hearth", "contagious diffusion", "hierarchical diffusion", "stimulus diffusion", "relocation diffusion", "universalizing religion", "ethnic religion", "language family", "indo-european", "isogloss", "lingua franca", "acculturation", "assimilation", "syncretism", "cultural landscape", "folk culture", "pop culture"] },
+      { unitNumber: 4, title: "Political Patterns & Processes", keywords: ["sovereignty", "nation-state", "stateless nation", "multinational state", "autonomous region", "colonialism", "berlin conference", "superimposed boundary", "relic boundary", "unclos", "exclusive economic zone", "eez", "gerrymandering", "devolution", "supranationalism", "un", "eu", "nato", "asean", "balkanization"] },
+      { unitNumber: 5, title: "Agriculture & Rural Land-Use", keywords: ["von thunen", "bid-rent", "green revolution", "subsistence agriculture", "commercial agriculture", "intensive farming", "extensive farming", "shifting cultivation", "pastoral nomadism", "agribusiness", "commodity chain", "metes and bounds", "township and range", "long lot", "desertification", "salinization"] },
+      { unitNumber: 6, title: "Cities & Urban Land-Use", keywords: ["burgess", "concentric zone", "hoyt sector", "multiple nuclei", "harris-ullman", "galactic city", "edge city", "central place theory", "christaller", "range", "threshold", "rank-size rule", "primate city", "gentrification", "new urbanism", "smart growth", "suburban sprawl", "redlining", "blockbusting", "megacity", "squatter settlement"] },
+      { unitNumber: 7, title: "Industrial & Economic Development", keywords: ["wallerstein", "world systems", "core", "periphery", "semiperiphery", "rostow", "stages of economic growth", "weber", "least cost theory", "bulk-gaining", "bulk-reducing", "hdi", "human development index", "gni", "gii", "maquiladora", "epz", "sez", "outsourcing", "deindustrialization", "agglomeration", "un sdgs", "microfinance"] }
+    ],
+    allowedDomains: ["spatial analysis", "demography", "culture", "geopolitics", "agriculture", "urban planning", "economic development"],
+    forbiddenSignatures: [
+      // Calculus and advanced mathematics
+      /\b(?:definite\s+integral|indefinite\s+integral|fundamental\s+theorem\s+of\s+calculus|\bFTC\b|derivative|differentiat(?:ion|e)|critical\s+point|concav(?:e|ity)|tangent\s+line|riemann\s+sum|slope\s+field|separable\s+differential\s+equation|disk\s+method|washer\s+method|shell\s+method|volume\s+of\s+revolution|taylor\s+series|maclaurin|radius\s+of\s+convergence|l'h[oô]pital|mean\s+value\s+theorem|\bMVT\b|intermediate\s+value\s+theorem|\bIVT\b|dy\/dx|d\^2y\/dx\^2|f'\(x\)|f''\(x\)|\\int\b|\\frac\{d\}\{dx\})\b/i,
+      // Classical mechanics / Physics
+      /\b(?:centripetal\s+acceleration|rotational\s+inertia|kinematic\s+equation|projectile\s+motion|angular\s+momentum|newton's\s+second\s+law|bernoulli's\s+equation|archimedes\s+principle|f\s*=\s*ma)\b/i,
+      // Advanced Chemistry
+      /\b(?:titration\s+curve|le\s+chatelier|stoichiometr(?:y|ic)|henderson-hasselbalch|beer-lambert|orbitals|hybridization|sp3|photoelectron\s+spectroscopy|\bPES\b|net\s+ionic\s+equation)\b/i
+    ]
+  },
+  "ap-environmental-science": {
+    subjectId: "ap-environmental-science",
+    subjectName: "AP Environmental Science",
+    category: "science",
+    mathExpected: true,
+    canonicalUnits: [
+      { unitNumber: 1, title: "The Living World: Ecosystems", keywords: ["carbon cycle", "nitrogen cycle", "phosphorus cycle", "hydrologic cycle", "trophic level", "10% rule", "primary productivity", "gpp", "npp", "biomes"] },
+      { unitNumber: 2, title: "The Living World: Biodiversity", keywords: ["ecosystem services", "provisioning", "regulating", "cultural", "supporting", "island biogeography", "ecological tolerance", "succession", "pioneer species", "keystone species"] },
+      { unitNumber: 3, title: "Populations", keywords: ["generalist", "specialist", "r-selected", "k-selected", "survivorship curve", "carrying capacity", "k", "rule of 70", "doubling time", "demographic transition", "tfr", "replacement level"] },
+      { unitNumber: 4, title: "Earth Systems & Resources", keywords: ["plate tectonics", "convergent", "divergent", "transform", "soil horizons", "soil texture triangle", "atmosphere", "troposphere", "stratosphere", "coriolis effect", "el nino", "la nina", "watershed"] },
+      { unitNumber: 5, title: "Land & Water Use", keywords: ["tragedy of the commons", "clearcutting", "green revolution", "irrigation", "drip", "furrow", "flood", "salinization", "aquifer", "ogallala", "pest control", "ipm", "cafo", "overfishing", "mining", "slag"] },
+      { unitNumber: 6, title: "Energy Resources & Consumption", keywords: ["fossil fuels", "coal", "petroleum", "natural gas", "fracking", "nuclear fission", "half-life", "biomass", "solar photovoltaic", "wind turbine", "hydroelectric", "geothermal", "hydrogen fuel cell"] },
+      { unitNumber: 7, title: "Atmospheric Pollution", keywords: ["photochemical smog", "ground-level ozone", "thermal inversion", "acid deposition", "so2", "nox", "pm2.5", "pm10", "radon", "asbestos", "vocs", "vapor recovery nozzle", "catalytic converter", "scrubber"] },
+      { unitNumber: 8, title: "Aquatic & Terrestrial Pollution", keywords: ["point source", "nonpoint source", "eutrophication", "hypoxic", "dead zone", "biological oxygen demand", "bod", "bioaccumulation", "biomagnification", "endocrine disruptor", "ld50", "sanitary landfill", "leachate", "sewage treatment"] },
+      { unitNumber: 9, title: "Global Change", keywords: ["stratospheric ozone depletion", "cfcs", "montreal protocol", "greenhouse effect", "co2", "ch4", "n2o", "ocean acidification", "coral bleaching", "invasive species", "hsi", "cites", "endangered species act"] }
+    ],
+    allowedDomains: ["ecology", "earth systems", "energy", "environmental toxicology", "pollution", "sustainability", "population ecology"],
+    forbiddenSignatures: [
+      /\b(?:definite\s+integral|indefinite\s+integral|fundamental\s+theorem\s+of\s+calculus|riemann\s+sum|disk\s+method|washer\s+method|taylor\s+series|maclaurin|l'h[oô]pital|mean\s+value\s+theorem|dy\/dx|d\^2y\/dx\^2|f'\(x\)|f''\(x\))\b/i,
+      /\b(?:rotational\s+inertia|angular\s+momentum|centripetal\s+acceleration|bernoulli's\s+equation)\b/i
+    ]
+  },
+  "ap-computer-science-principles": {
+    subjectId: "ap-computer-science-principles",
+    subjectName: "AP Computer Science Principles",
+    category: "tech",
+    mathExpected: false,
+    canonicalUnits: [
+      { unitNumber: 1, title: "Creative Development", keywords: ["collaboration", "program design", "software development process", "debugging", "logic error", "syntax error", "runtime error", "testing"] },
+      { unitNumber: 2, title: "Data Representation & Information", keywords: ["binary", "bits", "bytes", "hexadecimal", "overflow error", "roundoff error", "lossy compression", "lossless compression", "data abstraction", "metadata"] },
+      { unitNumber: 3, title: "Algorithms & Programming", keywords: ["sequencing", "selection", "iteration", "conditional", "if-else", "loops", "traversal", "linear search", "binary search", "procedural abstraction", "parameters", "return value", "robot grid"] },
+      { unitNumber: 4, title: "Computing Systems & Networks", keywords: ["the internet", "ip address", "ipv4", "ipv6", "tcp/ip", "packets", "packet switching", "routers", "fault tolerance", "redundancy", "bandwidth", "latency", "world wide web", "http", "https"] },
+      { unitNumber: 5, title: "Impact of Computing", keywords: ["digital divide", "computing bias", "crowdsourcing", "citizen science", "intellectual property", "creative commons", "open source", "open access", "cybersecurity", "phishing", "keylogging", "malware", "public-key encryption", "symmetric encryption", "ddos", "multifactor authentication"] }
+    ],
+    allowedDomains: ["algorithms", "networking", "data representation", "programming logic", "cybersecurity", "digital ethics"],
+    forbiddenSignatures: [
+      /\b(?:integral|derivative|calculus|riemann|titration|stoichiometry|dtm|demographic\s+transition|von\s+thunen|gerrymandering)\b/i,
+      /\b(?:public\s+class\b|System\.out\.println|extends\b|implements\b|private\s+int\b|ArrayList<Integer>)\b/i
+      // Avoid Java AP CSA code leaking into CSP pseudocode
+    ]
+  },
+  "ap-calculus-ab": {
+    subjectId: "ap-calculus-ab",
+    subjectName: "AP Calculus AB",
+    category: "stem_math",
+    mathExpected: true,
+    canonicalUnits: [
+      { unitNumber: 1, title: "Limits & Continuity", keywords: ["limit", "continuity", "removable discontinuity", "jump discontinuity", "vertical asymptote", "squeeze theorem", "intermediate value theorem", "ivt", "end behavior"] },
+      { unitNumber: 2, title: "Differentiation: Definition & Fundamentals", keywords: ["derivative", "difference quotient", "instantaneous rate of change", "power rule", "product rule", "quotient rule", "differentiability"] },
+      { unitNumber: 3, title: "Chain Rule & Implicit Differentiation", keywords: ["chain rule", "composite function", "implicit differentiation", "inverse trigonometric derivatives"] },
+      { unitNumber: 4, title: "Contextual Applications of Differentiation", keywords: ["straight-line motion", "position", "velocity", "acceleration", "speed", "related rates", "local linearity", "linear approximation"] },
+      { unitNumber: 5, title: "Analytical Applications of Differentiation", keywords: ["mean value theorem", "mvt", "extreme value theorem", "evt", "critical point", "first derivative test", "second derivative test", "concavity", "inflection point", "optimization"] },
+      { unitNumber: 6, title: "Integration & Accumulation of Change", keywords: ["riemann sum", "trapezoidal rule", "antiderivative", "indefinite integral", "definite integral", "fundamental theorem of calculus", "ftc", "u-substitution"] },
+      { unitNumber: 7, title: "Differential Equations & Slope Fields", keywords: ["slope field", "separation of variables", "general solution", "particular solution", "exponential growth", "dy/dx"] },
+      { unitNumber: 8, title: "Applications of Integration", keywords: ["average value", "area between curves", "volume of solid of revolution", "disk method", "washer method", "cross sections"] }
+    ],
+    allowedDomains: ["limits", "derivatives", "integrals", "differential equations", "particle motion", "rates of change"],
+    forbiddenSignatures: [
+      /\b(?:gentrification|von\s+thunen|supranationalism|wallerstein|malthus|cold\s+war|french\s+revolution|hamlet|chloroplast|mitochondria|dna\s+replication|operon)\b/i
+    ]
+  },
+  "ap-calculus-bc": {
+    subjectId: "ap-calculus-bc",
+    subjectName: "AP Calculus BC",
+    category: "stem_math",
+    mathExpected: true,
+    canonicalUnits: [
+      { unitNumber: 1, title: "Limits & Continuity", keywords: ["limit", "continuity", "squeeze theorem", "l'hopital"] },
+      { unitNumber: 2, title: "Differentiation: Definition & Fundamentals", keywords: ["derivative", "power rule", "product rule", "quotient rule"] },
+      { unitNumber: 3, title: "Chain Rule & Implicit Differentiation", keywords: ["chain rule", "implicit differentiation"] },
+      { unitNumber: 4, title: "Contextual Applications of Differentiation", keywords: ["related rates", "linear approximation"] },
+      { unitNumber: 5, title: "Analytical Applications of Differentiation", keywords: ["mean value theorem", "mvt", "critical points", "optimization"] },
+      { unitNumber: 6, title: "Integration & Accumulation of Change", keywords: ["riemann sums", "ftc", "integration by parts", "partial fractions", "improper integrals"] },
+      { unitNumber: 7, title: "Differential Equations", keywords: ["slope fields", "euler's method", "logistic differential equation", "carrying capacity"] },
+      { unitNumber: 8, title: "Applications of Integration", keywords: ["area between curves", "volumes of revolution", "arc length"] },
+      { unitNumber: 9, title: "Parametric Equations, Polar Coordinates & Vector-Valued Functions", keywords: ["parametric equations", "vector motion", "velocity vector", "speed", "polar coordinates", "polar area", "r(theta)"] },
+      { unitNumber: 10, title: "Infinite Sequences & Series", keywords: ["infinite series", "geometric series", "taylor polynomial", "maclaurin", "ratio test", "radius of convergence", "interval of convergence", "alternating series test", "lagrange error bound"] }
+    ],
+    allowedDomains: ["calculus", "infinite series", "taylor polynomials", "polar coordinates", "parametric equations", "differential equations"],
+    forbiddenSignatures: [
+      /\b(?:gentrification|von\s+thunen|supranationalism|wallerstein|malthus|cold\s+war|cell\s+membrane)\b/i
+    ]
+  },
+  "ap-physics-1": {
+    subjectId: "ap-physics-1",
+    subjectName: "AP Physics 1: Algebra-Based",
+    category: "science",
+    mathExpected: true,
+    canonicalUnits: [
+      { unitNumber: 1, title: "Kinematics", keywords: ["displacement", "velocity", "acceleration", "free fall", "projectile motion", "v-t graph", "x-t graph"] },
+      { unitNumber: 2, title: "Force & Translational Dynamics", keywords: ["newton's laws", "inertia", "f=ma", "free body diagram", "normal force", "friction", "tension", "spring force", "hooke's law"] },
+      { unitNumber: 3, title: "Work, Energy & Power", keywords: ["kinetic energy", "gravitational potential energy", "elastic potential energy", "conservation of energy", "work-energy theorem", "power"] },
+      { unitNumber: 4, title: "Linear Momentum", keywords: ["momentum", "impulse", "conservation of momentum", "elastic collision", "inelastic collision", "center of mass"] },
+      { unitNumber: 5, title: "Torque & Rotational Dynamics", keywords: ["torque", "rotational inertia", "rotational kinetic energy", "angular momentum", "conservation of angular momentum", "angular acceleration"] },
+      { unitNumber: 6, title: "Energy & Momentum of Oscillations", keywords: ["simple harmonic motion", "shm", "period", "frequency", "simple pendulum", "mass-spring oscillator"] },
+      { unitNumber: 7, title: "Fluids", keywords: ["density", "pressure", "buoyant force", "archimedes principle", "continuity equation", "bernoulli's equation"] }
+    ],
+    allowedDomains: ["mechanics", "forces", "energy", "momentum", "rotational motion", "oscillations", "fluids"],
+    forbiddenSignatures: [
+      /\b(?:definite\s+integral|fundamental\s+theorem\s+of\s+calculus|taylor\s+series|maclaurin|disk\s+method|washer\s+method)\b/i,
+      /\b(?:dtm|gentrification|von\s+thunen|supranationalism|gerrymandering)\b/i
+    ]
+  },
+  "ap-chemistry": {
+    subjectId: "ap-chemistry",
+    subjectName: "AP Chemistry",
+    category: "science",
+    mathExpected: true,
+    canonicalUnits: [
+      { unitNumber: 1, title: "Atomic Structure & Properties", keywords: ["moles", "molar mass", "pes", "photoelectron spectroscopy", "electron configuration", "periodic trends", "electronegativity", "ionization energy", "mass spectrometry"] },
+      { unitNumber: 2, title: "Molecular & Ionic Compound Structure & Properties", keywords: ["chemical bonds", "ionic", "covalent", "lewis structure", "resonance", "vsepr", "molecular geometry", "bond angle", "formal charge", "hybridization"] },
+      { unitNumber: 3, title: "Intermolecular Forces & Properties", keywords: ["intermolecular forces", "imf", "hydrogen bonding", "dipole-dipole", "london dispersion", "vapor pressure", "boiling point", "solubility", "beer-lambert law"] },
+      { unitNumber: 4, title: "Chemical Reactions", keywords: ["net ionic equation", "stoichiometry", "limiting reactant", "percent yield", "precipitation", "acid-base", "redox", "oxidation state", "titration"] },
+      { unitNumber: 5, title: "Kinetics", keywords: ["reaction rate", "rate law", "rate constant k", "reaction order", "integrated rate law", "half-life", "activation energy", "arrhenius", "catalyst", "reaction mechanism", "elementary step"] },
+      { unitNumber: 6, title: "Thermodynamics", keywords: ["endothermic", "exothermic", "enthalpy", "delta h", "heat capacity", "calorimetry", "hess's law", "bond enthalpies", "standard enthalpy of formation"] },
+      { unitNumber: 7, title: "Equilibrium", keywords: ["equilibrium constant", "k_eq", "k_c", "k_p", "reaction quotient q", "le chatelier's principle", "solubility product ksp", "common ion effect"] },
+      { unitNumber: 8, title: "Acids & Bases", keywords: ["ph", "poh", "strong acid", "weak acid", "ka", "kb", "kw", "neutralization", "titration curve", "equivalence point", "buffer", "henderson-hasselbalch"] },
+      { unitNumber: 9, title: "Applications of Thermodynamics", keywords: ["entropy", "delta s", "gibbs free energy", "delta g", "galvanic cell", "voltaic cell", "electrolytic cell", "cell potential", "faraday's constant"] }
+    ],
+    allowedDomains: ["atomic structure", "bonding", "stoichiometry", "kinetics", "thermodynamics", "chemical equilibrium", "acids and bases", "electrochemistry"],
+    forbiddenSignatures: [
+      /\b(?:definite\s+integral|fundamental\s+theorem\s+of\s+calculus|taylor\s+series|disk\s+method|washer\s+method)\b/i,
+      /\b(?:dtm|demographic\s+transition|von\s+thunen|gerrymandering|supranationalism)\b/i
+    ]
+  },
+  "ap-biology": {
+    subjectId: "ap-biology",
+    subjectName: "AP Biology",
+    category: "science",
+    mathExpected: true,
+    canonicalUnits: [
+      { unitNumber: 1, title: "Chemistry of Life", keywords: ["water properties", "hydrogen bonding", "macromolecules", "carbohydrates", "lipids", "proteins", "nucleic acids", "amino acids", "peptide bond"] },
+      { unitNumber: 2, title: "Cell Structure & Function", keywords: ["cell organelles", "endosymbiosis", "plasma membrane", "phospholipid bilayer", "selective permeability", "osmosis", "water potential", "tonicity", "active transport"] },
+      { unitNumber: 3, title: "Cellular Energetics", keywords: ["enzyme", "catalysis", "active site", "denaturation", "competitive inhibitor", "allosteric", "photosynthesis", "chloroplast", "chlorophyll", "calvin cycle", "cellular respiration", "mitochondria", "glycolysis", "krebs cycle", "oxidative phosphorylation", "atp synthase"] },
+      { unitNumber: 4, title: "Cell Communication & Cell Cycle", keywords: ["signal transduction", "ligand", "receptor", "second messenger", "camp", "phosphorylation cascade", "feedback loops", "mitosis", "cyclin", "cdk", "apoptosis"] },
+      { unitNumber: 5, title: "Heredity", keywords: ["meiosis", "crossing over", "independent assortment", "mendelian genetics", "monohybrid", "dihybrid", "punnett square", "chi-square", "sex-linked", "pedigree"] },
+      { unitNumber: 6, title: "Gene Expression & Regulation", keywords: ["dna replication", "helicase", "dna polymerase", "transcription", "mrna", "translation", "tRNA", "ribosome", "codon", "operon", "lac operon", "mutation", "gel electrophoresis", "pcr"] },
+      { unitNumber: 7, title: "Natural Selection", keywords: ["natural selection", "evolution", "fitness", "hardy-weinberg", "genetic drift", "founder effect", "bottleneck", "speciation", "allopatric", "phylogenetic tree", "cladogram"] },
+      { unitNumber: 8, title: "Ecology", keywords: ["energy flow", "trophic cascade", "keystone species", "symbiosis", "population ecology", "carrying capacity", "exponential growth", "logistic growth", "biodiversity"] }
+    ],
+    allowedDomains: ["cellular biology", "genetics", "evolution", "ecology", "biochemistry", "physiology"],
+    forbiddenSignatures: [
+      /\b(?:definite\s+integral|fundamental\s+theorem\s+of\s+calculus|disk\s+method|washer\s+method)\b/i,
+      /\b(?:gerrymandering|dtm|demographic\s+transition|von\s+thunen|supranationalism|berlin\s+conference)\b/i
+    ]
+  },
+  "ap-us-history": {
+    subjectId: "ap-us-history",
+    subjectName: "AP U.S. History (APUSH)",
+    category: "humanities",
+    mathExpected: false,
+    canonicalUnits: [
+      { unitNumber: 1, title: "Period 1 (1491-1607)", keywords: ["columbian exchange", "indigenous societies", "encomienda system", "spanish colonization", "pueblo revolt"] },
+      { unitNumber: 2, title: "Period 2 (1607-1754)", keywords: ["cheasapeake", "jamestown", "puritans", "new england", "middle colonies", "mercantilism", "salutary neglect", "first great awakening", "triangular trade", "indentured servitude", "bacon's rebellion"] },
+      { unitNumber: 3, title: "Period 3 (1754-1800)", keywords: ["french and indian war", "seven years war", "stamp act", "boston tea party", "declaration of independence", "articles of confederation", "constitutional convention", "federalist papers", "bill of rights", "washington's farewell address"] },
+      { unitNumber: 4, title: "Period 4 (1800-1848)", keywords: ["louisiana purchase", "marbury v madison", "war of 1812", "monroe doctrine", "market revolution", "erie canal", "second great awakening", "jacksonian democracy", "nullification crisis", "trail of tears", "manifest destiny", "seneca falls"] },
+      { unitNumber: 5, title: "Period 5 (1844-1877)", keywords: ["mexican-american war", "compromise of 1850", "fugitive slave act", "kansas-nebraska act", "dred scott", "lincoln-douglas", "civil war", "emancipation proclamation", "reconstruction", "13th amendment", "14th amendment", "15th amendment"] },
+      { unitNumber: 6, title: "Period 6 (1865-1898)", keywords: ["gilded age", "transcontinental railroad", "andrew carnegie", "john d rockefeller", "social darwinism", "labor unions", "knights of labor", "american federation of labor", "populist party", "dawes act", "plessy v ferguson"] },
+      { unitNumber: 7, title: "Period 7 (1890-1945)", keywords: ["progressive era", "muckrakers", "spanish-american war", "imperialism", "world war i", "fourteen points", "league of nations", "roaring twenties", "great depression", "new deal", "fdr", "world war ii", "pearl harbor", "atomic bomb"] },
+      { unitNumber: 8, title: "Period 8 (1945-1980)", keywords: ["cold war", "containment", "marshall plan", "nato", "korean war", "cuban missile crisis", "vietnam war", "civil rights movement", "brown v board", "martin luther king", "great society", "watergate"] },
+      { unitNumber: 9, title: "Period 9 (1980-Present)", keywords: ["reagan administration", "conservative movement", "end of cold war", "persian gulf war", "globalization", "internet age", "september 11", "war on terror"] }
+    ],
+    allowedDomains: ["us history", "politics", "social movements", "foreign policy", "constitutional history", "economics in history"],
+    forbiddenSignatures: [
+      /\b(?:definite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|dna\s+replication|mitosis|titration)\b/i
+    ]
+  },
+  "ap-psychology": {
+    subjectId: "ap-psychology",
+    subjectName: "AP Psychology",
+    category: "social_science",
+    mathExpected: false,
+    canonicalUnits: [
+      { unitNumber: 1, title: "Biological Bases of Behavior", keywords: ["neuron", "action potential", "synapse", "neurotransmitter", "dopamine", "serotonin", "endorphins", "central nervous system", "brain structures", "cerebral cortex", "hippocampus", "amygdala", "neuroplasticity"] },
+      { unitNumber: 2, title: "Cognition", keywords: ["memory", "encoding", "storage", "retrieval", "sensory memory", "short-term memory", "long-term memory", "chunking", "amnesia", "problem solving", "heuristics", "biases", "language acquisition"] },
+      { unitNumber: 3, title: "Development & Learning", keywords: ["classical conditioning", "pavlov", "unconditioned stimulus", "conditioned response", "operant conditioning", "skinner", "reinforcement", "punishment", "social learning", "bandura", "piaget", "erikson", "kohlberg"] },
+      { unitNumber: 4, title: "Social Psychology & Personality", keywords: ["conformity", "asch", "obedience", "milgram", "attribution theory", "fundamental attribution error", "cognitive dissonance", "bystander effect", "in-group bias", "freud", "big five traits"] },
+      { unitNumber: 5, title: "Mental & Physical Health", keywords: ["dsm-5", "anxiety disorders", "major depressive disorder", "bipolar", "schizophrenia", "obsessive-compulsive", "ptsd", "psychotherapy", "cbt", "biopsychosocial model"] }
+    ],
+    allowedDomains: ["psychology", "neuroscience", "cognition", "behavior", "development", "mental health"],
+    forbiddenSignatures: [
+      /\b(?:definite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|von\s+thunen)\b/i
+    ]
+  },
+  "ap-statistics": {
+    subjectId: "ap-statistics",
+    subjectName: "AP Statistics",
+    category: "stem_math",
+    mathExpected: true,
+    canonicalUnits: [
+      { unitNumber: 1, title: "Exploring One-Variable Data", keywords: ["mean", "median", "mode", "standard deviation", "iqr", "outlier", "box plot", "histogram", "z-score", "normal distribution"] },
+      { unitNumber: 2, title: "Exploring Two-Variable Data", keywords: ["scatter plot", "correlation r", "coefficient of determination r-squared", "residual", "least-squares regression line", "influential point", "extrapolation"] },
+      { unitNumber: 3, title: "Collecting Data", keywords: ["simple random sample", "srs", "stratified sample", "cluster sample", "systematic sample", "convenience sample", "bias", "confounding", "placebo", "double blind", "blocking"] },
+      { unitNumber: 4, title: "Probability, Random Variables & Probability Distributions", keywords: ["mutually exclusive", "independent events", "conditional probability", "binomial distribution", "geometric distribution", "expected value", "variance"] },
+      { unitNumber: 5, title: "Sampling Distributions", keywords: ["central limit theorem", "clt", "sampling variability", "unbiased estimator", "standard error", "normal approximation"] },
+      { unitNumber: 6, title: "Inference for Categorical Data: Proportions", keywords: ["confidence interval for p", "one-sample z-test", "two-sample z-test", "p-value", "type i error", "type ii error", "power", "margin of error"] },
+      { unitNumber: 7, title: "Inference for Quantitative Data: Means", keywords: ["t-distribution", "degrees of freedom", "one-sample t-test", "two-sample t-test", "paired t-test", "t-interval"] },
+      { unitNumber: 8, title: "Inference for Categorical Data: Chi-Square", keywords: ["chi-square goodness of fit", "chi-square test of independence", "chi-square test of homogeneity", "expected counts", "observed counts"] },
+      { unitNumber: 9, title: "Inference for Quantitative Data: Slopes", keywords: ["t-test for slope", "confidence interval for slope", "linear regression model conditions"] }
+    ],
+    allowedDomains: ["descriptive statistics", "probability", "sampling", "hypothesis testing", "confidence intervals", "regression inference"],
+    forbiddenSignatures: [
+      /\b(?:definite\s+integral|indefinite\s+integral|fundamental\s+theorem\s+of\s+calculus|derivative|dy\/dx|disk\s+method|washer\s+method|taylor\s+series)\b/i,
+      /\b(?:dtm|demographic\s+transition|von\s+thunen|gerrymandering|chloroplast)\b/i
+    ]
+  },
+  "ap-us-government": {
+    subjectId: "ap-us-government",
+    subjectName: "AP U.S. Government & Politics",
+    category: "social_science",
+    mathExpected: false,
+    canonicalUnits: [
+      { unitNumber: 1, title: "Foundations of American Democracy", keywords: ["federalist 10", "brutus 1", "declaration of independence", "articles of confederation", "constitution", "bill of rights", "federalism", "separation of powers", "checks and balances", "mcculloch v maryland", "us v lopez"] },
+      { unitNumber: 2, title: "Interactions Among Branches of Government", keywords: ["congress", "house", "senate", "filibuster", "cloture", "gerrymandering", "presidency", "executive order", "veto", "pocket veto", "federalist 70", "bureaucracy", "iron triangle", "supreme court", "judicial review", "marbury v madison", "federalist 78", "stare decisis"] },
+      { unitNumber: 3, title: "Civil Liberties & Civil Rights", keywords: ["first amendment", "establishment clause", "free exercise clause", "schenck v us", "tinker v des moines", "new york times v us", "second amendment", "fourth amendment", "exclusionary rule", "miranda", "fourteenth amendment", "due process", "equal protection", "selective incorporation", "brown v board", "letter from birmingham jail"] },
+      { unitNumber: 4, title: "American Political Ideologies & Beliefs", keywords: ["political socialization", "liberalism", "conservatism", "libertarianism", "public opinion polling", "scientific polling", "sampling error", "fiscal policy", "monetary policy", "federal reserve"] },
+      { unitNumber: 5, title: "Political Participation", keywords: ["voting rights", "15th amendment", "19th amendment", "24th amendment", "26th amendment", "voter turnout", "political parties", "critical elections", "realignment", "interest groups", "citizens united v fec", "pacs", "super pacs", "electoral college", "media bias", "horse-race journalism"] }
+    ],
+    allowedDomains: ["american politics", "constitution", "scotus cases", "foundational documents", "civil rights", "elections", "institutions of government"],
+    forbiddenSignatures: [
+      /\b(?:definite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|chloroplast|mitosis)\b/i
+    ]
+  }
+};
+function getSubjectWhitelist(subjectIdentifier) {
+  if (!subjectIdentifier) return null;
+  const s = subjectIdentifier.toLowerCase().trim();
+  if (AP_SUBJECT_WHITELISTS[s]) return AP_SUBJECT_WHITELISTS[s];
+  for (const [key, wl] of Object.entries(AP_SUBJECT_WHITELISTS)) {
+    if (s.includes(key.replace("ap-", "")) || s.includes(wl.subjectName.toLowerCase().replace("ap ", ""))) {
+      return wl;
+    }
+  }
+  if (s.includes("geography") || s.includes("aphg")) return AP_SUBJECT_WHITELISTS["ap-human-geography"];
+  if (s.includes("environmental") || s.includes("apes")) return AP_SUBJECT_WHITELISTS["ap-environmental-science"];
+  if (s.includes("principles") || s.includes("csp")) return AP_SUBJECT_WHITELISTS["ap-computer-science-principles"];
+  if (s.includes("calculus bc")) return AP_SUBJECT_WHITELISTS["ap-calculus-bc"];
+  if (s.includes("calculus")) return AP_SUBJECT_WHITELISTS["ap-calculus-ab"];
+  if (s.includes("physics")) return AP_SUBJECT_WHITELISTS["ap-physics-1"];
+  if (s.includes("chemistry")) return AP_SUBJECT_WHITELISTS["ap-chemistry"];
+  if (s.includes("biology")) return AP_SUBJECT_WHITELISTS["ap-biology"];
+  if (s.includes("history") || s.includes("apush")) return AP_SUBJECT_WHITELISTS["ap-us-history"];
+  if (s.includes("psych")) return AP_SUBJECT_WHITELISTS["ap-psychology"];
+  if (s.includes("stat")) return AP_SUBJECT_WHITELISTS["ap-statistics"];
+  if (s.includes("gov") || s.includes("politics")) return AP_SUBJECT_WHITELISTS["ap-us-government"];
+  return null;
+}
+
+// src/utils/standardizedApDiagrams.ts
+var DTM_STANDARDIZED_SVG = `<svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>
+  <rect width='400' height='220' fill='#09090b' rx='10' stroke='#27272a' stroke-width='1'/>
+  
+  <!-- Title & Model Header -->
+  <text x='200' y='18' text-anchor='middle' fill='#f8fafc' font-size='11' font-family='system-ui, sans-serif' font-weight='800' letter-spacing='0.5'>DEMOGRAPHIC TRANSITION MODEL (STAGES 1\u20135)</text>
+  
+  <!-- Stage Background Columns -->
+  <!-- Stage 1 (x: 45 to 110) -->
+  <rect x='45' y='26' width='65' height='150' fill='#18181b' fill-opacity='0.4'/>
+  <!-- Stage 2 (x: 110 to 175) -->
+  <rect x='110' y='26' width='65' height='150' fill='#27272a' fill-opacity='0.2'/>
+  <!-- Stage 3 (x: 175 to 240) -->
+  <rect x='175' y='26' width='65' height='150' fill='#18181b' fill-opacity='0.4'/>
+  <!-- Stage 4 (x: 240 to 305) -->
+  <rect x='240' y='26' width='65' height='150' fill='#27272a' fill-opacity='0.2'/>
+  <!-- Stage 5 (x: 305 to 370) -->
+  <rect x='305' y='26' width='65' height='150' fill='#18181b' fill-opacity='0.4'/>
+
+  <!-- Vertical Stage Dividers -->
+  <line x1='110' y1='26' x2='110' y2='176' stroke='#3f3f46' stroke-width='1' stroke-dasharray='3,3'/>
+  <line x1='175' y1='26' x2='175' y2='176' stroke='#3f3f46' stroke-width='1' stroke-dasharray='3,3'/>
+  <line x1='240' y1='26' x2='240' y2='176' stroke='#3f3f46' stroke-width='1' stroke-dasharray='3,3'/>
+  <line x1='305' y1='26' x2='305' y2='176' stroke='#3f3f46' stroke-width='1' stroke-dasharray='3,3'/>
+  
+  <!-- Stage Column Labels -->
+  <text x='77' y='36' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='sans-serif' font-weight='700'>Stage 1</text>
+  <text x='77' y='46' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='sans-serif'>High Stat.</text>
+
+  <text x='142' y='36' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='sans-serif' font-weight='700'>Stage 2</text>
+  <text x='142' y='46' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='sans-serif'>Early Exp.</text>
+
+  <text x='207' y='36' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='sans-serif' font-weight='700'>Stage 3</text>
+  <text x='207' y='46' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='sans-serif'>Late Exp.</text>
+
+  <text x='272' y='36' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='sans-serif' font-weight='700'>Stage 4</text>
+  <text x='272' y='46' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='sans-serif'>Low Stat.</text>
+
+  <text x='337' y='36' text-anchor='middle' fill='#e2e8f0' font-size='9' font-family='sans-serif' font-weight='700'>Stage 5</text>
+  <text x='337' y='46' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='sans-serif'>Declining</text>
+
+  <!-- Y-Axis (Rates per 1,000) -->
+  <line x1='45' y1='26' x2='45' y2='176' stroke='#64748b' stroke-width='1.5'/>
+  <line x1='45' y1='176' x2='370' y2='176' stroke='#64748b' stroke-width='1.5'/>
+  
+  <text x='42' y='57' text-anchor='end' fill='#94a3b8' font-size='7.5' font-family='sans-serif'>40</text>
+  <line x1='42' y1='55' x2='45' y2='55' stroke='#64748b' stroke-width='1'/>
+
+  <text x='42' y='97' text-anchor='end' fill='#94a3b8' font-size='7.5' font-family='sans-serif'>30</text>
+  <line x1='42' y1='95' x2='45' y2='95' stroke='#64748b' stroke-width='1'/>
+
+  <text x='42' y='137' text-anchor='end' fill='#94a3b8' font-size='7.5' font-family='sans-serif'>20</text>
+  <line x1='42' y1='135' x2='45' y2='135' stroke='#64748b' stroke-width='1'/>
+
+  <text x='42' y='167' text-anchor='end' fill='#94a3b8' font-size='7.5' font-family='sans-serif'>10</text>
+  <line x1='42' y1='165' x2='45' y2='165' stroke='#64748b' stroke-width='1'/>
+
+  <!-- Y-Axis Title -->
+  <text x='14' y='105' text-anchor='middle' transform='rotate(-90 14 105)' fill='#94a3b8' font-size='8' font-family='sans-serif' font-weight='600'>Rate per 1,000 / Total Pop</text>
+
+  <!-- Shaded Natural Increase Rate (NIR) Region across Stage 2 & Stage 3 -->
+  <polygon points='110,55 175,55 240,140 240,154 175,145 110,60' fill='#22c55e' fill-opacity='0.16'/>
+  <text x='175' y='100' text-anchor='middle' fill='#4ade80' font-size='8' font-family='sans-serif' font-weight='700'>Natural Increase (NIR)</text>
+
+  <!-- CBR Curve (Crude Birth Rate: High in 1&2, Drops in 3, Low in 4&5) -->
+  <path d='M 45,55 C 70,53 90,56 110,55 C 135,54 155,55 175,55 C 195,65 220,115 240,140 C 265,150 285,154 305,154 C 325,155 350,165 370,168' 
+        fill='none' stroke='#38bdf8' stroke-width='2.5' stroke-linecap='round'/>
+
+  <!-- CDR Curve (Crude Death Rate: High fluctuating in 1, Plummets in 2, Low in 3&4, Slight rise in 5) -->
+  <path d='M 45,60 C 65,58 75,65 90,59 C 100,64 105,62 110,60 C 125,75 145,125 175,145 C 200,152 225,153 240,154 C 265,155 285,154 305,154 C 325,153 350,148 370,145' 
+        fill='none' stroke='#f43f5e' stroke-width='2.5' stroke-linecap='round'/>
+
+  <!-- Total Population Curve (Sigmoid Growth Curve: Low in 1, Accelerates in 2, Sits high in 4, Dips in 5) -->
+  <path d='M 45,165 C 75,165 95,164 110,162 C 130,150 155,115 175,90 C 205,65 240,50 270,45 C 295,44 320,44 335,46 C 355,50 365,55 370,60' 
+        fill='none' stroke='#fbbf24' stroke-width='2' stroke-dasharray='5,3' stroke-linecap='round'/>
+
+  <!-- Bottom Legend Bar -->
+  <rect x='45' y='188' width='325' height='24' fill='#18181b' rx='6' stroke='#27272a' stroke-width='1'/>
+  
+  <line x1='55' y1='200' x2='75' y2='200' stroke='#38bdf8' stroke-width='2.5'/>
+  <text x='80' y='203' fill='#f1f5f9' font-size='8' font-family='sans-serif' font-weight='600'>Crude Birth Rate (CBR)</text>
+
+  <line x1='175' y1='200' x2='195' y2='200' stroke='#f43f5e' stroke-width='2.5'/>
+  <text x='200' y='203' fill='#f1f5f9' font-size='8' font-family='sans-serif' font-weight='600'>Crude Death Rate (CDR)</text>
+
+  <line x1='290' y1='200' x2='310' y2='200' stroke='#fbbf24' stroke-width='2' stroke-dasharray='4,2'/>
+  <text x='315' y='203' fill='#f1f5f9' font-size='8' font-family='sans-serif' font-weight='600'>Total Population</text>
+</svg>`;
+var VON_THUNEN_STANDARDIZED_SVG = `<svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>
+  <rect width='400' height='220' fill='#09090b' rx='10' stroke='#27272a' stroke-width='1'/>
+  
+  <text x='200' y='18' text-anchor='middle' fill='#f8fafc' font-size='11' font-family='system-ui, sans-serif' font-weight='800' letter-spacing='0.5'>VON TH\xDCNEN AGRICULTURAL LAND-USE MODEL</text>
+
+  <!-- Left: Concentric Rings (Center at x=115, y=115) -->
+  <!-- Ring 4: Ranching / Livestock -->
+  <circle cx='115' cy='115' r='88' fill='#581c87' fill-opacity='0.4' stroke='#a855f7' stroke-width='1.5'/>
+  <!-- Ring 3: Extensive Field Crops & Grains -->
+  <circle cx='115' cy='115' r='68' fill='#854d0e' fill-opacity='0.45' stroke='#eab308' stroke-width='1.5'/>
+  <!-- Ring 2: Forest & Fuel Wood -->
+  <circle cx='115' cy='115' r='48' fill='#78350f' fill-opacity='0.5' stroke='#f97316' stroke-width='1.5'/>
+  <!-- Ring 1: Dairying & Intensive Market Gardening -->
+  <circle cx='115' cy='115' r='28' fill='#065f46' fill-opacity='0.6' stroke='#10b981' stroke-width='1.5'/>
+  <!-- Central Market City -->
+  <circle cx='115' cy='115' r='10' fill='#2563eb' stroke='#60a5fa' stroke-width='2'/>
+  <text x='115' y='118' text-anchor='middle' fill='#ffffff' font-size='7' font-family='sans-serif' font-weight='bold'>CBD</text>
+
+  <!-- Ring Identification Annotations -->
+  <line x1='115' y1='105' x2='115' y2='32' stroke='#94a3b8' stroke-width='1' stroke-dasharray='2,2'/>
+  
+  <!-- Right: Legend and Bid-Rent Principle Breakdown -->
+  <rect x='215' y='30' width='175' height='175' fill='#18181b' rx='8' stroke='#27272a' stroke-width='1'/>
+  <text x='225' y='46' fill='#f8fafc' font-size='9' font-family='sans-serif' font-weight='800'>MODEL RINGS &amp; BID-RENT:</text>
+
+  <!-- Item CBD -->
+  <circle cx='228' cy='62' r='5' fill='#2563eb'/>
+  <text x='240' y='65' fill='#e2e8f0' font-size='8' font-family='sans-serif' font-weight='bold'>Central Market / City</text>
+
+  <!-- Item 1 -->
+  <circle cx='228' cy='82' r='5' fill='#10b981'/>
+  <text x='240' y='81' fill='#a7f3d0' font-size='8' font-family='sans-serif' font-weight='bold'>1. Market Gardening &amp; Dairy</text>
+  <text x='240' y='91' fill='#94a3b8' font-size='7' font-family='sans-serif'>High land cost, highly perishable</text>
+
+  <!-- Item 2 -->
+  <circle cx='228' cy='110' r='5' fill='#f97316'/>
+  <text x='240' y='109' fill='#fed7aa' font-size='8' font-family='sans-serif' font-weight='bold'>2. Forest / Timber &amp; Firewood</text>
+  <text x='240' y='119' fill='#94a3b8' font-size='7' font-family='sans-serif'>Heavy freight, high transport cost</text>
+
+  <!-- Item 3 -->
+  <circle cx='228' cy='138' r='5' fill='#eab308'/>
+  <text x='240' y='137' fill='#fef08a' font-size='8' font-family='sans-serif' font-weight='bold'>3. Extensive Grains &amp; Wheat</text>
+  <text x='240' y='147' fill='#94a3b8' font-size='7' font-family='sans-serif'>Lower land cost, non-perishable</text>
+
+  <!-- Item 4 -->
+  <circle cx='228' cy='166' r='5' fill='#a855f7'/>
+  <text x='240' y='165' fill='#e9d5ff' font-size='8' font-family='sans-serif' font-weight='bold'>4. Ranching &amp; Livestock</text>
+  <text x='240' y='175' fill='#94a3b8' font-size='7' font-family='sans-serif'>Cheapest land, self-transporting</text>
+
+  <!-- Distance Decay Note -->
+  <text x='225' y='195' fill='#38bdf8' font-size='7.5' font-family='sans-serif' font-weight='600'>Key Factor: Bid-Rent &amp; Transport Cost</text>
+</svg>`;
+var BURGESS_CONCENTRIC_ZONE_SVG = `<svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>
+  <rect width='400' height='220' fill='#09090b' rx='10' stroke='#27272a' stroke-width='1'/>
+  
+  <text x='200' y='18' text-anchor='middle' fill='#f8fafc' font-size='11' font-family='system-ui, sans-serif' font-weight='800' letter-spacing='0.5'>BURGESS CONCENTRIC ZONE MODEL (URBAN LAND-USE)</text>
+
+  <!-- Concentric Rings (Center at x=115, y=115) -->
+  <!-- Zone 5: Commuter Zone -->
+  <circle cx='115' cy='115' r='88' fill='#1e293b' stroke='#64748b' stroke-width='1.5'/>
+  <!-- Zone 4: Better Residences -->
+  <circle cx='115' cy='115' r='70' fill='#0f766e' fill-opacity='0.4' stroke='#14b8a6' stroke-width='1.5'/>
+  <!-- Zone 3: Working-Class Homes -->
+  <circle cx='115' cy='115' r='52' fill='#0369a1' fill-opacity='0.45' stroke='#0284c7' stroke-width='1.5'/>
+  <!-- Zone 2: Zone in Transition -->
+  <circle cx='115' cy='115' r='34' fill='#b91c1c' fill-opacity='0.45' stroke='#ef4444' stroke-width='1.5'/>
+  <!-- Zone 1: Central Business District (CBD) -->
+  <circle cx='115' cy='115' r='14' fill='#eab308' stroke='#fde047' stroke-width='2'/>
+  <text x='115' y='118' text-anchor='middle' fill='#000000' font-size='7' font-family='sans-serif' font-weight='bold'>1</text>
+
+  <!-- Number labels on rings -->
+  <text x='115' y='90' text-anchor='middle' fill='#ffffff' font-size='8' font-family='sans-serif' font-weight='bold'>2</text>
+  <text x='115' y='72' text-anchor='middle' fill='#ffffff' font-size='8' font-family='sans-serif' font-weight='bold'>3</text>
+  <text x='115' y='55' text-anchor='middle' fill='#ffffff' font-size='8' font-family='sans-serif' font-weight='bold'>4</text>
+  <text x='115' y='38' text-anchor='middle' fill='#ffffff' font-size='8' font-family='sans-serif' font-weight='bold'>5</text>
+
+  <!-- Legend -->
+  <rect x='215' y='30' width='175' height='175' fill='#18181b' rx='8' stroke='#27272a' stroke-width='1'/>
+  <text x='225' y='46' fill='#f8fafc' font-size='9' font-family='sans-serif' font-weight='800'>5 CONCENTRIC URBAN ZONES:</text>
+
+  <circle cx='228' cy='62' r='5' fill='#eab308'/>
+  <text x='240' y='65' fill='#fef08a' font-size='8' font-family='sans-serif' font-weight='bold'>1. CBD (Commercial Center)</text>
+
+  <circle cx='228' cy='88' r='5' fill='#ef4444'/>
+  <text x='240' y='87' fill='#fca5a5' font-size='8' font-family='sans-serif' font-weight='bold'>2. Zone of Transition</text>
+  <text x='240' y='97' fill='#94a3b8' font-size='7' font-family='sans-serif'>Industry, tenements, high density</text>
+
+  <circle cx='228' cy='118' r='5' fill='#0284c7'/>
+  <text x='240' y='117' fill='#7dd3fc' font-size='8' font-family='sans-serif' font-weight='bold'>3. Independent Workers' Homes</text>
+  <text x='240' y='127' fill='#94a3b8' font-size='7' font-family='sans-serif'>Older single-family homes</text>
+
+  <circle cx='228' cy='148' r='5' fill='#14b8a6'/>
+  <text x='240' y='147' fill='#99f6e4' font-size='8' font-family='sans-serif' font-weight='bold'>4. Zone of Better Residences</text>
+  <text x='240' y='157' fill='#94a3b8' font-size='7' font-family='sans-serif'>Middle class spacious housing</text>
+
+  <circle cx='228' cy='178' r='5' fill='#64748b'/>
+  <text x='240' y='177' fill='#cbd5e1' font-size='8' font-family='sans-serif' font-weight='bold'>5. Commuter Zone</text>
+  <text x='240' y='187' fill='#94a3b8' font-size='7' font-family='sans-serif'>Dormitory suburbs, car commuters</text>
+</svg>`;
+var HOYT_SECTOR_MODEL_SVG = `<svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>
+  <rect width='400' height='220' fill='#09090b' rx='10' stroke='#27272a' stroke-width='1'/>
+  
+  <text x='200' y='18' text-anchor='middle' fill='#f8fafc' font-size='11' font-family='system-ui, sans-serif' font-weight='800' letter-spacing='0.5'>HOYT SECTOR MODEL (URBAN GROWTH ALONG CORRIDORS)</text>
+
+  <!-- Left: Sectors (Center at x=115, y=115, R=80) -->
+  <g transform='translate(115, 115)'>
+    <!-- Transportation corridor & Industry (Wedge 1) -->
+    <path d='M 0,0 L 70,-40 A 80 80 0 0 1 80,10 Z' fill='#b91c1c' fill-opacity='0.6' stroke='#ef4444' stroke-width='1.5'/>
+    <!-- Low-class Residential (Wedge 2 flanking industry) -->
+    <path d='M 0,0 L 80,10 A 80 80 0 0 1 40,70 Z' fill='#ea580c' fill-opacity='0.5' stroke='#f97316' stroke-width='1.5'/>
+    <!-- Middle-class Residential (Wedge 3 broad expansion) -->
+    <path d='M 0,0 L 40,70 A 80 80 0 0 1 -70,40 Z' fill='#0284c7' fill-opacity='0.5' stroke='#38bdf8' stroke-width='1.5'/>
+    <!-- High-class Residential Corridor (Wedge 4 opposite industry) -->
+    <path d='M 0,0 L -70,40 A 80 80 0 0 1 -40,-70 Z' fill='#059669' fill-opacity='0.6' stroke='#34d399' stroke-width='1.5'/>
+    <!-- Middle-class Residential 2 -->
+    <path d='M 0,0 L -40,-70 A 80 80 0 0 1 70,-40 Z' fill='#0284c7' fill-opacity='0.5' stroke='#38bdf8' stroke-width='1.5'/>
+    <!-- Central Business District (CBD) -->
+    <circle cx='0' cy='0' r='18' fill='#eab308' stroke='#fde047' stroke-width='2'/>
+    <text x='0' y='4' text-anchor='middle' fill='#000000' font-size='8' font-family='sans-serif' font-weight='bold'>CBD</text>
+  </g>
+
+  <!-- Right: Legend -->
+  <rect x='215' y='30' width='175' height='175' fill='#18181b' rx='8' stroke='#27272a' stroke-width='1'/>
+  <text x='225' y='46' fill='#f8fafc' font-size='9' font-family='sans-serif' font-weight='800'>HOYT SECTOR CLASSIFICATION:</text>
+
+  <circle cx='228' cy='64' r='5' fill='#eab308'/>
+  <text x='240' y='67' fill='#fef08a' font-size='8' font-family='sans-serif' font-weight='bold'>1. CBD (Central Core)</text>
+
+  <circle cx='228' cy='90' r='5' fill='#ef4444'/>
+  <text x='240' y='89' fill='#fca5a5' font-size='8' font-family='sans-serif' font-weight='bold'>2. Transportation &amp; Industry</text>
+  <text x='240' y='99' fill='#94a3b8' font-size='7' font-family='sans-serif'>Rails, waterways, manufacturing</text>
+
+  <circle cx='228' cy='122' r='5' fill='#f97316'/>
+  <text x='240' y='121' fill='#fed7aa' font-size='8' font-family='sans-serif' font-weight='bold'>3. Low-Class Residential</text>
+  <text x='240' y='131' fill='#94a3b8' font-size='7' font-family='sans-serif'>Closest to factories &amp; pollution</text>
+
+  <circle cx='228' cy='152' r='5' fill='#38bdf8'/>
+  <text x='240' y='151' fill='#bae6fd' font-size='8' font-family='sans-serif' font-weight='bold'>4. Middle-Class Residential</text>
+  <text x='240' y='161' fill='#94a3b8' font-size='7' font-family='sans-serif'>Buffer zones and suburbs</text>
+
+  <circle cx='228' cy='182' r='5' fill='#34d399'/>
+  <text x='240' y='181' fill='#a7f3d0' font-size='8' font-family='sans-serif' font-weight='bold'>5. High-Class Residential</text>
+  <text x='240' y='191' fill='#94a3b8' font-size='7' font-family='sans-serif'>Along spine / clean environmental axis</text>
+</svg>`;
+function getStandardizedModelSvg(text, subjectId) {
+  if (!text) return null;
+  const t = text.toLowerCase();
+  const s = (subjectId || "").toLowerCase();
+  if (s.includes("geography") || s.includes("aphg") || s.includes("human")) {
+    if (t.includes("demographic transition") || t.includes("dtm") || t.includes("crude birth") && t.includes("crude death")) {
+      return DTM_STANDARDIZED_SVG;
+    }
+    if (t.includes("von thunen") || t.includes("von th\xFCnen") || t.includes("bid-rent") || t.includes("isolated state")) {
+      return VON_THUNEN_STANDARDIZED_SVG;
+    }
+    if (t.includes("burgess") || t.includes("concentric zone") || t.includes("concentric") && t.includes("zone")) {
+      return BURGESS_CONCENTRIC_ZONE_SVG;
+    }
+    if (t.includes("hoyt") || t.includes("sector model") || t.includes("axial growth")) {
+      return HOYT_SECTOR_MODEL_SVG;
+    }
+  }
+  if (s.includes("environmental") || s.includes("apes")) {
+    if (t.includes("demographic transition") || t.includes("crude birth") && t.includes("crude death")) {
+      return DTM_STANDARDIZED_SVG;
+    }
+  }
+  return null;
+}
+
+// src/utils/apSubjectValidator.ts
+function createUsedConceptsTracker() {
+  return {
+    usedConceptCounts: {},
+    usedUnits: {}
+  };
+}
+function countSubParts(text) {
+  if (!text) return { count: 0, labels: [] };
+  const regex = /(?:\((a|b|c|d|e|f|g)\)|(?:^|\n)\s*(?:part|question)\s+([a-g])\b)/gi;
+  const matches = [...text.matchAll(regex)];
+  const found = /* @__PURE__ */ new Set();
+  for (const m of matches) {
+    const label = (m[1] || m[2]).toLowerCase();
+    found.add(label);
+  }
+  const sortedLabels = Array.from(found).sort();
+  return {
+    count: sortedLabels.length,
+    labels: sortedLabels
+  };
+}
+function calculateRealTotalPoints(q, subjectId) {
+  if (!q) return 1;
+  if (Array.isArray(q.scoringRubric) && q.scoringRubric.length > 0) {
+    let sum = 0;
+    let foundExplicit = false;
+    for (const item of q.scoringRubric) {
+      const str = String(item || "");
+      const match = str.match(/\[\s*(?:\d+\s*\/\s*)?(\d+)\s*(?:points|point|pts|pt)\s*\]/i) || str.match(/\(\s*(?:\d+\s*\/\s*)?(\d+)\s*(?:points|point|pts|pt)\s*\)/i);
+      if (match) {
+        sum += parseInt(match[1], 10);
+        foundExplicit = true;
+      }
+    }
+    if (foundExplicit && sum > 0) {
+      return sum;
+    }
+  }
+  const fullText = `${q.prompt || ""} ${q.modelAnswer || ""}`;
+  const { count: partCount } = countSubParts(fullText);
+  if (partCount >= 2) {
+    const rawPoints = Number(q.totalPoints);
+    if (!isNaN(rawPoints) && rawPoints >= partCount) {
+      return rawPoints;
+    }
+    return partCount;
+  }
+  const s = (subjectId || "").toLowerCase();
+  if (s.includes("stat")) return 4;
+  if (s.includes("human") || s.includes("geography")) return 7;
+  if (s.includes("history") || s.includes("apush")) return 6;
+  if (s.includes("gov")) return 4;
+  if (s.includes("chem") || s.includes("bio")) return 8;
+  const raw = Number(q.totalPoints);
+  return !isNaN(raw) && raw > 0 ? raw : 6;
+}
+function stripRawSvgMarkup(text) {
+  if (!text) return "";
+  return text.replace(/<svg[\s\S]*?<\/svg>/gi, "").replace(/<svg\b[^>]*>/gi, "").replace(/<\/svg>/gi, "").replace(/<path\b[^>]*>/gi, "").replace(/<rect\b[^>]*>/gi, "").replace(/<circle\b[^>]*>/gi, "").replace(/<text\b[^>]*>[\s\S]*?<\/text>/gi, "").trim();
+}
+function resolveCanonicalUnit(subjectId, unitInput) {
+  const whitelist = getSubjectWhitelist(subjectId);
+  if (!whitelist || whitelist.canonicalUnits.length === 0) {
+    return { unitNumber: 1, title: typeof unitInput === "string" ? unitInput : "General Course Content" };
+  }
+  const inputStr = String(unitInput || "").toLowerCase();
+  const numMatch = inputStr.match(/(?:unit|period|u|p)?\s*([0-9]+)/i);
+  if (numMatch) {
+    const num = parseInt(numMatch[1], 10);
+    const found = whitelist.canonicalUnits.find((u) => u.unitNumber === num);
+    if (found) return { unitNumber: found.unitNumber, title: found.title };
+  }
+  for (const u of whitelist.canonicalUnits) {
+    if (inputStr.includes(u.title.toLowerCase())) {
+      return { unitNumber: u.unitNumber, title: u.title };
+    }
+    for (const kw of u.keywords) {
+      if (inputStr.includes(kw.toLowerCase())) {
+        return { unitNumber: u.unitNumber, title: u.title };
+      }
+    }
+  }
+  const first = whitelist.canonicalUnits[0];
+  return { unitNumber: first.unitNumber, title: first.title };
+}
+function validateAndHealApQuestion(q, subjectId, targetTopic, tracker) {
+  const whitelist = getSubjectWhitelist(subjectId);
+  const detectedConcepts = [];
+  const rawPrompt = typeof q.prompt === "string" ? q.prompt : q.question || q.stem || "";
+  const rawModel = typeof q.modelAnswer === "string" ? q.modelAnswer : q.explanation || "";
+  const rawRubric = Array.isArray(q.scoringRubric) ? q.scoringRubric.join(" ") : "";
+  const combinedText = `${rawPrompt} ${rawModel} ${rawRubric}`.toLowerCase();
+  if (whitelist && Array.isArray(whitelist.forbiddenSignatures)) {
+    for (const sig of whitelist.forbiddenSignatures) {
+      const match = combinedText.match(sig);
+      if (match) {
+        return {
+          isValid: false,
+          rejectionReason: `Detected forbidden off-subject concept "${match[0]}" for subject "${whitelist.subjectName}". Question belongs to another AP curriculum.`,
+          sanitizedQuestion: q,
+          detectedConcepts: []
+        };
+      }
+    }
+  }
+  let cleanPrompt = stripRawSvgMarkup(rawPrompt);
+  let cleanModel = stripRawSvgMarkup(rawModel);
+  let cleanRubric = Array.isArray(q.scoringRubric) ? q.scoringRubric.map((r) => stripRawSvgMarkup(String(r))) : [];
+  let finalDiagramSvg = q.diagramSvg || "";
+  if (!finalDiagramSvg) {
+    const svgMatch = rawPrompt.match(/<svg[\s\S]*?<\/svg>/i);
+    if (svgMatch) {
+      finalDiagramSvg = svgMatch[0];
+    }
+  }
+  const standardModelSvg = getStandardizedModelSvg(`${cleanPrompt} ${cleanModel}`, subjectId);
+  if (standardModelSvg) {
+    finalDiagramSvg = standardModelSvg;
+    if (!q.diagramType || q.diagramType === "none") {
+      q.diagramType = "standardized_model";
+    }
+  }
+  const calculatedPoints = calculateRealTotalPoints({
+    prompt: cleanPrompt,
+    modelAnswer: cleanModel,
+    scoringRubric: cleanRubric,
+    totalPoints: q.totalPoints
+  }, subjectId);
+  const canonicalUnit = resolveCanonicalUnit(subjectId, q.skill || targetTopic);
+  if (whitelist) {
+    for (const unit of whitelist.canonicalUnits) {
+      for (const kw of unit.keywords) {
+        if (combinedText.includes(kw.toLowerCase())) {
+          detectedConcepts.push(kw);
+          if (tracker) {
+            tracker.usedConceptCounts[kw] = (tracker.usedConceptCounts[kw] || 0) + 1;
+            tracker.usedUnits[unit.unitNumber] = (tracker.usedUnits[unit.unitNumber] || 0) + 1;
+          }
+        }
+      }
+    }
+  }
+  let stimulusType = "none";
+  if (finalDiagramSvg || cleanPrompt.toLowerCase().includes("data table") || cleanPrompt.toLowerCase().includes("figure 1")) {
+    stimulusType = "single";
+  }
+  if (cleanPrompt.toLowerCase().includes("figure 2") || finalDiagramSvg && cleanPrompt.toLowerCase().includes("table 1")) {
+    stimulusType = "two";
+  }
+  const sanitized = {
+    ...q,
+    prompt: cleanPrompt,
+    modelAnswer: cleanModel,
+    scoringRubric: cleanRubric,
+    diagramSvg: finalDiagramSvg,
+    totalPoints: calculatedPoints,
+    unitNumber: canonicalUnit.unitNumber,
+    unitTitle: canonicalUnit.title,
+    skill: `Unit ${canonicalUnit.unitNumber}: ${canonicalUnit.title}`,
+    stimulusCategory: stimulusType
+  };
+  return {
+    isValid: true,
+    sanitizedQuestion: sanitized,
+    detectedConcepts
+  };
+}
+
 // server.ts
 dotenv.config();
 dns.setDefaultResultOrder("ipv4first");
@@ -11311,13 +12219,13 @@ eq cos^2 x. You MUST use Integration by Parts (u = x, dv = \frac{sin x}{1+cos^2 
 {
   "topic_title": "Subject or Topic of the problem",
   "format_type": "steps",
-  "key_formula": "The primary theoretical formula, law, or identity used in LaTeX (e.g. $$\\sin(A \\pm B) = \\sin A \\cos B \\pm \\cos A \\sin B$$)",
-  "exam_trap": "A brief 1-2 sentence high-yield warning about common calculation traps, sign errors, or misunderstandings students must avoid in exams",
+  "key_formula": "The primary theoretical formula, law, or identity used in LaTeX wrapped in $$ ... $$ (e.g. "$$V = 2\\\\pi \\\\int_{a}^{b} x f(x)\\\\,dx, \\\\quad A(w) = w \\\\cdot h(w)$$", or null if not applicable)",
+  "exam_trap": "A brief 1-2 sentence high-yield warning about common calculation traps, sign errors, or misunderstandings. Wrap any math expressions or variables in single $ delimiters (e.g. "($2\\\\pi x h(x))", "$y = f(x)$") (or null)",
   "solution_steps": [
     {
       "step_id": 1,
       "title": "Clear concise step title",
-      "content": "A detailed, encouraging explanation with formulas and step-by-step calculations. Whenever generating mathematical numbers, formulas, symbols, or equations/chemical reactions, you must strictly wrap them in LaTeX delimiters. Use single '$' for inline math and double '$$' for block math equations (e.g. $$2H_2O \\rightarrow 2H_2 + O_2$$). Always double-escape backslashes in JSON (e.g. \\\\rightarrow, \\\\frac, \\\\sqrt, \\\\text) so that equations render beautifully for students.",
+      "content": "A detailed, encouraging explanation with formulas and step-by-step calculations. Whenever generating mathematical numbers, formulas, symbols, or equations/chemical reactions, you must strictly wrap them in LaTeX delimiters. Use single '$' for inline math and double '$$' for block math equations (e.g. $$2H_2O \\rightarrow 2H_2 + O_2$$). NEVER output bare LaTeX commands without $ or $$ delimiters! Always double-escape backslashes in JSON (e.g. \\\\rightarrow, \\\\frac, \\\\sqrt, \\\\text, \\\\pi, \\\\theta, \\\\int, \\\\cdot, \\\\quad) so that equations render beautifully for students.",
       "is_final_answer": false
     }
   ],
@@ -12551,11 +13459,25 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
               if (subOpt) resolvedAnswer = subOpt;
             }
           }
+          let promptStr = q.prompt || q.question || q.text || q.scenario || "";
+          let stimulusStr = q.stimulus || "";
+          let diagramSvg = q.diagramSvg || "";
+          if (!diagramSvg && stimulusStr) {
+            const ext = extractDiagramAndCleanText(stimulusStr);
+            stimulusStr = ext.cleanText;
+            if (ext.diagramSvg) diagramSvg = ext.diagramSvg;
+          }
+          const extQ = extractDiagramAndCleanText(promptStr, diagramSvg);
+          promptStr = extQ.cleanText;
+          if (extQ.diagramSvg) diagramSvg = extQ.diagramSvg;
           return {
             ...q,
             id: idx + 1,
             title: q.title || `Question ${idx + 1}`,
-            prompt: q.prompt || q.question || q.text || q.scenario || "",
+            question: promptStr,
+            prompt: promptStr,
+            stimulus: stimulusStr,
+            diagramSvg,
             options: formattedOptions,
             correctAnswer: resolvedAnswer
           };
@@ -12585,6 +13507,8 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
       }
       throw new Error("Failed to generate a valid AP objective questions structure.");
     } else {
+      const usedTracker = createUsedConceptsTracker();
+      const whitelist = getSubjectWhitelist(subject);
       const generateSubjectiveBatch = async (batchCount, bIdx, extraAvoid = []) => {
         const batchOffset = bIdx >= 80 ? 0 : batchSizes.slice(0, bIdx).reduce((a, b) => a + b, 0);
         const batchArchetypes = allArchetypes.slice(batchOffset, batchOffset + batchCount);
@@ -12598,43 +13522,46 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
 STRICT PREVIOUS QUESTIONS AVOIDANCE (NO DUPLICATES):
 ${avoidLines}`;
         }
+        const usedConceptsList = Object.keys(usedTracker.usedConceptCounts);
+        if (usedConceptsList.length > 0) {
+          combinedAntiRepetition += `
+
+ALREADY TESTED CONCEPTS IN THIS SESSION (DEPRIORITIZE REPEATS - SPAN WIDER TOPIC LIST):
+- ${usedConceptsList.slice(-12).join(", ")}`;
+        }
+        const isSocialOrGeog = s.includes("geography") || s.includes("aphg") || s.includes("human") || s.includes("history") || s.includes("gov");
+        const isApes = s.includes("environmental") || s.includes("apes");
         const systemInstruction = `You are an AP Exam Chief Reader and Author of official College Board Scoring Guidelines.
 The student is preparing for the AP ${subject} Exam.
 Your task is to generate exactly ${batchCount} authentic, high-yield AP Exam FREE RESPONSE / SUBJECTIVE QUESTIONS for: "${targetTopic}".
 
 CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
-1. AUTHENTIC MULTI-PART STRUCTURE: AP Free Response Questions always consist of clearly delineated sub-parts: (a), (b), (c) (and optionally (d)). Each sub-part must clearly test specific College Board cognitive skills (e.g., Identify, Calculate, Justify, Explain, Describe, Graph, Show).
-2. CLEAR LINE BREAKS: Separate each part with a double newline '\\n\\n' so each part starts clearly on a new line.
-3. OFFICIAL SCORING GUIDELINES & POINT BREAKDOWN: Provide a precise, point-by-point College Board Reader rubric in an array 'scoringRubric'. Each item should state what earns the point (e.g., '+1 pt for applying product rule', '+1 pt for correctly stating units', '+1 pt for citing historical document').
-4. STEP-BY-STEP EXEMPLARY MODEL ANSWER (CRITICAL):
-   Provide a complete, maximum-points exemplary student response in 'modelAnswer'.
-   - ALWAYS format each sub-part with a clear label and double newlines ('\\n\\n'):
-     Part (a): [Step-by-step mathematical/conceptual setup, formula substitution, and complete concluding sentence.]\\n\\nPart (b): [Step-by-step reasoning, calculations, and final value with units.]\\n\\nPart (c): [Thorough analytical justification and conclusion.]
-   - NEVER glue parts or sentences together (NEVER output things like 'holds.(b)' or 'x=2.(c)'). ALWAYS leave clean double newlines and spaces between words, sentences, and sub-parts!
-5. TOTAL POINTS: Total point value for this problem (e.g. 9 points for Calculus/CSA, 10 points for Chem, 7 points for DBQ, 4 points for Short FRQ).
-6. MANDATORY COLLEGE BOARD SVG DIAGRAMS & GRAPHS (CRITICAL):
-   For all graphical, experimental, and visual subjects/units:
-   - AP Calculus (Limits & Continuity, piecewise functions with holes/discontinuities, derivatives, tangent lines, graphs of f'(x), Riemann sum areas, slope fields).
-   - AP Physics (kinematics v-t/x-t graphs, Free-Body Force Diagrams with labeled force vectors, projectile trajectories, electric circuit schematics).
-   - AP Chemistry (reaction coordinate energy profiles with Delta H & Ea, acid-base titration curves with equivalence point, PES spectra).
-   - AP Biology (pedigree charts, enzyme kinetics curves, cell signaling feedback loops).
-   - AP Micro/Macroeconomics (supply & demand equilibrium shifts, PPC, Phillips curves).
-   - AP Statistics (box plots with 5-number summary & outliers, normal distribution bell curves).
+1. CURRICULUM BOUNDARY ENFORCEMENT (CRITICAL - ZERO WRONG-SUBJECT LEAKAGE):
+   - You MUST generate content STRICTLY AND EXCLUSIVELY belonging to the College Board Course and Exam Description (CED) for AP ${subject}.
+   ${whitelist && whitelist.forbiddenSignatures.length > 0 ? `- STRICTLY FORBIDDEN: Under NO circumstances include mathematical calculus formulas (derivatives, integrals, slope fields, limits, volume of revolution) or concepts from other AP courses into AP ${subject}!` : ""}
+   - Every question must test legitimate, authentic concepts from AP ${subject} Units and Skills.
 
-   The question prompt MUST refer to the visual diagram naturally using varied lead-ins (e.g. "In the experiment depicted in the accompanying figure...", "Based on the plotted data in the graph above...", "A researcher examines the model shown in the figure...", "According to the diagram provided..."). NEVER begin every question with the exact same repetitive formulaic words.
-   
-   SVG TECHNICAL REQUIREMENTS (MANDATORY SAFE BOUNDS - ZERO CLIPPING):
-   - Root tag: <svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>...</svg>
-   - Dark contrast container: <rect width='400' height='220' fill='#09090b' rx='12' stroke='#27272a' stroke-width='1'/>
-   - STRICT SAFE DRAWING ZONE (CRITICAL):
-     * Keep ALL curves, plotted points, coordinate axes, and labels strictly within the inner bounding box: x between 25 and 375, and y between 25 and 195.
-     * NEVER draw any curve peak, inflection point, asymptote, or circle where y < 20 or y > 200, so curves NEVER touch or get cut off by the border!
-   - Coordinate Axes: stroke='#94a3b8' stroke-width='2' with arrowheads and axis labels (e.g. 'x', 'y = f(x)').
-   - Grid lines: stroke='#1e293b' stroke-dasharray='2,2'.
-   - Calculus Discontinuities / Holes: Use hollow circles for removable holes (<circle cx='...' cy='...' r='4.5' fill='#09090b' stroke='#38bdf8' stroke-width='2.5'/>) and solid dots for defined points (<circle cx='...' cy='...' r='4.5' fill='#38bdf8'/>).
-   - Curves / Shapes: High-contrast stroke='#38bdf8' or stroke='#818cf8' stroke-width='2.5' fill='none'.
-   - Text labels: fill='#f8fafc' font-size='12' font-family='sans-serif' font-weight='bold'.
-   - Only set diagramSvg to "" if the subject is purely literary/historical (e.g. AP English Lit, AP History).
+2. AUTHENTIC MULTI-PART STRUCTURE & POINT VALUES:
+   - For AP Human Geography: Real Section II FRQs typically have 4 to 7 distinct sub-parts labeled (a) through (g) or (a) through (e), testing command verbs: "Identify", "Define", "Describe", and "Explain".
+   - For AP Calculus / Science: Multi-part problems typically have (a), (b), (c), (d).
+   - "totalPoints" MUST BE AN EXACT INTEGER EQUAL TO THE SUM OF ALL SUB-PARTS (e.g. 7 points for a 7-part question). NEVER set totalPoints to 1 when a question has 4 to 7 sub-parts!
+   - In "scoringRubric", provide a precise, point-by-point rubric matching each subpart:
+     e.g. ["Part (a) [1 point]: 1 pt for correctly identifying...", "Part (b) [1 point]: 1 pt for defining...", "Part (c) [2 points]: 1 pt for describing..., 1 pt for explaining..."]
+
+3. REALISTIC STIMULUS VARIATION (MATCHING REAL COLLEGE BOARD EXAM FORMAT):
+   - Real AP exams use 3 stimulus categories:
+     * Category 1: No Stimulus (conceptual application, theory, synthesis).
+     * Category 2: Single Stimulus (authentic demographic/spatial data table, population pyramid, or textbook model diagram such as Demographic Transition Model, Von Th\xFCnen rings, or Burgess Concentric Zone).
+     * Category 3: Two Stimuli (comparative data sets, paired maps, or dual charts).
+   - When a question requires a visual model or chart, provide an authentic College Board standard SVG in "diagramSvg" (viewBox='0 0 400 220') or format a clean Markdown/LaTeX data table in the prompt.
+   - The question prompt MUST reference specific details from the stimulus in its sub-parts (e.g., "Referring to the data in Table 1...", "Based on Stage 2 in the accompanying diagram...").
+
+4. CLEAR FORMATTING & EXEMPLARY MODEL ANSWER:
+   - Separate each part with a double newline '\\n\\n' so each part starts on a new line.
+   - Provide a complete, maximum-points exemplary student response in 'modelAnswer' with explicit labels:
+     Part (a): [Step-by-step reasoning and complete response.]\\n\\nPart (b): [Full explanation...]\\n\\nPart (c): [Justification...]
+   - NEVER glue parts together.
+   - NEVER leak raw <svg> markup into the text of 'prompt' or 'modelAnswer'. All SVG code must be strictly in the 'diagramSvg' property!
 
 ${subjectGuidelines}
 ${gradeCalibrationInstruction}
@@ -12644,35 +13571,9 @@ BATCH TARGET ARCHETYPES:
 ${batchArchetypePlan}
 
 CRITICAL CODE, MATH & LATEX FORMATTING:
-- FOR COMPUTER SCIENCE / PROGRAMMING (AP Computer Science A, AP Computer Science Principles):
-  * Always format code snippets inside standard Markdown fenced code blocks (\`\`\`java ... \`\`\`).
-  * In code blocks and programming expressions, ALWAYS use standard programming operators: '<=', '>=', '!=', '==', '&&', '||', '<', '>'. NEVER substitute LaTeX symbols like \\leqslant, \\le, \\ge, \\times into code!
-  * For inline variable names, methods, or keywords in question text (e.g. \`reverseString("APCS")\`, \`true\`, \`false\`, \`StackOverflowError\`), ALWAYS use Markdown backticks (\`code\`) and NEVER raw LaTeX like \\texttt{...}.
-- FOR MATHEMATICS & SCIENCE (AP Calculus, AP Physics, AP Chemistry, AP Statistics):
-  * Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for block.
-  * For data tables and matrices, ALWAYS wrap in $$ block delimiters:
-    $$\\begin{array}{c|ccccc} x & -1 & 0 & 2 & 3 & 4 \\\\ \\hline g(x) & -5 & 3 & -2 & 7 & 10 \\end{array}$$
-    NEVER output bare \\begin{array} without $$...$$ delimiters!
-  * For piecewise functions, ALWAYS use clean LaTeX with $$:
-    $$f(x) = \\begin{cases} g(x) & \\text{for } x < c \\\\ h(x) & \\text{for } x \\ge c \\end{cases}$$
-    NEVER write raw unescaped pseudo-code like 'f(x) = { ... }' or '<=' inside math equations that breaks KaTeX!
-  * Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\to, \\\\infty, \\\\begin{cases}, \\\\end{cases}, \\\\begin{array}, \\\\end{array}.
-
-STRICT SCORING RUBRIC & AUTHENTIC TOTAL POINTS RULES:
-- In official College Board AP Free Response Questions, every question has its own authentic point total calibrated to its subparts and subject standard:
-  * AP Statistics: ALL FRQs are strictly 4 Points Max (College Board E/P/I 4-point scale).
-  * AP Chemistry: Short FRQs are 4 Points Max; Long FRQs are 10 Points Max.
-  * AP Biology: Short FRQs are 4 Points Max; Long FRQs are 8 to 10 Points Max.
-  * AP History (US, World, Euro): SAQs with (a), (b), (c) are strictly 3 Points Max (1 pt each); LEQs are 6 Points Max; DBQs are 7 Points Max.
-  * AP Government: Concept Application is 3 Points Max; Quantitative/SCOTUS is 4 Points Max; Argument Essay is 6 Points Max.
-  * AP Economics (Macro/Micro): Short FRQs are 5 Points Max; Long FRQs are 9 or 10 Points Max.
-  * AP English (Lang/Lit): Essays are strictly 6 Points Max.
-  * AP Physics: Short FRQs are 7 Points Max; Long FRQs are 12 Points Max (Physics C: 15 Points Max).
-  * AP Calculus AB & BC: Provide realistic point diversity! 2-part focused problems (3-4 points), 3-part medium problems (5-6 points), and full-length FRQs (7-9 points). DO NOT blindly set 9 points for every single question!
-- "totalPoints" MUST BE A STRICT INTEGER EQUAL TO THE EXACT MATHEMATICAL SUM OF THE POINTS ALLOCATED IN "scoringRubric"!
-- In "scoringRubric", ALWAYS explicitly state the points for each sub-part in brackets:
-  e.g. ["Part (a) [2 points]: 1 point for limit setup, 1 point for evaluation", "Part (b) [2 points]: 1 point for derivative, 1 point for solving", "Part (c) [2 points]: 1 point for conclusion"] (Total: 6 points).
-- NEVER output a mismatched totalPoints! If the rubric points sum to 4, totalPoints MUST be 4. If they sum to 6, totalPoints MUST be 6.
+- For Computer Science: standard Markdown fenced code blocks (\`\`\`java ... \`\`\`), standard operators '<=', '>=', '!=', '=='.
+- For Mathematics & Science: valid LaTeX syntax ($...$ or $$...$$). Wrap data tables in $$\\begin{array}{c|ccccc}...\\end{array}$$.
+- Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge.
 
 STRICT JSON OUTPUT:
 Return ONLY a valid JSON object with key "questions" containing an array of objects:
@@ -12681,18 +13582,21 @@ Return ONLY a valid JSON object with key "questions" containing an array of obje
     {
       "id": 1,
       "title": "FRQ 1: Multi-Part Analytical Problem",
-      "prompt": "Scenario/stimulus referencing the diagram above followed by:\\n\\n(a) Sub-part A prompt...\\n\\n(b) Sub-part B prompt...\\n\\n(c) Sub-part C prompt...\\n\\n(d) Sub-part D prompt...",
+      "prompt": "Scenario/stimulus description followed by:\\n\\n(a) Sub-part A prompt [1 point]...\\n\\n(b) Sub-part B prompt [1 point]...\\n\\n(c) Sub-part C prompt [1 point]...\\n\\n(d) Sub-part D prompt [1 point]...\\n\\n(e) Sub-part E prompt [1 point]...\\n\\n(f) Sub-part F prompt [1 point]...\\n\\n(g) Sub-part G prompt [1 point]...",
       "diagramSvg": "<svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg'>...</svg>",
-      "diagramType": "piecewise_graph",
-      "totalPoints": 9,
-      "modelAnswer": "(a) Full exemplary solution for part a...\\n\\n(b) Full exemplary solution for part b...\\n\\n(c) Full exemplary solution for part c...\\n\\n(d) Full exemplary solution for part d...",
+      "diagramType": "standardized_model",
+      "totalPoints": 7,
+      "modelAnswer": "(a) Full exemplary solution for part a...\\n\\n(b) Full exemplary solution for part b...\\n\\n(c) Full exemplary solution for part c...",
       "scoringRubric": [
-        "Part (a) [2 points]: 1 point for setting up the governing formula, 1 point for evaluation.",
-        "Part (b) [3 points]: 1 point for chain rule, 1 point for equating f'(x)=0, 1 point for justification.",
-        "Part (c) [2 points]: 1 point for FTC integral setup, 1 point for final calculation.",
-        "Part (d) [2 points]: 1 point for Mean Value Theorem hypothesis, 1 point for conclusion."
+        "Part (a) [1 point]: 1 point for identifying...",
+        "Part (b) [1 point]: 1 point for defining...",
+        "Part (c) [1 point]: 1 point for describing...",
+        "Part (d) [1 point]: 1 point for explaining...",
+        "Part (e) [1 point]: 1 point for explaining...",
+        "Part (f) [1 point]: 1 point for evaluating...",
+        "Part (g) [1 point]: 1 point for justifying..."
       ],
-      "skill": "Relevant AP Unit / Skill Tag"
+      "skill": "Unit X: Topic Name"
     }
   ]
 }
@@ -12706,8 +13610,7 @@ NEVER include multiple-choice options A/B/C/D in subjective output.`;
 Generate exactly ${batchCount} authentic College Board AP Exam Free Response / Subjective Questions for this batch.
 Target Archetypes for this batch:
 ${batchArchetypePlan}
-IMPORTANT: Ensure 100% diversity and fresh non-repetitive problems with unique functions, numbers, and scenarios. Do not repeat standard textbook clich\xE9s!
-If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or AP Statistics, provide an authentic College Board standard SVG in "diagramSvg" (viewBox='0 0 400 220') for questions that genuinely require visual graph analysis (at least 1 question per batch), and set diagramSvg to "" for purely symbolic, algebraic, or text-based questions so generation is ultra-fast!` }] },
+Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP ${subject} curriculum!` }] },
             config: {
               systemInstruction: { parts: [{ text: systemInstruction }] },
               responseMimeType: "application/json",
@@ -12745,165 +13648,117 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
       };
       const batchPromises = batchSizes.map((batchCount, bIdx) => generateSubjectiveBatch(batchCount, bIdx));
       const batchResults = await Promise.allSettled(batchPromises);
-      let combinedQuestions = [];
+      let rawGeneratedQuestions = [];
       for (const res2 of batchResults) {
         if (res2.status === "fulfilled" && Array.isArray(res2.value)) {
-          combinedQuestions.push(...res2.value);
+          rawGeneratedQuestions.push(...res2.value);
         } else if (res2.status === "rejected") {
           console.warn("[generate-ap-questions] Subjective batch error:", res2.reason);
         }
       }
+      let validatedQuestions = [];
+      for (const rawQ of rawGeneratedQuestions) {
+        const vResult = validateAndHealApQuestion(rawQ, subject, targetTopic, usedTracker);
+        if (!vResult.isValid) {
+          console.warn(`[generate-ap-questions] REJECTED off-subject question for "${subject}": ${vResult.rejectionReason}`);
+          continue;
+        }
+        validatedQuestions.push(vResult.sanitizedQuestion);
+      }
       let backfillAttempts = 0;
-      while (combinedQuestions.length < requestedCount && backfillAttempts < 2) {
+      while (validatedQuestions.length < requestedCount && backfillAttempts < 3) {
         backfillAttempts++;
-        const missingCount = requestedCount - combinedQuestions.length;
-        console.warn(`[generate-ap-questions] Subjective questions deficit: got ${combinedQuestions.length}/${requestedCount}. Backfilling ${missingCount} questions (attempt ${backfillAttempts})...`);
+        const missingCount = requestedCount - validatedQuestions.length;
+        console.warn(`[generate-ap-questions] Subjective questions deficit: got ${validatedQuestions.length}/${requestedCount} valid questions. Backfilling ${missingCount} questions (attempt ${backfillAttempts})...`);
         try {
-          const existingPrompts = combinedQuestions.map(
+          const existingPrompts = validatedQuestions.map(
             (q) => (typeof q === "string" ? q : q.prompt || q.question || q.title || "").slice(0, 140)
           ).filter(Boolean);
           const backfillResult = await generateSubjectiveBatch(missingCount, 80 + backfillAttempts, existingPrompts);
           if (Array.isArray(backfillResult) && backfillResult.length > 0) {
-            combinedQuestions.push(...backfillResult);
+            for (const bq of backfillResult) {
+              const bvResult = validateAndHealApQuestion(bq, subject, targetTopic, usedTracker);
+              if (bvResult.isValid) {
+                validatedQuestions.push(bvResult.sanitizedQuestion);
+              } else {
+                console.warn(`[generate-ap-questions] Backfilled question rejected: ${bvResult.rejectionReason}`);
+              }
+            }
           }
         } catch (bfErr) {
           console.warn("[generate-ap-questions] Subjective backfill attempt failed:", bfErr);
         }
       }
-      if (combinedQuestions.length > 0) {
-        const resolveRealTotalPoints = (q) => {
-          if (Array.isArray(q.scoringRubric) && q.scoringRubric.length > 0) {
-            let sum = 0;
-            let foundExplicit = false;
-            for (const item of q.scoringRubric) {
-              const str = String(item || "");
-              const match = str.match(/(?:\[|\()?\s*(\d+)\s*(?:points|point|pts|pt|marks|mark)\b/i) || str.match(/\b(\d+)\s*(?:points|point|pts|pt)\b/i);
-              if (match) {
-                sum += parseInt(match[1], 10);
-                foundExplicit = true;
-              } else {
-                sum += 1;
-              }
-            }
-            if (foundExplicit && sum > 0) return sum;
+      if (validatedQuestions.length > 0) {
+        const questionsList = validatedQuestions.slice(0, requestedCount).map((q, idx) => {
+          const realPoints = calculateRealTotalPoints(q, subject);
+          let promptStr = q.prompt || q.question || q.text || q.scenario || "";
+          let stimulusStr = q.stimulus || "";
+          let diagramSvg = q.diagramSvg || "";
+          if (!diagramSvg && stimulusStr) {
+            const ext = extractDiagramAndCleanText(stimulusStr);
+            stimulusStr = ext.cleanText;
+            if (ext.diagramSvg) diagramSvg = ext.diagramSvg;
           }
-          if (typeof q.prompt === "string") {
-            const matches = [...q.prompt.matchAll(/\([a-d]\)[^[]*?\[\s*(\d+)\s*(?:points|point|pts|pt)\s*\]/gi)];
-            if (matches.length > 0) {
-              const sum = matches.reduce((acc, m) => acc + parseInt(m[1], 10), 0);
-              if (sum > 0) return sum;
-            }
-          }
-          const sLower = String(subject || "").toLowerCase();
-          const partCount = typeof q.prompt === "string" ? (q.prompt.match(/\([a-d]\)/gi) || []).length : 0;
-          const raw = Number(q.totalPoints);
-          if (sLower.includes("stat")) return 4;
-          if (sLower.includes("history") || sLower.includes("apush") || sLower.includes("euro") || sLower.includes("world")) {
-            if (partCount <= 3 && !q.prompt?.toLowerCase().includes("document")) return 3;
-            if (q.prompt?.toLowerCase().includes("document") || raw === 7) return 7;
-            return 6;
-          }
-          if (sLower.includes("gov")) {
-            if (partCount <= 3) return 3;
-            if (partCount === 4) return 4;
-            return 6;
-          }
-          if (sLower.includes("econ")) {
-            if (partCount <= 3) return 5;
-            return 9;
-          }
-          if (sLower.includes("chem")) {
-            if (partCount <= 3) return 4;
-            return 10;
-          }
-          if (sLower.includes("bio")) {
-            if (partCount <= 3) return 4;
-            return 8;
-          }
-          if (sLower.includes("physic")) {
-            if (partCount <= 3) return 7;
-            return 12;
-          }
-          if (sLower.includes("lit") || sLower.includes("lang")) return 6;
-          if (!isNaN(raw) && raw >= 1 && raw <= 15) {
-            if (partCount === 1 && raw > 4) return 2;
-            if (partCount === 2 && raw > 6) return 4;
-            if (partCount === 3 && raw > 7) return 6;
-            return raw;
-          }
-          if (partCount === 1) return 2;
-          if (partCount === 2) return 4;
-          if (partCount === 3) return 6;
-          if (partCount >= 4) {
-            return raw && raw >= 6 && raw <= 9 ? raw : 8;
-          }
-          return 6;
-        };
-        const questionsList = combinedQuestions.slice(0, requestedCount).map((q, idx) => {
-          if (typeof q === "string") {
-            return {
-              id: idx + 1,
-              title: `FRQ ${idx + 1}: Multi-Part Analytical Problem`,
-              prompt: q,
-              diagramSvg: "",
-              diagramType: "none",
-              modelAnswer: "",
-              totalPoints: 6,
-              scoringRubric: []
-            };
-          }
-          const realPoints = resolveRealTotalPoints(q);
+          const extP = extractDiagramAndCleanText(promptStr, diagramSvg);
+          promptStr = extP.cleanText;
+          if (extP.diagramSvg) diagramSvg = extP.diagramSvg;
           return {
             ...q,
             id: idx + 1,
             totalPoints: realPoints,
-            title: q.title || `FRQ ${idx + 1}: Multi-Part Analytical Problem`,
-            prompt: q.prompt || q.question || q.text || q.scenario || ""
+            title: q.title || `FREE RESPONSE QUESTION ${idx + 1}  [${realPoints} POINTS]`,
+            question: promptStr,
+            prompt: promptStr,
+            stimulus: stimulusStr,
+            diagramSvg,
+            unitNumber: q.unitNumber,
+            unitTitle: q.unitTitle,
+            skill: q.skill || `Unit ${q.unitNumber || 1}: ${q.unitTitle || targetTopic || subject}`
           };
         });
         return res.json({ questions: questionsList, questionType: "subjective", subject, count: questionsList.length });
       }
       console.warn(`[generate-ap-questions] Subjective AI batch returned empty for "${subject}". Engaging authentic curriculum fallback...`);
-      const fallbackSubject = AP_BATTLE_SUBJECTS.find(
-        (s2) => (subject || "").toLowerCase().includes(s2.name.toLowerCase().replace("ap ", "")) || s2.id.includes((subject || "").toLowerCase().replace(/[^a-z0-9]/g, ""))
-      ) || AP_BATTLE_SUBJECTS[0];
-      const fallbackMcqs = getBattleQuestions(fallbackSubject.id);
+      const canonicalUnits = whitelist?.canonicalUnits || [
+        { unitNumber: 1, title: "Foundational Principles", keywords: ["concepts"] },
+        { unitNumber: 2, title: "Systems & Interactions", keywords: ["processes"] },
+        { unitNumber: 3, title: "Advanced Analysis", keywords: ["applications"] }
+      ];
       const fallbackSubjectives = Array.from({ length: requestedCount }).map((_, idx) => {
-        const mcqRef = fallbackMcqs && fallbackMcqs[idx % fallbackMcqs.length];
-        const topicName = targetTopic || fallbackSubject.name;
-        const subPrompt = mcqRef ? `${mcqRef.stem}
-
-(a) Identify the primary concept or mechanism illustrated in this scenario [1 point].
-
-(b) Explain the fundamental theoretical cause of this phenomenon within ${topicName} [2 points].
-
-(c) Describe one real-world consequence or alternative scenario if the key variable were altered [2 points].
-
-(d) Justify your reasoning using standard College Board terminology and principles [2 points].` : `Consider an authentic scenario concerning ${topicName} in ${subject}:
+        const unitRef = canonicalUnits[idx % canonicalUnits.length];
+        const topicName = targetTopic || unitRef.title;
+        const subPrompt = `Consider an authentic scenario concerning ${topicName} in AP ${subject}:
 
 (a) Identify and define the fundamental College Board concept at play [1 point].
 
-(b) Explain the underlying theoretical framework and relationships [2 points].
+(b) Explain the underlying theoretical framework and real-world mechanisms [1 point].
 
-(c) Analyze the direct consequences and implications [2 points].
+(c) Describe one observable spatial or empirical pattern resulting from this process [1 point].
 
-(d) Justify your conclusions with evidence and relevant terminology [2 points].`;
-        const modelAns = mcqRef ? `Part (a): ${mcqRef.explanation.slice(0, 120)}...
+(d) Explain how changing a primary variable alters system outcomes [1 point].
 
-Part (b): Detailed theoretical mechanism demonstrating full mastery of ${topicName}.
+(e) Compare this scenario with an alternative institutional or regional context [1 point].
 
-Part (c): Critical analysis of practical applications and secondary effects.
+(f) Evaluate the long-term consequences for affected stakeholders or environments [1 point].
 
-Part (d): Comprehensive justification adhering to official College Board scoring rubrics.` : `Part (a): Definition and core identification matching College Board standards.
+(g) Justify your conclusions citing authoritative course principles and empirical evidence [1 point].`;
+        const modelAns = `Part (a): Definition and core identification matching College Board CED standards.
 
 Part (b): In-depth analytical explanation of causes and interactions.
 
-Part (c): Evaluative analysis of outcomes and system behavior.
+Part (c): Clear empirical description of observable spatial trends.
 
-Part (d): Robust justification citing key principles and empirical evidence.`;
+Part (d): Cause-and-effect breakdown of altered parameters.
+
+Part (e): Comparative evaluation contrasting two relevant models or regions.
+
+Part (f): Longitudinal assessment of socio-economic or environmental impacts.
+
+Part (g): Robust justification citing key CED principles and verifiable evidence.`;
         return {
           id: idx + 1,
-          title: `FRQ ${idx + 1}: ${topicName} Analytical Problem`,
+          title: `FREE RESPONSE QUESTION ${idx + 1}  [7 POINTS]`,
           prompt: subPrompt,
           diagramSvg: "",
           diagramType: "none",
@@ -12911,11 +13766,16 @@ Part (d): Robust justification citing key principles and empirical evidence.`;
           totalPoints: 7,
           scoringRubric: [
             "Part (a) [1 point]: Correct identification and definition.",
-            "Part (b) [2 points]: 1 pt for stating governing rule, 1 pt for applying to context.",
-            "Part (c) [2 points]: 1 pt for consequence, 1 pt for analytical depth.",
-            "Part (d) [2 points]: 1 pt for relevant evidence, 1 pt for rigorous College Board justification."
+            "Part (b) [1 point]: Thorough explanation of governing mechanisms.",
+            "Part (c) [1 point]: Accurate description of observable trends.",
+            "Part (d) [1 point]: Logical cause-and-effect relationship.",
+            "Part (e) [1 point]: Sound comparative contextualization.",
+            "Part (f) [1 point]: Evaluative analysis of consequences.",
+            "Part (g) [1 point]: Rigorous justification with course evidence."
           ],
-          skill: topicName
+          unitNumber: unitRef.unitNumber,
+          unitTitle: unitRef.title,
+          skill: `Unit ${unitRef.unitNumber}: ${unitRef.title}`
         };
       });
       return res.json({ questions: fallbackSubjectives, questionType: "subjective", subject, count: fallbackSubjectives.length, fallback: true });

@@ -426,28 +426,202 @@ export const AP_SUBJECT_ARCHETYPES: Record<string, ArchetypeBundle> = {
         "Money market and Loanable funds market: Federal funds interest rate determination, open market operations, and crowding-out effect"
       ]
     }
+  },
+  human_geography: {
+    general: [
+      "Spatial pattern evaluation: Identifying clustering, dispersion, and regional density from geospatial maps and thematic projections",
+      "Scale of analysis: Contrasting global, national, regional, and local demographic and economic data patterns to uncover hidden spatial variations",
+      "Demographic stimulus interpretation: Evaluating Stage 2 vs Stage 4 population pyramids, dependency ratios, and sex ratio imbalances",
+      "Geospatial model application: Testing real-world deviations from isotropic assumptions in concentric, sectoral, and agricultural models",
+      "Cultural landscape analysis: Explaining visible religious, architectural, and linguistic imprints on urban centers and rural hearths",
+      "Geopolitical border impacts: Devolutionary pressures, supranational governance, and UNCLOS maritime boundaries influencing state sovereignty"
+    ],
+    units: {
+      "1": [
+        "Geospatial technologies: Analyzing GIS overlay layers, GPS navigation coordinates, and satellite remote sensing for environmental disaster management",
+        "Spatial concepts: Distance decay vs time-space compression driven by telecommunications and jet transportation",
+        "Regional analysis: Formal (uniform climatic/legislative) vs Functional (nodal broadcast/newspaper) vs Vernacular (perceptual cultural identity) regions",
+        "Human-environmental interaction: Environmental determinism vs possibilism in agricultural development and arid urbanization",
+        "Map projections & distortion: Mercator preservation of directional lines for navigation vs polar areal distortion vs Peters equal-area balance",
+        "Thematic mapping types: Choropleth density gradients, dot density distributions, isoline topographic contours, and proportional symbol maps"
+      ],
+      "2": [
+        "Demographic Transition Model (DTM): Stage 1 high fluctuating equilibrium vs Stage 2 Industrial/Medical revolution CDR collapse and population explosion",
+        "DTM Late Stages: Stage 3 fertility decline via urbanization and female education vs Stage 4 low stable equilibrium and Stage 5 natural decrease",
+        "Epidemiological Transition Model: Stage 1 pestilence and famine vs Stage 2 receding pandemics vs Stage 3/4 degenerative human-made diseases",
+        "Population Pyramids: Broad expansive base (rapid growth, high youth dependency) vs columnar aging demographic (caregiver deficits and pension strain)",
+        "Malthusian population theory: Arithmetic food growth vs exponential population growth, positive vs preventative checks, and Boserup agricultural intensification rebuttal",
+        "Migration push and pull factors: Economic employment, political persecution, environmental desertification, and Ravenstein's laws of migration",
+        "Forced vs voluntary displacement: Refugees vs internally displaced persons (IDPs) vs asylum seekers under international UNHCR protocols",
+        "Pro-natalist vs anti-natalist government policies: Singapore tax rebates and parental leave vs China's historic One-Child Policy gender imbalance"
+      ],
+      "3": [
+        "Types of cultural diffusion: Relocation (physical migration) vs Expansion diffusion (contagious social media, hierarchical fashion/capitals, stimulus adaptations)",
+        "Religious distribution & hearths: Universalizing faiths (Christianity, Islam, Buddhism) seeking global converts vs Ethnic faiths (Judaism, Hinduism) anchored to sacred hearth landscapes",
+        "Linguistic geography: Indo-European language family evolution, Romance/Germanic branches, isoglosses, dialects, and English as global lingua franca",
+        "Cultural landscape imprint: Toponyms, religious architecture (minarets, steeples, shrines), and indigenous vs colonial land-use patterns",
+        "Cultural identity processes: Acculturation (adopting traits while maintaining identity) vs Assimilation (complete cultural absorption) vs Syncretism (blended traditions)",
+        "Centripetal vs centrifugal cultural forces: Shared national language/patriotism unifying a populace vs ethnic sectarian linguistic cleavages driving fragmentation"
+      ],
+      "4": [
+        "Political entity types: Nation-states (Japan, Iceland), stateless nations (Kurds, Palestinians), multinational states (UK, Canada), and autonomous regions",
+        "Colonial borders and historical boundaries: Berlin Conference (1884) superimposed borders ignoring African ethnic lines, antecedent boundaries, and relic boundaries (Berlin Wall)",
+        "Boundary dispute categories: Definitional (treaty wording), locational (border cartography), operational (immigration/customs), and allocational (oil/aquifer resource extraction)",
+        "Law of the Sea (UNCLOS): 12-nautical-mile territorial sea sovereignty, 24nm contiguous enforcement zone, and 200nm Exclusive Economic Zone (EEZ) resource rights",
+        "Internal political boundaries: Gerrymandering techniques (packing opposition into single districts vs cracking across multiple districts) and redistricting reapportionment",
+        "Devolutionary forces: Physical geography barriers, ethnic separatism (Basques, Catalans), economic disparities, and terrorism causing state decentralization",
+        "Supranational organizations: European Union (EU), United Nations (UN), NATO, and ASEAN balancing sovereign independence against collective trade and defense"
+      ],
+      "5": [
+        "Von Thünen Agricultural Land-Use Model: Concentric rings determined by land rent and perishability/transport weight (Dairying -> Timber -> Grains -> Livestock)",
+        "Bid-Rent Theory in agriculture: Highest land cost near urban market favoring intensive farming vs low rent per hectare on periphery favoring extensive grazing",
+        "First, Second, and Third (Green) Agricultural Revolutions: High-yield variety (HYV) wheat/rice strains, synthetic nitrogen fertilizers, and mechanized irrigation",
+        "Intensive vs Extensive agricultural systems: Market gardening, plantation agriculture, and mixed crop-livestock vs nomadic herding and shifting cultivation",
+        "Cadastral rural survey systems: English Metes and Bounds (natural landmarks) vs French Long Lots (riverfront access) vs Township and Range rectangular grids",
+        "Global agricultural supply chains: Agribusiness corporate consolidation, commodity chains, fair trade certification, and export monoculture vulnerabilities"
+      ],
+      "6": [
+        "Classic North American Urban Models: Burgess Concentric Zone (CBD outward) vs Hoyt Sector (transit corridor wedges) vs Harris-Ullman Multiple Nuclei",
+        "Galactic City and Edge Cities: Suburban nodes, beltways, office parks, and polycentric urban agglomerations",
+        "Christaller's Central Place Theory: Hexagonal market areas, threshold (minimum customer base to sustain a business), and range (maximum distance consumers travel)",
+        "Urban settlement hierarchies: Primate city rule (disproportionate economic/political dominance) vs Rank-Size rule (nth city is 1/n size of largest city)",
+        "Urban challenges & gentrification: Displacement of lower-income residents, property tax inflation, suburban sprawl, infrastructure deficits, and food deserts",
+        "Socio-spatial urban inequalities: Redlining, blockbusting, racial steering, and peripheral squatter settlements / favelas in developing megacities"
+      ],
+      "7": [
+        "Wallerstein's World Systems Theory: Core (capital-intensive, high-value manufacturing), Periphery (raw material extraction, low wages), and Semiperiphery",
+        "Rostow's Stages of Economic Growth: Traditional society -> Preconditions for takeoff -> Takeoff -> Drive to maturity -> Age of high mass consumption",
+        "Weber's Least Cost Theory: Raw material index, bulk-reducing industries (copper smelting near mine) vs bulk-gaining industries (beverage bottling near market)",
+        "Human Development Index (HDI): Composite metric evaluating GDP per capita (PPP), mean years of schooling, and life expectancy at birth",
+        "Gender and Economic Development: Gender Inequality Index (GII), microfinance small-business lending, and female labor force participation empowerment",
+        "Post-Fordism and globalization: Offshoring, maquiladoras, Export Processing Zones (EPZs), just-in-time logistics, and Rust Belt deindustrialization"
+      ]
+    }
+  },
+  environmental_science: {
+    general: [
+      "Ecological systems analysis: Trophic energy transfers, 10% ecological efficiency rule, and nutrient cycling disruptions",
+      "Environmental quantitative calculations: LD50 toxicology thresholds, Rule of 70 doubling times, and per-capita resource consumption",
+      "Anthropogenic impact evaluation: Ocean acidification, stratospheric ozone depletion, and habitat fragmentation",
+      "Sustainable resource stewardship: Renewable energy trade-offs, integrated pest management, and aquifer recharge equilibrium"
+    ],
+    units: {
+      "1": ["Carbon, nitrogen, and phosphorus biogeochemical cycles", "Primary productivity: GPP vs NPP calculations in terrestrial and aquatic biomes"],
+      "2": ["Ecosystem biodiversity: Species richness vs evenness, ecosystem services, and island biogeography theory"],
+      "3": ["Population ecology: r-selected vs K-selected species, Type I/II/III survivorship curves, and carrying capacity K overshoot"],
+      "4": ["Earth systems: Plate tectonics, soil texture triangle classification, atmospheric Hadley cells, and El Niño-Southern Oscillation (ENSO)"],
+      "5": ["Land and water use: Tragedy of the commons, Green Revolution impacts, irrigation salinization, and integrated pest management (IPM)"],
+      "6": ["Energy resources: Fossil fuel extraction, nuclear fission half-life calculations, photovoltaic solar, and wind turbine generation"],
+      "7": ["Atmospheric pollution: Photochemical smog formation, thermal inversions, acid deposition, and catalytic converters"],
+      "8": ["Aquatic and terrestrial pollution: Cultural eutrophication, biochemical oxygen demand (BOD) oxygen sag curves, and endocrine disruptors"],
+      "9": ["Global change: Stratospheric ozone chlorofluorocarbons (CFCs), greenhouse gas warming potentials, ocean acidification, and invasive species"]
+    }
+  },
+  csp: {
+    general: [
+      "Algorithmic analysis: Selection, sequencing, and iteration efficiency and correctness",
+      "Data abstraction & representation: Binary encoding, hexadecimal conversion, lossy vs lossless compression",
+      "Internet architecture: Packet routing, TCP/IP protocols, DNS hierarchy, and fault-tolerant network topologies",
+      "Societal impacts of computing: Digital divide, facial recognition bias, intellectual property, and crowdsourcing citizen science"
+    ],
+    units: {
+      "1": ["Iterative software development process: Program design, user testing, debugging logic errors vs syntax errors"],
+      "2": ["Binary numbers, bytes, overflow errors, metadata, and analog-to-digital sampling rates"],
+      "3": ["Robot grid path traversals, list manipulations, linear vs binary search operations, and modular procedural abstraction with parameters"],
+      "4": ["The Internet, IPv4 vs IPv6 addressing, router redundancy, bandwidth vs latency, and public-key encryption (RSA)"],
+      "5": ["Computing innovations, digital divide, creative commons licensing, open-source software, phishing, malware, and multi-factor authentication"]
+    }
+  },
+  government: {
+    general: [
+      "Foundational document textual analysis: Federalist No. 10, Brutus No. 1, Federalist No. 78, Letter from Birmingham Jail",
+      "SCOTUS case precedent and selective incorporation: McCulloch v. Maryland, US v. Lopez, Tinker v. Des Moines, Brown v. Board",
+      "Interactions among branches: Congressional checks, presidential executive orders, judicial review, and bureaucratic administrative rulemaking",
+      "Political participation & public opinion: Polling methodology, voting rights legislation, campaign finance, and media agenda setting"
+    ],
+    units: {
+      "1": ["Constitutional foundations: Separation of powers, checks and balances, federalism, Commerce Clause, and Tenth Amendment reserved powers"],
+      "2": ["Institutions of national government: House vs Senate procedural rules (filibuster, rules committee), executive veto power, judicial appointments, iron triangles"],
+      "3": ["Civil liberties & civil rights: First Amendment Free Exercise vs Establishment Clause, Fourteenth Amendment Equal Protection, selective incorporation"],
+      "4": ["American political ideologies: Liberalism vs conservatism vs libertarianism, political socialization agents, and Keynesian vs supply-side fiscal policy"],
+      "5": ["Political participation: Electoral College mechanisms, Citizens United v. FEC independent expenditures, interest group lobbying, and primary voting systems"]
+    }
+  },
+  statistics: {
+    general: [
+      "Data display interpretation: Histograms, stemplots, boxplots with 1.5*IQR outlier criterion, and normal probability plots",
+      "Bivariate relationship analysis: Least-squares regression line (LSRL), correlation coefficient r, and residual plot diagnostic patterns",
+      "Experimental and survey design: Simple random sampling, stratified sampling, blocking, confounding variables, and placebo double-blinding",
+      "Statistical inference: Null vs alternative hypotheses, Type I vs Type II errors, p-value interpretation, and confidence intervals"
+    ],
+    units: {
+      "1": ["Exploring One-Variable Data: Center, shape, spread, standard deviation formula, z-score transformations, empirical 68-95-99.7 rule"],
+      "2": ["Exploring Two-Variable Data: LSRL y-hat = a + bx, slope and intercept contextual interpretations, coefficient of determination r^2, influential points"],
+      "3": ["Collecting Data: Observational study vs randomized controlled experiment, voluntary response bias, nonresponse bias, and completely randomized designs"],
+      "4": ["Probability and distributions: Addition/multiplication probability rules, conditional probability P(A|B), binomial B(n,p) vs geometric distributions"],
+      "5": ["Sampling Distributions: Central Limit Theorem (CLT), sampling distribution of sample mean x-bar and sample proportion p-hat, standard error"],
+      "6": ["Inference for Categorical Proportions: One-sample and two-sample z-intervals and z-tests, normal approximation conditions np >= 10 and n(1-p) >= 10"],
+      "7": ["Inference for Quantitative Means: One-sample and two-sample t-procedures, degrees of freedom, matched-pairs t-tests, robustness to normality"],
+      "8": ["Chi-Square Inference: Chi-Square goodness-of-fit test, test of independence, test of homogeneity, expected cell count requirements"],
+      "9": ["Inference for Regression Slopes: t-test for population regression slope beta, standard error of the slope SE_b, linear regression condition checks"]
+    }
+  },
+  general_academic: {
+    general: [
+      "Conceptual definition and contextualization: Defining core domain terminology and situating the phenomenon within its broader academic framework",
+      "Cause-and-effect explanatory analysis: Demonstrating step-by-step how an initial change or stimulus leads directly to observed secondary consequences",
+      "Comparative critical evaluation: Contrasting two competing theories, institutional models, or empirical outcomes to assess relative efficacy",
+      "Claim justification using empirical evidence: Formulating a defensible analytical thesis supported by authentic course-specific data or principles"
+    ],
+    units: {
+      "1": ["Foundational domain principles: Core taxonomic concepts, historical precedents, and primary analytical frameworks"],
+      "2": ["System dynamics and interactions: Analyzing functional relationships between interdependent components within the field"],
+      "3": ["Advanced contextual evaluation: Assessing real-world case studies, regulatory interventions, and empirical validations"]
+    }
   }
 };
 
 /**
  * Resolves subject category and unit key, returning a randomized, non-repeating
  * list of target archetypes for the generation session.
+ * 
+ * CRITICAL FIX: Safe fallback to general academic inquiry to prevent any cross-subject
+ * calculus leakage when unknown or non-math subjects are selected.
  */
 export function getGranularSubjectArchetypes(subject: string, unitOrTopic: string, count: number): string[] {
   const s = (subject || '').toLowerCase();
   const u = (unitOrTopic || '').toLowerCase();
 
-  let bundle: ArchetypeBundle = AP_SUBJECT_ARCHETYPES.calculus;
+  // SAFE DEFAULT: Fallback to subject-neutral academic inquiry, NEVER calculus!
+  let bundle: ArchetypeBundle = AP_SUBJECT_ARCHETYPES.general_academic;
 
-  if (s.includes('biology')) bundle = AP_SUBJECT_ARCHETYPES.biology;
-  else if (s.includes('chemistry')) bundle = AP_SUBJECT_ARCHETYPES.chemistry;
-  else if (s.includes('physics')) bundle = AP_SUBJECT_ARCHETYPES.physics;
-  else if (s.includes('history') || s.includes('apush')) bundle = AP_SUBJECT_ARCHETYPES.history;
-  else if (s.includes('psych')) bundle = AP_SUBJECT_ARCHETYPES.psychology;
-  else if (s.includes('econ')) bundle = AP_SUBJECT_ARCHETYPES.economics;
-  else if (s.includes('calculus')) bundle = AP_SUBJECT_ARCHETYPES.calculus;
+  if (s.includes('geography') || s.includes('aphg') || s.includes('human')) {
+    bundle = AP_SUBJECT_ARCHETYPES.human_geography;
+  } else if (s.includes('environmental') || s.includes('apes')) {
+    bundle = AP_SUBJECT_ARCHETYPES.environmental_science;
+  } else if (s.includes('principles') || s.includes('csp')) {
+    bundle = AP_SUBJECT_ARCHETYPES.csp;
+  } else if (s.includes('gov') || s.includes('politics')) {
+    bundle = AP_SUBJECT_ARCHETYPES.government;
+  } else if (s.includes('stat')) {
+    bundle = AP_SUBJECT_ARCHETYPES.statistics;
+  } else if (s.includes('calculus')) {
+    bundle = AP_SUBJECT_ARCHETYPES.calculus;
+  } else if (s.includes('biology')) {
+    bundle = AP_SUBJECT_ARCHETYPES.biology;
+  } else if (s.includes('chemistry')) {
+    bundle = AP_SUBJECT_ARCHETYPES.chemistry;
+  } else if (s.includes('physics')) {
+    bundle = AP_SUBJECT_ARCHETYPES.physics;
+  } else if (s.includes('history') || s.includes('apush') || s.includes('euro') || s.includes('world')) {
+    bundle = AP_SUBJECT_ARCHETYPES.history;
+  } else if (s.includes('psych')) {
+    bundle = AP_SUBJECT_ARCHETYPES.psychology;
+  } else if (s.includes('econ')) {
+    bundle = AP_SUBJECT_ARCHETYPES.economics;
+  }
 
-  // Detect unit number from unitOrTopic string (e.g. "Unit 3: Cellular Energetics" -> "3", "Unit 1" -> "1", "Period 5" -> "5")
+  // Detect unit number from unitOrTopic string (e.g. "Unit 3: Cultural Patterns" -> "3", "Period 5" -> "5")
   const unitMatch = u.match(/(?:unit|period|chapter|u|p)\s*([0-9]+)/i);
   const detectedUnit = unitMatch ? unitMatch[1] : null;
 
@@ -466,7 +640,7 @@ export function getGranularSubjectArchetypes(subject: string, unitOrTopic: strin
     candidatePool = [...allUnitItems, ...bundle.general];
   }
 
-  // High-entropy random shuffle (Fisher-Yates with salt)
+  // High-entropy random shuffle (Fisher-Yates)
   const shuffled = [...candidatePool];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));

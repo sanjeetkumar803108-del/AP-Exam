@@ -39,6 +39,17 @@ export const sanitizeSvg = (rawSvg?: string, autoPad = true): string => {
   // Prevents fatal XML parse errors on labels like 'Demand & Supply' or 'A && B'
   svg = svg.replace(/&(?!(amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)/g, '&amp;');
 
+  // CRITICAL XML FIX: Ensure raw '<' and '>' inside <text> elements are escaped as &lt; and &gt;
+  // Prevents fatal XML parse errors on mathematical relations like 'x < 2' or 'lim x -> c-'
+  svg = svg.replace(/<text\b([^>]*)>([\s\S]*?)<\/text>/gi, (_match, attrs, content) => {
+    let fixedContent = content.replace(/(<tspan\b[^>]*>)([\s\S]*?)(<\/tspan>)/gi, (_m: string, open: string, inner: string, close: string) => {
+      const escaped = inner.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return `${open}${escaped}${close}`;
+    });
+    fixedContent = fixedContent.replace(/<(?!\/?tspan\b)/gi, '&lt;');
+    return `<text${attrs}>${fixedContent}</text>`;
+  });
+
   if (autoPad) {
     // Robust Auto-healing ViewBox Padding
     const vbMatch = svg.match(/viewBox=['"]\s*([-\d.]+)[,\s]+([-\d.]+)[,\s]+([-\d.]+)[,\s]+([-\d.]+)\s*['"]/i);
@@ -158,20 +169,28 @@ export const rasterizeSvgToDataUrl = async (
 
       const canvasSvg = prepareSvgForRasterization(sanitized, targetWidth, targetHeight);
 
-      // Build Base64 Data URI (CORS-free, universal mobile support, zero network latency)
+      // Build Base64 Data URI with safe UTF-8 encoding (CORS-free, universal mobile support)
       let dataUrlSrc = '';
       try {
-        const base64Data = typeof btoa !== 'undefined'
-          ? btoa(unescape(encodeURIComponent(canvasSvg)))
-          : (typeof Buffer !== 'undefined' ? Buffer.from(canvasSvg).toString('base64') : '');
-        if (base64Data) {
-          dataUrlSrc = `data:image/svg+xml;base64,${base64Data}`;
+        if (typeof TextEncoder !== 'undefined') {
+          const bytes = new TextEncoder().encode(canvasSvg);
+          let binary = '';
+          const chunk = 8192;
+          for (let i = 0; i < bytes.length; i += chunk) {
+            binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
+          }
+          dataUrlSrc = `data:image/svg+xml;base64,${btoa(binary)}`;
+        } else if (typeof Buffer !== 'undefined') {
+          dataUrlSrc = `data:image/svg+xml;base64,${Buffer.from(canvasSvg).toString('base64')}`;
+        } else {
+          dataUrlSrc = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(canvasSvg)}`;
         }
       } catch {
         dataUrlSrc = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(canvasSvg)}`;
       }
 
       const img = new Image();
+      img.crossOrigin = 'anonymous';
 
       let blobUrl: string | null = null;
       let hasFinished = false;
@@ -228,6 +247,7 @@ export const rasterizeSvgToDataUrl = async (
             const blob = new Blob([canvasSvg], { type: 'image/svg+xml;charset=utf-8' });
             blobUrl = URL.createObjectURL(blob);
             const fallbackImg = new Image();
+            fallbackImg.crossOrigin = 'anonymous';
             fallbackImg.onload = () => {
               try {
                 const canvas = document.createElement('canvas');
@@ -260,3 +280,69 @@ export const rasterizeSvgToDataUrl = async (
     }
   });
 };
+
+/**
+ * Universal extractor and sanitizer for AI-generated question text and stimulus.
+ * Extracts embedded SVG diagrams into a standalone `diagramSvg` string,
+ * while stripping the raw XML/SVG tags and markdown code blocks completely
+ * from the human-readable text string.
+ */
+export function extractDiagramAndCleanText(
+  text: string,
+  existingSvg?: string
+): { cleanText: string; diagramSvg?: string } {
+  if (!text) return { cleanText: '', diagramSvg: existingSvg };
+
+  let extractedSvg = existingSvg && existingSvg.trim() ? existingSvg.trim() : undefined;
+  let clean = text;
+
+  // 1. Detect and extract Markdown code block containing SVG: ```xml\n<svg ... </svg>\n```
+  const codeBlockMatch = clean.match(/```(?:xml|svg|html)?\s*(<svg[\s\S]*?<\/svg>)\s*```/i);
+  if (codeBlockMatch) {
+    if (!extractedSvg) {
+      extractedSvg = codeBlockMatch[1].trim();
+    }
+    clean = clean.replace(codeBlockMatch[0], '').trim();
+  }
+
+  // 2. Detect and extract raw <svg ... </svg>
+  const rawSvgMatch = clean.match(/<svg[\s\S]*?<\/svg>/i);
+  if (rawSvgMatch) {
+    if (!extractedSvg) {
+      extractedSvg = rawSvgMatch[0].trim();
+    }
+    clean = clean.replace(rawSvgMatch[0], '').trim();
+  }
+
+  // 3. Detect and extract HTML-escaped &lt;svg ... &lt;/svg&gt;
+  const escapedSvgMatch = clean.match(/&lt;svg[\s\S]*?&lt;\/svg&gt;/i);
+  if (escapedSvgMatch) {
+    if (!extractedSvg) {
+      extractedSvg = escapedSvgMatch[0]
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&amp;/g, '&')
+        .trim();
+    }
+    clean = clean.replace(escapedSvgMatch[0], '').trim();
+  }
+
+  // 4. Strip any residual empty code blocks or stray backticks
+  clean = clean.replace(/```(?:xml|svg|html)?\s*```/gi, '').trim();
+
+  // 5. Clean up duplicate newlines
+  clean = clean.replace(/\n{3,}/g, '\n\n').trim();
+
+  // If extractedSvg is wrapped in code fences, strip them cleanly
+  if (extractedSvg) {
+    const innerMatch = extractedSvg.match(/<svg[\s\S]*?<\/svg>/i);
+    if (innerMatch) {
+      extractedSvg = innerMatch[0].trim();
+    }
+  }
+
+  return { cleanText: clean, diagramSvg: extractedSvg };
+}
+
