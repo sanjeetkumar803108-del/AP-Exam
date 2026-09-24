@@ -198,8 +198,8 @@ export default function CoinPage({ onClose, onSelectTool, isVip: propIsVip }: Co
                 <Sparkles className="w-5 h-5 fill-amber-400" />
               </div>
               <h2 className="text-lg font-black tracking-tight mb-1">Remove All Limits</h2>
-              <p className="text-[11px] text-zinc-400 font-bold leading-relaxed mb-4 max-w-xs mx-auto">
-                Stop counting coins. Upgrade to PRO for zero friction and completely unlimited AI learning power.
+              <p className="text-[11px] text-zinc-400 font-bold mb-4">
+                Unlimited AI access
               </p>
               <button 
                 onClick={() => {

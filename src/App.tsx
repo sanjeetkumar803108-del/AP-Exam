@@ -1036,16 +1036,22 @@ export default function App() {
       
       <main className={`w-full ${(Capacitor.isNativePlatform() || activeTool !== null) ? 'max-w-none' : 'max-w-md mx-auto landscape:max-w-none'} flex-1 min-h-0 relative z-0 ${(activeTab === 'frqgrader' || activeTab === 'scanner' || activeTab === 'aitutor' || activeTab === 'teacher' || activeTool !== null) ? 'overflow-hidden flex flex-col' : 'overflow-y-auto pb-20'} bg-[#FAF9F6]`}>
         {/* FRQ Grader Tab (Replaces legacy Scan second section) */}
-        <div className={activeTab === 'frqgrader' ? 'h-full flex flex-col flex-1 min-h-0' : 'hidden'}>
-          <ErrorBoundary featureName="FRQ Grader" onClose={() => setActiveTab('notes')}>
-            <Suspense fallback={<FullPageSkeleton />}>
-              <FRQGrader onBack={() => {
-                setActiveTab('notes');
-                setActiveTool(null);
-              }} />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
+        {/* FRQ Grader Tab (Mounted strictly when active to prevent background camera access) */}
+        {activeTab === 'frqgrader' && activeTool === null && (
+          <div className="h-full flex flex-col flex-1 min-h-0">
+            <ErrorBoundary featureName="FRQ Grader" onClose={() => setActiveTab('notes')}>
+              <Suspense fallback={<FullPageSkeleton />}>
+                <FRQGrader 
+                  isActive={activeTab === 'frqgrader' && activeTool === null}
+                  onBack={() => {
+                    setActiveTab('notes');
+                    setActiveTool(null);
+                  }} 
+                />
+              </Suspense>
+            </ErrorBoundary>
+          </div>
+        )}
 
         {/* AI Tutor Tab */}
         <div className={activeTab === 'aitutor' ? 'h-full flex flex-col flex-1 min-h-0' : 'hidden'}>
@@ -1163,7 +1169,7 @@ export default function App() {
                 </ErrorBoundary>
               )}
               {activeTool === 'mindmap' && (
-                <ErrorBoundary featureName="Mind Map" onClose={() => setActiveTool(null)}>
+                <ErrorBoundary featureName="Short Notes" onClose={() => setActiveTool(null)}>
                   <APMindMap 
                     onBack={() => setActiveTool(null)} 
                     isVip={isVip}
@@ -1173,7 +1179,10 @@ export default function App() {
               {activeTool === 'frqgrader' && (
                 <div className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
                   <ErrorBoundary featureName="FRQ Grader" onClose={() => setActiveTool(null)}>
-                    <FRQGrader onBack={() => setActiveTool(null)} />
+                    <FRQGrader 
+                      isActive={activeTool === 'frqgrader'}
+                      onBack={() => setActiveTool(null)} 
+                    />
                   </ErrorBoundary>
                 </div>
               )}

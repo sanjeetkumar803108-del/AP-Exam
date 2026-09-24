@@ -226,8 +226,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   <h2 className="text-2xl font-black tracking-tight text-zinc-900">
                     Your Fast Track to a 5
                   </h2>
-                  <p className="text-xs font-semibold text-zinc-500 max-w-[280px] mx-auto">
-                    Master official College Board exams with an elite 24/7 AI tutor that guarantees high-yield results.
+                  <p className="text-xs font-semibold text-zinc-500">
+                    Target a 5
                   </p>
                 </div>
               </motion.div>
@@ -379,8 +379,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   <h2 className="text-2xl font-black tracking-tight text-zinc-900">
                     Snap &amp; Grade Handwritten FRQs
                   </h2>
-                  <p className="text-xs font-semibold text-zinc-500 max-w-[280px] mx-auto">
-                    Snap a photo of your handwritten paper. AI awards exact rubric points (4/9 pts) and gives instant reader feedback.
+                  <p className="text-xs font-semibold text-zinc-500">
+                    Instant rubric grading
                   </p>
                 </div>
               </motion.div>
@@ -505,8 +505,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   <h2 className="text-2xl font-black tracking-tight text-zinc-900">
                     Gamified Learning Island
                   </h2>
-                  <p className="text-xs font-semibold text-zinc-500 max-w-[280px] mx-auto">
-                    Climb unit mountain trails, unlock quest levels, earn 3 stars, and master every AP topic like a game.
+                  <p className="text-xs font-semibold text-zinc-500">
+                    Gamified AP quests
                   </p>
                 </div>
               </motion.div>
@@ -559,7 +559,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                           108 UNITS COVERED
                         </span>
                         <span className="text-[8px] font-extrabold text-emerald-400">
-                          ✓ 3-Page Mind Maps
+                          ✓ 3-Page Short Notes
                         </span>
                       </div>
                       <h4 className="text-sm font-black tracking-tight text-white text-left">
@@ -585,8 +585,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   <h2 className="text-2xl font-black tracking-tight text-zinc-900">
                     108 Units. Zero Fluff.
                   </h2>
-                  <p className="text-xs font-semibold text-zinc-500 max-w-[280px] mx-auto">
-                    All major AP courses condensed into beautiful, high-yield visual cheat sheets ready for exam day.
+                  <p className="text-xs font-semibold text-zinc-500">
+                    Visual cheat sheets
                   </p>
                 </div>
               </motion.div>

@@ -39,10 +39,9 @@ import {
   UnitQuestLevel,
   UnitBiomeTheme,
   UnitDefinition,
-  UNIT_BIOMES,
-  ALL_CALC_AB_UNIT_DEFINITIONS,
   getDefaultUnlockedLevelIds
 } from '../data/quiz/apCalculusUnitsData';
+import { getSubjectQuestUnits } from '../data/quiz/quizQuestRegistry';
 import { TreasureIslandCanvas } from './TreasureIslandCanvas';
 import { getApiUrl } from '../utils/api';
 import { getStudyXP, getStudyLevel, addStudyXP } from '../utils/gamification';
@@ -386,98 +385,19 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
 
   // Progress state moved below currentUnits for dynamic subject unlocks
 
-  // Build units definition for current selected subject
+  // Build units definition for current selected subject using authentic CED registry
   const currentUnits: UnitDefinition[] = useMemo(() => {
-    if (selectedSubject.id === 'ap-calculus-ab') {
-      return ALL_CALC_AB_UNIT_DEFINITIONS.map(u => ({
-        ...u,
-        levels: u.levels.map(lvl => ({
-          ...lvl,
-          questions: shuffleAndBalanceQuestQuestions(
-            lvl.questions,
-            lvl.uniqueKey || `calc-u${lvl.unitIndex}-l${lvl.levelNumber}`
-          )
-        }))
-      }));
-    }
-    // Dynamic generation for other subjects using their curriculum units
-    return selectedSubject.units.map((u, uIdx) => {
-      const unitNum = uIdx + 1;
-      const biome = UNIT_BIOMES[((unitNum - 1) % 8) + 1] || UNIT_BIOMES[1];
-      const levelsCount = 10;
-      const unitLevels: UnitQuestLevel[] = [];
-
-      for (let l = 1; l <= levelsCount; l++) {
-        const lid = unitNum * 100 + l;
-        const diff: 'Easy' | 'Medium' | 'Hard' | 'Boss' =
-          l === levelsCount ? 'Boss' : l > 6 ? 'Hard' : l > 3 ? 'Medium' : 'Easy';
-        const levelKey = `${selectedSubject.id}-u${unitNum}-l${l}`;
-
-        unitLevels.push({
-          id: lid,
-          unitIndex: unitNum,
-          levelNumber: l,
-          uniqueKey: `u${unitNum}-l${l}`,
-          topicNumber: `Topic ${unitNum}.${l}`,
-          name: `${u.title} - Level ${l}`,
-          subtitle: `Foundational AP Exam Practice • ${selectedSubject.shortCode}`,
-          difficulty: diff,
-          rewardCoins: 30,
-          questions: shuffleAndBalanceQuestQuestions([
-            {
-              id: `gen-u${unitNum}-l${l}-q1`,
-              stem: `In **${selectedSubject.name}** (${u.title}), which principle is fundamental to mastering **Level ${l}**?`,
-              options: [
-                `Applying core CED concepts from ${u.title}.`,
-                'Assuming arbitrary variables without empirical evidence.',
-                'Disregarding standard formulas and units.',
-                'Selecting random guesses.'
-              ],
-              correctIndex: 0,
-              explanation: `Success in ${selectedSubject.name} requires systematic application of CED principles for ${u.title}.`,
-              distractorTip: 'Trap: Always review official College Board scoring guidelines and terminology.'
-            },
-            {
-              id: `gen-u${unitNum}-l${l}-q2`,
-              stem: `Which approach produces maximum credit on AP Exam questions for **${u.title}**?`,
-              options: [
-                'Showing clear mathematical/scientific steps with proper notation.',
-                'Giving only unsupported final numerical answers.',
-                'Omitting units of measurement.',
-                'Skipping foundational definitions.'
-              ],
-              correctIndex: 0,
-              explanation: 'Official AP rubrics require explicit mathematical or scientific reasoning with appropriate notation.',
-              distractorTip: 'Always justify your answers using the given data and theorems.'
-            },
-            {
-              id: `gen-u${unitNum}-l${l}-q3`,
-              stem: `When practicing **${selectedSubject.shortCode} Topic ${unitNum}.${l}**, what is the best strategy to avoid common test traps?`,
-              options: [
-                'Carefully verifying boundary conditions and question stems.',
-                'Rushing through without checking negative signs or units.',
-                'Assuming the most complicated answer choice is always correct.',
-                'Ignoring graphical and tabular data.'
-              ],
-              correctIndex: 0,
-              explanation: 'Checking boundary conditions and units is the most reliable strategy to eliminate AP test traps.',
-              distractorTip: 'Double-check all unit conversions and sign changes!'
-            }
-          ], levelKey)
-        });
-      }
-
-      return {
-        unitIndex: unitNum,
-        unitId: u.id,
-        title: u.title,
-        shortTitle: u.title.split(':')[0] || `Unit ${unitNum}`,
-        description: u.description,
-        examWeight: '10–15% of AP Exam',
-        biome,
-        levels: unitLevels
-      };
-    });
+    const rawUnits = getSubjectQuestUnits(selectedSubject.id);
+    return rawUnits.map(u => ({
+      ...u,
+      levels: u.levels.map(lvl => ({
+        ...lvl,
+        questions: shuffleAndBalanceQuestQuestions(
+          lvl.questions,
+          lvl.uniqueKey || `${selectedSubject.id}-u${lvl.unitIndex}-l${lvl.levelNumber}`
+        )
+      }))
+    }));
   }, [selectedSubject]);
 
   // Default unlocked levels: Level 1 of EVERY unit is ALWAYS unlocked!
@@ -1470,10 +1390,10 @@ Please structure your response into these 4 clear sections:
                             <Bot className="w-5 h-5 text-yellow-300 shrink-0" />
                             <span>
                               {isAILoading
-                                ? 'AI is Thinking...'
+                                ? 'AI Thinking...'
                                 : showAIExplanation
-                                ? 'Hide AI Explanation & Solution'
-                                : 'Ask AI for Full Explanation & Steps'}
+                                ? 'Hide Explanation'
+                                : 'Explain with AI'}
                             </span>
                             <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
                           </button>
@@ -1736,7 +1656,7 @@ Please structure your response into these 4 clear sections:
                         }`}
                       >
                         <RotateCcw className="w-4 h-4" />
-                        <span>{isPassed ? 'Retry Quiz for 3 Stars' : 'Retry Quiz Now'}</span>
+                        <span>{isPassed ? 'Retry for 3 Stars' : 'Retry Quiz'}</span>
                       </button>
 
 
@@ -1799,7 +1719,8 @@ Please structure your response into these 4 clear sections:
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-md bg-white rounded-3xl p-5 border border-zinc-200 shadow-2xl flex flex-col max-h-[85vh]"
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              className="w-full max-w-md bg-white rounded-3xl p-5 border border-zinc-200 shadow-2xl flex flex-col max-h-[85vh] transform-gpu will-change-transform"
             >
               <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
                 <div className="flex items-center gap-2">

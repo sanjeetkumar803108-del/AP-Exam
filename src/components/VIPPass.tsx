@@ -141,7 +141,7 @@ export default function VIPPass({ isVip, onUpgrade, onClose }: { isVip: boolean,
           className="w-full relative overflow-hidden bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white py-4 px-6 rounded-2xl font-black text-sm tracking-wide shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 border border-purple-500/30 cursor-pointer group"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
-          <span>GET STARTED — UNLOCK ALL PRO BENEFITS</span>
+          <span>UNLOCK PRO ACCESS</span>
         </button>
         <p className="text-[9px] text-zinc-500 text-center mt-2.5 font-semibold max-w-[280px]">
           Instant activation. Cancel anytime easily.

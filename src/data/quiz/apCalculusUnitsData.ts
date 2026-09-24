@@ -2102,13 +2102,12 @@ export const ALL_CALC_AB_UNIT_DEFINITIONS: UnitDefinition[] = [
                         "id": "c5-l5-q2",
                         "stem": "Find the absolute minimum value of $f(x) = 2x^3 - 6x$ on $[0, 3]$.",
                         "options": [
-                              "$-4\\sqrt{2}$ or at $x = 1$: $f(1) = 2(1) - 6(1) = -4$.",
                               "$-4$",
                               "$0$",
                               "$-6$",
                               "$36$"
                         ],
-                        "correctIndex": 1,
+                        "correctIndex": 0,
                         "explanation": "$f'(x) = 6x^2 - 6 = 6(x^2 - 1) = 0 \\implies x = 1$ in $[0, 3]$. Values: $f(0) = 0$; $f(1) = 2 - 6 = -4$; $f(3) = 2(27) - 6(3) = 54 - 18 = 36$. Absolute minimum value is $-4$.",
                         "distractorTip": "Notice $x = -1$ is rejected because it is outside the interval $[0, 3]$."
                   },

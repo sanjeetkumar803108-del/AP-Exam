@@ -2519,43 +2519,6 @@ export default function Profile({
 
 
 
-                {/* APP CONFIGURATION */}
-                <div className="bg-white rounded-[2rem] border border-zinc-200 shadow-sm overflow-hidden">
-                  <div className="px-5 py-4 border-b border-zinc-100 flex items-center gap-2 bg-zinc-50/50">
-                    <Settings className="w-3.5 h-3.5 text-zinc-400" />
-                    <span className="font-extrabold text-[10px] text-zinc-500 uppercase tracking-wide">Preferences</span>
-                  </div>
-                  
-
-
-
-
-                  {/* Haptic Vibration Toggle */}
-                  <div
-                    onClick={() => {
-                      const newVal = !hapticEnabled;
-                      setHapticEnabled(newVal);
-                      safeSetItem('pref_haptic_enabled', String(newVal));
-                      if (newVal) triggerVibration(15); // Give a test buzz when turning ON
-                      showToast(newVal ? '📳 Vibration turned ON' : '🔇 Vibration turned OFF');
-                    }}
-                    className="p-4 flex justify-between items-center border-t border-zinc-100 bg-white cursor-pointer hover:bg-zinc-50/30 transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-3.5 h-3.5 text-zinc-400" />
-                      <div>
-                        <span className="text-xs font-bold text-zinc-700 block">Haptic Feedback</span>
-                        <span className="text-[10px] text-zinc-400 font-semibold">Vibrations on button taps</span>
-                      </div>
-                    </div>
-                    <div className={`w-9 h-5 ${hapticEnabled ? 'bg-emerald-500' : 'bg-zinc-200'} rounded-full relative cursor-pointer shadow-inner transition-colors`}>
-                      <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${hapticEnabled ? 'right-0.5' : 'left-0.5'}`} />
-                    </div>
-                  </div>
-                </div>
-
-
-
                 {/* Account Info for Social Users */}
                 {user && !user.providerData?.some(p => p.providerId === 'password') && (
                   <div className="bg-white rounded-[2rem] border border-zinc-200 shadow-sm p-5 flex items-center gap-4">
@@ -2710,12 +2673,12 @@ export default function Profile({
                     {isOptimizing ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin text-emerald-700" />
-                        <span>Optimizing App Memory...</span>
+                        <span>Optimizing App...</span>
                       </>
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4 text-emerald-600 fill-emerald-600" />
-                        <span>⚡ Run Full Optimization & Reload</span>
+                        <span>⚡ Optimize & Reload</span>
                       </>
                     )}
                   </button>

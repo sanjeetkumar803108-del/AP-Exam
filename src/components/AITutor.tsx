@@ -10,7 +10,7 @@ import {
   Sparkles, Send, Mic, MicOff, Loader2, RefreshCw, Compass, Brain, 
   ArrowRight, Copy, Check, Share2, ThumbsUp, ThumbsDown, Pause, Play,
   Plus, X, Image, Camera, FileText, Heart, HelpCircle, History, Trash2, BookOpen, ChevronDown, Lock, Square,
-  AlertTriangle
+  AlertTriangle, Menu
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { parsePartialJSON } from '../utils/partialJson';
@@ -183,6 +183,10 @@ CRITICAL GOVERNING PROTOCOLS (HIGHEST PRIORITY):
      Evaluate their response clearly: state whether they are correct or incorrect.
      Provide the full, rigorous conceptual explanation of why the correct option is right, why other choices are misconceptions, and the underlying principle directly inside "markdown_content" (or "solution_steps" if numerical).
      NEVER output only a greeting or catchphrase without the complete explanation and solution breakdown!
+
+9. RAPID DIRECT ANSWERS & YES/NO CONSTRAINTS (FAST-TRACK):
+   - If the student explicitly demands a direct answer, a straight "YES or NO", or a quick verification (e.g. "answer with YES or NO", "just tell me YES or NO", "is this true or false?"), you MUST state that direct answer immediately at the very beginning of "markdown_content" without long preamble.
+   - For long questions or complex queries, focus on direct, high-value problem solving without unnecessary conversational filler.
 
 ================================================================
 MANDATORY JSON OUTPUT STRUCTURE (NO RAW TEXT OUTSIDE JSON):
@@ -1438,9 +1442,26 @@ Please evaluate this answer strictly according to your system rubric.`;
       formData.append('profileContext', getProfileContext());
       formData.append('gradeLevel', safeGetItem('academic_grade') || '11th Grade (Junior)');
       
-      const formattedHistory = messages.map(m => {
-        if (m.text) return { role: m.role, parts: [{ text: m.text }] };
-        return null;
+      // Optimize history: Keep last 6 turns and prune distant massive JSON payloads to eliminate latency on long inputs
+      const recentMessages = messages.slice(-6);
+      const formattedHistory = recentMessages.map(m => {
+        if (!m.text) return null;
+        let historyText = m.text;
+        if (m.role === 'model' && historyText.length > 800) {
+          try {
+            const parsed = parsePartialJSON(historyText);
+            if (parsed?.markdown_content) {
+              historyText = parsed.markdown_content.slice(0, 500);
+            } else if (parsed?.solution_steps && Array.isArray(parsed.solution_steps)) {
+              historyText = parsed.solution_steps.map((s: any) => `${s.title}: ${s.content?.slice(0, 100)}`).join('\n').slice(0, 500);
+            } else {
+              historyText = historyText.slice(0, 500);
+            }
+          } catch (e) {
+            historyText = historyText.slice(0, 500);
+          }
+        }
+        return { role: m.role, parts: [{ text: historyText }] };
       }).filter(Boolean);
       
       formData.append('history', JSON.stringify(formattedHistory));
@@ -1934,12 +1955,22 @@ Please evaluate this answer strictly according to your system rubric.`;
       
       {/* Header section */}
       <div className={`flex items-center justify-between p-4 border-b border-zinc-200 bg-[#FAF9F6]/95 backdrop-blur-md sticky top-0 shrink-0 transition-all ${personaModalOpen ? 'z-[1001]' : 'z-10'}`}>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center border border-purple-150">
-            <Sparkles className="w-4 h-4 text-purple-500 animate-pulse" />
-          </div>
-          <div className="min-w-0">
-            <h2 className="font-bold text-sm text-zinc-800 tracking-tight leading-none">Magic AI Tutor</h2>
+        <div className="flex items-center gap-2.5">
+          <button 
+            onClick={() => setHistoryOpen(true)}
+            className="w-10 h-10 rounded-2xl border border-zinc-200/80 bg-white hover:bg-zinc-50 text-zinc-700 shadow-xs flex items-center justify-center transition-all active:scale-95 shrink-0 cursor-pointer"
+            title="Chat History Menu"
+            aria-label="Open Chat History"
+          >
+            <Menu className="w-5 h-5 text-zinc-700" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center border border-purple-150">
+              <Sparkles className="w-4 h-4 text-purple-500 animate-pulse" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="font-bold text-sm text-zinc-800 tracking-tight leading-none">Magic AI Tutor</h2>
+            </div>
           </div>
         </div>
         
@@ -2061,14 +2092,6 @@ Please evaluate this answer strictly according to your system rubric.`;
             </AnimatePresence>
           </div>
 
-          <button 
-            onClick={() => setHistoryOpen(true)}
-            className="w-10 h-10 rounded-full border shadow-sm flex items-center justify-center transition-all active:scale-95 bg-white hover:bg-zinc-50 border-zinc-200 text-zinc-500 hover:text-zinc-800 shrink-0 cursor-pointer"
-            title="Chat History"
-          >
-            <History className="w-5 h-5" />
-          </button>
-
           {messages.length > 0 && (
             <button 
               onClick={startNewSession}
@@ -2081,20 +2104,20 @@ Please evaluate this answer strictly according to your system rubric.`;
         </div>
       </div>
 
-      {/* History Drawer Overlay */}
+      {/* History Drawer Overlay (Slides in from Left) */}
       <AnimatePresence>
         {historyOpen && (
-          <div className="absolute inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm">
+          <div className="absolute inset-0 z-50 flex justify-start bg-black/70 backdrop-blur-sm">
             {/* Backdrop click to close */}
             <div className="absolute inset-0 bg-transparent" onClick={() => setHistoryOpen(false)} />
             
-            {/* Drawer container */}
+            {/* Drawer container from Left */}
             <motion.div 
-              initial={{ x: '100%' }}
+              initial={{ x: '-100%' }}
               animate={{ x: 0 }}
-              exit={{ x: '100%' }}
+              exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-xs sm:max-w-sm h-full bg-[#FAF9F6] border-l border-zinc-200 flex flex-col shadow-2xl z-10"
+              className="relative w-full max-w-xs sm:max-w-sm h-full bg-[#FAF9F6] border-r border-zinc-200 flex flex-col shadow-2xl z-10"
             >
               {/* Drawer Header */}
               <div className="p-4 border-b border-zinc-200 flex items-center justify-between bg-[#FAF9F6]">
@@ -2227,14 +2250,14 @@ Please evaluate this answer strictly according to your system rubric.`;
                   className="flex items-center gap-2 p-3 rounded-2xl bg-gradient-to-br from-rose-500/5 to-rose-650/5 hover:from-rose-500/15 hover:to-rose-600/10 border border-rose-200 text-rose-700 text-xs font-black transition-all active:scale-[0.98] shadow-sm"
                 >
                   <Heart className="w-4 h-4 fill-current text-rose-500" />
-                  <span>Exam Stress Booster ❤️</span>
+                  <span>Stress Booster ❤️</span>
                 </button>
                 <button 
                   onClick={() => handleSendMessage("Give me a fun multiple choice practice quiz question with Options! Don't tell me the answer directly!")}
                   className="flex items-center gap-2 p-3 rounded-2xl bg-gradient-to-br from-indigo-500/5 to-indigo-650/5 hover:from-indigo-500/15 hover:to-indigo-600/10 border border-indigo-200 text-indigo-700 text-xs font-black transition-all active:scale-[0.98] shadow-sm"
                 >
                   <HelpCircle className="w-4 h-4 text-indigo-500" />
-                  <span>Fun Practice Quiz 🌟</span>
+                  <span>Practice Quiz 🌟</span>
                 </button>
               </div>
 
@@ -2342,8 +2365,8 @@ Please evaluate this answer strictly according to your system rubric.`;
                 );
               })()}
 
-              {/* Premium Brain Thinking Wave Animation (Requirement 6) */}
-              {loading && (
+              {/* Premium Brain Thinking Wave Animation with Sequential Dot Blink */}
+              {loading && (!messages.length || messages[messages.length - 1]?.role !== 'model' || !messages[messages.length - 1]?.text) && (
                 <div className="flex justify-start">
                   <div className="bg-zinc-900 border border-white/5 rounded-3xl p-5 rounded-tl-none flex items-center space-x-3.5 shadow-xl max-w-[85%] relative overflow-hidden">
                     {/* Glowing background ripple */}
@@ -2358,8 +2381,13 @@ Please evaluate this answer strictly according to your system rubric.`;
                         <Brain className="w-4 h-4 text-white animate-pulse" />
                       </div>
                     </div>
-                    <div>
-                      <span className="text-xs text-zinc-100 font-bold tracking-wide">AI is thinking...</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-zinc-100 font-bold tracking-wide">AI is thinking</span>
+                      <span className="inline-flex items-center gap-1 ml-0.5">
+                        <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-dot-1" />
+                        <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-dot-2" />
+                        <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-dot-3" />
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -2448,7 +2476,7 @@ Please evaluate this answer strictly according to your system rubric.`;
                 className="w-full text-left p-2 hover:bg-zinc-50 rounded-xl text-xs font-bold text-zinc-700 flex items-center gap-2.5 transition-colors mb-1"
               >
                 <Image className="w-4 h-4 text-sky-600" />
-                <span>Choose From Gallery</span>
+                <span>Gallery</span>
               </button>
               {/* ── CAMERA BUTTON ───────────────────────── */}
               <button
@@ -2537,7 +2565,7 @@ Please evaluate this answer strictly according to your system rubric.`;
                 className="w-full text-left p-2 hover:bg-zinc-50 rounded-xl text-xs font-bold text-zinc-700 flex items-center gap-2.5 transition-colors"
               >
                 <FileText className="w-4 h-4 text-purple-600" />
-                <span>Upload PDF / Text File</span>
+                <span>Upload Document</span>
               </button>
             </motion.div>
           )}

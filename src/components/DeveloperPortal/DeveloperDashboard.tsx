@@ -518,33 +518,42 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
         )}
       </AnimatePresence>
 
-      {/* ── PDF Preview Modal ── */}
+      {/* ── 100% Edge-to-Edge Full-Screen PDF Preview ── */}
       <AnimatePresence>
         {previewPaper && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/80 backdrop-blur-sm">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-zinc-900 border border-zinc-700 w-full max-w-4xl h-[90vh] rounded-3xl flex flex-col overflow-hidden shadow-2xl"
-            >
-              <div className="p-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-950 shrink-0">
-                <div className="flex items-center gap-2 truncate">
-                  <FileText className="w-5 h-5 text-indigo-400 shrink-0" />
-                  <span className="text-sm font-black text-white truncate">{previewPaper.title}</span>
-                </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-[100] flex flex-col bg-zinc-950 w-full h-full overflow-hidden select-text"
+          >
+            <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between bg-zinc-900 shrink-0 z-20">
+              <div className="flex items-center gap-2.5 truncate">
                 <button
                   onClick={() => setPreviewPaper(null)}
-                  className="p-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white cursor-pointer"
+                  className="w-8 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white flex items-center justify-center cursor-pointer transition-all active:scale-95"
+                  title="Close"
                 >
-                  <X className="w-4 h-4" />
+                  <ArrowLeft className="w-4 h-4" />
                 </button>
+                <div className="flex items-center gap-2 truncate">
+                  <FileText className="w-4 h-4 text-indigo-400 shrink-0" />
+                  <span className="text-sm font-black text-white truncate">{previewPaper.title}</span>
+                </div>
               </div>
-              <div className="flex-1 overflow-hidden bg-zinc-900 relative">
-                <SafePdfViewer pdfUrlOrBase64={previewPaper.pdfUrl} />
-              </div>
-            </motion.div>
-          </div>
+              <button
+                onClick={() => setPreviewPaper(null)}
+                className="w-8 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer transition-all active:scale-95"
+                title="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden bg-zinc-100/90 relative">
+              <SafePdfViewer pdfUrlOrBase64={previewPaper.pdfUrl} />
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

@@ -5,11 +5,18 @@
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { Capacitor } from '@capacitor/core';
 
+let lastVibrateTime = 0;
+
 /**
  * Utility for safe tactile/haptic feedback using the HTML5 Vibration API or Capacitor Haptics.
  * On native platforms, this dynamically maps standard patterns to high-fidelity native Haptics.
  */
 export function triggerVibration(pattern: number | number[] = 15) {
+  const now = Date.now();
+  // Prevent flooding native Capacitor IPC bridge during fast touch interactions
+  if (now - lastVibrateTime < 45) return;
+  lastVibrateTime = now;
+
   if (Capacitor.isNativePlatform()) {
     try {
       if (Array.isArray(pattern)) {
@@ -52,6 +59,10 @@ export function triggerVibration(pattern: number | number[] = 15) {
  * Trigger explicit haptic impact (subtle click) on native platform.
  */
 export function hapticImpact(style: 'LIGHT' | 'MEDIUM' | 'HEAVY' = 'LIGHT') {
+  const now = Date.now();
+  if (now - lastVibrateTime < 45) return;
+  lastVibrateTime = now;
+
   if (Capacitor.isNativePlatform()) {
     try {
       const hStyle = 

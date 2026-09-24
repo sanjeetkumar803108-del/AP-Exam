@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Flag, 
@@ -53,6 +54,25 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
   const [showSnippet, setShowSnippet] = useState<boolean>(false);
   const [copiedBody, setCopiedBody] = useState<boolean>(false);
   const [isOpeningEmail, setIsOpeningEmail] = useState<boolean>(false);
+
+  // Prevent background scrolling on body when modal is open and handle Android hardware back button
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleBackButton = (e: Event) => {
+      e.preventDefault();
+      onClose();
+    };
+    window.addEventListener('appBackButton', handleBackButton);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('appBackButton', handleBackButton);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -190,10 +210,11 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
     } catch (_) {}
   };
 
-  return (
+  const modalContent = (
     <div
-      className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-fade-in pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]"
+      className="fixed inset-0 z-[99999] flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm animate-fade-in pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]"
       onClick={onClose}
+      style={{ zIndex: 99999 }}
     >
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.98 }}
@@ -329,7 +350,7 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
             >
               <div className="flex items-center gap-2 truncate">
                 <FileText className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                <span className="truncate">Preview Email Template (Pre-filled)</span>
+                <span className="truncate">Preview Email Template</span>
               </div>
               {showSnippet ? <ChevronUp className="w-3.5 h-3.5 text-zinc-500" /> : <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />}
             </button>
@@ -364,7 +385,7 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
               className="w-full py-3 px-4 rounded-xl text-xs font-black !text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:opacity-95 active:scale-98 transition-all shadow-md shadow-red-500/20 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <Mail className="w-4 h-4 text-white" />
-              <span className="!text-white font-black">Open Email App (Pre-filled)</span>
+              <span className="!text-white font-black">Open Email App</span>
             </button>
 
             {/* Secondary Action: Open Gmail Web */}
@@ -401,13 +422,19 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
       </motion.div>
     </div>
   );
+
+  if (typeof document !== 'undefined') {
+    return createPortal(modalContent, document.body);
+  }
+
+  return modalContent;
 };
 
 /**
  * Reusable compact button to report any AI output across the app
  */
 export const ReportAiButton: React.FC<{
-  aiOutput: string;
+  aiOutput: string | any;
   context?: string;
   questionText?: string;
   label?: string;
@@ -423,7 +450,8 @@ export const ReportAiButton: React.FC<{
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
-  if (!aiOutput || typeof aiOutput !== 'string' || !aiOutput.trim()) {
+  const safeOutput = typeof aiOutput === 'string' ? aiOutput : (aiOutput ? JSON.stringify(aiOutput, null, 2) : '');
+  if (!safeOutput || !safeOutput.trim()) {
     return null;
   }
 
@@ -474,7 +502,7 @@ export const ReportAiButton: React.FC<{
       <ReportAiModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        aiOutput={aiOutput}
+        aiOutput={safeOutput}
         context={context}
         questionText={questionText}
       />

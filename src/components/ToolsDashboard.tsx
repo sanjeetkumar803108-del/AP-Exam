@@ -522,7 +522,7 @@ function ToolsDashboard({
                     </span>
                   </div>
                   <p className="text-xs font-semibold text-zinc-300 mt-0.5 flex items-center gap-1.5">
-                    <span className="text-blue-300 font-bold">Live Multiplayer PvP Showdown</span>
+                    <span className="text-blue-300 font-bold">Live PvP Battle</span>
                   </p>
                 </div>
               </div>
@@ -553,7 +553,7 @@ function ToolsDashboard({
                 AP FRQ Grader™
               </h2>
               <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">
-                Handwriting Photo &amp; Rubric Check
+                Rubric Grader
               </p>
             </div>
           </div>
@@ -581,7 +581,7 @@ function ToolsDashboard({
                 AP Trap Radar™
               </h2>
               <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 mt-0.5">
-                Bust Distractor Traps &amp; Scoring Secrets
+                Distractor Trap Radar
               </p>
             </div>
           </div>
@@ -609,7 +609,7 @@ function ToolsDashboard({
                 Learning Island™
               </h2>
               <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mt-0.5">
-                Gamified AP Quest Roadmaps
+                Quest Roadmaps
               </p>
             </div>
           </div>
@@ -702,7 +702,7 @@ function ToolsDashboard({
           </div>
         </motion.div>
 
-        {/* 8. Mind Map Revision */}
+        {/* 8. Short Notes */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -714,16 +714,16 @@ function ToolsDashboard({
         >
           <div className="flex items-center gap-4 sm:gap-5">
             <div className="w-16 h-16 rounded-2xl bg-teal-50 dark:bg-teal-950/40 border border-teal-100 dark:border-teal-900/50 flex items-center justify-center text-3xl shrink-0 group-hover:bg-gradient-to-br group-hover:from-teal-500 group-hover:to-cyan-600 group-hover:text-white transition-all duration-300">
-              🧠
+              📝
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
-                  Mind Map Revision
+                  Short Notes
                 </h2>
               </div>
               <p className="text-xs font-semibold text-teal-600 dark:text-teal-400 mt-0.5">
-                Visual Concept Trees
+                High-Yield Unit Summaries
               </p>
             </div>
           </div>
@@ -785,7 +785,7 @@ function ToolsDashboard({
                   className="w-full bg-zinc-50 hover:bg-zinc-100 text-zinc-800 text-xs font-black uppercase tracking-wider py-3.5 px-4 rounded-xl transition-all border border-zinc-100 flex items-center gap-3 cursor-pointer"
                 >
                   <Share2 className="w-4 h-4 text-zinc-500" />
-                  <span>Share Study Link / Content</span>
+                  <span>Share Link</span>
                 </button>
 
                 {/* Archive / Unarchive Option */}
@@ -801,7 +801,7 @@ function ToolsDashboard({
                   <Archive className="w-4 h-4 text-zinc-500" />
                   <span>
                     {contextMenuItem.isTool
-                      ? (archivedToolIds.includes(contextMenuItem.item) ? "Unarchive & Show Card" : "Archive & Hide Card")
+                      ? (archivedToolIds.includes(contextMenuItem.item) ? "Unarchive Card" : "Archive Card")
                       : "Archive"}
                   </span>
                 </button>

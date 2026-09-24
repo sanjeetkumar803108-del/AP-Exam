@@ -23,6 +23,48 @@ import {
 import { battleSync, PlayerProfile, BattleRoom } from '../services/battleSync';
 import GlobalMarkdown, { prepareQuizMath } from './GlobalMarkdown';
 
+/**
+ * Battle option math formatter:
+ * 1. Strips leading option labels (A, B, Choice A:, etc.)
+ * 2. Neutralizes block $$ to inline $ so KaTeX renders inline inside button without block margins or linebreaks
+ * 3. Safely wraps mathematical formulas, expressions, variables and fractions in single $...$ delimiters
+ * 4. Normalizes functions (sin, cos, tan, ln, log, sqrt) and converts raw asterisks to \cdot
+ */
+export function formatBattleOptionMath(rawText: string, idx: number): string {
+  if (!rawText) return '';
+  // Strip leading prefix e.g. A), Choice A:, Option A -
+  let text = String(rawText).replace(new RegExp(`^\\s*(?:Option|Choice)?\\s*${String.fromCharCode(65 + idx)}\\s*[:.)-]\\s*`, 'i'), '').trim();
+
+  // Convert double dollar $$ to single dollar $ to prevent block KaTeX (<div class="katex-display">)
+  text = text.replace(/\$\$/g, '$');
+
+  // If already properly wrapped in $...$, heal inside math
+  if (text.startsWith('$') && text.endsWith('$') && (text.match(/\$/g) || []).length === 2) {
+    let inner = text.slice(1, -1).trim();
+    inner = inner.replace(/(?<=[a-zA-Z0-9)\]^_])\s*\*\s*(?=[a-zA-Z0-9(\[^\\])/g, ' \\cdot ');
+    inner = inner.replace(/(?<![a-zA-Z\\])(cos|sin|tan|sec|csc|cot|log|ln)\b/g, (_, fn) => '\\' + fn);
+    return `$${inner}$`;
+  }
+
+  // If contains LaTeX commands e.g. \frac, \sqrt, \cdot, \theta, etc.
+  const hasLatex = /\\(?:frac|sqrt|left|right|cos|sin|tan|sec|csc|cot|log|ln|theta|cdot|text|circ|alpha|beta|pm|times|lim|sum|int)\b/.test(text);
+  const hasMathChars = /[\^_=√≤≥≠]/.test(text) || (/[+\-*/]/.test(text) && /[0-9a-zA-Z]/.test(text));
+
+  if (hasLatex || hasMathChars) {
+    if (!text.includes('$')) {
+      const narrativeWords = (text.replace(/\\[a-zA-Z]+(?:\{[^{}]*\}|\[[^\]]*\])*/g, '').match(/[a-zA-Z]{3,}/g) || [])
+        .filter(w => !['sin','cos','tan','sec','csc','cot','log','ln','lim','exp','dx','dy','dt','frac','sqrt','text'].includes(w.toLowerCase()));
+      if (narrativeWords.length <= 2) {
+        let mathBody = text.replace(/(?<=[a-zA-Z0-9)\]^_])\s*\*\s*(?=[a-zA-Z0-9(\[^\\])/g, ' \\cdot ');
+        mathBody = mathBody.replace(/(?<![a-zA-Z\\])(cos|sin|tan|sec|csc|cot|log|ln)\b/g, (_, fn) => '\\' + fn);
+        return `$${mathBody}$`;
+      }
+    }
+  }
+
+  return text;
+}
+
 interface APQuizBattleProps {
   onBack: () => void;
   user?: any;
@@ -153,6 +195,10 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   const [roundRevealed, setRoundRevealed] = useState<boolean>(false);
   const roundRevealedRef = useRef<boolean>(false);
 
+  // Opponent Forfeit / Connection Disconnect Tracking
+  const [forfeitNotice, setForfeitNotice] = useState<string | null>(null);
+  const [isForcedWinner, setIsForcedWinner] = useState<boolean | null>(null);
+
   // Audio Toggle
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
@@ -169,7 +215,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   const advanceToQuestionRef = useRef<(targetIdx: number) => void>(() => {});
   const triggerRoundRevealRef = useRef<() => void>(() => {});
   const startQuestionRoundRef = useRef<(qIdx: number) => void>(() => {});
-  const finishBattleRef = useRef<() => void>(() => {});
+  const finishBattleRef = useRef<(isForcedWin?: boolean) => void>(() => {});
   const initBattleArenaRef = useRef<() => void>(() => {});
   const stuckAnsweredWatchdogRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -288,6 +334,8 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   // Full exit cleanup: cleans local state and tells server player cancelled/left
   const leaveServerQueueAndReset = () => {
     cleanupLocalBattleTimers();
+    setForfeitNotice(null);
+    setIsForcedWinner(null);
     battleSync.leaveQueue(myId, liveRoomIdRef.current || undefined);
   };
 
@@ -325,6 +373,8 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     isPlayer1Param?: boolean
   ) => {
     cleanupLocalBattleTimers();
+    setForfeitNotice(null);
+    setIsForcedWinner(null);
 
     if (typeof isPlayer1Param === 'boolean') {
       isPlayer1Ref.current = isPlayer1Param;
@@ -357,6 +407,8 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   // 2. Start Quick Match (30 seconds search, fast pairing)
   const startQuickMatch = async () => {
     cleanupLocalBattleTimers();
+    setForfeitNotice(null);
+    setIsForcedWinner(null);
     triggerVibration(25);
     playSound(() => battleAudio.playBattleStart());
 
@@ -650,6 +702,21 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
       // 1. Room Finished
       if (room.status === 'finished') {
+        if (room.forfeitedBy) {
+          if (room.forfeitedBy !== myId) {
+            setForfeitNotice("Opponent Disconnected • Victory by Default!");
+            setIsForcedWinner(true);
+            if (!battleFinishedRef.current) {
+              finishBattleRef.current(true);
+            }
+          } else {
+            if (!battleFinishedRef.current) {
+              finishBattleRef.current(false);
+            }
+          }
+          return;
+        }
+
         const totalQ = questionsRef.current.length || questions.length || 5;
         // If user is actively playing the final question and has not answered yet, do not prematurely abort their question!
         if (currentQIndexRef.current === totalQ - 1 && userStatusRef.current === 'idle' && !roundRevealedRef.current) {
@@ -682,7 +749,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
       // 4. Synchronize remaining round time with server round clock (using serverTime to prevent clock drift)
       if (room.roundStatus === 'playing' && room.currentQ === currentQIndexRef.current && serverTime) {
-        if (room.roundStartTime && phaseRef.current === 'BATTLE' && !roundRevealedRef.current && userStatusRef.current !== 'answered') {
+        if (room.roundStartTime && phaseRef.current === 'BATTLE' && !roundRevealedRef.current) {
           const currQ = questionsRef.current[room.currentQ] || questions[room.currentQ];
           const maxTime = currQ?.timeLimit || 30;
           const elapsedSec = Math.floor((serverTime - room.roundStartTime) / 1000);
@@ -765,6 +832,10 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       setTimeLeft(prev => {
         if (prev <= 1) {
           if (timerRef.current) clearInterval(timerRef.current);
+          if (userStatusRef.current === 'answered') {
+            // Already answered! Do NOT run handleRoundTimeout locally to avoid out-of-sync jumps
+            return 0;
+          }
           handleRoundTimeout();
           return 0;
         }
@@ -909,6 +980,11 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
         if (oppStatusRef.current === 'answered' && !roundRevealedRef.current) {
           triggerRoundRevealRef.current();
+        } else if (watchdogTicks >= 8 && !roundRevealedRef.current && timeLeft <= 0) {
+          // If locked in and round timer reached 0, auto-reveal! Never stay stuck!
+          setOpponentAnswerStatus('answered');
+          oppStatusRef.current = 'answered';
+          triggerRoundRevealRef.current();
         }
       }, 800);
     }
@@ -1016,7 +1092,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   };
 
   // 15. Finish Battle (Strict Single Execution & Outcome-specific Audio/Animations)
-  const finishBattle = () => {
+  const finishBattle = (isForcedWin?: boolean) => {
     // PREVENT MULTIPLE INVOCATIONS - strictly execute once!
     if (battleFinishedRef.current) return;
     battleFinishedRef.current = true;
@@ -1039,13 +1115,17 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       battleSync.updatePlayerAction(liveRoomIdRef.current, myId, userScoreRef.current, true, true, undefined, isPlayer1Ref.current);
     }
 
+    if (typeof isForcedWin === 'boolean') {
+      setIsForcedWinner(isForcedWin);
+    }
+
     setPhase('VICTORY');
     prefetchAiQuestions(selectedSubjectId);
 
     const finalUser = userScoreRef.current;
     const finalOpp = oppScoreRef.current;
-    const isWinner = finalUser > finalOpp;
-    const isTie = finalUser === finalOpp;
+    const isWinner = isForcedWin === true ? true : (isForcedWin === false ? false : finalUser > finalOpp);
+    const isTie = isForcedWin === undefined && finalUser === finalOpp;
 
     if (isWinner) {
       // WINNER: Victory fanfare + one crisp confetti celebration burst!
@@ -1132,7 +1212,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
               <Swords className="w-8 h-8" />
             </div>
             <h1 className="text-3xl font-black tracking-tight text-white uppercase">1v1 Quiz Battle</h1>
-            <p className="text-xs text-zinc-400 mt-1 font-medium">Challenge real AP scholars live or invite friends</p>
+            <p className="text-xs text-zinc-400 mt-1 font-medium">Live PvP arena</p>
           </div>
 
           {/* Slide-Down Subject Selector Trigger Card */}
@@ -1279,15 +1359,15 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           {showSubjectPicker && (
             <div 
               onClick={() => setShowSubjectPicker(false)}
-              className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+              className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 animate-fade-in"
             >
               <motion.div
                 onClick={(e) => e.stopPropagation()}
                 initial={{ opacity: 0, y: 70, scale: 0.97 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 70, scale: 0.97 }}
-                transition={{ duration: 0.22, ease: "easeOut" }}
-                className="w-full max-w-lg bg-zinc-950 rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl border border-zinc-800 overflow-hidden flex flex-col max-h-[88vh]"
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="w-full max-w-lg bg-zinc-950 rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl border border-zinc-800 overflow-hidden flex flex-col max-h-[88vh] transform-gpu will-change-transform"
               >
                 {/* Drag handle for mobile */}
                 <div className="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mt-3 sm:hidden" />
@@ -1992,7 +2072,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                     </span>
                     <div className="leading-normal text-xs sm:text-sm font-medium text-left flex-1 min-w-0 overflow-x-auto overflow-y-hidden scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1">
                       {(() => {
-                        const cleanOptText = optionText.replace(new RegExp(`^\\s*(?:Option|Choice)?\\s*${String.fromCharCode(65 + idx)}\\s*[:.)-]\\s*`, 'i'), '').trim();
+                        const formattedOpt = formatBattleOptionMath(optionText, idx);
                         return (
                           <GlobalMarkdown
                             className="inline-block w-full [&_.katex]:text-inherit [&_p]:m-0 [&_p]:inline [&_p]:text-inherit text-xs sm:text-sm font-medium"
@@ -2000,7 +2080,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                               p: ({ node, ...props }: any) => <span className="inline break-words" {...props} />
                             }}
                           >
-                            {prepareQuizMath(cleanOptText)}
+                            {prepareQuizMath(formattedOpt)}
                           </GlobalMarkdown>
                         );
                       })()}
@@ -2049,8 +2129,8 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   }
 
   // ================= RENDER: VICTORY SCREEN =================
-  const isUserWinner = userScore > opponentScore;
-  const isTie = userScore === opponentScore;
+  const isUserWinner = isForcedWinner === true ? true : (isForcedWinner === false ? false : userScore > opponentScore);
+  const isTie = isForcedWinner === null && userScore === opponentScore;
 
   return (
     <div className="w-full h-full min-h-full bg-zinc-950 text-white flex flex-col justify-between p-6 select-none font-sans overflow-y-auto">
@@ -2095,11 +2175,20 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           )}
         </motion.div>
 
+        {forfeitNotice && (
+          <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-semibold mb-3">
+            <Zap className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>{forfeitNotice}</span>
+          </div>
+        )}
+
         <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white mb-1">
           {isUserWinner ? 'VICTORY!' : isTie ? 'DRAW MATCH!' : 'GOOD EFFORT!'}
         </h1>
         <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-6">
-          {isUserWinner
+          {forfeitNotice
+            ? forfeitNotice
+            : isUserWinner
             ? `Congratulations! You conquered ${activeSubject.name} Duel`
             : isTie
             ? `Evenly Matched! ${activeSubject.name} Duel`

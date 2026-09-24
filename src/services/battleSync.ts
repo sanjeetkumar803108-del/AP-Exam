@@ -28,6 +28,8 @@ export interface BattleRoom {
   revealStartTime?: number;
   countdownStart?: number;
   updatedAt: number;
+  forfeitedBy?: string;
+  winnerId?: string;
 }
 
 // Clean helper to extract and normalize room code
@@ -372,7 +374,8 @@ export class BattleSyncService {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 2000);
 
-        const res = await fetch(getBattleApiUrl(`/api/battle/room/${encodeURIComponent(roomId)}`), {
+        const pollUrl = `/api/battle/room/${encodeURIComponent(roomId)}${myPlayerId ? `?playerId=${encodeURIComponent(myPlayerId)}` : ''}`;
+        const res = await fetch(getBattleApiUrl(pollUrl), {
           signal: controller.signal
         });
         clearTimeout(timeoutId);

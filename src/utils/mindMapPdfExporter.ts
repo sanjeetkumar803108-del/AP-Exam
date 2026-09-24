@@ -57,7 +57,7 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
     doc.setTextColor(110, 110, 115);
     const headerUnitTitle = unit.unitTitle || (unit as any).title || '';
     doc.text(
-      `${subjectHeader} CONCEPT MIND MAP - UNIT ${unit.unitNumber}: ${sanitizePdfText(stripMarkdownFormatting(headerUnitTitle)).toUpperCase()}`,
+      `${subjectHeader} SHORT NOTES - UNIT ${unit.unitNumber}: ${sanitizePdfText(stripMarkdownFormatting(headerUnitTitle)).toUpperCase()}`,
       margin,
       10
     );
@@ -79,7 +79,7 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
     doc.setFont('Helvetica', 'normal');
     doc.setFontSize(7.2);
     doc.setTextColor(140, 140, 140);
-    doc.text('AP Exam - Mind Map & Concept Revision Sheet', margin, pageHeight - 8);
+    doc.text('AP Exam - Short Notes & Concept Revision Sheet', margin, pageHeight - 8);
     doc.text('College Board AP Aligned  •  Best viewed in AP Exam app', pageWidth - margin, pageHeight - 8, { align: 'right' });
   };
 
@@ -106,7 +106,7 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
   doc.setFont('Helvetica', 'bold');
   doc.setFontSize(12.5);
   doc.setTextColor(255, 255, 255);
-  doc.text(`${subjectHeader} - UNIT ${unit.unitNumber} MIND MAP`, margin + 4.5, currentY + 6.8);
+  doc.text(`${subjectHeader} - UNIT ${unit.unitNumber} SHORT NOTES`, margin + 4.5, currentY + 6.8);
 
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(8.5);
@@ -576,13 +576,13 @@ export async function generateMindMapPdfDocument(unit: APUnitMindMap): Promise<{
   const dataUri = doc.output('datauristring');
   const safeSubject = (unit.subjectName || (unit as any).subject || 'AP_Course').replace(/[^a-zA-Z0-9_-]/g, '_');
   const safeTitle = (unit.unitTitle || (unit as any).title || `Unit_${unit.unitNumber || 1}`).replace(/[^a-zA-Z0-9_-]/g, '_');
-  const fileName = `${safeSubject}_Unit_${unit.unitNumber}_${safeTitle}_MindMap.pdf`;
+  const fileName = `${safeSubject}_Unit_${unit.unitNumber}_${safeTitle}_ShortNotes.pdf`;
 
   return { doc, blob, dataUri, fileName };
 }
 
 /**
- * Generates and downloads an ultra-clean, high-yield Printable AP Mind Map Revision PDF.
+ * Generates and downloads an ultra-clean, high-yield Printable AP Short Notes Revision PDF.
  * Formatted with standard Helvetica fonts, sanitized math, and zero UTF-16 null-byte errors.
  */
 export async function exportMindMapPDF(unit: APUnitMindMap): Promise<MindMapPdfResult> {
@@ -594,7 +594,7 @@ export async function exportMindMapPDF(unit: APUnitMindMap): Promise<MindMapPdfR
     // Save to device storage (Downloads / Files app) via mobileSaver
     try {
       await savePDFMobile(blob, fileName, {
-        featureTag: 'Mind Map Revision Sheet',
+        featureTag: 'Short Notes Revision Sheet',
       });
     } catch (saveErr) {
       console.warn('mobileSaver fallback triggered:', saveErr);
@@ -608,7 +608,7 @@ export async function exportMindMapPDF(unit: APUnitMindMap): Promise<MindMapPdfR
 
     // Reward XP & Quest progress
     try {
-      addStudyXP(30, 'Mind Map PDF Saved');
+      addStudyXP(30, 'Short Notes PDF Saved');
       trackQuestProgress('notes', 1);
     } catch (err) {
       console.warn('Gamification update ignored:', err);

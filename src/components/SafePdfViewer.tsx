@@ -162,15 +162,9 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl }: SafePdfViewerP
           if (!active) return;
           const page = await pdf.getPage(pageNum);
           
-          // Full-screen mobile layout for visual pages
+          // Clean, full-width visual page card with subtle paper elevation
           const pageCard = document.createElement('div');
-          pageCard.className = 'w-full flex flex-col items-center bg-white p-0 relative border-b border-zinc-200/80 shadow-xs last:border-b-0';
-          
-          // Compact visual indicator for page count
-          const badge = document.createElement('div');
-          badge.className = 'relative my-3.5 bg-zinc-900 text-zinc-100 text-[10px] font-black tracking-widest px-4 py-2 rounded-full z-10 uppercase shadow-md flex items-center justify-center';
-          badge.innerText = `Page ${pageNum} of ${pdf.numPages}`;
-          pageCard.appendChild(badge);
+          pageCard.className = 'w-full max-w-4xl mx-auto mb-3 sm:mb-4 bg-white shadow-xs border-b sm:border border-zinc-200/70 flex flex-col items-center overflow-hidden last:mb-0';
 
           // Render canvas with optimized mobile retina sharpness without memory exhaustion
           const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1.5), 2.2);
@@ -219,13 +213,13 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl }: SafePdfViewerP
   }, [targetUrl]);
 
   return (
-    <div className="w-full h-full flex flex-col bg-zinc-950 overflow-y-auto momentum-scroll px-0 py-0 items-center justify-start min-h-[300px]">
+    <div className="w-full h-full flex flex-col bg-zinc-100/90 overflow-y-auto momentum-scroll px-0 sm:px-4 py-0 sm:py-3 items-center justify-start min-h-[300px]">
       {loading && (
-        <div className="flex flex-col items-center justify-center my-auto py-20 text-white gap-3.5">
-          <div className="w-11 h-11 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="flex flex-col items-center justify-center my-auto py-24 text-zinc-800 gap-3.5">
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
           <div className="text-center">
-            <p className="text-sm font-black text-white uppercase tracking-wider">Generating Visual Pages</p>
-            <p className="text-[11px] text-zinc-400 mt-1">Please wait while the PDF compiles...</p>
+            <p className="text-xs font-black text-zinc-800 uppercase tracking-wider">Rendering AP Document</p>
+            <p className="text-[11px] text-zinc-500 mt-0.5">Loading high-resolution pages...</p>
           </div>
         </div>
       )}

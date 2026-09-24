@@ -4830,13 +4830,12 @@ var ALL_CALC_AB_UNIT_DEFINITIONS = [
             "id": "c5-l5-q2",
             "stem": "Find the absolute minimum value of $f(x) = 2x^3 - 6x$ on $[0, 3]$.",
             "options": [
-              "$-4\\sqrt{2}$ or at $x = 1$: $f(1) = 2(1) - 6(1) = -4$.",
               "$-4$",
               "$0$",
               "$-6$",
               "$36$"
             ],
-            "correctIndex": 1,
+            "correctIndex": 0,
             "explanation": "$f'(x) = 6x^2 - 6 = 6(x^2 - 1) = 0 \\implies x = 1$ in $[0, 3]$. Values: $f(0) = 0$; $f(1) = 2 - 6 = -4$; $f(3) = 2(27) - 6(3) = 54 - 18 = 36$. Absolute minimum value is $-4$.",
             "distractorTip": "Notice $x = -1$ is rejected because it is outside the interval $[0, 3]$."
           },
@@ -12053,16 +12052,17 @@ ${text}`.trim() },
   const respMime = clonedParams?.config?.responseMimeType || "";
   const isAudioModel = isTtsModel || !!clonedParams.config?.speechConfig || !!clonedParams.config?.responseModalities?.includes(import_genai.Modality.AUDIO);
   const isSpecialtyModel = isAudioModel || params.model && (params.model.includes("image") || params.model.includes("video") || params.model.includes("veo") || params.model.includes("lyria") || params.model.includes("clip"));
-  let requestedModel = isAudioModel ? params.model || "gemini-2.5-flash-preview-tts" : params.model || "gemini-3.5-flash-lite";
-  if (requestedModel && (requestedModel === "gemini-2.5-flash" || requestedModel === "gemini-2.0-flash" || requestedModel === "gemini-1.5-flash" || requestedModel === "gemini-2.0-flash-exp" || requestedModel === "gemini-2.5-flash-lite")) {
-    requestedModel = "gemini-3.5-flash-lite";
+  let requestedModel = isAudioModel ? params.model || "gemini-2.5-flash-preview-tts" : params.model || "gemini-3.6-flash";
+  if (requestedModel && (requestedModel === "gemini-2.5-flash" || requestedModel === "gemini-2.0-flash" || requestedModel === "gemini-1.5-flash" || requestedModel === "gemini-2.0-flash-exp" || requestedModel === "gemini-2.5-flash-lite" || requestedModel === "gemini-flash-lite-latest")) {
+    requestedModel = "gemini-3.6-flash";
   }
-  let modelsToTry = isAudioModel ? [requestedModel, "gemini-2.5-flash-preview-tts", "gemini-flash-lite-latest"].filter(Boolean) : isSpecialtyModel ? [requestedModel] : [
-    "gemini-3.5-flash-lite",
-    "gemini-flash-lite-latest",
-    "gemini-3.7-flash",
-    "gemini-3.6-flash"
-  ].filter((value, index, self) => self.indexOf(value) === index);
+  let modelsToTry = isAudioModel ? [requestedModel, "gemini-2.5-flash-preview-tts", "gemini-3.6-flash"].filter(Boolean) : isSpecialtyModel ? [requestedModel] : [
+    requestedModel,
+    "gemini-3.6-flash",
+    "gemini-flash-latest",
+    "gemini-3.5-flash",
+    "gemini-flash-lite-latest"
+  ].filter(Boolean).filter((value, index, self) => self.indexOf(value) === index);
   if (!isSpecialtyModel) {
     const now = Date.now();
     const activeModels = [];
@@ -12103,7 +12103,7 @@ ${text}`.trim() },
       try {
         const aiClient = getAI();
         const generatePromise = aiClient.models.generateContent(currentParams);
-        const timeoutMs = params.timeoutMs && typeof params.timeoutMs === "number" ? params.timeoutMs : 9e4;
+        const timeoutMs = params.timeoutMs && typeof params.timeoutMs === "number" ? params.timeoutMs : 25e3;
         const timeoutPromise = new Promise(
           (_, reject) => setTimeout(() => reject(new Error(`Timeout: Model ${model} took longer than ${timeoutMs}ms`)), timeoutMs)
         );
@@ -12351,6 +12351,9 @@ app.post("/api/chat", upload.single("image"), async (req, res) => {
       isEvaluation
     } = req.body;
     let parsedHistory = history ? typeof history === "string" ? JSON.parse(history) : history : [];
+    if (Array.isArray(parsedHistory) && parsedHistory.length > 6) {
+      parsedHistory = parsedHistory.slice(-6);
+    }
     const imagePart = req.file ? {
       inlineData: {
         mimeType: req.file.mimetype,
@@ -12365,7 +12368,7 @@ ${userMessage}`;
     }
     const hasImage = !!imagePart || parsedHistory.some((m) => m.parts && m.parts.some((p) => p.inlineData || p.imageUrl));
     const normalizedMsg = (userMessage || "").toLowerCase();
-    const shouldEnableSearch = !hasImage && (normalizedMsg.includes("search") || normalizedMsg.includes("browse") || normalizedMsg.includes("live") || normalizedMsg.includes("current") || normalizedMsg.includes("weather") || normalizedMsg.includes("news") || normalizedMsg.includes("rates") || normalizedMsg.includes("today") || normalizedMsg.includes("current events") || normalizedMsg.includes("recent") || normalizedMsg.includes("latest") || normalizedMsg.includes("exchange") || normalizedMsg.includes("stats") || normalizedMsg.includes("price") || normalizedMsg.includes("fact") || normalizedMsg.includes("forecast") || normalizedMsg.includes("who is"));
+    const shouldEnableSearch = !hasImage && /\b(google search|search online|search the web|live weather|current weather|breaking news|live stock price|currency rate today|gold price today)\b/i.test(normalizedMsg);
     let systemInstruction = "";
     if (isEvaluation === "true" || isEvaluation === true) {
       systemInstruction = `You are a strict academic examiner for a ${gradeLevel || "High School"} student. DO NOT act as a standard tutor. Your SOLE purpose is to grade the student's answer calibrated exactly to their grade level (${gradeLevel || "High School"}). Use vocabulary, standards, and expectations appropriate for ${gradeLevel || "High School"}. YOU MUST output strictly using this format:
@@ -12449,10 +12452,10 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
     const shouldStream = stream === "true" || stream === true;
     if (shouldStream) {
       let modelsToTry = [
-        "gemini-3.5-flash-lite",
-        "gemini-flash-lite-latest",
-        "gemini-3.7-flash",
-        "gemini-3.6-flash"
+        "gemini-3.6-flash",
+        "gemini-flash-latest",
+        "gemini-3.5-flash",
+        "gemini-flash-lite-latest"
       ];
       const now = Date.now();
       const activeModels = [];
@@ -12479,7 +12482,7 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
             config: {
               systemInstruction: { parts: [{ text: systemInstruction }] },
               responseMimeType: isEvaluation === "true" || isEvaluation === true ? "text/plain" : "application/json",
-              maxOutputTokens: 8192,
+              maxOutputTokens: 3e3,
               temperature: 0.2,
               candidateCount: 1
             }
@@ -12540,15 +12543,15 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
       }
     } else {
       const response = await safeGenerateContent({
-        model: "gemini-3.5-flash-lite",
+        model: "gemini-flash-lite-latest",
         contents,
         config: {
           systemInstruction: { parts: [{ text: systemInstruction }] },
           responseMimeType: isEvaluation === "true" || isEvaluation === true ? "text/plain" : "application/json",
           temperature: 0.7,
           // ⚡ Balanced temp for conversational AI
-          maxOutputTokens: 8192,
-          // ⚡ High capacity ceiling for complete complex outputs
+          maxOutputTokens: 3e3,
+          // ⚡ Calibrated token ceiling for snappy output
           candidateCount: 1
           // ⚡ Single candidate only
         }
@@ -12674,25 +12677,47 @@ You MUST thoroughly inspect, transcribe, and grade ALL ${totalPages} PAGES in ch
    - Break down every part/step across all pages into "evaluationSteps".
 
 =======================================================
-STEP 2: STRICT OPTICAL VERIFICATION
+STEP 2: OPTICAL CONTENT CLASSIFICATION & REJECTION PROTOCOL
 =======================================================
-REJECTION RULE (CRITICAL):
-You MUST immediately REJECT the submission and award 0 POINTS if:
-1. NON-ACADEMIC / IRRELEVANT: Photos contain people, selfies, rooms, furniture, vehicles, animals, food, memes, app screenshots, blank paper, or non-educational objects.
-2. MULTIPLE CHOICE QUESTION (MCQ): Objective multiple-choice questions with answer options (A, B, C, D) or bubble answer sheets.
-3. ZERO STUDENT WORK ACROSS ALL ${totalPages} PAGES: All uploaded pages contain ONLY unworked printed questions with ZERO handwritten student calculations anywhere across ALL ${totalPages} pages.
-   (If even ONE page has handwritten student work, ACCEPT and GRADE the student work!)
+You MUST inspect the visual contents of the uploaded photo(s) and classify them into one of these 4 exact categories:
 
-IF REJECTED:
-Set:
-- "isValidAcademicAnswer": false
-- "verificationVerdict": "REJECT_NOT_AN_ANSWER" (or "REJECT_MCQ_NOT_ALLOWED" if MCQ, or "REJECT_NO_STUDENT_WORK" if zero student work)
-- "errorCode": "NO_ACADEMIC_CONTENT" (or "MCQ_DETECTED", or "NO_STUDENT_WORK_DETECTED")
-- "errorMessage": "No handwritten student work was detected across your uploaded pages! The FRQ Grader is exclusively designed to evaluate and score your handwritten solutions under official College Board standards. We cannot provide answers to unworked questions."
-- "detectionReason": "The uploaded pages contain exam question prompts without any handwritten student calculations or answers. Under College Board AP exam rules: 'No Work = No Credit' (0 Points)."
-- "suggestion": "Please write out your solution by hand on paper with all mathematical steps, then snap and upload your handwritten answer sheet to receive your official AP score and rubric evaluation."
-- Set: "totalPointsEarned": 0, "totalPointsPossible": 0, "predictedAPScale": 0, "evaluationSteps": []
-- DO NOT PROVIDE ANY WORKED-OUT HOMEWORK SOLUTIONS.
+1. AUTHENTIC HANDWRITTEN STUDENT SOLUTION:
+   - Contains authentic handwritten calculations, algebraic steps, written reasoning, code, or diagrams by a student answering an AP Free Response Question.
+   - Classification: "isValidAcademicAnswer": true, "hasStudentHandwriting": true, "detectedContentType": "handwritten_student_work", "verificationVerdict": "GENUINE_EXAM_ANSWER".
+   - Action: PROCEED TO FULL SCORING & EVALUATION.
+
+2. UNWORKED QUESTION PROMPT ONLY:
+   - The photo actually contains an authentic printed AP exam problem or textbook question prompt, BUT contains ZERO handwritten student work or calculations.
+   - Classification: 
+     * "isValidAcademicAnswer": false, "hasStudentHandwriting": false, "detectedContentType": "printed_frq_question"
+     * "verificationVerdict": "REJECT_NO_STUDENT_WORK", "errorCode": "NO_STUDENT_WORK_DETECTED"
+     * "errorMessage": "Question prompt detected without handwritten solution. Please solve it on paper and upload your handwritten work to be graded."
+     * "detectionReason": "The photo contains an exam question prompt, but no handwritten student calculations or answers were found."
+     * "suggestion": "Write out your solution on paper, then upload your handwritten answer sheet."
+     * Set: "totalPointsEarned": 0, "totalPointsPossible": 0, "predictedAPScale": 0, "evaluationSteps": []
+
+3. MULTIPLE CHOICE QUESTION (MCQ):
+   - Contains objective questions with multiple choice options (A, B, C, D) or bubble sheet.
+   - Classification: 
+     * "isValidAcademicAnswer": false, "hasStudentHandwriting": false, "detectedContentType": "mcq_or_objective_question"
+     * "verificationVerdict": "REJECT_MCQ_NOT_ALLOWED", "errorCode": "MCQ_DETECTED"
+     * "errorMessage": "Multiple Choice Question (MCQ) detected. The FRQ Grader is exclusively for subjective free-response questions."
+     * "detectionReason": "The uploaded photo contains multiple-choice questions with choices (A, B, C, D)."
+     * "suggestion": "For MCQs, please use the Quiz & Test feature."
+     * Set: "totalPointsEarned": 0, "totalPointsPossible": 0, "predictedAPScale": 0, "evaluationSteps": []
+
+4. NON-ACADEMIC / RANDOM / BLANK / UNRELATED IMAGE:
+   - Does NOT contain an AP exam question or student academic work. Examples: photos of people, selfies, furniture, rooms, desks without text, keyboards, cars, animals, food, memes, screenshots, blank sheets, blur, or darkness.
+   - Classification: 
+     * "isValidAcademicAnswer": false, "hasStudentHandwriting": false, "detectedContentType": "random_object" (or "blank_or_unreadable", "app_logo_or_graphic")
+     * "verificationVerdict": "REJECT_NOT_AN_ANSWER", "errorCode": "NO_ACADEMIC_CONTENT"
+     * "errorMessage": "No AP exam question or student work was found in this photo. Please upload a clear photo of your handwritten FRQ solution."
+     * "detectionReason": "The uploaded photo does not contain an authentic AP exam question or student solution."
+     * "suggestion": "Please capture a clear, well-lit photo of your handwritten AP FRQ solution."
+     * Set: "totalPointsEarned": 0, "totalPointsPossible": 0, "predictedAPScale": 0, "evaluationSteps": []
+
+CRITICAL DETECTION RULE:
+NEVER classify a non-academic photo, random object, blank paper, or room photo as "printed_frq_question" or "NO_STUDENT_WORK_DETECTED". If there is NO printed academic question prompt visible, it is STRICTLY "NO_ACADEMIC_CONTENT". DO NOT PROVIDE ANY WORKED-OUT HOMEWORK SOLUTIONS.
 
 =======================================================
 EVALUATION PROTOCOL FOR VALID STUDENT WORK:
@@ -12790,7 +12815,7 @@ Ensure all formulas and variables are enclosed in $...$. Return pure JSON with n
     const response = await safeGenerateContent({
       gradeLevel,
       profileContext,
-      model: "gemini-3.5-flash-lite",
+      model: "gemini-flash-lite-latest",
       contents: [
         {
           parts: contentParts
@@ -12815,13 +12840,31 @@ Ensure all formulas and variables are enclosed in $...$. Return pure JSON with n
         throw new Error("Invalid grading format received from AI evaluation engine.");
       }
     }
-    const isMCQ = parsed.detectedContentType === "mcq_or_objective_question" || parsed.detectedContentType === "mcq_or_objective_test" || parsed.submissionMode === "mcq_question" || parsed.questionType === "mcq_or_objective_question" || parsed.opticalInspection?.questionType === "mcq_or_objective_question" || parsed.verificationVerdict === "REJECT_MCQ_NOT_ALLOWED" || parsed.errorCode === "MCQ_DETECTED";
-    const hasAnyStudentHandwriting = parsed.hasStudentHandwriting === true || parsed.submissionMode === "student_answer" || parsed.submissionMode === "question_and_answer" || Array.isArray(parsed.pagesAudited) && parsed.pagesAudited.some(
+    const hasAnyStudentHandwriting = parsed.hasStudentHandwriting === true || parsed.submissionMode === "student_answer" || parsed.submissionMode === "question_and_answer" || parsed.detectedContentType === "handwritten_student_work" || Array.isArray(parsed.pagesAudited) && parsed.pagesAudited.some(
       (p) => p.detectedType === "handwritten_student_work" || p.detectedType === "mixed"
     );
-    const isQuestionOnly = !hasAnyStudentHandwriting && (parsed.submissionMode === "question_prompt" || parsed.submissionMode === "question_prompt_only" || parsed.questionType === "subjective_frq_question" || parsed.detectedContentType === "printed_frq_question" || parsed.verificationVerdict === "REJECT_NO_STUDENT_WORK" || parsed.errorCode === "NO_STUDENT_WORK_DETECTED");
-    const isNonAcademic = parsed.detectedContentType === "app_logo_or_graphic" || parsed.detectedContentType === "random_object" || parsed.detectedContentType === "blank_or_unreadable" || parsed.submissionMode === "non_academic" || parsed.questionType === "non_academic" || parsed.opticalInspection?.questionType === "non_academic" || parsed.verificationVerdict === "REJECT_NOT_AN_ANSWER" || parsed.errorCode === "NO_ACADEMIC_CONTENT";
-    if (isMCQ) {
+    let isNonAcademic = parsed.detectedContentType === "app_logo_or_graphic" || parsed.detectedContentType === "random_object" || parsed.detectedContentType === "blank_or_unreadable" || parsed.submissionMode === "non_academic" || parsed.questionType === "non_academic" || parsed.opticalInspection?.questionType === "non_academic" || parsed.opticalInspection?.imageMedium === "non_educational_object" || parsed.verificationVerdict === "REJECT_NOT_AN_ANSWER" || parsed.errorCode === "NO_ACADEMIC_CONTENT";
+    const isMCQ = !isNonAcademic && (parsed.submissionMode === "mcq_question" || parsed.questionType === "mcq_or_objective_question" || parsed.detectedContentType === "mcq_or_objective_question" || parsed.opticalInspection?.questionType === "mcq_or_objective_question" || parsed.verificationVerdict === "REJECT_MCQ_NOT_ALLOWED" || parsed.errorCode === "MCQ_DETECTED");
+    let isQuestionOnly = !hasAnyStudentHandwriting && !isNonAcademic && !isMCQ && (parsed.submissionMode === "question_prompt" || parsed.submissionMode === "question_prompt_only" || parsed.questionType === "subjective_frq_question" || parsed.detectedContentType === "printed_frq_question" || parsed.verificationVerdict === "REJECT_NO_STUDENT_WORK" || parsed.errorCode === "NO_STUDENT_WORK_DETECTED");
+    const questionText = (parsed.questionStatement || parsed.opticalInspection?.visibleTextSummary || "").trim();
+    if (isQuestionOnly && questionText.length < 15) {
+      isNonAcademic = true;
+      isQuestionOnly = false;
+    }
+    if (isNonAcademic || parsed.isValidAcademicAnswer === false && !isMCQ && !isQuestionOnly) {
+      parsed.isValidAcademicAnswer = false;
+      parsed.hasStudentHandwriting = false;
+      parsed.totalPointsEarned = 0;
+      parsed.totalPointsPossible = 0;
+      parsed.predictedAPScale = 0;
+      parsed.predictedAPScaleLabel = "Not Scored";
+      parsed.evaluationSteps = [];
+      parsed.parts = [];
+      parsed.errorCode = "NO_ACADEMIC_CONTENT";
+      parsed.errorMessage = "No AP exam question or student work was found in this photo. Please upload a clear photo of your handwritten FRQ solution.";
+      parsed.detectionReason = parsed.detectionReason || "The uploaded image does not contain an authentic academic exam problem or student solution.";
+      parsed.suggestion = "Please capture a clear, well-lit photo of your handwritten AP FRQ solution.";
+    } else if (isMCQ) {
       parsed.isValidAcademicAnswer = false;
       parsed.hasStudentHandwriting = false;
       parsed.totalPointsEarned = 0;
@@ -12832,8 +12875,8 @@ Ensure all formulas and variables are enclosed in $...$. Return pure JSON with n
       parsed.parts = [];
       parsed.errorCode = "MCQ_DETECTED";
       parsed.errorMessage = "Multiple Choice Question (MCQ) detected. The FRQ Grader strictly evaluates subjective Free Response Questions only.";
-      parsed.detectionReason = parsed.detectionReason || "The uploaded image contains multiple choice questions or options (A, B, C, D) rather than subjective problem solving.";
-      parsed.suggestion = "For multiple-choice questions, please use the Quiz / Practice feature. The FRQ Grader is exclusively for subjective free-response questions and solutions.";
+      parsed.detectionReason = parsed.detectionReason || "The uploaded image contains multiple choice questions with options (A, B, C, D).";
+      parsed.suggestion = "For multiple-choice questions, please use the Quiz / Practice feature.";
     } else if (isQuestionOnly) {
       parsed.isValidAcademicAnswer = false;
       parsed.hasStudentHandwriting = false;
@@ -12841,26 +12884,13 @@ Ensure all formulas and variables are enclosed in $...$. Return pure JSON with n
       parsed.totalPointsEarned = 0;
       parsed.totalPointsPossible = 0;
       parsed.predictedAPScale = 0;
-      parsed.predictedAPScaleLabel = "No Credit (0 / 5)";
+      parsed.predictedAPScaleLabel = "0 / 5 (No Solution)";
       parsed.evaluationSteps = [];
       parsed.parts = [];
       parsed.errorCode = "NO_STUDENT_WORK_DETECTED";
-      parsed.errorMessage = "No handwritten student work was detected across your uploaded page(s)! The FRQ Grader is exclusively built to grade and score your handwritten solutions, not as a homework solver. Please solve the problem on paper first and upload your handwritten answer sheet.";
-      parsed.detectionReason = parsed.detectionReason || `The ${totalPages} uploaded page(s) contain only exam question prompts without any handwritten student calculations, steps, or answers. Under College Board AP exam rules: 'No Work = No Credit' (0 Points).`;
-      parsed.suggestion = "Please write out your solution by hand on paper with all mathematical steps, then snap and upload your handwritten answer sheet to receive your official AP score and rubric evaluation.";
-    } else if (isNonAcademic || parsed.isValidAcademicAnswer === false) {
-      parsed.isValidAcademicAnswer = false;
-      parsed.hasStudentHandwriting = false;
-      parsed.totalPointsEarned = 0;
-      parsed.totalPointsPossible = 0;
-      parsed.predictedAPScale = 0;
-      parsed.predictedAPScaleLabel = "Not Scored";
-      parsed.evaluationSteps = [];
-      parsed.parts = [];
-      parsed.errorCode = parsed.errorCode || "NO_ACADEMIC_CONTENT";
-      parsed.errorMessage = parsed.errorMessage || "No valid academic question or student answer was detected in this photo.";
-      parsed.detectionReason = parsed.detectionReason || parsed.opticalInspection?.verdictReason || "The image does not contain an authentic academic exam question or student solution.";
-      parsed.suggestion = parsed.suggestion || "Please take a clear photo of an academic exam question (FRQ) or your handwritten student answer sheet.";
+      parsed.errorMessage = "Question prompt detected without handwritten solution. Please solve it on paper and upload your handwritten work to be graded.";
+      parsed.detectionReason = parsed.detectionReason || `The ${totalPages} uploaded page(s) contain only exam question prompts without any handwritten student calculations.`;
+      parsed.suggestion = "Please write out your solution on paper, then upload your handwritten work to receive your official score and rubric evaluation.";
     } else {
       parsed.isValidAcademicAnswer = true;
       parsed.hasStudentHandwriting = true;
@@ -13177,11 +13207,11 @@ function shuffleAndBalanceTrapRadarQuestions(questions) {
 }
 app.post("/api/generate-ap-questions", async (req, res) => {
   try {
-    const { subject, unit, topic, questionType, count, gradeLevel, avoidPrompts, randomSeed } = req.body;
+    const { subject, unit, topic, questionType, type: rawType, count, gradeLevel, avoidPrompts, randomSeed, examMode } = req.body;
     if (!subject) {
       return res.status(400).json({ error: "Missing AP Subject" });
     }
-    const type = questionType === "subjective" ? "subjective" : "objective";
+    const type = questionType === "subjective" || rawType === "subjective" ? "subjective" : "objective";
     const requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 20);
     const targetTopic = [topic, unit, subject].filter(Boolean).join(" - ");
     const subjectGuidelines = getCollegeBoardSubjectGuidelines(subject, type);
@@ -13246,7 +13276,7 @@ OFFICIAL GRADE-LEVEL PEDAGOGICAL CALIBRATION: ADVANCED PLACEMENT (HIGH SCHOOL TO
     }
     const batchSizes = [];
     let remaining = requestedCount;
-    const maxBatch = type === "subjective" ? 3 : 5;
+    const maxBatch = type === "subjective" ? 3 : 10;
     while (remaining > 0) {
       const take = Math.min(remaining, maxBatch);
       batchSizes.push(take);
@@ -13372,8 +13402,8 @@ Return ONLY a valid JSON array of objects with this exact structure:
         const makeCall = async (seed) => {
           const response = await safeGenerateContent({
             gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-            model: "gemini-3.5-flash-lite",
-            timeoutMs: 9e4,
+            model: "gemini-flash-lite-latest",
+            timeoutMs: 25e3,
             contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Batch Seed: ${seed}.
 Generate exactly ${batchCount} authentic College Board AP Exam Multiple Choice Questions (MCQs) for this batch.
 Target Archetypes for this batch:
@@ -13383,7 +13413,7 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
             config: {
               systemInstruction: { parts: [{ text: systemInstruction }] },
               responseMimeType: "application/json",
-              maxOutputTokens: 8192,
+              maxOutputTokens: 3e3,
               temperature: 0.75
             }
           });
@@ -13440,6 +13470,32 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
           }
         } catch (bfErr) {
           console.warn("[generate-ap-questions] Objective backfill attempt failed:", bfErr);
+        }
+      }
+      if (combinedQuestions.length < requestedCount) {
+        const deficit = requestedCount - combinedQuestions.length;
+        console.warn(`[generate-ap-questions] Deficit detected: got ${combinedQuestions.length}/${requestedCount}. Backfilling ${deficit} questions from authentic bank...`);
+        const matchedSubject2 = AP_BATTLE_SUBJECTS.find(
+          (s2) => (subject || "").toLowerCase().includes(s2.name.toLowerCase().replace("ap ", "")) || s2.id.includes((subject || "").toLowerCase().replace(/[^a-z0-9]/g, ""))
+        ) || AP_BATTLE_SUBJECTS[0];
+        const fallbackBank2 = getBattleQuestions(matchedSubject2.id);
+        if (fallbackBank2 && fallbackBank2.length > 0) {
+          const existingPrompts = new Set(combinedQuestions.map((q) => (typeof q === "string" ? q : q.prompt || q.question || "").slice(0, 50).toLowerCase()));
+          const available = fallbackBank2.filter((q) => !existingPrompts.has(q.question.slice(0, 50).toLowerCase()));
+          const pool = available.length >= deficit ? available : fallbackBank2;
+          const letters = ["A", "B", "C", "D"];
+          for (let i = 0; i < deficit && i < pool.length; i++) {
+            const item = pool[i];
+            const formattedOptions = item.options.map((opt, oIdx) => `${letters[oIdx]}) ${opt.replace(/^[A-D]\)\s*/, "")}`);
+            const correctIdx = item.options.findIndex((o) => o.startsWith(item.correctAnswer));
+            const safeCorrectIdx = correctIdx !== -1 ? correctIdx : 0;
+            combinedQuestions.push({
+              prompt: item.question,
+              options: formattedOptions,
+              correctAnswer: formattedOptions[safeCorrectIdx],
+              explanation: item.explanation || ""
+            });
+          }
         }
       }
       if (combinedQuestions.length > 0) {
@@ -13637,8 +13693,8 @@ NEVER include multiple-choice options A/B/C/D in subjective output.`;
         const makeCall = async (seed) => {
           const response = await safeGenerateContent({
             gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-            model: "gemini-3.5-flash-lite",
-            timeoutMs: 9e4,
+            model: "gemini-flash-lite-latest",
+            timeoutMs: 25e3,
             contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Batch Seed: ${seed}.
 Generate exactly ${batchCount} authentic College Board AP Exam Free Response / Subjective Questions for this batch.
 Target Archetypes for this batch:
@@ -13647,7 +13703,7 @@ Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP
             config: {
               systemInstruction: { parts: [{ text: systemInstruction }] },
               responseMimeType: "application/json",
-              maxOutputTokens: 8192,
+              maxOutputTokens: 3500,
               temperature: 0.75
             }
           });
@@ -13850,7 +13906,7 @@ STRICT JSON OUTPUT FORMAT:
 }`;
       const response = await safeGenerateContent({
         gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-        model: "gemini-3.5-flash-lite",
+        model: "gemini-flash-lite-latest",
         contents: { parts: [{ text: `Question: ${questionPrompt || "AP Question"}
 Student Chose / Mistake: ${wrongInput || "Distractor Trap"}
 Correct Concept / Target: ${correctConcept || "CED Standard"}
@@ -13858,7 +13914,8 @@ Trap Type: ${trapType || "Psychometric Trap"}` }] },
         config: {
           systemInstruction: { parts: [{ text: explainSystemInstruction }] },
           responseMimeType: "application/json",
-          temperature: 0.2
+          temperature: 0.2,
+          maxOutputTokens: 1024
         }
       });
       const parsed = safeParseJSON(response.text || "{}", "object");
@@ -13993,7 +14050,7 @@ ${customQuestion}`;
       contentParts.push({ text: promptText });
       const response = await safeGenerateContent({
         gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-        model: "gemini-3.5-flash-lite",
+        model: "gemini-flash-lite-latest",
         contents: { parts: contentParts },
         config: {
           systemInstruction: { parts: [{ text: systemInstruction }] },
@@ -14009,7 +14066,7 @@ ${customQuestion}`;
         try {
           const recoveryResponse = await safeGenerateContent({
             gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-            model: "gemini-3.5-flash-lite",
+            model: "gemini-flash-lite-latest",
             contents: {
               parts: [
                 ...contentParts.filter((p) => p.inlineData),
@@ -14179,12 +14236,13 @@ Step 4 (Interpretation): This value represents the total path length traveled by
 ]`;
       const response = await safeGenerateContent({
         gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-        model: "gemini-3.5-flash-lite",
+        model: "gemini-flash-lite-latest",
         contents: { parts: [{ text: `Generate ${requestedCount2} authentic AP ${subject} Free Response Trap Radar questions for ${targetTopic}.` }] },
         config: {
           systemInstruction: { parts: [{ text: subjectiveSystemInstruction }] },
           responseMimeType: "application/json",
-          temperature: 0.2
+          temperature: 0.2,
+          maxOutputTokens: 3e3
         }
       });
       const parsed = safeParseJSON(response.text || "[]", "array");
@@ -14316,13 +14374,13 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
 ]`;
       const response = await safeGenerateContent({
         gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-        model: "gemini-3.5-flash-lite",
+        model: "gemini-flash-lite-latest",
         contents: { parts: [{ text: `Generate ${batchCount} authentic AP ${subject} Trap Radar questions for ${targetTopic}. Batch Seed: ${Date.now()}_b${bIdx + 1}_${Math.random().toString(36).substring(2, 6)}` }] },
         config: {
           systemInstruction: { parts: [{ text: batchSystemInstruction }] },
           responseMimeType: "application/json",
           temperature: 0.2,
-          maxOutputTokens: 8192
+          maxOutputTokens: 3e3
         }
       });
       const parsed = safeParseJSON(response.text || "[]", "array");
@@ -14340,7 +14398,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
     const batchSizes = [];
     let remaining = requestedCount;
     while (remaining > 0) {
-      const take = Math.min(remaining, 5);
+      const take = Math.min(remaining, 10);
       batchSizes.push(take);
       remaining -= take;
     }
@@ -14352,8 +14410,51 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
         questionsList.push(...res2.value);
       }
     }
+    if (questionsList.length > 0 && questionsList.length < requestedCount) {
+      const deficit = requestedCount - questionsList.length;
+      console.warn(`[ap-trap-radar] Deficit detected: got ${questionsList.length}/${requestedCount}. Backfilling ${deficit} questions...`);
+      const matchedSubject2 = AP_BATTLE_SUBJECTS.find(
+        (s) => (subject || "").toLowerCase().includes(s.name.toLowerCase().replace("ap ", "")) || s.id.includes((subject || "").toLowerCase().replace(/[^a-z0-9]/g, ""))
+      ) || AP_BATTLE_SUBJECTS[0];
+      const fallbackBank2 = getBattleQuestions(matchedSubject2.id);
+      if (fallbackBank2 && fallbackBank2.length > 0) {
+        const letters = ["A", "B", "C", "D"];
+        const existingPrompts = new Set(questionsList.map((q) => (q.prompt || q.question || "").slice(0, 50).toLowerCase()));
+        const available = fallbackBank2.filter((q) => !existingPrompts.has(q.question.slice(0, 50).toLowerCase()));
+        const backfillPool = available.length >= deficit ? available : fallbackBank2;
+        for (let i = 0; i < deficit && i < backfillPool.length; i++) {
+          const item = backfillPool[i];
+          const formattedOptions = item.options.map((opt, oIdx) => `${letters[oIdx]}) ${opt.replace(/^[A-D]\)\s*/, "")}`);
+          const correctIdx = item.options.findIndex((o) => o.startsWith(item.correctAnswer));
+          const safeCorrectIdx = correctIdx !== -1 ? correctIdx : 0;
+          questionsList.push({
+            id: questionsList.length + 1,
+            questionNumber: questionsList.length + 1,
+            unit: targetTopic,
+            prompt: item.question,
+            options: formattedOptions,
+            correctAnswer: formattedOptions[safeCorrectIdx],
+            correctLetter: letters[safeCorrectIdx],
+            trapAnalysis: {
+              distractorTraps: formattedOptions.map((opt, oIdx) => ({
+                optionLetter: letters[oIdx],
+                optionText: opt,
+                isCorrect: oIdx === safeCorrectIdx,
+                trapType: oIdx === safeCorrectIdx ? "None (Definite AP Answer)" : "\u{1FAA4} Distractor Trap",
+                trapDescription: oIdx === safeCorrectIdx ? "Verified AP solution." : "Common distractor based on standard exam pitfalls.",
+                testMakerMindset: "AP College Board reader grading criteria."
+              })),
+              chiefReaderSecret: item.explanation || "Master the fundamental AP theorem and verify boundary conditions.",
+              trapSummary: "Carefully eliminate distractor options before choosing your final answer."
+            },
+            explanation: item.explanation || "",
+            format: "objective"
+          });
+        }
+      }
+    }
     if (questionsList.length > 0) {
-      const finalized = questionsList.map((q, idx) => ({
+      const finalized = questionsList.slice(0, requestedCount).map((q, idx) => ({
         ...q,
         id: q.id || idx + 1,
         format: "objective"
@@ -14562,12 +14663,12 @@ ${image ? "IMPORTANT: The student has provided an attached photo containing thei
     });
     const response = await safeGenerateContent({
       gradeLevel: userGrade,
-      model: "gemini-3.5-flash-lite",
+      model: "gemini-flash-lite-latest",
       contents: { parts },
       config: {
         systemInstruction: { parts: [{ text: systemInstruction }] },
         temperature: 0.2,
-        maxOutputTokens: 2048
+        maxOutputTokens: 1500
       }
     });
     const text = response.text || "Failed to evaluate response.";
@@ -14683,12 +14784,12 @@ Disarm Secret Note: ${disarmStrategy}
 ${promptGoal}`;
     const response = await safeGenerateContent({
       gradeLevel,
-      model: "gemini-3.5-flash-lite",
+      model: "gemini-flash-lite-latest",
       contents: { parts: [{ text: userPrompt }] },
       config: {
         systemInstruction: { parts: [{ text: systemInstruction }] },
         temperature: 0.3,
-        maxOutputTokens: 2048
+        maxOutputTokens: 1500
       }
     });
     return res.json({ explanation: response.text || "Here is a breakdown to help you understand and solve this AP question." });
@@ -14870,7 +14971,8 @@ RULES FOR 1V1 QUIZ BATTLE QUESTIONS:
 1. Every question must be competitive, fast-paced, clear, and solvable in 30-60 seconds.
 2. Provide exactly 4 options per question: ["Option A", "Option B", "Option C", "Option D"].
 3. Exactly ONE correct option. Set "correctIndex" as 0, 1, 2, or 3.
-4. "stem" must be concise and engaging (use standard LaTeX $...$ for mathematical/scientific expressions if applicable).
+4. "stem" must be concise and engaging. For ALL mathematical/scientific formulas, functions, or variables, ALWAYS use inline LaTeX wrapped in single dollar signs e.g. $f'(x) = 3x^2$ or $\\frac{1}{2}mv^2$.
+4b. "options": If options contain mathematical equations, fractions, or variables, ALWAYS wrap each formula in single dollar signs e.g. ["$\\frac{1}{2} x^2$", "$2x$", "$3x^2 \\cdot e^x$", "$4x$"]. NEVER use double dollar signs $$ and NEVER use unformatted asterisks for multiplication (use \\cdot or \\times).
 5. "explanation": 1-2 sentence crisp breakdown explaining why the correct choice is true and why the distractors are wrong.
 6. "difficulty": distribute as 'Easy' (30s), 'Medium' (45s), 'Hard' (60s).
 7. "timeLimit": 30 for Easy, 45 for Medium, 60 for Hard.
@@ -14888,11 +14990,12 @@ Strictly return a raw JSON array of ${requestedCount} objects matching this exac
   }
 ]`;
     const aiResp = await safeGenerateContent({
-      model: "gemini-3.5-flash-lite",
+      model: "gemini-flash-lite-latest",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         responseMimeType: "application/json",
-        temperature: 0.9
+        temperature: 0.9,
+        maxOutputTokens: 1500
       }
     });
     let rawText = "";
@@ -15178,9 +15281,11 @@ app.post("/api/battle/cancel", (req, res) => {
           } else if (room.status === "countdown" || room.status === "battle") {
             const leaver = room.player1.id === playerId ? room.player1 : room.player2?.id === playerId ? room.player2 : null;
             if (leaver) leaver.finished = true;
+            room.forfeitedBy = playerId;
+            room.winnerId = room.player1.id === playerId ? room.player2?.id || void 0 : room.player1.id;
             room.status = "finished";
             room.updatedAt = Date.now();
-            console.log(`[Battle Matchmaker] Player ${playerId} forfeited match in room ${key}.`);
+            console.log(`[Battle Matchmaker] Player ${playerId} forfeited match in room ${key}. Winner: ${room.winnerId}`);
           }
         }
         playerToRoomMap.delete(playerId);
@@ -15308,21 +15413,29 @@ app.post("/api/battle/action", (req, res) => {
     }
     const now = Date.now();
     let target = null;
-    if (typeof isPlayer1 === "boolean") {
+    if (playerId) {
+      if (room.player1.id === playerId) {
+        target = room.player1;
+      } else if (room.player2?.id === playerId) {
+        target = room.player2;
+      }
+    }
+    if (!target && typeof isPlayer1 === "boolean") {
       target = isPlayer1 ? room.player1 : room.player2 || null;
     }
-    if (!target) {
-      target = room.player1.id === playerId ? room.player1 : room.player2?.id === playerId ? room.player2 : null;
-    }
-    if (!target && room.player2) {
-      if (room.player1.id.startsWith(playerId) || playerId.startsWith(room.player1.id)) target = room.player1;
-      else if (room.player2.id.startsWith(playerId) || playerId.startsWith(room.player2.id)) target = room.player2;
-      else if (isSameUser(room.player1.id, playerId)) target = room.player1;
+    if (!target && playerId && room.player2) {
+      if (isSameUser(room.player1.id, playerId)) target = room.player1;
       else if (isSameUser(room.player2.id, playerId)) target = room.player2;
     }
     if (target) {
       if (typeof score === "number") target.score = score;
-      if (typeof hasAnswered === "boolean") target.hasAnswered = hasAnswered;
+      if (typeof hasAnswered === "boolean") {
+        if (hasAnswered === true) {
+          target.hasAnswered = true;
+        } else if (!target.hasAnswered) {
+          target.hasAnswered = false;
+        }
+      }
       if (typeof finished === "boolean") {
         const totalQ = room.questions?.length || 5;
         if (finished) {
@@ -15359,6 +15472,27 @@ app.post("/api/battle/action", (req, res) => {
 });
 function stepBattleRoomClock(room, now) {
   let changed = false;
+  if (room.status === "battle" && room.player2) {
+    const p1Inactive = now - (room.player1.lastSeen || 0) > 15e3;
+    const p2Inactive = now - (room.player2.lastSeen || 0) > 15e3;
+    const p1Active = now - (room.player1.lastSeen || 0) <= 6e3;
+    const p2Active = now - (room.player2.lastSeen || 0) <= 6e3;
+    if (p1Inactive && p2Active) {
+      room.forfeitedBy = room.player1.id;
+      room.winnerId = room.player2.id;
+      room.status = "finished";
+      room.updatedAt = now;
+      changed = true;
+      console.log(`[Battle Arena] Player 1 inactive/disconnected in room ${room.id}. Forfeit awarded to Player 2.`);
+    } else if (p2Inactive && p1Active) {
+      room.forfeitedBy = room.player2.id;
+      room.winnerId = room.player1.id;
+      room.status = "finished";
+      room.updatedAt = now;
+      changed = true;
+      console.log(`[Battle Arena] Player 2 inactive/disconnected in room ${room.id}. Forfeit awarded to Player 1.`);
+    }
+  }
   if (room.status === "countdown" && room.countdownStart) {
     if (now - room.countdownStart >= 3e3) {
       room.status = "battle";
@@ -15433,6 +15567,14 @@ app.get("/api/battle/room/:roomId", (req, res) => {
       return res.status(404).json({ error: "Room not found" });
     }
     const now = Date.now();
+    const playerId = req.query.playerId;
+    if (playerId) {
+      if (room.player1.id === playerId) {
+        room.player1.lastSeen = now;
+      } else if (room.player2?.id === playerId) {
+        room.player2.lastSeen = now;
+      }
+    }
     stepBattleRoomClock(room, now);
     res.json({ room, serverTime: now });
   } catch (err) {

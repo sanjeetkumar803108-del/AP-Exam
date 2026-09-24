@@ -363,7 +363,7 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
       if (res.success && res.dataUri) {
         setFullScreenPdfData({
           uri: res.dataUri,
-          title: `${currentUnit.subjectName} Unit ${currentUnit.unitNumber} Mind Map`,
+          title: `${currentUnit.subjectName} Unit ${currentUnit.unitNumber} Short Notes`,
           unitNumber: currentUnit.unitNumber
         });
       }
@@ -418,7 +418,7 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
                 AP® REVISION
               </span>
               <h1 className="text-base font-black text-zinc-900 tracking-tight">
-                Course Mind Maps
+                Course Short Notes
               </h1>
             </div>
           </div>
@@ -430,14 +430,11 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
           <div className="bg-gradient-to-br from-indigo-900 via-indigo-950 to-purple-950 rounded-3xl p-6 text-white relative overflow-hidden shadow-sm">
             <div className="relative z-10 max-w-xl">
               <h2 className="text-2xl font-black tracking-tight leading-tight">
-                AP® Mind Map Revision
+                AP® Short Notes Revision
               </h2>
-              <p className="text-xs text-indigo-200 mt-1 leading-relaxed font-medium">
-                Select a subject and unit to review official College Board visual branches, active recall trees, formulas, and distractor traps.
-              </p>
             </div>
             <div className="absolute -right-4 -bottom-6 text-7xl opacity-20 select-none pointer-events-none">
-              🧠
+              📝
             </div>
           </div>
 
@@ -521,52 +518,44 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
                     </button>
                   </div>
 
-                  {/* Units Expanded List */}
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.25, ease: 'easeInOut' }}
-                        className="border-t border-zinc-100 bg-zinc-50/40 p-3 flex flex-col gap-2 overflow-hidden w-full"
-                      >
-                        {subj.notes.map(unit => (
-                          <div
-                            key={unit.unitId}
-                            className="w-full bg-white border border-zinc-200/80 hover:bg-zinc-50 hover:border-indigo-300 py-2.5 px-3.5 rounded-2xl flex items-center justify-between transition-all group/unit shadow-xs"
+                  {/* Units Expanded List - 60fps CSS Grid Accordion */}
+                  <div className={`smooth-accordion border-t border-zinc-100 ${isExpanded ? 'is-open' : ''}`}>
+                    <div className="smooth-accordion-inner bg-zinc-50/40 p-3 flex flex-col gap-2 w-full">
+                      {subj.notes.map(unit => (
+                        <div
+                          key={unit.unitId}
+                          className="w-full bg-white border border-zinc-200/80 hover:bg-zinc-50 hover:border-indigo-300 py-2.5 px-3.5 rounded-2xl flex items-center justify-between transition-all group/unit shadow-xs"
+                        >
+                          {/* Main Unit Click Target to Open Direct Mind Map */}
+                          <button
+                            onClick={() => openUnitMap(subj.subjectId, unit.unitId, unit.unitNumber)}
+                            className="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer pr-2"
                           >
-                            {/* Main Unit Click Target to Open Direct Mind Map */}
-                            <button
-                              onClick={() => openUnitMap(subj.subjectId, unit.unitId, unit.unitNumber)}
-                              className="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer pr-2"
-                            >
-                              <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-200/70 text-indigo-700 font-black text-xs flex items-center justify-center shrink-0">
-                                U{unit.unitNumber}
-                              </div>
-                              <div className="min-w-0">
-                                <span className="font-bold text-xs text-zinc-900 group-hover/unit:text-indigo-600 transition-colors truncate block">
-                                  Unit {unit.unitNumber}: {unit.title}
-                                </span>
-                                <span className="text-[10px] text-zinc-400 truncate block">
-                                  {unit.examWeight || 'CED Exam Core'} • {unit.sections.length} Concept Nodes
-                                </span>
-                              </div>
-                            </button>
+                            <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-200/70 text-indigo-700 font-black text-xs flex items-center justify-center shrink-0">
+                              U{unit.unitNumber}
+                            </div>
+                            <div className="min-w-0">
+                              <span className="font-bold text-xs text-zinc-900 group-hover/unit:text-indigo-600 transition-colors truncate block">
+                                Unit {unit.unitNumber}: {unit.title}
+                              </span>
+                              <span className="text-[10px] text-zinc-400 truncate block">
+                                {unit.examWeight || 'CED Exam Core'} • {unit.sections.length} Concept Nodes
+                              </span>
+                            </div>
+                          </button>
 
-                            {/* Arrow Button */}
-                            <button
-                              onClick={() => openUnitMap(subj.subjectId, unit.unitId, unit.unitNumber)}
-                              className="w-8 h-8 rounded-xl bg-zinc-50 hover:bg-indigo-50 hover:text-indigo-700 text-zinc-400 group-hover/unit:text-indigo-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
-                              title={`Open Unit ${unit.unitNumber} Mind Map`}
-                            >
-                              <ChevronRight className="w-4 h-4 group-hover/unit:translate-x-0.5 transition-all" />
-                            </button>
-                          </div>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                          {/* Arrow Button */}
+                          <button
+                            onClick={() => openUnitMap(subj.subjectId, unit.unitId, unit.unitNumber)}
+                            className="w-8 h-8 rounded-xl bg-zinc-50 hover:bg-indigo-50 hover:text-indigo-700 text-zinc-400 group-hover/unit:text-indigo-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                            title={`Open Unit ${unit.unitNumber} Short Notes`}
+                          >
+                            <ChevronRight className="w-4 h-4 group-hover/unit:translate-x-0.5 transition-all" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               );
             })}
@@ -595,7 +584,7 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
     return (
       <div className="w-full h-full bg-[#FAF7F2] text-zinc-900 flex flex-col items-center justify-center p-4">
         <Loader2 className="w-8 h-8 text-indigo-600 animate-spin mb-3" />
-        <p className="text-sm font-bold text-zinc-700">Loading AP Mind Map...</p>
+        <p className="text-sm font-bold text-zinc-700">Loading AP Short Notes...</p>
       </div>
     );
   }
@@ -618,7 +607,7 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
 
           <div className="min-w-0">
             <h1 className="text-xs sm:text-sm font-black text-zinc-900 tracking-tight truncate">
-              Mind Map Revision
+              Short Notes Revision
             </h1>
             <p className="text-[10px] sm:text-[11px] text-zinc-500 font-medium truncate">
               {currentSubject.subjectName}
@@ -661,7 +650,7 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
             <span className="text-[11px] hidden sm:inline">Recall</span>
           </button>
 
-          {/* Share Mind Map PDF */}
+          {/* Share Short Notes PDF */}
           <button
             onClick={async () => {
               if (!currentUnit || isExporting) return;
@@ -674,7 +663,7 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
             }}
             disabled={isExporting}
             className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-xs font-bold shadow-2xs cursor-pointer transition-all active:scale-95 shrink-0"
-            title="Share Mind Map Notes (PDF)"
+            title="Share Short Notes (PDF)"
           >
             <Share2 className="w-3.5 h-3.5 text-indigo-600" />
             <span className="text-[11px] hidden sm:inline">Share</span>
@@ -1017,7 +1006,7 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
         <div className="p-4 rounded-2xl bg-indigo-50/80 border border-indigo-200/80 text-indigo-950 text-xs flex items-start gap-3 w-full">
           <HelpCircle className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <span className="font-bold block">How to use Mind Map Revision:</span>
+            <span className="font-bold block">How to use Short Notes Revision:</span>
             <p className="text-zinc-700 leading-relaxed">
               Tap any concept card to view its complete textbook breakdown. Turn on <strong>Active Recall</strong> to blur formulas and definitions until you attempt to remember them. Mark nodes with the green checkmark once mastered.
             </p>
@@ -1160,7 +1149,7 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
               <div className="pt-2 flex items-center justify-between gap-2">
                 <ReportAiButton
                   aiOutput={selectedNodeForModal.node.fullContent || selectedNodeForModal.node.detail || selectedNodeForModal.node.title}
-                  context={`AP Mind Map: ${selectedNodeForModal.node.title}`}
+                  context={`AP Short Notes: ${selectedNodeForModal.node.title}`}
                   variant="compact"
                   label="Report Content"
                 />

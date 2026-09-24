@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   ArrowLeft,
   Brain, 
@@ -32,6 +32,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { Capacitor } from '@capacitor/core';
 import { Camera as CapCamera } from '@capacitor/camera';
+import { App as CapApp } from '@capacitor/app';
 import { triggerVibration, hapticImpact, hapticNotification } from '../utils/vibrate';
 import { compressImageToFile } from '../utils/imageCompressor';
 import { getApiUrl } from '../utils/api';
@@ -107,9 +108,10 @@ export interface UploadedPage {
 
 interface FRQGraderProps {
   onBack: () => void;
+  isActive?: boolean;
 }
 
-export default function FRQGrader({ onBack }: FRQGraderProps) {
+export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraPermissionError, setCameraPermissionError] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
@@ -139,6 +141,54 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
     return () => window.removeEventListener('user_account_changed', handleAccountChange);
   }, []);
 
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraCaptureInputRef = useRef<HTMLInputElement | null>(null);
+  const resultsContainerRef = useRef<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  // Safely stop all camera tracks and release hardware back to the OS immediately
+  const stopCamera = useCallback(() => {
+    try {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => {
+          try {
+            // Turn off torch before stopping track
+            if (torchOn) {
+              (track as any).applyConstraints?.({ advanced: [{ torch: false }] }).catch(() => {});
+            }
+            track.stop();
+          } catch (_) {}
+        });
+        streamRef.current = null;
+      }
+      if (videoRef.current) {
+        try {
+          videoRef.current.pause();
+          videoRef.current.srcObject = null;
+        } catch (_) {}
+      }
+      const globalAny = typeof window !== 'undefined' ? (window as any) : {};
+      if (globalAny.__scannerStream) {
+        try {
+          if (typeof globalAny.__scannerStream.getTracks === 'function') {
+            globalAny.__scannerStream.getTracks().forEach((t: any) => {
+              try { t.stop(); } catch (_) {}
+            });
+          }
+        } catch (_) {}
+        globalAny.__scannerStream = null;
+      }
+    } catch (err) {
+      console.warn("[FRQGrader] Error stopping camera stream:", err);
+    } finally {
+      setCameraActive(false);
+      setTorchOn(false);
+    }
+  }, [torchOn]);
+
   // Hardware Android Back Button Navigation (Step-by-step)
   useEffect(() => {
     const handleHardwareBack = (e: Event) => {
@@ -161,76 +211,169 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
       } else {
         e.preventDefault();
         triggerVibration(10);
+        stopCamera();
         onBack();
       }
     };
     window.addEventListener('appBackButton', handleHardwareBack);
     return () => window.removeEventListener('appBackButton', handleHardwareBack);
-  }, [viewingFullImageUrl, showHistoryModal, result, uploadedPages.length, onBack]);
+  }, [viewingFullImageUrl, showHistoryModal, result, uploadedPages.length, onBack, stopCamera]);
 
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const cameraCaptureInputRef = useRef<HTMLInputElement | null>(null);
-  const resultsContainerRef = useRef<HTMLDivElement | null>(null);
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  // Initialize and auto-open camera strictly when viewfinder is active and no pages staged
+  const startCamera = useCallback(async () => {
+    // Hardware guard: Do not start if inactive, pages staged, grading, result shown, or document hidden
+    if (!isActive || uploadedPages.length > 0 || isGrading || result !== null) {
+      return;
+    }
+    if (typeof document !== 'undefined' && document.hidden) {
+      return;
+    }
 
-  // Initialize and auto-open camera on mount when no pages are staged
-  useEffect(() => {
-    let active = true;
-
-    const startCamera = async () => {
-      // Don't start video stream if we already have staged pages
-      if (uploadedPages.length > 0) return;
-
-      try {
-        if (Capacitor.isNativePlatform()) {
-          const checkStatus = await CapCamera.checkPermissions();
-          if (checkStatus.camera !== 'granted') {
-            const req = await CapCamera.requestPermissions({ permissions: ['camera'] });
-            if (req.camera !== 'granted') {
-              if (active) setCameraPermissionError(true);
-              return;
-            }
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const checkStatus = await CapCamera.checkPermissions();
+        if (checkStatus.camera !== 'granted') {
+          const req = await CapCamera.requestPermissions({ permissions: ['camera'] });
+          if (req.camera !== 'granted') {
+            setCameraPermissionError(true);
+            return;
           }
         }
+      }
 
-        const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
+      // Re-verify guards before getUserMedia
+      if (!isActive || uploadedPages.length > 0 || isGrading || result !== null || (typeof document !== 'undefined' && document.hidden)) {
+        return;
+      }
+
+      // Multi-tier high compatibility stream acquisition (720p ideal -> environment -> basic)
+      let mediaStream: MediaStream;
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1280, max: 1920 },
+            height: { ideal: 720, max: 1080 }
+          },
+          audio: false
         });
-
-        if (!active) {
-          mediaStream.getTracks().forEach(t => t.stop());
-          return;
-        }
-
-        streamRef.current = mediaStream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream;
-          videoRef.current.play().catch(() => {});
-        }
-        setCameraActive(true);
-        setCameraPermissionError(false);
-      } catch (err: any) {
-        console.warn("[FRQGrader] Camera access fallback:", err);
-        if (active) {
-          setCameraPermissionError(true);
-          setCameraActive(false);
+      } catch (err1) {
+        console.warn("[FRQGrader] Preferred video constraints failed, trying basic environment:", err1);
+        try {
+          mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' },
+            audio: false
+          });
+        } catch (err2) {
+          console.warn("[FRQGrader] Environment constraints failed, trying fallback:", err2);
+          mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false
+          });
         }
       }
-    };
+
+      // Guard check after stream acquisition
+      if (!isActive || uploadedPages.length > 0 || isGrading || result !== null || (typeof document !== 'undefined' && document.hidden)) {
+        mediaStream.getTracks().forEach(t => {
+          try { t.stop(); } catch (_) {}
+        });
+        return;
+      }
+
+      // Ensure any existing stream is cleanly stopped
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => {
+          try { t.stop(); } catch (_) {}
+        });
+      }
+
+      streamRef.current = mediaStream;
+      const globalAny = typeof window !== 'undefined' ? (window as any) : {};
+      globalAny.__scannerStream = mediaStream;
+
+      if (videoRef.current) {
+        const video = videoRef.current;
+        video.pause();
+        video.muted = true;
+        video.defaultMuted = true;
+        video.playsInline = true;
+        video.setAttribute('playsinline', 'true');
+        video.setAttribute('webkit-playsinline', 'true');
+        video.setAttribute('autoplay', 'true');
+        video.setAttribute('muted', 'true');
+        video.srcObject = mediaStream;
+
+        const attemptPlay = () => {
+          if (video && video.srcObject) {
+            video.play().catch(playErr => {
+              console.warn("[FRQGrader] Video play attempt note:", playErr);
+            });
+          }
+        };
+
+        video.onloadedmetadata = () => attemptPlay();
+        video.oncanplay = () => { if (video.paused) attemptPlay(); };
+        video.onloadeddata = () => { if (video.paused) attemptPlay(); };
+
+        attemptPlay();
+      }
+
+      setCameraActive(true);
+      setCameraPermissionError(false);
+      setTorchOn(false);
+    } catch (err: any) {
+      console.warn("[FRQGrader] Camera access fallback:", err);
+      setCameraPermissionError(true);
+      setCameraActive(false);
+      setTorchOn(false);
+    }
+  }, [isActive, uploadedPages.length, isGrading, result]);
+
+  // Manage camera lifecycle: Start when active and clean up on any state change, minimize, or unmount
+  useEffect(() => {
+    if (!isActive || uploadedPages.length > 0 || isGrading || result !== null) {
+      stopCamera();
+      return;
+    }
 
     startCamera();
 
-    return () => {
-      active = false;
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(t => t.stop());
-        streamRef.current = null;
+    // 1. Web visibilitychange: Handle app minimize, tab switch, or phone lock
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopCamera();
+      } else if (isActive && uploadedPages.length === 0 && !isGrading && !result) {
+        startCamera();
       }
     };
-  }, [uploadedPages.length]);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // 2. Capacitor App State Change (Native background / foreground events)
+    let appStateSub: any = null;
+    if (Capacitor.isNativePlatform()) {
+      try {
+        appStateSub = CapApp.addListener('appStateChange', (state) => {
+          if (!state.isActive) {
+            stopCamera();
+          } else if (isActive && uploadedPages.length === 0 && !isGrading && !result) {
+            startCamera();
+          }
+        });
+      } catch (_) {}
+    }
+
+    // Unmount cleanup: ALWAYS kill camera stream immediately
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (appStateSub && typeof appStateSub.then === 'function') {
+        appStateSub.then((sub: any) => sub?.remove?.()).catch(() => {});
+      } else if (appStateSub && typeof appStateSub.remove === 'function') {
+        appStateSub.remove();
+      }
+      stopCamera();
+    };
+  }, [isActive, uploadedPages.length, isGrading, result, startCamera, stopCamera]);
 
   // Automatic smooth scroll down to evaluation results whenever evaluation starts or completes
   useEffect(() => {
@@ -245,18 +388,37 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
   // Toggle Torch/Flashlight
   const toggleTorch = async () => {
     triggerVibration(15);
-    if (!streamRef.current) return;
+    if (!streamRef.current) {
+      showToast('Camera stream is not active', 'info');
+      setTorchOn(false);
+      return;
+    }
     const track = streamRef.current.getVideoTracks()[0];
-    if (track) {
-      try {
-        const nextState = !torchOn;
-        await track.applyConstraints({
-          advanced: [{ torch: nextState } as any]
-        });
-        setTorchOn(nextState);
-      } catch (_) {
-        setTorchOn(!torchOn);
-      }
+    if (!track) {
+      showToast('Camera track not found', 'info');
+      setTorchOn(false);
+      return;
+    }
+
+    const capabilities = typeof track.getCapabilities === 'function' ? (track.getCapabilities() as any) : null;
+    if (capabilities && !('torch' in capabilities)) {
+      showToast('Flashlight is not supported on this camera lens', 'info', 2000);
+      setTorchOn(false);
+      return;
+    }
+
+    try {
+      const nextState = !torchOn;
+      await (track as any).applyConstraints({
+        advanced: [{ torch: nextState }]
+      });
+      setTorchOn(nextState);
+      showToast(nextState ? 'Torch ON' : 'Torch OFF', 'info', 1000);
+    } catch (err) {
+      console.warn('[FRQGrader] Torch toggle failed:', err);
+      // Strictly set to false on error - never flip to true when hardware failed
+      setTorchOn(false);
+      showToast('Flashlight not supported on this device', 'info', 2000);
     }
   };
 
@@ -275,12 +437,8 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
       return next;
     });
 
-    // Stop camera stream to preserve battery
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.stop());
-      streamRef.current = null;
-    }
-    setCameraActive(false);
+    // Stop camera stream to preserve battery and release hardware
+    stopCamera();
 
     showToast(`Page ${uploadedPages.length + 1} added!`, "info", 1800);
   };
@@ -298,13 +456,38 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
     });
   };
 
-  // Capture photo from camera stream
+  // Capture photo from live camera stream with instant canvas grab & native fallback
   const handleCapturePhoto = async () => {
     triggerVibration(25);
     hapticImpact('MEDIUM');
 
+    // 1. Direct high-speed snapshot from active live camera video stream
+    const video = videoRef.current;
+    if (video && video.videoWidth > 0 && video.videoHeight > 0) {
+      try {
+        const canvas = canvasRef.current || document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(async (blob) => {
+            if (!blob) return;
+            const file = new File([blob], `frq_page_${uploadedPages.length + 1}_${Date.now()}.jpg`, { type: 'image/jpeg' });
+            const previewUrl = URL.createObjectURL(file);
+            addPage(file, previewUrl, file.name);
+          }, 'image/jpeg', 0.92);
+          return;
+        }
+      } catch (snapErr) {
+        console.warn("[FRQGrader] Canvas live snapshot failed, falling back to native:", snapErr);
+      }
+    }
+
+    // 2. Fallback to native camera if stream was not producing active video dimensions
     if (Capacitor.isNativePlatform()) {
       try {
+        stopCamera();
         const picked = await takeNativePhoto();
         if (picked) {
           if ('error' in picked) {
@@ -318,36 +501,43 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
             return;
           }
         }
+        if (uploadedPages.length === 0 && isActive) {
+          startCamera();
+        }
       } catch (err) {
         console.warn("[FRQGrader] Native capture cancelled or failed:", err);
+        if (uploadedPages.length === 0 && isActive) {
+          startCamera();
+        }
       }
-    }
-
-    if (!videoRef.current) {
-      // Fallback: trigger camera input or file picker
-      cameraCaptureInputRef.current?.click();
       return;
     }
 
-    const video = videoRef.current;
-    const canvas = canvasRef.current || document.createElement('canvas');
-    canvas.width = video.videoWidth || 1280;
-    canvas.height = video.videoHeight || 720;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    canvas.toBlob(async (blob) => {
-      if (!blob) return;
-      const file = new File([blob], `frq_page_${uploadedPages.length + 1}_${Date.now()}.jpg`, { type: 'image/jpeg' });
-      const previewUrl = URL.createObjectURL(file);
-      addPage(file, previewUrl, file.name);
-    }, 'image/jpeg', 0.88);
+    // 3. Fallback for desktop/web input
+    if (videoRef.current) {
+      const v = videoRef.current;
+      const canvas = canvasRef.current || document.createElement('canvas');
+      canvas.width = v.videoWidth || 1280;
+      canvas.height = v.videoHeight || 720;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(async (blob) => {
+          if (!blob) return;
+          const file = new File([blob], `frq_page_${uploadedPages.length + 1}_${Date.now()}.jpg`, { type: 'image/jpeg' });
+          const previewUrl = URL.createObjectURL(file);
+          addPage(file, previewUrl, file.name);
+        }, 'image/jpeg', 0.88);
+        return;
+      }
+    }
+    cameraCaptureInputRef.current?.click();
   };
 
   // Pick image(s) from Gallery (supports multiple)
   const handleGalleryClick = async () => {
     triggerVibration(15);
+    stopCamera();
 
     if (Capacitor.isNativePlatform()) {
       try {
@@ -366,11 +556,7 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
             return next;
           });
 
-          if (streamRef.current) {
-            streamRef.current.getTracks().forEach(t => t.stop());
-            streamRef.current = null;
-          }
-          setCameraActive(false);
+          stopCamera();
 
           showToast(`${newPages.length} image${newPages.length > 1 ? 's' : ''} added!`, "info", 2000);
           return;
@@ -402,11 +588,7 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
       return next;
     });
 
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.stop());
-      streamRef.current = null;
-    }
-    setCameraActive(false);
+    stopCamera();
 
     showToast(`${newPages.length} page${newPages.length > 1 ? 's' : ''} staged!`, "info", 2000);
     e.target.value = '';
@@ -654,23 +836,47 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
 
       {/* 1. FULLSCREEN CAMERA VIEWFINDER (Active when NO pages are uploaded yet) */}
       {uploadedPages.length === 0 ? (
-        <div className="relative w-full h-full flex-1 min-h-0 bg-black overflow-hidden flex flex-col justify-between">
+        <div 
+          onClick={() => {
+            if (videoRef.current && videoRef.current.paused && streamRef.current) {
+              videoRef.current.play().catch(() => {});
+            }
+          }}
+          className="relative w-full h-full flex-1 min-h-0 bg-black overflow-hidden flex flex-col justify-between select-none cursor-pointer"
+        >
           {/* Video element covering the entire available area */}
-          <div className="absolute inset-0 w-full h-full z-0 bg-black overflow-hidden">
+          <div className="absolute inset-0 w-full h-full z-0 bg-black overflow-hidden flex items-center justify-center">
             <video 
               ref={videoRef} 
               playsInline 
               muted 
               autoPlay
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover block"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
+          </div>
+
+          {/* Scanner Reticle Overlay */}
+          <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-6 z-10">
+            <div className="w-full max-w-[280px] sm:max-w-xs aspect-[3/4] border-2 border-emerald-400/50 rounded-3xl relative overflow-hidden shadow-[0_0_25px_rgba(52,211,153,0.15)]">
+              {/* Corner Reticles */}
+              <div className="absolute top-0 left-0 w-5 h-5 border-t-[3px] border-l-[3px] border-emerald-400 rounded-tl-xl" />
+              <div className="absolute top-0 right-0 w-5 h-5 border-t-[3px] border-r-[3px] border-emerald-400 rounded-tr-xl" />
+              <div className="absolute bottom-0 left-0 w-5 h-5 border-b-[3px] border-l-[3px] border-emerald-400 rounded-bl-xl" />
+              <div className="absolute bottom-0 right-0 w-5 h-5 border-b-[3px] border-r-[3px] border-emerald-400 rounded-br-xl" />
+            </div>
+            <p className="text-white/90 text-[11px] font-bold mt-4 tracking-wide bg-black/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/15 shadow-md">
+              Align FRQ answer sheet inside frame
+            </p>
           </div>
 
           {/* Floating Top Header */}
           <header className="relative z-20 w-full p-4 pt-safe flex items-center justify-between bg-gradient-to-b from-black/80 via-black/40 to-transparent">
             <button 
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 triggerVibration(10);
+                stopCamera();
                 onBack();
               }}
               className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/60 active:scale-95 transition-all shadow-md cursor-pointer"
@@ -684,7 +890,8 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
               </span>
             </div>
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 triggerVibration(10);
                 setShowHistoryModal(true);
               }}
@@ -703,16 +910,19 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
               </div>
               <div className="max-w-xs">
                 <h3 className="text-base font-black text-white">Camera Access Needed</h3>
-                <p className="text-xs text-zinc-300 mt-1 leading-relaxed">
-                  Please allow camera permission in device settings, or tap below to upload multi-page answer sheets from your gallery.
+                <p className="text-xs text-zinc-300 mt-1">
+                  Upload answer photos
                 </p>
               </div>
               <button
-                onClick={handleGalleryClick}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleGalleryClick();
+                }}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black px-6 py-3 rounded-2xl cursor-pointer border-none shadow-lg transition-all flex items-center gap-2"
               >
                 <ImageIcon className="w-4 h-4" />
-                <span>Upload From Gallery (Multi-Page)</span>
+                <span>Upload Gallery</span>
               </button>
             </div>
           )}
@@ -721,7 +931,10 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
           <div className="relative z-20 w-full pb-safe pb-8 pt-10 px-8 flex items-center justify-around bg-gradient-to-t from-black/85 via-black/45 to-transparent">
             {/* Gallery Button */}
             <button
-              onClick={handleGalleryClick}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleGalleryClick();
+              }}
               className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white flex items-center justify-center active:scale-90 transition-all shadow-lg hover:bg-white/20 cursor-pointer"
               title="Upload from Gallery"
               aria-label="Upload from Gallery"
@@ -731,7 +944,10 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
 
             {/* Shutter Capture Button */}
             <button
-              onClick={handleCapturePhoto}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCapturePhoto();
+              }}
               className="w-20 h-20 rounded-full border-[3.5px] border-emerald-400 p-1 flex items-center justify-center active:scale-95 transition-all shadow-[0_0_30px_rgba(52,211,153,0.6)] cursor-pointer group"
               aria-label="Capture Page 1"
             >
@@ -742,16 +958,19 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
 
             {/* Torch Button */}
             <button
-              onClick={toggleTorch}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleTorch();
+              }}
               className={`w-14 h-14 rounded-full backdrop-blur-md border flex items-center justify-center active:scale-90 transition-all shadow-lg cursor-pointer ${
                 torchOn 
-                  ? 'bg-amber-500/30 text-amber-300 border-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.5)]' 
+                  ? 'bg-amber-400 text-zinc-950 border-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.7)]' 
                   : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
               }`}
               title="Toggle Torch"
               aria-label="Toggle Torch"
             >
-              {torchOn ? <Zap className="w-6 h-6 fill-amber-400 text-amber-400" /> : <ZapOff className="w-6 h-6" />}
+              {torchOn ? <Zap className="w-6 h-6 fill-current text-zinc-950" /> : <ZapOff className="w-6 h-6 text-white" />}
             </button>
           </div>
         </div>
@@ -903,7 +1122,7 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                       className="bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-900 font-black text-xs py-3.5 px-4 rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                     >
                       <Camera className="w-4 h-4 text-emerald-600" />
-                      <span>+ Add Page (Camera)</span>
+                      <span>+ Camera</span>
                     </button>
 
                     <button
@@ -911,7 +1130,7 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                       className="bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-900 font-black text-xs py-3.5 px-4 rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                     >
                       <ImageIcon className="w-4 h-4 text-teal-600" />
-                      <span>+ Add Page (Gallery)</span>
+                      <span>+ Gallery</span>
                     </button>
                   </div>
 
@@ -933,10 +1152,10 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                   >
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-amber-300 fill-amber-300" />
-                      <span>Grade My FRQ ({uploadedPages.length} {uploadedPages.length === 1 ? 'Page' : 'Pages'})</span>
+                      <span>Grade FRQ ({uploadedPages.length})</span>
                     </div>
                     <span className="text-[10px] font-bold text-emerald-100 mt-0.5">
-                      Official College Board Scoring Guideline Rubric
+                      Official Rubric
                     </span>
                   </button>
                 </div>
@@ -1051,62 +1270,28 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                           : 'text-red-600'
                       }`}>
                         {result.errorCode === 'NO_STUDENT_WORK_DETECTED'
-                          ? '0 Points (No Credit) — No Handwritten Answer'
+                          ? 'Question Prompt Only'
                           : result.errorCode === 'MCQ_DETECTED' 
-                          ? 'Subjective FRQ Only — No MCQs' 
-                          : 'Verification Failed'}
+                          ? 'Subjective FRQ Only' 
+                          : 'Invalid Image'}
                       </span>
                       <h3 className="text-base font-black text-zinc-950 mt-1">
                         {result.errorCode === 'NO_STUDENT_WORK_DETECTED'
-                          ? 'Question Prompt Only Detected'
+                          ? 'No Handwritten Solution Found'
                           : result.errorCode === 'MCQ_DETECTED'
-                          ? 'Multiple Choice Question (MCQ) Detected'
-                          : 'No Academic Question or Answer Detected'}
+                          ? 'Multiple Choice Question (MCQ)'
+                          : 'No Academic Question or Answer Found'}
                       </h3>
-                      <p className="text-xs font-semibold text-zinc-600 mt-1.5 leading-relaxed">
+                      <p className="text-xs font-semibold text-zinc-600 mt-1.5 leading-relaxed max-w-sm mx-auto">
                         {result.errorMessage || (
                           result.errorCode === 'NO_STUDENT_WORK_DETECTED'
-                            ? 'The FRQ Grader is exclusively built to evaluate and grade your handwritten solutions. Since no student handwriting or calculations were found, zero points are awarded.'
+                            ? 'Please write out your solution on paper and upload a photo of your handwritten work to be graded.'
                             : result.errorCode === 'MCQ_DETECTED'
-                            ? 'The FRQ Grader is strictly built to evaluate subjective Free Response Questions requiring handwritten calculations or written explanations.'
-                            : 'Please capture or upload a clear photo of an academic exam question (FRQ) or your handwritten student answer sheet.'
+                            ? 'The FRQ Grader is exclusively for subjective free-response questions. For MCQs, use the Quiz feature.'
+                            : 'The uploaded photo does not contain an AP exam question or student solution. Please upload a clear photo of your handwritten FRQ work.'
                         )}
                       </p>
                     </div>
-
-                    {/* Official AP Rule Notice */}
-                    {result.errorCode === 'NO_STUDENT_WORK_DETECTED' && (
-                      <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-3.5 text-left space-y-1">
-                        <span className="text-[9px] font-black uppercase tracking-wider text-amber-800 block">
-                          Official College Board Rule: "No Work, No Credit"
-                        </span>
-                        <p className="text-xs text-amber-950 font-medium leading-relaxed">
-                          AP Exam readers can only score student calculations and reasoning shown on the page. To protect academic integrity and prepare you for exam day, the FRQ Grader does not provide homework solutions for blank questions.
-                        </p>
-                      </div>
-                    )}
-
-                    {result.detectionReason && result.errorCode !== 'NO_STUDENT_WORK_DETECTED' && (
-                      <div className="bg-zinc-50 border border-zinc-200/80 rounded-2xl p-3 text-left">
-                        <span className="text-[9px] font-black uppercase tracking-wider text-zinc-400 block mb-1">
-                          Image Analysis:
-                        </span>
-                        <p className="text-xs text-zinc-700 font-medium leading-relaxed">
-                          {result.detectionReason}
-                        </p>
-                      </div>
-                    )}
-
-                    {result.suggestion && (
-                      <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-3 text-left">
-                        <span className="text-[9px] font-black uppercase tracking-wider text-emerald-800 block mb-1">
-                          Next Step:
-                        </span>
-                        <p className="text-xs text-emerald-900 font-semibold leading-relaxed">
-                          {result.suggestion}
-                        </p>
-                      </div>
-                    )}
 
                     <div className="grid grid-cols-2 gap-2.5 pt-1">
                       <button
@@ -1114,7 +1299,7 @@ export default function FRQGrader({ onBack }: FRQGraderProps) {
                         className="bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-black text-xs py-3.5 rounded-2xl shadow-sm transition-all cursor-pointer border-none flex items-center justify-center gap-2"
                       >
                         <Camera className="w-4 h-4" />
-                        <span>Upload Handwritten Work</span>
+                        <span>Upload Work</span>
                       </button>
 
                       <button

@@ -1381,9 +1381,6 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                     <h2 className="text-lg sm:text-xl font-black text-zinc-900 tracking-tight">
                       Deploy College Board Trap Radar
                     </h2>
-                    <p className="text-xs text-zinc-500">
-                      Generate authentic AP exam MCQs engineered with realistic distractor traps.
-                    </p>
                   </div>
                 </div>
 
@@ -2077,16 +2074,12 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                               {frqEvaluating ? (
                                 <>
                                   <Loader2 className="w-4 h-4 animate-spin text-white" />
-                                  <span>AI Chief Reader Grading Your Answer...</span>
+                                  <span>Checking Answer...</span>
                                 </>
                               ) : (
                                 <>
                                   <Radar className="w-4 h-4 text-amber-400" />
-                                  <span>
-                                    {((userFrqDraft[String(activeQuestion.id || currentIndex)] || '').trim() || (frqAttachedImages[String(activeQuestion.id || currentIndex)] || []).length > 0)
-                                      ? 'Check My Answer with AI & Reveal Traps'
-                                      : 'Type or Attach Your Answer to Check with AI'}
-                                  </span>
+                                  <span>Check Answer</span>
                                 </>
                               )}
                             </button>
@@ -2094,7 +2087,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                             {!((userFrqDraft[String(activeQuestion.id || currentIndex)] || '').trim() || (frqAttachedImages[String(activeQuestion.id || currentIndex)] || []).length > 0) && (
                               <div className="flex flex-col items-center gap-1.5 pt-1 text-center">
                                 <span className="text-[11px] text-zinc-500 font-medium">
-                                  ✍️ Please type your solution or attach a photo above so AI can grade your work.
+                                  ✍️ Type or attach answer above
                                 </span>
                                 <button
                                   type="button"
@@ -2105,7 +2098,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                   }}
                                   className="text-xs font-semibold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 underline underline-offset-4 cursor-pointer py-1 transition-colors"
                                 >
-                                  Skip answering & view official reference solution
+                                  View Official Solution
                                 </button>
                               </div>
                             )}
@@ -2143,9 +2136,9 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                       triggerVibration(10);
                                     }}
                                     className="text-[11px] font-bold text-indigo-300 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 transition-colors cursor-pointer"
-                                    title="Edit work and re-evaluate"
+                                    title="Edit answer"
                                   >
-                                    ✏️ Edit & Re-evaluate
+                                    ✏️ Edit Answer
                                   </button>
                                 </div>
 
@@ -2228,7 +2221,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                   }`}
                                 >
                                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                  <span>I Avoided The Traps</span>
+                                  <span>Avoided Traps</span>
                                 </button>
 
                                 <button
@@ -2240,7 +2233,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                   }`}
                                 >
                                   <XCircle className="w-4 h-4 text-red-500" />
-                                  <span>I Tripped on a Trap</span>
+                                  <span>Fell for Trap</span>
                                 </button>
                               </div>
                             </div>
@@ -2884,7 +2877,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-50 border border-zinc-200 hover:border-emerald-300 text-zinc-700 hover:text-emerald-700 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
                       >
                         <Plus className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
-                        <span>Attach Question Photo</span>
+                        <span>Attach Photo</span>
                       </button>
 
                       {/* Camera / Gallery Dropdown Menu */}
@@ -2905,8 +2898,8 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                 <Camera className="w-4 h-4" />
                               </div>
                               <div>
-                                <span className="block">Take Photo (Camera)</span>
-                                <span className="text-[10px] text-zinc-500 font-medium">Snap textbook or worksheet</span>
+                                <span className="block">Camera</span>
+                                <span className="text-[10px] text-zinc-500 font-medium">Snap paper work</span>
                               </div>
                             </button>
 
@@ -2919,8 +2912,8 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                 <ImageIcon className="w-4 h-4" />
                               </div>
                               <div>
-                                <span className="block">Upload from Gallery</span>
-                                <span className="text-[10px] text-zinc-500 font-medium">Choose from screenshots</span>
+                                <span className="block">Gallery</span>
+                                <span className="text-[10px] text-zinc-500 font-medium">Choose from device</span>
                               </div>
                             </button>
                           </motion.div>
@@ -2970,12 +2963,12 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                 {scanLoading ? (
                   <>
                     <Radar className="w-4 h-4 animate-spin" />
-                    <span>Disarming Traps via AI Radar...</span>
+                    <span>Scanning Traps...</span>
                   </>
                 ) : (
                   <>
                     <Zap className="w-4 h-4" />
-                    <span>Run Trap Radar Autopsy</span>
+                    <span>Scan Question</span>
                   </>
                 )}
               </button>
@@ -3662,15 +3655,15 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
         {showSubjectModal && (
           <div 
             onClick={() => setShowSubjectModal(false)}
-            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 backdrop-blur-sm animate-fade-in"
+            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 animate-fade-in"
           >
             <motion.div
               onClick={(e) => e.stopPropagation()}
               initial={{ opacity: 0, y: 70, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 70, scale: 0.97 }}
-              transition={{ duration: 0.22, ease: "easeOut" }}
-              className="w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[88vh]"
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[88vh] transform-gpu will-change-transform"
             >
               {/* Drag handle for mobile slide down */}
               <div className="w-12 h-1.5 bg-zinc-300 rounded-full mx-auto mt-3 sm:hidden" />

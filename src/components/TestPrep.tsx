@@ -462,6 +462,14 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   // Subjective (FRQ) Scoring State
   const [subjectiveScores, setSubjectiveScores] = useState<Record<number, { earned: number; total: number; feedback?: string }>>({});
 
+  // Bulletproof Reset: Whenever user leaves active practice (e.g. back to subject picker or configure screen), guarantee exam completion and scoring states are completely reset
+  useEffect(() => {
+    if (step !== 'practice') {
+      setIsExamCompleted(false);
+      setSubjectiveScores({});
+    }
+  }, [step]);
+
   // Premium In-App Confirmation Modal State (replaces native window.confirm)
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -958,6 +966,10 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   const handleGenerateQuestions = async () => {
     triggerVibration(20);
 
+    // Bulletproof State Reset: Ensure all prior exam completion, answer, and score states are cleared immediately
+    setIsExamCompleted(false);
+    setSubjectiveScores({});
+
     // Offline Resilience: If student is offline, recover from saved history or provide clear guidance
     const safeHistoryList = Array.isArray(historyList) ? historyList.filter(Boolean) : [];
 
@@ -975,6 +987,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
           setSelectedAnswers({});
           setShowExplanation({});
           setIsExamCompleted(false);
+          setSubjectiveScores({});
           const allocatedTime = getApExamDurationSeconds(selectedSubject.id, 'objective', balancedCached.length);
           setTotalAllocatedSeconds(allocatedTime);
           setTimeRemainingSeconds(allocatedTime);
@@ -990,6 +1003,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
           setStudentAnswers({});
           setShowRubric({});
           setEvaluations({});
+          setSubjectiveScores({});
+          setIsExamCompleted(false);
           setAttachedImages({});
           setShowPlusMenuIndex(null);
           const allocatedTime = getApExamDurationSeconds(selectedSubject.id, 'subjective', cachedHistory.subjectiveQuestions.length);
@@ -1162,6 +1177,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         setStudentAnswers({});
         setShowRubric({});
         setEvaluations({});
+        setSubjectiveScores({});
+        setIsExamCompleted(false);
         setAttachedImages({});
         setShowPlusMenuIndex(null);
 
@@ -1202,6 +1219,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         });
       }
 
+      setIsExamCompleted(false);
       setStep('practice');
     } catch (err: any) {
       console.error("AP Question Generation Error:", err);
@@ -1632,16 +1650,20 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
       setSelectedAnswers({});
       setShowExplanation({});
       setIsExamCompleted(false);
+      setSubjectiveScores({});
     } else if (item.questionType === 'subjective' && item.subjectiveQuestions && item.subjectiveQuestions.length > 0) {
       setSubjectiveQuestions(item.subjectiveQuestions);
       setCurrentSubIndex(0);
       setStudentAnswers({});
       setShowRubric({});
       setEvaluations({});
+      setSubjectiveScores({});
+      setIsExamCompleted(false);
       setAttachedImages({});
       setShowPlusMenuIndex(null);
     }
 
+    setIsExamCompleted(false);
     setShowHistoryModal(false);
     setStep('practice');
   };
@@ -1869,9 +1891,6 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                 <h2 className="text-2xl font-black tracking-tight leading-tight">
                   Master Your AP® Exams
                 </h2>
-                <p className="text-xs text-indigo-200 mt-1 leading-relaxed font-medium">
-                  Practice with high-yield Subjective (FRQ) & Objective (MCQ) questions engineered to simulate the real College Board AP scoring criteria.
-                </p>
               </div>
               <div className="absolute -right-4 -bottom-6 text-7xl opacity-20 select-none pointer-events-none">
                 🎓
@@ -1957,69 +1976,61 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                         </div>
                       </button>
 
-                      {/* Collapsible Topics List Underneath Subject */}
-                      <AnimatePresence initial={false}>
-                        {isExpanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25, ease: 'easeInOut' }}
-                            className="border-t border-zinc-100 bg-zinc-50/40 p-3 flex flex-col gap-2 overflow-hidden"
+                      {/* Collapsible Topics List Underneath Subject - 60fps CSS Grid Accordion */}
+                      <div className={`smooth-accordion border-t border-zinc-100 ${isExpanded ? 'is-open' : ''}`}>
+                        <div className="smooth-accordion-inner bg-zinc-50/40 p-3 flex flex-col gap-2">
+                          {/* All Units Combined Option */}
+                          <button
+                            onClick={() => {
+                              triggerVibration(15);
+                              setSelectedSubject(sub);
+                              setSelectedUnitId('all');
+                              setStep('configure');
+                            }}
+                            className="w-full bg-white border border-indigo-200/90 hover:bg-indigo-50/50 hover:border-indigo-400 active:scale-[0.995] py-3.5 px-4 rounded-2xl flex items-center justify-between text-left transition-all group/topic shadow-sm cursor-pointer"
                           >
-                            {/* All Units Combined Option */}
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-lg">⭐</span>
+                              <div>
+                                <span className="font-extrabold text-xs text-indigo-950 group-hover/topic:text-indigo-600 transition-colors">
+                                  Full Exam Simulation (All Topics Combined)
+                                </span>
+                                <p className="text-[10px] text-indigo-700/80 font-medium">
+                                  Comprehensive mock exam across all {sub.units.length} official units
+                                </p>
+                              </div>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-indigo-500 group-hover/topic:translate-x-0.5 transition-all shrink-0" />
+                          </button>
+
+                          {/* Individual Subject Units / Topics */}
+                          {sub.units.map((unit) => (
                             <button
+                              key={unit.id}
                               onClick={() => {
                                 triggerVibration(15);
                                 setSelectedSubject(sub);
-                                setSelectedUnitId('all');
+                                setSelectedUnitId(unit.id);
                                 setStep('configure');
                               }}
-                              className="w-full bg-white border border-indigo-200/90 hover:bg-indigo-50/50 hover:border-indigo-400 active:scale-[0.995] py-3.5 px-4 rounded-2xl flex items-center justify-between text-left transition-all group/topic shadow-sm cursor-pointer"
+                              className="w-full bg-white border border-zinc-200/80 hover:bg-zinc-50 hover:border-indigo-300 active:scale-[0.995] py-3.5 px-4 rounded-2xl flex items-center justify-between text-left transition-all group/topic shadow-sm cursor-pointer"
                             >
-                              <div className="flex items-center gap-2.5">
-                                <span className="text-lg">⭐</span>
-                                <div>
-                                  <span className="font-extrabold text-xs text-indigo-950 group-hover/topic:text-indigo-600 transition-colors">
-                                    Full Exam Simulation (All Topics Combined)
+                              <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                                <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
+                                <div className="min-w-0">
+                                  <span className="font-bold text-xs text-zinc-900 group-hover/topic:text-indigo-600 transition-colors block truncate">
+                                    {unit.title}
                                   </span>
-                                  <p className="text-[10px] text-indigo-700/80 font-medium">
-                                    Comprehensive mock exam across all {sub.units.length} official units
+                                  <p className="text-[10px] text-zinc-500 font-medium truncate mt-0.5">
+                                    {unit.description}
                                   </p>
                                 </div>
                               </div>
-                              <ArrowRight className="w-4 h-4 text-indigo-500 group-hover/topic:translate-x-0.5 transition-all shrink-0" />
+                              <ArrowRight className="w-3.5 h-3.5 text-zinc-400 group-hover/topic:text-indigo-600 group-hover/topic:translate-x-0.5 transition-all shrink-0" />
                             </button>
-
-                            {/* Individual Subject Units / Topics */}
-                            {sub.units.map((unit) => (
-                              <button
-                                key={unit.id}
-                                onClick={() => {
-                                  triggerVibration(15);
-                                  setSelectedSubject(sub);
-                                  setSelectedUnitId(unit.id);
-                                  setStep('configure');
-                                }}
-                                className="w-full bg-white border border-zinc-200/80 hover:bg-zinc-50 hover:border-indigo-300 active:scale-[0.995] py-3.5 px-4 rounded-2xl flex items-center justify-between text-left transition-all group/topic shadow-sm cursor-pointer"
-                              >
-                                <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                                  <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
-                                  <div className="min-w-0">
-                                    <span className="font-bold text-xs text-zinc-900 group-hover/topic:text-indigo-600 transition-colors block truncate">
-                                      {unit.title}
-                                    </span>
-                                    <p className="text-[10px] text-zinc-500 font-medium truncate mt-0.5">
-                                      {unit.description}
-                                    </p>
-                                  </div>
-                                </div>
-                                <ArrowRight className="w-3.5 h-3.5 text-zinc-400 group-hover/topic:text-indigo-600 group-hover/topic:translate-x-0.5 transition-all shrink-0" />
-                              </button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   );
                 })}
@@ -2161,13 +2172,13 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-black text-xs">📚 Practice Question Bank</span>
+                    <span className="font-black text-xs">📚 Practice Bank</span>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                       examMode === 'practice_bank' ? 'bg-zinc-800 text-zinc-200' : 'bg-zinc-100 text-zinc-600'
                     }`}>Flexible Bank</span>
                   </div>
                   <p className={`text-[11px] mt-1 ${examMode === 'practice_bank' ? 'text-zinc-300' : 'text-zinc-500'}`}>
-                    Concept mastery across curriculum units (5 to 20 questions).
+                    Flexible unit drills
                   </p>
                 </button>
 
@@ -2187,15 +2198,13 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-black text-xs">⏱️ Section II Exam Simulation</span>
+                    <span className="font-black text-xs">⏱️ Exam Simulation</span>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                       examMode === 'mock_exam' ? 'bg-purple-900 text-purple-200' : 'bg-purple-50 text-purple-700'
                     }`}>Official Format</span>
                   </div>
                   <p className={`text-[11px] mt-1 ${examMode === 'mock_exam' ? 'text-purple-100' : 'text-zinc-500'}`}>
-                    {selectedSubject.id === 'ap-human-geography' || selectedSubject.name.toLowerCase().includes('geography')
-                      ? '3 FRQs in 75 min (1 No-Stimulus, 1 Single-Stimulus, 1 Two-Stimuli).'
-                      : '3 authentic Section II Free Response Questions with official timing.'}
+                    Timed exam drills
                   </p>
                 </button>
               </div>
@@ -2229,7 +2238,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                 <div className="p-3 rounded-2xl bg-purple-50/80 border border-purple-200 flex items-center justify-between">
                   <div className="text-xs">
                     <span className="font-black text-purple-900 block">Section II Structure: 3 Questions</span>
-                    <span className="text-[11px] text-purple-600">College Board Section II standard time (75 minutes)</span>
+                    <span className="text-[11px] text-purple-600">75 min timed</span>
                   </div>
                   <span className="px-2.5 py-1 rounded-full bg-purple-600 text-white text-[11px] font-black">
                     3 FRQs Fixed
@@ -2368,7 +2377,10 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                               disabled={isAnswered}
                               onClick={() => {
                                 triggerVibration(15);
+                                const isCorrect = isOptionCorrectAnswer(opt, q.correctAnswer, q.options);
                                 setSelectedAnswers(prev => ({ ...prev, [currentObjIndex]: opt }));
+                                // Show short explanation ONLY when user chooses a wrong option! Never when correct.
+                                setShowExplanation(prev => ({ ...prev, [currentObjIndex]: !isCorrect }));
                               }}
                               className={`p-3.5 rounded-2xl border text-left text-xs transition-all flex items-center justify-between gap-3 ${btnStyle}`}
                             >
@@ -2386,57 +2398,22 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                         })}
                       </div>
 
-                      {/* Ask AI Action Banner (Shown after answering, keeping full solution hidden until user taps Ask AI) */}
-                      {isAnswered && !isRevealed && !inlineAiExplanations[`obj_${currentObjIndex}`] && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="mt-3 p-3.5 rounded-2xl bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-50 border border-purple-200/90 flex items-center justify-between gap-3 shadow-2xs"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
-                              <Sparkles className="w-4 h-4 text-yellow-300" />
-                            </div>
-                            <div className="min-w-0">
-                              <span className="text-xs font-black text-purple-950 block truncate">
-                                Ask AI for Full Explanation & Steps
-                              </span>
-                              <span className="text-[10px] text-purple-700 font-medium block">
-                                Tap Ask AI to reveal College Board solution breakdown
-                              </span>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              triggerVibration(15);
-                              setShowExplanation(prev => ({ ...prev, [currentObjIndex]: true }));
-                              handleOpenAITutor(q, 'objective');
-                            }}
-                            className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-black flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer shrink-0"
-                          >
-                            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                            <span>Ask AI</span>
-                          </button>
-                        </motion.div>
-                      )}
-
-                      {/* Explanation Section (Only visible after user taps Ask AI) */}
-                      {isRevealed && (
+                      {/* Short Explanation Section (Shown ONLY when user chooses the WRONG option, never when correct) */}
+                      {isAnswered && !isOptionCorrectAnswer(userChoice, q.correctAnswer, q.options) && isRevealed && (
                         <motion.div
                           initial={{ opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="mt-3 p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex flex-col gap-2 overflow-hidden shadow-2xs"
+                          className="mt-3 p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex flex-col gap-2 overflow-hidden shadow-2xs"
                         >
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-black uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
-                              <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                              College Board AP Explanation
+                            <span className="text-xs font-black uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                              <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                              Explanation & Key Concept
                             </span>
                             <button
                               type="button"
                               onClick={() => setShowExplanation(prev => ({ ...prev, [currentObjIndex]: false }))}
-                              className="text-[10px] font-bold text-indigo-600 hover:text-indigo-900 px-2 py-0.5 rounded-lg hover:bg-indigo-100/60 transition-colors cursor-pointer"
+                              className="text-[10px] font-bold text-amber-700 hover:text-amber-900 px-2 py-0.5 rounded-lg hover:bg-amber-100/60 transition-colors cursor-pointer"
                               title="Hide Explanation"
                             >
                               Hide
@@ -2611,7 +2588,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                       className="px-5 py-3 rounded-xl bg-emerald-600 text-white font-black text-xs flex items-center gap-1.5 shadow-md shadow-emerald-600/20"
                     >
                       <Award className="w-4 h-4" />
-                      <span>Finish & View AP Score</span>
+                      <span>View AP Score</span>
                     </button>
                   )}
                 </div>
@@ -2629,7 +2606,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                     ) : (
                       <Share2 className="w-4 h-4 text-purple-200" />
                     )}
-                    <span>{isSharingPdf ? 'Preparing PDF...' : 'Share Questions & Answers (PDF)'}</span>
+                    <span>{isSharingPdf ? 'Preparing...' : 'Share Exam PDF'}</span>
                   </button>
                 </div>
               </>
@@ -2724,6 +2701,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                     <button
                       onClick={() => {
                         triggerVibration(10);
+                        setIsExamCompleted(false);
+                        setSubjectiveScores({});
                         setStep('select-subject');
                       }}
                       className="py-3 rounded-xl bg-indigo-50 border border-indigo-100 font-bold text-xs text-indigo-700 flex items-center justify-center gap-1.5"
@@ -3212,7 +3191,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                             className="px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs flex items-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 cursor-pointer"
                           >
                             <Award className="w-4 h-4" />
-                            <span>Finish & View Total AP Score</span>
+                            <span>View Total AP Score</span>
                           </button>
                         )}
                       </div>
@@ -3228,7 +3207,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                             }}
                             className="text-[11px] font-bold text-zinc-500 hover:text-indigo-600 transition-colors cursor-pointer flex items-center gap-1"
                           >
-                            <span>Finish Practice & View Current AP Scorecard</span>
+                            <span>View Current Scorecard</span>
                             <ArrowRight className="w-3 h-3" />
                           </button>
                         </div>
@@ -3247,7 +3226,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                           ) : (
                             <Share2 className="w-4 h-4 text-purple-200" />
                           )}
-                          <span>{isSharingPdf ? 'Preparing PDF...' : 'Share Questions & Answers (PDF)'}</span>
+                          <span>{isSharingPdf ? 'Preparing...' : 'Share Exam PDF'}</span>
                         </button>
                       </div>
                     </div>
@@ -3314,48 +3293,6 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                       </p>
                     </div>
                   </div>
-
-                  {/* Breakdown per Question / Task */}
-                  <div className="w-full mt-5 text-left flex flex-col gap-2.5">
-                    <h4 className="text-xs font-black uppercase tracking-wider text-zinc-500">
-                      {isComputerSubject(selectedSubject) ? 'Create Performance Task Breakdown' : 'Free Response Question Breakdown'}
-                    </h4>
-                    {subjectiveQuestions.map((q, idx) => {
-                      const sc = subjectiveScores[idx];
-                      const hasAnswer = Boolean(studentAnswers[idx] || attachedImages[idx]);
-                      return (
-                        <div key={idx} className="p-3.5 rounded-xl border border-zinc-200 bg-zinc-50/50 flex flex-col gap-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-black text-zinc-800">
-                              {isComputerSubject(selectedSubject) ? `Task ${idx + 1}: ` : `FRQ ${idx + 1}: `}{q.skill || (isComputerSubject(selectedSubject) ? 'Create Performance Task' : 'Free Response Question')}
-                            </span>
-                            {sc ? (
-                              <span className="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-bold text-xs">
-                                {sc.earned} / {sc.total} pts
-                              </span>
-                            ) : hasAnswer ? (
-                              <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 font-bold text-xs">
-                                Submitted (Ungraded)
-                              </span>
-                            ) : (
-                              <span className="px-2 py-0.5 rounded-md bg-zinc-200 text-zinc-600 font-bold text-xs">
-                                Skipped / Unanswered
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-[11px] text-zinc-600 line-clamp-2">
-                            <GlobalMarkdown>{q.prompt}</GlobalMarkdown>
-                          </div>
-                          {sc && (
-                            <div className="text-[11px] text-purple-900 bg-purple-50/60 p-2 rounded-lg border border-purple-100">
-                              <span className="font-bold">Chief Reader Feedback: </span>
-                              <span className="line-clamp-2">{sc.feedback?.split('\n')[0] || sc.feedback || 'Rubric evaluation complete.'}</span>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
                 </div>
 
                 {/* PDF Share & Retake Actions */}
@@ -3395,6 +3332,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                     <button
                       onClick={() => {
                         triggerVibration(10);
+                        setIsExamCompleted(false);
+                        setSubjectiveScores({});
                         setStep('select-subject');
                       }}
                       className="py-3 rounded-xl bg-purple-50 border border-purple-100 font-bold text-xs text-purple-700 flex items-center justify-center gap-1.5 cursor-pointer hover:bg-purple-100"
@@ -3704,7 +3643,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                     className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-black shadow-md flex items-center gap-1.5 cursor-pointer hover:opacity-95 active:scale-98 transition-transform"
                   >
                     <Check className="w-4 h-4 stroke-[3]" />
-                    <span>Attach Graph to Answer</span>
+                    <span>Attach Graph</span>
                   </button>
                 </div>
               </div>
@@ -4259,7 +4198,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                     className="w-full py-3 rounded-2xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-950 font-black text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
                   >
                     <Plus className="w-4 h-4 text-amber-700" />
-                    <span>Add +5 Min Extra Time & Continue</span>
+                    <span>+5 Min Extra Time</span>
                   </button>
 
                   {/* Essential Action 2: Export Test Questions to PDF */}
@@ -4274,7 +4213,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                     className="w-full py-3 rounded-2xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
                   >
                     <Download className="w-4 h-4 text-indigo-600" />
-                    <span>Export Questions to PDF</span>
+                    <span>Export PDF</span>
                   </button>
 
                   {/* Essential Action 3: Review Answers / Finish */}
@@ -4289,7 +4228,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                     className="w-full py-3 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-sm"
                   >
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>Finish & Review Answers</span>
+                    <span>Review Answers</span>
                   </button>
                 </div>
               </motion.div>

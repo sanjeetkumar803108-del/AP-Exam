@@ -826,3 +826,53 @@ sub {
   animation: lightning-flash 3.5s ease-in-out infinite;
 }
 
+/* Sequential Staggered Dot Blink Animation for AI Thinking Indicator */
+@keyframes dot-blink-wave {
+  0%, 80%, 100% {
+    opacity: 0.2;
+    transform: scale(0.7);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+
+.animate-dot-1 {
+  animation: dot-blink-wave 1.4s infinite ease-in-out;
+  animation-delay: 0s;
+}
+
+.animate-dot-2 {
+  animation: dot-blink-wave 1.4s infinite ease-in-out;
+  animation-delay: 0.2s;
+}
+
+.animate-dot-3 {
+  animation: dot-blink-wave 1.4s infinite ease-in-out;
+  animation-delay: 0.4s;
+}
+
+/* =========================================================================
+   HARDWARE-ACCELERATED ACCORDION (0ms JS LAYOUT REFLOW, 60FPS COMPOSITOR)
+   Uses pure CSS Grid 0fr -> 1fr so mobile browser skips getBoundingClientRect.
+   ========================================================================= */
+.smooth-accordion {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease-out;
+  will-change: grid-template-rows, opacity;
+  transform: translateZ(0);
+}
+
+.smooth-accordion.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.smooth-accordion-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+

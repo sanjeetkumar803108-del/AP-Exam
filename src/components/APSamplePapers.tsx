@@ -128,9 +128,6 @@ export default function APSamplePapers({ onBack, isVip }: APSamplePapersProps) {
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white mt-1">
               AP Sample Papers Set
             </h2>
-            <p className="text-xs sm:text-sm text-emerald-50 font-medium max-w-xl leading-relaxed">
-              Official authentic AP practice examination papers, question sets, and scoring guides prepared for full test rehearsal.
-            </p>
           </div>
         </div>
 
@@ -183,8 +180,8 @@ export default function APSamplePapers({ onBack, isVip }: APSamplePapersProps) {
             <h3 className="text-lg font-black text-zinc-900 tracking-tight">
               AP Sample Papers Set
             </h3>
-            <p className="text-xs text-zinc-500 font-medium max-w-sm mt-1.5 leading-relaxed">
-              Official College Board sample question paper sets and mock exams will appear here once published.
+            <p className="text-xs text-zinc-500 font-medium mt-1">
+              Upcoming mock sets
             </p>
             <div className="mt-5 px-3 py-1.5 rounded-full bg-zinc-100 text-zinc-500 text-[11px] font-bold">
               Ready for upcoming mock sets
@@ -262,58 +259,77 @@ export default function APSamplePapers({ onBack, isVip }: APSamplePapersProps) {
         )}
       </main>
 
-      {/* Full-Screen PDF Reader Modal */}
+      {/* 100% True Edge-to-Edge Full-Screen PDF Reader */}
       <AnimatePresence>
         {previewPaper && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-5">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-3xl w-full max-w-4xl h-[92vh] flex flex-col overflow-hidden shadow-2xl border border-zinc-200"
-            >
-              {/* Header */}
-              <div className="p-4 border-b border-zinc-200 flex items-center justify-between bg-zinc-50">
-                <div className="flex items-center gap-2.5 truncate">
-                  <FileText className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <div>
-                    <h3 className="text-xs sm:text-sm font-black text-zinc-900 truncate">
-                      {previewPaper.title}
-                    </h3>
-                    <span className="text-[10px] text-zinc-500 font-bold">
-                      {previewPaper.subjectName} • {previewPaper.year}
-                    </span>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-[100] flex flex-col bg-white w-full h-full overflow-hidden select-text"
+          >
+            {/* Top Navigation & Action Header */}
+            <header className="px-3 sm:px-5 py-3 border-b border-zinc-200 bg-white flex items-center justify-between shrink-0 shadow-2xs z-20">
+              <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerVibration(10);
+                    setPreviewPaper(null);
+                  }}
+                  className="w-9 h-9 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 flex items-center justify-center border border-zinc-200 active:scale-95 transition-all cursor-pointer shrink-0 shadow-2xs"
+                  title="Back to Papers List"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+                <div className="min-w-0">
+                  <h3 className="text-xs sm:text-sm font-black text-zinc-900 truncate leading-tight">
+                    {previewPaper.title}
+                  </h3>
+                  <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-bold mt-0.5">
+                    <span className="text-indigo-600 font-black">{previewPaper.subjectName}</span>
+                    <span>•</span>
+                    <span>{previewPaper.year || 'Official AP Set'}</span>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleDownloadPaper(previewPaper)}
-                    disabled={downloadingId === previewPaper.id}
-                    className="p-2 rounded-xl bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 cursor-pointer shadow-xs active:scale-95 transition-all disabled:opacity-50"
-                    title="Download & Save Offline"
-                  >
-                    {downloadingId === previewPaper.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
-                    ) : (
-                      <Download className="w-4 h-4" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setPreviewPaper(null)}
-                    className="p-2 rounded-xl bg-white border border-zinc-200 text-zinc-500 hover:text-zinc-900 cursor-pointer shadow-xs"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
               </div>
 
-              {/* PDF Viewer */}
-              <div className="flex-1 overflow-hidden relative bg-zinc-100">
-                <SafePdfViewer pdfUrlOrBase64={previewPaper.pdfUrl} />
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => handleDownloadPaper(previewPaper)}
+                  disabled={downloadingId === previewPaper.id}
+                  className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                  title="Download & Save Offline"
+                >
+                  {downloadingId === previewPaper.id ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                  ) : (
+                    <Download className="w-3.5 h-3.5" />
+                  )}
+                  <span className="hidden sm:inline">Save Offline</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerVibration(10);
+                    setPreviewPaper(null);
+                  }}
+                  className="w-9 h-9 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-zinc-900 flex items-center justify-center border border-zinc-200 cursor-pointer shadow-2xs transition-all active:scale-95"
+                  title="Close PDF"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-            </motion.div>
-          </div>
+            </header>
+
+            {/* True Full Screen Clean PDF Viewer */}
+            <div className="flex-1 overflow-hidden relative bg-zinc-100/90">
+              <SafePdfViewer pdfUrlOrBase64={previewPaper.pdfUrl} />
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

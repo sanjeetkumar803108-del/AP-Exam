@@ -296,9 +296,9 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
                     desc: "Live peer battles" 
                   },
                   { 
-                    icon: "🏝️", 
-                    title: "Learning Island™ & Visual Mind Maps", 
-                    desc: "Visual study maps" 
+                    icon: "📝", 
+                    title: "Learning Island™ & Short Notes Revision", 
+                    desc: "High-yield unit summaries" 
                   }
                 ].map((f, i) => (
                   <div key={i} className="flex items-center gap-3 p-2.5 bg-white border border-zinc-200/80 rounded-2xl shadow-xs">

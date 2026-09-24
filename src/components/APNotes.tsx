@@ -1581,9 +1581,6 @@ export default function APNotes({ onBack }: APNotesProps) {
                 <h2 className="text-2xl font-black tracking-tight leading-tight">
                   AP® Subject Notes
                 </h2>
-                <p className="text-xs text-indigo-200 mt-1 leading-relaxed font-medium">
-                  Select a subject and unit to review official College Board theorems, formulas, worked examples, and figures.
-                </p>
               </div>
               <div className="absolute -right-4 -bottom-6 text-7xl opacity-20 select-none pointer-events-none">
                 📐
@@ -1698,23 +1695,58 @@ export default function APNotes({ onBack }: APNotesProps) {
                             </div>
                           </button>
 
-                          {/* Accordion Units List */}
-                          <AnimatePresence initial={false}>
-                            {isExpanded && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.25, ease: 'easeInOut' }}
-                                className="border-t border-zinc-100 bg-zinc-50/40 p-3 flex flex-col gap-2 overflow-hidden"
-                              >
-                                {subj.notes.map(unit => {
-                                  return (
-                                    <div
-                                      key={unit.unitId}
-                                      className="w-full bg-white border border-zinc-200/80 hover:bg-zinc-50 hover:border-indigo-300 py-2.5 px-3.5 rounded-2xl flex items-center justify-between transition-all group/unit shadow-xs"
+                          {/* Accordion Units List - 60fps CSS Grid Accordion */}
+                          <div className={`smooth-accordion border-t border-zinc-100 ${isExpanded ? 'is-open' : ''}`}>
+                            <div className="smooth-accordion-inner bg-zinc-50/40 p-3 flex flex-col gap-2">
+                              {subj.notes.map(unit => {
+                                return (
+                                  <div
+                                    key={unit.unitId}
+                                    className="w-full bg-white border border-zinc-200/80 hover:bg-zinc-50 hover:border-indigo-300 py-2.5 px-3.5 rounded-2xl flex items-center justify-between transition-all group/unit shadow-xs"
+                                  >
+                                    {/* Main Unit Click Target to Open Direct Notes */}
+                                    <button
+                                      onClick={() => {
+                                        triggerVibration(15);
+                                        setSelectedSubjectId(subj.subjectId);
+                                        setSelectedUnitId(unit.unitId);
+                                        setActiveTab('all');
+                                        setStep('reading');
+                                      }}
+                                      className="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer pr-2"
                                     >
-                                      {/* Main Unit Click Target to Open Direct Notes */}
+                                      <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-200/70 text-indigo-700 font-black text-xs flex items-center justify-center shrink-0">
+                                        U{unit.unitNumber}
+                                      </div>
+                                      <div className="min-w-0">
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-bold text-xs text-zinc-900 group-hover/unit:text-indigo-600 transition-colors truncate">
+                                            Unit {unit.unitNumber}: {unit.title}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                          <span className="text-[10px] text-zinc-500 font-medium truncate">
+                                            {unit.examWeight}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </button>
+
+                                    {/* Direct Actions: Share + Open */}
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      {/* Share Button */}
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleShareUnitPDF(unit, subj);
+                                        }}
+                                        className="w-8 h-8 rounded-xl bg-zinc-100 hover:bg-purple-100 hover:text-purple-700 text-zinc-600 flex items-center justify-center transition-colors cursor-pointer active:scale-95"
+                                        title={`Share ${subj.shortCode} Unit ${unit.unitNumber} Notes`}
+                                      >
+                                        <Share2 className="w-3.5 h-3.5" />
+                                      </button>
+
+                                      {/* Open PDF Arrow */}
                                       <button
                                         onClick={() => {
                                           triggerVibration(15);
@@ -1723,60 +1755,17 @@ export default function APNotes({ onBack }: APNotesProps) {
                                           setActiveTab('all');
                                           setStep('reading');
                                         }}
-                                        className="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer pr-2"
+                                        className="w-8 h-8 rounded-xl bg-zinc-50 hover:bg-zinc-100 text-zinc-400 group-hover/unit:text-indigo-600 flex items-center justify-center transition-colors cursor-pointer"
+                                        title={`Open Unit ${unit.unitNumber} PDF`}
                                       >
-                                        <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-200/70 text-indigo-700 font-black text-xs flex items-center justify-center shrink-0">
-                                          U{unit.unitNumber}
-                                        </div>
-                                        <div className="min-w-0">
-                                          <div className="flex items-center gap-2">
-                                            <span className="font-bold text-xs text-zinc-900 group-hover/unit:text-indigo-600 transition-colors truncate">
-                                              Unit {unit.unitNumber}: {unit.title}
-                                            </span>
-                                          </div>
-                                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                                            <span className="text-[10px] text-zinc-500 font-medium truncate">
-                                              {unit.examWeight}
-                                            </span>
-                                          </div>
-                                        </div>
+                                        <ArrowRight className="w-4 h-4 group-hover/unit:translate-x-0.5 transition-all" />
                                       </button>
-
-                                      {/* Direct Actions: Share + Open */}
-                                      <div className="flex items-center gap-1 shrink-0">
-                                        {/* Share Button */}
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleShareUnitPDF(unit, subj);
-                                          }}
-                                          className="w-8 h-8 rounded-xl bg-zinc-100 hover:bg-purple-100 hover:text-purple-700 text-zinc-600 flex items-center justify-center transition-colors cursor-pointer active:scale-95"
-                                          title={`Share ${subj.shortCode} Unit ${unit.unitNumber} Notes`}
-                                        >
-                                          <Share2 className="w-3.5 h-3.5" />
-                                        </button>
-
-                                        {/* Open PDF Arrow */}
-                                        <button
-                                          onClick={() => {
-                                            triggerVibration(15);
-                                            setSelectedSubjectId(subj.subjectId);
-                                            setSelectedUnitId(unit.unitId);
-                                            setActiveTab('all');
-                                            setStep('reading');
-                                          }}
-                                          className="w-8 h-8 rounded-xl bg-zinc-50 hover:bg-zinc-100 text-zinc-400 group-hover/unit:text-indigo-600 flex items-center justify-center transition-colors cursor-pointer"
-                                          title={`Open Unit ${unit.unitNumber} PDF`}
-                                        >
-                                          <ArrowRight className="w-4 h-4 group-hover/unit:translate-x-0.5 transition-all" />
-                                        </button>
-                                      </div>
                                     </div>
-                                  );
-                                })}
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
                         </div>
                       );
                     })}
