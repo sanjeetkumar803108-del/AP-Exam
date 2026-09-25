@@ -342,6 +342,7 @@ interface RealRadarLoadingScreenProps {
   mode: 'challenge' | 'scan' | 'disarm';
   questionCount?: number;
   format?: 'objective' | 'subjective';
+  isComplete?: boolean;
 }
 
 function RealRadarLoadingScreen({
@@ -351,7 +352,8 @@ function RealRadarLoadingScreen({
   unitName,
   mode,
   questionCount,
-  format
+  format,
+  isComplete = false
 }: RealRadarLoadingScreenProps) {
   return (
     <motion.div
@@ -370,6 +372,7 @@ function RealRadarLoadingScreen({
         questionCount={questionCount}
         format={format}
         variant="radar"
+        isComplete={isComplete}
       />
     </motion.div>
   );
@@ -409,6 +412,8 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
   }, [subjectSearchQuery, subjectCategoryFilter]);
 
   const [loading, setLoading] = useState(false);
+  const [isChallengeComplete, setIsChallengeComplete] = useState<boolean>(false);
+  const [isScanComplete, setIsScanComplete] = useState<boolean>(false);
   const [questions, setQuestions] = useState<TrapQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -803,20 +808,39 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     setSelectedOption(null);
     setIsRadarRevealed(false);
 
+    // Mobile APK Fix: 55s AbortController timeout prevents silent Android WebView hangs.
+    const trapFetchController = new AbortController();
+    const trapFetchTimeoutId = setTimeout(() => trapFetchController.abort(), 55000);
+
     try {
       const _radarChallengeProfile = getUserProfileData();
-      const response = await fetch(getApiUrl('/api/ap-trap-radar'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'generate_challenge',
-          subject: selectedSubject.name,
-          unit: selectedUnit,
-          count: questionCount,
-          gradeLevel: _radarChallengeProfile.gradeLevel,
-          format: questionFormat
-        })
-      });
+      let response: Response;
+      try {
+        response = await fetch(getApiUrl('/api/ap-trap-radar'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: trapFetchController.signal,
+          body: JSON.stringify({
+            action: 'generate_challenge',
+            subject: selectedSubject.name,
+            unit: selectedUnit,
+            count: questionCount,
+            gradeLevel: _radarChallengeProfile.gradeLevel,
+            format: questionFormat
+          })
+        });
+      } catch (networkErr: any) {
+        const isAbort = networkErr?.name === 'AbortError';
+        showToast(
+          isAbort
+            ? 'Request timed out — server is busy. Please try again in a moment.'
+            : 'Network error: Could not reach the AI server. Check your internet and retry.',
+          'error'
+        );
+        return;
+      } finally {
+        clearTimeout(trapFetchTimeoutId);
+      }
 
       if (!response.ok) {
         throw new Error(`Server returned status ${response.status}`);
@@ -825,6 +849,9 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       const data = await response.json();
       if (data.questions && data.questions.length > 0) {
         const sanitized = sanitizeFrontendTrapQuestions(data.questions);
+        // Instant crisp 100% completion signal before unveiling cockpit
+        setIsChallengeComplete(true);
+        await new Promise(r => setTimeout(r, 220));
         setQuestions(sanitized);
         setChallengeStep('active');
         saveToHistory({
@@ -844,6 +871,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       showToast('Could not load Trap Challenge. Please retry.', 'error');
     } finally {
       setLoading(false);
+      setIsChallengeComplete(false);
     }
   };
 
@@ -1151,6 +1179,9 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
           setScanInputError(data.analysis.errorMessage || 'Invalid Question: Please provide a complete AP question prompt or options.');
           showToast('Input is not a valid AP question', 'warning');
         } else {
+          // Instant crisp 100% completion trigger before rendering autopsy
+          setIsScanComplete(true);
+          await new Promise(r => setTimeout(r, 220));
           setScannedResult(data.analysis);
           triggerVibration(40);
           showToast('Trap Radar Autopsy Complete!', 'success');
@@ -1174,6 +1205,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       showToast('Failed to analyze question. Please check input.', 'error');
     } finally {
       setScanLoading(false);
+      setIsScanComplete(false);
     }
   };
 
@@ -1206,6 +1238,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
             mode={loading ? 'challenge' : scanLoading ? 'scan' : 'disarm'}
             questionCount={questionCount}
             format={questionFormat}
+            isComplete={isChallengeComplete || isScanComplete}
           />
         )}
       </AnimatePresence>
@@ -1575,7 +1608,9 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                       onClick={() => {
                         triggerVibration(10);
                         setQuestionFormat('subjective');
-                        setQuestionCount(2);
+                        if (![3, 5, 10, 15, 20].includes(questionCount)) {
+                          setQuestionCount(5);
+                        }
                       }}
                       className={`p-4 rounded-2xl border transition-all cursor-pointer relative ${
                         questionFormat === 'subjective'
@@ -1620,26 +1655,21 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                     2. How Many Questions?
                   </label>
 
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                    {(questionFormat === 'objective'
-                      ? [
-                          { count: 3, label: '3 Questions' },
-                          { count: 5, label: '5 Questions' },
-                          { count: 10, label: '10 Questions' }
-                        ]
-                      : [
-                          { count: 2, label: '2 FRQs' },
-                          { count: 3, label: '3 FRQs' },
-                          { count: 5, label: '5 FRQs' }
-                        ]
-                    ).map(item => (
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-2.5">
+                    {[
+                      { count: 3, label: questionFormat === 'subjective' ? '3 FRQs' : '3 Questions' },
+                      { count: 5, label: questionFormat === 'subjective' ? '5 FRQs' : '5 Questions' },
+                      { count: 10, label: questionFormat === 'subjective' ? '10 FRQs' : '10 Questions' },
+                      { count: 15, label: questionFormat === 'subjective' ? '15 FRQs' : '15 Questions' },
+                      { count: 20, label: questionFormat === 'subjective' ? '20 FRQs' : '20 Questions' }
+                    ].map(item => (
                       <button
                         key={item.count}
                         onClick={() => {
                           triggerVibration(10);
                           setQuestionCount(item.count);
                         }}
-                        className={`py-3.5 px-2 sm:px-4 rounded-2xl border text-center transition-all cursor-pointer ${
+                        className={`py-3 px-2 sm:px-3 rounded-2xl border text-center transition-all cursor-pointer ${
                           questionCount === item.count
                             ? 'bg-zinc-900 border-zinc-900 text-white shadow-md ring-2 ring-zinc-900/20'
                             : 'bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-50'
@@ -1755,15 +1785,25 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                         {activeQuestion.format === 'subjective' ? 'AP Free Response Trap' : 'AP Multiple Choice Trap'}
                       </div>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => handleOpenAITutor(activeQuestion)}
-                      className="px-2.5 py-1 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
-                      title="Ask AI to Explain Question Traps or Full Answer Breakdown"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-                      <span>Ask AI</span>
-                    </button>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <ReportAiButton
+                        aiOutput={`AP Trap Question: ${activeQuestion.prompt}\n${activeQuestion.stimulus ? `Stimulus:\n${activeQuestion.stimulus}\n` : ''}${activeQuestion.options ? `Options:\n${activeQuestion.options.join('\n')}\n` : ''}Correct: ${activeQuestion.correctAnswer || 'N/A'}`}
+                        context={`AP Trap Radar: ${activeQuestion.format === 'subjective' ? 'FRQ' : 'MCQ'} Question`}
+                        questionText={activeQuestion.prompt}
+                        variant="icon"
+                        label="Report Question"
+                        className="p-1 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleOpenAITutor(activeQuestion)}
+                        className="px-2.5 py-1 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
+                        title="Ask AI to Explain Question Traps or Full Answer Breakdown"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                        <span>Ask AI</span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* Stimulus Context Box */}
@@ -2179,6 +2219,21 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                   <GlobalMarkdown components={darkEvaluationMarkdownComponents}>
                                     {formatAiAnswerText(frqAiFeedback[String(activeQuestion.id || currentIndex)])}
                                   </GlobalMarkdown>
+                                </div>
+
+                                {/* AI Evaluation Report Button */}
+                                <div className="flex flex-col items-center justify-center pt-2.5 pb-1 px-4 gap-1.5 border-t border-zinc-800">
+                                  <ReportAiButton
+                                    aiOutput={frqAiFeedback[String(activeQuestion.id || currentIndex)]}
+                                    context="AP Trap Radar FRQ Evaluation"
+                                    questionText={activeQuestion.prompt}
+                                    variant="compact"
+                                    label="Report FRQ Evaluation"
+                                    className="text-zinc-400 hover:text-red-400"
+                                  />
+                                  <p className="text-[10px] text-zinc-500 font-medium select-none tracking-tight">
+                                    AP Exam AI can make mistakes. Please double check important information.
+                                  </p>
                                 </div>
                               </motion.div>
                             )}
@@ -2633,6 +2688,21 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                               </div>
                             )}
 
+                            {/* AI Question & Trap Report Footer */}
+                            <div className="flex flex-col items-center justify-center pt-2 pb-1 px-4 gap-1.5 border-t border-zinc-100 dark:border-zinc-800/40">
+                              <ReportAiButton
+                                aiOutput={`Question: ${activeQuestion.prompt}\nCorrect Answer: ${activeQuestion.correctAnswer}\nDisarm Secret: ${activeQuestion.disarmStrategy || 'N/A'}\nTraps: ${JSON.stringify(activeQuestion.traps || [])}`}
+                                context="AP Trap Radar: MCQ Question"
+                                questionText={activeQuestion.prompt}
+                                variant="compact"
+                                label="Report Question or Trap"
+                                className="text-zinc-400 hover:text-red-500"
+                              />
+                              <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium select-none tracking-tight">
+                                AP Exam AI can make mistakes. Please double check important information.
+                              </p>
+                            </div>
+
                             <div className="flex items-center justify-between gap-3">
                               <button
                                 onClick={() => {
@@ -2674,7 +2744,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                     className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
                                   >
                                     <RotateCcw className="w-4 h-4" />
-                                    <span>New Set ({questionCount} MCQs)</span>
+                                    <span>New Set ({questionCount} {questionFormat === 'subjective' ? 'FRQs' : 'MCQs'})</span>
                                   </button>
                                 </div>
                               )}
@@ -3815,14 +3885,21 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       {/* ================= PREMIUM IN-APP CED UNIT SELECTION BOTTOM SHEET / MODAL ================= */}
       <AnimatePresence>
         {showUnitModal && (
-          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 backdrop-blur-sm animate-fade-in">
+          <div 
+            onClick={() => setShowUnitModal(false)}
+            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 animate-fade-in"
+          >
             <motion.div
-              initial={{ opacity: 0, y: 50, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 50, scale: 0.96 }}
-              transition={{ duration: 0.2 }}
-              className="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[88vh]"
+              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, y: 70 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 70 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[88vh] transform-gpu will-change-transform"
             >
+              {/* Drag handle for mobile slide down */}
+              <div className="w-12 h-1.5 bg-zinc-300 rounded-full mx-auto mt-3 sm:hidden" />
+
               {/* Modal Header */}
               <div className="p-4 sm:p-5 border-b border-zinc-100 flex items-center justify-between bg-gradient-to-r from-emerald-50/70 via-teal-50/40 to-white shrink-0">
                 <div className="flex items-center gap-3">
@@ -3851,7 +3928,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
               </div>
 
               {/* Unit Scrollable List */}
-              <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2.5">
+              <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2.5 momentum-scroll overscroll-contain">
                 {/* All Units Option */}
                 <button
                   type="button"
@@ -3860,7 +3937,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                     setSelectedUnit('All Units');
                     setShowUnitModal(false);
                   }}
-                  className={`w-full p-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 text-left cursor-pointer active:scale-[0.99] ${
+                  className={`w-full p-3.5 rounded-2xl border-2 transition-colors duration-150 flex items-center justify-between gap-3 text-left cursor-pointer active:scale-[0.98] ${
                     selectedUnit === 'All Units'
                       ? 'bg-emerald-50/70 border-emerald-500 shadow-sm ring-1 ring-emerald-500/20'
                       : 'bg-white border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/60'
@@ -3908,7 +3985,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                         setSelectedUnit(u.title);
                         setShowUnitModal(false);
                       }}
-                      className={`w-full p-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 text-left cursor-pointer active:scale-[0.99] ${
+                      className={`w-full p-3.5 rounded-2xl border-2 transition-colors duration-150 flex items-center justify-between gap-3 text-left cursor-pointer active:scale-[0.98] ${
                         isSelected
                           ? 'bg-emerald-50/70 border-emerald-500 shadow-sm ring-1 ring-emerald-500/20'
                           : 'bg-white border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/60'
@@ -3949,14 +4026,20 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       {/* ================= ASK AI 2-SUGGESTION MODAL PAGE ================= */}
       <AnimatePresence>
         {askAiModalQuestion && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div 
+            onClick={() => setAskAiModalQuestion(null)}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 animate-fade-in"
+          >
             <motion.div
-              initial={{ opacity: 0, y: 50, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 50, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[90vh]"
+              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, y: 70 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 70 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full max-w-md bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[90vh] transform-gpu will-change-transform"
             >
+              {/* Drag handle for mobile */}
+              <div className="w-12 h-1.5 bg-zinc-300 rounded-full mx-auto mt-3 sm:hidden" />
               {/* Modal Header */}
               <div className="p-5 border-b border-zinc-100 flex items-center justify-between bg-gradient-to-r from-amber-50 via-purple-50 to-white">
                 <div className="flex items-center gap-2.5">

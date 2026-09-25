@@ -9,6 +9,7 @@ import { APSubjectNoteEntry } from '../data/notes';
 import { triggerVibration } from '../utils/vibrate';
 import GlobalMarkdown from './GlobalMarkdown';
 import { renderCalculusDiagramSvg } from './CalculusDiagramSvg';
+import { ReportAiButton } from './ReportAiModal';
 
 interface APSubjectStitchNotesProps {
   unit: APUnitNote;
@@ -986,6 +987,20 @@ export default function APSubjectStitchNotes({
               >
                 {speedDrillComplete ? 'Ready for Exam Day! 🎉' : 'Review Complete'}
               </button>
+            </div>
+
+            {/* AI Notes Content Safety & Report Footer */}
+            <div className="flex flex-col items-center justify-center pt-6 pb-2 gap-2 border-t border-zinc-200/60 mt-4">
+              <ReportAiButton
+                aiOutput={`AP Subject: ${subject?.subjectName || 'AP Course'}\nUnit ${unit.unitNumber}: ${unit.title}\nBig Idea: ${unit.bigIdea || 'N/A'}`}
+                context={`AP Notes: ${subject?.shortCode || 'AP'} Unit ${unit.unitNumber}`}
+                variant="pill"
+                label="Report Issue with Notes"
+                className="bg-zinc-100 hover:bg-red-50 text-zinc-600 hover:text-red-500 border border-zinc-200"
+              />
+              <p className="text-[10px] text-zinc-400 font-medium select-none tracking-tight">
+                AP Exam AI can make mistakes. Please double check important information.
+              </p>
             </div>
           </div>
         )}

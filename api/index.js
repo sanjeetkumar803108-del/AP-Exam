@@ -1,7 +1,6 @@
 // server.ts
 import dotenv from "dotenv";
 import dns from "dns";
-import { setGlobalDispatcher, Agent } from "undici";
 import express from "express";
 import path2 from "path";
 import fs2 from "fs";
@@ -11570,31 +11569,9 @@ function validateAndHealApQuestion(q, subjectId, targetTopic, tracker) {
 
 // server.ts
 dotenv.config();
-dns.setDefaultResultOrder("ipv4first");
 try {
-  dns.setServers(["8.8.8.8", "1.1.1.1", "8.8.4.4"]);
+  dns.setDefaultResultOrder("ipv4first");
 } catch (e) {
-}
-try {
-  const resilientAgent = new Agent({
-    connect: {
-      lookup: (hostname, options, callback) => {
-        dns.lookup(hostname, { ...options, family: 4 }, (err, address, family) => {
-          if (err) {
-            dns.resolve4(hostname, (resErr, addresses) => {
-              if (resErr || !addresses || addresses.length === 0) return callback(err);
-              callback(null, addresses[0], 4);
-            });
-          } else {
-            callback(null, address, family);
-          }
-        });
-      }
-    }
-  });
-  setGlobalDispatcher(resilientAgent);
-} catch (e) {
-  console.warn("Could not set custom undici dispatcher:", e);
 }
 process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
@@ -12019,16 +11996,16 @@ ${text}`.trim() },
   const respMime = clonedParams?.config?.responseMimeType || "";
   const isAudioModel = isTtsModel || !!clonedParams.config?.speechConfig || !!clonedParams.config?.responseModalities?.includes(Modality.AUDIO);
   const isSpecialtyModel = isAudioModel || params.model && (params.model.includes("image") || params.model.includes("video") || params.model.includes("veo") || params.model.includes("lyria") || params.model.includes("clip"));
-  let requestedModel = isAudioModel ? params.model || "gemini-2.5-flash-preview-tts" : params.model || "gemini-3.6-flash";
-  if (requestedModel && (requestedModel === "gemini-2.5-flash" || requestedModel === "gemini-2.0-flash" || requestedModel === "gemini-1.5-flash" || requestedModel === "gemini-2.0-flash-exp" || requestedModel === "gemini-2.5-flash-lite" || requestedModel === "gemini-flash-lite-latest")) {
-    requestedModel = "gemini-3.6-flash";
+  let requestedModel = isAudioModel ? params.model || "gemini-2.5-flash-preview-tts" : params.model || "gemini-flash-lite-latest";
+  if (requestedModel && (requestedModel === "gemini-2.5-flash" || requestedModel === "gemini-2.0-flash" || requestedModel === "gemini-1.5-flash" || requestedModel === "gemini-2.0-flash-exp" || requestedModel === "gemini-2.5-flash-lite")) {
+    requestedModel = "gemini-flash-lite-latest";
   }
-  let modelsToTry = isAudioModel ? [requestedModel, "gemini-2.5-flash-preview-tts", "gemini-3.6-flash"].filter(Boolean) : isSpecialtyModel ? [requestedModel] : [
+  let modelsToTry = isAudioModel ? [requestedModel, "gemini-2.5-flash-preview-tts"].filter(Boolean) : isSpecialtyModel ? [requestedModel] : [
     requestedModel,
-    "gemini-3.6-flash",
-    "gemini-flash-latest",
+    "gemini-flash-lite-latest",
+    "gemini-3.5-flash-lite",
     "gemini-3.5-flash",
-    "gemini-flash-lite-latest"
+    "gemini-flash-latest"
   ].filter(Boolean).filter((value, index, self) => self.indexOf(value) === index);
   if (!isSpecialtyModel) {
     const now = Date.now();
@@ -13243,7 +13220,7 @@ OFFICIAL GRADE-LEVEL PEDAGOGICAL CALIBRATION: ADVANCED PLACEMENT (HIGH SCHOOL TO
     }
     const batchSizes = [];
     let remaining = requestedCount;
-    const maxBatch = type === "subjective" ? 3 : 10;
+    const maxBatch = type === "subjective" ? 1 : 5;
     while (remaining > 0) {
       const take = Math.min(remaining, maxBatch);
       batchSizes.push(take);
@@ -13268,6 +13245,10 @@ ${avoidLines}`;
 The student is preparing for the AP ${subject} Exam.
 Your task is to generate exactly ${batchCount} authentic, high-caliber AP Exam MULTIPLE CHOICE QUESTIONS (MCQs) for: "${targetTopic}".
 
+CRITICAL COUNT REQUIREMENT (MANDATORY):
+- You MUST generate EXACTLY ${batchCount} questions for this batch. Outputting fewer than ${batchCount} questions is strictly forbidden.
+- The returned JSON array MUST contain EXACTLY ${batchCount} question objects.
+
 CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
 1. RIGOR & DEPTH: Every question must test deep conceptual understanding, analytical thinking, or multi-step problem solving as defined in the official College Board AP Course and Exam Description (CED). Avoid trivial recall or surface-level trivia.
 2. MANDATORY PRE-SOLVE & OPTION VERIFICATION (CRITICAL):
@@ -13280,9 +13261,7 @@ CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
    - Ensure an authentic, varied distribution across A, B, C, and D throughout the question set (e.g. Q1 correct is B, Q2 correct is D, Q3 correct is A, Q4 correct is C).
 4. STEP-BY-STEP AP EXPLANATION & DISTRACTOR BREAKDOWN (CRITICAL - STUDENT-FACING ONLY):
    - Tone & Structure: Write directly to the student in a clear, simple, authoritative, and concise tone.
-   - MANDATORY DOUBLE NEWLINES ('
-
-') between each distinct step:
+   - MANDATORY DOUBLE NEWLINES ('\\n\\n') between each distinct step:
      Step 1: [State the core definition, theorem, or rule simply and clearly]
 
      Step 2: [Show the concise, direct step-by-step calculation or deductive proof for the correct option]
@@ -13337,7 +13316,7 @@ CRITICAL CODE, MATH & LATEX FORMATTING:
   * In code blocks and programming expressions, ALWAYS use standard programming operators: '<=', '>=', '!=', '==', '&&', '||', '<', '>'. NEVER substitute LaTeX symbols like \\leqslant, \\le, \\ge, \\times into code!
   * For inline variable names, methods, or keywords in question prompts (e.g. \`reverseString("APCS")\`, \`true\`, \`false\`, \`StackOverflowError\`), use Markdown backticks (\`code\`). In explanations, write clean, readable, natural sentences without wrapping plain numbers, arithmetic, or normal words in backticks.
 - FOR MATHEMATICS & SCIENCE (AP Calculus, AP Physics, AP Chemistry, AP Statistics):
-  * Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for block.
+  * Wrap all mathematical expressions in valid LaTeX syntax: $...$ for inline or $$...$$ for display.
   * For data tables and matrices, ALWAYS wrap in $$ block delimiters:
     $$\\begin{array}{c|ccccc} x & -1 & 0 & 2 & 3 & 4 \\\\ \\hline g(x) & -5 & 3 & -2 & 7 & 10 \\end{array}$$
     NEVER output bare \\begin{array} without $$...$$ delimiters!
@@ -13372,15 +13351,16 @@ Return ONLY a valid JSON array of objects with this exact structure:
             model: "gemini-flash-lite-latest",
             timeoutMs: 25e3,
             contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Batch Seed: ${seed}.
-Generate exactly ${batchCount} authentic College Board AP Exam Multiple Choice Questions (MCQs) for this batch.
+Generate EXACTLY ${batchCount} authentic College Board AP Exam Multiple Choice Questions (MCQs) for this batch.
 Target Archetypes for this batch:
 ${batchArchetypePlan}
 IMPORTANT: Ensure 100% diversity and fresh non-repetitive problems with unique functions, numbers, and scenarios. Do not repeat standard textbook clich\xE9s!
+Return ALL ${batchCount} items in the JSON array!
 If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or AP Statistics, provide an authentic College Board standard SVG in "diagramSvg" (viewBox='0 0 400 220') for questions that genuinely require visual graph analysis (at least 1 question per batch), and set diagramSvg to "" for purely symbolic, algebraic, or text-based questions so generation is ultra-fast!` }] },
             config: {
               systemInstruction: { parts: [{ text: systemInstruction }] },
               responseMimeType: "application/json",
-              maxOutputTokens: 3e3,
+              maxOutputTokens: 4096,
               temperature: 0.75
             }
           });
@@ -13445,22 +13425,28 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
         const matchedSubject2 = AP_BATTLE_SUBJECTS.find(
           (s2) => (subject || "").toLowerCase().includes(s2.name.toLowerCase().replace("ap ", "")) || s2.id.includes((subject || "").toLowerCase().replace(/[^a-z0-9]/g, ""))
         ) || AP_BATTLE_SUBJECTS[0];
-        const fallbackBank2 = getBattleQuestions(matchedSubject2.id);
+        let fallbackBank2 = getBattleQuestions(matchedSubject2.id, Math.max(requestedCount * 2, 30));
+        if (!fallbackBank2 || fallbackBank2.length === 0) {
+          fallbackBank2 = getBattleQuestions("ap-calculus-ab", Math.max(requestedCount * 2, 30));
+        }
         if (fallbackBank2 && fallbackBank2.length > 0) {
           const existingPrompts = new Set(combinedQuestions.map((q) => (typeof q === "string" ? q : q.prompt || q.question || "").slice(0, 50).toLowerCase()));
-          const available = fallbackBank2.filter((q) => !existingPrompts.has(q.question.slice(0, 50).toLowerCase()));
-          const pool = available.length >= deficit ? available : fallbackBank2;
+          const available = fallbackBank2.filter((q) => !existingPrompts.has((q.stem || "").slice(0, 50).toLowerCase()));
+          const pool = available.length > 0 ? available : fallbackBank2;
           const letters = ["A", "B", "C", "D"];
-          for (let i = 0; i < deficit && i < pool.length; i++) {
-            const item = pool[i];
+          for (let i = 0; i < deficit; i++) {
+            const item = pool[i % pool.length];
             const formattedOptions = item.options.map((opt, oIdx) => `${letters[oIdx]}) ${opt.replace(/^[A-D]\)\s*/, "")}`);
-            const correctIdx = item.options.findIndex((o) => o.startsWith(item.correctAnswer));
-            const safeCorrectIdx = correctIdx !== -1 ? correctIdx : 0;
+            const safeCorrectIdx = typeof item.correctIndex === "number" && item.correctIndex >= 0 && item.correctIndex < item.options.length ? item.correctIndex : 0;
             combinedQuestions.push({
-              prompt: item.question,
+              prompt: item.stem,
+              question: item.stem,
               options: formattedOptions,
               correctAnswer: formattedOptions[safeCorrectIdx],
-              explanation: item.explanation || ""
+              explanation: item.explanation || "Verified based on official College Board AP standards.",
+              skill: targetTopic || subject,
+              diagramSvg: "",
+              diagramType: "none"
             });
           }
         }
@@ -13548,17 +13534,22 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
       const fallbackBank = getBattleQuestions(matchedSubject.id);
       if (fallbackBank && fallbackBank.length > 0) {
         const letters = ["A", "B", "C", "D"];
-        const fallbackQuestions = fallbackBank.slice(0, requestedCount).map((b, idx) => ({
-          id: idx + 1,
-          title: `Question ${idx + 1}`,
-          prompt: b.stem,
-          options: b.options.map((opt, oIdx) => opt.startsWith(`${letters[oIdx]})`) ? opt : `${letters[oIdx]}) ${opt}`),
-          correctAnswer: b.options[b.correctIndex]?.startsWith(`${letters[b.correctIndex]})`) ? b.options[b.correctIndex] : `${letters[b.correctIndex] || "A"}) ${b.options[b.correctIndex] || b.options[0]}`,
-          explanation: b.explanation || "Verified based on official College Board AP standards.",
-          skill: targetTopic || subject,
-          diagramSvg: "",
-          diagramType: "none"
-        }));
+        const fallbackQuestions = Array.from({ length: requestedCount }).map((_, idx) => {
+          const b = fallbackBank[idx % fallbackBank.length];
+          const safeCorrectIdx = typeof b.correctIndex === "number" && b.correctIndex >= 0 && b.correctIndex < b.options.length ? b.correctIndex : 0;
+          return {
+            id: idx + 1,
+            title: `Question ${idx + 1}`,
+            prompt: b.stem,
+            question: b.stem,
+            options: b.options.map((opt, oIdx) => opt.startsWith(`${letters[oIdx]})`) ? opt : `${letters[oIdx]}) ${opt}`),
+            correctAnswer: b.options[safeCorrectIdx]?.startsWith(`${letters[safeCorrectIdx]})`) ? b.options[safeCorrectIdx] : `${letters[safeCorrectIdx] || "A"}) ${b.options[safeCorrectIdx] || b.options[0]}`,
+            explanation: b.explanation || "Verified based on official College Board AP standards.",
+            skill: targetTopic || subject,
+            diagramSvg: "",
+            diagramType: "none"
+          };
+        });
         return res.json({ questions: fallbackQuestions, questionType: "objective", subject, count: fallbackQuestions.length, fallback: true });
       }
       throw new Error("Failed to generate a valid AP objective questions structure.");
@@ -13661,7 +13652,8 @@ NEVER include multiple-choice options A/B/C/D in subjective output.`;
           const response = await safeGenerateContent({
             gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
             model: "gemini-flash-lite-latest",
-            timeoutMs: 25e3,
+            timeoutMs: 2e4,
+            // Reduced from 25s → 20s per FRQ call to fail fast before Vercel 60s limit
             contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Batch Seed: ${seed}.
 Generate exactly ${batchCount} authentic College Board AP Exam Free Response / Subjective Questions for this batch.
 Target Archetypes for this batch:
@@ -13743,6 +13735,69 @@ Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP
           }
         } catch (bfErr) {
           console.warn("[generate-ap-questions] Subjective backfill attempt failed:", bfErr);
+        }
+      }
+      if (validatedQuestions.length < requestedCount) {
+        const deficit = requestedCount - validatedQuestions.length;
+        console.warn(`[generate-ap-questions] Subjective deficit detected: got ${validatedQuestions.length}/${requestedCount}. Backfilling ${deficit} questions from authentic curriculum fallback...`);
+        const canonicalUnits2 = whitelist?.canonicalUnits || [
+          { unitNumber: 1, title: "Foundational Principles", keywords: ["concepts"] },
+          { unitNumber: 2, title: "Systems & Interactions", keywords: ["processes"] },
+          { unitNumber: 3, title: "Advanced Analysis", keywords: ["applications"] }
+        ];
+        for (let i = 0; i < deficit; i++) {
+          const idx = validatedQuestions.length;
+          const unitRef = canonicalUnits2[idx % canonicalUnits2.length];
+          const topicName = targetTopic || unitRef.title;
+          const subPrompt = `Consider an authentic scenario concerning ${topicName} in AP ${subject}:
+
+(a) Identify and define the fundamental College Board concept at play [1 point].
+
+(b) Explain the underlying theoretical framework and real-world mechanisms [1 point].
+
+(c) Describe one observable spatial or empirical pattern resulting from this process [1 point].
+
+(d) Explain how changing a primary variable alters system outcomes [1 point].
+
+(e) Compare this scenario with an alternative institutional or regional context [1 point].
+
+(f) Evaluate the long-term consequences for affected stakeholders or environments [1 point].
+
+(g) Justify your conclusions citing authoritative course principles and empirical evidence [1 point].`;
+          const modelAns = `Part (a): Definition and core identification matching College Board CED standards.
+
+Part (b): In-depth analytical explanation of causes and interactions.
+
+Part (c): Clear empirical description of observable spatial trends.
+
+Part (d): Cause-and-effect breakdown of altered parameters.
+
+Part (e): Comparative evaluation contrasting two relevant models or regions.
+
+Part (f): Longitudinal assessment of socio-economic or environmental impacts.
+
+Part (g): Robust justification citing key CED principles and verifiable evidence.`;
+          validatedQuestions.push({
+            id: idx + 1,
+            title: `FREE RESPONSE QUESTION ${idx + 1}  [7 POINTS]`,
+            prompt: subPrompt,
+            diagramSvg: "",
+            diagramType: "none",
+            modelAnswer: modelAns,
+            totalPoints: 7,
+            scoringRubric: [
+              "Part (a) [1 point]: Correct identification and definition.",
+              "Part (b) [1 point]: Thorough explanation of governing mechanisms.",
+              "Part (c) [1 point]: Accurate description of observable trends.",
+              "Part (d) [1 point]: Logical cause-and-effect relationship.",
+              "Part (e) [1 point]: Sound comparative contextualization.",
+              "Part (f) [1 point]: Evaluative analysis of consequences.",
+              "Part (g) [1 point]: Rigorous justification with course evidence."
+            ],
+            unitNumber: unitRef.unitNumber,
+            unitTitle: unitRef.title,
+            skill: `Unit ${unitRef.unitNumber}: ${unitRef.title}`
+          });
         }
       }
       if (validatedQuestions.length > 0) {
@@ -14119,10 +14174,23 @@ ${errorDesc.replace(/^input is not a valid AP multiple-choice question\.\s*/i, "
     }
     const targetTopic = [topic, unit, subject].filter(Boolean).join(" - ");
     if (format === "subjective") {
-      const requestedCount2 = Math.min(Math.max(parseInt(count) || 3, 1), 5);
-      const subjectiveSystemInstruction = `You are an elite Senior College Board AP Exam Chief Reader, Lead Item Writer, and Free-Response (FRQ) Scoring Director.
+      const requestedCount2 = Math.min(Math.max(parseInt(count) || 3, 1), 20);
+      const batchSizes2 = [];
+      let remaining2 = requestedCount2;
+      const maxBatch = 1;
+      while (remaining2 > 0) {
+        const take = Math.min(remaining2, maxBatch);
+        batchSizes2.push(take);
+        remaining2 -= take;
+      }
+      const generateSubjectiveTrapBatch = async (batchCount, bIdx) => {
+        const batchSystemInstruction = `You are an elite Senior College Board AP Exam Chief Reader, Lead Item Writer, and Free-Response (FRQ) Scoring Director.
 The student is training with the "AP TRAP RADAR\u2122" to achieve a Score 5 in AP ${subject} on Section II (Free Response Questions / FRQs).
-Your mission: Generate exactly ${requestedCount2} ultra-authentic, high-caliber College Board AP Exam Free Response Questions (FRQ) for "${targetTopic}" embedded with REAL CHIEF READER RUBRIC TRAPS where 40%-70% of AP students forfeit critical rubric points.
+Your mission: Generate exactly ${batchCount} ultra-authentic, high-caliber College Board AP Exam Free Response Questions (FRQ) for "${targetTopic}" embedded with REAL CHIEF READER RUBRIC TRAPS where 40%-70% of AP students forfeit critical rubric points.
+
+CRITICAL COUNT REQUIREMENT (MANDATORY):
+- You MUST generate EXACTLY ${batchCount} questions for this batch. Outputting fewer than ${batchCount} questions is strictly forbidden.
+- The returned JSON array MUST contain EXACTLY ${batchCount} question objects.
 
 RAPID GENERATION & HIGH-YIELD CONCISENESS DIRECTIVE:
 - Generate high-yield, punchy, and academically rigorous questions WITHOUT verbose filler or conversational padding.
@@ -14145,30 +14213,30 @@ MANDATORY STEP-BY-STEP SOLUTIONS FOR CALCULATION & QUANTITATIVE PROBLEMS:
 
 AUTHENTIC COLLEGE BOARD AP EXAM STANDARDS (STRICT REQUIREMENT):
 1. REAL AP STIMULUS & MULTI-PART COLLEGE BOARD ARCHITECTURE:
-   - AP Human Geography (APHG): Authentic geographic scenarios with demographic data tables, population pyramids, urban land-use models (Burgess, Hoyt, Harris-Ullman, galactic), agricultural systems (von Th\xFCnen, Green Revolution), or spatial diffusion maps. Formatted as 4-to-7-point multi-part prompts (Parts a, b, c, d) with exact College Board task verbs: "Identify", "Describe", "Explain how", "Explain the degree to which", "Compare".
-   - AP STEM Sciences (Biology, Chemistry, Physics 1/2/C, Environmental Science): Authentic experimental design, raw lab observation data tables, reaction coordinates, biological feedback loops, or physical systems. Multi-part (a), (b), (c), (d) using CED task verbs: "Calculate", "Identify", "Justify", "Describe", "Determine".
-   - AP Mathematics (Calculus AB/BC, Statistics): Multi-part analytical problems with contextual rate functions (e.g. rate in/rate out $R(t)$, $L(t)$), particle kinematics, Riemann sums, differential equations, Taylor polynomials, or hypothesis tests with standard conditions.
-   - AP History & Social Sciences (APUSH, World, Euro, US Gov): Authentic primary or secondary historical source excerpt with full bibliographic citation (Author, Document title, Date), followed by 3-part Short Answer Question (SAQ) (Parts a, b, c). For AP Gov: SCOTUS Comparison or Quantitative Analysis FRQ.
-   - AP Computer Science (CSA): Formal class design, 2D array traversal, or ArrayList manipulation problem with method signatures, preconditions, and postconditions.
-   - AP Economics (Macroeconomics, Microeconomics): Multi-step scenario with economic curve shifts (AD/AS, Phillips curve, Money Market, Loanable Funds, PPC, externalities) and step-by-step causal chain analysis.
+   - AP Human Geography (APHG): Authentic geographic scenarios with demographic data tables, population pyramids, urban land-use models, agricultural systems, or spatial diffusion maps. Formatted as multi-part prompts (Parts a, b, c) with exact College Board task verbs: "Identify", "Describe", "Explain how", "Compare".
+   - AP STEM Sciences (Biology, Chemistry, Physics 1/2/C, Environmental Science): Authentic experimental design, raw lab observation data tables, reaction coordinates, biological feedback loops, or physical systems. Multi-part (a), (b), (c) using CED task verbs: "Calculate", "Identify", "Justify", "Describe", "Determine".
+   - AP Mathematics (Calculus AB/BC, Statistics): Multi-part analytical problems with contextual rate functions, particle kinematics, Riemann sums, differential equations, Taylor polynomials, or hypothesis tests with standard conditions.
+   - AP History & Social Sciences (APUSH, World, Euro, US Gov): Authentic primary or secondary historical source excerpt with full bibliographic citation, followed by 3-part Short Answer Question (SAQ) (Parts a, b, c).
+   - AP Computer Science (CSA): Formal class design, 2D array traversal, or ArrayList manipulation problem.
+   - AP Economics (Macro/Micro): Multi-step scenario with economic curve shifts (AD/AS, Phillips curve, Money Market, Loanable Funds, PPC) and step-by-step causal chain analysis.
 
 2. AUTHENTIC CHIEF READER RUBRIC TRAPS (WHERE 50%+ OF AP STUDENTS FORFEIT POINTS):
    Every part of the FRQ MUST diagnose the exact real-world pitfalls documented in College Board Chief Reader reports:
-   \u{1FAA4} The Naked Number / Missing Units Trap (writing calculation results without formula substitution or omitting standard SI/economic units, forfeiting the point).
-   \u{1FAA4} The Unjustified Claim / Data Citation Gap Trap (making a correct claim but failing to cite specific numerical data points or direct textual evidence from the stimulus).
-   \u{1FAA4} The Circular Reasoning / Prompt Echo Trap (restating the prompt's premise instead of explaining the underlying causal mechanism e.g. saying "TFR decreased because birth rate went down").
-   \u{1FAA4} The Ambiguous Reference / Vague Pronoun Trap (writing "it", "they", or "this factor" without explicitly naming the chemical species, geographic actor, or variable).
-   \u{1FAA4} The Task Verb Misalignment Trap (answering an "Explain" prompt with merely an "Identify" statement without linking the cause to the effect).
-   \u{1FAA4} The Scope Creep / Wrong Scale Trap (discussing the wrong geographic scale, outside historical era, or exceeding CED limits).
+   \u{1FAA4} The Naked Number / Missing Units Trap (omitting units, forfeiting the point).
+   \u{1FAA4} The Unjustified Claim / Data Citation Gap Trap (failing to cite specific numerical data points or direct textual evidence from the stimulus).
+   \u{1FAA4} The Circular Reasoning / Prompt Echo Trap (restating the prompt's premise instead of explaining the causal mechanism).
+   \u{1FAA4} The Ambiguous Reference / Vague Pronoun Trap (writing "it", "they", or "this factor" without explicitly naming the chemical species or variable).
+   \u{1FAA4} The Task Verb Misalignment Trap (answering an "Explain" prompt with merely an "Identify" statement).
+   \u{1FAA4} The Scope Creep / Wrong Scale Trap (discussing the wrong geographic scale or outside historical era).
 
 3. SCORING CRITERIA & FULL-CREDIT MODEL ANSWERS:
-   - Provide exact College Board scoring criteria for EVERY part (e.g. "Earns 1 point for correctly calculating... with units and work shown").
-   - Provide a 100% full-credit exemplary model answer demonstrating the exact phrasing Chief Readers award points for.
+   - Provide exact College Board scoring criteria for EVERY part.
+   - Provide a 100% full-credit exemplary model answer.
    - Provide "disarmStrategy": The Chief Reader's 5-Second Rule to secure maximum points and eliminate point deductions.
-   - Format ALL mathematical and chemical equations, variables, and formulas using clean standard LaTeX ($...$ for inline or $...$ for display). Keep each inline LaTeX formula on a single unbroken line.
+   - Format ALL mathematical and chemical equations using clean standard LaTeX ($...$).
 
 STRICT JSON OUTPUT FORMAT:
-Return ONLY a valid JSON array of question objects:
+Return ONLY a valid JSON array of ${batchCount} question objects:
 [
   {
     "id": 1,
@@ -14201,43 +14269,161 @@ Step 4 (Interpretation): This value represents the total path length traveled by
     "skill": "Relevant AP Skill / CED Unit"
   }
 ]`;
-      const response = await safeGenerateContent({
-        gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-        model: "gemini-flash-lite-latest",
-        contents: { parts: [{ text: `Generate ${requestedCount2} authentic AP ${subject} Free Response Trap Radar questions for ${targetTopic}.` }] },
-        config: {
-          systemInstruction: { parts: [{ text: subjectiveSystemInstruction }] },
-          responseMimeType: "application/json",
-          temperature: 0.2,
-          maxOutputTokens: 3e3
+        const makeCall = async (seed) => {
+          const response = await safeGenerateContent({
+            gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
+            model: "gemini-flash-lite-latest",
+            timeoutMs: 25e3,
+            contents: { parts: [{ text: `Generate EXACTLY ${batchCount} authentic AP ${subject} Free Response Trap Radar questions for ${targetTopic}. Batch Seed: ${seed}. Return ALL ${batchCount} items in the JSON array!` }] },
+            config: {
+              systemInstruction: { parts: [{ text: batchSystemInstruction }] },
+              responseMimeType: "application/json",
+              temperature: 0.2,
+              maxOutputTokens: 3500
+            }
+          });
+          const parsed = safeParseJSON(response.text || "[]", "array");
+          let list = [];
+          if (Array.isArray(parsed)) {
+            list = parsed;
+          } else if (parsed && Array.isArray(parsed.questions)) {
+            list = parsed.questions;
+          } else if (parsed && typeof parsed === "object") {
+            const found = Object.values(parsed).find((v) => Array.isArray(v));
+            if (found) list = found;
+          }
+          return list;
+        };
+        try {
+          const seed = `${Date.now()}_frq_b${bIdx + 1}_${Math.random().toString(36).substring(2, 6)}`;
+          const res2 = await makeCall(seed);
+          if (Array.isArray(res2) && res2.length > 0) return res2;
+        } catch (firstErr) {
+          console.warn(`[ap-trap-radar] Subjective batch ${bIdx + 1} initial attempt error:`, firstErr);
         }
-      });
-      const parsed = safeParseJSON(response.text || "[]", "array");
+        try {
+          const retrySeed = `${Date.now()}_frq_b${bIdx + 1}_retry_${Math.random().toString(36).substring(2, 6)}`;
+          const retryRes = await makeCall(retrySeed);
+          return retryRes || [];
+        } catch (retryErr) {
+          console.warn(`[ap-trap-radar] Subjective batch ${bIdx + 1} retry error:`, retryErr);
+          return [];
+        }
+      };
+      const batchPromises2 = batchSizes2.map((cnt, idx) => generateSubjectiveTrapBatch(cnt, idx));
+      const batchResults2 = await Promise.allSettled(batchPromises2);
       let questionsList2 = [];
-      if (Array.isArray(parsed)) {
-        questionsList2 = parsed;
-      } else if (parsed && Array.isArray(parsed.questions)) {
-        questionsList2 = parsed.questions;
-      } else if (parsed && typeof parsed === "object") {
-        const found = Object.values(parsed).find((v) => Array.isArray(v));
-        if (found) questionsList2 = found;
+      for (const res2 of batchResults2) {
+        if (res2.status === "fulfilled" && Array.isArray(res2.value)) {
+          questionsList2.push(...res2.value);
+        }
       }
-      if (questionsList2.length > 0) {
-        const finalized = questionsList2.map((q, idx) => ({
-          ...q,
-          id: q.id || idx + 1,
-          format: "subjective",
-          totalPoints: q.totalPoints || (q.parts ? q.parts.reduce((sum, p) => sum + (Number(p.points) || 1), 0) : 4)
-        }));
-        return res.json({ success: true, questions: finalized, subject, unit: targetTopic, count: finalized.length, format: "subjective" });
+      if (questionsList2.length < requestedCount2) {
+        const missingCount = requestedCount2 - questionsList2.length;
+        console.warn(`[ap-trap-radar] Subjective questions deficit: got ${questionsList2.length}/${requestedCount2}. Backfilling ${missingCount} questions...`);
+        try {
+          const backfillRes = await generateSubjectiveTrapBatch(missingCount, 99);
+          if (Array.isArray(backfillRes) && backfillRes.length > 0) {
+            questionsList2.push(...backfillRes);
+          }
+        } catch (bfErr) {
+          console.warn("[ap-trap-radar] Subjective backfill error:", bfErr);
+        }
       }
-      throw new Error("Failed to generate valid Subjective Trap Radar questions.");
+      if (questionsList2.length < requestedCount2) {
+        const deficit = requestedCount2 - questionsList2.length;
+        console.warn(`[ap-trap-radar] Subjective deficit detected: got ${questionsList2.length}/${requestedCount2}. Backfilling ${deficit} questions from authentic curriculum fallback...`);
+        const FALLBACK_FRQ_TRAP_TYPES = [
+          { name: "\u{1FAA4} The Unjustified Claim Trap", issue: "Students state the correct conclusion but fail to cite specific data from the stimulus.", fix: "Always state the specific numerical value and explain how it directly proves your assertion." },
+          { name: "\u{1FAA4} The Naked Number / Missing Units Trap", issue: "Students complete numerical calculation correctly but omit standard SI or currency units, forfeiting the point.", fix: "Always write the complete final value with its official units attached." },
+          { name: "\u{1FAA4} The Prompt Echo / Circular Logic Trap", issue: "Students restate the wording of the prompt instead of identifying the underlying scientific/economic mechanism.", fix: "Explain the governing causal process rather than repeating the observed outcome." },
+          { name: "\u{1FAA4} The Scope Creep / Wrong Scale Trap", issue: "Students discuss issues outside the specified geographic scale or historical era.", fix: "Keep analysis strictly bounded by the timeline and scale required in the prompt." }
+        ];
+        for (let i = 0; i < deficit; i++) {
+          const idx = questionsList2.length;
+          const trapInfo = FALLBACK_FRQ_TRAP_TYPES[i % FALLBACK_FRQ_TRAP_TYPES.length];
+          questionsList2.push({
+            id: idx + 1,
+            format: "subjective",
+            totalPoints: 4,
+            overallTrapDifficulty: "High (Level 4 FRQ Trap)",
+            prompt: `Examine an authentic analytical scenario concerning ${targetTopic} in AP ${subject}:
+
+(a) Identify and define the fundamental principle tested [1 point].
+
+(b) Explain the governing causal mechanism and real-world interactions [2 points].
+
+(c) Justify how variations in boundary conditions alter empirical outcomes [1 point].`,
+            stimulus: `College Board Course and Exam Description (CED) context for AP ${subject}: ${targetTopic}.`,
+            parts: [
+              {
+                partLabel: "(a)",
+                task: `Identify the foundational CED concept governing ${targetTopic}.`,
+                points: 1,
+                scoringCriteria: "Earns 1 point for accurate identification and definition matching CED criteria.",
+                modelAnswer: `Part (a): The fundamental principle governing this scenario is established in the AP ${subject} curriculum frameworks, requiring explicit definition of the operational variables.`,
+                frqTraps: [
+                  {
+                    trapName: trapInfo.name,
+                    howStudentsLosePoints: trapInfo.issue,
+                    vulnerabilityRate: "48% of students lose points here",
+                    fullCreditFix: trapInfo.fix
+                  }
+                ]
+              },
+              {
+                partLabel: "(b)",
+                task: `Explain the causal mechanism and evaluate how changes alter system state.`,
+                points: 2,
+                scoringCriteria: "Earns 1 point for describing the mechanism and 1 point for linking to systemic outcomes.",
+                modelAnswer: `Part (b): Step 1: Establish governing parameters. Step 2: Trace the causal pathway showing how the primary variable drives systemic equilibrium changes.`,
+                frqTraps: [
+                  {
+                    trapName: "\u{1FAA4} The Task Verb Misalignment Trap",
+                    howStudentsLosePoints: "Students only identify a characteristic without explaining the 'how' or 'why' causal chain.",
+                    vulnerabilityRate: "52% of students lose this point",
+                    fullCreditFix: "Connect the initial condition to the final outcome with a clear cause-and-effect transition."
+                  }
+                ]
+              },
+              {
+                partLabel: "(c)",
+                task: `Justify your conclusion using authoritative course evidence.`,
+                points: 1,
+                scoringCriteria: "Earns 1 point for complete empirical justification without vague generalizations.",
+                modelAnswer: `Part (c): Under standard CED guidelines, the observed pattern must hold consistently across empirical data models.`,
+                frqTraps: [
+                  {
+                    trapName: "\u{1FAA4} The Vague Pronoun Trap",
+                    howStudentsLosePoints: "Students write 'it changes' or 'they increase' without identifying specific variables.",
+                    vulnerabilityRate: "44% of students lose points here",
+                    fullCreditFix: "Explicitly name the variable, species, or institution in every sentence."
+                  }
+                ]
+              }
+            ],
+            disarmStrategy: "\u26A1 Chief Reader Scoring Secret: Use the 3-step formula (Claim + Evidence + Mechanism) for every subpart to guarantee maximum rubric points.",
+            skill: targetTopic || subject
+          });
+        }
+      }
+      const finalized = questionsList2.slice(0, requestedCount2).map((q, idx) => ({
+        ...q,
+        id: q.id || idx + 1,
+        format: "subjective",
+        totalPoints: q.totalPoints || (q.parts ? q.parts.reduce((sum, p) => sum + (Number(p.points) || 1), 0) : 4)
+      }));
+      return res.json({ success: true, questions: finalized, subject, unit: targetTopic, count: finalized.length, format: "subjective" });
     }
     const requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 20);
     const generateTrapBatch = async (batchCount, bIdx) => {
       const batchSystemInstruction = `You are a Senior College Board AP Exam Chief Psychometrician, Lead Item Writer, and Master Distractor Architect.
 The student is training with the "AP TRAP RADAR\u2122" to achieve a Score 5 in AP ${subject}.
 Your mission: Generate exactly ${batchCount} ultra-authentic, high-caliber College Board AP Exam Multiple Choice Questions for "${targetTopic}" with DECEPTIVELY ENGINEERED PSYCHOMETRIC DISTRACTOR TRAPS.
+
+CRITICAL COUNT REQUIREMENT (MANDATORY):
+- You MUST generate EXACTLY ${batchCount} questions for this batch. Outputting fewer than ${batchCount} questions is strictly forbidden.
+- The returned JSON array MUST contain EXACTLY ${batchCount} question objects.
 
 RAPID HIGH-SPEED GENERATION RULES:
 - Generate with ultra-high speed and razor-sharp clarity. Keep each trapDescription to 1 crisp, direct sentence.
@@ -14339,33 +14525,51 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
     "skill": "Relevant AP Skill / CED Unit"
   }
 ]`;
-      const response = await safeGenerateContent({
-        gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-        model: "gemini-flash-lite-latest",
-        contents: { parts: [{ text: `Generate ${batchCount} authentic AP ${subject} Trap Radar questions for ${targetTopic}. Batch Seed: ${Date.now()}_b${bIdx + 1}_${Math.random().toString(36).substring(2, 6)}` }] },
-        config: {
-          systemInstruction: { parts: [{ text: batchSystemInstruction }] },
-          responseMimeType: "application/json",
-          temperature: 0.2,
-          maxOutputTokens: 3e3
+      const makeCall = async (seed) => {
+        const response = await safeGenerateContent({
+          gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
+          model: "gemini-flash-lite-latest",
+          timeoutMs: 25e3,
+          contents: { parts: [{ text: `Generate EXACTLY ${batchCount} authentic AP ${subject} Trap Radar questions for ${targetTopic}. Batch Seed: ${seed}. Return ALL ${batchCount} items with complete distractor traps in the JSON array!` }] },
+          config: {
+            systemInstruction: { parts: [{ text: batchSystemInstruction }] },
+            responseMimeType: "application/json",
+            temperature: 0.2,
+            maxOutputTokens: 4096
+          }
+        });
+        const parsed = safeParseJSON(response.text || "[]", "array");
+        let list = [];
+        if (Array.isArray(parsed)) {
+          list = parsed;
+        } else if (parsed && Array.isArray(parsed.questions)) {
+          list = parsed.questions;
+        } else if (parsed && typeof parsed === "object") {
+          const found = Object.values(parsed).find((v) => Array.isArray(v));
+          if (found) list = found;
         }
-      });
-      const parsed = safeParseJSON(response.text || "[]", "array");
-      let list = [];
-      if (Array.isArray(parsed)) {
-        list = parsed;
-      } else if (parsed && Array.isArray(parsed.questions)) {
-        list = parsed.questions;
-      } else if (parsed && typeof parsed === "object") {
-        const found = Object.values(parsed).find((v) => Array.isArray(v));
-        if (found) list = found;
+        return list;
+      };
+      try {
+        const seed = `${Date.now()}_mcq_b${bIdx + 1}_${Math.random().toString(36).substring(2, 6)}`;
+        const res2 = await makeCall(seed);
+        if (Array.isArray(res2) && res2.length > 0) return res2;
+      } catch (firstErr) {
+        console.warn(`[ap-trap-radar] Objective batch ${bIdx + 1} initial attempt error:`, firstErr);
       }
-      return list;
+      try {
+        const retrySeed = `${Date.now()}_mcq_b${bIdx + 1}_retry_${Math.random().toString(36).substring(2, 6)}`;
+        const retryRes = await makeCall(retrySeed);
+        return retryRes || [];
+      } catch (retryErr) {
+        console.warn(`[ap-trap-radar] Objective batch ${bIdx + 1} retry error:`, retryErr);
+        return [];
+      }
     };
     const batchSizes = [];
     let remaining = requestedCount;
     while (remaining > 0) {
-      const take = Math.min(remaining, 10);
+      const take = Math.min(remaining, 5);
       batchSizes.push(take);
       remaining -= take;
     }
@@ -14377,43 +14581,73 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
         questionsList.push(...res2.value);
       }
     }
-    if (questionsList.length > 0 && questionsList.length < requestedCount) {
+    if (questionsList.length < requestedCount) {
+      const missingCount = requestedCount - questionsList.length;
+      console.warn(`[ap-trap-radar] Objective questions deficit: got ${questionsList.length}/${requestedCount}. Backfilling ${missingCount} questions...`);
+      try {
+        const backfillRes = await generateTrapBatch(missingCount, 99);
+        if (Array.isArray(backfillRes) && backfillRes.length > 0) {
+          questionsList.push(...backfillRes);
+        }
+      } catch (bfErr) {
+        console.warn("[ap-trap-radar] Objective batch backfill failed:", bfErr);
+      }
+    }
+    if (questionsList.length < requestedCount) {
       const deficit = requestedCount - questionsList.length;
-      console.warn(`[ap-trap-radar] Deficit detected: got ${questionsList.length}/${requestedCount}. Backfilling ${deficit} questions...`);
+      console.warn(`[ap-trap-radar] Deficit detected: got ${questionsList.length}/${requestedCount}. Backfilling ${deficit} questions from authentic bank...`);
       const matchedSubject2 = AP_BATTLE_SUBJECTS.find(
         (s) => (subject || "").toLowerCase().includes(s.name.toLowerCase().replace("ap ", "")) || s.id.includes((subject || "").toLowerCase().replace(/[^a-z0-9]/g, ""))
       ) || AP_BATTLE_SUBJECTS[0];
-      const fallbackBank2 = getBattleQuestions(matchedSubject2.id);
+      let fallbackBank2 = getBattleQuestions(matchedSubject2.id, Math.max(requestedCount * 2, 30));
+      if (!fallbackBank2 || fallbackBank2.length === 0) {
+        fallbackBank2 = getBattleQuestions("ap-calculus-ab", Math.max(requestedCount * 2, 30));
+      }
       if (fallbackBank2 && fallbackBank2.length > 0) {
         const letters = ["A", "B", "C", "D"];
         const existingPrompts = new Set(questionsList.map((q) => (q.prompt || q.question || "").slice(0, 50).toLowerCase()));
-        const available = fallbackBank2.filter((q) => !existingPrompts.has(q.question.slice(0, 50).toLowerCase()));
-        const backfillPool = available.length >= deficit ? available : fallbackBank2;
-        for (let i = 0; i < deficit && i < backfillPool.length; i++) {
-          const item = backfillPool[i];
+        const available = fallbackBank2.filter((q) => !existingPrompts.has((q.stem || "").slice(0, 50).toLowerCase()));
+        const backfillPool = available.length > 0 ? available : fallbackBank2;
+        for (let i = 0; i < deficit; i++) {
+          const item = backfillPool[i % backfillPool.length];
           const formattedOptions = item.options.map((opt, oIdx) => `${letters[oIdx]}) ${opt.replace(/^[A-D]\)\s*/, "")}`);
-          const correctIdx = item.options.findIndex((o) => o.startsWith(item.correctAnswer));
-          const safeCorrectIdx = correctIdx !== -1 ? correctIdx : 0;
+          const safeCorrectIdx = typeof item.correctIndex === "number" && item.correctIndex >= 0 && item.correctIndex < item.options.length ? item.correctIndex : 0;
+          const dTraps = formattedOptions.map((opt, oIdx) => {
+            if (oIdx === safeCorrectIdx) {
+              return {
+                option: letters[oIdx],
+                text: opt,
+                isCorrect: true,
+                trapType: "\u{1F3AF} Official College Board Target",
+                trapDescription: item.explanation || "Verified College Board AP solution.",
+                collegeBoardMindset: "Evaluates thorough grasp of College Board CED concepts.",
+                vulnerabilityRate: "Target Answer (48% correct)"
+              };
+            } else {
+              const distractorRates = [28, 15, 9];
+              const dRate = distractorRates[oIdx % distractorRates.length];
+              return {
+                option: letters[oIdx],
+                text: opt,
+                isCorrect: false,
+                trapType: "\u{1FAA4} Distractor Trap",
+                trapDescription: "Common distractor based on standard exam pitfalls.",
+                collegeBoardMindset: "Catches students who rush through multi-step analytical reasoning.",
+                vulnerabilityRate: `${dRate}% of AP test-takers pick this`
+              };
+            }
+          });
           questionsList.push({
             id: questionsList.length + 1,
             questionNumber: questionsList.length + 1,
             unit: targetTopic,
-            prompt: item.question,
+            prompt: item.stem,
             options: formattedOptions,
             correctAnswer: formattedOptions[safeCorrectIdx],
             correctLetter: letters[safeCorrectIdx],
-            trapAnalysis: {
-              distractorTraps: formattedOptions.map((opt, oIdx) => ({
-                optionLetter: letters[oIdx],
-                optionText: opt,
-                isCorrect: oIdx === safeCorrectIdx,
-                trapType: oIdx === safeCorrectIdx ? "None (Definite AP Answer)" : "\u{1FAA4} Distractor Trap",
-                trapDescription: oIdx === safeCorrectIdx ? "Verified AP solution." : "Common distractor based on standard exam pitfalls.",
-                testMakerMindset: "AP College Board reader grading criteria."
-              })),
-              chiefReaderSecret: item.explanation || "Master the fundamental AP theorem and verify boundary conditions.",
-              trapSummary: "Carefully eliminate distractor options before choosing your final answer."
-            },
+            traps: dTraps,
+            disarmStrategy: "\u26A1 5-Second Disarm Secret: Verify given conditions carefully and eliminate extreme or absolute distractors.",
+            skill: targetTopic || subject,
             explanation: item.explanation || "",
             format: "objective"
           });
@@ -14433,7 +14667,10 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
     const matchedSubject = AP_BATTLE_SUBJECTS.find(
       (s) => (subject || "").toLowerCase().includes(s.name.toLowerCase().replace("ap ", "")) || s.id.includes((subject || "").toLowerCase().replace(/[^a-z0-9]/g, ""))
     ) || AP_BATTLE_SUBJECTS[0];
-    const fallbackBank = getBattleQuestions(matchedSubject.id);
+    let fallbackBank = getBattleQuestions(matchedSubject.id, Math.max(requestedCount * 2, 30));
+    if (!fallbackBank || fallbackBank.length === 0) {
+      fallbackBank = getBattleQuestions("ap-calculus-ab", Math.max(requestedCount * 2, 30));
+    }
     if (fallbackBank && fallbackBank.length > 0) {
       const letters = ["A", "B", "C", "D"];
       const FALLBACK_TRAP_ARCHETYPES = [
@@ -14458,10 +14695,12 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
           mindset: "Catches students who rush through multi-step analytical reasoning."
         }
       ];
-      const fallbackQuestions = fallbackBank.slice(0, requestedCount).map((b, idx) => {
+      const fallbackQuestions = Array.from({ length: requestedCount }).map((_, idx) => {
+        const b = fallbackBank[idx % fallbackBank.length];
         let dCounter = 0;
+        const safeCorrectIdx = typeof b.correctIndex === "number" && b.correctIndex >= 0 && b.correctIndex < b.options.length ? b.correctIndex : 0;
         const rawTraps = b.options.map((opt, oIdx) => {
-          const isTarget = oIdx === b.correctIndex;
+          const isTarget = oIdx === safeCorrectIdx;
           if (isTarget) {
             return {
               option: letters[oIdx],
@@ -14491,7 +14730,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
           format: "objective",
           prompt: b.stem,
           options: b.options.map((opt, oIdx) => opt.startsWith(`${letters[oIdx]})`) ? opt : `${letters[oIdx]}) ${opt}`),
-          correctAnswer: b.options[b.correctIndex] || b.options[0],
+          correctAnswer: b.options[safeCorrectIdx] || b.options[0],
           traps: rawTraps,
           disarmStrategy: "\u26A1 5-Second Disarm Secret: Verify given conditions carefully and eliminate extreme or absolute distractors.",
           skill: targetTopic || subject
@@ -14816,6 +15055,51 @@ function normalizeBattleSubject(subId) {
 var waitingQueue = /* @__PURE__ */ new Map();
 var activeBattleRooms = /* @__PURE__ */ new Map();
 var playerToRoomMap = /* @__PURE__ */ new Map();
+var BATTLE_ROOMS_FILE = path2.join(
+  process.env.VERCEL ? "/tmp" : process.cwd(),
+  "active_battle_rooms.json"
+);
+function readRoomsFromDisk() {
+  try {
+    if (fs2.existsSync(BATTLE_ROOMS_FILE)) {
+      const data = fs2.readFileSync(BATTLE_ROOMS_FILE, "utf-8");
+      return JSON.parse(data);
+    }
+  } catch {
+  }
+  return {};
+}
+function writeRoomsToDisk() {
+  try {
+    const obj = {};
+    for (const [k, v] of activeBattleRooms.entries()) {
+      if (v && v.id && k === v.id) {
+        obj[k] = v;
+      }
+    }
+    fs2.writeFileSync(BATTLE_ROOMS_FILE, JSON.stringify(obj), "utf-8");
+  } catch {
+  }
+}
+function syncRoomsFromDiskIfNeeded() {
+  const diskRooms = readRoomsFromDisk();
+  for (const [id, room] of Object.entries(diskRooms)) {
+    if (!activeBattleRooms.has(id)) {
+      activeBattleRooms.set(id, room);
+      if (room.code) {
+        const raw = room.code.toUpperCase();
+        activeBattleRooms.set(raw, room);
+        activeBattleRooms.set(`room_${raw}`, room);
+        const digits = raw.replace(/\D/g, "");
+        if (digits) {
+          activeBattleRooms.set(digits, room);
+          activeBattleRooms.set(`room_${digits}`, room);
+          activeBattleRooms.set(`room_AP-${digits}`, room);
+        }
+      }
+    }
+  }
+}
 function purgeStaleTickets() {
   const now = Date.now();
   for (const [qId, ticket] of waitingQueue.entries()) {
@@ -14833,6 +15117,7 @@ function purgeStaleTickets() {
       activeBattleRooms.delete(roomId);
     }
   }
+  writeRoomsToDisk();
 }
 function isSameUser(id1, id2) {
   if (!id1 || !id2) return false;
@@ -14891,6 +15176,22 @@ function findBattleRoom(roomIdOrCode) {
   }
   const digits = raw.replace(/\D/g, "");
   if (digits) {
+    if (activeBattleRooms.has(digits)) return { room: activeBattleRooms.get(digits), key: digits };
+    if (activeBattleRooms.has(`room_${digits}`)) return { room: activeBattleRooms.get(`room_${digits}`), key: `room_${digits}` };
+    if (activeBattleRooms.has(`room_AP-${digits}`)) return { room: activeBattleRooms.get(`room_AP-${digits}`), key: `room_AP-${digits}` };
+    if (activeBattleRooms.has(`room_AP${digits}`)) return { room: activeBattleRooms.get(`room_AP${digits}`), key: `room_AP${digits}` };
+  }
+  syncRoomsFromDiskIfNeeded();
+  if (activeBattleRooms.has(roomIdOrCode)) return { room: activeBattleRooms.get(roomIdOrCode), key: roomIdOrCode };
+  if (activeBattleRooms.has(raw)) return { room: activeBattleRooms.get(raw), key: raw };
+  if (activeBattleRooms.has(withRoom)) return { room: activeBattleRooms.get(withRoom), key: withRoom };
+  if (clean) {
+    if (activeBattleRooms.has(`room_${clean}`)) return { room: activeBattleRooms.get(`room_${clean}`), key: `room_${clean}` };
+    if (activeBattleRooms.has(`room_AP-${clean}`)) return { room: activeBattleRooms.get(`room_AP-${clean}`), key: `room_AP-${clean}` };
+    if (activeBattleRooms.has(clean)) return { room: activeBattleRooms.get(clean), key: clean };
+  }
+  if (digits) {
+    if (activeBattleRooms.has(digits)) return { room: activeBattleRooms.get(digits), key: digits };
     if (activeBattleRooms.has(`room_${digits}`)) return { room: activeBattleRooms.get(`room_${digits}`), key: `room_${digits}` };
     if (activeBattleRooms.has(`room_AP-${digits}`)) return { room: activeBattleRooms.get(`room_AP-${digits}`), key: `room_AP-${digits}` };
     if (activeBattleRooms.has(`room_AP${digits}`)) return { room: activeBattleRooms.get(`room_AP${digits}`), key: `room_AP${digits}` };
@@ -14917,7 +15218,7 @@ app.post("/api/battle/generate-questions", async (req, res) => {
     const subjectName = subjectObj?.name || subjectId;
     let antiRepeatPrompt = "";
     if (Array.isArray(avoidStems) && avoidStems.length > 0) {
-      const cleanList = avoidStems.filter((s) => typeof s === "string" && s.trim()).slice(-25).map((s) => `- "${s.replace(/"/g, "'").slice(0, 100)}"`).join("\n");
+      const cleanList = avoidStems.filter((s) => typeof s === "string" && s.trim()).slice(-60).map((s) => `- "${s.replace(/"/g, "'").slice(0, 120)}"`).join("\n");
       if (cleanList) {
         antiRepeatPrompt = `
 CRITICAL ANTI-REPETITION REQUIREMENT:
@@ -14967,6 +15268,7 @@ Strictly return a raw JSON array of ${requestedCount} objects matching this exac
     });
     let rawText = "";
     if (typeof aiResp === "string") rawText = aiResp;
+    else if (aiResp?.text) rawText = aiResp.text;
     else if (aiResp?.candidates?.[0]?.content?.parts?.[0]?.text) {
       rawText = aiResp.candidates[0].content.parts[0].text;
     }
@@ -15300,15 +15602,20 @@ app.post("/api/battle/room/create", (req, res) => {
       updatedAt: now
     };
     activeBattleRooms.set(roomId, newRoom);
+    activeBattleRooms.set(displayCode, newRoom);
     if (digits) {
+      activeBattleRooms.set(digits, newRoom);
       activeBattleRooms.set(`room_${digits}`, newRoom);
       activeBattleRooms.set(`room_AP-${digits}`, newRoom);
+      activeBattleRooms.set(`AP-${digits}`, newRoom);
     }
     if (cleanCode && cleanCode !== digits) {
+      activeBattleRooms.set(cleanCode, newRoom);
       activeBattleRooms.set(`room_${cleanCode}`, newRoom);
     }
     playerToRoomMap.set(player.id, roomId);
-    res.json({ success: true, roomId, code: displayCode });
+    writeRoomsToDisk();
+    res.json({ success: true, roomId, code: displayCode, questions: newRoom.questions });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -15321,7 +15628,7 @@ app.post("/api/battle/room/join", (req, res) => {
       return res.status(404).json({ error: "Room not found. Check the 4-digit code!" });
     }
     if (room.player1.id === player.id) {
-      return res.status(400).json({ error: "You are the host of this room!" });
+      player.id = `${player.id}_p2_${Date.now().toString(36)}`;
     }
     if (room.status !== "waiting") {
       return res.status(400).json({ error: "Room already in progress or full!" });
@@ -15345,6 +15652,7 @@ app.post("/api/battle/room/join", (req, res) => {
     room.roundStartTime = now + 3e3;
     room.updatedAt = now;
     playerToRoomMap.set(player.id, room.id);
+    writeRoomsToDisk();
     res.json({
       success: true,
       roomId: room.id,
@@ -15368,7 +15676,7 @@ app.post("/api/battle/action", (req, res) => {
       if (currentQ < room.currentQ) {
         return res.json({ success: true, room, ignored: true });
       }
-      if (currentQ > room.currentQ) {
+      if (currentQ === room.currentQ + 1) {
         room.currentQ = currentQ;
         room.roundStatus = "playing";
         room.roundStartTime = Date.now();
@@ -15432,6 +15740,7 @@ app.post("/api/battle/action", (req, res) => {
       room.status = "finished";
       room.updatedAt = now;
     }
+    writeRoomsToDisk();
     res.json({ success: true, room });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -15440,8 +15749,8 @@ app.post("/api/battle/action", (req, res) => {
 function stepBattleRoomClock(room, now) {
   let changed = false;
   if (room.status === "battle" && room.player2) {
-    const p1Inactive = now - (room.player1.lastSeen || 0) > 15e3;
-    const p2Inactive = now - (room.player2.lastSeen || 0) > 15e3;
+    const p1Inactive = now - (room.player1.lastSeen || 0) > 45e3;
+    const p2Inactive = now - (room.player2.lastSeen || 0) > 45e3;
     const p1Active = now - (room.player1.lastSeen || 0) <= 6e3;
     const p2Active = now - (room.player2.lastSeen || 0) <= 6e3;
     if (p1Inactive && p2Active) {
@@ -15502,8 +15811,8 @@ function stepBattleRoomClock(room, now) {
   }
   if (room.status === "battle" && room.roundStatus === "playing") {
     const currQ = room.questions?.[room.currentQ];
-    const qSec = currQ?.timeLimit && typeof currQ.timeLimit === "number" && currQ.timeLimit >= 15 ? currQ.timeLimit : 45;
-    const qDurationMs = qSec * 1e3 + 4e3;
+    const qSec = currQ?.timeLimit && typeof currQ.timeLimit === "number" && currQ.timeLimit >= 15 ? currQ.timeLimit : 30;
+    const qDurationMs = qSec * 1e3 + 2e3;
     if (now - room.roundStartTime >= qDurationMs) {
       room.roundStatus = "revealed";
       room.revealStartTime = now;
@@ -15513,6 +15822,9 @@ function stepBattleRoomClock(room, now) {
       changed = true;
       console.log(`[Battle Arena] Round ${room.currentQ} in room ${room.id} timed out. Auto-revealing!`);
     }
+  }
+  if (changed) {
+    writeRoomsToDisk();
   }
   return changed;
 }

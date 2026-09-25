@@ -22,6 +22,7 @@ import {
 } from '../data/quizBattleBank';
 import { battleSync, PlayerProfile, BattleRoom } from '../services/battleSync';
 import GlobalMarkdown, { prepareQuizMath } from './GlobalMarkdown';
+import { ReportAiButton } from './ReportAiModal';
 
 /**
  * Battle option math formatter:
@@ -52,8 +53,8 @@ export function formatBattleOptionMath(rawText: string, idx: number): string {
 
   if (hasLatex || hasMathChars) {
     if (!text.includes('$')) {
-      const narrativeWords = (text.replace(/\\[a-zA-Z]+(?:\{[^{}]*\}|\[[^\]]*\])*/g, '').match(/[a-zA-Z]{3,}/g) || [])
-        .filter(w => !['sin','cos','tan','sec','csc','cot','log','ln','lim','exp','dx','dy','dt','frac','sqrt','text'].includes(w.toLowerCase()));
+      const narrativeWords = ((text.replace(/\\[a-zA-Z]+(?:\{[^{}]*\}|\[[^\]]*\])*/g, '').match(/[a-zA-Z]{3,}/g) || []) as string[])
+        .filter((w: string) => !['sin','cos','tan','sec','csc','cot','log','ln','lim','exp','dx','dy','dt','frac','sqrt','text'].includes(w.toLowerCase()));
       if (narrativeWords.length <= 2) {
         let mathBody = text.replace(/(?<=[a-zA-Z0-9)\]^_])\s*\*\s*(?=[a-zA-Z0-9(\[^\\])/g, ' \\cdot ');
         mathBody = mathBody.replace(/(?<![a-zA-Z\\])(cos|sin|tan|sec|csc|cot|log|ln)\b/g, (_, fn) => '\\' + fn);
@@ -218,6 +219,9 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   const finishBattleRef = useRef<(isForcedWin?: boolean) => void>(() => {});
   const initBattleArenaRef = useRef<() => void>(() => {});
   const stuckAnsweredWatchdogRef = useRef<NodeJS.Timeout | null>(null);
+  const matchCommencedRef = useRef<boolean>(false);
+  const roundStartTimeRef = useRef<number>(0);
+  const revealStartTimeRef = useRef<number>(0);
 
   const playSound = (soundFn: () => void) => {
     if (soundEnabled) {
@@ -244,7 +248,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       const current = getSeenStems();
       const newStems = (newQuestions || []).map(q => q.stem?.trim()).filter(Boolean);
       const combined = Array.from(new Set([...current, ...newStems]));
-      const trimmed = combined.slice(-300);
+      const trimmed = combined.slice(-500);
       safeSetItem(SEEN_QUESTIONS_KEY, JSON.stringify(trimmed));
     } catch (e) {}
   };
@@ -333,6 +337,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // Full exit cleanup: cleans local state and tells server player cancelled/left
   const leaveServerQueueAndReset = () => {
+    matchCommencedRef.current = false;
     cleanupLocalBattleTimers();
     setForfeitNotice(null);
     setIsForcedWinner(null);
@@ -372,6 +377,8 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     matchedSubjectId?: string,
     isPlayer1Param?: boolean
   ) => {
+    if (matchCommencedRef.current) return;
+    matchCommencedRef.current = true;
     cleanupLocalBattleTimers();
     setForfeitNotice(null);
     setIsForcedWinner(null);
@@ -406,6 +413,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // 2. Start Quick Match (30 seconds search, fast pairing)
   const startQuickMatch = async () => {
+    matchCommencedRef.current = false;
     cleanupLocalBattleTimers();
     setForfeitNotice(null);
     setIsForcedWinner(null);
@@ -469,27 +477,30 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     );
     stopPollingRef.current = stopPoll;
 
-    // 30-SECOND SEARCH COUNTDOWN
-    searchCountdownIntervalRef.current = setInterval(() => {
-      setSearchSecondsLeft(prev => {
-        if (prev <= 1) {
-          if (searchCountdownIntervalRef.current) {
-            clearInterval(searchCountdownIntervalRef.current);
-            searchCountdownIntervalRef.current = null;
-          }
-          setTimeout(() => {
-            handleSearchTimeout(initialQs);
-          }, 0);
-          return 0;
+    // 30-SECOND SEARCH COUNTDOWN (Protected with local interval handle & single execution lock)
+    let localSeconds = 30;
+    const searchTimer = setInterval(() => {
+      localSeconds -= 1;
+      setSearchSecondsLeft(localSeconds);
+      if (localSeconds <= 0) {
+        clearInterval(searchTimer);
+        if (searchCountdownIntervalRef.current === searchTimer) {
+          searchCountdownIntervalRef.current = null;
         }
-        return prev - 1;
-      });
+        if (!matchCommencedRef.current) {
+          handleSearchTimeout(initialQs);
+        }
+      }
     }, 1000);
+    searchCountdownIntervalRef.current = searchTimer;
   };
 
   // 3. Fallback to Ghost practice rival after 30 full seconds of searching
   const handleSearchTimeout = (fallbackQs: BattleQuestion[]) => {
+    if (matchCommencedRef.current) return;
+    matchCommencedRef.current = true;
     cleanupLocalBattleTimers();
+    battleSync.leaveQueue(myId, liveRoomIdRef.current || undefined);
 
     const ghost = getRandomGhostPlayer(selectedSubjectId, myGrade);
     setIsRealOpponent(false);
@@ -509,6 +520,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // 4. Friend Room: Create Room
   const handleHostFriendRoom = async () => {
+    matchCommencedRef.current = false;
     cleanupLocalBattleTimers();
     triggerVibration(20);
     playSound(() => battleAudio.playBattleStart());
@@ -557,13 +569,17 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     if (res.code) {
       setRoomCode(res.code);
     }
+    const finalRoomQuestions = res.questions || initialQs;
+    setQuestions(finalRoomQuestions);
+    questionsRef.current = finalRoomQuestions;
+
     const roomId = res.roomId;
     setLiveRoomId(roomId);
     liveRoomIdRef.current = roomId;
 
     const stopRoomPolling = battleSync.subscribeToRoomUpdates(roomId, myId, (room, opp) => {
       if (opp && opp.id !== myId) {
-        handleMatchedWithRealPlayer(roomId, opp, initialQs, selectedSubjectId, true);
+        handleMatchedWithRealPlayer(roomId, opp, room.questions || finalRoomQuestions, selectedSubjectId, true);
       }
     }, true);
     roomUnsubRef.current = stopRoomPolling;
@@ -718,6 +734,11 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
         }
 
         const totalQ = questionsRef.current.length || questions.length || 5;
+        // Strictly prevent premature finish before the final question is reached unless forfeited!
+        if (currentQIndexRef.current < totalQ - 1) {
+          console.warn(`[Battle Sync] Ignored premature room finish at Q${currentQIndexRef.current + 1}/${totalQ}`);
+          return;
+        }
         // If user is actively playing the final question and has not answered yet, do not prematurely abort their question!
         if (currentQIndexRef.current === totalQ - 1 && userStatusRef.current === 'idle' && !roundRevealedRef.current) {
           return;
@@ -741,10 +762,24 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       // 3. Synchronize question progression from server
       // Advance ONLY when the server has authoritatively transitioned to a future question!
       // Never abort an active 2.2s reveal banner while on the same question.
-      if (typeof room.currentQ === 'number') {
-        if (room.currentQ > currentQIndexRef.current) {
-          advanceToQuestionRef.current(room.currentQ);
+      if (typeof room.currentQ === 'number' && room.currentQ > currentQIndexRef.current) {
+        if (!roundRevealedRef.current && userStatusRef.current === 'idle') {
+          // Time expired without user answering: lock answer as wrong and show reveal for 2.2s before jumping
+          setUserAnswerStatus('answered');
+          userStatusRef.current = 'answered';
+          setOpponentAnswerStatus('answered');
+          oppStatusRef.current = 'answered';
+          triggerRoundRevealRef.current();
+          return;
         }
+        if (roundRevealedRef.current) {
+          const elapsedReveal = Date.now() - revealStartTimeRef.current;
+          if (elapsedReveal < 2200) {
+            // Player is actively viewing the green/red answer reveal card! Let local timer advance cleanly
+            return;
+          }
+        }
+        advanceToQuestionRef.current(room.currentQ);
       }
 
       // 4. Synchronize remaining round time with server round clock (using serverTime to prevent clock drift)
@@ -754,7 +789,11 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           const maxTime = currQ?.timeLimit || 30;
           const elapsedSec = Math.floor((serverTime - room.roundStartTime) / 1000);
           if (elapsedSec >= 0 && elapsedSec <= maxTime) {
-            const remain = Math.max(0, maxTime - elapsedSec);
+            let remain = Math.max(0, maxTime - elapsedSec);
+            // Protect first 4 seconds of a round from false 0s expiration caused by network/server clock skew
+            if (Date.now() - roundStartTimeRef.current < 4000 && remain < 4) {
+              remain = 4;
+            }
             setTimeLeft(prev => (prev > remain && (prev - remain) > 3) ? remain : prev);
           }
         }
@@ -810,6 +849,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // 10. Start Synchronized Question Round
   const startQuestionRound = (qIdx: number) => {
+    roundStartTimeRef.current = Date.now();
     const activeQ = questionsRef.current[qIdx] || questions[qIdx];
     const initialTimeLimit = activeQ?.timeLimit || 30;
     setTimeLeft(initialTimeLimit);
@@ -833,7 +873,12 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
         if (prev <= 1) {
           if (timerRef.current) clearInterval(timerRef.current);
           if (userStatusRef.current === 'answered') {
-            // Already answered! Do NOT run handleRoundTimeout locally to avoid out-of-sync jumps
+            // Already answered! Auto-reveal to prevent freezing on 0s
+            if (!roundRevealedRef.current) {
+              setOpponentAnswerStatus('answered');
+              oppStatusRef.current = 'answered';
+              triggerRoundRevealRef.current();
+            }
             return 0;
           }
           handleRoundTimeout();
@@ -882,6 +927,8 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // 11. User Selects Option (Answer Locked)
   const handleSelectOption = async (optionIndex: number) => {
+    // 350ms Touch Debounce / Grace Period: Ignore accidental tap bleed-through from countdown screen
+    if (Date.now() - roundStartTimeRef.current < 350) return;
     if (userAnswerStatus === 'answered' || phase !== 'BATTLE' || roundRevealedRef.current) return;
 
     const currQ = questionsRef.current[currentQIndexRef.current] || questions[currentQIndex];
@@ -995,6 +1042,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     if (roundRevealedRef.current) return;
     setRoundRevealed(true);
     roundRevealedRef.current = true;
+    revealStartTimeRef.current = Date.now();
     playSound(() => battleAudio.playOpponentAction());
 
     if (timerRef.current) {
@@ -1024,6 +1072,11 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // 13. Round Timeout (Time expired without answer)
   const handleRoundTimeout = async () => {
+    // Guard against premature round timeout if round was just mounted (< 3000ms)
+    if (Date.now() - roundStartTimeRef.current < 3000) {
+      return;
+    }
+
     if (userStatusRef.current === 'idle') {
       setUserAnswerStatus('answered');
       userStatusRef.current = 'answered';
@@ -2106,7 +2159,20 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             })}
           </div>
 
-
+          {/* Synchronized Round Report Button */}
+          {roundRevealed && currentQ && (
+            <div className="flex items-center justify-between pt-1 px-1">
+              <span className="text-[10px] text-zinc-500 font-medium">Question or answer error?</span>
+              <ReportAiButton
+                aiOutput={`1v1 Quiz Battle Question:\n${currentQ.stem}\n\nOptions:\n${currentQ.options.map((opt, idx) => `${String.fromCharCode(65 + idx)}: ${opt}`).join('\n')}\n\nCorrect Index: ${currentQ.correctIndex} (${currentQ.options[currentQ.correctIndex]})\n\nSubject: ${activeSubject.name}`}
+                context={`1v1 Quiz Battle - ${activeSubject.name}`}
+                questionText={currentQ.stem}
+                variant="compact"
+                label="Report Question"
+                className="text-zinc-400 hover:text-red-400 hover:bg-zinc-900 py-1 px-2.5 rounded-lg border border-zinc-800"
+              />
+            </div>
+          )}
         </div>
 
         {/* Bottom Pacing Indicator */}
@@ -2228,11 +2294,22 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
         </div>
 
         {/* Rewards Earned (10 XP for Winner, 0 XP for Loser, Study Coins Removed) */}
-        <div className="inline-flex items-center gap-2 bg-zinc-900/90 border border-zinc-800 px-5 py-2.5 rounded-2xl mb-6 shadow-md">
+        <div className="inline-flex items-center gap-2 bg-zinc-900/90 border border-zinc-800 px-5 py-2.5 rounded-2xl mb-4 shadow-md">
           <Zap className={`w-4 h-4 ${isUserWinner ? 'text-amber-400 fill-amber-400 animate-pulse' : 'text-zinc-500'}`} />
           <span className={`text-xs font-black tracking-wider uppercase ${isUserWinner ? 'text-amber-300' : 'text-zinc-400'}`}>
             {isUserWinner ? '+10 XP Points' : '+0 XP Points'}
           </span>
+        </div>
+
+        {/* Battle Content Report */}
+        <div className="mb-4">
+          <ReportAiButton
+            aiOutput={`Match Summary: ${activeSubject.name} Battle\nWinner: ${isUserWinner ? myName : opponent?.name}\nFinal Score: ${userScore} - ${opponentScore}\nQuestions Count: ${questions.length}`}
+            context={`1v1 Quiz Battle Match - ${activeSubject.name}`}
+            variant="compact"
+            label="Report Battle Content"
+            className="text-zinc-500 hover:text-red-400 hover:bg-zinc-900 border border-zinc-800/80 px-3 py-1.5 rounded-xl text-xs"
+          />
         </div>
       </div>
 

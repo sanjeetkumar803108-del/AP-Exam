@@ -3891,7 +3891,7 @@ const GRADE_TAGLINES: Record<string, string[]> = {
 };
 
 const SEEN_NAMES_STORAGE_KEY = 'AP_SEEN_GHOST_OPPONENTS';
-const MAX_SEEN_HISTORY = 120;
+const MAX_SEEN_HISTORY = 250;
 
 function getSeenGhostNames(): string[] {
   if (typeof window === 'undefined') return [];

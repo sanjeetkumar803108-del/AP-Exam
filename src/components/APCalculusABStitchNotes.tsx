@@ -7,6 +7,7 @@ import {
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { triggerVibration } from '../utils/vibrate';
+import { ReportAiButton } from './ReportAiModal';
 
 /**
  * High-performance, error-tolerant KaTeX math formula renderer.
@@ -1438,6 +1439,20 @@ export default function APCalculusABStitchNotes({ onBack, unitNumber = 1, onExpo
               >
                 {speedDrillComplete ? 'Ready for Exam Day! 🎉' : 'Review Complete'}
               </button>
+            </div>
+
+            {/* AI Notes Content Safety & Report Footer */}
+            <div className="flex flex-col items-center justify-center pt-6 pb-2 gap-2 border-t border-zinc-200/60 mt-4">
+              <ReportAiButton
+                aiOutput="AP Calculus AB Unit 1: Limits & Continuity Notes"
+                context="AP Notes: Calculus AB Unit 1"
+                variant="pill"
+                label="Report Issue with Notes"
+                className="bg-zinc-100 hover:bg-red-50 text-zinc-600 hover:text-red-500 border border-zinc-200"
+              />
+              <p className="text-[10px] text-zinc-400 font-medium select-none tracking-tight">
+                AP Exam AI can make mistakes. Please double check important information.
+              </p>
             </div>
           </div>
         )}

@@ -167,7 +167,7 @@ export class BattleSyncService {
       if (!active) return;
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
 
         const res = await fetch(getBattleApiUrl('/api/battle/poll-match'), {
           method: 'POST',
@@ -240,7 +240,7 @@ export class BattleSyncService {
     player: PlayerProfile,
     subjectId: string,
     questions: BattleQuestion[]
-  ): Promise<{ success: boolean; roomId?: string; code?: string }> {
+  ): Promise<{ success: boolean; roomId?: string; code?: string; questions?: BattleQuestion[] }> {
     try {
       const formattedCode = normalizeBattleCode(code);
       const res = await fetch(getBattleApiUrl('/api/battle/room/create'), {
@@ -256,7 +256,7 @@ export class BattleSyncService {
 
       if (!res.ok) return { success: false };
       const data = await res.json();
-      return { success: true, roomId: data.roomId, code: data.code || formattedCode };
+      return { success: true, roomId: data.roomId, code: data.code || formattedCode, questions: data.questions };
     } catch (err) {
       console.warn('Create friend room failed:', err);
       return { success: false };
@@ -337,7 +337,7 @@ export class BattleSyncService {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
         const res = await fetch(getBattleApiUrl('/api/battle/action'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -372,7 +372,7 @@ export class BattleSyncService {
       if (!active) return;
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
 
         const pollUrl = `/api/battle/room/${encodeURIComponent(roomId)}${myPlayerId ? `?playerId=${encodeURIComponent(myPlayerId)}` : ''}`;
         const res = await fetch(getBattleApiUrl(pollUrl), {

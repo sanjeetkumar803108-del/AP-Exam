@@ -359,6 +359,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
 
   // Practice & Results States
   const [loading, setLoading] = useState<boolean>(false);
+  const [isGenerationComplete, setIsGenerationComplete] = useState<boolean>(false);
   const [loadingMsg, setLoadingMsg] = useState<string>('Connecting to College Board AP Engine...');
   const [error, setError] = useState<string | null>(null);
 
@@ -1056,23 +1057,42 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
       .filter(p => typeof p === 'string' && p.trim().length > 10)
       .slice(0, 30);
 
+    // Mobile APK Fix: AbortController with 55s timeout prevents silent hangs in Android WebView.
+    // Vercel functions have a 60s hard limit; we abort client-side at 55s to surface a clean error.
+    const fetchController = new AbortController();
+    const fetchTimeoutId = setTimeout(() => fetchController.abort(), 55000);
+
     try {
-      const response = await fetch(getApiUrl('/api/generate-ap-questions'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          subject: selectedSubject.name,
-          unit: unitTitle,
-          topic: promptTopic,
-          questionType,
-          count: questionCount,
-          gradeLevel: userGrade || 'Advanced Placement (AP High School)',
-          avoidPrompts: recentPromptsToAvoid,
-          randomSeed: `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
-        })
-      });
+      let response: Response;
+      try {
+        response = await fetch(getApiUrl('/api/generate-ap-questions'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          signal: fetchController.signal,
+          body: JSON.stringify({
+            subject: selectedSubject.name,
+            unit: unitTitle,
+            topic: promptTopic,
+            questionType,
+            count: questionCount,
+            gradeLevel: userGrade || 'Advanced Placement (AP High School)',
+            avoidPrompts: recentPromptsToAvoid,
+            randomSeed: `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+          })
+        });
+      } catch (networkErr: any) {
+        // Friendly message for mobile "Failed to fetch" / AbortError / network loss
+        const isAbort = networkErr?.name === 'AbortError';
+        throw new Error(
+          isAbort
+            ? 'Request timed out. The server is busy — please try again in a moment.'
+            : 'Network error: Could not reach the AI server. Please check your internet connection and try again.'
+        );
+      } finally {
+        clearTimeout(fetchTimeoutId);
+      }
 
       const data = await response.json();
 
@@ -1219,6 +1239,9 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         });
       }
 
+      // Instant crisp 100% completion trigger before unveiling practice room
+      setIsGenerationComplete(true);
+      await new Promise(r => setTimeout(r, 220));
       setIsExamCompleted(false);
       setStep('practice');
     } catch (err: any) {
@@ -1226,6 +1249,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
       setError(err.message || "Failed to generate questions. Please check your internet connection.");
     } finally {
       setLoading(false);
+      setIsGenerationComplete(false);
     }
   };
 
@@ -1858,6 +1882,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
               questionCount={questionCount}
               questionType={questionType}
               mode="testprep"
+              isComplete={isGenerationComplete}
             />
           </div>
         )}
@@ -2210,8 +2235,9 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
               </div>
 
               {examMode === 'practice_bank' ? (
-                <div className="grid grid-cols-2 gap-2.5 mt-1">
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-2.5 mt-1">
                   {[
+                    { count: 3, label: '3 Questions' },
                     { count: 5, label: '5 Questions' },
                     { count: 10, label: '10 Questions' },
                     { count: 15, label: '15 Questions' },
@@ -2224,13 +2250,13 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                         triggerVibration(10);
                         setQuestionCount(item.count);
                       }}
-                      className={`py-3 px-4 rounded-2xl border text-center transition-all cursor-pointer ${
+                      className={`py-3 px-2 sm:px-3 rounded-2xl border text-center transition-all cursor-pointer ${
                         questionCount === item.count
                           ? 'bg-zinc-900 border-zinc-900 text-white shadow-md ring-2 ring-zinc-900/10'
                           : 'bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-50 hover:border-zinc-300'
                       }`}
                     >
-                      <div className="font-black text-sm">{item.label}</div>
+                      <div className="font-black text-xs sm:text-sm">{item.label}</div>
                     </button>
                   ))}
                 </div>
@@ -2305,15 +2331,25 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                         ) : (
                           <div className="text-[11px] font-extrabold text-zinc-400">AP Question {currentObjIndex + 1}</div>
                         )}
-                        <button
-                          type="button"
-                          onClick={() => handleOpenAITutor(q, 'objective')}
-                          className="px-2.5 py-1 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
-                          title="Ask AI Magic Tutor for Concept Explanation & Hints"
-                        >
-                          <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-                          <span>Ask AI</span>
-                        </button>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <ReportAiButton
+                            aiOutput={`Question: ${q.question}\n${q.stimulus ? `Stimulus: ${q.stimulus}\n` : ''}Options:\n${q.options?.join('\n')}\nCorrect: ${q.correctAnswer}\nExplanation: ${q.explanation || 'N/A'}`}
+                            context="Test Prep MCQ Drill"
+                            questionText={q.question}
+                            variant="icon"
+                            label="Report"
+                            className="p-1 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleOpenAITutor(q, 'objective')}
+                            className="px-2.5 py-1 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
+                            title="Ask AI Magic Tutor for Concept Explanation & Hints"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                            <span>Ask AI</span>
+                          </button>
+                        </div>
                       </div>
 
                       {/* Stimulus if present */}
@@ -2421,6 +2457,19 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                           </div>
                           <div className="text-xs text-zinc-700 leading-relaxed">
                             <GlobalMarkdown>{q.explanation}</GlobalMarkdown>
+                          </div>
+                          <div className="flex items-center justify-between pt-2 border-t border-amber-200/60 mt-1">
+                            <p className="text-[10px] text-zinc-400 font-medium select-none tracking-tight">
+                              AP Exam AI can make mistakes.
+                            </p>
+                            <ReportAiButton
+                              aiOutput={`Question: ${q.question}\nOptions:\n${q.options.join('\n')}\nCorrect: ${q.correctAnswer}\nExplanation:\n${q.explanation}`}
+                              context="Test Prep MCQ Explanation"
+                              questionText={q.question}
+                              variant="compact"
+                              label="Report Issue"
+                              className="text-amber-800 hover:text-red-600 hover:bg-amber-100/60"
+                            />
                           </div>
                         </motion.div>
                       )}
@@ -2745,7 +2794,15 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                           <span className="text-[11px] font-extrabold uppercase tracking-wide text-purple-700 bg-purple-50 px-2.5 py-1 rounded-lg">
                             {q.skill || (isComputerSubject(selectedSubject) ? `${selectedSubject.name} Create Task` : `${selectedSubject.name} FRQ`)}
                           </span>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <ReportAiButton
+                              aiOutput={`AP FRQ Question: ${q.prompt}\nModel Answer: ${(q as any).modelAnswer || 'N/A'}\nScoring Rubric: ${(q as any).scoringRubric || 'N/A'}`}
+                              context="Test Prep FRQ Question"
+                              questionText={q.prompt}
+                              variant="icon"
+                              label="Report"
+                              className="p-1 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                            />
                             <button
                               type="button"
                               onClick={() => handleOpenAITutor(q, 'subjective')}
@@ -3834,14 +3891,20 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         {/* ================= ASK AI 2-SUGGESTION MODAL PAGE ================= */}
         <AnimatePresence>
           {askAiModalData && (
-            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm">
+            <div 
+              onClick={() => setAskAiModalData(null)}
+              className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 animate-fade-in"
+            >
               <motion.div
-                initial={{ opacity: 0, y: 50, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 50, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[90vh]"
+                onClick={(e) => e.stopPropagation()}
+                initial={{ opacity: 0, y: 70 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 70 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full max-w-md bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[90vh] transform-gpu will-change-transform"
               >
+                {/* Drag handle for mobile */}
+                <div className="w-12 h-1.5 bg-zinc-300 rounded-full mx-auto mt-3 sm:hidden" />
                 {/* Modal Header */}
                 <div className="p-5 border-b border-zinc-100 flex items-center justify-between bg-gradient-to-r from-purple-50 via-indigo-50 to-white">
                   <div className="flex items-center gap-2.5">
@@ -3935,14 +3998,20 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
         {/* ================= TIMER SETUP MODAL ================= */}
         <AnimatePresence>
           {showTimerSetupModal && (
-            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm">
+            <div 
+              onClick={() => setShowTimerSetupModal(false)}
+              className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 animate-fade-in"
+            >
               <motion.div
-                initial={{ opacity: 0, y: 50, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 50, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[90vh]"
+                onClick={(e) => e.stopPropagation()}
+                initial={{ opacity: 0, y: 70 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 70 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full max-w-md bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[90vh] transform-gpu will-change-transform"
               >
+                {/* Drag handle for mobile */}
+                <div className="w-12 h-1.5 bg-zinc-300 rounded-full mx-auto mt-3 sm:hidden" />
                 {/* Modal Header */}
                 <div className="p-5 border-b border-zinc-100 flex items-center justify-between bg-gradient-to-r from-amber-50 via-orange-50 to-white">
                   <div className="flex items-center gap-2.5">

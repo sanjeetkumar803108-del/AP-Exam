@@ -652,16 +652,14 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
       formData.append('totalPages', String(compressedFiles.length));
       appendProfileToFormData(formData);
 
-      // Simulation ticks for smooth UX while waiting for Gemini
+      // Dynamic smooth progress ticks while waiting for AP Chief Reader AI
       progressTimer = setInterval(() => {
         setGradingProgress((prev) => {
-          if (prev >= 88) {
-            if (progressTimer) clearInterval(progressTimer);
-            return 88;
-          }
-          return prev + 5;
+          if (prev >= 95) return 95;
+          const increment = prev < 45 ? 3 : prev < 78 ? 2 : 1;
+          return Math.min(95, prev + increment);
         });
-      }, 350);
+      }, 450);
 
       const apiUrl = getApiUrl('/api/grade-frq');
       const abortController = new AbortController();
@@ -689,7 +687,8 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
 
       const data: FRQGradingResult = await res.json();
       setGradingProgress(100);
-      setGradingStepText("Evaluation complete!");
+      setGradingStepText("Evaluation 100% complete!");
+      await new Promise(r => setTimeout(r, 220));
       setResult(data);
       setIsGrading(false);
 

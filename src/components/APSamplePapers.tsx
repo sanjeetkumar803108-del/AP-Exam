@@ -21,6 +21,7 @@ import { fetchSamplePapers } from '../services/samplePaperService';
 import SafePdfViewer from './SafePdfViewer';
 import { TOP_10_AP_SUBJECTS } from '../utils/apCurriculum';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
+import { ReportAiButton } from './ReportAiModal';
 
 interface APSamplePapersProps {
   onBack: () => void;
@@ -310,6 +311,14 @@ export default function APSamplePapers({ onBack, isVip }: APSamplePapersProps) {
                   )}
                   <span className="hidden sm:inline">Save Offline</span>
                 </button>
+
+                <ReportAiButton
+                  aiOutput={`AP Sample Paper: ${previewPaper.title}\nSubject: ${previewPaper.subjectName}\nYear: ${previewPaper.year || 'N/A'}\nFile Size: ${previewPaper.fileSize || 'N/A'}\nURL: ${previewPaper.pdfUrl}`}
+                  context={`AP Sample Paper: ${previewPaper.subjectName}`}
+                  variant="icon"
+                  label="Report Paper"
+                  className="w-9 h-9 rounded-xl bg-zinc-100 hover:bg-red-50 text-zinc-500 hover:text-red-500 border border-zinc-200 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+                />
 
                 <button
                   type="button"

@@ -14,7 +14,8 @@ import {
   Plus,
   X,
   ChevronDown,
-  AlertCircle
+  AlertCircle,
+  ArrowLeft
 } from 'lucide-react';
 import { TOP_10_AP_SUBJECTS } from '../../utils/apCurriculum';
 import { APSamplePaper } from '../../types/samplePapers';

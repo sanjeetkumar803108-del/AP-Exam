@@ -15,6 +15,7 @@ export interface AIThinkingLoaderProps {
   format?: 'objective' | 'subjective';
   mode?: 'testprep' | 'trap_radar' | 'radar_scan' | 'radar_disarm' | 'challenge' | 'scan' | 'disarm' | 'general';
   variant?: 'app_loader' | 'radar';
+  isComplete?: boolean;
 }
 
 interface ShortStep {
@@ -34,7 +35,8 @@ export default function AIThinkingLoader({
   questionType = 'objective',
   format,
   mode = 'testprep',
-  variant
+  variant,
+  isComplete = false
 }: AIThinkingLoaderProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
@@ -49,6 +51,15 @@ export default function AIThinkingLoader({
     mode === 'radar_scan' ||
     mode === 'radar_disarm';
   const effectiveVariant = variant || (isRadarMode ? 'radar' : 'app_loader');
+
+  // Dynamic realistic duration estimate based on count and mode
+  const estimatedDuration = useMemo(() => {
+    if (mode === 'scan' || mode === 'radar_scan') return 12;
+    if (mode === 'disarm' || mode === 'radar_disarm') return 8;
+    const count = questionCount || 5;
+    const base = count <= 3 ? 12 : count <= 5 ? 16 : count <= 10 ? 24 : 34;
+    return effectiveFormat === 'subjective' ? base + 5 : base;
+  }, [mode, questionCount, effectiveFormat]);
 
   // Short, punchy 2-4 word AI status steps (No long sentences!)
   const steps: ShortStep[] = useMemo(() => {
@@ -103,9 +114,17 @@ export default function AIThinkingLoader({
     return () => clearInterval(timer);
   }, []);
 
-  // Step progression across elapsed time
+  // Proportional step duration across estimated time
+  const stepDuration = useMemo(() => {
+    return Math.max(2.4, (estimatedDuration * 0.85) / steps.length);
+  }, [estimatedDuration, steps.length]);
+
+  // Step progression across elapsed time (or jumps to final step if isComplete)
   useEffect(() => {
-    const stepDuration = 2.4; // Progression every 2.4s
+    if (isComplete) {
+      setCurrentStepIndex(steps.length - 1);
+      return;
+    }
     const targetIndex = Math.min(Math.floor(elapsedSeconds / stepDuration), steps.length - 1);
     if (targetIndex !== currentStepIndex) {
       setCurrentStepIndex(targetIndex);
@@ -115,7 +134,7 @@ export default function AIThinkingLoader({
         // Fallback silently
       }
     }
-  }, [elapsedSeconds, steps.length, currentStepIndex]);
+  }, [elapsedSeconds, stepDuration, steps.length, currentStepIndex, isComplete]);
 
   // Subtle acoustic ping for Radar mode
   useEffect(() => {
@@ -149,11 +168,19 @@ export default function AIThinkingLoader({
     return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}s`;
   }, [elapsedSeconds]);
 
-  // Progress percentage
-  const progressPercent = Math.min(
-    98,
-    Math.round(((currentStepIndex + 1) / steps.length) * 85 + Math.min(elapsedSeconds * 1.5, 13))
-  );
+  // Smooth, realistic continuous progress percentage
+  const progressPercent = useMemo(() => {
+    if (isComplete) return 100;
+    
+    // Proportional progress that reaches ~88-92% near estimatedDuration and smoothly asymptotes toward 96%
+    const normalizedTime = elapsedSeconds / Math.max(1, estimatedDuration);
+    const curveValue = 1 - Math.exp(-normalizedTime * 2.2);
+    const stepRatio = (currentStepIndex + 0.5) / steps.length;
+    const combined = (stepRatio * 0.45 + curveValue * 0.55) * 100;
+    
+    // Never prematurely freeze at 98%: smooth ceiling at 96% while waiting for network packet
+    return Math.min(96, Math.max(8, Math.round(combined)));
+  }, [isComplete, elapsedSeconds, estimatedDuration, currentStepIndex, steps.length]);
 
   return (
     <div className="w-full max-w-lg mx-auto py-4 px-2 select-none">
@@ -299,13 +326,17 @@ export default function AIThinkingLoader({
         <div className="relative z-10 space-y-2">
           {/* Step Pill */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[11px] font-mono font-bold text-zinc-600 dark:text-zinc-300 border border-zinc-200/70 dark:border-zinc-700/60">
-            <span>Step {activeStep.stepNum} of {steps.length}</span>
+            {isComplete ? (
+              <span className="text-emerald-600 dark:text-emerald-400">✓ Ready 100%</span>
+            ) : (
+              <span>Step {activeStep.stepNum} of {steps.length}</span>
+            )}
           </div>
 
           {/* Animated Action Headline */}
           <AnimatePresence mode="wait">
             <motion.div
-              key={currentStepIndex}
+              key={isComplete ? 'complete' : currentStepIndex}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
@@ -313,10 +344,10 @@ export default function AIThinkingLoader({
               className="space-y-1"
             >
               <h3 className="text-base sm:text-lg font-black text-zinc-900 dark:text-white tracking-tight">
-                {activeStep.action}
+                {isComplete ? '✨ Synthesizing Complete!' : activeStep.action}
               </h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-                {activeStep.subtext}
+                {isComplete ? 'Launching your AP session...' : activeStep.subtext}
               </p>
             </motion.div>
           </AnimatePresence>
@@ -330,19 +361,21 @@ export default function AIThinkingLoader({
             <motion.div
               className="h-full"
               style={{
-                background: effectiveVariant === 'radar'
+                background: isComplete
+                  ? 'linear-gradient(to right, #059669, #10b981, #34d399)'
+                  : effectiveVariant === 'radar'
                   ? 'linear-gradient(to right, #1e3a5f, #2563eb, #3b82f6)'
                   : 'linear-gradient(to right, #1e3a5f, #2563eb, #caaa5f)',
-                boxShadow: '0 0 10px rgba(37, 99, 235, 0.5)'
+                boxShadow: isComplete ? '0 0 12px rgba(16, 185, 129, 0.6)' : '0 0 10px rgba(37, 99, 235, 0.5)'
               }}
               animate={{ width: `${progressPercent}%` }}
-              transition={{ duration: 0.4, ease: 'easeInOut' }}
+              transition={{ duration: isComplete ? 0.2 : 0.4, ease: 'easeOut' }}
             />
           </div>
 
           <div className="flex items-center justify-between text-[11px] font-medium text-zinc-400 dark:text-zinc-500 px-1">
-            <span>{isRadarMode ? 'Deconstructing Traps' : `${questionCount} Questions Loading`}</span>
-            <span className="font-mono font-bold text-zinc-700 dark:text-zinc-300">{progressPercent}%</span>
+            <span>{isComplete ? 'Ready!' : isRadarMode ? 'Deconstructing Traps' : `${questionCount} Questions Loading`}</span>
+            <span className={`font-mono font-bold ${isComplete ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-700 dark:text-zinc-300'}`}>{progressPercent}%</span>
           </div>
         </div>
       </motion.div>

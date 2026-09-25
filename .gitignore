@@ -21,5 +21,6 @@ scratch/
 
 # Google Services Config (Keep local, do not expose API secrets to git)
 **/google-services.json
+active_battle_rooms.json
 
 

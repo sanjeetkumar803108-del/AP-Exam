@@ -174,11 +174,17 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
 
     const { mailtoUrl } = getEmailData(reasonId);
 
-    // Open via native window.location or system browser
-    if (Capacitor.isNativePlatform()) {
+    // Bulletproof native/web mailto launcher
+    try {
+      const mailLink = document.createElement('a');
+      mailLink.href = mailtoUrl;
+      mailLink.setAttribute('target', '_system');
+      mailLink.setAttribute('rel', 'noopener noreferrer');
+      document.body.appendChild(mailLink);
+      mailLink.click();
+      document.body.removeChild(mailLink);
+    } catch (_) {
       window.location.href = mailtoUrl;
-    } else {
-      window.open(mailtoUrl, '_self');
     }
 
     showToast('📧 Opening email app with pre-filled report. Tap Send!');
