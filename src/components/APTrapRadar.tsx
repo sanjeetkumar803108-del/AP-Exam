@@ -634,6 +634,14 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       [qKey]: { loading: true, mode }
     }));
 
+    // Auto-scroll down smoothly to the AI output card so user immediately sees generation happening
+    setTimeout(() => {
+      const el = document.getElementById(`inline-ai-box-${qKey}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 120);
+
     try {
       const _radarProfile = getUserProfileData();
       const response = await fetch(getApiUrl('/api/ap-tutor-explain'), {
@@ -1608,7 +1616,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                       onClick={() => {
                         triggerVibration(10);
                         setQuestionFormat('subjective');
-                        if (![3, 5, 10, 15, 20].includes(questionCount)) {
+                        if (![5, 10, 15].includes(questionCount)) {
                           setQuestionCount(5);
                         }
                       }}
@@ -1655,13 +1663,11 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                     2. How Many Questions?
                   </label>
 
-                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-2.5">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
                     {[
-                      { count: 3, label: questionFormat === 'subjective' ? '3 FRQs' : '3 Questions' },
                       { count: 5, label: questionFormat === 'subjective' ? '5 FRQs' : '5 Questions' },
                       { count: 10, label: questionFormat === 'subjective' ? '10 FRQs' : '10 Questions' },
-                      { count: 15, label: questionFormat === 'subjective' ? '15 FRQs' : '15 Questions' },
-                      { count: 20, label: questionFormat === 'subjective' ? '20 FRQs' : '20 Questions' }
+                      { count: 15, label: questionFormat === 'subjective' ? '15 FRQs' : '15 Questions' }
                     ].map(item => (
                       <button
                         key={item.count}
@@ -2350,6 +2356,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
                         return (
                           <motion.div
+                            id={`inline-ai-box-${qKey}`}
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="mt-4 rounded-2xl border border-zinc-200 overflow-hidden bg-white shadow-xs transition-all"
@@ -2760,6 +2767,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
                         return (
                           <motion.div
+                            id={`inline-ai-box-${qKey}`}
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="mt-4 rounded-2xl border border-zinc-200 overflow-hidden bg-white shadow-xs transition-all"

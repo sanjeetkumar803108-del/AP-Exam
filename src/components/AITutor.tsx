@@ -444,7 +444,6 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
   const [displayedText, setDisplayedText] = useState(msg.displayedText || (msg.isTyping ? '' : cleanText));
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [copied, setCopied] = useState(false);
-  const [shared, setShared] = useState(false);
   const onTypingCompleteRef = useRef(onTypingComplete);
   useEffect(() => {
     onTypingCompleteRef.current = onTypingComplete;
@@ -522,30 +521,6 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error(err);
-    }
-  };
-
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: parsedSolution?.topic_title || 'AP Exam App Solution',
-          text: textToShareOrCopy,
-          url: window.location.href
-        });
-        setShared(true);
-        setTimeout(() => setShared(false), 2000);
-      } catch (err) {
-        console.warn(err);
-      }
-    } else {
-      try {
-        await navigator.clipboard.writeText(`${textToShareOrCopy}\n\nShared via AP Exam App`);
-        setShared(true);
-        setTimeout(() => setShared(false), 2000);
-      } catch (err) {
-        console.error(err);
-      }
     }
   };
 
@@ -706,7 +681,7 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
         </div>
 
         {/* Dynamic Context Suggestions rendered inside the message for seamless study workflow */}
-        {msg.role === 'model' && (!msg.isTyping || Boolean(parsedSolution)) && suggestions.length > 0 && (
+        {msg.role === 'model' && !msg.isTyping && suggestions.length > 0 && (
           <div className="mt-4 pt-3.5 border-t border-zinc-200/80 flex flex-col gap-2">
             <div className="flex items-center gap-1.5 text-purple-700 font-extrabold text-[11px] tracking-wider uppercase">
               <Sparkles className="w-3.5 h-3.5 text-purple-600 animate-pulse shrink-0" />
@@ -739,15 +714,6 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{copied ? 'Copied' : 'Copy'}</span>
-            </button>
-
-            <button 
-              onClick={handleShare}
-              className="p-1.5 rounded-lg hover:bg-zinc-100 hover:text-zinc-700 transition-all active:scale-95 flex items-center gap-1 text-[11px] font-bold"
-              title="Share solution"
-            >
-              {shared ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
-              <span>{shared ? 'Shared' : 'Share'}</span>
             </button>
 
             <button 
@@ -1525,6 +1491,7 @@ Please evaluate this answer strictly according to your system rubric.`;
         setMessages([...updatedMessages, initialModelMessage]);
 
         let buffer = "";
+        let streamCompletedSuccessfully = false;
         try {
           while (true) {
             const { value, done } = await reader.read();
@@ -1543,6 +1510,7 @@ Please evaluate this answer strictly according to your system rubric.`;
               if (trimmed.startsWith("data: ")) {
                 const dataStr = trimmed.slice(6).trim();
                 if (dataStr === "[DONE]") {
+                  streamCompletedSuccessfully = true;
                   break;
                 }
 
@@ -1563,7 +1531,7 @@ Please evaluate this answer strictly according to your system rubric.`;
                           ...next[modelMessageIdx],
                           text,
                           displayedText: isJson ? text : '',
-                          isTyping: !isJson
+                          isTyping: true
                         };
                       }
                       return next;
@@ -1586,12 +1554,37 @@ Please evaluate this answer strictly according to your system rubric.`;
         } catch (streamErr) {
           console.warn("Streaming connection ended or interrupted:", streamErr);
         } finally {
-          // Set isTyping to false once stream is fully complete or ended
+          // If stream ended prematurely without [DONE] (e.g. mobile carrier drop at low speed or socket cutoff),
+          // auto-recover by requesting full non-streamed response from server so user NEVER sees cut-off text!
+          if (!streamCompletedSuccessfully && (!finalAIResponseText.includes('}') || finalAIResponseText.length < 300)) {
+            try {
+              console.warn("[AITutor] Stream interrupted before [DONE]. Attempting seamless auto-recovery fallback...");
+              formData.set('stream', 'false');
+              const recoveryRes = await fetch(getApiUrl('/api/chat'), {
+                method: 'POST',
+                body: formData
+              });
+              if (recoveryRes.ok) {
+                const recoveryData = await recoveryRes.json();
+                if (recoveryData && recoveryData.text) {
+                  finalAIResponseText = recoveryData.text;
+                }
+              }
+            } catch (recErr) {
+              console.warn("[AITutor] Auto-recovery attempt error:", recErr);
+            }
+          }
+
+          // Set isTyping to false once stream is fully complete or recovered
           setMessages(prev => {
             const next = [...prev];
             if (next[modelMessageIdx]) {
+              const text = finalAIResponseText;
+              const isJson = text.trim().startsWith('{') || text.trim().includes('"solution_steps"') || text.trim().includes('"markdown_content"') || text.trim().includes('"format_type"');
               next[modelMessageIdx] = {
                 ...next[modelMessageIdx],
+                text,
+                displayedText: isJson ? text : '',
                 isTyping: false
               };
             }

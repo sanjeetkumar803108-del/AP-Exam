@@ -436,6 +436,7 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
       setActivePageIndex(next.length - 1);
       return next;
     });
+    setResult(null);
 
     // Stop camera stream to preserve battery and release hardware
     stopCamera();
@@ -555,6 +556,7 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
             setActivePageIndex(next.length - 1);
             return next;
           });
+          setResult(null);
 
           stopCamera();
 
@@ -587,6 +589,7 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
       setActivePageIndex(next.length - 1);
       return next;
     });
+    setResult(null);
 
     stopCamera();
 
@@ -1294,7 +1297,7 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
 
                     <div className="grid grid-cols-2 gap-2.5 pt-1">
                       <button
-                        onClick={resetGrader}
+                        onClick={handleAddMoreFromCamera}
                         className="bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-black text-xs py-3.5 rounded-2xl shadow-sm transition-all cursor-pointer border-none flex items-center justify-center gap-2"
                       >
                         <Camera className="w-4 h-4" />

@@ -12426,7 +12426,7 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
             config: {
               systemInstruction: { parts: [{ text: systemInstruction }] },
               responseMimeType: isEvaluation === "true" || isEvaluation === true ? "text/plain" : "application/json",
-              maxOutputTokens: 3e3,
+              maxOutputTokens: 4096,
               temperature: 0.2,
               candidateCount: 1
             }
@@ -12457,7 +12457,7 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
           res.write(": keep-alive\n\n");
         } catch (e) {
         }
-      }, 3e3);
+      }, 2e3);
       try {
         for await (const chunk of responseStream) {
           let text = "";

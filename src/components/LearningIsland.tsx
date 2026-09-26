@@ -54,6 +54,7 @@ interface LearningIslandProps {
 interface UserLevelProgress {
   unlockedLevels: number[];
   completedLevels: Record<number, { stars: number; score: number }>;
+  claimedXpLevelIds?: number[];
   lastPlayedUnitIndex?: number;
   lastPlayedLevelId?: number;
 }
@@ -334,6 +335,7 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
   const [isAnswerSubmitted, setIsAnswerSubmitted] = useState<boolean>(false);
   const [correctAnswersCount, setCorrectAnswersCount] = useState<number>(0);
   const [isQuizCompleted, setIsQuizCompleted] = useState<boolean>(false);
+  const [quizXpStatus, setQuizXpStatus] = useState<'awarded' | 'already_claimed' | 'zero_score'>('zero_score');
   // AI Explanation State
   const [showAIExplanation, setShowAIExplanation] = useState<boolean>(false);
   const [isAILoading, setIsAILoading] = useState<boolean>(false);
@@ -416,6 +418,7 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
     const defaultState: UserLevelProgress = {
       unlockedLevels: initialDefaultUnlocked,
       completedLevels: {},
+      claimedXpLevelIds: [],
       lastPlayedUnitIndex: 1,
       lastPlayedLevelId: undefined
     };
@@ -434,9 +437,11 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
           const safeCompleted = (parsed.completedLevels && typeof parsed.completedLevels === 'object' && !Array.isArray(parsed.completedLevels))
             ? parsed.completedLevels
             : {};
+          const rawClaimed = Array.isArray(parsed.claimedXpLevelIds) ? parsed.claimedXpLevelIds : [];
           return {
             unlockedLevels: combined.length > 0 ? combined : initialDefaultUnlocked,
             completedLevels: safeCompleted,
+            claimedXpLevelIds: rawClaimed,
             lastPlayedUnitIndex: typeof parsed.lastPlayedUnitIndex === 'number' ? parsed.lastPlayedUnitIndex : 1,
             lastPlayedLevelId: typeof parsed.lastPlayedLevelId === 'number' ? parsed.lastPlayedLevelId : undefined
           };
@@ -464,9 +469,11 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
           const safeCompleted = (parsed.completedLevels && typeof parsed.completedLevels === 'object' && !Array.isArray(parsed.completedLevels))
             ? parsed.completedLevels
             : {};
+          const rawClaimed = Array.isArray(parsed.claimedXpLevelIds) ? parsed.claimedXpLevelIds : [];
           setProgress({
             unlockedLevels: combined.length > 0 ? combined : defaultUnlocked,
             completedLevels: safeCompleted,
+            claimedXpLevelIds: rawClaimed,
             lastPlayedUnitIndex: typeof parsed.lastPlayedUnitIndex === 'number' ? parsed.lastPlayedUnitIndex : 1,
             lastPlayedLevelId: typeof parsed.lastPlayedLevelId === 'number' ? parsed.lastPlayedLevelId : undefined
           });
@@ -479,6 +486,7 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
     setProgress({
       unlockedLevels: defaultUnlocked,
       completedLevels: {},
+      claimedXpLevelIds: [],
       lastPlayedUnitIndex: 1,
       lastPlayedLevelId: undefined
     });
@@ -795,6 +803,7 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
     setIsAILoading(false);
     setAiExplanationText(null);
     setCorrectAnswersCount(0);
+    setQuizXpStatus('zero_score');
     setIsQuizCompleted(false);
     if (quizScrollContainerRef.current) {
       quizScrollContainerRef.current.scrollTop = 0;
@@ -957,12 +966,25 @@ Please structure your response into these 4 clear sections:
       const scoreRatio = correctAnswersCount / totalQ;
       const stars = scoreRatio >= 1 ? 3 : scoreRatio >= 0.66 ? 2 : isPassed ? 1 : 0;
 
-      // Award 10 Study XP points to user profile on quiz completion
-      try {
-        addStudyXP(10, `Learning Island Unit ${activeQuizLevel.unitIndex} Level ${activeQuizLevel.levelNumber} Quiz Completed`);
-        setStudyXP(getStudyXP());
-      } catch (e) {
-        console.warn('Failed to add study XP:', e);
+      // Check if user has already claimed XP for this quiz level
+      const alreadyClaimed = Boolean(
+        (progress.claimedXpLevelIds && progress.claimedXpLevelIds.includes(activeQuizLevel.id)) ||
+        (progress.completedLevels?.[activeQuizLevel.id] && progress.completedLevels[activeQuizLevel.id].stars > 0)
+      );
+
+      if (!isPassed) {
+        setQuizXpStatus('zero_score');
+      } else if (alreadyClaimed) {
+        setQuizXpStatus('already_claimed');
+      } else {
+        // Award 10 Study XP points to user profile on quiz completion (ONLY ONCE and ONLY IF >= 1 correct)
+        setQuizXpStatus('awarded');
+        try {
+          addStudyXP(10, `Learning Island Unit ${activeQuizLevel.unitIndex} Level ${activeQuizLevel.levelNumber} Quiz Completed`);
+          setStudyXP(getStudyXP());
+        } catch (e) {
+          console.warn('Failed to add study XP:', e);
+        }
       }
 
       // Confetti only if user passed with at least 1 correct answer (clean old particles first)
@@ -989,9 +1011,14 @@ Please structure your response into these 4 clear sections:
           ? [...prev.unlockedLevels, nextLevelId]
           : prev.unlockedLevels;
 
+        const updatedClaimed = (isPassed && !alreadyClaimed)
+          ? Array.from(new Set([...(prev.claimedXpLevelIds || []), activeQuizLevel.id]))
+          : (prev.claimedXpLevelIds || []);
+
         return {
           ...prev,
           unlockedLevels: updatedUnlocked,
+          claimedXpLevelIds: updatedClaimed,
           lastPlayedUnitIndex: activeQuizLevel.unitIndex,
           lastPlayedLevelId: targetNextLvl,
           completedLevels: {
@@ -1615,14 +1642,34 @@ Please structure your response into these 4 clear sections:
                       </p>
                     </div>
 
-                    {/* XP Awarded Banner */}
-                    <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-50 border border-purple-200/90 rounded-2xl p-3 my-2.5 flex items-center justify-center gap-2.5 text-purple-950 shadow-2xs">
-                      <span className="text-xl">⚡</span>
-                      <div className="text-left">
-                        <span className="text-xs font-black block text-purple-900">+10 Study XP Earned!</span>
-                        <span className="text-[10px] font-bold text-purple-600 block">Total: {studyXP} XP • {getStudyLevel(studyXP).currentLevel.title}</span>
+                    {/* XP Awarded / Status Banner */}
+                    {quizXpStatus === 'awarded' && (
+                      <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-50 border border-purple-200/90 rounded-2xl p-3 my-2.5 flex items-center justify-center gap-2.5 text-purple-950 shadow-2xs">
+                        <span className="text-xl">⚡</span>
+                        <div className="text-left">
+                          <span className="text-xs font-black block text-purple-900">+10 Study XP Earned!</span>
+                          <span className="text-[10px] font-bold text-purple-600 block">Total: {studyXP} XP • {getStudyLevel(studyXP).currentLevel.title}</span>
+                        </div>
                       </div>
-                    </div>
+                    )}
+                    {quizXpStatus === 'already_claimed' && (
+                      <div className="bg-gradient-to-r from-blue-50/70 via-indigo-50/50 to-blue-50/70 border border-blue-200/80 rounded-2xl p-3 my-2.5 flex items-center justify-center gap-2.5 text-zinc-800 shadow-2xs">
+                        <span className="text-xl">✨</span>
+                        <div className="text-left">
+                          <span className="text-xs font-black block text-zinc-900">Quiz Completed (+0 XP)</span>
+                          <span className="text-[10px] font-bold text-zinc-600 block">XP already earned for this level • Total: {studyXP} XP</span>
+                        </div>
+                      </div>
+                    )}
+                    {quizXpStatus === 'zero_score' && (
+                      <div className="bg-gradient-to-r from-amber-50/70 via-orange-50/40 to-amber-50/70 border border-amber-200/80 rounded-2xl p-3 my-2.5 flex items-center justify-center gap-2.5 text-zinc-800 shadow-2xs">
+                        <span className="text-xl">🎯</span>
+                        <div className="text-left">
+                          <span className="text-xs font-black block text-amber-950">0 XP Earned (Score at least 1 to earn XP)</span>
+                          <span className="text-[10px] font-bold text-amber-800 block">Retake quiz & score at least 1/3 to claim +10 XP</span>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Action Buttons */}
                     <div className="space-y-2 pt-1">
