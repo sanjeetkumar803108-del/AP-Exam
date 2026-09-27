@@ -11,23 +11,23 @@ import rateLimit from "express-rate-limit";
 import xss2 from "xss";
 
 // src/server/reportAiRoutes.ts
-import path2 from "path";
-import fs2 from "fs";
+import path from "path";
+import fs from "fs";
 import crypto from "crypto";
 import xss from "xss";
 import nodemailer from "nodemailer";
 var DEVELOPER_SUPPORT_EMAIL = "helpyou.ai.support@gmail.com";
-var AI_REPORTS_FILE = path2.join(process.cwd(), "data", "ai_reports_vault.json");
-if (!fs2.existsSync(path2.join(process.cwd(), "data"))) {
+var AI_REPORTS_FILE = path.join(process.cwd(), "data", "ai_reports_vault.json");
+if (!fs.existsSync(path.join(process.cwd(), "data"))) {
   try {
-    fs2.mkdirSync(path2.join(process.cwd(), "data"), { recursive: true });
+    fs.mkdirSync(path.join(process.cwd(), "data"), { recursive: true });
   } catch (_) {
   }
 }
 var aiReportsVault = [];
 try {
-  if (fs2.existsSync(AI_REPORTS_FILE)) {
-    const raw = fs2.readFileSync(AI_REPORTS_FILE, "utf-8");
+  if (fs.existsSync(AI_REPORTS_FILE)) {
+    const raw = fs.readFileSync(AI_REPORTS_FILE, "utf-8");
     aiReportsVault = JSON.parse(raw);
     if (!Array.isArray(aiReportsVault)) aiReportsVault = [];
   }
@@ -36,7 +36,7 @@ try {
 }
 var saveAiReportsToDisk = () => {
   try {
-    fs2.writeFileSync(AI_REPORTS_FILE, JSON.stringify(aiReportsVault, null, 2), "utf-8");
+    fs.writeFileSync(AI_REPORTS_FILE, JSON.stringify(aiReportsVault, null, 2), "utf-8");
   } catch (err) {
     console.warn("[AI Report Vault] Error saving to disk:", err);
   }
@@ -197,6 +197,8 @@ function registerReportAiRoutes(app2) {
 }
 
 // src/server/helpYouRoutes.ts
+import path2 from "path";
+import fs2 from "fs";
 import crypto2 from "crypto";
 import { YoutubeTranscript } from "youtube-transcript";
 function getGradePedagogicalDirective(gradeLevel, stream, country) {
@@ -4252,11 +4254,11 @@ Return strictly a valid JSON object matching the requested schema with exactly $
       });
     }
   });
-  const SUBS_FILE_PATH2 = path.join(process.cwd(), "subscriptions.json");
+  const SUBS_FILE_PATH2 = path2.join(process.cwd(), "subscriptions.json");
   function getStoredSubscriptions2() {
     try {
-      if (fs.existsSync(SUBS_FILE_PATH2)) {
-        return JSON.parse(fs.readFileSync(SUBS_FILE_PATH2, "utf-8"));
+      if (fs2.existsSync(SUBS_FILE_PATH2)) {
+        return JSON.parse(fs2.readFileSync(SUBS_FILE_PATH2, "utf-8"));
       }
     } catch (error) {
       console.error("Error reading subscriptions from file:", error);
@@ -4265,7 +4267,7 @@ Return strictly a valid JSON object matching the requested schema with exactly $
   }
   function writeStoredSubscriptions2(subs) {
     try {
-      fs.writeFileSync(SUBS_FILE_PATH2, JSON.stringify(subs, null, 2), "utf-8");
+      fs2.writeFileSync(SUBS_FILE_PATH2, JSON.stringify(subs, null, 2), "utf-8");
     } catch (error) {
       console.error("Error saving subscriptions to file:", error);
     }

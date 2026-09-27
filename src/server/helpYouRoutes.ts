@@ -1,4 +1,7 @@
 import type { Express } from "express";
+import path from "path";
+import fs from "fs";
+import os from "os";
 import crypto from "crypto";
 import { YoutubeTranscript } from "youtube-transcript";
 

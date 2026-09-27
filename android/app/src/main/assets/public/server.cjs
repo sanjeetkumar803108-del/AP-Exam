@@ -35,8 +35,8 @@ module.exports = __toCommonJS(server_exports);
 var import_dotenv = __toESM(require("dotenv"), 1);
 var import_dns = __toESM(require("dns"), 1);
 var import_express = __toESM(require("express"), 1);
-var import_path2 = __toESM(require("path"), 1);
-var import_fs2 = __toESM(require("fs"), 1);
+var import_path3 = __toESM(require("path"), 1);
+var import_fs3 = __toESM(require("fs"), 1);
 var import_multer = __toESM(require("multer"), 1);
 var import_cors = __toESM(require("cors"), 1);
 var import_genai = require("@google/genai");
@@ -230,6 +230,8 @@ function registerReportAiRoutes(app2) {
 }
 
 // src/server/helpYouRoutes.ts
+var import_path2 = __toESM(require("path"), 1);
+var import_fs2 = __toESM(require("fs"), 1);
 var import_crypto2 = __toESM(require("crypto"), 1);
 var import_youtube_transcript = require("youtube-transcript");
 function getGradePedagogicalDirective(gradeLevel, stream, country) {
@@ -4285,11 +4287,11 @@ Return strictly a valid JSON object matching the requested schema with exactly $
       });
     }
   });
-  const SUBS_FILE_PATH2 = path.join(process.cwd(), "subscriptions.json");
+  const SUBS_FILE_PATH2 = import_path2.default.join(process.cwd(), "subscriptions.json");
   function getStoredSubscriptions2() {
     try {
-      if (fs.existsSync(SUBS_FILE_PATH2)) {
-        return JSON.parse(fs.readFileSync(SUBS_FILE_PATH2, "utf-8"));
+      if (import_fs2.default.existsSync(SUBS_FILE_PATH2)) {
+        return JSON.parse(import_fs2.default.readFileSync(SUBS_FILE_PATH2, "utf-8"));
       }
     } catch (error) {
       console.error("Error reading subscriptions from file:", error);
@@ -4298,7 +4300,7 @@ Return strictly a valid JSON object matching the requested schema with exactly $
   }
   function writeStoredSubscriptions2(subs) {
     try {
-      fs.writeFileSync(SUBS_FILE_PATH2, JSON.stringify(subs, null, 2), "utf-8");
+      import_fs2.default.writeFileSync(SUBS_FILE_PATH2, JSON.stringify(subs, null, 2), "utf-8");
     } catch (error) {
       console.error("Error saving subscriptions to file:", error);
     }
@@ -19114,11 +19116,11 @@ ${promptGoal}`;
     return res.status(500).json({ error: error.message || "Failed to explain AP question" });
   }
 });
-var SUBS_FILE_PATH = import_path2.default.join(process.cwd(), "subscriptions.json");
+var SUBS_FILE_PATH = import_path3.default.join(process.cwd(), "subscriptions.json");
 function getStoredSubscriptions() {
   try {
-    if (import_fs2.default.existsSync(SUBS_FILE_PATH)) {
-      return JSON.parse(import_fs2.default.readFileSync(SUBS_FILE_PATH, "utf-8"));
+    if (import_fs3.default.existsSync(SUBS_FILE_PATH)) {
+      return JSON.parse(import_fs3.default.readFileSync(SUBS_FILE_PATH, "utf-8"));
     }
   } catch (error) {
     console.error("Error reading subscriptions from file:", error);
@@ -19127,7 +19129,7 @@ function getStoredSubscriptions() {
 }
 function writeStoredSubscriptions(subs) {
   try {
-    import_fs2.default.writeFileSync(SUBS_FILE_PATH, JSON.stringify(subs, null, 2), "utf-8");
+    import_fs3.default.writeFileSync(SUBS_FILE_PATH, JSON.stringify(subs, null, 2), "utf-8");
   } catch (error) {
     console.error("Error saving subscriptions to file:", error);
   }
@@ -19165,14 +19167,14 @@ function normalizeBattleSubject(subId) {
 var waitingQueue = /* @__PURE__ */ new Map();
 var activeBattleRooms = /* @__PURE__ */ new Map();
 var playerToRoomMap = /* @__PURE__ */ new Map();
-var BATTLE_ROOMS_FILE = import_path2.default.join(
+var BATTLE_ROOMS_FILE = import_path3.default.join(
   process.env.VERCEL ? "/tmp" : process.cwd(),
   "active_battle_rooms.json"
 );
 function readRoomsFromDisk() {
   try {
-    if (import_fs2.default.existsSync(BATTLE_ROOMS_FILE)) {
-      const data = import_fs2.default.readFileSync(BATTLE_ROOMS_FILE, "utf-8");
+    if (import_fs3.default.existsSync(BATTLE_ROOMS_FILE)) {
+      const data = import_fs3.default.readFileSync(BATTLE_ROOMS_FILE, "utf-8");
       return JSON.parse(data);
     }
   } catch {
@@ -19187,7 +19189,7 @@ function writeRoomsToDisk() {
         obj[k] = v;
       }
     }
-    import_fs2.default.writeFileSync(BATTLE_ROOMS_FILE, JSON.stringify(obj), "utf-8");
+    import_fs3.default.writeFileSync(BATTLE_ROOMS_FILE, JSON.stringify(obj), "utf-8");
   } catch {
   }
 }
@@ -19970,14 +19972,14 @@ app.get("/api/battle/room/:roomId", (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-var PRIMARY_PAPERS_FILE = import_path2.default.join(process.cwd(), "data", "sample_papers_vault.json");
-var TMP_PAPERS_FILE = import_path2.default.join("/tmp", "sample_papers_vault.json");
+var PRIMARY_PAPERS_FILE = import_path3.default.join(process.cwd(), "data", "sample_papers_vault.json");
+var TMP_PAPERS_FILE = import_path3.default.join("/tmp", "sample_papers_vault.json");
 var samplePapersVault = [];
 function loadSamplePapersFromDisk() {
   const papersMap = /* @__PURE__ */ new Map();
   try {
-    if (import_fs2.default.existsSync(PRIMARY_PAPERS_FILE)) {
-      const raw = import_fs2.default.readFileSync(PRIMARY_PAPERS_FILE, "utf-8");
+    if (import_fs3.default.existsSync(PRIMARY_PAPERS_FILE)) {
+      const raw = import_fs3.default.readFileSync(PRIMARY_PAPERS_FILE, "utf-8");
       const list = JSON.parse(raw);
       if (Array.isArray(list)) list.forEach((p) => papersMap.set(p.id, p));
     }
@@ -19985,8 +19987,8 @@ function loadSamplePapersFromDisk() {
     console.warn("[SamplePaperVault] Primary load notice:", err);
   }
   try {
-    if (import_fs2.default.existsSync(TMP_PAPERS_FILE)) {
-      const raw = import_fs2.default.readFileSync(TMP_PAPERS_FILE, "utf-8");
+    if (import_fs3.default.existsSync(TMP_PAPERS_FILE)) {
+      const raw = import_fs3.default.readFileSync(TMP_PAPERS_FILE, "utf-8");
       const list = JSON.parse(raw);
       if (Array.isArray(list)) list.forEach((p) => papersMap.set(p.id, p));
     }
@@ -20001,12 +20003,12 @@ function loadSamplePapersFromDisk() {
 function saveSamplePapersToDisk() {
   const json = JSON.stringify(samplePapersVault, null, 2);
   try {
-    const dir = import_path2.default.dirname(PRIMARY_PAPERS_FILE);
-    if (!import_fs2.default.existsSync(dir)) import_fs2.default.mkdirSync(dir, { recursive: true });
-    import_fs2.default.writeFileSync(PRIMARY_PAPERS_FILE, json, "utf-8");
+    const dir = import_path3.default.dirname(PRIMARY_PAPERS_FILE);
+    if (!import_fs3.default.existsSync(dir)) import_fs3.default.mkdirSync(dir, { recursive: true });
+    import_fs3.default.writeFileSync(PRIMARY_PAPERS_FILE, json, "utf-8");
   } catch (primaryErr) {
     try {
-      import_fs2.default.writeFileSync(TMP_PAPERS_FILE, json, "utf-8");
+      import_fs3.default.writeFileSync(TMP_PAPERS_FILE, json, "utf-8");
     } catch (tmpErr) {
       console.warn("[SamplePaperVault] Write notice:", tmpErr);
     }
@@ -20063,12 +20065,12 @@ registerHelpYouRoutes(app, {
   summaryCache
 });
 async function startServer() {
-  const distPath = import_path2.default.join(process.cwd(), "dist");
-  const hasDist = import_fs2.default.existsSync(import_path2.default.join(distPath, "index.html"));
+  const distPath = import_path3.default.join(process.cwd(), "dist");
+  const hasDist = import_fs3.default.existsSync(import_path3.default.join(distPath, "index.html"));
   const isDevExplicit = (process.env.NODE_ENV || "").toLowerCase() === "development" || process.env.npm_lifecycle_event === "dev";
   if (hasDist && !isDevExplicit) {
     console.log("[Server] Serving production static frontend from:", distPath);
-    app.use("/assets", import_express.default.static(import_path2.default.join(distPath, "assets"), {
+    app.use("/assets", import_express.default.static(import_path3.default.join(distPath, "assets"), {
       maxAge: "1y",
       immutable: true
     }));
@@ -20080,12 +20082,12 @@ async function startServer() {
       }
     }));
     app.get("*", (req, res) => {
-      const ext = import_path2.default.extname(req.path);
+      const ext = import_path3.default.extname(req.path);
       if (ext || req.path.startsWith("/src") || req.path.startsWith("/api")) {
         return res.status(404).send("Not Found");
       }
       res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-      res.sendFile(import_path2.default.join(distPath, "index.html"));
+      res.sendFile(import_path3.default.join(distPath, "index.html"));
     });
   } else {
     try {
