@@ -90,6 +90,7 @@ Do NOT output a generic, one-size-fits-all answer. Your tone, depth, vocabulary,
 
 export function registerHelpYouRoutes(app: Express, ctx: any) {
   const { upload, getAI, generateContentWithRetry, safeParseJSON, sanitizeInput, summaryCache } = ctx;
+  const safeGenerateContent = ctx.safeGenerateContent || generateContentWithRetry;
 
 app.post("/api/scan", upload.single("image"), async (req, res) => {
   try {

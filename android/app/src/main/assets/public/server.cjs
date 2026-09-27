@@ -299,6 +299,7 @@ Do NOT output a generic, one-size-fits-all answer. Your tone, depth, vocabulary,
 }
 function registerHelpYouRoutes(app2, ctx) {
   const { upload: upload2, getAI: getAI2, generateContentWithRetry, safeParseJSON: safeParseJSON2, sanitizeInput: sanitizeInput2, summaryCache: summaryCache2 } = ctx;
+  const safeGenerateContent2 = ctx.safeGenerateContent || generateContentWithRetry;
   app2.post("/api/scan", upload2.single("image"), async (req, res) => {
     try {
       if (!req.file) {
@@ -420,7 +421,7 @@ THE "MASTER EDUCATOR" TEACHING PROTOCOL:
 2. THE ANALOGY RULE: Use relatable, real-world analogies where helpful.
 3. HIGH EMPATHY: Be patient and deeply encouraging.`
       };
-      const response = await safeGenerateContent({
+      const response = await safeGenerateContent2({
         gradeLevel,
         stream,
         country,
@@ -862,7 +863,7 @@ ${extractedText}` };
       let summarizeError = null;
       for (const model of summarizeModels) {
         try {
-          const response = await safeGenerateContent({
+          const response = await safeGenerateContent2({
             gradeLevel,
             stream,
             country,
@@ -1155,7 +1156,7 @@ GIBBERISH / RANDOM TYPING GUARD:
       } catch (streamErr) {
         console.warn("[/api/grade-essay] Stream interrupted midway, attempting recovery...", streamErr?.message);
         try {
-          const recoveryRes = await safeGenerateContent({
+          const recoveryRes = await safeGenerateContent2({
             gradeLevel,
             stream,
             country,
@@ -1217,7 +1218,7 @@ ${accumulatedOutput}` }] : []
           data: req.file.buffer.toString("base64")
         }
       };
-      const response = await safeGenerateContent({
+      const response = await safeGenerateContent2({
         model: "gemini-3.5-flash-lite",
         contents: [
           {
@@ -1247,7 +1248,7 @@ ${accumulatedOutput}` }] : []
           data: file.buffer.toString("base64")
         }
       }));
-      const response = await safeGenerateContent({
+      const response = await safeGenerateContent2({
         model: "gemini-3.5-flash-lite",
         contents: [
           {
@@ -1306,7 +1307,7 @@ Format:
     "answer": "Every interacting force creates an equal and opposite reaction acting simultaneously on two distinct interacting physical objects."
   }
 ]`;
-      const response = await safeGenerateContent({
+      const response = await safeGenerateContent2({
         gradeLevel,
         stream,
         country,
@@ -1405,7 +1406,7 @@ Format:
           data: req.file.buffer.toString("base64")
         }
       };
-      const response = await safeGenerateContent({
+      const response = await safeGenerateContent2({
         gradeLevel,
         stream,
         country,
@@ -1733,7 +1734,7 @@ At the very end of your response, you MUST output 2-3 new interactive follow-up 
 ${previousSummary}
 
 Student's Request: "${followUp}"`;
-        const response2 = await safeGenerateContent({
+        const response2 = await safeGenerateContent2({
           gradeLevel,
           model: "gemini-3.5-flash-lite",
           contents: { parts: [{ text: promptText }] },
@@ -1792,7 +1793,7 @@ At the very end of your notes, always include 3 helpful interactive study sugges
 \`[SUGGESTION: Explain key concepts simpler]\`
 \`[SUGGESTION: Give me a quick 3-question quiz]\`
 \`[SUGGESTION: Deep dive into the first half]\``;
-      const response = await safeGenerateContent({
+      const response = await safeGenerateContent2({
         gradeLevel,
         model: "gemini-3.5-flash-lite",
         contents: { parts: [{ text: transcriptText }] },
@@ -1939,7 +1940,7 @@ FORMAT: ${format}
 CRITICAL EXECUTION:
 - Authentically tailor vocabulary, sentence complexity, and subject depth to the student's profile (${studentContext || "Standard"}).
 - Do not produce formulaic AI filler. Deliver a rich, complete, publication-grade piece ready for academic reading or assignment submission.`;
-      const response = await safeGenerateContent({
+      const response = await safeGenerateContent2({
         gradeLevel,
         stream,
         country,
@@ -2040,7 +2041,7 @@ You must return your output strictly in JSON format matching the following schem
       let grammarError = null;
       for (const model of grammarModels) {
         try {
-          response = await safeGenerateContent({
+          response = await safeGenerateContent2({
             gradeLevel,
             stream,
             country,
@@ -2244,7 +2245,7 @@ OUTPUT QUALITY & MATHEMATICAL FORMULAS (KaTeX):
       let textSumError = null;
       for (const model of textSumModels) {
         try {
-          const response = await safeGenerateContent({
+          const response = await safeGenerateContent2({
             gradeLevel,
             stream,
             country,
@@ -2348,7 +2349,7 @@ For each question, provide:
 3. 'keyRubricPoints': 2-4 point marking rubric with mark values.${avoidDirective}`;
       let generatedText = "";
       try {
-        const response = await safeGenerateContent({
+        const response = await safeGenerateContent2({
           gradeLevel,
           stream,
           country,
@@ -2885,7 +2886,7 @@ STRICT ANTI-REPETITION: Do NOT repeat or generate questions similar to these pre
 ${avoidList.map((p, i) => `  [${i + 1}] ${p.slice(0, 100)}`).join("\n")}` : "";
       let quizText = "";
       try {
-        const response = await safeGenerateContent({
+        const response = await safeGenerateContent2({
           gradeLevel,
           stream,
           country,
@@ -2983,7 +2984,7 @@ Use this exact JSON structure:
       if (extractedText && extractedText.trim().length >= 50) {
         console.log("[PDF Quiz API] Using high-reliability text extraction path...");
         const slicedText = extractedText.length > 15e4 ? extractedText.slice(0, 15e4) : extractedText;
-        response = await safeGenerateContent({
+        response = await safeGenerateContent2({
           gradeLevel,
           stream,
           country,
@@ -3008,7 +3009,7 @@ Generate the ${requestedCount}-question JSON quiz now based strictly on the cont
             data: req.file.buffer.toString("base64")
           }
         };
-        response = await safeGenerateContent({
+        response = await safeGenerateContent2({
           gradeLevel,
           stream,
           country,
@@ -3090,7 +3091,7 @@ Use this exact JSON structure:
     "explanation": "Because..."
   }
 ]`;
-      const response = await safeGenerateContent({
+      const response = await safeGenerateContent2({
         gradeLevel,
         stream,
         country,
@@ -3231,7 +3232,7 @@ STRICT JSON OUTPUT FORMAT (Return ONLY a single valid JSON object, NO markdown w
 - Target Grade Level: ${gradeLevel || "Standard"}
 
 Analyze this mistake and provide the 3-part JSON fix for this grade level.`;
-      const response = await safeGenerateContent({
+      const response = await safeGenerateContent2({
         gradeLevel,
         stream,
         country,
@@ -3316,7 +3317,7 @@ ${correctAnswer ? `Official Correct Option: ${correctAnswer}
 ` : ""}${explanation ? `Provided Context/Explanation: ${explanation}
 ` : ""}
 Goal: Generate a master-level ${isHint ? "question breakdown and 3 progressive hints without spoiling the final choice" : "full step-by-step solution, option-by-option analysis, and subject-specific exam tip"} for a student in Grade: ${gradeLevel || "Standard"}.`;
-      const response = await safeGenerateContent({
+      const response = await safeGenerateContent2({
         gradeLevel,
         stream,
         country,
@@ -3369,7 +3370,7 @@ STRICT JSON OUTPUT (Return ONLY a JSON array with 3 question objects):
 - Target Grade: ${gradeLevel || "Standard"}
 
 Generate 3 fresh similar practice questions to help the student master this concept at their grade level.`;
-      const response = await safeGenerateContent({
+      const response = await safeGenerateContent2({
         gradeLevel,
         stream,
         country,
@@ -3569,7 +3570,7 @@ ${verifiedContextString || "No external search feeds returned. Synthesize using 
 
 ${isSmallOrDateQuery ? "Generate a direct, simple, concise answer with the exact date/fact stated immediately in bold, followed by 2-3 crisp bullet points with inline citations." : "Generate an elite, point-wise, structured academic research report with small markdown subheadings (### ...) and bullet points with inline citations."}
 Return strictly the JSON structure specified above.`;
-      const response = await safeGenerateContent({
+      const response = await safeGenerateContent2({
         gradeLevel,
         stream: academicStream,
         country,
@@ -4198,7 +4199,7 @@ STRICT OUTPUT JSON FORMAT:
 You are the Daily Trivia Engine for HelpYou AI, calibrated for ${studentGrade} (${studentStream}) students.
 Generate exactly ${requestedCount} multiple-choice micro-questions targeting "Exam Traps" (negative-marking traps where 80%+ students make careless errors).
 Return strictly a valid JSON object matching the requested schema with exactly ${requestedCount} items in the "questions" array.`;
-        const response = await safeGenerateContent({
+        const response = await safeGenerateContent2({
           gradeLevel: studentGrade,
           stream: studentStream,
           country: studentCountry,
@@ -16015,7 +16016,7 @@ function extractUserQuery(params) {
   }
   return "";
 }
-async function safeGenerateContent2(params, retries = 3, delay = 200) {
+async function safeGenerateContent(params, retries = 3, delay = 200) {
   const gradeLevel = params.gradeLevel || params.grade;
   const stream = params.stream || params.academic_stream;
   const country = params.country || params.academic_country;
@@ -16598,7 +16599,7 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
         return;
       }
     } else {
-      const response = await safeGenerateContent2({
+      const response = await safeGenerateContent({
         model: "gemini-flash-lite-latest",
         contents,
         config: {
@@ -16639,7 +16640,7 @@ app.post("/api/tts", async (req, res) => {
     const selectedVoice = voice || "Kore";
     const chunkPromises = chunks.map(async (chunkText, i) => {
       try {
-        const response = await safeGenerateContent2({
+        const response = await safeGenerateContent({
           model: "gemini-2.5-flash-preview-tts",
           contents: [{ parts: [{ text: `Please speak the following text naturally, clearly, and engagingly:
 
@@ -16868,7 +16869,7 @@ Ensure all formulas and variables are enclosed in $...$. Return pure JSON with n
       });
     });
     contentParts.push({ text: systemPrompt });
-    const response = await safeGenerateContent2({
+    const response = await safeGenerateContent({
       gradeLevel,
       profileContext,
       model: "gemini-flash-lite-latest",
@@ -17458,7 +17459,7 @@ Return ONLY a valid JSON array of objects with this exact structure:
   }
 ]`;
         const makeCall = async (seed) => {
-          const response = await safeGenerateContent2({
+          const response = await safeGenerateContent({
             gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
             model: "gemini-flash-lite-latest",
             timeoutMs: 25e3,
@@ -17761,7 +17762,7 @@ Return ONLY a valid JSON object with key "questions" containing an array of obje
 }
 NEVER include multiple-choice options A/B/C/D in subjective output.`;
         const makeCall = async (seed) => {
-          const response = await safeGenerateContent2({
+          const response = await safeGenerateContent({
             gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
             model: "gemini-flash-lite-latest",
             timeoutMs: 2e4,
@@ -18038,7 +18039,7 @@ STRICT JSON OUTPUT FORMAT:
   "the_fix": "Exact step-by-step conceptual or mathematical rule to reach the 100% correct CED answer...",
   "pro_memory_trick": "\u26A1 Unforgettable Score-5 rule / mnemonic to disarm this trap in 5 seconds."
 }`;
-      const response = await safeGenerateContent2({
+      const response = await safeGenerateContent({
         gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
         model: "gemini-flash-lite-latest",
         contents: { parts: [{ text: `Question: ${questionPrompt || "AP Question"}
@@ -18182,7 +18183,7 @@ Perform complete OCR and conduct an in-depth AP Trap Radar Autopsy for this ques
 ${customQuestion}`;
       }
       contentParts.push({ text: promptText });
-      const response = await safeGenerateContent2({
+      const response = await safeGenerateContent({
         gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
         model: "gemini-flash-lite-latest",
         contents: { parts: contentParts },
@@ -18198,7 +18199,7 @@ ${customQuestion}`;
       if (isFalsePositiveRejection) {
         console.log("[APTrapRadar] Detected false-positive FRQ rejection. Forcing FRQ Trap Radar Autopsy...");
         try {
-          const recoveryResponse = await safeGenerateContent2({
+          const recoveryResponse = await safeGenerateContent({
             gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
             model: "gemini-flash-lite-latest",
             contents: {
@@ -18382,7 +18383,7 @@ Step 4 (Interpretation): This value represents the total path length traveled by
   }
 ]`;
         const makeCall = async (seed) => {
-          const response = await safeGenerateContent2({
+          const response = await safeGenerateContent({
             gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
             model: "gemini-flash-lite-latest",
             timeoutMs: 25e3,
@@ -18638,7 +18639,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
   }
 ]`;
       const makeCall = async (seed) => {
-        const response = await safeGenerateContent2({
+        const response = await safeGenerateContent({
           gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
           model: "gemini-flash-lite-latest",
           timeoutMs: 25e3,
@@ -18979,7 +18980,7 @@ Official Exemplary Model Solution:
 ${modelAnswer}` : ""}
 ${image ? "IMPORTANT: The student has provided an attached photo containing their handwritten calculations, work, or steps. Thoroughly inspect and evaluate the handwritten solution in the image against the scoring rubric." : ""}`
     });
-    const response = await safeGenerateContent2({
+    const response = await safeGenerateContent({
       gradeLevel: userGrade,
       model: "gemini-flash-lite-latest",
       contents: { parts },
@@ -19100,7 +19101,7 @@ Disarm Secret Note: ${disarmStrategy}
 ` : ""}
 
 ${promptGoal}`;
-    const response = await safeGenerateContent2({
+    const response = await safeGenerateContent({
       gradeLevel,
       model: "gemini-flash-lite-latest",
       contents: { parts: [{ text: userPrompt }] },
@@ -19369,7 +19370,7 @@ Strictly return a raw JSON array of ${requestedCount} objects matching this exac
     "timeLimit": 45
   }
 ]`;
-    const aiResp = await safeGenerateContent2({
+    const aiResp = await safeGenerateContent({
       model: "gemini-flash-lite-latest",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
@@ -20058,8 +20059,8 @@ registerReportAiRoutes(app);
 registerHelpYouRoutes(app, {
   upload,
   getAI,
-  safeGenerateContent: safeGenerateContent2,
-  generateContentWithRetry: safeGenerateContent2,
+  safeGenerateContent,
+  generateContentWithRetry: safeGenerateContent,
   safeParseJSON,
   sanitizeInput,
   summaryCache
