@@ -17,6 +17,7 @@ import { YoutubeTranscript } from 'youtube-transcript';
 import rateLimit from "express-rate-limit";
 import xss from "xss";
 import { registerReportAiRoutes } from "./src/server/reportAiRoutes";
+import { registerHelpYouRoutes } from "./src/server/helpYouRoutes";
 import { getGranularSubjectArchetypes } from "./src/utils/apArchetypes";
 import { getCollegeBoardSubjectGuidelines, getDynamicTopicVariation } from "./src/data/apPromptGuidelines";
 import { getBattleQuestions, AP_BATTLE_SUBJECTS, BattleQuestion, normalizeGrade } from "./src/data/quizBattleBank";
@@ -5084,6 +5085,18 @@ app.delete("/api/sample-papers/:id", (req, res) => {
 
 // Register AI content reporting routes (automated developer email dispatch)
 registerReportAiRoutes(app);
+
+// Register HelpYou AI complete educational feature routes
+registerHelpYouRoutes(app, {
+  upload,
+  getAI,
+  safeGenerateContent,
+  generateContentWithRetry: safeGenerateContent,
+  safeParseJSON,
+  sanitizeInput,
+  summaryCache
+});
+
 
 
 async function startServer() {
