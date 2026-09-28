@@ -39,15 +39,41 @@ export const sanitizeSvg = (rawSvg?: string, autoPad = true): string => {
   // Prevents fatal XML parse errors on labels like 'Demand & Supply' or 'A && B'
   svg = svg.replace(/&(?!(amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)/g, '&amp;');
 
-  // CRITICAL XML FIX: Ensure raw '<' and '>' inside <text> elements are escaped as &lt; and &gt;
-  // Prevents fatal XML parse errors on mathematical relations like 'x < 2' or 'lim x -> c-'
+  // CRITICAL XML FIX & COLOR STYLING:
+  // 1. Ensure raw '<' and '>' inside <text> elements are escaped as &lt; and &gt; (prevents fatal XML parse errors).
+  // 2. Set all text labels, numbers, and coordinates to vibrant high-contrast green (#4ade80) with bold font weight.
   svg = svg.replace(/<text\b([^>]*)>([\s\S]*?)<\/text>/gi, (_match, attrs, content) => {
     let fixedContent = content.replace(/(<tspan\b[^>]*>)([\s\S]*?)(<\/tspan>)/gi, (_m: string, open: string, inner: string, close: string) => {
       const escaped = inner.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      return `${open}${escaped}${close}`;
+      let tspanOpen = open;
+      if (/\bfill=['"][^'"]*['"]/i.test(tspanOpen)) {
+        tspanOpen = tspanOpen.replace(/\bfill=['"][^'"]*['"]/i, 'fill="#4ade80"');
+      } else {
+        tspanOpen = tspanOpen.replace(/<tspan\b/i, '<tspan fill="#4ade80"');
+      }
+      return `${tspanOpen}${escaped}${close}`;
     });
     fixedContent = fixedContent.replace(/<(?!\/?tspan\b)/gi, '&lt;');
-    return `<text${attrs}>${fixedContent}</text>`;
+
+    let updatedAttrs = attrs;
+    // Force vibrant high-contrast green (#4ade80) on all graph numbers, labels, and titles
+    if (/\bfill=['"][^'"]*['"]/i.test(updatedAttrs)) {
+      updatedAttrs = updatedAttrs.replace(/\bfill=['"][^'"]*['"]/i, 'fill="#4ade80"');
+    } else {
+      updatedAttrs += ' fill="#4ade80"';
+    }
+
+    // Override inline style fill if defined
+    if (/\bstyle=['"][^'"]*['"]/i.test(updatedAttrs)) {
+      updatedAttrs = updatedAttrs.replace(/(style=['"][^'"]*?)fill\s*:\s*[^;"]+;?/gi, '$1fill: #4ade80;');
+    }
+
+    // Ensure bold weight for maximum clarity on mobile screens and dark canvases
+    if (!/\bfont-weight=['"][^'"]*['"]/i.test(updatedAttrs) && !/\bfont-weight\s*:/i.test(updatedAttrs)) {
+      updatedAttrs += ' font-weight="700"';
+    }
+
+    return `<text${updatedAttrs}>${fixedContent}</text>`;
   });
 
   if (autoPad) {
@@ -84,9 +110,12 @@ export const sanitizeSvg = (rawSvg?: string, autoPad = true): string => {
   }
 
   // Ensure responsive scaling, zero clipping, and aspect-ratio preservation for onscreen UI
+  // and inject internal CSS rule guaranteeing vibrant green (#4ade80) for all text and numbers
+  const greenStyleTag = `<style>/* ap-green-text */ text, tspan, textPath { fill: #4ade80 !important; font-weight: 700 !important; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important; }</style>`;
+
   svg = svg.replace(
-    /<svg\b([^>]*?)>/i,
-    `<svg $1 style="overflow: visible; width: 100%; height: auto; max-height: 100%; display: block;" preserveAspectRatio="xMidYMid meet">`
+    /<svg\b([^>]*)>/i,
+    `<svg $1 style="overflow: visible; width: 100%; height: auto; max-height: 100%; display: block;" preserveAspectRatio="xMidYMid meet">${greenStyleTag}`
   );
 
   return svg;

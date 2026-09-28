@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Check, GraduationCap, Rocket, HeartPulse, BarChart3, Palette, Cpu, ArrowLeft, ArrowRight, Globe } from 'lucide-react';
+import { Check, GraduationCap, Rocket, HeartPulse, BarChart3, Palette, Cpu, ArrowLeft, ArrowRight } from 'lucide-react';
 import { triggerVibration } from '../utils/vibrate';
 import { safeSetItem } from '../utils/storage';
 import { auth, db } from '../lib/firebase';
@@ -103,25 +103,21 @@ export const REGIONAL_TRACKS: Record<string, Array<{ id: string; title: string; 
 };
 
 export default function AcademicSetup({ userId, onComplete }: AcademicSetupProps) {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2>(1);
   const [selectedGrade, setSelectedGrade] = useState<string>('11th Grade (Junior)');
-  const [selectedCountryId, setSelectedCountryId] = useState<string>('USA');
+  const [selectedCountryId] = useState<string>('USA');
   const [selectedStream, setSelectedStream] = useState<string>('STEM / Engineering');
 
   const handleNextStep = () => {
     triggerVibration(15);
     if (step === 1) {
       setStep(2);
-    } else if (step === 2) {
-      setStep(3);
     }
   };
 
   const handleBackStep = () => {
     triggerVibration(10);
-    if (step === 3) {
-      setStep(2);
-    } else if (step === 2) {
+    if (step === 2) {
       setStep(1);
     }
   };
@@ -192,7 +188,7 @@ export default function AcademicSetup({ userId, onComplete }: AcademicSetupProps
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-100 px-2.5 py-1 rounded-full border border-zinc-150">
-            Step {step} of 3
+            Step {step} of 2
           </span>
         </div>
       </div>
@@ -259,62 +255,6 @@ export default function AcademicSetup({ userId, onComplete }: AcademicSetupProps
           )}
 
           {step === 2 && (
-            <motion.div
-              key="step-country"
-              initial={{ x: 20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -20, opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className="flex-1 flex flex-col justify-center min-h-0 py-2"
-            >
-              <div className="text-left mb-6 shrink-0">
-                <h1 className="text-2xl font-black text-zinc-950 tracking-tight leading-tight flex items-center gap-2">
-                  Select your country
-                </h1>
-                <p className="text-xs text-zinc-500 font-semibold mt-1.5 leading-relaxed">
-                  We tailor subject titles and exam naming conventions (SAT, GCSE, A-Levels, IB) to your educational system.
-                </p>
-              </div>
-
-              {/* Country Selection Cards */}
-              <div className="flex-1 overflow-y-auto pr-1 -mr-1 py-1 space-y-2.5 max-h-[50vh]">
-                {COUNTRIES.map((country) => {
-                  const isSelected = selectedCountryId === country.id;
-                  return (
-                    <motion.div
-                      key={country.id}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        triggerVibration(10);
-                        setSelectedCountryId(country.id);
-                      }}
-                      className={`p-4 rounded-2xl border transition-all flex items-center justify-between cursor-pointer ${
-                        isSelected
-                          ? 'border-purple-500 bg-purple-50/60 ring-1 ring-purple-500/20 shadow-sm'
-                          : 'border-zinc-200 bg-white hover:border-zinc-300'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3.5">
-                        <span className="text-2xl filter drop-shadow-sm select-none">{country.flag}</span>
-                        <span className={`text-xs font-black ${isSelected ? 'text-purple-700' : 'text-zinc-800'}`}>
-                          {country.name}
-                        </span>
-                      </div>
-                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
-                        isSelected 
-                          ? 'border-purple-600 bg-purple-600 text-white' 
-                          : 'border-zinc-300 bg-white'
-                      }`}>
-                        {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </motion.div>
-          )}
-
-          {step === 3 && (
             <motion.div
               key="step-stream"
               initial={{ x: 20, opacity: 0 }}
@@ -397,7 +337,7 @@ export default function AcademicSetup({ userId, onComplete }: AcademicSetupProps
             </motion.button>
           )}
           
-          {step < 3 ? (
+          {step < 2 ? (
             <motion.button
               whileTap={{ scale: 0.98 }}
               onClick={handleNextStep}

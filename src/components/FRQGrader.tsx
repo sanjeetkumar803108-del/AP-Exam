@@ -246,14 +246,14 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
         return;
       }
 
-      // Multi-tier high compatibility stream acquisition (720p ideal -> environment -> basic)
+      // Multi-tier high compatibility stream acquisition (1080p full HD ideal -> environment -> basic)
       let mediaStream: MediaStream;
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: { ideal: 'environment' },
-            width: { ideal: 1280, max: 1920 },
-            height: { ideal: 720, max: 1080 }
+            width: { ideal: 1920, max: 2560 },
+            height: { ideal: 1080, max: 1440 }
           },
           audio: false
         });
@@ -640,9 +640,9 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
 
     let progressTimer: any = null;
     try {
-      // Step 1: Compress all pages in parallel for ultra-fast mobile transmission (~120KB/page)
+      // Step 1: Compress all pages in parallel with high-res preservation for crystal-clear handwriting & math OCR
       const compressedFiles = await Promise.all(
-        uploadedPages.map(p => compressImageToFile(p.file, 1000, 0.72))
+        uploadedPages.map(p => compressImageToFile(p.file, 1920, 0.88))
       );
       setGradingProgress(45);
       setGradingStepText("Matching against College Board AP Scoring Guidelines...");

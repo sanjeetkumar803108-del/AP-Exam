@@ -1057,10 +1057,9 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
       .filter(p => typeof p === 'string' && p.trim().length > 10)
       .slice(0, 30);
 
-    // Mobile APK Fix: AbortController with 55s timeout prevents silent hangs in Android WebView.
-    // Vercel functions have a 60s hard limit; we abort client-side at 55s to surface a clean error.
+    // Mobile APK Fix: AbortController with 75s timeout prevents premature aborts on large 15-question exam sessions.
     const fetchController = new AbortController();
-    const fetchTimeoutId = setTimeout(() => fetchController.abort(), 55000);
+    const fetchTimeoutId = setTimeout(() => fetchController.abort(), 75000);
 
     try {
       let response: Response;
@@ -2108,6 +2107,10 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                   onClick={() => {
                     triggerVibration(15);
                     setQuestionType('objective');
+                    setExamMode('practice_bank');
+                    if (![5, 10, 15].includes(questionCount)) {
+                      setQuestionCount(5);
+                    }
                   }}
                   className={`p-4 rounded-2xl border transition-all cursor-pointer bg-white relative ${
                     questionType === 'objective'
@@ -2188,64 +2191,67 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
             {/* Section 2: Generation Mode & Question Count */}
             <div className="flex flex-col gap-3">
               <label className="text-xs font-black uppercase tracking-wider text-zinc-500">
-                2. Practice Mode & Structure
+                {questionType === 'subjective' ? '2. Practice Mode & Structure' : '2. Select Number of Questions'}
               </label>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerVibration(10);
-                    setExamMode('practice_bank');
-                    if (![5, 10, 15].includes(questionCount)) {
-                      setQuestionCount(5);
-                    }
-                  }}
-                  className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                    examMode === 'practice_bank'
-                      ? 'bg-zinc-900 border-zinc-900 text-white shadow-md'
-                      : 'bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-black text-xs">📚 Practice Bank</span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      examMode === 'practice_bank' ? 'bg-zinc-800 text-zinc-200' : 'bg-zinc-100 text-zinc-600'
-                    }`}>Flexible Bank</span>
-                  </div>
-                  <p className={`text-[11px] mt-1 ${examMode === 'practice_bank' ? 'text-zinc-300' : 'text-zinc-500'}`}>
-                    Flexible unit drills
-                  </p>
-                </button>
+              {/* Exam Simulation is strictly available for Subjective (Section II FRQs) */}
+              {questionType === 'subjective' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      triggerVibration(10);
+                      setExamMode('practice_bank');
+                      if (![5, 10, 15].includes(questionCount)) {
+                        setQuestionCount(5);
+                      }
+                    }}
+                    className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                      examMode === 'practice_bank'
+                        ? 'bg-zinc-900 border-zinc-900 text-white shadow-md'
+                        : 'bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-black text-xs">📚 Practice Bank</span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        examMode === 'practice_bank' ? 'bg-zinc-800 text-zinc-200' : 'bg-zinc-100 text-zinc-600'
+                      }`}>Flexible Bank</span>
+                    </div>
+                    <p className={`text-[11px] mt-1 ${examMode === 'practice_bank' ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                      Flexible unit drills
+                    </p>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerVibration(15);
-                    setExamMode('mock_exam');
-                    setQuestionType('subjective');
-                    // Real College Board Section II: 3 FRQs for APHG / 3 for most social sciences
-                    setQuestionCount(3);
-                  }}
-                  className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                    examMode === 'mock_exam'
-                      ? 'bg-gradient-to-r from-purple-700 to-indigo-700 border-purple-700 text-white shadow-md'
-                      : 'bg-white border-zinc-200 text-zinc-800 hover:bg-purple-50/50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-black text-xs">⏱️ Exam Simulation</span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      examMode === 'mock_exam' ? 'bg-purple-900 text-purple-200' : 'bg-purple-50 text-purple-700'
-                    }`}>Official Format</span>
-                  </div>
-                  <p className={`text-[11px] mt-1 ${examMode === 'mock_exam' ? 'text-purple-100' : 'text-zinc-500'}`}>
-                    Timed exam drills
-                  </p>
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      triggerVibration(15);
+                      setExamMode('mock_exam');
+                      setQuestionType('subjective');
+                      // Real College Board Section II: 3 FRQs for APHG / 3 for most social sciences
+                      setQuestionCount(3);
+                    }}
+                    className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                      examMode === 'mock_exam'
+                        ? 'bg-gradient-to-r from-purple-700 to-indigo-700 border-purple-700 text-white shadow-md'
+                        : 'bg-white border-zinc-200 text-zinc-800 hover:bg-purple-50/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-black text-xs">⏱️ Exam Simulation</span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        examMode === 'mock_exam' ? 'bg-purple-900 text-purple-200' : 'bg-purple-50 text-purple-700'
+                      }`}>Official Format</span>
+                    </div>
+                    <p className={`text-[11px] mt-1 ${examMode === 'mock_exam' ? 'text-purple-100' : 'text-zinc-500'}`}>
+                      Timed exam drills
+                    </p>
+                  </button>
+                </div>
+              )}
 
-              {examMode === 'practice_bank' ? (
+              {questionType === 'objective' || examMode === 'practice_bank' ? (
                 <div className="grid grid-cols-3 gap-2 sm:gap-2.5 mt-1">
                   {[
                     { count: 5, label: '5 Questions' },

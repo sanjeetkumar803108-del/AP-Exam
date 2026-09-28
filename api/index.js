@@ -16744,13 +16744,64 @@ CRITICAL DETECTION RULE:
 NEVER classify a non-academic photo, random object, blank paper, or room photo as "printed_frq_question" or "NO_STUDENT_WORK_DETECTED". If there is NO printed academic question prompt visible, it is STRICTLY "NO_ACADEMIC_CONTENT". DO NOT PROVIDE ANY WORKED-OUT HOMEWORK SOLUTIONS.
 
 =======================================================
-EVALUATION PROTOCOL FOR VALID STUDENT WORK:
+STEP 3: FORENSIC OPTICAL CHARACTER RECOGNITION (OCR) & ZERO-GUESSWORK AUDITING
+=======================================================
+You are conducting a forensic-level optical reading of handwritten student work.
+DO NOT GUESS. DO NOT ASSUME. DO NOT SILENTLY AUTO-CORRECT STUDENT ERRORS.
+
+1. EXACT INK-LEVEL TRANSCRIPTION MANDATE:
+   - In "transcribedHandwriting", you MUST transcribe character-by-character, number-by-number, and operator-by-operator EXACTLY what is physically written on the page in student ink.
+   - If the student made an error, transcribe their exact erroneous equation or number. DO NOT substitute the correct standard textbook answer in your mind!
+
+2. STROKE & CHARACTER DISAMBIGUATION RULES:
+   Scrutinize handwritten strokes with extreme optical rigor:
+   - Digits:
+     * '1' vs '7': A '7' has a distinct horizontal top bar and downward stroke (often with a European crossbar). Do not confuse a slanted '1' with a '7'.
+     * '3' vs '8': A '3' has open concave loops on the left. An '8' has fully closed upper and lower loops with a waist intersection. If the loops are closed, it is an 8; if open, it is a 3.
+     * '4' vs '9': A '4' has an open or pointed top triangle. A '9' has a closed round upper loop.
+     * '5' vs '6' vs 'S': A '5' has a sharp horizontal top flag followed by a short vertical drop and rounded bottom. A '6' is a continuous smooth curve into a closed bottom loop. An 'S' is a continuous double curve without a horizontal top bar.
+     * '0' vs '6' vs '8': A '0' is an oval. Do not hallucinate an open top into a '6' or '8' unless an explicit stem or cross-stroke exists.
+     * '2' vs 'Z': Look for a curved rounded hook ('2') vs sharp horizontal corners ('Z').
+
+   - Mathematical Operators & Signs (MANDATORY CHECKS):
+     * MINUS (-) vs PLUS (+) vs EQUALS (=):
+       - A minus sign (-) is a single horizontal line. Inspect closely whether a vertical stroke crosses it. If there is NO vertical stroke, it is STRICTLY MINUS (-).
+       - NEVER turn a student's minus sign into a plus sign or vice versa. If a student wrote "-4.9t^2" or "+4.9t^2", or "v - u" instead of "v + u", transcribe EXACTLY what was written!
+       - Check fraction bars vs minus signs carefully based on their alignment with operators.
+     * MULTIPLICATION (\\times) vs VARIABLE (x):
+       - Check whether the stroke is a curved/rounded cursive x or straight crossed lines \\times.
+     * LETTER (t) vs PLUS SIGN (+):
+       - 't' extends vertically above the horizontal bar and typically has a curved bottom hook. '+' has centered, symmetrical arms.
+     * LETTERS (u) vs (v) vs (\\nu) vs (r):
+       - 'u' has a rounded bottom. 'v' has a sharp pointed apex at the base.
+     * Exponents & Subscripts:
+       - Observe baseline elevation strictly. Do not confuse $x^2$ with $2x$, $10^3$ with $103$, or $v_0$ with $v \\cdot 0$.
+     * Decimal Points:
+       - Actively search for decimal points (e.g. $4.8$ vs $48$, $0.25$ vs $25$). Do not omit decimal points.
+
+3. STRICT ARITHMETIC RECALCULATION:
+   - You MUST recalculate every intermediate calculation and algebraic expansion written by the student.
+   - If the student writes "$12 \\times 3 = 32$" or "$8 + 7 = 14$" or "$-5 - 8 = -3$", YOU MUST FLAG IT AS AN ARITHMETIC ERROR.
+   - Do NOT assume the student "knew the right value".
+
+4. "NO BENEFIT OF THE DOUBT" RULE (COLLEGE BOARD AP CHIEF READER STANDARD):
+   - Official AP Readers are strictly forbidden from "reading into" student intent.
+   - If the student arrived at an incorrect number, applied an incorrect formula, flipped a sign, or made a computational blunder, POINTS MUST BE DEDUCTED for that criteria.
+   - NEVER award full credit to an answer that contains flawed mathematics, incorrect units, or contradictory reasoning.
+   - If a symbol or step is illegible or scribbled out, transcribe as "[illegible]" and award 0 points for that specific unreadable claim.
+
+=======================================================
+STEP 4: DETAILED STEP-BY-STEP AP RUBRIC EVALUATION
 =======================================================
 - Grade strictly according to official College Board AP Scoring Guidelines with the "NO WORK, NO CREDIT" rule.
 - All mathematical expressions, formulas, variables ($x$, $y$, $t$), derivatives, integrals, limits, equations, and units MUST be wrapped in KaTeX math delimiters ($...$ for inline or $$...$$ for display).
 - Break down grading into official rubric parts/steps: Part (a), Part (b), etc.
-- Award pointsEarned (0 to pointsPossible) for each step with clear rubric criteria, student work evaluated, and reader feedback.
-- Provide professional, concise Chief Reader diagnostic commentary without boilerplate or filler text.
+- In each step:
+  * "criteria": State the exact College Board benchmark requirement with KaTeX math.
+  * "workEvaluated": Quote the student's exact written work (including their actual numbers and signs in KaTeX) evaluated for this part.
+  * "feedback": Provide authoritative commentary explaining whether the work was mathematically sound or pointing out the exact line where a sign/calculation/conceptual error occurred.
+  * "pointsEarned": Exact integer earned (0 to pointsPossible).
+  * "status": "full" if 100% correct, "partial" if partial credit earned, "zero" if incorrect or missing.
 
 Return ONLY valid raw JSON conforming strictly to this schema:
 {
@@ -16839,7 +16890,7 @@ Ensure all formulas and variables are enclosed in $...$. Return pure JSON with n
     const response = await safeGenerateContent({
       gradeLevel,
       profileContext,
-      model: "gemini-flash-lite-latest",
+      model: "gemini-flash-latest",
       contents: [
         {
           parts: contentParts
@@ -16847,8 +16898,8 @@ Ensure all formulas and variables are enclosed in $...$. Return pure JSON with n
       ],
       config: {
         responseMimeType: "application/json",
-        maxOutputTokens: 2500,
-        temperature: 0.2
+        maxOutputTokens: 4e3,
+        temperature: 0.1
       }
     });
     const rawText = response.text || "{}";
@@ -17298,9 +17349,10 @@ OFFICIAL GRADE-LEVEL PEDAGOGICAL CALIBRATION: ADVANCED PLACEMENT (HIGH SCHOOL TO
 - Rigor: Standard College Board AP Course and Exam Description (CED) college-level rigor.
 - Explanations: Clear, authoritative step-by-step breakdown according to official College Board scoring rubrics.`;
     }
+    const startTime = Date.now();
     const batchSizes = [];
     let remaining = requestedCount;
-    const maxBatch = type === "subjective" ? 1 : 5;
+    const maxBatch = type === "subjective" ? requestedCount > 6 ? 3 : 2 : 5;
     while (remaining > 0) {
       const take = Math.min(remaining, maxBatch);
       batchSizes.push(take);
@@ -17380,7 +17432,7 @@ CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
    - Grid lines: stroke='#1e293b' stroke-dasharray='2,2'.
    - Calculus Discontinuities / Holes: Use hollow circles for removable holes (<circle cx='...' cy='...' r='4.5' fill='#09090b' stroke='#38bdf8' stroke-width='2.5'/>) and solid dots for defined points (<circle cx='...' cy='...' r='4.5' fill='#38bdf8'/>).
    - Curves / Shapes: High-contrast stroke='#38bdf8' or stroke='#818cf8' stroke-width='2.5' fill='none'.
-   - Text labels: fill='#f8fafc' font-size='12' font-family='sans-serif' font-weight='bold'.
+   - Text labels, numbers & coordinates (CRITICAL - ALWAYS GREEN): fill='#4ade80' font-size='12' font-family='sans-serif' font-weight='bold'. Every number (e.g. '0', '1', '2', '-3'), coordinate label (e.g. '(1, f(1))'), axis mark ('x', 'y = f(x)'), and title in the graph MUST have fill='#4ade80' (vibrant high-contrast green) for perfect readability on the dark background.
    - Only set diagramSvg to "" if the subject is purely literary/historical (e.g. AP English Lit, AP History).
 
 ${subjectGuidelines}
@@ -17680,7 +17732,7 @@ CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
      * Category 1: No Stimulus (conceptual application, theory, synthesis).
      * Category 2: Single Stimulus (authentic demographic/spatial data table, population pyramid, or textbook model diagram such as Demographic Transition Model, Von Th\xFCnen rings, or Burgess Concentric Zone).
      * Category 3: Two Stimuli (comparative data sets, paired maps, or dual charts).
-   - When a question requires a visual model or chart, provide an authentic College Board standard SVG in "diagramSvg" (viewBox='0 0 400 220') or format a clean Markdown/LaTeX data table in the prompt.
+   - When a question requires a visual model or chart, provide an authentic College Board standard SVG in "diagramSvg" (viewBox='0 0 400 220', with all text labels, numbers, and coordinates styled with fill='#4ade80' font-weight='bold') or format a clean Markdown/LaTeX data table in the prompt.
    - The question prompt MUST reference specific details from the stimulus in its sub-parts (e.g., "Referring to the data in Table 1...", "Based on Stage 2 in the accompanying diagram...").
 
 4. CLEAR FORMATTING & EXEMPLARY MODEL ANSWER:
@@ -17742,7 +17794,7 @@ Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP
             config: {
               systemInstruction: { parts: [{ text: systemInstruction }] },
               responseMimeType: "application/json",
-              maxOutputTokens: 3500,
+              maxOutputTokens: 4e3,
               temperature: 0.75
             }
           });
@@ -17793,16 +17845,14 @@ Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP
         }
         validatedQuestions.push(vResult.sanitizedQuestion);
       }
-      let backfillAttempts = 0;
-      while (validatedQuestions.length < requestedCount && backfillAttempts < 3) {
-        backfillAttempts++;
+      if (validatedQuestions.length < requestedCount && Date.now() - startTime < 25e3) {
         const missingCount = requestedCount - validatedQuestions.length;
-        console.warn(`[generate-ap-questions] Subjective questions deficit: got ${validatedQuestions.length}/${requestedCount} valid questions. Backfilling ${missingCount} questions (attempt ${backfillAttempts})...`);
+        console.warn(`[generate-ap-questions] Subjective questions deficit: got ${validatedQuestions.length}/${requestedCount} valid questions. Backfilling ${missingCount} questions...`);
         try {
           const existingPrompts = validatedQuestions.map(
             (q) => (typeof q === "string" ? q : q.prompt || q.question || q.title || "").slice(0, 140)
           ).filter(Boolean);
-          const backfillResult = await generateSubjectiveBatch(missingCount, 80 + backfillAttempts, existingPrompts);
+          const backfillResult = await generateSubjectiveBatch(missingCount, 99, existingPrompts);
           if (Array.isArray(backfillResult) && backfillResult.length > 0) {
             for (const bq of backfillResult) {
               const bvResult = validateAndHealApQuestion(bq, subject, targetTopic, usedTracker);
