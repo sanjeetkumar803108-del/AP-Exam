@@ -2670,7 +2670,7 @@ The Gemini API is currently experiencing rate limits. Please try again in 60 sec
   }
   function getDynamicTopicVariation2(subject, unitOrTopic, count) {
     const archetypes = getGranularSubjectArchetypes2(subject, unitOrTopic, count);
-    return archetypes.map((arch, idx) => `  - Question ${idx + 1} Target Archetype: ${arch}`).join("\n");
+    return archetypes.map((arch, idx2) => `  - Question ${idx2 + 1} Target Archetype: ${arch}`).join("\n");
   }
   const MCQ_LETTERS2 = ["A", "B", "C", "D"];
   function generateBalancedAnswerSequence2(count) {
@@ -2770,17 +2770,17 @@ The Gemini API is currently experiencing rate limits. Please try again in 60 sec
       }
       if (currentCorrectIdx === -1) currentCorrectIdx = 0;
       const origLetter = MCQ_LETTERS2[currentCorrectIdx];
-      const items = rawOptions.slice(0, 4).map((opt, idx) => {
+      const items = rawOptions.slice(0, 4).map((opt, idx2) => {
         const cleanText = opt.replace(/^[A-Da-d][\)\.:\s]\s*/, "").trim();
-        const trap = Array.isArray(q.traps) && q.traps[idx] ? { ...q.traps[idx] } : null;
+        const trap = Array.isArray(q.traps) && q.traps[idx2] ? { ...q.traps[idx2] } : null;
         return {
           content: cleanText,
-          isCorrect: idx === currentCorrectIdx,
+          isCorrect: idx2 === currentCorrectIdx,
           trap
         };
       });
       const correctItem = items[currentCorrectIdx];
-      const distractorItems = items.filter((_, idx) => idx !== currentCorrectIdx);
+      const distractorItems = items.filter((_, idx2) => idx2 !== currentCorrectIdx);
       for (let d = distractorItems.length - 1; d > 0; d--) {
         const rand = Math.floor(Math.random() * (d + 1));
         [distractorItems[d], distractorItems[rand]] = [distractorItems[rand], distractorItems[d]];
@@ -3486,7 +3486,7 @@ Generate 3 fresh similar practice questions to help the student master this conc
       const isSmallOrDateQuery = rawQuery.split(/\s+/).length <= 8 || /\b(when|date|launch|born|died|kab|kitne|kitna|kaun|kisne|kisko|kaha|where|who is|what is|capital|full form|ceo|founder|prime minister|president|released|announced|exam date|admit card|score|result|headquarters|hq|established)\b/i.test(rawQuery);
       const searchResults = await performLiveWebSearch(rawQuery, keywords, country);
       const verifiedContextString = searchResults.map(
-        (s, idx) => `[Source ${idx + 1}] Title: ${s.title}
+        (s, idx2) => `[Source ${idx2 + 1}] Title: ${s.title}
 URL: ${s.uri}
 Publisher: ${s.sourceName} (${s.pubDate || "Recent"})
 Content Snippet: ${s.snippet}
@@ -5171,7 +5171,7 @@ function getCollegeBoardSubjectGuidelines(subject, questionType) {
 }
 function getDynamicTopicVariation(subject, unitOrTopic, count) {
   const archetypes = getGranularSubjectArchetypes(subject, unitOrTopic, count);
-  return archetypes.map((arch, idx) => `  - Question ${idx + 1} Target Archetype: ${arch}`).join("\n");
+  return archetypes.map((arch, idx2) => `  - Question ${idx2 + 1} Target Archetype: ${arch}`).join("\n");
 }
 
 // src/data/quiz/expandedBattleQuestions.ts
@@ -15679,6 +15679,315 @@ function validateAndHealApQuestion(q, subjectId, targetTopic, tracker) {
   };
 }
 
+// src/utils/apCurriculum.ts
+var TOP_10_AP_SUBJECTS = [
+  {
+    id: "ap-human-geography",
+    name: "AP Human Geography (APHG)",
+    shortCode: "APHG",
+    badge: "\u{1F451} #1 Grade 9 AP",
+    category: "Humanities & Social Sciences",
+    icon: "\u{1F5FA}\uFE0F",
+    accentColor: "#0284C7",
+    gradient: "from-sky-600 via-teal-600 to-emerald-700",
+    description: "The Premier Grade 9 (Freshman) AP Course: Spatial Patterns, Population Pyramids, DTM, Cultural Hearth & Urban Models (Units 1\u20137)",
+    gradeLevels: ["9th", "10th", "11th", "12th"],
+    units: [
+      { id: "u1", title: "Unit 1: Thinking Geographically", description: "Geospatial tech (GIS, GPS, remote sensing), spatial concepts, scales of analysis, and formal/functional/vernacular regions" },
+      { id: "u2", title: "Unit 2: Population & Migration Patterns", description: "Demographic Transition Model (DTM Stages 1-5), population pyramids, Malthusian theory, push/pull factors, and refugees" },
+      { id: "u3", title: "Unit 3: Cultural Patterns & Processes", description: "Diffusion mechanisms (contagious, hierarchical, stimulus), language families, universalizing vs ethnic religions, and cultural landscapes" },
+      { id: "u4", title: "Unit 4: Political Patterns & Processes", description: "Sovereignty, nation-states, stateless nations, boundaries/UNCLOS, gerrymandering, supranationalism (UN, EU), and devolution" },
+      { id: "u5", title: "Unit 5: Agriculture & Rural Land-Use", description: "Von Th\xFCnen spatial model, Green Revolution, subsistence vs commercial farming, agricultural hearths, and rural land survey systems" },
+      { id: "u6", title: "Unit 6: Cities & Urban Land-Use", description: "Burgess Concentric Zone, Hoyt Sector, Harris-Ullman Multiple Nuclei, Central Place Theory (Christaller), gentrification, and New Urbanism" },
+      { id: "u7", title: "Unit 7: Industrial & Economic Development", description: "Wallerstein World Systems (Core/Periphery), Rostow 5 Stages of Economic Growth, Weber Least Cost Theory, HDI, and UN SDGs" }
+    ]
+  },
+  {
+    id: "ap-environmental-science",
+    name: "AP Environmental Science (APES)",
+    shortCode: "APES",
+    badge: "\u{1F331} Popular 9th Lab",
+    category: "Sciences",
+    icon: "\u{1F33F}",
+    accentColor: "#16A34A",
+    gradient: "from-green-600 via-emerald-600 to-teal-800",
+    description: "Freshman-Friendly Interdisciplinary Lab Science: Ecosystem Cycles, Biodiversity, Earth Systems, Energy, Pollution & Sustainability (Units 1\u20139)",
+    gradeLevels: ["9th", "10th", "11th", "12th"],
+    units: [
+      { id: "u1", title: "Unit 1: The Living World: Ecosystems", description: "Biogeochemical cycles (carbon, nitrogen, phosphorus, water), trophic cascades, 10% energy rule, and primary productivity" },
+      { id: "u2", title: "Unit 2: The Living World: Biodiversity", description: "Ecosystem services (provisioning/regulating), island biogeography, ecological tolerance, natural disruptions, and succession" },
+      { id: "u3", title: "Unit 3: Populations", description: "Generalist vs specialist species, r-selected vs K-selected, survivorship curves, carrying capacity, and human demographic transition" },
+      { id: "u4", title: "Unit 4: Earth Systems & Resources", description: "Tectonic plate boundaries, soil horizons/texture triangle, atmospheric layers, global wind patterns, and El Ni\xF1o/La Ni\xF1a" },
+      { id: "u5", title: "Unit 5: Land & Water Use", description: "Tragedy of the Commons, Green Revolution, irrigation methods, Integrated Pest Management (IPM), CAFOs, and mining impacts" },
+      { id: "u6", title: "Unit 6: Energy Resources & Consumption", description: "Fossil fuels, nuclear fission, solar, wind, hydroelectric, biomass, and energy conservation calculations" },
+      { id: "u7", title: "Unit 7: Atmospheric Pollution", description: "Photochemical smog, thermal inversions, acid deposition, indoor air pollutants (radon, VOCs), and Clean Air Act" },
+      { id: "u8", title: "Unit 8: Aquatic & Terrestrial Pollution", description: "Point vs nonpoint sources, eutrophication, bioaccumulation/biomagnification, solid waste landfills, and LD50 toxicity testing" },
+      { id: "u9", title: "Unit 9: Global Change", description: "Stratospheric ozone depletion, greenhouse gases, ocean acidification, invasive species, and climate mitigation strategies" }
+    ]
+  },
+  {
+    id: "ap-computer-science-principles",
+    name: "AP Computer Science Principles (CSP)",
+    shortCode: "CSP",
+    badge: "\u{1F4BB} 9th Tech Entry",
+    category: "English & Tech",
+    icon: "\u{1F310}",
+    accentColor: "#0EA5E9",
+    gradient: "from-cyan-600 via-blue-600 to-indigo-700",
+    description: "Foundational 9th Grade Computing: Computational Thinking, Big Data, Algorithms, Pseudocode Logic, Cybersecurity & the Global Internet (Units 1\u20135)",
+    gradeLevels: ["9th", "10th", "11th", "12th"],
+    units: [
+      { id: "u1", title: "Unit 1: Creative Development", description: "Collaboration, program design, software development process, identifying errors, and debugging strategies" },
+      { id: "u2", title: "Unit 2: Data Representation & Information", description: "Binary numbers, hexadecimal, data compression (lossy vs lossless), abstraction, and Big Data analysis" },
+      { id: "u3", title: "Unit 3: Algorithms & Programming", description: "Variables, booleans, conditionals, loops, procedural abstraction, algorithm efficiency, and robot navigation" },
+      { id: "u4", title: "Unit 4: Computing Systems & Networks", description: "The Internet, IP addressing, TCP/IP packets, routing, fault tolerance, and parallel/distributed computing" },
+      { id: "u5", title: "Unit 5: Impact of Computing", description: "Cybersecurity, symmetric vs public key encryption, phishing, DDoS attacks, digital divide, and computing ethics" }
+    ]
+  },
+  {
+    id: "ap-calculus-ab",
+    name: "AP Calculus AB",
+    shortCode: "CALC AB",
+    badge: "Foundational",
+    category: "STEM & Math",
+    icon: "\u{1F4D0}",
+    accentColor: "#3B82F6",
+    gradient: "from-blue-600 via-indigo-600 to-blue-800",
+    description: "Limits, Derivatives, Applications of Differentiation, Definite Integrals & Differential Equations (Units 1\u20138)",
+    gradeLevels: ["11th", "12th"],
+    units: [
+      { id: "u1", title: "Unit 1: Limits & Continuity", description: "Limit properties, squeeze theorem, and Intermediate Value Theorem (IVT)" },
+      { id: "u2", title: "Unit 2: Differentiation: Definition & Fundamentals", description: "Derivative definition, power, product, and quotient rules" },
+      { id: "u3", title: "Unit 3: Chain Rule & Implicit Differentiation", description: "Composite functions, implicit curves, and inverse trigonometric derivatives" },
+      { id: "u4", title: "Unit 4: Contextual Applications of Differentiation", description: "Rates of change, straight-line motion, related rates, and local linearity" },
+      { id: "u5", title: "Unit 5: Analytical Applications of Differentiation", description: "Mean Value Theorem (MVT), First/Second Derivative Tests, concavity, and optimization" },
+      { id: "u6", title: "Unit 6: Integration & Accumulation of Change", description: "Riemann sums, FTC Parts 1 & 2, and U-substitution" },
+      { id: "u7", title: "Unit 7: Differential Equations & Slope Fields", description: "Separation of variables, exponential growth models, and slope fields" },
+      { id: "u8", title: "Unit 8: Applications of Integration", description: "Average value, area between curves, and volumes of revolution (disk/washer)" }
+    ]
+  },
+  {
+    id: "ap-calculus-bc",
+    name: "AP Calculus BC",
+    shortCode: "CALC BC",
+    badge: "Advanced (+2 Units)",
+    category: "STEM & Math",
+    icon: "\u{1F4C8}",
+    accentColor: "#6366F1",
+    gradient: "from-indigo-600 via-purple-600 to-violet-800",
+    description: "All Calculus AB Core Curriculum PLUS 2 Advanced BC-Exclusive Units: Parametric/Polar/Vectors & Infinite Sequences and Series",
+    gradeLevels: ["11th", "12th"],
+    units: [
+      { id: "u1", title: "Unit 1: Limits & Continuity", description: "Limit properties, squeeze theorem, and IVT" },
+      { id: "u2", title: "Unit 2: Differentiation: Fundamentals", description: "Power, product, quotient rules, and derivative definitions" },
+      { id: "u3", title: "Unit 3: Composite, Implicit & Inverse Functions", description: "Chain rule, implicit curves, and inverse trig derivatives" },
+      { id: "u4", title: "Unit 4: Contextual Applications of Differentiation", description: "Rates of change, related rates, and linear approximations" },
+      { id: "u5", title: "Unit 5: Analytical Applications of Differentiation", description: "MVT, First/Second derivative tests, concavity, and optimization" },
+      { id: "u6", title: "Unit 6: Integration: Advanced Techniques", description: "Integration by parts, partial fractions, improper integrals, and FTC" },
+      { id: "u7", title: "Unit 7: Differential Equations & Logistic Growth", description: "Euler\u2019s method, logistic differential equations, and slope fields" },
+      { id: "u8", title: "Unit 8: Applications of Integration & Arc Length", description: "Area, volumes of revolution, and curve arc length" },
+      { id: "u9", title: "Unit 9: Parametric, Polar & Vectors (BC Exclusive)", description: "Parametric derivatives and arc length, vector velocity/acceleration, polar area and tangents" },
+      { id: "u10", title: "Unit 10: Infinite Sequences & Series (BC Exclusive)", description: "Convergence tests, alternating series, power series, and Taylor/Maclaurin series" }
+    ]
+  },
+  {
+    id: "ap-biology",
+    name: "AP Biology",
+    shortCode: "BIO",
+    badge: "Popular",
+    category: "Sciences",
+    icon: "\u{1F9EC}",
+    accentColor: "#10B981",
+    gradient: "from-emerald-600 via-teal-600 to-emerald-800",
+    description: "Cellular Energetics, Genetics, Gene Regulation & Natural Selection",
+    gradeLevels: ["9th", "10th", "11th", "12th"],
+    units: [
+      { id: "u1", title: "Unit 1: Chemistry of Life", description: "Structure of water, hydrogen bonding, and biomolecules" },
+      { id: "u2", title: "Unit 2: Cell Structure & Function", description: "Organelles, membrane permeability, and tonicity/osmosis" },
+      { id: "u3", title: "Unit 3: Cellular Energetics", description: "Enzyme kinetics, photosynthesis (light/dark reactions), and cellular respiration" },
+      { id: "u4", title: "Unit 4: Cell Communication & Cell Cycle", description: "Signal transduction pathways, feedback loops, mitosis, and checkpoints" },
+      { id: "u5", title: "Unit 5: Heredity & Mendelian Genetics", description: "Meiosis, independent assortment, non-Mendelian inheritance, and pedigrees" },
+      { id: "u6", title: "Unit 6: Gene Expression & Regulation", description: "DNA replication, transcription, translation, operons, and biotechnology" },
+      { id: "u7", title: "Unit 7: Natural Selection & Evolution", description: "Hardy-Weinberg equilibrium, phylogenetic trees, and speciation" },
+      { id: "u8", title: "Unit 8: Ecology", description: "Energy flow in trophic levels, population dynamics, and ecosystem resilience" }
+    ]
+  },
+  {
+    id: "ap-chemistry",
+    name: "AP Chemistry",
+    shortCode: "CHEM",
+    badge: "Challenging",
+    category: "Sciences",
+    icon: "\u2697\uFE0F",
+    accentColor: "#8B5CF6",
+    gradient: "from-purple-600 via-violet-600 to-indigo-800",
+    description: "Atomic Models, Chemical Kinetics, Thermodynamics & Equilibrium",
+    gradeLevels: ["10th", "11th", "12th"],
+    units: [
+      { id: "u1", title: "Unit 1: Atomic Structure & Properties", description: "Moles, mass spectrometry, electron configurations, and periodic trends" },
+      { id: "u2", title: "Unit 2: Molecular & Ionic Bonding", description: "Lattice energy, Lewis structures, resonance, and VSEPR geometry" },
+      { id: "u3", title: "Unit 3: Intermolecular Forces & Properties", description: "Dipole forces, ideal gas laws (PV=nRT), solutions, and spectroscopy" },
+      { id: "u4", title: "Unit 4: Chemical Reactions & Stoichiometry", description: "Net ionic equations, redox titrations, and precipitation" },
+      { id: "u5", title: "Unit 5: Kinetics", description: "Rate laws, collision theory, reaction mechanisms, and catalysts" },
+      { id: "u6", title: "Unit 6: Thermodynamics", description: "Enthalpy of reaction, Hess\u2019s Law, calorimetry, and bond energies" },
+      { id: "u7", title: "Unit 7: Equilibrium", description: "Equilibrium constant (Keq, Kp), Le Chatelier\u2019s principle, and solubility (Ksp)" },
+      { id: "u8", title: "Unit 8: Acids & Bases", description: "pH, pOH, strong vs weak, buffers, and Henderson-Hasselbalch" },
+      { id: "u9", title: "Unit 9: Applications of Thermodynamics", description: "Entropy (S), Gibbs Free Energy (\u0394G), and galvanic/electrolytic cells" }
+    ]
+  },
+  {
+    id: "ap-physics",
+    name: "AP Physics 1: Algebra-Based",
+    shortCode: "PHYS",
+    badge: "Conceptual",
+    category: "Sciences",
+    icon: "\u26A1",
+    accentColor: "#F59E0B",
+    gradient: "from-amber-500 via-orange-500 to-amber-700",
+    description: "Kinematics, Newton\u2019s Laws, Work-Energy, Momentum & Rotational Motion",
+    gradeLevels: ["9th", "10th", "11th", "12th"],
+    units: [
+      { id: "u1", title: "Unit 1: Kinematics", description: "1D & 2D motion, projectile motion, and kinematic graphs" },
+      { id: "u2", title: "Unit 2: Force & Translational Dynamics", description: "Newton\u2019s three laws, free-body diagrams, and friction" },
+      { id: "u3", title: "Unit 3: Work, Energy & Power", description: "Conservation of mechanical energy, work-energy theorem, and spring forces" },
+      { id: "u4", title: "Unit 4: Linear Momentum", description: "Impulse, elastic and inelastic collisions, and center of mass" },
+      { id: "u5", title: "Unit 5: Torque & Rotational Dynamics", description: "Rotational kinematics, moment of inertia, torque, and rolling motion" },
+      { id: "u6", title: "Unit 6: Energy & Momentum of Rotating Systems", description: "Conservation of angular momentum and rotational kinetic energy" },
+      { id: "u7", title: "Unit 7: Oscillations (Simple Harmonic Motion)", description: "Mass-spring systems, simple pendulums, period, and restoring forces" },
+      { id: "u8", title: "Unit 8: Fluids", description: "Density, pressure, Archimedes\u2019 principle, and continuity equation" }
+    ]
+  },
+  {
+    id: "ap-us-history",
+    name: "AP U.S. History (APUSH)",
+    shortCode: "APUSH",
+    badge: "Top Pick",
+    category: "Humanities & Social Sciences",
+    icon: "\u{1F3DB}\uFE0F",
+    accentColor: "#EF4444",
+    gradient: "from-red-600 via-rose-600 to-red-800",
+    description: "Periods 1\u20139: From Pre-Columbian Societies to Modern American Politics",
+    gradeLevels: ["10th", "11th", "12th"],
+    units: [
+      { id: "p1", title: "Period 1 (1491\u20131607)", description: "Early contact, Native American societies, and Columbian Exchange" },
+      { id: "p2", title: "Period 2 (1607\u20131754)", description: "Colonial settlements, mercantilism, and regional economies" },
+      { id: "p3", title: "Period 3 (1754\u20131800)", description: "Seven Years War, American Revolution, Declaration, and US Constitution" },
+      { id: "p4", title: "Period 4 (1800\u20131848)", description: "Jacksonian Democracy, Market Revolution, and Second Great Awakening" },
+      { id: "p5", title: "Period 5 (1844\u20131877)", description: "Manifest Destiny, Sectional Crisis, Civil War, and Reconstruction" },
+      { id: "p6", title: "Period 6 (1865\u20131898)", description: "Gilded Age industrialization, labor movements, and urbanization" },
+      { id: "p7", title: "Period 7 (1890\u20131945)", description: "Progressive Era, Imperialism, World War I, Great Depression, New Deal & WWII" },
+      { id: "p8", title: "Period 8 (1945\u20131980)", description: "Cold War geopolitics, Civil Rights Movement, Vietnam, and suburban shift" },
+      { id: "p9", title: "Period 9 (1980\u2013Present)", description: "Reagan Revolution, conservative resurgence, globalization, and digital era" }
+    ]
+  },
+  {
+    id: "ap-english-lang",
+    name: "AP English Language & Comp",
+    shortCode: "AP LANG",
+    badge: "Essential",
+    category: "English & Tech",
+    icon: "\u270D\uFE0F",
+    accentColor: "#06B6D4",
+    gradient: "from-cyan-600 via-teal-600 to-cyan-800",
+    description: "Rhetorical Analysis, Synthesis Essays, Argumentation & Stylistic Craft",
+    gradeLevels: ["11th", "12th"],
+    units: [
+      { id: "u1", title: "Unit 1: Rhetorical Situation & Claims", description: "Audience, purpose, context, exigence, and thesis construction" },
+      { id: "u2", title: "Unit 2: Evidence & Appeals (Ethos, Pathos, Logos)", description: "Lines of reasoning, supporting claims, and rhetorical choices" },
+      { id: "u3", title: "Unit 3: Synthesis of Multiple Sources", description: "Synthesizing conflicting viewpoints, citations, and conversation building" },
+      { id: "u4", title: "Unit 4: Argumentative Structure & Logic", description: "Inductive/deductive logic, qualifying claims, and counter-arguments" },
+      { id: "u5", title: "Unit 5: Style, Diction & Syntax", description: "Tone, figurative language, periodic sentences, and stylistic voice" },
+      { id: "u6", title: "Unit 6: Multiple Choice: Reading & Revision", description: "Deconstructing nonfiction arguments and editing prose for clarity" }
+    ]
+  },
+  {
+    id: "ap-psychology",
+    name: "AP Psychology",
+    shortCode: "PSYCH",
+    badge: "Popular",
+    category: "Humanities & Social Sciences",
+    icon: "\u{1F9E0}",
+    accentColor: "#EC4899",
+    gradient: "from-pink-500 via-rose-500 to-purple-600",
+    description: "Cognitive Processes, Neuroscience, Learning Theories & Clinical Disorders",
+    gradeLevels: ["9th", "10th", "11th", "12th"],
+    units: [
+      { id: "u1", title: "Unit 1: Biological Bases of Behavior", description: "Neuron anatomy, neurotransmitters, brain lobes, and endocrine system" },
+      { id: "u2", title: "Unit 2: Cognition & Memory", description: "Encoding, storage, retrieval, problem-solving heuristics, and intelligence" },
+      { id: "u3", title: "Unit 3: Development & Learning", description: "Classical and operant conditioning, Piaget, Erikson, and lifespan changes" },
+      { id: "u4", title: "Unit 4: Social Psychology & Personality", description: "Conformity, attribution bias, group dynamics, and personality traits" },
+      { id: "u5", title: "Unit 5: Mental & Physical Health", description: "Psychological disorders (DSM-5), therapeutic modalities, and stress coping" }
+    ]
+  },
+  {
+    id: "ap-computer-science",
+    name: "AP Computer Science A",
+    shortCode: "CSA",
+    badge: "Tech Lead",
+    category: "English & Tech",
+    icon: "\u{1F4BB}",
+    accentColor: "#6366F1",
+    gradient: "from-indigo-600 via-blue-600 to-indigo-800",
+    description: "Java Programming: OOP, Inheritance, Data Structures & Algorithms",
+    gradeLevels: ["10th", "11th", "12th"],
+    units: [
+      { id: "u1", title: "Unit 1: Primitive Types", description: "Variables, casting, arithmetic expressions, and operator precedence" },
+      { id: "u2", title: "Unit 2: Using Objects & String Methods", description: "Instantiating classes, String manipulation, and Math class methods" },
+      { id: "u3", title: "Unit 3: Boolean Expressions & if Statements", description: "De Morgan\u2019s Laws, nested conditionals, and logical operators" },
+      { id: "u4", title: "Unit 4: Iteration (Loops)", description: "While loops, for loops, nested loops, and loop analysis" },
+      { id: "u5", title: "Unit 5: Writing Classes", description: "Constructors, encapsulation, access modifiers, and static variables" },
+      { id: "u6", title: "Unit 6: 1D Array", description: "Array traversal, insertion, deletion, and linear search" },
+      { id: "u7", title: "Unit 7: ArrayList", description: "Dynamic arrays, wrapper classes, autoboxing, and selection/insertion sort" },
+      { id: "u8", title: "Unit 8: 2D Array", description: "Matrix traversal (row-major vs column-major) and grid algorithms" },
+      { id: "u9", title: "Unit 9: Inheritance & Polymorphism", description: "Superclasses, subclasses, super keyword, and method overriding" },
+      { id: "u10", title: "Unit 10: Recursion", description: "Recursive methods, base cases, call stack tracing, and binary search" }
+    ]
+  },
+  {
+    id: "ap-economics",
+    name: "AP Micro & Macroeconomics",
+    shortCode: "ECON",
+    badge: "High Yield",
+    category: "Humanities & Social Sciences",
+    icon: "\u{1F4C8}",
+    accentColor: "#14B8A6",
+    gradient: "from-teal-600 via-emerald-600 to-teal-800",
+    description: "Market Equilibrium, Consumer Theory, GDP, Inflation & Monetary Policy",
+    gradeLevels: ["11th", "12th"],
+    units: [
+      { id: "u1", title: "Micro 1: Supply, Demand & Elasticity", description: "Price elasticity, consumer/producer surplus, deadweight loss, and taxes" },
+      { id: "u2", title: "Micro 2: Production Costs & Perfect Competition", description: "Marginal cost/revenue curves, short-run vs long-run profit maximization" },
+      { id: "u3", title: "Micro 3: Imperfect Competition & Game Theory", description: "Monopolies, price discrimination, oligopolies, and payoff matrices" },
+      { id: "u4", title: "Macro 1: Economic Indicators (GDP & Inflation)", description: "Real vs nominal GDP, CPI calculation, unemployment types, and business cycles" },
+      { id: "u5", title: "Macro 2: AD-AS Model & Fiscal Policy", description: "Aggregate demand, short-run/long-run AS, spending multiplier, and taxes" },
+      { id: "u6", title: "Macro 3: Financial Sector & Monetary Policy", description: "Money market, bank balance sheets, reserve ratio, and Fed interest rate tools" }
+    ]
+  },
+  {
+    id: "ap-world-history",
+    name: "AP World History: Modern",
+    shortCode: "WHAP",
+    badge: "Global",
+    category: "Humanities & Social Sciences",
+    icon: "\u{1F30D}",
+    accentColor: "#D97706",
+    gradient: "from-yellow-600 via-amber-600 to-orange-700",
+    description: "1200 CE to Present: Global Tapestry, Exchange Networks & Modern Conflicts",
+    gradeLevels: ["10th", "11th", "12th"],
+    units: [
+      { id: "u1", title: "Unit 1: The Global Tapestry (1200\u20131450)", description: "Song Dynasty, Dar al-Islam, South/Southeast Asia, and American states" },
+      { id: "u2", title: "Unit 2: Networks of Exchange (1200\u20131450)", description: "Silk Roads, Mongol Empire, Indian Ocean trade, and Trans-Saharan routes" },
+      { id: "u3", title: "Unit 3: Land-Based Empires (1450\u20131750)", description: "Ottoman, Safavid, Mughal, and Qing dynasties administrative consolidation" },
+      { id: "u4", title: "Unit 4: Transoceanic Interconnections (1450\u20131750)", description: "Maritime exploration, Columbian Exchange, and Atlantic slave trade" },
+      { id: "u5", title: "Unit 5: Revolutions (1750\u20131900)", description: "Enlightenment philosophy, American/French/Haitian revolutions, and nationalism" },
+      { id: "u6", title: "Unit 6: Industrialization & Imperialism (1750\u20131900)", description: "Factory system, capitalist ideologies, Scramble for Africa, and Meiji Japan" },
+      { id: "u7", title: "Unit 7: Global Conflict (1900\u2013Present)", description: "World War I, Russian Revolution, Great Depression, Fascism, and World War II" },
+      { id: "u8", title: "Unit 8: Cold War & Decolonization (1900\u2013Present)", description: "Superpower proxy wars, nuclear arms race, Indian independence, and African liberation" },
+      { id: "u9", title: "Unit 9: Globalization (1900\u2013Present)", description: "Technological advances, global economic institutions, disease, and environmentalism" }
+    ]
+  }
+];
+
 // server.ts
 import_dotenv.default.config();
 try {
@@ -17110,12 +17419,12 @@ function shuffleAndBalanceTestPrepQuestions(questions) {
     }
     if (currentCorrectIdx === -1) currentCorrectIdx = 0;
     const origLetter = MCQ_LETTERS[currentCorrectIdx];
-    const items = rawOptions.slice(0, 4).map((opt, idx) => ({
+    const items = rawOptions.slice(0, 4).map((opt, idx2) => ({
       content: opt.replace(/^[A-Da-d][\)\.:\s]\s*/, "").trim(),
-      isCorrect: idx === currentCorrectIdx
+      isCorrect: idx2 === currentCorrectIdx
     }));
     const correctItem = items[currentCorrectIdx];
-    const distractorItems = items.filter((_, idx) => idx !== currentCorrectIdx);
+    const distractorItems = items.filter((_, idx2) => idx2 !== currentCorrectIdx);
     for (let d = distractorItems.length - 1; d > 0; d--) {
       const rand = Math.floor(Math.random() * (d + 1));
       [distractorItems[d], distractorItems[rand]] = [distractorItems[rand], distractorItems[d]];
@@ -17207,8 +17516,8 @@ function sanitizeAndBalancePsychometricRates(traps, seed = 0) {
     finalDistractorRates = [safeTemplate[1], safeTemplate[2], safeTemplate[3]];
   }
   let dIdx = 0;
-  return traps.map((trap, idx) => {
-    if (idx === targetIdx) {
+  return traps.map((trap, idx2) => {
+    if (idx2 === targetIdx) {
       return {
         ...trap,
         isCorrect: true,
@@ -17256,17 +17565,17 @@ function shuffleAndBalanceTrapRadarQuestions(questions) {
       if (foundIdx >= 0) currentCorrectIdx = foundIdx;
     }
     if (currentCorrectIdx === -1) currentCorrectIdx = 0;
-    const items = rawOptions.slice(0, 4).map((opt, idx) => {
+    const items = rawOptions.slice(0, 4).map((opt, idx2) => {
       const cleanText = opt.replace(/^[A-Da-d][\)\.:\s]\s*/, "").trim();
-      const trap = Array.isArray(q.traps) && q.traps[idx] ? { ...q.traps[idx] } : null;
+      const trap = Array.isArray(q.traps) && q.traps[idx2] ? { ...q.traps[idx2] } : null;
       return {
         content: cleanText,
-        isCorrect: idx === currentCorrectIdx,
+        isCorrect: idx2 === currentCorrectIdx,
         trap
       };
     });
     const correctItem = items[currentCorrectIdx];
-    const distractorItems = items.filter((_, idx) => idx !== currentCorrectIdx);
+    const distractorItems = items.filter((_, idx2) => idx2 !== currentCorrectIdx);
     for (let d = distractorItems.length - 1; d > 0; d--) {
       const rand = Math.floor(Math.random() * (d + 1));
       [distractorItems[d], distractorItems[rand]] = [distractorItems[rand], distractorItems[d]];
@@ -17337,7 +17646,7 @@ MANDATORY QUESTION VARIATION BLUEPRINT FOR THIS SESSION:
 ${dynamicArchetypePlan}
 Ensure every question adheres to its designated archetype and uses distinct functions, numbers, and contexts.`;
     if (Array.isArray(avoidPrompts) && avoidPrompts.length > 0) {
-      const cleanAvoid = avoidPrompts.filter((p) => typeof p === "string" && p.trim()).slice(0, 12).map((p, idx) => `  [PREVIOUS ${idx + 1}]: "${p.replace(/\n+/g, " ").slice(0, 140)}"`).join("\n");
+      const cleanAvoid = avoidPrompts.filter((p) => typeof p === "string" && p.trim()).slice(0, 12).map((p, idx2) => `  [PREVIOUS ${idx2 + 1}]: "${p.replace(/\n+/g, " ").slice(0, 140)}"`).join("\n");
       if (cleanAvoid) {
         antiRepetitionDirective += `
 
@@ -17396,7 +17705,7 @@ OFFICIAL GRADE-LEVEL PEDAGOGICAL CALIBRATION: ADVANCED PLACEMENT (HIGH SCHOOL TO
       const generateObjectiveBatch = async (batchCount, bIdx, extraAvoid = []) => {
         const batchOffset = bIdx >= 80 ? 0 : batchSizes.slice(0, bIdx).reduce((a, b) => a + b, 0);
         const batchArchetypes = allArchetypes.slice(batchOffset, batchOffset + batchCount);
-        const batchArchetypePlan = batchArchetypes.map((arch, idx) => `  - Question ${batchOffset + idx + 1} Target Archetype: ${arch}`).join("\n");
+        const batchArchetypePlan = batchArchetypes.map((arch, idx2) => `  - Question ${batchOffset + idx2 + 1} Target Archetype: ${arch}`).join("\n");
         const batchSeed = `${randomSeed || Date.now()}_b${bIdx + 1}_${Math.random().toString(36).substring(2, 6)}`;
         let combinedAntiRepetition = antiRepetitionDirective;
         if (extraAvoid.length > 0) {
@@ -17618,11 +17927,11 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
       }
       if (combinedQuestions.length > 0) {
         const letters = ["A", "B", "C", "D"];
-        const questionsList = combinedQuestions.slice(0, requestedCount).map((q, idx) => {
+        const questionsList = combinedQuestions.slice(0, requestedCount).map((q, idx2) => {
           if (typeof q === "string") {
             return {
-              id: idx + 1,
-              title: `Question ${idx + 1}`,
+              id: idx2 + 1,
+              title: `Question ${idx2 + 1}`,
               prompt: q,
               options: ["A) Option A", "B) Option B", "C) Option C", "D) Option D"],
               correctAnswer: "A) Option A",
@@ -17679,8 +17988,8 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
           if (extQ.diagramSvg) diagramSvg = extQ.diagramSvg;
           return {
             ...q,
-            id: idx + 1,
-            title: q.title || `Question ${idx + 1}`,
+            id: idx2 + 1,
+            title: q.title || `Question ${idx2 + 1}`,
             question: promptStr,
             prompt: promptStr,
             stimulus: stimulusStr,
@@ -17699,12 +18008,12 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
       const fallbackBank = getBattleQuestions(matchedSubject.id);
       if (fallbackBank && fallbackBank.length > 0) {
         const letters = ["A", "B", "C", "D"];
-        const fallbackQuestions = Array.from({ length: requestedCount }).map((_, idx) => {
-          const b = fallbackBank[idx % fallbackBank.length];
+        const fallbackQuestions = Array.from({ length: requestedCount }).map((_, idx2) => {
+          const b = fallbackBank[idx2 % fallbackBank.length];
           const safeCorrectIdx = typeof b.correctIndex === "number" && b.correctIndex >= 0 && b.correctIndex < b.options.length ? b.correctIndex : 0;
           return {
-            id: idx + 1,
-            title: `Question ${idx + 1}`,
+            id: idx2 + 1,
+            title: `Question ${idx2 + 1}`,
             prompt: b.stem,
             question: b.stem,
             options: b.options.map((opt, oIdx) => opt.startsWith(`${letters[oIdx]})`) ? opt : `${letters[oIdx]}) ${opt}`),
@@ -17724,7 +18033,7 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
       const generateSubjectiveBatch = async (batchCount, bIdx, extraAvoid = []) => {
         const batchOffset = bIdx >= 80 ? 0 : batchSizes.slice(0, bIdx).reduce((a, b) => a + b, 0);
         const batchArchetypes = allArchetypes.slice(batchOffset, batchOffset + batchCount);
-        const batchArchetypePlan = batchArchetypes.map((arch, idx) => `  - Question ${batchOffset + idx + 1} Target Archetype: ${arch}`).join("\n");
+        const batchArchetypePlan = batchArchetypes.map((arch, idx2) => `  - Question ${batchOffset + idx2 + 1} Target Archetype: ${arch}`).join("\n");
         const batchSeed = `${randomSeed || Date.now()}_b${bIdx + 1}_${Math.random().toString(36).substring(2, 6)}`;
         let combinedAntiRepetition = antiRepetitionDirective;
         if (extraAvoid.length > 0) {
@@ -17909,8 +18218,8 @@ Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP
           { unitNumber: 3, title: "Advanced Analysis", keywords: ["applications"] }
         ];
         for (let i = 0; i < deficit; i++) {
-          const idx = validatedQuestions.length;
-          const unitRef = canonicalUnits2[idx % canonicalUnits2.length];
+          const idx2 = validatedQuestions.length;
+          const unitRef = canonicalUnits2[idx2 % canonicalUnits2.length];
           const topicName = targetTopic || unitRef.title;
           const subPrompt = `Consider an authentic scenario concerning ${topicName} in AP ${subject}:
 
@@ -17941,8 +18250,8 @@ Part (f): Longitudinal assessment of socio-economic or environmental impacts.
 
 Part (g): Robust justification citing key CED principles and verifiable evidence.`;
           validatedQuestions.push({
-            id: idx + 1,
-            title: `FREE RESPONSE QUESTION ${idx + 1}  [7 POINTS]`,
+            id: idx2 + 1,
+            title: `FREE RESPONSE QUESTION ${idx2 + 1}  [7 POINTS]`,
             prompt: subPrompt,
             diagramSvg: "",
             diagramType: "none",
@@ -17964,7 +18273,7 @@ Part (g): Robust justification citing key CED principles and verifiable evidence
         }
       }
       if (validatedQuestions.length > 0) {
-        const questionsList = validatedQuestions.slice(0, requestedCount).map((q, idx) => {
+        const questionsList = validatedQuestions.slice(0, requestedCount).map((q, idx2) => {
           const realPoints = calculateRealTotalPoints(q, subject);
           let promptStr = q.prompt || q.question || q.text || q.scenario || "";
           let stimulusStr = q.stimulus || "";
@@ -17979,9 +18288,9 @@ Part (g): Robust justification citing key CED principles and verifiable evidence
           if (extP.diagramSvg) diagramSvg = extP.diagramSvg;
           return {
             ...q,
-            id: idx + 1,
+            id: idx2 + 1,
             totalPoints: realPoints,
-            title: q.title || `FREE RESPONSE QUESTION ${idx + 1}  [${realPoints} POINTS]`,
+            title: q.title || `FREE RESPONSE QUESTION ${idx2 + 1}  [${realPoints} POINTS]`,
             question: promptStr,
             prompt: promptStr,
             stimulus: stimulusStr,
@@ -17999,8 +18308,8 @@ Part (g): Robust justification citing key CED principles and verifiable evidence
         { unitNumber: 2, title: "Systems & Interactions", keywords: ["processes"] },
         { unitNumber: 3, title: "Advanced Analysis", keywords: ["applications"] }
       ];
-      const fallbackSubjectives = Array.from({ length: requestedCount }).map((_, idx) => {
-        const unitRef = canonicalUnits[idx % canonicalUnits.length];
+      const fallbackSubjectives = Array.from({ length: requestedCount }).map((_, idx2) => {
+        const unitRef = canonicalUnits[idx2 % canonicalUnits.length];
         const topicName = targetTopic || unitRef.title;
         const subPrompt = `Consider an authentic scenario concerning ${topicName} in AP ${subject}:
 
@@ -18031,8 +18340,8 @@ Part (f): Longitudinal assessment of socio-economic or environmental impacts.
 
 Part (g): Robust justification citing key CED principles and verifiable evidence.`;
         return {
-          id: idx + 1,
-          title: `FREE RESPONSE QUESTION ${idx + 1}  [7 POINTS]`,
+          id: idx2 + 1,
+          title: `FREE RESPONSE QUESTION ${idx2 + 1}  [7 POINTS]`,
           prompt: subPrompt,
           diagramSvg: "",
           diagramType: "none",
@@ -18315,8 +18624,8 @@ ${errorDesc.replace(/^input is not a valid AP multiple-choice question\.\s*/i, "
         };
       }
       if (parsed && Array.isArray(parsed.traps)) {
-        parsed.traps = parsed.traps.map((t, idx) => {
-          const rawOpt = String(t.option || String.fromCharCode(65 + idx)).trim();
+        parsed.traps = parsed.traps.map((t, idx2) => {
+          const rawOpt = String(t.option || String.fromCharCode(65 + idx2)).trim();
           const opt = /^part\s+/i.test(rawOpt) ? rawOpt : rawOpt.toUpperCase();
           let txt = String(t.text || "").trim();
           txt = txt.replace(new RegExp(`^\\s*${opt}\\s*[:.)-]\\s*`, "i"), "").trim();
@@ -18335,9 +18644,156 @@ ${errorDesc.replace(/^input is not a valid AP multiple-choice question\.\s*/i, "
     if (!subject) {
       return res.status(400).json({ error: "Missing AP Subject" });
     }
+    const cleanScratchpadText = (str) => {
+      if (!str || typeof str !== "string") return "";
+      return str.replace(/(?:wait,\s*let['’]?s\s*(?:verify|check|recalculate|make sure)|wait,\s*let\s*me\s*(?:verify|check|recalculate)|hold\s*on,\s*let['’]?s\s*check)[^.\n]*[.\n]?/gi, "").replace(/\b(?:Wait,\s*I\s*need\s*to\s*check|Let's\s*double\s*check)\b[^.\n]*[.\n]?/gi, "").trim();
+    };
+    const getTargetTopicsForBatches = (subj, unitParam, topicParam, totalItems) => {
+      const cleanUnit = (unitParam || "").trim();
+      const isAllUnits = !cleanUnit || /^all(\s*units)?$/i.test(cleanUnit) || cleanUnit.toLowerCase().includes("all high-yield units") || cleanUnit.toLowerCase().includes("all units") || /entire\s*(curriculum|syllabus|course)/i.test(cleanUnit) || /full\s*(exam|test|simulation)/i.test(cleanUnit);
+      const whitelist = getSubjectWhitelist(subj);
+      const curriculumSubj = TOP_10_AP_SUBJECTS.find(
+        (s) => s.name.toLowerCase().includes((subj || "").toLowerCase()) || (subj || "").toLowerCase().includes(s.name.toLowerCase()) || s.id.toLowerCase().includes((subj || "").toLowerCase().replace(/[^a-z0-9]/g, ""))
+      );
+      let canonicalUnits = [];
+      if (whitelist && whitelist.canonicalUnits && whitelist.canonicalUnits.length > 0) {
+        canonicalUnits = whitelist.canonicalUnits;
+      } else if (curriculumSubj && curriculumSubj.units && curriculumSubj.units.length > 0) {
+        canonicalUnits = curriculumSubj.units.map((u, uIdx) => {
+          const uNumMatch = u.title.match(/(?:unit|period)\s*(\d+)/i);
+          const uNum = uNumMatch ? parseInt(uNumMatch[1], 10) : uIdx + 1;
+          const kw = u.description ? u.description.split(/[,;&]+/).map((s) => s.trim()).filter(Boolean) : [u.title];
+          return {
+            unitNumber: uNum,
+            title: u.title,
+            keywords: kw.length > 0 ? kw : [u.title]
+          };
+        });
+      }
+      const results = [];
+      if (isAllUnits) {
+        if (canonicalUnits.length > 0) {
+          for (let i = 0; i < totalItems; i++) {
+            const u = canonicalUnits[i % canonicalUnits.length];
+            const kwList = u.keywords && u.keywords.length > 0 ? u.keywords : [u.title];
+            const kwIdx = Math.floor(i / canonicalUnits.length) % kwList.length;
+            const kw = kwList[kwIdx] || u.title;
+            results.push({
+              targetTopic: `${u.title} (Key Focus: ${kw})`,
+              unitLabel: u.title,
+              subtopicFocus: kw,
+              unitNumber: u.unitNumber
+            });
+          }
+        } else {
+          for (let i = 0; i < totalItems; i++) {
+            const uNum = i % 8 + 1;
+            results.push({
+              targetTopic: `AP ${subj} - Unit ${uNum} Core Curriculum`,
+              unitLabel: `Unit ${uNum}`,
+              subtopicFocus: `Unit ${uNum} Key Concepts`,
+              unitNumber: uNum
+            });
+          }
+        }
+        return results;
+      }
+      if (canonicalUnits.length > 0) {
+        const numMatch = cleanUnit.match(/(?:unit|period)\s*(\d+)/i);
+        const targetNum = numMatch ? parseInt(numMatch[1], 10) : null;
+        let matchedUnit = targetNum ? canonicalUnits.find((u) => u.unitNumber === targetNum) : null;
+        if (!matchedUnit) {
+          const lowerClean = cleanUnit.toLowerCase();
+          matchedUnit = canonicalUnits.find(
+            (u) => lowerClean.includes(u.title.toLowerCase()) || u.title.toLowerCase().includes(lowerClean)
+          ) || null;
+        }
+        if (matchedUnit) {
+          const kwList = matchedUnit.keywords && matchedUnit.keywords.length > 0 ? matchedUnit.keywords : [matchedUnit.title];
+          for (let i = 0; i < totalItems; i++) {
+            const kw = kwList[i % kwList.length] || matchedUnit.title;
+            results.push({
+              targetTopic: `${matchedUnit.title} \u2014 Specific Concept: ${kw}`,
+              unitLabel: matchedUnit.title,
+              subtopicFocus: kw,
+              unitNumber: matchedUnit.unitNumber
+            });
+          }
+          return results;
+        }
+      }
+      for (let i = 0; i < totalItems; i++) {
+        const focus = topicParam ? `${cleanUnit} - ${topicParam} (Variant ${i + 1})` : `${cleanUnit} (Variant ${i + 1})`;
+        results.push({
+          targetTopic: focus,
+          unitLabel: cleanUnit,
+          subtopicFocus: `Core Principle ${i + 1}`
+        });
+      }
+      return results;
+    };
+    const sanitizeFrqQuestion = (q, targetInfo, idx2) => {
+      const promptText = cleanScratchpadText(q.prompt || q.question || "");
+      const stimulusText = cleanScratchpadText(q.stimulus || "");
+      const hasPhysicalUnits = /\b(?:meters?|seconds?|minutes?|hours?|feet|ft|grams?|kg|liters?|mL|moles?|molar|joules?|kelvin|volts?|amps?|newtons?|°C|usd|\$|mph|cm)\b/i.test(promptText + " " + stimulusText);
+      const parts = Array.isArray(q.parts) ? q.parts.map((p) => {
+        const rawTraps = Array.isArray(p.frqTraps) ? p.frqTraps : [];
+        const sanitizedTraps = rawTraps.map((t) => {
+          let trapName = t.trapName || t.name || t.trapType || "\u{1FAA4} Common Rubric Trap";
+          let how = t.howStudentsLosePoints || t.issue || t.description || "Students fail to complete required rubric elements.";
+          let rate = t.vulnerabilityRate || t.rate || "48% of students lose this point";
+          if (rate === "undefined" || !rate.includes("%")) {
+            rate = "48% of students lose this point";
+          }
+          let fix = t.fullCreditFix || t.fix || t.solution || "Ensure complete formula setup and explicit justification.";
+          if (fix === "undefined" || fix.trim() === "") {
+            fix = "Ensure complete formula setup and explicit justification.";
+          }
+          if (!hasPhysicalUnits && /missing units|naked number/i.test(trapName)) {
+            trapName = "\u{1FAA4} Incomplete Work / Formula Setup Trap";
+            how = "Students evaluate the expression without writing the fundamental theorem or derivative/integral setup first.";
+            fix = "Always write the governing formula/calculus theorem before substituting numerical values.";
+          }
+          return {
+            trapName,
+            howStudentsLosePoints: cleanScratchpadText(how),
+            vulnerabilityRate: rate,
+            fullCreditFix: cleanScratchpadText(fix)
+          };
+        });
+        return {
+          ...p,
+          task: cleanScratchpadText(p.task || ""),
+          scoringCriteria: cleanScratchpadText(p.scoringCriteria || ""),
+          modelAnswer: cleanScratchpadText(p.modelAnswer || ""),
+          frqTraps: sanitizedTraps.length > 0 ? sanitizedTraps : [
+            {
+              trapName: "\u{1FAA4} The Unjustified Claim Trap",
+              howStudentsLosePoints: "Students provide a final numerical answer or claim without showing the required formula setup or theorem verification.",
+              vulnerabilityRate: "52% of students lose this point",
+              fullCreditFix: "Always state the governing principle or formula before performing algebraic evaluation."
+            }
+          ]
+        };
+      }) : [];
+      return {
+        ...q,
+        id: q.id || idx2 + 1,
+        format: "subjective",
+        prompt: promptText,
+        stimulus: stimulusText,
+        parts,
+        disarmStrategy: cleanScratchpadText(q.disarmStrategy || "\u26A1 Chief Reader Scoring Secret: State the claim, write the formula setup, and provide clear causal justification."),
+        skill: q.skill || targetInfo.unitLabel || subject,
+        unit: targetInfo.unitLabel || q.unit || subject
+      };
+    };
     const targetTopic = [topic, unit, subject].filter(Boolean).join(" - ");
     if (format === "subjective") {
       const requestedCount2 = Math.min(Math.max(parseInt(count) || 3, 1), 20);
+      const assignedTargets2 = getTargetTopicsForBatches(subject, unit, topic, requestedCount2);
+      const isAllUnitsMode2 = !unit || /^all(\s*units)?$/i.test(unit.trim()) || unit.toLowerCase().includes("all high-yield units");
+      const subjectGuidelines2 = getCollegeBoardSubjectGuidelines(subject, "subjective");
       const batchSizes2 = [];
       let remaining2 = requestedCount2;
       const maxBatch = 1;
@@ -18347,9 +18803,55 @@ ${errorDesc.replace(/^input is not a valid AP multiple-choice question\.\s*/i, "
         remaining2 -= take;
       }
       const generateSubjectiveTrapBatch = async (batchCount, bIdx) => {
+        const targetInfo = assignedTargets2[bIdx] || {
+          targetTopic,
+          unitLabel: unit || subject,
+          subtopicFocus: "Core AP Concepts"
+        };
         const batchSystemInstruction = `You are an elite Senior College Board AP Exam Chief Reader, Lead Item Writer, and Free-Response (FRQ) Scoring Director.
 The student is training with the "AP TRAP RADAR\u2122" to achieve a Score 5 in AP ${subject} on Section II (Free Response Questions / FRQs).
-Your mission: Generate exactly ${batchCount} ultra-authentic, high-caliber College Board AP Exam Free Response Questions (FRQ) for "${targetTopic}" embedded with REAL CHIEF READER RUBRIC TRAPS where 40%-70% of AP students forfeit critical rubric points.
+Your mission: Generate exactly ${batchCount} ultra-authentic, high-caliber College Board AP Exam Free Response Question(s) strictly for:
+\u{1F3AF} ASSIGNED TARGET: "${targetInfo.targetTopic}"
+${targetInfo.unitNumber ? `\u{1F4CC} MANDATORY AP UNIT: Unit ${targetInfo.unitNumber}` : ""}
+\u{1F511} SPECIFIC CONCEPT FOCUS: "${targetInfo.subtopicFocus}"
+
+COLLEGE BOARD OFFICIAL COURSE & EXAM GUIDELINES FOR AP ${subject.toUpperCase()}:
+${subjectGuidelines2}
+
+${isAllUnitsMode2 ? `FULL CURRICULUM SIMULATION MODE ACTIVE:
+- This question is assigned to ${targetInfo.unitLabel}.
+- You MUST construct this question EXCLUSIVELY using the concepts, theorems, equations, and skills of ${targetInfo.unitLabel}.
+- DO NOT default to particle motion, kinematics, or series unless this specific unit is about them.` : `SINGLE UNIT FOCUS MODE ACTIVE:
+- All parts of this question MUST stay strictly within ${targetInfo.unitLabel}.
+- The specific focus is: "${targetInfo.subtopicFocus}".
+- Do NOT bring in unrelated concepts from other units.`}
+
+ANTI-FRANKENSTEIN UNIFIED SCENARIO MANDATE (STRICTLY ENFORCED):
+- NEVER EVER mash together or combine unrelated mathematical or scientific domains into a single question.
+- FOR EXAMPLE: NEVER connect particle motion/kinematics with power series, or polar curves with logistic differential equations, or electrochemistry with acid-base titrations.
+- The stimulus and all parts (a, b, c) MUST form one unified, coherent real-world or theoretical scenario that fits 100% within the assigned AP unit.
+
+CONTEXTUAL UNITS & RUBRIC REALITY MANDATE:
+- ONLY include a 'Missing Units Trap' if the problem scenario explicitly provides physical real-world measurement units (e.g. meters, seconds, ft/min, \xB0C, grams, Molarity).
+- IF THE PROBLEM IS PURE ABSTRACT MATHEMATICS (e.g. evaluating an integral $\\int f(x)dx$, finding a Taylor polynomial, calculating a derivative, or determining radius of convergence where variables are unitless numbers):
+  DO NOT invent a fake 'Missing Units Trap'.
+  Instead, use legitimate College Board rubric traps such as:
+  \u{1FAA4} The Missing Endpoint / Boundary Test Trap (testing open vs closed interval).
+  \u{1FAA4} The Premature Rounding / Precision Slip Trap.
+  \u{1FAA4} The Missing Justification / Intermediate Theorem Trap (e.g. failing to verify continuity for IVT/MVT).
+  \u{1FAA4} The Formula Setup / Incomplete Work Trap.
+
+INTERVAL OF CONVERGENCE & MATHEMATICAL RIGOR (IF APPLICABLE):
+- When testing Power Series / Interval of Convergence:
+  Always explicitly test both endpoints independently.
+  Show whether each endpoint converges conditionally, absolutely, or diverges with the exact convergence test named.
+  Never invert bracket notation (e.g. do not write [-1, 5) if the lower endpoint diverges and upper converges\u2014write (-1, 5]).
+  Ensure the center $c$ and radius $R$ are mathematically exact.
+
+SCRATCHPAD & THINKING SUPPRESSION MANDATE (MANDATORY):
+- Do NOT output internal monologues, drafting self-talk, or reasoning commentary (such as 'Wait, let\\'s verify...', 'Let me double check...', 'Hold on, let me recalculate...').
+- Every string field in the JSON (prompt, stimulus, task, scoringCriteria, modelAnswer, trapDescription, etc.) must contain ONLY the polished final text intended for the student and teacher.
+- Verify all arithmetic and calculus derivations internally BEFORE producing the final JSON output.
 
 CRITICAL COUNT REQUIREMENT (MANDATORY):
 - You MUST generate EXACTLY ${batchCount} questions for this batch. Outputting fewer than ${batchCount} questions is strictly forbidden.
@@ -18364,9 +18866,9 @@ MANDATORY STEP-BY-STEP SOLUTIONS FOR CALCULATION & QUANTITATIVE PROBLEMS:
 - FOR ANY CALCULATION, DERIVATION, OR QUANTITATIVE TASK (e.g. Calculus, Physics, Chemistry, Statistics, Macro/Microeconomics):
   THE "modelAnswer" MUST BE BROKEN DOWN STRICTLY STEP-BY-STEP, displaying full mathematical rigor as required by College Board Chief Readers:
   \u2022 Step 1 [Formula Setup & Concept]: Write the fundamental equation, theorem, integral/derivative setup, or physical law before plugging in numbers.
-  \u2022 Step 2 [Value Substitution & Work]: Show explicit substitution of numerical values with standard units. Show all intermediate algebraic/calculus work step-by-step.
-  \u2022 Step 3 [Evaluation & Final Result]: Calculate the exact final answer, rounded to standard College Board precision (3 decimal places for AP Calculus/Stats, or appropriate significant figures for Chemistry/Physics) WITH EXPLICIT UNITS.
-  \u2022 Step 4 [Interpretation / Justification]: Provide 1 clear concluding sentence connecting the numerical result back to the context of the problem (e.g. interpreting rate of change, direction of velocity/acceleration, or rejecting H0).
+  \u2022 Step 2 [Value Substitution & Work]: Show explicit substitution of numerical values with standard units (if applicable). Show all intermediate algebraic/calculus work step-by-step.
+  \u2022 Step 3 [Evaluation & Final Result]: Calculate the exact final answer, rounded to standard College Board precision (3 decimal places for AP Calculus/Stats, or appropriate significant figures for Chemistry/Physics) with units if problem had units.
+  \u2022 Step 4 [Interpretation / Justification]: Provide 1 clear concluding sentence connecting the numerical result back to the context of the problem.
 - FOR QUALITATIVE / EXPLANATORY PROBLEMS (e.g. History, Gov, Human Geography, Biology conceptual):
   Structure the model answer with clear sub-points:
   \u2022 Part 1: Direct Claim / Identification.
@@ -18374,29 +18876,15 @@ MANDATORY STEP-BY-STEP SOLUTIONS FOR CALCULATION & QUANTITATIVE PROBLEMS:
   \u2022 Part 3: Explicit causal reasoning connecting the evidence to the broader concept.
 - NEVER PROVIDE A SHORT 1-LINE ANSWER FOR A CALCULATION. Every single calculation point MUST have its setup and intermediate work clearly visible.
 
-AUTHENTIC COLLEGE BOARD AP EXAM STANDARDS (STRICT REQUIREMENT):
-1. REAL AP STIMULUS & MULTI-PART COLLEGE BOARD ARCHITECTURE:
-   - AP Human Geography (APHG): Authentic geographic scenarios with demographic data tables, population pyramids, urban land-use models, agricultural systems, or spatial diffusion maps. Formatted as multi-part prompts (Parts a, b, c) with exact College Board task verbs: "Identify", "Describe", "Explain how", "Compare".
-   - AP STEM Sciences (Biology, Chemistry, Physics 1/2/C, Environmental Science): Authentic experimental design, raw lab observation data tables, reaction coordinates, biological feedback loops, or physical systems. Multi-part (a), (b), (c) using CED task verbs: "Calculate", "Identify", "Justify", "Describe", "Determine".
-   - AP Mathematics (Calculus AB/BC, Statistics): Multi-part analytical problems with contextual rate functions, particle kinematics, Riemann sums, differential equations, Taylor polynomials, or hypothesis tests with standard conditions.
-   - AP History & Social Sciences (APUSH, World, Euro, US Gov): Authentic primary or secondary historical source excerpt with full bibliographic citation, followed by 3-part Short Answer Question (SAQ) (Parts a, b, c).
-   - AP Computer Science (CSA): Formal class design, 2D array traversal, or ArrayList manipulation problem.
-   - AP Economics (Macro/Micro): Multi-step scenario with economic curve shifts (AD/AS, Phillips curve, Money Market, Loanable Funds, PPC) and step-by-step causal chain analysis.
-
-2. AUTHENTIC CHIEF READER RUBRIC TRAPS (WHERE 50%+ OF AP STUDENTS FORFEIT POINTS):
-   Every part of the FRQ MUST diagnose the exact real-world pitfalls documented in College Board Chief Reader reports:
-   \u{1FAA4} The Naked Number / Missing Units Trap (omitting units, forfeiting the point).
-   \u{1FAA4} The Unjustified Claim / Data Citation Gap Trap (failing to cite specific numerical data points or direct textual evidence from the stimulus).
-   \u{1FAA4} The Circular Reasoning / Prompt Echo Trap (restating the prompt's premise instead of explaining the causal mechanism).
-   \u{1FAA4} The Ambiguous Reference / Vague Pronoun Trap (writing "it", "they", or "this factor" without explicitly naming the chemical species or variable).
-   \u{1FAA4} The Task Verb Misalignment Trap (answering an "Explain" prompt with merely an "Identify" statement).
-   \u{1FAA4} The Scope Creep / Wrong Scale Trap (discussing the wrong geographic scale or outside historical era).
-
-3. SCORING CRITERIA & FULL-CREDIT MODEL ANSWERS:
-   - Provide exact College Board scoring criteria for EVERY part.
-   - Provide a 100% full-credit exemplary model answer.
-   - Provide "disarmStrategy": The Chief Reader's 5-Second Rule to secure maximum points and eliminate point deductions.
-   - Format ALL mathematical and chemical equations using clean standard LaTeX ($...$).
+AUTHENTIC CHIEF READER RUBRIC TRAPS:
+Every part of the FRQ MUST diagnose the exact real-world pitfalls documented in College Board Chief Reader reports:
+\u{1FAA4} The Unjustified Claim / Data Citation Gap Trap (failing to cite specific numerical data points or direct textual evidence from the stimulus).
+\u{1FAA4} The Circular Reasoning / Prompt Echo Trap (restating the prompt's premise instead of explaining the causal mechanism).
+\u{1FAA4} The Ambiguous Reference / Vague Pronoun Trap (writing "it", "they", or "this factor" without explicitly naming the chemical species or variable).
+\u{1FAA4} The Task Verb Misalignment Trap (answering an "Explain" prompt with merely an "Identify" statement).
+\u{1FAA4} The Scope Creep / Wrong Scale Trap (discussing the wrong geographic scale or outside historical era).
+\u{1FAA4} The Endpoint Exclusion Trap / Boundary Slip Trap (omitting boundary convergence tests).
+\u{1FAA4} The Naked Number / Missing Units Trap (ONLY if units are present in the problem stem).
 
 STRICT JSON OUTPUT FORMAT:
 Return ONLY a valid JSON array of ${batchCount} question objects:
@@ -18404,7 +18892,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
   {
     "id": 1,
     "format": "subjective",
-    "prompt": "Multi-part AP Free Response Question stem with background scenario and context...",
+    "prompt": "Multi-part AP Free Response Question stem with background scenario and context strictly for ${targetInfo.targetTopic}...",
     "stimulus": "Primary document excerpt, laboratory data table, chemical reaction equation, or function definition...",
     "totalPoints": 4,
     "overallTrapDifficulty": "High (Level 4 FRQ Trap)",
@@ -18414,22 +18902,19 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
         "task": "Specific task prompt with College Board task verb...",
         "points": 1,
         "scoringCriteria": "Earns 1 point for correctly explaining/calculating...",
-        "modelAnswer": "Step 1 (Formula Setup): Total distance is $D = \\int_{0}^{2} \\sqrt{(x'(t))^2 + (y'(t))^2}\\,dt$.
-Step 2 (Derivatives & Substitution): $x'(t) = 2t - 3$ and $y'(t) = e^{-t^2}$. Thus $D = \\int_{0}^{2} \\sqrt{(2t - 3)^2 + e^{-2t^2}}\\,dt$.
-Step 3 (Evaluation): Evaluating the definite integral yields $D \\approx 3.486$ units.
-Step 4 (Interpretation): This value represents the total path length traveled by the particle from $t = 0$ to $t = 2$.",
+        "modelAnswer": "Step 1 (Formula Setup): State governing formula or relationship.\\nStep 2 (Substitution & Work): Show explicit intermediate steps step-by-step.\\nStep 3 (Evaluation & Result): State computed final value with precision.\\nStep 4 (Interpretation): Conclude with contextual justification.",
         "frqTraps": [
           {
             "trapName": "\u{1FAA4} The Unjustified Claim Trap",
-            "howStudentsLosePoints": "Students identify the correct trend but fail to cite specific data points from Table 1, forfeiting the point.",
+            "howStudentsLosePoints": "Students identify the correct trend but fail to cite specific data points or show intermediate steps, forfeiting the point.",
             "vulnerabilityRate": "56% of students lose this point",
-            "fullCreditFix": "Always state the numerical value from the table and explicitly connect it to the mechanism."
+            "fullCreditFix": "Always state the explicit formula/setup and show each algebraic transition before the final value."
           }
         ]
       }
     ],
     "disarmStrategy": "\u26A1 Chief Reader Scoring Secret: The exact rubric requirement to guarantee full credit and avoid common point deductions.",
-    "skill": "Relevant AP Skill / CED Unit"
+    "skill": "${targetInfo.unitLabel}"
   }
 ]`;
         const makeCall = async (seed) => {
@@ -18437,7 +18922,7 @@ Step 4 (Interpretation): This value represents the total path length traveled by
             gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
             model: "gemini-flash-lite-latest",
             timeoutMs: 25e3,
-            contents: { parts: [{ text: `Generate EXACTLY ${batchCount} authentic AP ${subject} Free Response Trap Radar questions for ${targetTopic}. Batch Seed: ${seed}. Return ALL ${batchCount} items in the JSON array!` }] },
+            contents: { parts: [{ text: `Generate EXACTLY ${batchCount} authentic AP ${subject} Free Response Trap Radar question(s) strictly for: ${targetInfo.targetTopic}. Batch Seed: ${seed}. Return ALL ${batchCount} items in the JSON array!` }] },
             config: {
               systemInstruction: { parts: [{ text: batchSystemInstruction }] },
               responseMimeType: "application/json",
@@ -18473,7 +18958,7 @@ Step 4 (Interpretation): This value represents the total path length traveled by
           return [];
         }
       };
-      const batchPromises2 = batchSizes2.map((cnt, idx) => generateSubjectiveTrapBatch(cnt, idx));
+      const batchPromises2 = batchSizes2.map((cnt, idx2) => generateSubjectiveTrapBatch(cnt, idx2));
       const batchResults2 = await Promise.allSettled(batchPromises2);
       let questionsList2 = [];
       for (const res2 of batchResults2) {
@@ -18497,34 +18982,39 @@ Step 4 (Interpretation): This value represents the total path length traveled by
         const deficit = requestedCount2 - questionsList2.length;
         console.warn(`[ap-trap-radar] Subjective deficit detected: got ${questionsList2.length}/${requestedCount2}. Backfilling ${deficit} questions from authentic curriculum fallback...`);
         const FALLBACK_FRQ_TRAP_TYPES = [
-          { name: "\u{1FAA4} The Unjustified Claim Trap", issue: "Students state the correct conclusion but fail to cite specific data from the stimulus.", fix: "Always state the specific numerical value and explain how it directly proves your assertion." },
-          { name: "\u{1FAA4} The Naked Number / Missing Units Trap", issue: "Students complete numerical calculation correctly but omit standard SI or currency units, forfeiting the point.", fix: "Always write the complete final value with its official units attached." },
+          { name: "\u{1FAA4} The Unjustified Claim Trap", issue: "Students state the correct conclusion but fail to cite specific data from the stimulus or show explicit calculation setup.", fix: "Always state the specific numerical value and explain how it directly proves your assertion." },
+          { name: "\u{1FAA4} The Formula Setup / Incomplete Work Trap", issue: "Students write only the final answer without showing the intermediate derivative, integral, or governing formula.", fix: "Write out the fundamental theorem or formula setup before evaluating." },
           { name: "\u{1FAA4} The Prompt Echo / Circular Logic Trap", issue: "Students restate the wording of the prompt instead of identifying the underlying scientific/economic mechanism.", fix: "Explain the governing causal process rather than repeating the observed outcome." },
-          { name: "\u{1FAA4} The Scope Creep / Wrong Scale Trap", issue: "Students discuss issues outside the specified geographic scale or historical era.", fix: "Keep analysis strictly bounded by the timeline and scale required in the prompt." }
+          { name: "\u{1FAA4} The Scope Creep / Boundary Trap", issue: "Students omit boundary condition checks or discuss issues outside the specified domain.", fix: "Keep analysis strictly bounded by the conditions required in the prompt." }
         ];
         for (let i = 0; i < deficit; i++) {
-          const idx = questionsList2.length;
+          const idx2 = questionsList2.length;
+          const targetInfo = assignedTargets2[idx2] || {
+            targetTopic,
+            unitLabel: unit || subject,
+            subtopicFocus: "Core Concept"
+          };
           const trapInfo = FALLBACK_FRQ_TRAP_TYPES[i % FALLBACK_FRQ_TRAP_TYPES.length];
           questionsList2.push({
-            id: idx + 1,
+            id: idx2 + 1,
             format: "subjective",
             totalPoints: 4,
             overallTrapDifficulty: "High (Level 4 FRQ Trap)",
-            prompt: `Examine an authentic analytical scenario concerning ${targetTopic} in AP ${subject}:
+            prompt: `Examine an authentic analytical scenario concerning ${targetInfo.targetTopic} in AP ${subject}:
 
 (a) Identify and define the fundamental principle tested [1 point].
 
-(b) Explain the governing causal mechanism and real-world interactions [2 points].
+(b) Explain the governing causal mechanism and analytical relationships [2 points].
 
 (c) Justify how variations in boundary conditions alter empirical outcomes [1 point].`,
-            stimulus: `College Board Course and Exam Description (CED) context for AP ${subject}: ${targetTopic}.`,
+            stimulus: `College Board Course and Exam Description (CED) context for AP ${subject}: ${targetInfo.targetTopic}.`,
             parts: [
               {
                 partLabel: "(a)",
-                task: `Identify the foundational CED concept governing ${targetTopic}.`,
+                task: `Identify the foundational CED concept governing ${targetInfo.targetTopic}.`,
                 points: 1,
                 scoringCriteria: "Earns 1 point for accurate identification and definition matching CED criteria.",
-                modelAnswer: `Part (a): The fundamental principle governing this scenario is established in the AP ${subject} curriculum frameworks, requiring explicit definition of the operational variables.`,
+                modelAnswer: `Step 1 (Definition): The fundamental principle governing this scenario is established in the AP ${subject} curriculum frameworks (${targetInfo.unitLabel}), requiring explicit identification of the governing law.`,
                 frqTraps: [
                   {
                     trapName: trapInfo.name,
@@ -18539,7 +19029,7 @@ Step 4 (Interpretation): This value represents the total path length traveled by
                 task: `Explain the causal mechanism and evaluate how changes alter system state.`,
                 points: 2,
                 scoringCriteria: "Earns 1 point for describing the mechanism and 1 point for linking to systemic outcomes.",
-                modelAnswer: `Part (b): Step 1: Establish governing parameters. Step 2: Trace the causal pathway showing how the primary variable drives systemic equilibrium changes.`,
+                modelAnswer: `Step 1: Establish governing parameters. Step 2: Trace the causal pathway showing how the primary variable drives systemic equilibrium changes in ${targetInfo.subtopicFocus}.`,
                 frqTraps: [
                   {
                     trapName: "\u{1FAA4} The Task Verb Misalignment Trap",
@@ -18554,7 +19044,7 @@ Step 4 (Interpretation): This value represents the total path length traveled by
                 task: `Justify your conclusion using authoritative course evidence.`,
                 points: 1,
                 scoringCriteria: "Earns 1 point for complete empirical justification without vague generalizations.",
-                modelAnswer: `Part (c): Under standard CED guidelines, the observed pattern must hold consistently across empirical data models.`,
+                modelAnswer: `Step 1 (Justification): Under standard CED guidelines, the observed pattern must hold consistently across empirical and theoretical models.`,
                 frqTraps: [
                   {
                     trapName: "\u{1FAA4} The Vague Pronoun Trap",
@@ -18566,23 +19056,57 @@ Step 4 (Interpretation): This value represents the total path length traveled by
               }
             ],
             disarmStrategy: "\u26A1 Chief Reader Scoring Secret: Use the 3-step formula (Claim + Evidence + Mechanism) for every subpart to guarantee maximum rubric points.",
-            skill: targetTopic || subject
+            skill: targetInfo.unitLabel || subject,
+            unit: targetInfo.unitLabel || subject
           });
         }
       }
-      const finalized = questionsList2.slice(0, requestedCount2).map((q, idx) => ({
+      const sanitizedList = questionsList2.map((q, idx2) => {
+        const targetInfo = assignedTargets2[idx2] || {
+          targetTopic,
+          unitLabel: unit || subject,
+          subtopicFocus: "Core Concept"
+        };
+        return sanitizeFrqQuestion(q, targetInfo, idx2);
+      });
+      const finalized = sanitizedList.slice(0, requestedCount2).map((q, idx2) => ({
         ...q,
-        id: q.id || idx + 1,
+        id: q.id || idx2 + 1,
         format: "subjective",
         totalPoints: q.totalPoints || (q.parts ? q.parts.reduce((sum, p) => sum + (Number(p.points) || 1), 0) : 4)
       }));
       return res.json({ success: true, questions: finalized, subject, unit: targetTopic, count: finalized.length, format: "subjective" });
     }
     const requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 20);
+    const assignedTargets = getTargetTopicsForBatches(subject, unit, topic, requestedCount);
+    const isAllUnitsMode = !unit || /^all(\s*units)?$/i.test(unit.trim()) || unit.toLowerCase().includes("all high-yield units");
+    const subjectGuidelines = getCollegeBoardSubjectGuidelines(subject, "objective");
     const generateTrapBatch = async (batchCount, bIdx) => {
+      const startIdx = batchSizes.slice(0, bIdx).reduce((a, b) => a + b, 0);
+      const batchAssigned = assignedTargets.slice(startIdx, startIdx + batchCount);
+      const questionsTargetsDesc = batchAssigned.map((t, i) => `\u2022 Question ${i + 1}: ${t.targetTopic}`).join("\n");
       const batchSystemInstruction = `You are a Senior College Board AP Exam Chief Psychometrician, Lead Item Writer, and Master Distractor Architect.
 The student is training with the "AP TRAP RADAR\u2122" to achieve a Score 5 in AP ${subject}.
-Your mission: Generate exactly ${batchCount} ultra-authentic, high-caliber College Board AP Exam Multiple Choice Questions for "${targetTopic}" with DECEPTIVELY ENGINEERED PSYCHOMETRIC DISTRACTOR TRAPS.
+Your mission: Generate exactly ${batchCount} ultra-authentic, high-caliber College Board AP Exam Multiple Choice Questions with DECEPTIVELY ENGINEERED PSYCHOMETRIC DISTRACTOR TRAPS.
+
+COLLEGE BOARD OFFICIAL COURSE & EXAM GUIDELINES FOR AP ${subject.toUpperCase()}:
+${subjectGuidelines}
+
+${isAllUnitsMode ? `FULL CURRICULUM SIMULATION MODE ACTIVE:
+Each question in this batch is assigned to a specific AP Unit. You MUST strictly adhere to the assigned unit for each question:
+${questionsTargetsDesc}
+DO NOT default all questions to kinematics or a single unit. Distribute strictly according to the assignments above.` : `SINGLE UNIT FOCUS MODE ACTIVE:
+All ${batchCount} questions MUST focus strictly on: "${assignedTargets[0]?.unitLabel || targetTopic}".
+Each question MUST test a distinct concept from this unit:
+${questionsTargetsDesc}`}
+
+ANTI-FRANKENSTEIN SCENARIO MANDATE:
+- Never combine unrelated curriculum areas into a single question.
+- Every question must test legitimate College Board syllabus principles matching its assigned unit.
+
+SCRATCHPAD & THINKING SUPPRESSION MANDATE:
+- Do NOT output internal monologues, drafting self-talk, or reasoning commentary (such as 'Wait, let\\'s verify...', 'Let me double check...').
+- All string values must be polished, professional text directly suitable for student practice.
 
 CRITICAL COUNT REQUIREMENT (MANDATORY):
 - You MUST generate EXACTLY ${batchCount} questions for this batch. Outputting fewer than ${batchCount} questions is strictly forbidden.
@@ -18685,7 +19209,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
       }
     ],
     "disarmStrategy": "\u26A1 5-Second Disarm Secret: The exact heuristic to eliminate distractors instantly on exam day.",
-    "skill": "Relevant AP Skill / CED Unit"
+    "skill": "${batchAssigned[0]?.unitLabel || targetTopic}"
   }
 ]`;
       const makeCall = async (seed) => {
@@ -18693,7 +19217,9 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
           gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
           model: "gemini-flash-lite-latest",
           timeoutMs: 25e3,
-          contents: { parts: [{ text: `Generate EXACTLY ${batchCount} authentic AP ${subject} Trap Radar questions for ${targetTopic}. Batch Seed: ${seed}. Return ALL ${batchCount} items with complete distractor traps in the JSON array!` }] },
+          contents: { parts: [{ text: `Generate EXACTLY ${batchCount} authentic AP ${subject} Trap Radar questions covering:
+${questionsTargetsDesc}
+Batch Seed: ${seed}. Return ALL ${batchCount} items with complete distractor traps in the JSON array!` }] },
           config: {
             systemInstruction: { parts: [{ text: batchSystemInstruction }] },
             responseMimeType: "application/json",
@@ -18736,7 +19262,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
       batchSizes.push(take);
       remaining -= take;
     }
-    const batchPromises = batchSizes.map((cnt, idx) => generateTrapBatch(cnt, idx));
+    const batchPromises = batchSizes.map((cnt, idx2) => generateTrapBatch(cnt, idx2));
     const batchResults = await Promise.allSettled(batchPromises);
     let questionsList = [];
     for (const res2 of batchResults) {
@@ -18800,17 +19326,22 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
               };
             }
           });
+          const assigned = assignedTargets[idx] || {
+            targetTopic,
+            unitLabel: unit || subject,
+            subtopicFocus: "Core Concept"
+          };
           questionsList.push({
             id: questionsList.length + 1,
             questionNumber: questionsList.length + 1,
-            unit: targetTopic,
+            unit: assigned.unitLabel,
             prompt: item.stem,
             options: formattedOptions,
             correctAnswer: formattedOptions[safeCorrectIdx],
             correctLetter: letters[safeCorrectIdx],
             traps: dTraps,
             disarmStrategy: "\u26A1 5-Second Disarm Secret: Verify given conditions carefully and eliminate extreme or absolute distractors.",
-            skill: targetTopic || subject,
+            skill: assigned.unitLabel,
             explanation: item.explanation || "",
             format: "objective"
           });
@@ -18818,9 +19349,29 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
       }
     }
     if (questionsList.length > 0) {
-      const finalized = questionsList.slice(0, requestedCount).map((q, idx) => ({
+      const sanitizedMcqs = questionsList.map((q, idx2) => {
+        const assigned = assignedTargets[idx2];
+        return {
+          ...q,
+          id: q.id || idx2 + 1,
+          format: "objective",
+          prompt: cleanScratchpadText(q.prompt || q.question || ""),
+          stimulus: cleanScratchpadText(q.stimulus || ""),
+          options: Array.isArray(q.options) ? q.options.map((opt) => cleanScratchpadText(opt)) : [],
+          correctAnswer: cleanScratchpadText(q.correctAnswer || ""),
+          disarmStrategy: cleanScratchpadText(q.disarmStrategy || "\u26A1 5-Second Disarm Secret: Verify given conditions carefully and eliminate extreme or absolute distractors."),
+          skill: q.skill || (assigned ? assigned.unitLabel : unit || subject),
+          unit: assigned ? assigned.unitLabel : unit || subject,
+          traps: Array.isArray(q.traps) ? q.traps.map((t) => ({
+            ...t,
+            trapDescription: cleanScratchpadText(t.trapDescription || ""),
+            collegeBoardMindset: cleanScratchpadText(t.collegeBoardMindset || "")
+          })) : []
+        };
+      });
+      const finalized = sanitizedMcqs.slice(0, requestedCount).map((q, idx2) => ({
         ...q,
-        id: q.id || idx + 1,
+        id: q.id || idx2 + 1,
         format: "objective"
       }));
       const balancedFinalized = shuffleAndBalanceTrapRadarQuestions(finalized);
@@ -18858,8 +19409,8 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
           mindset: "Catches students who rush through multi-step analytical reasoning."
         }
       ];
-      const fallbackQuestions = Array.from({ length: requestedCount }).map((_, idx) => {
-        const b = fallbackBank[idx % fallbackBank.length];
+      const fallbackQuestions = Array.from({ length: requestedCount }).map((_, idx2) => {
+        const b = fallbackBank[idx2 % fallbackBank.length];
         let dCounter = 0;
         const safeCorrectIdx = typeof b.correctIndex === "number" && b.correctIndex >= 0 && b.correctIndex < b.options.length ? b.correctIndex : 0;
         const rawTraps = b.options.map((opt, oIdx) => {
@@ -18875,7 +19426,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
               vulnerabilityRate: "Target Answer"
             };
           } else {
-            const arch = FALLBACK_TRAP_ARCHETYPES[(idx + dCounter) % FALLBACK_TRAP_ARCHETYPES.length];
+            const arch = FALLBACK_TRAP_ARCHETYPES[(idx2 + dCounter) % FALLBACK_TRAP_ARCHETYPES.length];
             dCounter++;
             return {
               option: letters[oIdx],
@@ -18889,7 +19440,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
           }
         });
         return {
-          id: idx + 1,
+          id: idx2 + 1,
           format: "objective",
           prompt: b.stem,
           options: b.options.map((opt, oIdx) => opt.startsWith(`${letters[oIdx]})`) ? opt : `${letters[oIdx]}) ${opt}`),
@@ -19439,8 +19990,8 @@ Strictly return a raw JSON array of ${requestedCount} objects matching this exac
     try {
       const parsed = safeParseJSON(rawText, "array");
       if (Array.isArray(parsed)) {
-        generated = parsed.map((item, idx) => ({
-          id: `ai_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
+        generated = parsed.map((item, idx2) => ({
+          id: `ai_${Date.now()}_${idx2}_${Math.random().toString(36).substring(2, 6)}`,
           subjectId,
           stem: String(item.stem || "").trim(),
           options: Array.isArray(item.options) && item.options.length === 4 ? item.options.map((o) => String(o).trim()) : ["Option A", "Option B", "Option C", "Option D"],

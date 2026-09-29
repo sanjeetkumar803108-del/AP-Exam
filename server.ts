@@ -24,6 +24,7 @@ import { getBattleQuestions, AP_BATTLE_SUBJECTS, BattleQuestion, normalizeGrade 
 import { extractDiagramAndCleanText } from "./src/utils/svgHelper";
 import { validateAndHealApQuestion, createUsedConceptsTracker, calculateRealTotalPoints } from "./src/utils/apSubjectValidator";
 import { getSubjectWhitelist } from "./src/data/apSubjectWhitelists";
+import { TOP_10_AP_SUBJECTS } from "./src/utils/apCurriculum";
 
 
 process.on("unhandledRejection", (reason, promise) => {
@@ -3108,14 +3109,208 @@ STRICT JSON OUTPUT FORMAT (WHEN INVALID - ONLY FOR NON-ACADEMIC NOISE):
       return res.status(400).json({ error: "Missing AP Subject" });
     }
 
+    interface BatchTargetInfo {
+      targetTopic: string;
+      unitLabel: string;
+      subtopicFocus: string;
+      unitNumber?: number;
+    }
+
+    const cleanScratchpadText = (str: string): string => {
+      if (!str || typeof str !== 'string') return '';
+      return str
+        .replace(/(?:wait,\s*let['’]?s\s*(?:verify|check|recalculate|make sure)|wait,\s*let\s*me\s*(?:verify|check|recalculate)|hold\s*on,\s*let['’]?s\s*check)[^.\n]*[.\n]?/gi, '')
+        .replace(/\b(?:Wait,\s*I\s*need\s*to\s*check|Let's\s*double\s*check)\b[^.\n]*[.\n]?/gi, '')
+        .trim();
+    };
+
+    const getTargetTopicsForBatches = (
+      subj: string,
+      unitParam: string | undefined,
+      topicParam: string | undefined,
+      totalItems: number
+    ): BatchTargetInfo[] => {
+      const cleanUnit = (unitParam || '').trim();
+      const isAllUnits = !cleanUnit ||
+        /^all(\s*units)?$/i.test(cleanUnit) ||
+        cleanUnit.toLowerCase().includes('all high-yield units') ||
+        cleanUnit.toLowerCase().includes('all units') ||
+        /entire\s*(curriculum|syllabus|course)/i.test(cleanUnit) ||
+        /full\s*(exam|test|simulation)/i.test(cleanUnit);
+
+      const whitelist = getSubjectWhitelist(subj);
+      const curriculumSubj = TOP_10_AP_SUBJECTS.find(s => 
+        s.name.toLowerCase().includes((subj || '').toLowerCase()) ||
+        (subj || '').toLowerCase().includes(s.name.toLowerCase()) ||
+        s.id.toLowerCase().includes((subj || '').toLowerCase().replace(/[^a-z0-9]/g, ''))
+      );
+
+      // Build unified canonical units list
+      let canonicalUnits: { unitNumber: number; title: string; keywords: string[] }[] = [];
+
+      if (whitelist && whitelist.canonicalUnits && whitelist.canonicalUnits.length > 0) {
+        canonicalUnits = whitelist.canonicalUnits;
+      } else if (curriculumSubj && curriculumSubj.units && curriculumSubj.units.length > 0) {
+        canonicalUnits = curriculumSubj.units.map((u, uIdx) => {
+          const uNumMatch = u.title.match(/(?:unit|period)\s*(\d+)/i);
+          const uNum = uNumMatch ? parseInt(uNumMatch[1], 10) : uIdx + 1;
+          const kw = u.description ? u.description.split(/[,;&]+/).map(s => s.trim()).filter(Boolean) : [u.title];
+          return {
+            unitNumber: uNum,
+            title: u.title,
+            keywords: kw.length > 0 ? kw : [u.title]
+          };
+        });
+      }
+
+      const results: BatchTargetInfo[] = [];
+
+      if (isAllUnits) {
+        if (canonicalUnits.length > 0) {
+          for (let i = 0; i < totalItems; i++) {
+            const u = canonicalUnits[i % canonicalUnits.length];
+            const kwList = (u.keywords && u.keywords.length > 0) ? u.keywords : [u.title];
+            const kwIdx = Math.floor(i / canonicalUnits.length) % kwList.length;
+            const kw = kwList[kwIdx] || u.title;
+            results.push({
+              targetTopic: `${u.title} (Key Focus: ${kw})`,
+              unitLabel: u.title,
+              subtopicFocus: kw,
+              unitNumber: u.unitNumber
+            });
+          }
+        } else {
+          for (let i = 0; i < totalItems; i++) {
+            const uNum = (i % 8) + 1;
+            results.push({
+              targetTopic: `AP ${subj} - Unit ${uNum} Core Curriculum`,
+              unitLabel: `Unit ${uNum}`,
+              subtopicFocus: `Unit ${uNum} Key Concepts`,
+              unitNumber: uNum
+            });
+          }
+        }
+        return results;
+      }
+
+      // Single Unit Focus Mode
+      if (canonicalUnits.length > 0) {
+        const numMatch = cleanUnit.match(/(?:unit|period)\s*(\d+)/i);
+        const targetNum = numMatch ? parseInt(numMatch[1], 10) : null;
+
+        let matchedUnit = targetNum
+          ? canonicalUnits.find(u => u.unitNumber === targetNum)
+          : null;
+
+        if (!matchedUnit) {
+          const lowerClean = cleanUnit.toLowerCase();
+          matchedUnit = canonicalUnits.find(u => 
+            lowerClean.includes(u.title.toLowerCase()) ||
+            u.title.toLowerCase().includes(lowerClean)
+          ) || null;
+        }
+
+        if (matchedUnit) {
+          const kwList = (matchedUnit.keywords && matchedUnit.keywords.length > 0) ? matchedUnit.keywords : [matchedUnit.title];
+          for (let i = 0; i < totalItems; i++) {
+            const kw = kwList[i % kwList.length] || matchedUnit.title;
+            results.push({
+              targetTopic: `${matchedUnit.title} — Specific Concept: ${kw}`,
+              unitLabel: matchedUnit.title,
+              subtopicFocus: kw,
+              unitNumber: matchedUnit.unitNumber
+            });
+          }
+          return results;
+        }
+      }
+
+      // Fallback custom unit
+      for (let i = 0; i < totalItems; i++) {
+        const focus = topicParam ? `${cleanUnit} - ${topicParam} (Variant ${i + 1})` : `${cleanUnit} (Variant ${i + 1})`;
+        results.push({
+          targetTopic: focus,
+          unitLabel: cleanUnit,
+          subtopicFocus: `Core Principle ${i + 1}`
+        });
+      }
+      return results;
+    };
+
+    // Sanitizer for Subjective FRQ questions
+    const sanitizeFrqQuestion = (q: any, targetInfo: BatchTargetInfo, idx: number) => {
+      const promptText = cleanScratchpadText(q.prompt || q.question || '');
+      const stimulusText = cleanScratchpadText(q.stimulus || '');
+      const hasPhysicalUnits = /\b(?:meters?|seconds?|minutes?|hours?|feet|ft|grams?|kg|liters?|mL|moles?|molar|joules?|kelvin|volts?|amps?|newtons?|°C|usd|\$|mph|cm)\b/i.test(promptText + ' ' + stimulusText);
+
+      const parts = Array.isArray(q.parts) ? q.parts.map((p: any) => {
+        const rawTraps = Array.isArray(p.frqTraps) ? p.frqTraps : [];
+        const sanitizedTraps = rawTraps.map((t: any) => {
+          let trapName = t.trapName || t.name || t.trapType || "🪤 Common Rubric Trap";
+          let how = t.howStudentsLosePoints || t.issue || t.description || "Students fail to complete required rubric elements.";
+          let rate = t.vulnerabilityRate || t.rate || "48% of students lose this point";
+          if (rate === "undefined" || !rate.includes("%")) {
+            rate = "48% of students lose this point";
+          }
+          let fix = t.fullCreditFix || t.fix || t.solution || "Ensure complete formula setup and explicit justification.";
+          if (fix === "undefined" || fix.trim() === "") {
+            fix = "Ensure complete formula setup and explicit justification.";
+          }
+
+          // Check if abstract math erroneously received a naked units trap
+          if (!hasPhysicalUnits && /missing units|naked number/i.test(trapName)) {
+            trapName = "🪤 Incomplete Work / Formula Setup Trap";
+            how = "Students evaluate the expression without writing the fundamental theorem or derivative/integral setup first.";
+            fix = "Always write the governing formula/calculus theorem before substituting numerical values.";
+          }
+
+          return {
+            trapName,
+            howStudentsLosePoints: cleanScratchpadText(how),
+            vulnerabilityRate: rate,
+            fullCreditFix: cleanScratchpadText(fix)
+          };
+        });
+
+        return {
+          ...p,
+          task: cleanScratchpadText(p.task || ''),
+          scoringCriteria: cleanScratchpadText(p.scoringCriteria || ''),
+          modelAnswer: cleanScratchpadText(p.modelAnswer || ''),
+          frqTraps: sanitizedTraps.length > 0 ? sanitizedTraps : [
+            {
+              trapName: "🪤 The Unjustified Claim Trap",
+              howStudentsLosePoints: "Students provide a final numerical answer or claim without showing the required formula setup or theorem verification.",
+              vulnerabilityRate: "52% of students lose this point",
+              fullCreditFix: "Always state the governing principle or formula before performing algebraic evaluation."
+            }
+          ]
+        };
+      }) : [];
+
+      return {
+        ...q,
+        id: q.id || (idx + 1),
+        format: 'subjective',
+        prompt: promptText,
+        stimulus: stimulusText,
+        parts,
+        disarmStrategy: cleanScratchpadText(q.disarmStrategy || '⚡ Chief Reader Scoring Secret: State the claim, write the formula setup, and provide clear causal justification.'),
+        skill: q.skill || targetInfo.unitLabel || subject,
+        unit: targetInfo.unitLabel || q.unit || subject
+      };
+    };
+
     const targetTopic = [topic, unit, subject].filter(Boolean).join(" - ");
 
     // BRANCH A: SUBJECTIVE (Section II Free Response Questions / FRQs)
     if (format === 'subjective') {
       const requestedCount = Math.min(Math.max(parseInt(count) || 3, 1), 20);
+      const assignedTargets = getTargetTopicsForBatches(subject, unit, topic, requestedCount);
+      const isAllUnitsMode = !unit || /^all(\s*units)?$/i.test(unit.trim()) || unit.toLowerCase().includes('all high-yield units');
+      const subjectGuidelines = getCollegeBoardSubjectGuidelines(subject, 'subjective');
 
       // CRITICAL APK FIX: Use maxBatch=1 for FRQs so each question is a separate parallel call (~8s each).
-      // Batching 3 FRQs together in one call takes 60-70s → Vercel 60s timeout → "Failed to fetch" on Android.
       const batchSizes: number[] = [];
       let remaining = requestedCount;
       const maxBatch = 1;
@@ -3126,9 +3321,58 @@ STRICT JSON OUTPUT FORMAT (WHEN INVALID - ONLY FOR NON-ACADEMIC NOISE):
       }
 
       const generateSubjectiveTrapBatch = async (batchCount: number, bIdx: number): Promise<any[]> => {
+        const targetInfo = assignedTargets[bIdx] || {
+          targetTopic: targetTopic,
+          unitLabel: unit || subject,
+          subtopicFocus: 'Core AP Concepts'
+        };
+
         const batchSystemInstruction = `You are an elite Senior College Board AP Exam Chief Reader, Lead Item Writer, and Free-Response (FRQ) Scoring Director.
 The student is training with the "AP TRAP RADAR™" to achieve a Score 5 in AP ${subject} on Section II (Free Response Questions / FRQs).
-Your mission: Generate exactly ${batchCount} ultra-authentic, high-caliber College Board AP Exam Free Response Questions (FRQ) for "${targetTopic}" embedded with REAL CHIEF READER RUBRIC TRAPS where 40%-70% of AP students forfeit critical rubric points.
+Your mission: Generate exactly ${batchCount} ultra-authentic, high-caliber College Board AP Exam Free Response Question(s) strictly for:
+🎯 ASSIGNED TARGET: "${targetInfo.targetTopic}"
+${targetInfo.unitNumber ? `📌 MANDATORY AP UNIT: Unit ${targetInfo.unitNumber}` : ''}
+🔑 SPECIFIC CONCEPT FOCUS: "${targetInfo.subtopicFocus}"
+
+COLLEGE BOARD OFFICIAL COURSE & EXAM GUIDELINES FOR AP ${subject.toUpperCase()}:
+${subjectGuidelines}
+
+${isAllUnitsMode 
+  ? `FULL CURRICULUM SIMULATION MODE ACTIVE:
+- This question is assigned to ${targetInfo.unitLabel}.
+- You MUST construct this question EXCLUSIVELY using the concepts, theorems, equations, and skills of ${targetInfo.unitLabel}.
+- DO NOT default to particle motion, kinematics, or series unless this specific unit is about them.`
+  : `SINGLE UNIT FOCUS MODE ACTIVE:
+- All parts of this question MUST stay strictly within ${targetInfo.unitLabel}.
+- The specific focus is: "${targetInfo.subtopicFocus}".
+- Do NOT bring in unrelated concepts from other units.`}
+
+ANTI-FRANKENSTEIN UNIFIED SCENARIO MANDATE (STRICTLY ENFORCED):
+- NEVER EVER mash together or combine unrelated mathematical or scientific domains into a single question.
+- FOR EXAMPLE: NEVER connect particle motion/kinematics with power series, or polar curves with logistic differential equations, or electrochemistry with acid-base titrations.
+- The stimulus and all parts (a, b, c) MUST form one unified, coherent real-world or theoretical scenario that fits 100% within the assigned AP unit.
+
+CONTEXTUAL UNITS & RUBRIC REALITY MANDATE:
+- ONLY include a 'Missing Units Trap' if the problem scenario explicitly provides physical real-world measurement units (e.g. meters, seconds, ft/min, °C, grams, Molarity).
+- IF THE PROBLEM IS PURE ABSTRACT MATHEMATICS (e.g. evaluating an integral $\\int f(x)dx$, finding a Taylor polynomial, calculating a derivative, or determining radius of convergence where variables are unitless numbers):
+  DO NOT invent a fake 'Missing Units Trap'.
+  Instead, use legitimate College Board rubric traps such as:
+  🪤 The Missing Endpoint / Boundary Test Trap (testing open vs closed interval).
+  🪤 The Premature Rounding / Precision Slip Trap.
+  🪤 The Missing Justification / Intermediate Theorem Trap (e.g. failing to verify continuity for IVT/MVT).
+  🪤 The Formula Setup / Incomplete Work Trap.
+
+INTERVAL OF CONVERGENCE & MATHEMATICAL RIGOR (IF APPLICABLE):
+- When testing Power Series / Interval of Convergence:
+  Always explicitly test both endpoints independently.
+  Show whether each endpoint converges conditionally, absolutely, or diverges with the exact convergence test named.
+  Never invert bracket notation (e.g. do not write [-1, 5) if the lower endpoint diverges and upper converges—write (-1, 5]).
+  Ensure the center $c$ and radius $R$ are mathematically exact.
+
+SCRATCHPAD & THINKING SUPPRESSION MANDATE (MANDATORY):
+- Do NOT output internal monologues, drafting self-talk, or reasoning commentary (such as 'Wait, let\\'s verify...', 'Let me double check...', 'Hold on, let me recalculate...').
+- Every string field in the JSON (prompt, stimulus, task, scoringCriteria, modelAnswer, trapDescription, etc.) must contain ONLY the polished final text intended for the student and teacher.
+- Verify all arithmetic and calculus derivations internally BEFORE producing the final JSON output.
 
 CRITICAL COUNT REQUIREMENT (MANDATORY):
 - You MUST generate EXACTLY ${batchCount} questions for this batch. Outputting fewer than ${batchCount} questions is strictly forbidden.
@@ -3143,9 +3387,9 @@ MANDATORY STEP-BY-STEP SOLUTIONS FOR CALCULATION & QUANTITATIVE PROBLEMS:
 - FOR ANY CALCULATION, DERIVATION, OR QUANTITATIVE TASK (e.g. Calculus, Physics, Chemistry, Statistics, Macro/Microeconomics):
   THE "modelAnswer" MUST BE BROKEN DOWN STRICTLY STEP-BY-STEP, displaying full mathematical rigor as required by College Board Chief Readers:
   • Step 1 [Formula Setup & Concept]: Write the fundamental equation, theorem, integral/derivative setup, or physical law before plugging in numbers.
-  • Step 2 [Value Substitution & Work]: Show explicit substitution of numerical values with standard units. Show all intermediate algebraic/calculus work step-by-step.
-  • Step 3 [Evaluation & Final Result]: Calculate the exact final answer, rounded to standard College Board precision (3 decimal places for AP Calculus/Stats, or appropriate significant figures for Chemistry/Physics) WITH EXPLICIT UNITS.
-  • Step 4 [Interpretation / Justification]: Provide 1 clear concluding sentence connecting the numerical result back to the context of the problem (e.g. interpreting rate of change, direction of velocity/acceleration, or rejecting H0).
+  • Step 2 [Value Substitution & Work]: Show explicit substitution of numerical values with standard units (if applicable). Show all intermediate algebraic/calculus work step-by-step.
+  • Step 3 [Evaluation & Final Result]: Calculate the exact final answer, rounded to standard College Board precision (3 decimal places for AP Calculus/Stats, or appropriate significant figures for Chemistry/Physics) with units if problem had units.
+  • Step 4 [Interpretation / Justification]: Provide 1 clear concluding sentence connecting the numerical result back to the context of the problem.
 - FOR QUALITATIVE / EXPLANATORY PROBLEMS (e.g. History, Gov, Human Geography, Biology conceptual):
   Structure the model answer with clear sub-points:
   • Part 1: Direct Claim / Identification.
@@ -3153,29 +3397,15 @@ MANDATORY STEP-BY-STEP SOLUTIONS FOR CALCULATION & QUANTITATIVE PROBLEMS:
   • Part 3: Explicit causal reasoning connecting the evidence to the broader concept.
 - NEVER PROVIDE A SHORT 1-LINE ANSWER FOR A CALCULATION. Every single calculation point MUST have its setup and intermediate work clearly visible.
 
-AUTHENTIC COLLEGE BOARD AP EXAM STANDARDS (STRICT REQUIREMENT):
-1. REAL AP STIMULUS & MULTI-PART COLLEGE BOARD ARCHITECTURE:
-   - AP Human Geography (APHG): Authentic geographic scenarios with demographic data tables, population pyramids, urban land-use models, agricultural systems, or spatial diffusion maps. Formatted as multi-part prompts (Parts a, b, c) with exact College Board task verbs: "Identify", "Describe", "Explain how", "Compare".
-   - AP STEM Sciences (Biology, Chemistry, Physics 1/2/C, Environmental Science): Authentic experimental design, raw lab observation data tables, reaction coordinates, biological feedback loops, or physical systems. Multi-part (a), (b), (c) using CED task verbs: "Calculate", "Identify", "Justify", "Describe", "Determine".
-   - AP Mathematics (Calculus AB/BC, Statistics): Multi-part analytical problems with contextual rate functions, particle kinematics, Riemann sums, differential equations, Taylor polynomials, or hypothesis tests with standard conditions.
-   - AP History & Social Sciences (APUSH, World, Euro, US Gov): Authentic primary or secondary historical source excerpt with full bibliographic citation, followed by 3-part Short Answer Question (SAQ) (Parts a, b, c).
-   - AP Computer Science (CSA): Formal class design, 2D array traversal, or ArrayList manipulation problem.
-   - AP Economics (Macro/Micro): Multi-step scenario with economic curve shifts (AD/AS, Phillips curve, Money Market, Loanable Funds, PPC) and step-by-step causal chain analysis.
-
-2. AUTHENTIC CHIEF READER RUBRIC TRAPS (WHERE 50%+ OF AP STUDENTS FORFEIT POINTS):
-   Every part of the FRQ MUST diagnose the exact real-world pitfalls documented in College Board Chief Reader reports:
-   🪤 The Naked Number / Missing Units Trap (omitting units, forfeiting the point).
-   🪤 The Unjustified Claim / Data Citation Gap Trap (failing to cite specific numerical data points or direct textual evidence from the stimulus).
-   🪤 The Circular Reasoning / Prompt Echo Trap (restating the prompt's premise instead of explaining the causal mechanism).
-   🪤 The Ambiguous Reference / Vague Pronoun Trap (writing "it", "they", or "this factor" without explicitly naming the chemical species or variable).
-   🪤 The Task Verb Misalignment Trap (answering an "Explain" prompt with merely an "Identify" statement).
-   🪤 The Scope Creep / Wrong Scale Trap (discussing the wrong geographic scale or outside historical era).
-
-3. SCORING CRITERIA & FULL-CREDIT MODEL ANSWERS:
-   - Provide exact College Board scoring criteria for EVERY part.
-   - Provide a 100% full-credit exemplary model answer.
-   - Provide "disarmStrategy": The Chief Reader's 5-Second Rule to secure maximum points and eliminate point deductions.
-   - Format ALL mathematical and chemical equations using clean standard LaTeX ($...$).
+AUTHENTIC CHIEF READER RUBRIC TRAPS:
+Every part of the FRQ MUST diagnose the exact real-world pitfalls documented in College Board Chief Reader reports:
+🪤 The Unjustified Claim / Data Citation Gap Trap (failing to cite specific numerical data points or direct textual evidence from the stimulus).
+🪤 The Circular Reasoning / Prompt Echo Trap (restating the prompt's premise instead of explaining the causal mechanism).
+🪤 The Ambiguous Reference / Vague Pronoun Trap (writing "it", "they", or "this factor" without explicitly naming the chemical species or variable).
+🪤 The Task Verb Misalignment Trap (answering an "Explain" prompt with merely an "Identify" statement).
+🪤 The Scope Creep / Wrong Scale Trap (discussing the wrong geographic scale or outside historical era).
+🪤 The Endpoint Exclusion Trap / Boundary Slip Trap (omitting boundary convergence tests).
+🪤 The Naked Number / Missing Units Trap (ONLY if units are present in the problem stem).
 
 STRICT JSON OUTPUT FORMAT:
 Return ONLY a valid JSON array of ${batchCount} question objects:
@@ -3183,7 +3413,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
   {
     "id": 1,
     "format": "subjective",
-    "prompt": "Multi-part AP Free Response Question stem with background scenario and context...",
+    "prompt": "Multi-part AP Free Response Question stem with background scenario and context strictly for ${targetInfo.targetTopic}...",
     "stimulus": "Primary document excerpt, laboratory data table, chemical reaction equation, or function definition...",
     "totalPoints": 4,
     "overallTrapDifficulty": "High (Level 4 FRQ Trap)",
@@ -3193,19 +3423,19 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
         "task": "Specific task prompt with College Board task verb...",
         "points": 1,
         "scoringCriteria": "Earns 1 point for correctly explaining/calculating...",
-        "modelAnswer": "Step 1 (Formula Setup): Total distance is $D = \\int_{0}^{2} \\sqrt{(x'(t))^2 + (y'(t))^2}\\,dt$.\nStep 2 (Derivatives & Substitution): $x'(t) = 2t - 3$ and $y'(t) = e^{-t^2}$. Thus $D = \\int_{0}^{2} \\sqrt{(2t - 3)^2 + e^{-2t^2}}\\,dt$.\nStep 3 (Evaluation): Evaluating the definite integral yields $D \\approx 3.486$ units.\nStep 4 (Interpretation): This value represents the total path length traveled by the particle from $t = 0$ to $t = 2$.",
+        "modelAnswer": "Step 1 (Formula Setup): State governing formula or relationship.\\nStep 2 (Substitution & Work): Show explicit intermediate steps step-by-step.\\nStep 3 (Evaluation & Result): State computed final value with precision.\\nStep 4 (Interpretation): Conclude with contextual justification.",
         "frqTraps": [
           {
             "trapName": "🪤 The Unjustified Claim Trap",
-            "howStudentsLosePoints": "Students identify the correct trend but fail to cite specific data points from Table 1, forfeiting the point.",
+            "howStudentsLosePoints": "Students identify the correct trend but fail to cite specific data points or show intermediate steps, forfeiting the point.",
             "vulnerabilityRate": "56% of students lose this point",
-            "fullCreditFix": "Always state the numerical value from the table and explicitly connect it to the mechanism."
+            "fullCreditFix": "Always state the explicit formula/setup and show each algebraic transition before the final value."
           }
         ]
       }
     ],
     "disarmStrategy": "⚡ Chief Reader Scoring Secret: The exact rubric requirement to guarantee full credit and avoid common point deductions.",
-    "skill": "Relevant AP Skill / CED Unit"
+    "skill": "${targetInfo.unitLabel}"
   }
 ]`;
 
@@ -3214,7 +3444,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
             gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
             model: "gemini-flash-lite-latest",
             timeoutMs: 25000,
-            contents: { parts: [{ text: `Generate EXACTLY ${batchCount} authentic AP ${subject} Free Response Trap Radar questions for ${targetTopic}. Batch Seed: ${seed}. Return ALL ${batchCount} items in the JSON array!` }] },
+            contents: { parts: [{ text: `Generate EXACTLY ${batchCount} authentic AP ${subject} Free Response Trap Radar question(s) strictly for: ${targetInfo.targetTopic}. Batch Seed: ${seed}. Return ALL ${batchCount} items in the JSON array!` }] },
             config: {
               systemInstruction: { parts: [{ text: batchSystemInstruction }] },
               responseMimeType: "application/json",
@@ -3277,35 +3507,40 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
         }
       }
 
-      // Guaranteed Curriculum Fallback: If still fewer than requested questions (e.g. 5 instead of 10),
+      // Guaranteed Curriculum Fallback: If still fewer than requested questions,
       // backfill from authentic curriculum fallback FRQ traps so questionsList.length === requestedCount ALWAYS!
       if (questionsList.length < requestedCount) {
         const deficit = requestedCount - questionsList.length;
         console.warn(`[ap-trap-radar] Subjective deficit detected: got ${questionsList.length}/${requestedCount}. Backfilling ${deficit} questions from authentic curriculum fallback...`);
         const FALLBACK_FRQ_TRAP_TYPES = [
-          { name: "🪤 The Unjustified Claim Trap", issue: "Students state the correct conclusion but fail to cite specific data from the stimulus.", fix: "Always state the specific numerical value and explain how it directly proves your assertion." },
-          { name: "🪤 The Naked Number / Missing Units Trap", issue: "Students complete numerical calculation correctly but omit standard SI or currency units, forfeiting the point.", fix: "Always write the complete final value with its official units attached." },
+          { name: "🪤 The Unjustified Claim Trap", issue: "Students state the correct conclusion but fail to cite specific data from the stimulus or show explicit calculation setup.", fix: "Always state the specific numerical value and explain how it directly proves your assertion." },
+          { name: "🪤 The Formula Setup / Incomplete Work Trap", issue: "Students write only the final answer without showing the intermediate derivative, integral, or governing formula.", fix: "Write out the fundamental theorem or formula setup before evaluating." },
           { name: "🪤 The Prompt Echo / Circular Logic Trap", issue: "Students restate the wording of the prompt instead of identifying the underlying scientific/economic mechanism.", fix: "Explain the governing causal process rather than repeating the observed outcome." },
-          { name: "🪤 The Scope Creep / Wrong Scale Trap", issue: "Students discuss issues outside the specified geographic scale or historical era.", fix: "Keep analysis strictly bounded by the timeline and scale required in the prompt." }
+          { name: "🪤 The Scope Creep / Boundary Trap", issue: "Students omit boundary condition checks or discuss issues outside the specified domain.", fix: "Keep analysis strictly bounded by the conditions required in the prompt." }
         ];
 
         for (let i = 0; i < deficit; i++) {
           const idx = questionsList.length;
+          const targetInfo = assignedTargets[idx] || {
+            targetTopic: targetTopic,
+            unitLabel: unit || subject,
+            subtopicFocus: 'Core Concept'
+          };
           const trapInfo = FALLBACK_FRQ_TRAP_TYPES[i % FALLBACK_FRQ_TRAP_TYPES.length];
           questionsList.push({
             id: idx + 1,
             format: 'subjective',
             totalPoints: 4,
             overallTrapDifficulty: 'High (Level 4 FRQ Trap)',
-            prompt: `Examine an authentic analytical scenario concerning ${targetTopic} in AP ${subject}:\n\n(a) Identify and define the fundamental principle tested [1 point].\n\n(b) Explain the governing causal mechanism and real-world interactions [2 points].\n\n(c) Justify how variations in boundary conditions alter empirical outcomes [1 point].`,
-            stimulus: `College Board Course and Exam Description (CED) context for AP ${subject}: ${targetTopic}.`,
+            prompt: `Examine an authentic analytical scenario concerning ${targetInfo.targetTopic} in AP ${subject}:\n\n(a) Identify and define the fundamental principle tested [1 point].\n\n(b) Explain the governing causal mechanism and analytical relationships [2 points].\n\n(c) Justify how variations in boundary conditions alter empirical outcomes [1 point].`,
+            stimulus: `College Board Course and Exam Description (CED) context for AP ${subject}: ${targetInfo.targetTopic}.`,
             parts: [
               {
                 partLabel: "(a)",
-                task: `Identify the foundational CED concept governing ${targetTopic}.`,
+                task: `Identify the foundational CED concept governing ${targetInfo.targetTopic}.`,
                 points: 1,
                 scoringCriteria: "Earns 1 point for accurate identification and definition matching CED criteria.",
-                modelAnswer: `Part (a): The fundamental principle governing this scenario is established in the AP ${subject} curriculum frameworks, requiring explicit definition of the operational variables.`,
+                modelAnswer: `Step 1 (Definition): The fundamental principle governing this scenario is established in the AP ${subject} curriculum frameworks (${targetInfo.unitLabel}), requiring explicit identification of the governing law.`,
                 frqTraps: [
                   {
                     trapName: trapInfo.name,
@@ -3320,7 +3555,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
                 task: `Explain the causal mechanism and evaluate how changes alter system state.`,
                 points: 2,
                 scoringCriteria: "Earns 1 point for describing the mechanism and 1 point for linking to systemic outcomes.",
-                modelAnswer: `Part (b): Step 1: Establish governing parameters. Step 2: Trace the causal pathway showing how the primary variable drives systemic equilibrium changes.`,
+                modelAnswer: `Step 1: Establish governing parameters. Step 2: Trace the causal pathway showing how the primary variable drives systemic equilibrium changes in ${targetInfo.subtopicFocus}.`,
                 frqTraps: [
                   {
                     trapName: "🪤 The Task Verb Misalignment Trap",
@@ -3335,7 +3570,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
                 task: `Justify your conclusion using authoritative course evidence.`,
                 points: 1,
                 scoringCriteria: "Earns 1 point for complete empirical justification without vague generalizations.",
-                modelAnswer: `Part (c): Under standard CED guidelines, the observed pattern must hold consistently across empirical data models.`,
+                modelAnswer: `Step 1 (Justification): Under standard CED guidelines, the observed pattern must hold consistently across empirical and theoretical models.`,
                 frqTraps: [
                   {
                     trapName: "🪤 The Vague Pronoun Trap",
@@ -3347,12 +3582,22 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
               }
             ],
             disarmStrategy: "⚡ Chief Reader Scoring Secret: Use the 3-step formula (Claim + Evidence + Mechanism) for every subpart to guarantee maximum rubric points.",
-            skill: targetTopic || subject
+            skill: targetInfo.unitLabel || subject,
+            unit: targetInfo.unitLabel || subject
           });
         }
       }
 
-      const finalized = questionsList.slice(0, requestedCount).map((q, idx) => ({
+      const sanitizedList = questionsList.map((q, idx) => {
+        const targetInfo = assignedTargets[idx] || {
+          targetTopic: targetTopic,
+          unitLabel: unit || subject,
+          subtopicFocus: 'Core Concept'
+        };
+        return sanitizeFrqQuestion(q, targetInfo, idx);
+      });
+
+      const finalized = sanitizedList.slice(0, requestedCount).map((q, idx) => ({
         ...q,
         id: q.id || (idx + 1),
         format: 'subjective',
@@ -3363,11 +3608,39 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
 
     // BRANCH B: OBJECTIVE (Section I Multiple Choice Questions / MCQs)
     const requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 20);
+    const assignedTargets = getTargetTopicsForBatches(subject, unit, topic, requestedCount);
+    const isAllUnitsMode = !unit || /^all(\s*units)?$/i.test(unit.trim()) || unit.toLowerCase().includes('all high-yield units');
+    const subjectGuidelines = getCollegeBoardSubjectGuidelines(subject, 'objective');
 
     const generateTrapBatch = async (batchCount: number, bIdx: number): Promise<any[]> => {
+      const startIdx = batchSizes.slice(0, bIdx).reduce((a, b) => a + b, 0);
+      const batchAssigned = assignedTargets.slice(startIdx, startIdx + batchCount);
+      const questionsTargetsDesc = batchAssigned.map((t, i) => `• Question ${i + 1}: ${t.targetTopic}`).join('\n');
+
       const batchSystemInstruction = `You are a Senior College Board AP Exam Chief Psychometrician, Lead Item Writer, and Master Distractor Architect.
 The student is training with the "AP TRAP RADAR™" to achieve a Score 5 in AP ${subject}.
-Your mission: Generate exactly ${batchCount} ultra-authentic, high-caliber College Board AP Exam Multiple Choice Questions for "${targetTopic}" with DECEPTIVELY ENGINEERED PSYCHOMETRIC DISTRACTOR TRAPS.
+Your mission: Generate exactly ${batchCount} ultra-authentic, high-caliber College Board AP Exam Multiple Choice Questions with DECEPTIVELY ENGINEERED PSYCHOMETRIC DISTRACTOR TRAPS.
+
+COLLEGE BOARD OFFICIAL COURSE & EXAM GUIDELINES FOR AP ${subject.toUpperCase()}:
+${subjectGuidelines}
+
+${isAllUnitsMode
+  ? `FULL CURRICULUM SIMULATION MODE ACTIVE:
+Each question in this batch is assigned to a specific AP Unit. You MUST strictly adhere to the assigned unit for each question:
+${questionsTargetsDesc}
+DO NOT default all questions to kinematics or a single unit. Distribute strictly according to the assignments above.`
+  : `SINGLE UNIT FOCUS MODE ACTIVE:
+All ${batchCount} questions MUST focus strictly on: "${assignedTargets[0]?.unitLabel || targetTopic}".
+Each question MUST test a distinct concept from this unit:
+${questionsTargetsDesc}`}
+
+ANTI-FRANKENSTEIN SCENARIO MANDATE:
+- Never combine unrelated curriculum areas into a single question.
+- Every question must test legitimate College Board syllabus principles matching its assigned unit.
+
+SCRATCHPAD & THINKING SUPPRESSION MANDATE:
+- Do NOT output internal monologues, drafting self-talk, or reasoning commentary (such as 'Wait, let\\'s verify...', 'Let me double check...').
+- All string values must be polished, professional text directly suitable for student practice.
 
 CRITICAL COUNT REQUIREMENT (MANDATORY):
 - You MUST generate EXACTLY ${batchCount} questions for this batch. Outputting fewer than ${batchCount} questions is strictly forbidden.
@@ -3470,23 +3743,23 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
       }
     ],
     "disarmStrategy": "⚡ 5-Second Disarm Secret: The exact heuristic to eliminate distractors instantly on exam day.",
-    "skill": "Relevant AP Skill / CED Unit"
+    "skill": "${batchAssigned[0]?.unitLabel || targetTopic}"
   }
 ]`;
 
-        const makeCall = async (seed: string): Promise<any[]> => {
-          const response = await safeGenerateContent({
-            gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
-            model: "gemini-flash-lite-latest",
-            timeoutMs: 25000,
-            contents: { parts: [{ text: `Generate EXACTLY ${batchCount} authentic AP ${subject} Trap Radar questions for ${targetTopic}. Batch Seed: ${seed}. Return ALL ${batchCount} items with complete distractor traps in the JSON array!` }] },
-            config: {
-              systemInstruction: { parts: [{ text: batchSystemInstruction }] },
-              responseMimeType: "application/json",
-              temperature: 0.2,
-              maxOutputTokens: 4096
-            }
-          });
+      const makeCall = async (seed: string): Promise<any[]> => {
+        const response = await safeGenerateContent({
+          gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
+          model: "gemini-flash-lite-latest",
+          timeoutMs: 25000,
+          contents: { parts: [{ text: `Generate EXACTLY ${batchCount} authentic AP ${subject} Trap Radar questions covering:\n${questionsTargetsDesc}\nBatch Seed: ${seed}. Return ALL ${batchCount} items with complete distractor traps in the JSON array!` }] },
+          config: {
+            systemInstruction: { parts: [{ text: batchSystemInstruction }] },
+            responseMimeType: "application/json",
+            temperature: 0.2,
+            maxOutputTokens: 4096
+          }
+        });
 
           const parsed = safeParseJSON(response.text || "[]", 'array');
           let list: any[] = [];
@@ -3599,17 +3872,22 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
                 };
               }
             });
+            const assigned = assignedTargets[idx] || {
+              targetTopic: targetTopic,
+              unitLabel: unit || subject,
+              subtopicFocus: 'Core Concept'
+            };
             questionsList.push({
               id: questionsList.length + 1,
               questionNumber: questionsList.length + 1,
-              unit: targetTopic,
+              unit: assigned.unitLabel,
               prompt: item.stem,
               options: formattedOptions,
               correctAnswer: formattedOptions[safeCorrectIdx],
               correctLetter: letters[safeCorrectIdx],
               traps: dTraps,
               disarmStrategy: '⚡ 5-Second Disarm Secret: Verify given conditions carefully and eliminate extreme or absolute distractors.',
-              skill: targetTopic || subject,
+              skill: assigned.unitLabel,
               explanation: item.explanation || '',
               format: 'objective'
             });
@@ -3618,14 +3896,35 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
       }
 
       if (questionsList.length > 0) {
-        const finalized = questionsList.slice(0, requestedCount).map((q, idx) => ({
+        const sanitizedMcqs = questionsList.map((q, idx) => {
+          const assigned = assignedTargets[idx];
+          return {
+            ...q,
+            id: q.id || (idx + 1),
+            format: 'objective',
+            prompt: cleanScratchpadText(q.prompt || q.question || ''),
+            stimulus: cleanScratchpadText(q.stimulus || ''),
+            options: Array.isArray(q.options) ? q.options.map((opt: string) => cleanScratchpadText(opt)) : [],
+            correctAnswer: cleanScratchpadText(q.correctAnswer || ''),
+            disarmStrategy: cleanScratchpadText(q.disarmStrategy || '⚡ 5-Second Disarm Secret: Verify given conditions carefully and eliminate extreme or absolute distractors.'),
+            skill: q.skill || (assigned ? assigned.unitLabel : (unit || subject)),
+            unit: (assigned ? assigned.unitLabel : (unit || subject)),
+            traps: Array.isArray(q.traps) ? q.traps.map((t: any) => ({
+              ...t,
+              trapDescription: cleanScratchpadText(t.trapDescription || ''),
+              collegeBoardMindset: cleanScratchpadText(t.collegeBoardMindset || '')
+            })) : []
+          };
+        });
+
+        const finalized = sanitizedMcqs.slice(0, requestedCount).map((q, idx) => ({
           ...q,
           id: q.id || (idx + 1),
           format: 'objective'
         }));
-      const balancedFinalized = shuffleAndBalanceTrapRadarQuestions(finalized);
-      return res.json({ success: true, questions: balancedFinalized, subject, unit: targetTopic, count: balancedFinalized.length, format: 'objective' });
-    }
+        const balancedFinalized = shuffleAndBalanceTrapRadarQuestions(finalized);
+        return res.json({ success: true, questions: balancedFinalized, subject, unit: targetTopic, count: balancedFinalized.length, format: 'objective' });
+      }
 
     // Instant Curriculum Fallback for Trap Radar
     console.warn(`[ap-trap-radar] AI challenge returned empty. Engaging instant curriculum fallback with authentic balanced traps...`);
