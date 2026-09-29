@@ -1616,7 +1616,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                       onClick={() => {
                         triggerVibration(10);
                         setQuestionFormat('subjective');
-                        if (![5, 10, 15].includes(questionCount)) {
+                        if (![3, 5, 10].includes(questionCount)) {
                           setQuestionCount(5);
                         }
                       }}
@@ -1665,9 +1665,9 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
                   <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
                     {[
+                      { count: 3, label: questionFormat === 'subjective' ? '3 FRQs' : '3 Questions' },
                       { count: 5, label: questionFormat === 'subjective' ? '5 FRQs' : '5 Questions' },
-                      { count: 10, label: questionFormat === 'subjective' ? '10 FRQs' : '10 Questions' },
-                      { count: 15, label: questionFormat === 'subjective' ? '15 FRQs' : '15 Questions' }
+                      { count: 10, label: questionFormat === 'subjective' ? '10 FRQs' : '10 Questions' }
                     ].map(item => (
                       <button
                         key={item.count}

@@ -2108,7 +2108,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                     triggerVibration(15);
                     setQuestionType('objective');
                     setExamMode('practice_bank');
-                    if (![5, 10, 15].includes(questionCount)) {
+                    if (![3, 5, 10].includes(questionCount)) {
                       setQuestionCount(5);
                     }
                   }}
@@ -2202,7 +2202,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                     onClick={() => {
                       triggerVibration(10);
                       setExamMode('practice_bank');
-                      if (![5, 10, 15].includes(questionCount)) {
+                      if (![3, 5, 10].includes(questionCount)) {
                         setQuestionCount(5);
                       }
                     }}
@@ -2254,9 +2254,9 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
               {questionType === 'objective' || examMode === 'practice_bank' ? (
                 <div className="grid grid-cols-3 gap-2 sm:gap-2.5 mt-1">
                   {[
-                    { count: 5, label: '5 Questions' },
-                    { count: 10, label: '10 Questions' },
-                    { count: 15, label: '15 Questions' }
+                    { count: 3, label: questionType === 'subjective' ? '3 FRQs' : '3 Questions' },
+                    { count: 5, label: questionType === 'subjective' ? '5 FRQs' : '5 Questions' },
+                    { count: 10, label: questionType === 'subjective' ? '10 FRQs' : '10 Questions' }
                   ].map(item => (
                     <button
                       key={item.count}
