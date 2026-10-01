@@ -1521,6 +1521,15 @@ export function getGranularSubjectArchetypes(subject: string, unitOrTopic: strin
       "[Section II Part B - LEQ | 6 Points] Long Essay Question (Choice prompt across Units 1–4, Units 3–6, or Units 7–9): Essay prompt requiring historical reasoning (causation, comparison, or continuity and change over time). College Board 6-Point Rubric: Thesis/Claim (1 pt), Contextualization (1 pt), Evidence with 2+ specific facts (2 pts), Historical Reasoning structure (1 pt), Complex Understanding/Nuance (1 pt)."
     ];
 
+    const whapSectionTwoPair = [
+      whapCanonicalFive[3], // [Section II Part A - DBQ | 7 Points]
+      whapCanonicalFive[4]  // [Section II Part B - LEQ | 6 Points]
+    ];
+
+    if (count === 2) {
+      return [...whapSectionTwoPair];
+    }
+
     if (count === 5) {
       return [...whapCanonicalFive];
     }

@@ -5965,6 +5965,15 @@ function getGranularSubjectArchetypes(subject, unitOrTopic, count) {
       "[Section II Part A - DBQ | 7 Points] Document-Based Question (1450\u20132001): Comprehensive historical prompt with 7 distinct documents (mix of official state edicts, merchant accounts, diplomatic dispatches, indigenous testimonies, and visual/cultural artifacts). College Board 7-Point Rubric: Thesis/Claim (1 pt), Contextualization (1 pt), Evidence from 4+ Docs (2 pts), Outside Evidence (1 pt), Sourcing/HIPP for 2+ Docs (1 pt), Complex Understanding (1 pt).",
       "[Section II Part B - LEQ | 6 Points] Long Essay Question (Choice prompt across Units 1\u20134, Units 3\u20136, or Units 7\u20139): Essay prompt requiring historical reasoning (causation, comparison, or continuity and change over time). College Board 6-Point Rubric: Thesis/Claim (1 pt), Contextualization (1 pt), Evidence with 2+ specific facts (2 pts), Historical Reasoning structure (1 pt), Complex Understanding/Nuance (1 pt)."
     ];
+    const whapSectionTwoPair = [
+      whapCanonicalFive[3],
+      // [Section II Part A - DBQ | 7 Points]
+      whapCanonicalFive[4]
+      // [Section II Part B - LEQ | 6 Points]
+    ];
+    if (count === 2) {
+      return [...whapSectionTwoPair];
+    }
     if (count === 5) {
       return [...whapCanonicalFive];
     }
@@ -23574,13 +23583,11 @@ app.post("/api/generate-ap-questions", async (req, res) => {
       requestedCount = 7;
     } else if ((isBcSubject || isBioSubject) && (examMode === "mock_exam" || examMode === "exam_simulation") && type === "subjective") {
       requestedCount = 6;
-    } else if (isWhapSubject && (examMode === "mock_exam" || examMode === "exam_simulation") && type === "subjective") {
-      requestedCount = 5;
     } else if ((isPhys1Subject || isCsaSubject) && (examMode === "mock_exam" || examMode === "exam_simulation") && type === "subjective") {
       requestedCount = 4;
     } else if ((isMacroSubject || isLangSubject) && (examMode === "mock_exam" || examMode === "exam_simulation") && type === "subjective") {
       requestedCount = 3;
-    } else if (isPsychSubject && (examMode === "mock_exam" || examMode === "exam_simulation") && type === "subjective") {
+    } else if ((isWhapSubject || isPsychSubject) && (examMode === "mock_exam" || examMode === "exam_simulation") && type === "subjective") {
       requestedCount = 2;
     }
     const targetTopic = [topic, unit, subject].filter(Boolean).join(" - ");
@@ -24011,17 +24018,24 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
           }
         };
         const getWhapStratifiedType = (qIdx, total) => {
+          if (total === 2) {
+            if (qIdx === 0) {
+              return "QUESTION 1: DOCUMENT-BASED QUESTION (DBQ) [7 POINTS] (Historical prompt with 7 authentic documents [Documents 1\u20137: text excerpts, official edicts, travelers accounts, visual art/maps], 7-Point College Board Rubric: Thesis 1 pt, Contextualization 1 pt, Evidence from 6 Docs 2 pts, Outside Evidence 1 pt, Sourcing HIPP for 2 Docs 1 pt, Complex Understanding 1 pt)";
+            } else {
+              return "QUESTION 2: LONG ESSAY QUESTION (LEQ) [6 POINTS] (Comprehensive historical reasoning essay prompt across CED units [Comparison, Causation, or CCOT], 6-Point College Board Rubric: Thesis 1 pt, Contextualization 1 pt, Specific Historical Evidence 2 pts, Historical Reasoning 1 pt, Complex Understanding 1 pt)";
+            }
+          }
           const mod = qIdx % 5;
           if (mod === 0) {
-            return "QUESTION 1: SAQ 1 - SECONDARY SOURCE ANALYSIS [3 POINTS] (Historian argument excerpt, Parts a-c, ACE Method)";
+            return "QUESTION 1: DOCUMENT-BASED QUESTION (DBQ) [7 POINTS] (Historical prompt with 7 distinct documents, 7-Point College Board Rubric)";
           } else if (mod === 1) {
-            return "QUESTION 2: SAQ 2 - PRIMARY SOURCE / VISUAL ARTIFACT [3 POINTS] (Document/Visual artifact, HIPP sourcing, Parts a-c, ACE Method)";
+            return "QUESTION 2: LONG ESSAY QUESTION (LEQ) [6 POINTS] (Comprehensive essay prompt across units, 6-Point College Board Rubric)";
           } else if (mod === 2) {
-            return "QUESTION 3: SAQ 3 - NON-STIMULUS CONCEPTUAL / CCOT [3 POINTS] (Comparative/causation historical reasoning, Parts a-c, ACE Method)";
+            return "QUESTION 3: SAQ 1 - SECONDARY SOURCE ANALYSIS [3 POINTS] (Historian argument excerpt, Parts a-c, ACE Method)";
           } else if (mod === 3) {
-            return "QUESTION 4: DOCUMENT-BASED QUESTION (DBQ) [7 POINTS] (Historical prompt with 7 distinct documents, 7-Point College Board Rubric)";
+            return "QUESTION 4: SAQ 2 - PRIMARY SOURCE / VISUAL ARTIFACT [3 POINTS] (Document/Visual artifact, HIPP sourcing, Parts a-c, ACE Method)";
           } else {
-            return "QUESTION 5: LONG ESSAY QUESTION (LEQ) [6 POINTS] (Comprehensive essay prompt across units, 6-Point College Board Rubric)";
+            return "QUESTION 5: SAQ 3 - NON-STIMULUS CONCEPTUAL / CCOT [3 POINTS] (Comparative/causation historical reasoning, Parts a-c, ACE Method)";
           }
         };
         const getMacroStratifiedType = (qIdx, total) => {
@@ -24657,21 +24671,14 @@ Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP
           const chemDefaultPoints = idx < 3 ? 10 : 4;
           const bioDefaultPoints = idx < 2 ? 9 : 4;
           const phys1DefaultPoints = idx === 0 ? 10 : idx === 1 ? 12 : idx === 2 ? 10 : 8;
-          const whapDefaultPoints = idx % 5 === 3 ? 7 : idx % 5 === 4 ? 6 : 3;
+          const whapDefaultPoints = requestedCount === 2 ? idx === 0 ? 7 : 6 : idx % 5 === 0 ? 7 : idx % 5 === 1 ? 6 : 3;
           const langDefaultPoints = 6;
           const psychDefaultPoints = 7;
           const csaDefaultPoints = idx % 4 === 0 ? 7 : idx % 4 === 1 ? 7 : idx % 4 === 2 ? 5 : 6;
           const macroDefaultPoints = idx % 3 === 0 ? 10 : 5;
           const apushDefaultPoints = 3;
           const assignedPoints = isWhapSubject ? realPoints === 7 || realPoints === 6 || realPoints === 3 ? realPoints : whapDefaultPoints : isChemSubject ? realPoints === 10 || realPoints === 4 ? realPoints : chemDefaultPoints : isBioSubject ? realPoints === 9 || realPoints === 4 ? realPoints : bioDefaultPoints : isPhys1Subject ? realPoints === 12 || realPoints === 10 || realPoints === 8 ? realPoints : phys1DefaultPoints : isLangSubject ? realPoints === 6 ? realPoints : langDefaultPoints : isPsychSubject ? realPoints === 7 ? realPoints : psychDefaultPoints : isCsaSubject ? realPoints >= 5 && realPoints <= 9 ? realPoints : csaDefaultPoints : isMacroSubject ? realPoints === 10 || realPoints === 5 ? realPoints : macroDefaultPoints : isApushSubject ? realPoints === 3 ? realPoints : apushDefaultPoints : realPoints;
-          const whapTitles = [
-            `SECTION I PART B: SHORT-ANSWER QUESTION ${idx + 1} (SECONDARY SOURCE)  [${assignedPoints} POINTS]`,
-            `SECTION I PART B: SHORT-ANSWER QUESTION ${idx + 1} (PRIMARY SOURCE / VISUAL)  [${assignedPoints} POINTS]`,
-            `SECTION I PART B: SHORT-ANSWER QUESTION ${idx + 1} (NON-STIMULUS CONCEPTUAL)  [${assignedPoints} POINTS]`,
-            `SECTION II PART A: DOCUMENT-BASED QUESTION (DBQ)  [${assignedPoints} POINTS]`,
-            `SECTION II PART B: LONG ESSAY QUESTION (LEQ)  [${assignedPoints} POINTS]`
-          ];
-          const whapTitle = whapTitles[idx % 5];
+          const whapTitle = requestedCount === 2 ? idx === 0 ? `SECTION II PART A: DOCUMENT-BASED QUESTION (DBQ)  [${assignedPoints} POINTS]` : `SECTION II PART B: LONG ESSAY QUESTION (LEQ)  [${assignedPoints} POINTS]` : idx % 5 === 0 ? `SECTION II PART A: DOCUMENT-BASED QUESTION (DBQ)  [${assignedPoints} POINTS]` : idx % 5 === 1 ? `SECTION II PART B: LONG ESSAY QUESTION (LEQ)  [${assignedPoints} POINTS]` : idx % 5 === 2 ? `SECTION I PART B: SHORT-ANSWER QUESTION 1 (SECONDARY SOURCE)  [${assignedPoints} POINTS]` : idx % 5 === 3 ? `SECTION I PART B: SHORT-ANSWER QUESTION 2 (PRIMARY SOURCE / VISUAL)  [${assignedPoints} POINTS]` : `SECTION I PART B: SHORT-ANSWER QUESTION 3 (NON-STIMULUS CONCEPTUAL)  [${assignedPoints} POINTS]`;
           const chemTitle = idx < 3 ? `LONG FREE-RESPONSE QUESTION ${idx + 1}  [${assignedPoints} POINTS]` : `SHORT FREE-RESPONSE QUESTION ${idx + 1}  [${assignedPoints} POINTS]`;
           const bioTitle = idx < 2 ? `LONG FREE-RESPONSE QUESTION ${idx + 1}  [${assignedPoints} POINTS]` : `SHORT FREE-RESPONSE QUESTION ${idx + 1}  [${assignedPoints} POINTS]`;
           const phys1Titles = [
