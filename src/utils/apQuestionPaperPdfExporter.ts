@@ -154,9 +154,11 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(15);
+      const rawSubjectName = sanitizePdfText(subject.name || '');
+      const subjectClean = rawSubjectName.replace(/^AP\s+/i, '');
       const mainTitle = isMock
-        ? `AP ${sanitizePdfText(subject.name)} Section II Mock Exam`
-        : `AP ${sanitizePdfText(subject.name)} Topic & Concept Practice Bank`;
+        ? `AP ${subjectClean} Section II Mock Exam`
+        : `AP ${subjectClean} Topic & Concept Practice Bank`;
       doc.text(mainTitle, margin, 45);
 
       doc.setFont('helvetica', 'normal');
@@ -167,8 +169,29 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
         ? 'Section I (Multiple Choice)' 
         : (isComp ? 'Section II (Create Performance Task)' : 'Section II (Free Response)');
       const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+      const subjId = (subject.id || '').toLowerCase();
+      const subjName = (subject.name || '').toLowerCase();
+      const isChem = subjId.includes('chem') || subjName.includes('chem');
+      const isBc = subjId.includes('bc') || subjName.includes('bc');
+      const isBio = subjId.includes('bio') || subjName.includes('bio');
+      const isCsa = subjId.includes('computer-science') || subjId.includes('csa') || (subjName.includes('computer science') && !subjName.includes('principles'));
+      const isPhys1 = subjId.includes('phys') || subjName.includes('phys');
+      const isLang = subjId.includes('english') || subjId.includes('lang') || subjName.includes('english') || subjName.includes('lang');
+      const isPsych = subjId.includes('psych') || subjName.includes('psych');
       const subtitle = isMock
-        ? `Structure: 3 Real Exam FRQs (75 Minutes • Timed Simulation)   |   ${dateStr}`
+        ? (isChem
+            ? `Structure: 7 Real Exam FRQs (105 Minutes • Timed Simulation)   |   ${dateStr}`
+            : (isBc || isBio)
+            ? `Structure: 6 Real Exam FRQs (90 Minutes • Timed Simulation)   |   ${dateStr}`
+            : isCsa
+            ? `Structure: 4 Real Exam FRQs (90 Minutes • Timed Simulation)   |   ${dateStr}`
+            : isPhys1
+            ? `Structure: 4 Real Exam FRQs (100 Minutes • Timed Simulation)   |   ${dateStr}`
+            : isLang
+            ? `Structure: 3 Real Exam Essays (135 Minutes • Timed Simulation)   |   ${dateStr}`
+            : isPsych
+            ? `Structure: 2 Real Exam FRQs (70 Minutes • Timed Simulation)   |   ${dateStr}`
+            : `Structure: 3 Real Exam FRQs (75 Minutes • Timed Simulation)   |   ${dateStr}`)
         : `Format: ${formatSection} (CED Aligned Practice)   |   Unit: ${sanitizePdfText(unitTitle)}   |   ${dateStr}`;
       doc.text(subtitle, margin, 62);
 
@@ -414,8 +437,8 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
       promptText = stripRawSvgMarkup(extP.cleanText);
       if (extP.diagramSvg) diagramSvg = extP.diagramSvg;
 
-      const qPoints = getQuestionRealPoints(q, subject.id);
-      const canonicalUnit = resolveCanonicalUnit(subject.id || '', (q as any).unitNumber || q.skill || unitTitle);
+      const qPoints = getQuestionRealPoints(q, subject.id || subject.name);
+      const canonicalUnit = resolveCanonicalUnit(subject.id || subject.name || '', (q as any).unitNumber || (q as any).unitTitle || q.skill || unitTitle, promptText);
 
       const cleanPrompt = sanitizePdfText(promptText);
       doc.setFont('helvetica', 'bold');
@@ -443,9 +466,40 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
         : `FREE RESPONSE QUESTION ${idx + 1}  [${qPoints} POINTS]`;
       doc.text(bannerText, margin + 10, currentY + 14);
 
-      // Stimulus Category tag on right (Bug #3)
-      const stimCategory = (q as any).stimulusCategory || (diagramSvg ? 'single' : 'none');
-      const stimLabel = stimCategory === 'two' ? '[Two Stimuli]' : (stimCategory === 'single' ? '[Single Stimulus]' : '[No Stimulus]');
+      // Stimulus Category tag on right (Accurate College Board Categorization)
+      const combinedLower = `${promptText} ${stimulusText || ''}`.toLowerCase();
+      const hasDiagram = Boolean(diagramSvg && diagramSvg.trim());
+      const hasMarkdownTable = /\|[^\n]+\|[^\n]+\|/.test(promptText || '') || /\|[^\n]+\|[^\n]+\|/.test(stimulusText || '');
+      const hasSource1 = /\bsource\s*1\b/i.test(combinedLower);
+      const hasSource2 = /\bsource\s*2\b/i.test(combinedLower);
+      const hasSourceCitation = /\bsource\s*:/i.test(combinedLower);
+      const hasTableReference = /\b(?:the\s+table\s+below|data\s+in\s+the\s+table|using\s+the\s+data\s+shown|table\s+1)\b/i.test(combinedLower);
+      const hasFigureReference = /\b(?:figure\s*1|figure\s*2|using\s+the\s+map\s+shown|diagram\s+shown)\b/i.test(combinedLower);
+
+      let computedStim: 'none' | 'single' | 'two' = 'none';
+      if (
+        (hasSource1 && hasSource2) || 
+        (hasDiagram && hasMarkdownTable) || 
+        /\bfigure\s*2\b/i.test(combinedLower) || 
+        (hasDiagram && hasSource1) ||
+        (hasMarkdownTable && hasSource2) ||
+        (q as any).stimulusCategory === 'two'
+      ) {
+        computedStim = 'two';
+      } else if (
+        hasDiagram || 
+        hasMarkdownTable || 
+        hasSource1 || 
+        hasSourceCitation || 
+        hasTableReference || 
+        hasFigureReference || 
+        (stimulusText && stimulusText.trim().length > 20) ||
+        (q as any).stimulusCategory === 'single'
+      ) {
+        computedStim = 'single';
+      }
+
+      const stimLabel = computedStim === 'two' ? '[Two Stimuli]' : (computedStim === 'single' ? '[Single Stimulus]' : '[No Stimulus]');
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(8);
       doc.setTextColor(147, 51, 234);
@@ -471,7 +525,7 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
         currentY += 8;
       }
 
-      currentY = drawRichTextWithTables(doc, promptText, margin, currentY, contentWidth, {
+      currentY = drawRichTextWithTables(doc, cleanPrompt, margin, currentY, contentWidth, {
         fontName: 'helvetica',
         fontStyle: 'bold',
         fontSize: 10.5,
@@ -604,7 +658,14 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
       doc.text('Official Reader Scoring Guidelines & Criteria:', margin, currentY);
       currentY += 12;
 
-      q.scoringRubric.forEach(rubricItem => {
+      const rawRubric = (q as any).scoringRubric;
+      const rubricList: string[] = Array.isArray(rawRubric)
+        ? rawRubric.map(String)
+        : (typeof rawRubric === 'string' && rawRubric.trim()
+            ? (rawRubric.includes('\n') ? rawRubric.split('\n').map((s: string) => s.trim()).filter(Boolean) : [rawRubric])
+            : []);
+
+      rubricList.forEach(rubricItem => {
         const cleanRubricItem = stripRawSvgMarkup(rubricItem);
         currentY = drawRichTextWithTables(doc, `• ${cleanRubricItem}`, margin + 6, currentY, contentWidth - 12, {
           fontName: 'helvetica',

@@ -201,6 +201,24 @@ import path2 from "path";
 import fs2 from "fs";
 import crypto2 from "crypto";
 import { YoutubeTranscript } from "youtube-transcript";
+async function fetchWithTimeout(url, options = {}, timeout = 9e4) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+}
+var lastQuotaExceededTime = 0;
+var rateLimitedModels = {};
+var rateLimitedModelsCooldown = {};
 function getGradePedagogicalDirective(gradeLevel, stream, country) {
   const g = (gradeLevel || "").toLowerCase().trim();
   let tier = "tier3";
@@ -828,14 +846,14 @@ ${extractedText}` };
       ];
       let summaryText = "";
       let summarizeError = null;
-      for (const model of summarizeModels) {
+      for (const model2 of summarizeModels) {
         try {
           const response = await safeGenerateContent2({
             gradeLevel,
             stream,
             country,
             profileContext,
-            model,
+            model: model2,
             timeoutMs: 6e4,
             contents: contentsPayload,
             config: {
@@ -850,7 +868,7 @@ ${extractedText}` };
             break;
           }
         } catch (err) {
-          console.warn(`[summarize] Model ${model} failed, trying next fallback:`, err?.message || err);
+          console.warn(`[summarize] Model ${model2} failed, trying next fallback:`, err?.message || err);
           summarizeError = err;
         }
       }
@@ -1063,18 +1081,18 @@ GIBBERISH / RANDOM TYPING GUARD:
       let streamResponse = null;
       let lastError = null;
       let anyQuotaExceeded = false;
-      for (const model of modelsToTry) {
+      for (const model2 of modelsToTry) {
         try {
           const streamConfig = {
             systemInstruction: { parts: [{ text: systemInstruction }] },
             temperature: 0.15,
             maxOutputTokens: 3e3
           };
-          if (model.includes("thinking") || model.includes("2.5")) {
+          if (model2.includes("thinking") || model2.includes("2.5")) {
             streamConfig.thinkingConfig = { thinkingBudget: 0 };
           }
           streamResponse = await aiClient.models.generateContentStream({
-            model,
+            model: model2,
             contents: [{ parts: contentParts }],
             config: streamConfig
           });
@@ -1084,13 +1102,13 @@ GIBBERISH / RANDOM TYPING GUARD:
           const errStr = String(err.message || err);
           const isRateLimitOrQuota = errStr.includes("429") || errStr.includes("quota") || errStr.includes("RESOURCE_EXHAUSTED") || errStr.includes("resource_exhausted") || errStr.includes("limit");
           if (isRateLimitOrQuota) {
-            console.warn(`[grade-essay stream] Model ${model} hit rate-limit or quota constraint:`, errStr);
+            console.warn(`[grade-essay stream] Model ${model2} hit rate-limit or quota constraint:`, errStr);
             lastQuotaExceededTime = Date.now();
-            rateLimitedModels[model] = Date.now();
+            rateLimitedModels[model2] = Date.now();
             anyQuotaExceeded = true;
             continue;
           } else {
-            console.error(`[grade-essay stream] Model ${model} failed:`, errStr);
+            console.error(`[grade-essay stream] Model ${model2} failed:`, errStr);
           }
         }
       }
@@ -2006,14 +2024,14 @@ You must return your output strictly in JSON format matching the following schem
       ];
       let response = null;
       let grammarError = null;
-      for (const model of grammarModels) {
+      for (const model2 of grammarModels) {
         try {
           response = await safeGenerateContent2({
             gradeLevel,
             stream,
             country,
             profileContext,
-            model,
+            model: model2,
             contents: { parts: contentParts },
             config: {
               systemInstruction: { parts: [{ text: systemInstruction }] },
@@ -2025,7 +2043,7 @@ You must return your output strictly in JSON format matching the following schem
             break;
           }
         } catch (err) {
-          console.warn(`[grammar-enhance] Model ${model} failed, trying fallback:`, err?.message || err);
+          console.warn(`[grammar-enhance] Model ${model2} failed, trying fallback:`, err?.message || err);
           grammarError = err;
         }
       }
@@ -2210,14 +2228,14 @@ OUTPUT QUALITY & MATHEMATICAL FORMULAS (KaTeX):
       ];
       let textSummaryResult = "";
       let textSumError = null;
-      for (const model of textSumModels) {
+      for (const model2 of textSumModels) {
         try {
           const response = await safeGenerateContent2({
             gradeLevel,
             stream,
             country,
             profileContext,
-            model,
+            model: model2,
             contents: { parts: [{ text: trimmedText }] },
             config: { systemInstruction: { parts: [{ text: systemInstruction }] }, maxOutputTokens: 2500, temperature: 0.3 }
           });
@@ -2225,7 +2243,7 @@ OUTPUT QUALITY & MATHEMATICAL FORMULAS (KaTeX):
           textSumError = null;
           break;
         } catch (err) {
-          console.warn(`[summarize-text] Model ${model} failed, trying next fallback:`, err?.message || err);
+          console.warn(`[summarize-text] Model ${model2} failed, trying next fallback:`, err?.message || err);
           textSumError = err;
           continue;
         }
@@ -2409,19 +2427,105 @@ The Gemini API is currently experiencing rate limits. Please try again in 60 sec
   6. Cities & Urban Land-Use (Burgess Concentric Zone, Hoyt Sector, Harris-Ullman Multiple Nuclei, Galactic model, Christaller's Central Place Theory, rank-size rule, primate cities, gentrification, New Urbanism).
   7. Industrial & Economic Development (Wallerstein World Systems [Core/Periphery], Rostow 5 Stages of Economic Growth, Weber Least Cost Theory, HDI, UN SDGs).
 - Stimulus Requirement: Ground questions in realistic geographic stimuli (demographic data charts, regional map descriptions, population pyramid profiles, or geographic case studies).
-- Distractors: Plausible 9th-grade misconceptions (e.g., confusing environmental determinism with possibilism, confusing hierarchical with contagious diffusion, or misidentifying DTM stages).`;
+- Distractors: Plausible 9th-grade misconceptions (e.g., confusing environmental determinism with possibilism, confusing hierarchical with contagious diffusion, or misidentifying DTM stages).
+- MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+  Before finalizing any MCQ, perform an internal self-audit:
+  1. Geographic Fact Check: Verify demographic numbers, geographic models (DTM 1-5, Von Th\xFCnen, Burgess, Rostow, Wallerstein), and regional associations.
+  2. Single Unambiguous Key Check: Ensure exactly ONE option (the key) is unequivocally correct based on College Board CED definitions. The other 3 options must be distinct 9th-grade student misconceptions.
+  3. Stimulus Solvability: If referring to a data table or map description, ensure all needed evidence is explicitly given.
+  4. Instant Self-Healing: If you find ANY ambiguity, incorrect geographic fact, or invalid distractor during your self-check, DO NOT output it. Discard and completely regenerate or heal the question immediately before returning the final JSON.`;
       } else {
-        return `AP HUMAN GEOGRAPHY FREE RESPONSE STANDARDS (College Board CED - 7-Part FRQ):
-- Format: Real 7-PART College Board Free Response Questions with parts (A), (B), (C), (D), (E), (F), and (G). Total Points: Exactly 7 Points (1 point per part).
-- Official FRQ Types:
-  1. Question 1 (No Stimulus): Tests geographic concepts, spatial models, and processes.
-  2. Question 2 (One Stimulus): Anchored to a thematic map, demographic chart, or spatial model.
-  3. Question 3 (Two Stimuli): Comparative synthesis between two geographic datasets or regions.
-- Command Verbs & Scaffolding:
-  - "Identify" / "Define" (1-2 sentences stating the specific concept or pattern).
-  - "Describe" (Provide relevant characteristics or spatial trends).
-  - "Explain" (Must clearly establish cause-and-effect line of reasoning: 'how' or 'why' X causes Y in geographic context).
-- Rubric: Exactly 7 points (+1 pt for each part A through G) with crystal-clear scoring criteria and model responses.`;
+        return `AP HUMAN GEOGRAPHY FREE RESPONSE EXAM STANDARDS (COLLEGE BOARD SECTION II - 100% AUTHENTIC REPLICA):
+PEDAGOGICAL INTELLIGENCE DERIVED FROM OFFICIAL EXAM SETS (2023, 2024, 2025, 2026):
+You are the College Board AP Human Geography Chief Reader. Section II has 3 questions (1 hr 15 min). Every question you generate MUST strictly follow this exact real-exam blueprint:
+
+1. MANDATORY 7-PART SUB-QUESTION ANATOMY (PARTS A THROUGH G):
+- Every single Free Response Question MUST consist of EXACTLY 7 distinct parts labeled:
+  A. [Sub-question]
+  B. [Sub-question]
+  C. [Sub-question]
+  D. [Sub-question]
+  E. [Sub-question]
+  F. [Sub-question]
+  G. [Sub-question]
+- Outputting fewer than 7 parts or more than 7 parts is STRICTLY FORBIDDEN.
+- TOTAL POINTS: EXACTLY 7 POINTS (Each part A through G is worth exactly 1 point: +1 pt per part).
+
+2. THE 3 OFFICIAL COLLEGE BOARD QUESTION ARCHETYPES:
+- QUESTION TYPE 1 (NO STIMULUS - CONCEPTUAL / SPATIAL SCENARIO):
+  * Begins with a 1-2 sentence real-world geographic scenario setting the spatial and thematic context.
+  * Followed immediately by: "Respond to parts A, B, C, D, E, F, and G."
+  * No visual, map, or table stimulus. Tests pure spatial concepts, spatial models, and multi-unit linkages.
+- QUESTION TYPE 2 (ONE STIMULUS - AUTHENTIC DATA TABLE OR CANONICAL THEMATIC MAP):
+  * Rooted in EXACTLY ONE authentic stimulus:
+    [PILLAR 1: CANONICAL THEMATIC MAP / SPATIAL MODEL]:
+    - If testing a visual model, open the prompt with one of the canonical College Board figures:
+      * Unit 2 (Population & Migration): "Figure 1: Demographic Transition Model (DTM Stages 1\u20135)" OR "Figure 1: Global Total Fertility Rates (TFR) Thematic Choropleth Map" OR "Figure 1: Major Global Transnational Migration Corridors and Labor Flows Map"
+      * Unit 5 (Agriculture): "Figure 1: Von Th\xFCnen Model of Agricultural Land-Use"
+      * Unit 6 (Cities & Urban): "Figure 1: Burgess Concentric Zone Urban Model" OR "Figure 1: Hoyt Sector Model (Axial Urban Corridors)" OR "Figure 1: Harris-Ullman Multiple Nuclei and Galactic Edge City Model"
+      * Unit 7 (Industrial & Economic Development): "Figure 1: Wallerstein World Systems Theory (Core-Periphery Spatial Model)"
+      (The platform automatically attaches pixel-perfect vector SVG maps for these canonical models!)
+    [PILLAR 2: AUTHENTIC DEMOGRAPHIC / SPATIAL MARKDOWN DATA TABLE - THE #1 MOST COMMON COLLEGE BOARD STIMULUS]:
+    - Format as a clean standard GitHub Markdown table (| Region/Country | CBR | CDR | TFR | GNI per Capita |) with authentic institutional citations (UN, World Bank, FAO). NEVER use LaTeX math arrays ($$\\begin{array}).
+  * Parts A & B MUST explicitly reference the stimulus: "Using the map shown in Figure 1, identify..." or "Using the data in the table, identify...".
+- QUESTION TYPE 3 (TWO STIMULI - COMPARATIVE SYNTHESIS):
+  * Rooted in TWO complementary sources labeled "Source 1" and "Source 2":
+    [PILLAR 3: PAIRED SPATIAL REGIONAL CASE SCENARIOS]:
+    - Source 1: Thematic Map or Spatial Boundary Scenario (e.g. "Source 1: Figure 1 - Major Global Transnational Migration Corridors Map" OR subnational administrative governance scenario).
+    - Source 2: Paired Demographic, Economic, or Remittance Survey Data Table (e.g. "Source 2: Table 1 - Foreign Remittance Inflows and Emigration Statistics by Country of Origin").
+  * Requires comparative synthesis between Source 1 and Source 2 across subparts (e.g. Part A analyzes Source 1, Part B analyzes Source 2, Part C compares the relationship between Source 1 and Source 2).
+
+3. STRATIFIED DISTRIBUTION BY SESSION QUESTION COUNT:
+When generating a batch of questions, assign archetypes based on the total requested question count:
+- IF COUNT == 3 (Official Exam Simulation Set):
+  * Question 1 = Type 1 (No Stimulus)
+  * Question 2 = Type 2 (One Stimulus: Data Table or Thematic Map)
+  * Question 3 = Type 3 (Two Stimuli: Comparative 2 Sources/Maps/Tables)
+- IF COUNT == 5 (Practice Bank):
+  * Questions 1 & 2 = Type 1 (No Stimulus)
+  * Questions 3 & 4 = Type 2 (One Stimulus)
+  * Question 5 = Type 3 (Two Stimuli)
+- IF COUNT == 10 (Marathon Bank):
+  * Questions 1, 2, 3 = Type 1 (No Stimulus)
+  * Questions 4, 5, 6 = Type 2 (One Stimulus)
+  * Questions 7, 8, 9, 10 = Type 3 (Two Stimuli)
+- IF COUNT == 15 (Mega Practice Bank):
+  * Questions 1 to 5 = Type 1 (No Stimulus)
+  * Questions 6 to 10 = Type 2 (One Stimulus)
+  * Questions 11 to 15 = Type 3 (Two Stimuli)
+
+4. OFFICIAL COLLEGE BOARD COMMAND VERB HIERARCHY:
+Each part (A through G) must use an authentic College Board command verb:
+- "Identify..." (1-2 concise sentences identifying the specific concept, spatial trend, or datum from stimulus).
+- "Define..." (Precise academic definition of the geographical term, model, or principle).
+- "Describe..." (Provide relevant observable characteristics, spatial patterns, or demographic trends).
+- "Explain..." (MUST provide cause-and-effect line of reasoning showing HOW or WHY mechanism X leads to outcome Y in geographic context).
+- SIGNATURE COLLEGE BOARD COMMAND VERB (MANDATORY IN PART F OR G):
+  "Explain the degree to which... (Response must indicate the degree [low, moderate, high] and provide an explanation.)"
+
+5. MANDATORY CROSS-UNIT SYNTHESIS (NEVER ISOLATE TO A SINGLE UNIT):
+Real College Board questions synthesize concepts across multiple units:
+- Combine Unit 2 (Population/Migration) + Unit 6 (Cities/Urban land-use/Housing discrimination/Sustainability).
+- Combine Unit 4 (Political/Sovereignty/Federalism) + Unit 6 (Metropolitan transit fragmentation/Edge cities).
+- Combine Unit 5 (Agriculture/Green Revolution) + Unit 7 (Economic development/Trade interdependence/Commodity dependence).
+- Combine Unit 3 (Cultural diffusion/Linguistic patterns) + Unit 4 (Colonialism/Devolution/Indigenous autonomy).
+
+6. COPYRIGHT & ORIGINALITY SAFEGUARD:
+- DO NOT copy verbatim questions, maps, or exact numbers from the official 2023-2026 exam PDFs.
+- Invent 100% fresh, realistic global scenarios (e.g. agricultural commodity exports in Southeast Asia, pastoral migration in Central Asia, metropolitan boundary governance in European/North American transit systems, demographic shifts in aging vs youthful nations).
+
+7. SCORING RUBRIC & EXEMPLARY MODEL ANSWER:
+- In "totalPoints", specify exactly 7.
+- In "scoringRubric", provide a strict 7-item array (+1 point for each part A through G) stating the exact criteria required to earn the point.
+- In "modelAnswer", provide a complete exemplary response with clear labels: "Part A: ...\\n\\nPart B: ...\\n\\nPart C: ...\\n\\nPart D: ...\\n\\nPart E: ...\\n\\nPart F: ...\\n\\nPart G: ...".
+
+8. MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+Before returning any Free Response Question, the AI MUST execute a rigorous internal quality audit:
+- Check 1 (7-Part Completeness): Does the question have EXACTLY 7 parts labeled A through G? (If not, immediately expand or adjust to exactly 7 parts).
+- Check 2 (Points Parity): Is every single part worth exactly 1 point, totaling exactly 7 points? Does the scoring rubric have 7 distinct items (+1 for each part)?
+- Check 3 (College Board Command Verbs): Does part F or G contain the signature command: "Explain the degree to which..."? Do earlier parts correctly use Identify, Define, Describe, and Explain?
+- Check 4 (Geographic Plausibility & Model Integrity): Are all demographic data points (TFR, CBR, CDR, IMR) realistic for the identified countries? Are geographic models (Von Th\xFCnen concentric rings, Burgess, Hoyt, Rostow stages, Wallerstein world systems) applied with 100% textbook accuracy without hallucinations?
+- Check 5 (Self-Correction & Regeneration): If ANY part is flawed, ambiguous, or lacks geographic rigor, the AI MUST discard and replace that sub-part, or completely rewrite and heal the question to 100% College Board perfection before outputting.`;
       }
     }
     if (s.includes("environmental") || s.includes("apes")) {
@@ -2435,13 +2539,72 @@ The Gemini API is currently experiencing rate limits. Please try again in 60 sec
 - Quantitative Reasoning: Include realistic environmental math (Rule of 70, LD50 toxicity, percent change, metric conversions).
 - Distractors: Represent common student traps (confusing ozone depletion with global warming, confusing point vs nonpoint pollution).`;
       } else {
-        return `AP ENVIRONMENTAL SCIENCE FREE RESPONSE STANDARDS (College Board CED):
-- Format: Real 10-POINT multi-part questions with sub-parts (a), (b), (c), (d), (e). Total Points: Exactly 10 Points.
-- Official FRQ Archetypes:
-  1. Design an Investigation: Hypothesis, independent/dependent/control variables, data collection procedures, and experimental validity.
-  2. Analyze an Environmental Problem & Propose a Solution: Ecological impacts, identifying root causes, and proposing realistic, sustainable solutions with environmental or economic justifications.
-  3. Quantitative Environmental Problem & Solution: Multi-step mathematical calculations (with units and dimensional analysis) paired with an environmental mitigation recommendation.
-- Rubric: Exactly 10 points breakdown with step-by-step partial-credit criteria.`;
+        return `AP ENVIRONMENTAL SCIENCE FREE RESPONSE EXAM STANDARDS (COLLEGE BOARD SECTION II - 100% AUTHENTIC REPLICA):
+PEDAGOGICAL INTELLIGENCE DERIVED FROM OFFICIAL EXAM SETS (2024, 2025, 2026 DIGITAL STANDARDS):
+You are the College Board AP Environmental Science (APES) Chief Reader and Lead Exam Developer. Section II consists of 3 free-response questions (1 hour 10 minutes, suggested 22 minutes per question).
+Every single Free Response Question you generate MUST strictly conform to this exact official blueprint:
+
+1. MANDATORY 10-POINT ATOMIC ANATOMY (POINT 01 TO POINT 10):
+- Every single FRQ MUST yield EXACTLY 10 discrete, binary scoring points (Earned = 1, Not Earned = 0). Total Points: EXACTLY 10 POINTS.
+- Structure subparts clearly as Parts A through J (or Parts A through G/H with labeled subparts (i) and (ii)) such that the sum of all points is EXACTLY 10.
+- Outputting fewer than 10 points or more than 10 points is STRICTLY FORBIDDEN.
+
+2. THE 3 CANONICAL COLLEGE BOARD APES QUESTION ARCHETYPES (ROTATE EVENLY):
+- QUESTION ARCHETYPE 1: "DESIGN AN INVESTIGATION" (10 POINTS):
+  * Stimulus: Opens with a real-world ecological or lab investigation scenario accompanied by a data table, graph, or food web diagram (e.g. aquatic stream dissolved oxygen/BOD gradient, elevational avian community distribution, or soil fertility under different agricultural regimes).
+  * 10-Point Distribution Structure:
+    - Concept Application (2-3 pts): Connect to foundational ecology (trophic levels/cascades, r/K selection strategies, generalist vs specialist traits, ecosystem resistance/resilience).
+    - Data Analysis (2-3 pts): Read specific datum from stimulus ("Identify the value of... at [condition]"), describe overall trend ("Describe the relationship between X and Y - direct, inverse, or nonlinear"), and evaluate whether given data support or refute a stated hypothesis.
+    - Scientific Inquiry & Experimental Design (4-5 pts):
+      * Identify a testable scientific question or hypothesis (must state directional relationship).
+      * Identify the Independent Variable (IV) and Dependent Variable (DV) with laboratory precision.
+      * Describe the purpose of a control group or baseline treatment.
+      * Explain how an experimental modification (e.g. seasonal temperature shift, change in substrate/sediment, disturbance) would alter the experimental results.
+      * Explain why a diverse community recovers faster from disturbance (genetic diversity, niche partitioning) or describe an anthropogenic habitat disruption effect (habitat fragmentation, edge effect).
+
+- QUESTION ARCHETYPE 2: "ANALYZE AN ENVIRONMENTAL PROBLEM & PROPOSE A SOLUTION" (10 POINTS):
+  * Stimulus: Anchored to a real geographic map, geological/climatological diagram, or multi-decade land-use trend (e.g. tectonic rift valley/convergent plate boundary, El Ni\xF1o/La Ni\xF1a sea-surface temperature and jet-stream shifts, or land cover changes from 1700-present).
+  * 10-Point Distribution Structure:
+    - Earth Systems & Biomes (2-3 pts): Identify plate boundary type, atmospheric circulation pattern, or contrast climatic conditions between two terrestrial biomes.
+    - Environmental Problem & Mechanism (3-4 pts): Explain the causal chain of an ecological or environmental disturbance (e.g. impervious surfaces causing urban stormwater flooding, clear-cutting increasing water temperature, invasive species outcompeting natives, or pesticide treadmill).
+    - Propose a Realistic Solution (1 pt): Must propose an authentic, actionable engineering, agricultural, or policy intervention (e.g. permeable pavement, green roofs, wildlife overpass corridor, crop rotation, Integrated Pest Management).
+    - SIGNATURE COLLEGE BOARD TWIN-POINT RULE - JUSTIFY WITH CO-BENEFIT (1 pt):
+      "Justify the solution proposed in part [X] by providing an additional advantage OTHER THAN [the primary problem solved in part X]." (e.g. permeable pavement also recharges groundwater aquifers and reduces runoff pollutants; green roofs also mitigate the urban heat island effect and improve building insulation).
+    - Environmental Tradeoff / Sustainable Practice (2 pts): Secondary succession process, sustainable forestry (prescribed burns, brush clearing), or biocontrol methods.
+
+- QUESTION ARCHETYPE 3: "ANALYZE AN ENVIRONMENTAL PROBLEM - DOING CALCULATIONS" (10 POINTS):
+  * Stimulus: Grounded in energy generation (coal, natural gas, nuclear, solar), resource consumption (water usage, vehicle fuel economy), or wildlife population demographics.
+  * 10-Point Distribution Structure:
+    - Qualitative Environmental Problem & Source (3 pts): Identify anthropogenic pollutant source (e.g. particulate matter from industrial boilers/mining), describe pollution control mechanisms (vapor recovery nozzles, electrostatic precipitators, wet scrubbers), or explain acid rain chemistry.
+    - Environmental Solution & Justification (2 pts): Realistic conservation policy or technology upgrade with co-benefit justification.
+    - Multi-Step Quantitative Calculations (5 pts total):
+      * Minimum 2 distinct calculation problems, each awarded as PAIRED POINTS:
+        - 1 Point for Correct Formula Setup (numbers and mathematical relationship clearly displayed).
+        - 1 Point for Correct Numerical Calculation.
+      * Calculation Types to deploy:
+        1. Percent Change: ((New - Old) / Old) * 100
+        2. Rule of 70 Doubling Time: Time = 70 / r (where r is the annual growth percentage)
+        3. Dimensional Analysis / Unit Conversions: Fuel consumption per household, kWh to pounds of coal combusted, metric conversions, or energy efficiency.
+      * MANDATORY CLEAN NUMBERS RULE: Numbers MUST be mathematically pre-calibrated to produce clean, realistic integers or simple 1-decimal values (e.g. 11,000 houses, 0.88 kWh/lb, 14 gallons). NEVER generate messy irrational decimals that distract from scientific methodology.
+
+3. OFFICIAL COLLEGE BOARD COMMAND VERB HIERARCHY:
+- "Identify...": 1 concise factual phrase or numerical value directly from stimulus. No elaborate explanations.
+- "Describe...": State specific observable characteristics, biological adaptations, or directional trends.
+- "Explain...": STRICT REQUIREMENT - Must provide an unbroken cause-and-effect chain: [Cause] --> [Biophysical Mechanism] --> [Resulting Outcome]. Mentioning the outcome alone without the scientific mechanism earns 0 points!
+- "Propose a realistic solution...": Actionable, implementable environmental or engineering solution.
+- "Justify...": Must provide a distinct secondary ecological, public health, or economic advantage.
+- "Calculate... Show your work": Include explicit work setup and final answer with appropriate units.
+
+4. ORIGINALITY & ANTI-HALLUCINATION SAFEGUARD (NO VERBATIM COPYING):
+- Under NO circumstances copy the exact organisms, data tables, or questions from the 2024/2025/2026 released PDF exams (DO NOT reuse Chickadees, Ocelots, or Serengeti Wildebeest verbatim).
+- Use them strictly as pedagogical blueprints.
+- Invent 100% fresh, authentic environmental scenarios rooted in real geographic systems: Chesapeake Bay watershed, Everglades restoration, Mono Lake water diversion, Amazonian deforestation corridors, Colorado River water rights, or Three Gorges Dam impacts.
+- SCIENTIFIC REALITY BOUNDS: Dissolved Oxygen must be 0-14 mg/L; natural water pH 5.0-8.5; power plant efficiency 30-45%; trophic transfer strictly conforms to 10% rule.
+
+5. SCORING RUBRIC & EXEMPLARY MODEL ANSWER:
+- In "totalPoints", specify exactly 10.
+- In "scoringRubric", provide a strict 10-item array (Point 01 through Point 10) specifying exact point-by-point criteria and acceptable student response variations.
+- In "modelAnswer", provide a complete exemplary 10/10 response with clear part labels (e.g. "Part A: ... \\n\\nPart B: ...").`;
       }
     }
     if (s.includes("principles") || s.includes("csp")) {
@@ -2451,13 +2614,30 @@ The Gemini API is currently experiencing rate limits. Please try again in 60 sec
 - Scope: Creative development, binary/hex numbers, data compression (lossy vs lossless), pseudocode algorithms (robot grid traversal, conditional iteration, list filtering), Internet architecture (IP, TCP/IP, packet routing, fault tolerance), cybersecurity (public-key encryption, phishing, DDoS), and computing ethics.
 - Distractors: Represent algorithmic off-by-one errors, Boolean logic inversion (AND vs OR), or confusing lossy vs lossless compression.`;
       } else {
-        return `AP COMPUTER SCIENCE PRINCIPLES WRITTEN RESPONSE / PERFORMANCE TASK STANDARDS:
-- Format: 4-Part Written Response (6 Points Total) based on computational artifacts and program development:
-  - Part (a): Program Function and Purpose (explaining user inputs, outputs, and overall functionality).
-  - Part (b): Data Abstraction (identifying list/collection name, data represented, and how complexity is managed).
-  - Part (c): Algorithmic Logic & Sequencing (explaining iteration, selection, sequencing, and algorithmic outcome).
-  - Part (d): Testing & Parameter Behavior (describing two different calls/inputs, expected conditions, and resulting outputs).
-- Rubric: Precise College Board CED 6-point scoring criteria.`;
+        return `AP COMPUTER SCIENCE PRINCIPLES (AP CSP) SECTION II: WRITTEN RESPONSE (College Board 2024-2026 Official Standard):
+- Exam Structure: Section II lasts 60 minutes and consists of 2 Questions (4 Written-Response Prompts) based on a student's "Personalized Project Reference" (PPR).
+- Total Written Response Score: Exactly 4 Points (1 point each for WR 1, WR 2a, WR 2b, WR 2c). Overall Create Performance Task is 6 points (Video 1 pt + Program Requirements 1 pt + 4 WR pts).
+- STEP 1 (MANDATORY STUDENT PPR GENERATION):
+  Before asking the prompts, you MUST provide a realistic student Personalized Project Reference (PPR) in Python or JavaScript from a plausible domain (e.g. Smart Fitness Tracker, E-Commerce Cart, Weather Station Logger, Gaming Inventory, Playlist Shuffler, Gradebook):
+  1. List Section: Contains a non-trivial list with multiple elements (>= 4 dynamic elements).
+  2. Procedure Section: A student-developed procedure with at least ONE EXPLICIT PARAMETER, containing SELECTION ('if'/'else') and ITERATION ('for'/'while' loop) traversing or manipulating the list.
+- STEP 2 (THE 4 OFFICIAL WRITTEN-RESPONSE PROMPTS):
+  * Question 1 (Written Response 1 - 1 Point): Program Design, Function, and Purpose.
+    - Angle: Valid input & program action OR Unexpected/invalid input handling OR Example output demonstrating functionality OR Code documentation rationale for another programmer.
+  * Question 2(a) (Written Response 2a - 1 Point): Algorithm Development.
+    - Angle: Describing what is accomplished by the body of the first iteration statement OR identifying the Boolean expression in the first selection statement with specific values evaluating to true/false with causal reasoning OR iteration stopping condition and terminating boundary values.
+  * Question 2(b) (Written Response 2b - 1 Point): Errors and Testing.
+    - Angle: Providing two procedure calls with specific arguments causing two different code segments to execute OR proposing a modification that introduces a LOGIC ERROR (not a syntax error) and describing the deviated behavioral outcome OR accepted arguments causing edge-case failure.
+  * Question 2(c) (Written Response 2c - 1 Point): Data and Procedural Abstraction.
+    - Angle: Explaining how the list uses abstraction to manage complexity and describing how the code would be rewritten without lists (e.g. separate individual variables) OR explaining how code adapts when new elements are added to the list OR explaining procedural maintainability.
+- STRICT SANITY & ANTI-HALLUCINATION GUARDRAILS:
+  - ZERO PDF REPETITION / ZERO COPYING: Do NOT copy verbatim prompts or code from official exam releases. Invent 100% original scenarios.
+  - CODE-PROMPT DEPENDENCY LOCK: If a prompt asks about iteration, the code MUST have a loop. If it asks about selection, the code MUST have an if-statement. If it asks for two calls executing different segments, the procedure MUST have at least two reachable branches.
+  - MATHEMATICALLY SOLVABLE DATA: All conditions must have reachable true and false branches. Never ask impossible mathematical statements like 'x > 10 and x < 2'.
+  - LOGIC ERROR DEFINITION: A logic error is a mistake in an algorithm causing incorrect behavior/output, NOT a syntax/compile error.
+- SCORING RUBRIC & DECISION RULES:
+  - In 'totalPoints', specify 4 (or 6 if including video/program requirements).
+  - Provide a strict 4-item rubric with explicit Decision Rules detailing exactly when to award (+1) and 'Do NOT award a point if' (e.g. trivial iteration, one-element list, repeating code without explaining accomplishment, missing explicit parameter, vague explanation).`;
       }
     }
     if (s.includes("calculus bc")) {
@@ -2468,33 +2648,156 @@ The Gemini API is currently experiencing rate limits. Please try again in 60 sec
 - Distractors must represent classic student misconceptions: omitting chain rule in parametric derivatives, sign errors in integration by parts, forgetting to check endpoints in interval of convergence.
 - Format all math expressions cleanly using LaTeX ($...$).`;
       } else {
-        return `AP CALCULUS BC FREE RESPONSE STANDARDS (College Board CED):
-- Format: Real 9-POINT multi-part questions with sub-parts (a), (b), (c), (d).
-- Priority Archetypes:
-  1. Infinite Series (Taylor/Maclaurin series, finding general term, computing radius/interval of convergence using Ratio Test, Alternating Series Error Bound or Lagrange Error Bound).
-  2. Parametric / Polar Motion (position vector, velocity, total distance traveled / arc length integral, polar area enclosed between curves).
-  3. Logistic Differential Equations & Euler's Method step-by-step approximation.
-  4. Area & Volume of solids of revolution (disk/washer/cross sections) or Rate In / Rate Out Accumulation.
-- Total Points MUST be 9 points. Rubric must award partial points step-by-step (+1 pt for setup/derivative, +1 pt for antiderivative, +1 pt for justification/units).`;
+        return `AP CALCULUS BC SECTION II: FREE RESPONSE (College Board 2023-2026 Official CED Standards - 9 Points per FRQ):
+- Exam Architecture: Section II consists of 6 Free-Response Questions lasting 90 minutes (54 total points):
+  * Part A: Questions 1 & 2 (30 minutes, Graphing Calculator REQUIRED in RADIAN mode).
+  * Part B: Questions 3 to 6 (60 minutes, NO Calculator permitted).
+- Scoring Scale: Every single FRQ is worth EXACTLY 9 Points (P1 through P9), broken into 3 to 4 subparts: (a), (b), (c), (d).
+- Mathematical Rigor: The prompt function MUST match the rubric solution with 100% exactness. All series must have provable convergence, all integrals must be solvable, and no impossible physical data is permitted.
+
+1. THE 6 CANONICAL COLLEGE BOARD BC FRQ ARCHETYPES (ROTATE EVENLY ACROSS SESSIONS):
+- ARCHETYPE 1 (Part A, Calculator Active): RATE IN / RATE OUT ACCUMULATION & TABULAR FUNCTIONS
+  * Real-World Context: Fluid flow, thermal cooling/heating, biological arrival rates, or pollutant diffusion.
+  * Sub-part (a): Average rate of change using difference quotient [f(b) - f(a)] / (b - a) with physical units (e.g. gal/sec^2, words/min^2, deg C/min).
+  * Sub-part (b): Approximating definite integral int_a^b f(t) dt using Riemann sums (Right, Left, Midpoint, or Trapezoidal) with table data. Contextual interpretation: "integral gives the net change / total accumulation of [quantity] from t=a to t=b [units]".
+  * Sub-part (c): Average value formula: (1/(b - a)) * int_a^b f(t) dt, or solving f'(t) = average rate of change via calculator.
+  * Sub-part (d): Optimization / Net accumulation function A(t) = C(t) - int_a^t rate(x) dx: finding absolute maximum/minimum on closed interval [a, b] using CANDIDATES TEST (evaluating endpoints and all critical points).
+
+- ARCHETYPE 2 (Part A, Calculator Active): 2D PARAMETRIC VECTOR MOTION OR POLAR CURVES & AREA
+  * Sub-option 2A: POLAR CURVES r(theta) (BC Exclusive):
+    - Rate of change dr/dtheta at theta = theta_0 with calculator derivative.
+    - Polar area bounded between two curves: Area = (1/2) * int_alpha^beta (r_1(theta)^2 - r_2(theta)^2) dtheta. (Note: Must square each r individually; (r1 - r2)^2 is strictly incorrect).
+    - Extreme distance from y-axis (x = r*cos(theta), solve dx/dtheta = 0) or from x-axis (y = r*sin(theta), solve dy/dtheta = 0) with Candidates Test justification.
+    - Chain rule rate of change with respect to time: dr/dt = (dr/dtheta) * (dtheta/dt).
+  * Sub-option 2B: 2D PARAMETRIC VECTOR MOTION (BC Exclusive):
+    - Position <x(t), y(t)>, velocity vector <x'(t), y'(t)>, acceleration vector <x''(t), y''(t)>.
+    - Speed at t = t_0: ||v(t_0)|| = sqrt((x'(t_0))^2 + (y'(t_0))^2).
+    - Slope of tangent line: dy/dx = y'(t) / x'(t).
+    - Total distance traveled (arc length): int_a^b sqrt((x'(t))^2 + (y'(t))^2) dt.
+    - Position from initial condition: x(t) = x(t_0) + int_{t_0}^t x'(u) du.
+
+- ARCHETYPE 3 (Part B, No Calculator): DIFFERENTIAL EQUATIONS & SLOPE FIELDS
+  * Real-world contextual differential equation dy/dt = (1/k)(A - y) * g(t).
+  * Sub-part (a): Slope field sketch passing through initial point (x_0, y_0) respecting horizontal/vertical asymptotes.
+  * Sub-part (b): Tangent line equation y = y_0 + m(x - x_0) to approximate value at x_1.
+  * Sub-part (c): Overestimate vs Underestimate using second derivative d^2y/dx^2 via implicit differentiation and chain rule. If d^2y/dx^2 > 0 -> concave up -> tangent line lies below curve -> UNDERESTIMATE.
+  * Sub-part (d): Separation of Variables (4 Points): int dy/h(y) = int g(x) dx. Must separate variables (+1), find antiderivatives (+1), incorporate constant C with initial condition (+1), and solve explicitly for y (+1).
+
+- ARCHETYPE 4 (Part B, No Calculator): GRAPHICAL ANALYSIS OF f' & ACCUMULATION FUNCTION g(x) = int_a^x f(t) dt
+  * Given graph of continuous f (consisting of line segments and semicircles) on closed interval [a, b].
+  * Sub-part (a): Evaluating g'(x) = f(x) using Fundamental Theorem of Calculus (FTC Part 1).
+  * Sub-part (b): Points of inflection of g: locations where f changes from increasing to decreasing (or vice versa), or f attains relative extrema.
+  * Sub-part (c): Geometric evaluation of g(x) using triangle, trapezoid, and semicircle areas (area = (1/2)*pi*r^2), correctly handling reversal of limits: int_6^0 f(t) dt = -int_0^6 f(t) dt.
+  * Sub-part (d): Absolute minimum / maximum on [a, b] using CANDIDATES TEST (Must evaluate critical points where f(x) = 0 AND endpoints x = a, x = b).
+
+- ARCHETYPE 5 (Part B, No Calculator): ADVANCED INTEGRATION TECHNIQUES & EULER'S METHOD (BC Exclusive)
+  * Sub-part (a): Higher-order implicit derivative d^2y/dx^2 at point (x_0, y_0) using product and chain rules.
+  * Sub-part (b): Euler's Method: Approximating f(x_2) starting at (x_0, y_0) with 2 steps of equal size Delta x. Must clearly present step calculations: y_{k+1} = y_k + (dy/dx)|_{(x_k, y_k)} * Delta x.
+  * Sub-part (c): Advanced Integration: Integration by parts (int u dv = uv - int v du), partial fractions decomposition, or Improper Integral int_a^inf g(x) dx = lim_{b->inf} int_a^b g(x) dx. (MUST use proper limit notation; arithmetic with infinity like 1/inf = 0 is penalised).
+  * Sub-part (d): Taylor polynomial generated from differential equation or error bound.
+
+- ARCHETYPE 6 (Part B, No Calculator): THE SIGNATURE BC INFINITE SERIES & TAYLOR POLYNOMIALS (BC Signature)
+  * Given Taylor/Maclaurin series sum_{n=1}^inf a_n (x - c)^n or function with higher derivatives.
+  * Sub-part (a): Ratio Test for Interval of Convergence (5 Points):
+    - Set up ratio: lim_{n->inf} |a_{n+1} / a_n| (+1 pt).
+    - Evaluate limit of ratio in terms of |x - c| (+1 pt).
+    - Interior interval of convergence (c - R, c + R) (+1 pt).
+    - Consider BOTH endpoints individually (+1 pt).
+    - Detailed analysis of endpoints (using Alternating Series Test, p-series, or Limit Comparison Test to harmonic series) and final interval (+1 pt).
+  * Sub-part (b): Term-by-term differentiation or integration to find first 3-4 nonzero terms and general term of f'(x) or int f(x) dx.
+  * Sub-part (c): Geometric series verification: Identify first term a and common ratio r, verify sum S = a / (1 - r) on interval of convergence.
+  * Sub-part (d): Error Bound Justification:
+    - Alternating Series Error Bound: |f(x) - P_n(x)| <= |a_{n+1}| (first omitted term).
+    - Lagrange Error Bound: |f(x) - P_n(x)| <= [max |f^{(n+1)}(t)| / (n+1)!] * |x - c|^{n+1}.
+    - CRITICAL SCORING RULE: Inequality MUST use '<=' (writing '=' or '<' forfeits the analysis point).
+
+2. CHIEF READER REPORT SCORING PRINCIPLES & TYPICAL TRAPS (ENFORCE IN RUBRICS):
+- Setup Required: A bare numerical answer without integral/differential setup earns 0 points for setup.
+- Candidates Test: To earn the justification point for absolute extrema, students must provide a global argument evaluating the function at ALL critical points AND both endpoints. Local derivative tests earn 0 justification points.
+- Speed Increasing/Decreasing: Speed is increasing if and only if velocity and acceleration have the SAME sign; decreasing if OPPOSITE signs. Mentioning only acceleration earns 0 points.
+- No Arithmetic with Infinity: Do NOT write expressions like '38 / (25 + inf^2) = 0'. Must write 'lim_{t->inf} [expression] = 0'.
+- Polar Area Factor: Must include the 1/2 factor and square the radius: (1/2) * int (r)^2 dtheta.
+- Precision: Decimal approximations must be accurate to 3 decimal places (rounded or truncated).
+
+3. MANDATORY TWO-PASS DOUBLE-VERIFICATION PROTOCOL:
+- PASS 1 (Analytical Pre-Solving): Before finalizing the question, internally solve every subpart. Verify that all integrals yield clean real values, critical points lie strictly within the designated domain, Euler's method steps do not divide by zero, and series ratio tests produce valid non-zero radii.
+- PASS 2 (Rubric Consistency): Verify that total points = exactly 9 points (P1 to P9 labeled), all subparts (a)-(d) have corresponding model answers and scoring breakdown, and no impossible physical data exists.`;
       }
     }
     if (s.includes("calculus ab") || s.includes("calculus")) {
       if (questionType === "objective") {
-        return `AP CALCULUS AB EXAM SPECIFICATIONS (College Board CED):
-- Coverage: Limits & Continuity (including L'Hopital's Rule), Derivatives (Chain rule, Product/Quotient rule, Implicit differentiation), Mean Value Theorem, Particle Motion in 1D (position, velocity, acceleration, speed increasing/decreasing), Definite & Indefinite Integrals, Fundamental Theorem of Calculus, Riemann Sums, Differential Equations (separable).
-- Distractors must reflect real student math traps: forgetting chain rule factors, arithmetic sign slips, forgetting '+ C', confusing velocity with acceleration.
-- Format all equations cleanly in LaTeX ($...$).`;
+        return `AP CALCULUS AB EXAM SPECIFICATIONS (College Board CED Units 1-8 STRICTLY):
+- STRICT CURRICULUM BOUNDARY: Under NO circumstances include Calculus BC topics!
+  * FORBIDDEN: NO Infinite Series, NO Sequences, NO Ratio Test, NO Alternating Series, NO Taylor/Maclaurin series.
+  * FORBIDDEN: NO Euler's Method, NO Logistic Differential Equations (dP/dt = kP(1-P/M)).
+  * FORBIDDEN: NO Integration by Parts, NO Partial Fractions, NO Parametric/Polar curves.
+- Permitted Coverage:
+  * Unit 1: Limits & Continuity (evaluating limits algebraically, one-sided limits, vertical/horizontal asymptotes, IVT).
+  * Unit 2 & 3: Differentiation Fundamentals & Composite/Implicit (power, product, quotient, chain rule, implicit differentiation dy/dx, derivatives of exp/log/trig/inverse trig).
+  * Unit 4 & 5: Contextual & Analytical Applications (related rates, straight-line 1D particle motion [s(t), v(t), a(t), speed], MVT, EVT, First/Second Derivative Tests, concavity, optimization).
+  * Unit 6: Integration and Accumulation (Riemann sums [left, right, midpoint, trapezoidal], FTC Part 1 & 2, u-substitution, net change).
+  * Unit 7: Differential Equations (slope fields, separable differential equations dy/dx = g(x)h(y), exponential growth/decay dy/dt = ky).
+  * Unit 8: Applications of Integration (average value of a function, area between curves, volume of solids of revolution [disk/washer method], volume with known cross-sections).
+- Format all equations cleanly in LaTeX ($...$). Distractors must represent real student misconceptions (omitting chain rule factor, forgetting '+ C', confusing velocity with acceleration).`;
       } else {
-        return `AP CALCULUS AB FREE RESPONSE STANDARDS (College Board CED):
-- Format: Real 9-POINT multi-part questions with sub-parts (a), (b), (c), (d).
-- Classic AP FRQ Archetypes:
-  1. Rate In / Rate Out Accumulation: Net change integral formula integral(R_in(t) - R_out(t))dt, checking critical times.
-  2. Particle Motion: Analyzing velocity v(t), determining when speed is increasing/decreasing, total distance traveled integral(|v(t)|dt).
-  3. Graph Analysis of f'(x): Identifying relative extrema, points of inflection, justifying with First/Second Derivative Test, EVT.
-  4. Area & Volume: Area between two curves, volume of solid of revolution (disk/washer), volume with known cross sections (squares/semicircles).
-  5. Differential Equations: Slope fields, separation of variables to find particular solution y = f(x) with initial condition.
-  6. Riemann Sums & Tables: Estimating definite integrals using Trapezoidal rule or Left/Right sums with physical units.
-- Total Points MUST be 9 points. Rubric must assign exact points per sub-part.`;
+        return `AP CALCULUS AB SECTION II: FREE RESPONSE (College Board 2023-2026 Official CED Standards - 9 Points per FRQ):
+- Exam Architecture: Section II consists of 6 Free-Response Questions lasting 90 minutes (54 total points):
+  * Part A: Questions 1 & 2 (30 minutes, Graphing Calculator REQUIRED in RADIAN mode).
+  * Part B: Questions 3 to 6 (60 minutes, NO Calculator permitted).
+- Scoring Scale: Every single FRQ is worth EXACTLY 9 Points (P1 through P9), broken into 3 to 4 subparts: (a), (b), (c), (d).
+
+1. THE 6 CANONICAL COLLEGE BOARD FRQ ARCHETYPES (ROTATE EVENLY ACROSS SESSIONS):
+- ARCHETYPE 1 (Part A, Calculator Active): RATE IN / RATE OUT ACCUMULATION & TABULAR FUNCTIONS
+  * Real-World Context: Fluid flow, thermal cooling/heating, population migration, or vehicle arrival rates.
+  * Sub-part 1: Average rate of change over [a, b] using difference quotient with physical units (e.g. gal/sec^2).
+  * Sub-part 2: Approximating definite integral using Riemann sums (Right, Left, Midpoint, or Trapezoidal) with table data. Meaning of integral: "gives the net change in [quantity] from t=a to t=b [units]".
+  * Sub-part 3: Applying Mean Value Theorem (MVT) or IVT: MUST verify prerequisite ("f is differentiable on (a, b) implies f is continuous on [a, b]").
+  * Sub-part 4: Average value formula: (1/(b - a)) * int_a^b f(t) dt or finding instantaneous rate equal to average rate.
+- ARCHETYPE 2 (Part A, Calculator Active): RECTILINEAR PARTICLE MOTION OR AREA & KNOWN CROSS-SECTIONS
+  * Motion Subparts:
+    - Direction change: Must establish v(t) = 0 AND velocity changes sign (not just v(t) = 0).
+    - Speeding up vs Slowing down: Must evaluate signs of BOTH velocity v(t) AND acceleration a(t) = v'(t). If same sign -> speeding up; opposite signs -> slowing down.
+    - Total Distance: int_a^b |v(t)| dt vs Displacement: int_a^b v(t) dt.
+  * Area/Volume Subparts:
+    - Area: int_a^b (top - bottom) dx.
+    - Known Cross-Section: Volume = int_a^b Area(x) dx (Rectangles b*h, Squares s^2, Semicircles (pi/8)s^2).
+    - Revolution: pi * int_a^b (R(x)^2 - r(x)^2) dx about horizontal line y = k.
+- ARCHETYPE 3 (Part B, No Calculator): DIFFERENTIAL EQUATIONS & SLOPE FIELDS
+  * Sub-part 1: Slope field sketch passing through initial point (x_0, y_0) respecting asymptotes.
+  * Sub-part 2: Tangent line equation y = y_0 + m(x - x_0) to approximate value at x_1.
+  * Sub-part 3: Determining overestimate vs underestimate using second derivative d^2y/dx^2 via chain rule. If d^2y/dx^2 > 0 -> concave up -> tangent line lies below curve -> UNDERESTIMATE.
+  * Sub-part 4: Separation of Variables (4 Points): int dy/h(y) = int g(x) dx. Must separate variables (+1), find antiderivatives (+1), incorporate constant of integration C with initial condition (+1), and solve explicitly for y (+1).
+- ARCHETYPE 4 (Part B, No Calculator): GRAPHICAL ANALYSIS OF f' & ACCUMULATION FUNCTION g(x) = int_a^x f'(t) dt
+  * Given graph of f'(x) consisting of line segments and semicircles on closed interval [a, b].
+  * Sub-part 1: Evaluating g'(x) = f'(x) using Fundamental Theorem of Calculus (FTC Part 1).
+  * Sub-part 2: Points of inflection of g: locations where f' changes from increasing to decreasing (or vice versa), or f' attains relative extrema.
+  * Sub-part 3: Geometric evaluation of g(x) using triangle/trapezoid/semicircle areas with sign respect.
+  * Sub-part 4: Absolute minimum / maximum on [a, b] using CANDIDATES TEST (Must evaluate critical points where f'(x) = 0 AND endpoints x = a, x = b).
+- ARCHETYPE 5 (Part B, No Calculator): FUNCTIONS FROM A TABLE & DIFFERENTIATION RULES
+  * Table of twice-differentiable functions f(x), f'(x), g(x), g'(x).
+  * Sub-part 1: Chain Rule: h'(x) = f'(g(x)) * g'(x) evaluated at table value.
+  * Sub-part 2: Product/Quotient Rule with second derivative concavity: k''(x) sign analysis.
+  * Sub-part 3: Fundamental Theorem of Calculus: int_0^a f'(3x) dx = (1/3)(f(3a) - f(0)).
+  * Sub-part 4: IVT / MVT existence justification with continuous/differentiable preconditions.
+- ARCHETYPE 6 (Part B, No Calculator): IMPLICIT DIFFERENTIATION & RELATED RATES
+  * Curve defined implicitly: F(x, y) = C.
+  * Sub-part 1: Show that dy/dx = N(x, y) / D(x, y) using product rule on xy and chain rule on y^n.
+  * Sub-part 2: Horizontal tangent (N(x, y) = 0) vs Vertical tangent (D(x, y) = 0), verifying point lies on curve.
+  * Sub-part 3: Tangent line approximation at given point.
+  * Sub-part 4: Related Rates: Differentiating with respect to time t to find dy/dt given dx/dt.
+
+2. STRICT ANTI-HALLUCINATION & MATHEMATICAL SOLVABILITY LOCKS:
+- ZERO PDF COPYING / ZERO REPETITION: Do NOT copy functions or exact numbers from the 2023-2026 PDF exams (do NOT reuse Stephen swimming, milk bottle warming, or coffee cup). Invent 100% fresh, authentic scenarios.
+- NO ASYMPTOTES IN INTERVALS: Never define an integral on [a, b] where the integrand has a vertical asymptote or division by zero inside the interval.
+- CANDIDATES TEST MANDATE: Global extrema on a closed interval MUST use a candidates test table evaluating both critical points and endpoints. A local First Derivative Test alone is insufficient for global extrema.
+- CLEAN 3-DECIMAL ACCURACY: In calculator-active questions, all numerical answers must be accurate to at least 3 decimal places (rounded or truncated).
+- STRICT 9-POINT RUBRIC: 'totalPoints' must be exactly 9. Scoring rubric must provide 9 distinct points (P1 to P9) with specific scoring notes explaining point-award conditions and common student misconceptions.
+
+3. MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+Before outputting any Calculus AB FRQ, execute an internal solver verification:
+- Pass 1: Solve the problem step-by-step. Verify that derivatives, integrals, and limits are analytically correct.
+- Pass 2: Check that curves intersect at the claimed bounds. Check that Candidate Test table values match the function. Check that separation of variables produces an algebraically valid solution.
+- Self-Healing: If ANY calculation error, sign mistake, or unsolvable equation is detected, immediately correct and re-solve the question before returning the final JSON.`;
       }
     }
     if (s.includes("biology")) {
@@ -2637,7 +2940,7 @@ The Gemini API is currently experiencing rate limits. Please try again in 60 sec
   }
   function getDynamicTopicVariation2(subject, unitOrTopic, count) {
     const archetypes = getGranularSubjectArchetypes2(subject, unitOrTopic, count);
-    return archetypes.map((arch, idx2) => `  - Question ${idx2 + 1} Target Archetype: ${arch}`).join("\n");
+    return archetypes.map((arch, idx) => `  - Question ${idx + 1} Target Archetype: ${arch}`).join("\n");
   }
   const MCQ_LETTERS2 = ["A", "B", "C", "D"];
   function generateBalancedAnswerSequence2(count) {
@@ -2737,17 +3040,17 @@ The Gemini API is currently experiencing rate limits. Please try again in 60 sec
       }
       if (currentCorrectIdx === -1) currentCorrectIdx = 0;
       const origLetter = MCQ_LETTERS2[currentCorrectIdx];
-      const items = rawOptions.slice(0, 4).map((opt, idx2) => {
+      const items = rawOptions.slice(0, 4).map((opt, idx) => {
         const cleanText = opt.replace(/^[A-Da-d][\)\.:\s]\s*/, "").trim();
-        const trap = Array.isArray(q.traps) && q.traps[idx2] ? { ...q.traps[idx2] } : null;
+        const trap = Array.isArray(q.traps) && q.traps[idx] ? { ...q.traps[idx] } : null;
         return {
           content: cleanText,
-          isCorrect: idx2 === currentCorrectIdx,
+          isCorrect: idx === currentCorrectIdx,
           trap
         };
       });
       const correctItem = items[currentCorrectIdx];
-      const distractorItems = items.filter((_, idx2) => idx2 !== currentCorrectIdx);
+      const distractorItems = items.filter((_, idx) => idx !== currentCorrectIdx);
       for (let d = distractorItems.length - 1; d > 0; d--) {
         const rand = Math.floor(Math.random() * (d + 1));
         [distractorItems[d], distractorItems[rand]] = [distractorItems[rand], distractorItems[d]];
@@ -3453,7 +3756,7 @@ Generate 3 fresh similar practice questions to help the student master this conc
       const isSmallOrDateQuery = rawQuery.split(/\s+/).length <= 8 || /\b(when|date|launch|born|died|kab|kitne|kitna|kaun|kisne|kisko|kaha|where|who is|what is|capital|full form|ceo|founder|prime minister|president|released|announced|exam date|admit card|score|result|headquarters|hq|established)\b/i.test(rawQuery);
       const searchResults = await performLiveWebSearch(rawQuery, keywords, country);
       const verifiedContextString = searchResults.map(
-        (s, idx2) => `[Source ${idx2 + 1}] Title: ${s.title}
+        (s, idx) => `[Source ${idx + 1}] Title: ${s.title}
 URL: ${s.uri}
 Publisher: ${s.sourceName} (${s.pubDate || "Recent"})
 Content Snippet: ${s.snippet}
@@ -4063,7 +4366,7 @@ Return strictly the JSON structure specified above.`;
       const studentStream = academicStream || "STEM / Science & Engineering";
       const studentCountry = country || "Global";
       const normalizeStr = (s) => s ? s.toLowerCase().replace(/[^a-z0-9]/g, "") : "";
-      const excludesSet = new Set((excludeQuestions || []).map((q) => normalizeStr(q)));
+      const excludesSet = new Set((excludeQuestions || []).map((q) => normalizeStr(String(q || ""))));
       const isQuestionSeen = (qText) => {
         const norm = normalizeStr(qText);
         if (!norm || norm.length < 5) return false;
@@ -4376,13 +4679,14 @@ var AP_SUBJECT_ARCHETYPES = {
       ]
     }
   },
-  calculus: {
+  calculus_ab: {
     general: [
-      "Limits and Continuity: Analytical, graphical, and tabular approaches to evaluating finite and infinite limits",
-      "Derivatives: Chain, product, quotient rules, implicit differentiation, and related rates of change",
+      "Limits and Continuity: Analytical, graphical, and tabular limits, squeeze theorem, and IVT",
+      "Derivatives: Chain rule, implicit differentiation, and related rates of change",
       "Applications of Derivatives: Mean Value Theorem, First/Second Derivative Tests, concavity, and optimization",
       "Integrals and Accumulation: Fundamental Theorem of Calculus, u-substitution, Riemann sums, and net change",
-      "Differential Equations: Slope fields, exponential/logistic modeling, and separation of variables"
+      "Differential Equations: Slope fields, exponential modeling, and separation of variables",
+      "Applications of Integration: Area between curves, volume of solids of revolution, and known cross-sections"
     ],
     units: {
       "1": [
@@ -4398,18 +4702,23 @@ var AP_SUBJECT_ARCHETYPES = {
       "2": [
         "Limit definition of the derivative: Expressing f'(a) as limit as h->0 of (f(a+h) - f(a))/h or as x->a of (f(x) - f(a))/(x-a)",
         "Differentiability implying continuity: Analyzing functions with corners, cusps, vertical tangents, or jump discontinuities",
-        "Product and quotient rule differentiation with nested trigonometric, exponential, or logarithmic functions",
-        "Chain rule composition: Differentiating f(g(h(x))) with tabular data for functions and their derivatives",
-        "Implicit differentiation: Finding dy/dx and d^2y/dx^2 for non-function algebraic curves (e.g. ellipses, folium of Descartes)",
-        "Derivative of inverse functions: Applying (f^-1)'(a) = 1 / f'(f^-1(a)) using given function coordinates"
+        "Power, product, and quotient rule differentiation with trigonometric, exponential, or logarithmic functions",
+        "Horizontal and vertical tangent lines: Finding points where f'(x) = 0 or f'(x) is undefined",
+        "Instantaneous rate of change in physical contexts: Position, velocity, and estimating instantaneous rates from tabular data"
       ],
       "3": [
+        "Chain rule composition: Differentiating f(g(h(x))) with tabular data for functions and their derivatives",
+        "Implicit differentiation: Finding dy/dx and d^2y/dx^2 for non-function algebraic curves (e.g. ellipses, folium of Descartes)",
+        "Derivative of inverse functions: Applying (f^-1)'(a) = 1 / f'(f^-1(a)) using given function coordinates",
+        "Derivatives of inverse trigonometric functions: arcsin, arccos, and arctan with chain rule compositions"
+      ],
+      "4": [
         "Related rates: Geometric systems (expanding spheres, conical water tanks, receding shadows, sliding ladders)",
         "Related rates: Pythagorean distance and angle of elevation rates of change using trigonometric relations",
         "Local linear approximation and tangent line equations: Estimating function values and determining under/overestimates via f''(x)",
         "L'Hopital's Rule: Evaluating indeterminate limits of forms 0/0 and infinity/infinity with rigorous precondition checks"
       ],
-      "4": [
+      "5": [
         "Mean Value Theorem (MVT) and Rolle's Theorem: Verifying continuity and differentiability hypotheses to find c in (a, b)",
         "First Derivative Test for relative extrema: Analyzing sign changes of f'(x) from critical points",
         "Second Derivative Test and concavity: Finding inflection points and testing f''(c) at critical values",
@@ -4417,37 +4726,132 @@ var AP_SUBJECT_ARCHETYPES = {
         "Graph analysis of f'(x): Connecting the features of derivative graph f' to intervals of increase/decrease and concavity of f(x)",
         "Applied optimization: Minimizing packaging surface area, maximizing inscribed rectangular area, or economic profit functions"
       ],
-      "5": [
-        "Particle kinematics in 1D: Position s(t), velocity v(t), acceleration a(t), and determining when speed is increasing vs decreasing",
-        "Total distance traveled vs net displacement: Computing integral of |v(t)| dt vs integral of v(t) dt",
-        "Riemann sums: Left, Right, Midpoint, and Trapezoidal approximations from irregularly spaced tabular data",
-        "Fundamental Theorem of Calculus (FTC Part 1): Differentiating accumulation functions d/dx integral from a to g(x) of f(t) dt",
-        "Fundamental Theorem of Calculus (FTC Part 2): Evaluating definite integrals via antiderivatives and net change theorem",
-        "U-substitution integration: Definite integrals requiring conversion of upper and lower integration limits"
-      ],
       "6": [
-        "Separation of variables: Solving first-order differential equations dy/dx = f(x)g(y) with specific initial conditions",
-        "Slope fields: Sketching solution curves through given points and matching differential equations to slope patterns",
-        "Exponential growth and decay differential equations: dy/dt = ky modeling radioactive decay or Newton's law of cooling",
-        "Area between intersecting curves: Integrating with respect to x or y to find enclosed planar region area",
-        "Volume of solids of revolution: Disk and washer methods rotated around coordinate axes or horizontal/vertical lines y=k, x=k",
-        "Volume of solids with known cross sections: Perpendicular cross sections of squares, semicircles, equilateral triangles, or rectangles"
+        "Riemann sums: Left, Right, Midpoint, and Trapezoidal approximations from irregularly spaced tabular data",
+        "Definite integral as accumulated net change: Interpreting units and physical meaning in rate scenarios",
+        "Fundamental Theorem of Calculus (FTC Part 1): Differentiating accumulation functions d/dx integral from a to g(x) of f(t) dt",
+        "Fundamental Theorem of Calculus (FTC Part 2): Evaluating definite integrals via antiderivatives",
+        "U-substitution integration: Definite integrals requiring conversion of upper and lower integration limits",
+        "1D Particle motion: Position s(t), velocity v(t), acceleration a(t), speed increasing/decreasing, and total distance integral of |v(t)| dt"
       ],
       "7": [
-        "BC Exclusive: Integration by parts integral u dv = uv - integral v du using tabular integration or cyclic recursion",
-        "BC Exclusive: Partial fraction decomposition for integrating rational expressions with distinct linear factors",
-        "BC Exclusive: Improper integrals with infinite limits of integration or interior infinite discontinuities",
-        "BC Exclusive: Logistic differential equation dP/dt = kP(1 - P/M): Carrying capacity M, maximum growth rate at M/2, and inflection point",
-        "BC Exclusive: Euler's method: Step-by-step numerical approximation of differential equation solutions with delta x step sizes"
+        "Slope fields: Sketching solution segments at indicated grid points and matching differential equations to slope patterns",
+        "Separation of variables: Solving first-order differential equations dy/dx = f(x)g(y) with initial condition y(x0) = y0",
+        "Domain of particular solution: Explicitly determining the valid domain interval containing initial point x0",
+        "Exponential growth and decay differential equations: dy/dt = ky modeling radioactive decay or Newton's law of cooling"
       ],
       "8": [
-        "BC Exclusive: Parametric motion: Velocity vector (x'(t), y'(t)), speed sqrt((x')^2 + (y')^2), and total distance / arc length integral",
-        "BC Exclusive: Polar coordinates: Converting between Cartesian and polar, finding dy/dx on polar curves r = f(theta)",
-        "BC Exclusive: Polar area: Computing area bounded by one or two polar curves using integral (1/2) r^2 d(theta)",
-        "BC Exclusive: Infinite series convergence tests: Geometric, p-series, Integral test, Comparison tests, Alternating series test, Ratio test",
-        "BC Exclusive: Power series: Determining radius and interval of convergence using Ratio Test and testing interval endpoints",
-        "BC Exclusive: Taylor and Maclaurin polynomial approximations: Constructing nth-degree polynomials for e^x, sin(x), cos(x), 1/(1-x)",
-        "BC Exclusive: Taylor series error bounds: Alternating Series Error Bound and Lagrange Error Bound (Taylor's Remainder Theorem)"
+        "Area between intersecting curves: Integrating with respect to x or y to find enclosed planar region area",
+        "Volume of solids of revolution: Disk and washer methods rotated around coordinate axes or horizontal/vertical lines y=k, x=k",
+        "Volume of solids with known cross sections: Perpendicular cross sections of squares, semicircles, equilateral triangles, or rectangles",
+        "Average value of a continuous function on a closed interval: f_avg = (1/(b-a)) * integral from a to b of f(x) dx"
+      ]
+    }
+  },
+  calculus_bc: {
+    general: [
+      "All Calculus AB Topics (Units 1-8): Limits, derivatives, integration, differential equations, and area/volume",
+      "Parametric, Vector, and Polar functions: 2D motion, arc length, and polar area",
+      "Advanced Integration Techniques: Integration by parts, partial fractions, and improper integrals",
+      "Numerical Methods & Logistic Models: Euler's method and logistic differential equations",
+      "Infinite Sequences and Series: Convergence tests, power series, Taylor/Maclaurin series, and error bounds"
+    ],
+    units: {
+      "1": [
+        "Trigonometric Squeeze / Sandwich Theorem limits involving bounding functions (e.g. g(x) <= f(x) <= h(x))",
+        "Piecewise function continuity with two unknown constants A and B requiring a system of linear equations",
+        "Intermediate Value Theorem (IVT) applied to continuous functions on closed intervals proving root existence"
+      ],
+      "2": [
+        "Limit definition of the derivative and differentiability implying continuity",
+        "Product, quotient, and chain rule with exponential, trigonometric, and inverse trigonometric functions"
+      ],
+      "3": [
+        "Implicit differentiation dy/dx and second derivative d^2y/dx^2 for higher-order curves",
+        "Derivatives of inverse functions and composite inverse trigonometric relationships"
+      ],
+      "4": [
+        "Related rates in geometric, physical, and trigonometric configurations",
+        "L'Hopital's Rule for advanced indeterminate forms (0/0, inf/inf) with rigorous justifications"
+      ],
+      "5": [
+        "Mean Value Theorem, First and Second Derivative Tests, concavity, and closed interval EVT",
+        "Graph analysis of f'(x) and advanced optimization modeling"
+      ],
+      "6": [
+        "BC Topic: Integration by parts: integral u dv = uv - integral v du using tabular integration or cyclic recursion",
+        "BC Topic: Partial fraction decomposition for rational expressions with distinct and repeated linear factors",
+        "BC Topic: Improper integrals with infinite integration limits or interior vertical asymptotes",
+        "Riemann sums (Left, Right, Midpoint, Trapezoidal) and Fundamental Theorem of Calculus Part 1 and 2"
+      ],
+      "7": [
+        "BC Topic: Euler's method: Step-by-step numerical approximation of differential equation solutions with delta x step sizes",
+        "BC Topic: Logistic differential equation dP/dt = kP(1 - P/M): Carrying capacity M, maximum growth rate at M/2, and inflection point",
+        "Separation of variables with initial conditions and slope field analysis"
+      ],
+      "8": [
+        "Area between curves, and volume of solids of revolution (disk/washer methods) and known cross-sections",
+        "BC Topic: Arc length of planar curves y = f(x): integral from a to b of sqrt(1 + (f'(x))^2) dx"
+      ],
+      "9": [
+        "Parametric motion in 2D: Velocity vector (x'(t), y'(t)), acceleration vector (x''(t), y''(t)), and speed sqrt((x')^2 + (y')^2)",
+        "Parametric total distance traveled: Arc length integral from t1 to t2 of sqrt((x'(t))^2 + (y'(t))^2) dt",
+        "Polar coordinates and curves: Converting coordinates, finding dy/dx = (dr/dtheta sin + r cos)/(dr/dtheta cos - r sin)",
+        "Polar area: Computing area bounded by one or two polar curves using integral (1/2) r(theta)^2 dtheta"
+      ],
+      "10": [
+        "Infinite series convergence tests: Geometric, p-series, Integral test, Comparison tests, Limit Comparison test, Alternating Series Test",
+        "Ratio Test: Determining radius and interval of convergence for power series, explicitly testing both interval endpoints",
+        "Alternating Series Error Bound: Estimating error |S - S_N| <= a_{N+1} for alternating convergent series",
+        "Taylor and Maclaurin polynomials: Constructing nth-degree polynomials for e^x, sin(x), cos(x), 1/(1-x) centered at x=c",
+        "Taylor series operations: Substitution, term-by-term differentiation, and term-by-term integration to derive new series",
+        "Lagrange Error Bound (Taylor's Remainder Theorem): Bound on |f(x) - P_n(x)| <= (M / (n+1)!) * |x - c|^(n+1)"
+      ]
+    }
+  },
+  // Backwards compatibility alias
+  calculus: {
+    general: [
+      "Limits and Continuity: Analytical, graphical, and tabular limits",
+      "Derivatives: Chain rule, implicit differentiation, and related rates",
+      "Applications of Derivatives: Mean Value Theorem, First/Second Derivative Tests, concavity, and optimization",
+      "Integrals and Accumulation: Fundamental Theorem of Calculus, u-substitution, Riemann sums, and net change",
+      "Differential Equations: Slope fields, exponential modeling, and separation of variables",
+      "Applications of Integration: Area between curves, volume of solids of revolution, and known cross-sections"
+    ],
+    units: {
+      "1": [
+        "Trigonometric Squeeze / Sandwich Theorem limits",
+        "Piecewise function continuity with two unknown constants A and B",
+        "Intermediate Value Theorem (IVT) applied to continuous functions"
+      ],
+      "2": [
+        "Limit definition of the derivative and differentiability",
+        "Product, quotient, and chain rule differentiation"
+      ],
+      "3": [
+        "Implicit differentiation dy/dx and second derivative d^2y/dx^2",
+        "Related rates: Geometric and physical systems"
+      ],
+      "4": [
+        "Mean Value Theorem (MVT) and Rolle's Theorem",
+        "First/Second Derivative Tests, concavity, and optimization"
+      ],
+      "5": [
+        "Riemann sums and Fundamental Theorem of Calculus",
+        "1D Particle motion: Position, velocity, acceleration, speed, and total distance"
+      ],
+      "6": [
+        "Separation of variables for first-order differential equations",
+        "Slope fields and exponential growth/decay models"
+      ],
+      "7": [
+        "Area between curves and volume of solids of revolution (disk and washer methods)",
+        "Volume of solids with known cross sections (squares, semicircles, rectangles)"
+      ],
+      "8": [
+        "Average value of a function and contextual accumulation problems",
+        "Definite integrals and net change theorem in applied rate scenarios"
       ]
     }
   },
@@ -4529,47 +4933,53 @@ var AP_SUBJECT_ARCHETYPES = {
   },
   physics: {
     general: [
-      "1D and 2D Kinematics: Position, velocity, acceleration vectors, and projectile motion trajectories",
-      "Newton's Laws of Motion: Free-body diagrams, friction, inclined planes, and coupled multi-mass systems",
-      "Work, Energy, and Power: Work-energy theorem, conservative vs non-conservative forces, and potential energy curves",
-      "Linear Momentum & Collisions: Conservation of momentum, impulse-momentum theorem, and elastic vs inelastic collisions",
-      "Rotational Dynamics: Torque, moment of inertia, rotational kinematics, and rolling without slipping",
-      "Simple Harmonic Motion: Mass-spring systems, simple pendulums, restorative forces, and energy conservation",
-      "Universal Gravitation: Newton's law of gravitation, planetary orbital speed, Kepler's laws, and gravitational potential energy"
+      "Mathematical Routines: Multi-step algebraic derivations starting strictly from fundamental laws or reference equations",
+      "Translation Between Representations: Synthesizing energy bar charts (LOL diagrams), force diagrams, and kinematic graphs",
+      "Experimental Design & Analysis: Linearizing physical relationships, drawing smooth best-fit lines, and evaluating slope meaning",
+      "Qualitative/Quantitative Translation: Connecting qualitative physical claims to mathematical expressions and functional dependence",
+      "System boundaries and conservation laws: Distinguishing internal vs external forces in momentum and mechanical energy conservation",
+      "Fluids and mechanical equilibria: Applying buoyant forces, hydrostatic pressure, and continuity to dynamic scenarios"
     ],
     units: {
       "1": [
-        "Kinematic graphs: Deducing acceleration from velocity-time slope and displacement from velocity-time integral area",
-        "Projectile motion: Separating horizontal constant-velocity motion from vertical constant-acceleration gravitational free-fall",
-        "Relative velocity in two dimensions: Vector addition of swimmer in river current or airplane in crosswind"
+        "1D and 2D Kinematics: Horizontal vs vertical projectile motion components, trajectory symmetry, and launch velocity decomposition",
+        "Kinematic Graphing: Velocity-time slope indicating acceleration, area under v-t graph yielding displacement, and position curvature",
+        "Free fall dynamics: Time of flight, maximum vertical height h_max = (v0*sin(theta))^2 / (2g), and terminal conditions"
       ],
       "2": [
-        "Free-body diagrams: Resolving gravitational and normal forces on angled inclined planes with static vs kinetic friction",
-        "Atwood machine systems: Calculating system acceleration and string tension for coupled masses over a pulley",
-        "Centripetal acceleration and circular dynamics: Banked curves without friction vs horizontal circular turning with friction"
+        "Newton's Second Law: Free-body diagrams with forces labeled from the dot, inclined planes (mg*sin(theta) vs mg*cos(theta))",
+        "Frictional dynamics: Static friction threshold F_fs <= mu_s * F_N vs kinetic friction F_fk = mu_k * F_N",
+        "Circular motion dynamics: Centripetal net force F_c = m*v^2 / r provided by tension, gravity, or friction at critical points"
       ],
       "3": [
-        "Work-Energy Theorem: Calculating work done by variable forces via F(x) position graph area",
-        "Conservation of mechanical energy: Systems exchanging gravitational potential energy, spring elastic potential energy, and kinetic energy",
-        "Power calculations: Instantaneous mechanical power P = F * v * cos(theta) and average power over time intervals"
+        "Conservation of mechanical energy: Gravitational potential energy U_g = mg*Delta y, spring elastic energy U_s = (1/2)*k*(Delta x)^2",
+        "Energy bar charts (LOL diagrams): Total mechanical energy sum constancy (K + U_g + U_s = E_total) across discrete system positions",
+        "Work-energy theorem: Net work done by external forces W = F*d*cos(theta) equaling the change in kinetic energy Delta K"
       ],
       "4": [
-        "Impulse-momentum theorem: Determining change in momentum and average impact force from Force vs Time graph area",
-        "1D and 2D inelastic collisions: Calculating kinetic energy loss dissipated as thermal/acoustic energy during deformation",
-        "Center of mass motion: Verifying that center of mass velocity remains constant in closed systems during internal explosions"
+        "Linear momentum conservation: Isolated systems with zero net external force preserving horizontal momentum p_i = p_f",
+        "Inelastic collisions: Dropped block sticking to moving cart (m_c*v_c = (m_c + m_b)*v_f), kinetic energy dissipation, and center of mass velocity",
+        "Internal vs external forces: Equal and opposite internal contact/friction forces not changing the system's total linear momentum"
       ],
       "5": [
-        "Torque equilibrium: Sum of torques equal to zero for static beams, tilted ladders, and hanging signposts",
-        "Rotational inertia (moment of inertia): Comparing angular acceleration of solid cylinder vs hollow ring down an incline",
-        "Conservation of angular momentum: Figure skater spinning model with changing radius and rotational kinetic energy increase"
+        "Torque and static equilibrium: Net torque tau_net = Sigma r*F*sin(theta) = 0 about an arbitrary pivot for balanced metersticks/beams",
+        "Newton's second law in rotational form: tau_net = I*alpha where rotational inertia I depends on mass distribution",
+        "Hinged beam mechanics: Tension required to hold horizontal beam F_T = (Mg*L/2)/(L*sin(theta)) = Mg / (2*sin(theta))"
       ],
       "6": [
-        "Simple harmonic motion of mass-spring system: Period T = 2*pi*sqrt(m/k), velocity-position phase, and kinetic-potential oscillation",
-        "Simple pendulum kinematics: Period T = 2*pi*sqrt(L/g) in small-angle approximation and effects of changing length vs mass"
+        "Rotational kinetic energy: K_rot = (1/2)*I*omega^2 and rolling without slipping condition v = omega*R",
+        "Angular momentum conservation: L = I*omega in isolated rotational systems and torque-impulse theorem Delta L = tau*Delta t",
+        "Comparative rotational inertia: Solid disk (I = (1/2)*M*R^2) vs hoop (I = M*R^2) accelerating under identical tangential force"
       ],
       "7": [
-        "Newton's Law of Universal Gravitation: Calculating orbital speed v = sqrt(GM/r) for satellites in circular orbits",
-        "Gravitational potential energy U = -GMm/r and escape velocity derivation v_esc = sqrt(2GM/R) from planet surface"
+        "Simple harmonic motion: Mass on horizontal or vertical spring period T_s = 2*pi*sqrt(m/k) and frequency f = (1/(2*pi))*sqrt(k/m)",
+        "Simple pendulum dynamics: Period T_p = 2*pi*sqrt(L/g), restoring torque tau = -mg*L*sin(theta), and planetary gravity variations",
+        "SHM energy and graphs: Sinusoidal velocity-time and force-time graphs, phase relationships, and kinetic/potential trade-offs"
+      ],
+      "8": [
+        "Fluid statics: Density rho = m/V, hydrostatic pressure P = P_0 + rho*g*h, and buoyant force F_b = rho_fluid * V_sub * g",
+        "Archimedes principle: Floating vs submerged objects, net upward acceleration a = (rho_fluid*V*g - mg)/m = (rho_fluid/rho_obj - 1)*g",
+        "Fluid dynamics: Continuity equation A1*v1 = A2*v2 (volume flow rate), nozzle constrictions increasing exit speed, and Bernoulli's law"
       ]
     }
   },
@@ -4584,75 +4994,119 @@ var AP_SUBJECT_ARCHETYPES = {
     units: {
       "1": [
         "Pre-Columbian indigenous societies: Agricultural adaptation (maize cultivation, Pueblo irrigation, Mississippian mound building)",
-        "Columbian Exchange: Transatlantic transfer of pathogens, crops (sugar, tobacco, maize, potatoes), livestock, and demographic collapse"
+        "Columbian Exchange: Transatlantic transfer of pathogens, crops (sugar, tobacco, maize, potatoes), livestock, and demographic collapse",
+        "Spanish encomienda system: Forced indigenous labor extraction and racialized casta hierarchy",
+        "Bartolom\xE9 de las Casas vs Juan Gin\xE9s de Sep\xFAlveda: Moral debate over Spanish conquest, natural rights, and indigenous sovereignty",
+        "Pueblo Revolt (Pop\xE9's Rebellion 1680): Indigenous armed resistance, religious independence, and subsequent Spanish accommodation",
+        "African chattel slavery introduction: Declining native populations, Portuguese and Spanish maritime slave trade, and plantation labor"
       ],
       "2": [
-        "Colonial settlement patterns: Spanish encomienda, French fur trade alliances, vs English settler-colonialism",
-        "Transatlantic slave trade & Middle Passage: Cash-crop plantation economies, race-based chattel slavery, and African cultural resistance"
+        "Colonial settlement models: Spanish encomienda, French fur trade alliances, Dutch commercial trade vs English settler-colonialism",
+        "Regional British colonies: Chesapeake (tobacco cash crop, indentured servitude) vs New England (Puritans, family farms, town meetings)",
+        "Middle Colonies ('Breadbasket'): Ethnic and religious diversity, Quaker tolerance in Pennsylvania, and transatlantic merchant commerce",
+        "First Great Awakening: George Whitefield and Jonathan Edwards challenging traditional church authority and fostering intercolonial identity",
+        "British mercantilism, Navigation Acts, and period of salutary neglect cultivating colonial economic autonomy",
+        "Bacon's Rebellion (1676) accelerating the transition from indentured servitude to racialized hereditary chattel slavery",
+        "King Philip's War (Metacom's War 1675) ending sovereign indigenous armed resistance in New England"
       ],
       "3": [
-        "Enlightenment ideology and American Revolution: Locke social contract, Common Sense, Declaration of Independence, and republicanism",
-        "Articles of Confederation vs US Constitution: Shays' Rebellion, Great Compromise, Three-Fifths Compromise, and Federalist Papers"
+        "Seven Years' War (French and Indian War): Collapse of salutary neglect, British imperial debt, and the Proclamation of 1763",
+        "Colonial resistance movements: Stamp Act crisis, Sons of Liberty, Boston Tea Party, and John Dickinson's Letters from a Farmer",
+        "Enlightenment ideology and American Revolution: Locke social contract, Thomas Paine's Common Sense, Declaration of Independence, and republicanism",
+        "Articles of Confederation: Structural weaknesses (lack of taxation, no executive), Shays' Rebellion, and interstate commercial chaos",
+        "Constitutional Convention compromises: Great Compromise (bicameral legislature), Three-Fifths Compromise, and Electoral College",
+        "Federalist vs Anti-Federalist debates: Federalist Papers (No. 10 & 51 on factions/checks) vs Anti-Federalist demands for a Bill of Rights",
+        "Hamilton's Financial Plan (Bank of the US, debt assumption, tariffs) vs Jeffersonian agrarian Democratic-Republican opposition",
+        "Washington's Farewell Address: Warnings against entangling foreign alliances and domestic political factionalism"
       ],
       "4": [
-        "Market Revolution: Canals, steamboats, cotton gin, textile factories, Lowell mill girls, and emerging middle-class separate spheres",
-        "Jacksonian Democracy: Expansion of white male suffrage, Nullification Crisis, Bank War, and Indian Removal Act / Trail of Tears"
+        "Revolution of 1800 and Jeffersonian Democratic-Republican vision: Agrarian republic vs Federalist central commercial power",
+        "Marshall Court decisions: Marbury v. Madison (judicial review), McCulloch v. Maryland (implied powers/BUS), and federal supremacy",
+        "Market Revolution: Canals (Erie Canal), steamboats, cotton gin, textile factories, Lowell mill girls, and separate gender spheres",
+        "Henry Clay's American System: Protective tariffs, Second Bank of the United States, and federally funded internal improvements",
+        "Second Great Awakening and antebellum reform: Temperance, Horace Mann public education, Dorothea Dix asylum reform, and utopian communities",
+        "Abolitionist movement: William Lloyd Garrison's The Liberator, Frederick Douglass, underground railroad, and American Anti-Slavery Society",
+        "Seneca Falls Convention (1848): Declaration of Sentiments and early organized women's rights and suffrage movement",
+        "Jacksonian Democracy: Expansion of universal white male suffrage, spoils system, Nullification Crisis, Bank War, and Indian Removal Act / Trail of Tears"
       ],
       "5": [
-        "Manifest Destiny & Sectional Crisis: Mexican-American War, Compromise of 1850, Kansas-Nebraska Act, and Dred Scott decision",
-        "Civil War and Reconstruction: Emancipation Proclamation, 13th/14th/15th Amendments, Radical Reconstruction, and Jim Crow retrenchment"
+        "Manifest Destiny and territorial expansion: Annexation of Texas, Oregon boundary dispute (54-40 or Fight), and Mexican-American War",
+        "Sectional crisis: Wilmot Proviso, Compromise of 1850 (stricter Fugitive Slave Act), and Uncle Tom's Cabin polarizing public opinion",
+        "Kansas-Nebraska Act (1854): Popular sovereignty repudiating Missouri Compromise line, Bleeding Kansas, and rise of the Republican Party",
+        "Dred Scott v. Sandford (1857): Denial of African American citizenship and declaring federal bans on territorial slavery unconstitutional",
+        "Civil War home front and strategy: Union industrial and demographic superiority vs Confederate defensive advantage and failed cotton diplomacy",
+        "Emancipation Proclamation (1863) and Gettysburg Address redefining the war into a struggle for human liberation and union preservation",
+        "Reconstruction legislation: Freedmen's Bureau, Civil Rights Act of 1866, and 13th (abolition), 14th (citizenship/equal protection), 15th (voting) Amendments",
+        "Reconstruction backlash and retreat: Black Codes, Ku Klux Klan violence, sharecropping debt peonage, and Compromise of 1877 ending federal occupation"
       ],
       "6": [
-        "Gilded Age industrialization: Monopolies, Social Darwinism, transcontinental railroads, labor strikes, and urbanization",
-        "Populist Movement: Grange, Farmers' Alliance, Omaha Platform, silver bimetallism, and agrarian resistance to railroad rates"
+        "Second Industrial Revolution: Transcontinental railroads, steel and petroleum consolidation (Andrew Carnegie, John D. Rockefeller)",
+        "Gilded Age business practices: Horizontal vs vertical integration, corporate trusts, pools, and holding companies",
+        "Ideologies of wealth: Social Darwinism, Andrew Carnegie's Gospel of Wealth, vs Henry George's critique in Progress and Poverty",
+        "Labor union struggles: Knights of Labor vs American Federation of Labor (Samuel Gompers), Great Railroad Strike of 1877, Haymarket Affair, and Pullman Strike",
+        "Western frontier expansion and indigenous displacement: Homestead Act (1862), Dawes Severalty Act (1887), and Ghost Dance / Wounded Knee",
+        "Populist Movement (People's Party): Omaha Platform (free silver bimetallism, direct election of senators, graduated income tax) and Bryan's Cross of Gold speech",
+        "New Immigration: Immigrants from Southern and Eastern Europe, urban political machines (Tammany Hall), nativism, and Chinese Exclusion Act (1882)",
+        "Jim Crow era in the South: Disenfranchisement (poll taxes, literacy tests), Ida B. Wells anti-lynching crusade, and Plessy v. Ferguson (1896 'separate but equal')"
       ],
       "7": [
-        "Progressive Era reforms: Muckrakers, settlement houses, trust busting, 17th/19th Amendments, and conservation",
-        "World War I & Great Depression: League of Nations debate, New Deal relief/recovery/reform, and Roosevelt's First 100 Days",
-        "World War II mobilization: Double V campaign, Japanese American internment, atomic bomb development, and emergence as global superpower"
+        "American Imperialism debate: Spanish-American War (1898), Philippine annexation, Open Door Policy in China, and Anti-Imperialist League",
+        "Progressive Era reforms: Muckrakers (Ida Tarbell, Upton Sinclair), settlement houses (Jane Addams Hull House), and 16th-19th Constitutional Amendments",
+        "Theodore Roosevelt's Square Deal: Trust-busting (Northern Securities), Meat Inspection Act, Pure Food and Drug Act, and federal conservation",
+        "World War I home front & civil liberties: Committee on Public Information, Espionage and Sedition Acts, and Schenck v. US ('clear and present danger')",
+        "Treaty of Versailles and League of Nations debate: Woodrow Wilson's Fourteen Points vs Henry Cabot Lodge and Senate reservationists",
+        "1920s cultural cleavages: First Red Scare (Palmer Raids), Immigration Act of 1924 national origin quotas, Scopes Monkey Trial, and Harlem Renaissance",
+        "Great Depression causes & Hoover's response: Stock market crash 1929, bank runs, Hawley-Smoot Tariff, and Bonus Army march",
+        "Franklin D. Roosevelt's New Deal: First New Deal (relief/recovery: CCC, AAA, TVA, FDIC) vs Second New Deal (reform: Wagner Act, Social Security Act 1935)",
+        "World War II home front and mobilization: Lend-Lease Act, Pearl Harbor, Executive Order 9066 Japanese American internment (Korematsu v. US), and Manhattan Project"
       ],
       "8": [
-        "Cold War containment: Truman Doctrine, Marshall Plan, Korean War, Cuban Missile Crisis, and Vietnam War military quagmire",
-        "Civil Rights Movement: Brown v. Board, Montgomery Bus Boycott, Civil Rights Act of 1964, Voting Rights Act of 1965, and Black Power"
+        "Cold War containment strategy: George Kennan's Long Telegram, Truman Doctrine, Marshall Plan, Berlin Airlift, and creation of NATO",
+        "Korean War (1950-1953) and Second Red Scare: House Un-American Activities Committee (HUAC), Joseph McCarthy, and Alger Hiss spy trial",
+        "1950s affluence & suburban conformity: GI Bill, Levittown suburbanization, Interstate Highway Act of 1956, and baby boom",
+        "Civil Rights Movement legal and grassroots action: Brown v. Board of Education (1954), Montgomery Bus Boycott, MLK's Southern Christian Leadership Conference (SCLC)",
+        "Civil rights legislative milestones: March on Washington, Civil Rights Act of 1964, Voting Rights Act of 1965, and Black Power movement (Malcolm X, Black Panthers)",
+        "Lyndon B. Johnson's Great Society: War on Poverty, Medicare and Medicaid, Head Start, and Immigration and Nationality Act of 1965",
+        "Vietnam War escalation and domestic anti-war movement: Gulf of Tonkin Resolution, Tet Offensive, My Lai, Kent State shootings, and War Powers Act (1973)",
+        "Social counterculture and rights movements: Second-wave feminism (Betty Friedan, NOW, Roe v. Wade, Title IX), Cesar Chavez / United Farm Workers, Stonewall Riots, American Indian Movement (AIM)",
+        "Environmental movement (Rachel Carson's Silent Spring, first Earth Day 1970, EPA creation) and 1970s stagflation / Watergate crisis"
       ],
       "9": [
-        "Reagan Revolution: Supply-side economics (Reaganomics), deregulation, military defense spending, and end of the Cold War",
-        "Post-Cold War globalization: NAFTA, digital internet revolution, War on Terror post-9/11, and demographic shifts"
+        "The Conservative Resurgence: Election of 1980, Moral Majority, and Ronald Reagan's conservative coalition",
+        "Reaganomics & economic policy: Supply-side tax cuts (ERTA 1981), deregulation, federal budget deficits, and PATCO air traffic controllers strike",
+        "Reagan foreign policy & end of Cold War: Strategic Defense Initiative ('Star Wars'), INF Treaty, Gorbachev's glasnost/perestroika, and collapse of Soviet Union (1991)",
+        "Post-Cold War foreign interventions: Persian Gulf War (Operation Desert Storm 1991), humanitarian missions in Somalia and the Balkans",
+        "1990s economic expansion and globalization: North American Free Trade Agreement (NAFTA), commercialization of the Internet, dot-com boom, and welfare reform",
+        "Election of 2000 (Bush v. Gore) and Supreme Court intervention in presidential balloting",
+        "Post-9/11 War on Terror: September 11 attacks, USA PATRIOT Act, Department of Homeland Security, wars in Afghanistan and Iraq (2003)",
+        "The 2008 Financial Crisis (Great Recession), subprime mortgage collapse, Emergency Economic Stabilization Act, and Election of Barack Obama",
+        "21st-century demographic transformations, debates over immigration reform, Affordable Care Act (2010), and rising political polarization"
       ]
     }
   },
-  psychology: {
+  csa: {
     general: [
-      "Empirical research methodology: Experimental design, random assignment vs random selection, independent/dependent variables",
-      "Statistical reasoning: Normal distribution, z-scores, correlation coefficients (-1.0 to +1.0), and statistical significance (p < 0.05)",
-      "APA ethical guidelines: Informed consent, protection from harm, confidentiality, and post-experimental debriefing",
-      "Biological bases of behavior: Neurotransmitter mechanics, neural impulse action potential, and brain lateralization"
+      "Methods and Control Structures (Q1): Method calls on object instances, iterative loops (for, while), conditional logic (if-else), and accumulators",
+      "Class Design (Q2): Writing a complete class from scratch with private instance variables, constructors, accessors, and mutators conforming to execution trace tables",
+      "Array and ArrayList (Q3): 1D array traversal, ArrayList<E> manipulation, filtering, object instantiation with 'new', and dual-pointer / nested comparisons",
+      "2D Arrays (Q4): Matrix row-major traversal, bounds checking (length / [0].length), self-pairing guards, neighbor evaluation, and coordinate manipulation"
     ],
     units: {
       "1": [
-        "Neural communication: Resting potential (-70 mV), depolarization, all-or-none threshold, action potential, and refractory period",
-        "Neurotransmitters: Agonists vs antagonists for dopamine, serotonin, acetylcholine, GABA (inhibitory), and glutamate (excitatory)",
-        "Brain structure localization: Hippocampus (memory), amygdala (fear/emotion), prefrontal cortex (executive function), cerebellum (motor balance)"
+        "Primitive Types & Arithmetic: Integer division, modulus (%), double precision, and casting (e.g. (int)(Math.random() * range))",
+        "Calling Methods: Static vs instance methods, parameter passing, return value capture, and Math class library functions"
       ],
       "2": [
-        "Sensation vs perception: Absolute threshold, difference threshold (Weber's Law), sensory adaptation, and signal detection theory",
-        "Visual processing: Trichromatic theory vs opponent-process theory of color, rods vs cones, and feature detectors in visual cortex",
-        "Auditory transduction: Place theory vs frequency theory of pitch perception, and conductive vs sensorineural hearing loss"
+        "Boolean Expressions & If Statements: Relational operators, logical operators (&&, ||, !), De Morgan's Laws, short-circuit evaluation",
+        "Iteration & Loops: while loops, for loops, nested loops, loop bounds, off-by-one error prevention, and string index processing"
       ],
       "3": [
-        "Classical conditioning: Unconditioned stimulus (UCS), unconditioned response (UCR), conditioned stimulus (CS), extinction, and spontaneous recovery",
-        "Operant conditioning: Positive vs negative reinforcement, positive vs negative punishment, and intermittent reinforcement schedules (FR, VR, FI, VI)",
-        "Social-cognitive learning: Bandura Bobo doll observational modeling, vicarious reinforcement, and mirror neuron function"
+        "Writing Classes: Private instance variables, public constructors, keyword 'this', accessor (getter) methods, mutator (setter) methods",
+        "Class Scope & References: Variable shadowing, null references, object aliasing, and encapsulation integrity"
       ],
       "4": [
-        "Memory storage stages: Atkinson-Shiffrin model (sensory, short-term/working, long-term), chunking, and serial position effect",
-        "Forgetting & retrieval failures: Proactive interference vs retroactive interference, retrograde vs anterograde amnesia (H.M. case study)",
-        "Cognitive biases & problem solving: Availability heuristic, representativeness heuristic, confirmation bias, and functional fixedness"
-      ],
-      "5": [
-        "Developmental psychology: Piaget stages of cognitive development (sensorimotor, preoperational, concrete, formal operational)",
-        "Attachment theory: Ainsworth Strange Situation (secure, anxious-ambivalent, avoidant attachment) and Harlow rhesus monkey contact comfort",
-        "Social psychology: Fundamental attribution error, cognitive dissonance (Festinger), Milgram obedience, and bystander effect / diffusion of responsibility"
+        "1D Arrays & ArrayList: Indexed access, enhanced for-each loops, ArrayList methods (add, get, set, remove, size), and parallel list matching",
+        "2D Arrays: Grid row/column indexing (arr[r][c]), nested row-major traversal, neighbor checks, and matrix transformations"
       ]
     }
   },
@@ -4691,107 +5145,211 @@ var AP_SUBJECT_ARCHETYPES = {
   },
   human_geography: {
     general: [
-      "Spatial pattern evaluation: Identifying clustering, dispersion, and regional density from geospatial maps and thematic projections",
+      "Spatial pattern analysis: Identifying clustering, dispersion, and regional density from geospatial data and thematic maps",
       "Scale of analysis: Contrasting global, national, regional, and local demographic and economic data patterns to uncover hidden spatial variations",
-      "Demographic stimulus interpretation: Evaluating Stage 2 vs Stage 4 population pyramids, dependency ratios, and sex ratio imbalances",
-      "Geospatial model application: Testing real-world deviations from isotropic assumptions in concentric, sectoral, and agricultural models",
+      "Demographic stimulus interpretation: Analyzing Stage 2 vs Stage 4 population pyramids, dependency ratios, and sex ratio imbalances",
+      "Geospatial model application: Analyzing real-world deviations from theoretical assumptions in concentric, sectoral, and agricultural models",
       "Cultural landscape analysis: Explaining visible religious, architectural, and linguistic imprints on urban centers and rural hearths",
       "Geopolitical border impacts: Devolutionary pressures, supranational governance, and UNCLOS maritime boundaries influencing state sovereignty"
     ],
     units: {
       "1": [
-        "Geospatial technologies: Analyzing GIS overlay layers, GPS navigation coordinates, and satellite remote sensing for environmental disaster management",
-        "Spatial concepts: Distance decay vs time-space compression driven by telecommunications and jet transportation",
-        "Regional analysis: Formal (uniform climatic/legislative) vs Functional (nodal broadcast/newspaper) vs Vernacular (perceptual cultural identity) regions",
-        "Human-environmental interaction: Environmental determinism vs possibilism in agricultural development and arid urbanization",
-        "Map projections & distortion: Mercator preservation of directional lines for navigation vs polar areal distortion vs Peters equal-area balance",
-        "Thematic mapping types: Choropleth density gradients, dot density distributions, isoline topographic contours, and proportional symbol maps"
+        "Geospatial technologies: Analyzing GIS overlay layers, GPS navigation coordinates, and satellite remote sensing for emergency response and coastal flood planning",
+        "Spatial concepts: Distance decay vs time-space compression driven by telecommunications, internet infrastructure, and containerized freight",
+        "Regional analysis: Formal (uniform climatic/legislative traits) vs Functional (nodal broadcast/newspaper/transit delivery zones) vs Vernacular (perceptual cultural identity like the American South)",
+        "Human-environmental interaction: Environmental determinism vs possibilism in agricultural productivity and arid metropolitan growth (e.g. Phoenix, Arizona or Dubai)",
+        "Environmental determinism critique: Historical misuse to justify European colonial expansion, imperial dominance, and climate-based social hierarchies",
+        "Map projections & distortion: Mercator preservation of directional rhumb lines for marine navigation vs extreme high-latitude polar landmass exaggeration",
+        "Map projections & equality: Peters (Gall-Peters) equal-area projection balancing continental landmass size vs polar azimuthal equidistant great-circle flight paths",
+        "Thematic mapping types: Choropleth density gradients across administrative units vs dot density maps revealing actual rural/urban clustering and avoiding the ecological fallacy",
+        "Thematic mapping variables: Isoline continuous contour lines (elevation/barometric pressure) vs proportional symbol scaling representing city population magnitudes",
+        "Spatial distribution patterns: Identifying clustered (agglomerated), linear (along highway/river corridors), and dispersed point pattern arrangements",
+        "Scale of analysis contrasts: How national-level GDP averages obscure subnational regional and local neighborhood-level poverty and income disparities",
+        "Qualitative vs quantitative spatial data: Combining quantitative GIS data layers with qualitative community interviews during disaster recovery planning",
+        "Spatial decision-making: How local government planners utilize census tract-level data rather than national data to allocate municipal public health clinics",
+        "Friction of distance in modern trade: Explaining why physical distance, freight costs, and bulk transport logistics still influence global trade volumes"
       ],
       "2": [
-        "Demographic Transition Model (DTM): Stage 1 high fluctuating equilibrium vs Stage 2 Industrial/Medical revolution CDR collapse and population explosion",
-        "DTM Late Stages: Stage 3 fertility decline via urbanization and female education vs Stage 4 low stable equilibrium and Stage 5 natural decrease",
-        "Epidemiological Transition Model: Stage 1 pestilence and famine vs Stage 2 receding pandemics vs Stage 3/4 degenerative human-made diseases",
-        "Population Pyramids: Broad expansive base (rapid growth, high youth dependency) vs columnar aging demographic (caregiver deficits and pension strain)",
-        "Malthusian population theory: Arithmetic food growth vs exponential population growth, positive vs preventative checks, and Boserup agricultural intensification rebuttal",
+        "Demographic Transition Model (DTM): Stage 1 high fluctuating equilibrium vs Stage 2 Industrial/Medical revolution CDR collapse and rapid NIR population expansion",
+        "DTM Late Stages: Stage 3 fertility decline driven by female education and urbanization vs Stage 4 low stable equilibrium and Stage 5 natural decrease",
+        "Epidemiological Transition Model: Stage 1 pestilence and famine vs Stage 2 receding pandemics vs Stage 3/4 degenerative chronic diseases",
+        "Population Pyramids: Broad expansive base (rapid growth, high youth dependency) vs columnar aging demographic (caregiver deficits, pension strain, shrinking labor force)",
+        "Sex ratio imbalances: Male-skewed cohorts caused by cultural son preference and prenatal sex selection creating marriage market squeezes and labor shifts",
+        "Malthusian population theory: Arithmetic food production vs exponential population growth, and technological/Green Revolution rebuttals",
+        "Dependency ratios: Economic impact of high youth dependency in Stage 2 countries (primary schooling, pediatric healthcare) vs elderly dependency in Stage 4/5 countries",
         "Migration push and pull factors: Economic employment, political persecution, environmental desertification, and Ravenstein's laws of migration",
-        "Forced vs voluntary displacement: Refugees vs internally displaced persons (IDPs) vs asylum seekers under international UNHCR protocols",
-        "Pro-natalist vs anti-natalist government policies: Singapore tax rebates and parental leave vs China's historic One-Child Policy gender imbalance"
+        "Forced vs voluntary displacement: Transnational economic migrants vs refugees and internally displaced persons (IDPs) fleeing armed conflict",
+        "Pro-natalist government policies: Financial incentives, paid maternity leave, and subsidized childcare in aging societies (e.g., Japan, Singapore, France)",
+        "Anti-natalist government policies: Unitary vs federal government effectiveness in enforcing birth restriction laws (e.g., historic One-Child Policy in China)",
+        "Doubling time contrasts: Why less developed countries with high natural increase rates experience drastically shorter population doubling times than developed nations",
+        "Urban vs rural fertility differentials: Explaining why women in urban areas consistently exhibit lower total fertility rates (TFR) than rural peers"
       ],
       "3": [
-        "Types of cultural diffusion: Relocation (physical migration) vs Expansion diffusion (contagious social media, hierarchical fashion/capitals, stimulus adaptations)",
-        "Religious distribution & hearths: Universalizing faiths (Christianity, Islam, Buddhism) seeking global converts vs Ethnic faiths (Judaism, Hinduism) anchored to sacred hearth landscapes",
-        "Linguistic geography: Indo-European language family evolution, Romance/Germanic branches, isoglosses, dialects, and English as global lingua franca",
-        "Cultural landscape imprint: Toponyms, religious architecture (minarets, steeples, shrines), and indigenous vs colonial land-use patterns",
-        "Cultural identity processes: Acculturation (adopting traits while maintaining identity) vs Assimilation (complete cultural absorption) vs Syncretism (blended traditions)",
-        "Centripetal vs centrifugal cultural forces: Shared national language/patriotism unifying a populace vs ethnic sectarian linguistic cleavages driving fragmentation"
+        "Types of cultural diffusion: Relocation diffusion (migration of people) vs Expansion diffusion (contagious internet trends, hierarchical city-to-town trends, stimulus adaptations)",
+        "Linguistic geography: Indo-European language family evolution, Romance and Germanic branches, isoglosses, dialects, and English as global lingua franca",
+        "Creolization of language: The convergence and blending of two or more distinct languages through historical colonial contact to create a new stable language (e.g. Haitian Creole)",
+        "Religious distribution & hearths: Universalizing faiths (Christianity, Islam, Buddhism) seeking global converts vs Ethnic faiths (Judaism, Hinduism) anchored to specific physical hearths",
+        "Cultural landscape imprint: Visible architectural styles (Gothic cathedrals, Islamic minarets and domes, Buddhist pagodas) and toponyms reflecting religious heritage",
+        "Linguistic landscape: Bilingual street signage and official language laws reflecting political power negotiations and cultural preservation (e.g. Montreal, Quebec)",
+        "Cultural identity processes: Acculturation (adopting host traits while maintaining heritage) vs Assimilation (complete cultural absorption) vs Syncretism (blending cultural traditions)",
+        "Centripetal vs centrifugal cultural forces: Shared national language and cultural symbols unifying a population vs ethnic sectarian cleavages driving devolution",
+        "Globalization of food and diet: Relocation of ethnic cuisines into metropolitan restaurant landscapes vs loss of indigenous agricultural dietary traditions",
+        "Threats to indigenous languages: How European colonialism, mandatory boarding schools, and modern digital media threaten the survival of indigenous minority tongues",
+        "Cultural landscapes & placelessness: How commercial franchise architecture, standardized strip malls, and corporate branding erase local distinctiveness"
       ],
       "4": [
-        "Political entity types: Nation-states (Japan, Iceland), stateless nations (Kurds, Palestinians), multinational states (UK, Canada), and autonomous regions",
-        "Colonial borders and historical boundaries: Berlin Conference (1884) superimposed borders ignoring African ethnic lines, antecedent boundaries, and relic boundaries (Berlin Wall)",
-        "Boundary dispute categories: Definitional (treaty wording), locational (border cartography), operational (immigration/customs), and allocational (oil/aquifer resource extraction)",
+        "Political entity types: Nation-states (Japan, Iceland), stateless nations (Kurds, Palestinians, Basques), multinational states (UK, Canada), and autonomous regions",
+        "Colonial borders and historical boundaries: Berlin Conference (1884) superimposed boundaries ignoring ethnic boundaries, causing post-colonial conflicts in Africa",
+        "Boundary genetic types: Antecedent boundaries established before intensive human settlement vs subsequent boundaries drawn after cultural landscape development",
+        "Boundary dispute categories: Definitional (treaty wording), locational (border cartography), operational (customs/migration control), and allocational (shared aquifers or oil fields)",
         "Law of the Sea (UNCLOS): 12-nautical-mile territorial sea sovereignty, 24nm contiguous enforcement zone, and 200nm Exclusive Economic Zone (EEZ) resource rights",
-        "Internal political boundaries: Gerrymandering techniques (packing opposition into single districts vs cracking across multiple districts) and redistricting reapportionment",
-        "Devolutionary forces: Physical geography barriers, ethnic separatism (Basques, Catalans), economic disparities, and terrorism causing state decentralization",
-        "Supranational organizations: European Union (EU), United Nations (UN), NATO, and ASEAN balancing sovereign independence against collective trade and defense"
+        "Overlapping EEZ conflicts: Geopolitical friction over fishing rights and offshore petroleum reserves in enclosed seas (e.g. South China Sea, Persian Gulf)",
+        "Internal political boundaries: Gerrymandering techniques (packing opposition voters into a single district vs cracking across multiple districts) influencing elections",
+        "Devolutionary forces: Physical geography barriers, concentrated ethnic minorities (Scotland, Catalonia), and regional economic disparities promoting autonomy or secession",
+        "Federal vs unitary governance: Centralized top-down control in unitary systems vs regional autonomous power centers in federal systems (e.g. US, Canada, Nigeria)",
+        "Supranational organizations: European Union (EU), ASEAN, and UN balancing economic integration and free trade against the surrender of member state sovereignty"
       ],
       "5": [
         "Von Th\xFCnen Agricultural Land-Use Model: Concentric rings determined by land rent and perishability/transport weight (Dairying -> Timber -> Grains -> Livestock)",
-        "Bid-Rent Theory in agriculture: Highest land cost near urban market favoring intensive farming vs low rent per hectare on periphery favoring extensive grazing",
-        "First, Second, and Third (Green) Agricultural Revolutions: High-yield variety (HYV) wheat/rice strains, synthetic nitrogen fertilizers, and mechanized irrigation",
-        "Intensive vs Extensive agricultural systems: Market gardening, plantation agriculture, and mixed crop-livestock vs nomadic herding and shifting cultivation",
+        "Technological modifications to Von Th\xFCnen: How refrigerated trucks, air freight, and container shipping have expanded dairy and perishable crop distance rings",
+        "Bid-Rent Theory in agriculture: High land values near urban consumer markets dictating intensive farming vs low land values on the periphery favoring extensive grazing",
+        "First, Second, and Green Revolutions: High-yield variety (HYV) dwarf wheat/rice seeds, synthetic nitrogen fertilizers, chemical pesticides, and mechanized irrigation",
+        "Economic consequences of the Green Revolution: Increased farm yields and lower food prices vs financial debt and loss of land for small subsistence farmers unable to afford inputs",
+        "Environmental consequences of commercial agriculture: Ground water aquifer depletion, soil salinization from improper irrigation, eutrophication from fertilizer runoff, and desertification",
+        "Intensive vs Extensive agricultural systems: Market gardening and plantation farming vs nomadic pastoralism and shifting cultivation",
         "Cadastral rural survey systems: English Metes and Bounds (natural landmarks) vs French Long Lots (riverfront access) vs Township and Range rectangular grids",
-        "Global agricultural supply chains: Agribusiness corporate consolidation, commodity chains, fair trade certification, and export monoculture vulnerabilities"
+        "Global agricultural commodity dependence: Vulnerabilities faced by developing nations whose export economies rely overwhelmingly on single cash crops (e.g. coffee, cocoa, soybeans)",
+        "Agricultural sustainability practices: Terracing on steep mountain slopes, crop rotation, cover cropping, and dryland water conservation techniques"
       ],
       "6": [
         "Classic North American Urban Models: Burgess Concentric Zone (CBD outward) vs Hoyt Sector (transit corridor wedges) vs Harris-Ullman Multiple Nuclei",
-        "Galactic City and Edge Cities: Suburban nodes, beltways, office parks, and polycentric urban agglomerations",
+        "Deviations from classical urban models: How gentrification, transit sub-centers, and highway intersections disrupt smooth concentric land rent gradients",
+        "Galactic City Model & Edge Cities: Suburban employment nodes, circumferential beltways, corporate office parks, and polycentric urban agglomerations",
         "Christaller's Central Place Theory: Hexagonal market areas, threshold (minimum customer base to sustain a business), and range (maximum distance consumers travel)",
-        "Urban settlement hierarchies: Primate city rule (disproportionate economic/political dominance) vs Rank-Size rule (nth city is 1/n size of largest city)",
-        "Urban challenges & gentrification: Displacement of lower-income residents, property tax inflation, suburban sprawl, infrastructure deficits, and food deserts",
-        "Socio-spatial urban inequalities: Redlining, blockbusting, racial steering, and peripheral squatter settlements / favelas in developing megacities"
+        "Urban settlement hierarchies: Primate city rule (disproportionate political, economic, and cultural dominance) vs Rank-Size rule (nth city is 1/n population of largest city)",
+        "Megacities and Metacities: Infrastructure deficits, rapid rural-to-urban migration, and peripheral squatter settlements / favelas in developing world urban giants",
+        "Urban challenges & gentrification: Influx of affluent residents, rising property taxes and rents, and displacement of long-term low-income minority residents",
+        "Socio-spatial urban inequalities: Redlining, blockbusting, racial covenants, and contemporary housing discrimination creating entrenched residential segregation",
+        "Urban sustainability & New Urbanism: Mixed-use zoning, walkable neighborhoods, transit-oriented development (TOD), greenbelts, and smart growth policies",
+        "Metropolitan jurisdictional fragmentation: Challenges faced by fragmented municipal governments in coordinating regional transportation, water, and sewage systems"
       ],
       "7": [
-        "Wallerstein's World Systems Theory: Core (capital-intensive, high-value manufacturing), Periphery (raw material extraction, low wages), and Semiperiphery",
+        "Wallerstein's World Systems Theory: Core (capital-intensive, high-value manufacturing, tertiary/quaternary jobs), Periphery (raw material extraction, low wages), and Semiperiphery",
         "Rostow's Stages of Economic Growth: Traditional society -> Preconditions for takeoff -> Takeoff -> Drive to maturity -> Age of high mass consumption",
-        "Weber's Least Cost Theory: Raw material index, bulk-reducing industries (copper smelting near mine) vs bulk-gaining industries (beverage bottling near market)",
-        "Human Development Index (HDI): Composite metric evaluating GDP per capita (PPP), mean years of schooling, and life expectancy at birth",
-        "Gender and Economic Development: Gender Inequality Index (GII), microfinance small-business lending, and female labor force participation empowerment",
-        "Post-Fordism and globalization: Offshoring, maquiladoras, Export Processing Zones (EPZs), just-in-time logistics, and Rust Belt deindustrialization"
+        "Weber's Least Cost Theory: Raw material index, bulk-reducing industries (copper smelting, paper mills locating near inputs) vs bulk-gaining industries (beverage bottling locating near market)",
+        "Human Development Index (HDI): Composite metric evaluating GDP/GNI per capita (PPP), mean/expected years of schooling, and life expectancy at birth",
+        "Economic sectors and deindustrialization: Shift from secondary manufacturing to tertiary and quaternary knowledge/tech sectors in core nations, leaving Rust Belt job losses",
+        "Global division of labor: Offshoring, maquiladoras, Export Processing Zones (EPZs), and Special Economic Zones (SEZs) taking advantage of low labor costs in the semiperiphery",
+        "Economic interdependence and global trade: How specialized commodity exports and global supply chains link producing countries with consuming countries worldwide",
+        "Gender empowerment and development: Microfinance small-business lending, female secondary education, and labor force participation lowering total fertility rates",
+        "UN Sustainable Development Goals (SDGs): Balancing industrial growth with environmental protection, renewable energy, clean water, and reduced global poverty"
       ]
     }
   },
   environmental_science: {
     general: [
-      "Ecological systems analysis: Trophic energy transfers, 10% ecological efficiency rule, and nutrient cycling disruptions",
-      "Environmental quantitative calculations: LD50 toxicology thresholds, Rule of 70 doubling times, and per-capita resource consumption",
-      "Anthropogenic impact evaluation: Ocean acidification, stratospheric ozone depletion, and habitat fragmentation",
-      "Sustainable resource stewardship: Renewable energy trade-offs, integrated pest management, and aquifer recharge equilibrium"
+      "Experimental investigation design: Formulating testable hypotheses, identifying independent/dependent variables, control treatments, and predicting modification outcomes",
+      "Quantitative environmental problem solving: Multi-step dimensional analysis, energy calculations (kWh, BTUs), metric conversions, percent change, and Rule of 70 doubling time",
+      "Environmental problem evaluation and solution proposing: Assessing ecological disruptions, identifying root causes, and proposing realistic mitigation strategies with co-benefits",
+      "Ecosystem dynamics and resilience: Trophic cascades, 10% energy transfer rule, biodiversity metrics (species richness vs evenness), and disturbance recovery",
+      "Earth systems and climatological phenomena: Tectonic plate movements, atmospheric circulation cells, and El Ni\xF1o-Southern Oscillation (ENSO) ocean-atmosphere feedbacks",
+      "Human impacts on resources: Tragedy of the Commons, agricultural runoff, pesticide treadmill, urban stormwater runoff, and habitat fragmentation"
     ],
     units: {
-      "1": ["Carbon, nitrogen, and phosphorus biogeochemical cycles", "Primary productivity: GPP vs NPP calculations in terrestrial and aquatic biomes"],
-      "2": ["Ecosystem biodiversity: Species richness vs evenness, ecosystem services, and island biogeography theory"],
-      "3": ["Population ecology: r-selected vs K-selected species, Type I/II/III survivorship curves, and carrying capacity K overshoot"],
-      "4": ["Earth systems: Plate tectonics, soil texture triangle classification, atmospheric Hadley cells, and El Ni\xF1o-Southern Oscillation (ENSO)"],
-      "5": ["Land and water use: Tragedy of the commons, Green Revolution impacts, irrigation salinization, and integrated pest management (IPM)"],
-      "6": ["Energy resources: Fossil fuel extraction, nuclear fission half-life calculations, photovoltaic solar, and wind turbine generation"],
-      "7": ["Atmospheric pollution: Photochemical smog formation, thermal inversions, acid deposition, and catalytic converters"],
-      "8": ["Aquatic and terrestrial pollution: Cultural eutrophication, biochemical oxygen demand (BOD) oxygen sag curves, and endocrine disruptors"],
-      "9": ["Global change: Stratospheric ozone chlorofluorocarbons (CFCs), greenhouse gas warming potentials, ocean acidification, and invasive species"]
+      "1": [
+        "Biogeochemical cycles: Carbon, nitrogen, phosphorus, and hydrologic nutrient cycling pathways, reservoirs, and human disruptions",
+        "Trophic cascades and energy dynamics: Net Primary Productivity (NPP = GPP - R), 10% thermodynamic trophic transfer rule, and food web biomass pyramids",
+        "Terrestrial and aquatic biomes: Climatograms, temperature/precipitation patterns, and freshwater vs marine aquatic life zones"
+      ],
+      "2": [
+        "Ecosystem services classification: Provisioning, regulating, supporting, and cultural benefits provided by natural ecosystems",
+        "Island biogeography theory: Equilibrium model predicting species richness based on island surface area and distance from mainland colonization sources",
+        "Ecological tolerance and range: Physiological stress curves, optimum conditions, and zones of intolerance for abiotic factors",
+        "Natural ecosystem disruptions: Primary succession on bare bedrock/lava vs secondary succession with intact soil, pioneer species, and ecological resilience"
+      ],
+      "3": [
+        "Reproductive strategies: Generalist vs specialist species, and r-selected vs K-selected survivorship curves (Type I, II, III)",
+        "Carrying capacity and population dynamics: Logistic growth model, overshoot, and dieback caused by resource depletion",
+        "Human population demographics: Age-structure population pyramid diagrams, Total Fertility Rate (TFR), and Infant Mortality Rate indicators",
+        "Demographic Transition Model (DTM): Stages 1-4 shifts in birth/death rates, and Rule of 70 population doubling time calculations (70 / r)"
+      ],
+      "4": [
+        "Plate tectonics and geological hazards: Convergent, divergent, and transform boundaries forming rift valleys, trenches, island arcs, and earthquakes",
+        "Soil properties and conservation: Soil horizon profiles (O, A, B, C), soil texture triangle proportions (sand, silt, clay), porosity, and permeability",
+        "Atmospheric circulation: Hadley, Ferrel, and Polar cells, Coriolis deflection, and solar insolation driving global wind and climate patterns",
+        "Earth's geography and climate: Watershed topography and drainage basins, rain shadow effect on leeward mountain slopes, and ENSO (El Ni\xF1o vs La Ni\xF1a) upwelling shifts"
+      ],
+      "5": [
+        "Tragedy of the Commons: Depletion of shared unregulated resources (overgrazing on public rangelands, overfishing in international waters)",
+        "Agricultural irrigation and soil salinization: Furrow, flood, spray, and drip irrigation efficiencies, waterlogging, and aquifer depletion (Ogallala)",
+        "Pest management: Synthetic chemical pesticides, pesticide treadmill and evolved genetic resistance, and Integrated Pest Management (IPM) biocontrol",
+        "Meat production and aquaculture: Concentrated Animal Feeding Operations (CAFOs), rotational grazing, overfishing, and inland aquaculture disease transfer",
+        "Resource extraction and urbanization: Surface mining (strip mining, mountain top removal), acid mine drainage, urban runoff, and permeable pavement mitigations"
+      ],
+      "6": [
+        "Fossil fuels and electricity generation: Coal, petroleum, natural gas combustion, turbine mechanics, cogeneration, and hydraulic fracturing risks",
+        "Nuclear energy: Uranium-235 fission, fuel rods, radioactive waste storage, half-life decay calculations, and absence of air pollution vs thermal pollution",
+        "Renewable energy technologies: Photovoltaic solar cells vs concentrated solar, wind turbine energy conversion, hydroelectric dam environmental impacts, and geothermal power",
+        "Energy conservation and efficiency: Calculating percent change in fuel economy (mpg), residential electrical energy consumption (kWh), and appliance upgrades"
+      ],
+      "7": [
+        "Air pollutants and sources: Primary vs secondary pollutants, particulate matter (PM10, PM2.5), sulfur dioxide, and nitrogen oxides from fossil fuels",
+        "Photochemical smog: Formation chemistry involving sunlight, NOx, and volatile organic compounds (VOCs) producing tropospheric ozone and PANs",
+        "Thermal inversions: Trapping of cold ground-level air beneath warm inversion layer, concentrating industrial and urban pollutants",
+        "Indoor air pollutants: Radon gas seepage, carbon monoxide from incomplete combustion, asbestos fibers, and mold VOCs",
+        "Air pollution reduction technologies: Catalytic converters, electrostatic precipitators, wet scrubbers, and vapor recovery nozzles"
+      ],
+      "8": [
+        "Aquatic pollution sources: Point vs nonpoint sources, runoff plumes, and thermal pollution impacts on dissolved oxygen solubility",
+        "Endocrine disruptors and persistent organic pollutants: Synthetic chemicals (PCBs, DDT, BPA, phthalates), bioaccumulation in fatty tissue, and biomagnification",
+        "Eutrophication and oxygen sag curve: Nutrient runoff (nitrates, phosphates), algal blooms, decomposition by aerobic bacteria, and hypoxic dead zones (low DO, high BOD)",
+        "Wetlands and human impacts: Wetland ecological flood absorption, commercial development destruction, sedimentation, and mangrove coastal buffering",
+        "Dose-response curves: Threshold levels, LD50 (lethal dose killing 50% of test population), and municipal wastewater treatment (primary, secondary, tertiary)"
+      ],
+      "9": [
+        "Stratospheric ozone depletion: Chlorofluorocarbons (CFCs), catalytic destruction of O3 molecules, Antarctic ozone hole, and Montreal Protocol international treaty",
+        "Greenhouse effect and climate change: Carbon dioxide, methane, nitrous oxide, fluorinated gases, infrared absorption, and positive feedback loops (ice-albedo effect)",
+        "Ocean warming and acidification: Thermal stress causing zooxanthellae expulsion (coral bleaching), and atmospheric CO2 absorption forming carbonic acid (lowering marine pH)",
+        "Invasive species and biodiversity loss: Generalist traits outcompeting native specialists (HIPPCO framework), habitat fragmentation, and wildlife corridors"
+      ]
     }
   },
   csp: {
     general: [
-      "Algorithmic analysis: Selection, sequencing, and iteration efficiency and correctness",
-      "Data abstraction & representation: Binary encoding, hexadecimal conversion, lossy vs lossless compression",
-      "Internet architecture: Packet routing, TCP/IP protocols, DNS hierarchy, and fault-tolerant network topologies",
-      "Societal impacts of computing: Digital divide, facial recognition bias, intellectual property, and crowdsourcing citizen science"
+      "Student-developed procedure design: Procedural abstraction, explicit parameters, return values, and encapsulation",
+      "List-based data abstraction: Dynamic array traversal, indexing, filtering, aggregating, and complexity management",
+      "Algorithmic logic & control flow: Sequencing, relational selection (if/elif/else), and conditional/count-controlled iteration (loops)",
+      "Program testing & logic error analysis: Formulating test calls to execute distinct branches, simulating incorrect code modifications, and diagnosing logic bugs",
+      "User interface & input/output dynamics: Validating tactile/visual inputs, handling unexpected boundary inputs, and documenting code for maintenance"
     ],
     units: {
-      "1": ["Iterative software development process: Program design, user testing, debugging logic errors vs syntax errors"],
-      "2": ["Binary numbers, bytes, overflow errors, metadata, and analog-to-digital sampling rates"],
-      "3": ["Robot grid path traversals, list manipulations, linear vs binary search operations, and modular procedural abstraction with parameters"],
-      "4": ["The Internet, IPv4 vs IPv6 addressing, router redundancy, bandwidth vs latency, and public-key encryption (RSA)"],
-      "5": ["Computing innovations, digital divide, creative commons licensing, open-source software, phishing, malware, and multi-factor authentication"]
+      "1": [
+        "Creative Development: Iterative design process, incremental development, user documentation, and collaborative pair programming",
+        "Investigating program behavior: Describing input/output relationships and identifying how code segments fulfill program purpose",
+        "Identifying and correcting errors: Distinguishing between logic errors, syntax errors, and runtime exceptions during development"
+      ],
+      "2": [
+        "Data Representation: Binary numbering system, hexadecimal conversion, character encoding (ASCII/Unicode), and integer overflow",
+        "Data compression algorithms: Lossless vs lossy compression tradeoffs, text run-length encoding, and file size reduction",
+        "Extracting information from data: Data cleaning, metadata analysis, privacy concerns with large datasets, and correlation vs causation"
+      ],
+      "3": [
+        "Algorithms & Programming: Variables, expressions, string concatenation, and Boolean logic operations (AND, OR, NOT)",
+        "Conditional selection statements: Nested if/else statements and multi-branch decision trees based on variable states",
+        "Iteration statements: For/while loops traversing list collections, linear search algorithms, and accumulator pattern updates",
+        "Developing procedures: Writing parameterized functions that manage complexity and prevent redundant code duplication",
+        "Simulating algorithmic execution: Tracing variable values step-by-step through nested loops and conditional statements"
+      ],
+      "4": [
+        "Computer Systems & Networks: Internet routing protocols (IP, TCP/UDP), packet switching, and physical network connections",
+        "Fault tolerance and redundancy: Network reliability, multiple routing paths, and distributed computing architectures",
+        "Cybersecurity principles: Public-key vs symmetric encryption, multi-factor authentication (MFA), malware types, and phishing attacks"
+      ],
+      "5": [
+        "Impact of Computing: Digital divide (socioeconomic and geographic barriers), equitable access, and open-source licensing",
+        "Computing biases: Algorithmic bias in machine learning models, facial recognition training gaps, and discriminatory datasets",
+        "Legal and ethical concerns: Intellectual property rights, Creative Commons licenses, digital privacy, and automated tracking cookies"
+      ]
     }
   },
   government: {
@@ -4840,13 +5398,116 @@ var AP_SUBJECT_ARCHETYPES = {
       "2": ["System dynamics and interactions: Analyzing functional relationships between interdependent components within the field"],
       "3": ["Advanced contextual evaluation: Assessing real-world case studies, regulatory interventions, and empirical validations"]
     }
+  },
+  englishLang: {
+    general: [
+      "Rhetorical situation analysis: Identifying author, intended audience, exigence, and overarching purpose in authentic speeches and essays",
+      "Synthesis argumentation: Integrating diverse textual and quantitative perspectives into a cohesive line of reasoning",
+      "Defensible thesis formulation: Establishing a nuanced position that avoids simplistic binaries and acknowledges counterarguments",
+      "Evidence integration: Weaving signal phrases, direct quotations, and paraphrased evidence seamlessly without block summary",
+      "Rhetorical strategy evaluation: Analyzing how specific diction, syntax, tone shifts, and analogies function psychologically on the audience",
+      "Philosophical / cultural argumentation: Marshaling historical, literary, and contemporary evidence to support a defensible claim"
+    ],
+    units: {
+      "1": [
+        "Rhetorical situation: Exigence, speaker persona, and audience expectations in foundational non-fiction texts",
+        "Authorial intent and primary claims: Dissecting the core thesis and explicit arguments in persuasive writing"
+      ],
+      "2": [
+        "Classical appeals: Ethical credibility (ethos), emotional resonance (pathos), and logical structure (logos)",
+        "Evidence selection: Evaluating how empirical facts, anecdotes, and expert testimony advance distinct claims"
+      ],
+      "3": [
+        "Line of reasoning: Tracing the logical progression from introductory premises to supporting claims and conclusion",
+        "Structural transitions: Analyzing causal, contrastive, and concessive transitional phrases that unite paragraphs"
+      ],
+      "4": [
+        "Synthesis protocol: Synthesizing multiple competing viewpoints to construct an original, defensible position",
+        "Source conversation: Juxtaposing conflicting perspectives and resolving tensions between authors"
+      ],
+      "5": [
+        "Commentary depth: Linking evidence directly to the thesis through thorough analytical explanations of mechanism",
+        "Avoiding the summary trap: Distinguishing pure descriptive summary from rigorous rhetorical analysis"
+      ],
+      "6": [
+        "Stylistic choices: Diction, sentence variety, periodic sentences, and parallel structure enhancing persuasion",
+        "Tone and tonal shifts: Identifying how shifts in authorial mood, irony, or urgency steer audience perception"
+      ],
+      "7": [
+        "Complex argumentation: Incorporating qualifications, concessions, and rebuttals to address alternative perspectives",
+        "Stasis theory and Toulmin analysis: Examining warrants, backings, and grounds in multifaceted arguments"
+      ],
+      "8": [
+        "Figurative language in rhetoric: Functional metaphors, extended analogies, and imagery serving argumentative goals",
+        "Pervasive rhetorical devices: Anaphora, antithesis, rhetorical questions, and juxtaposition in historic speeches"
+      ],
+      "9": [
+        "Sophistication of thought: Contextualizing arguments within broader historical or philosophical frameworks",
+        "Stylistic maturity: Writing with vivid prose, voice consistency, and compelling rhetorical impact"
+      ]
+    }
+  },
+  psychology: {
+    general: [
+      "Article Analysis Question (AAQ): Dissecting peer-reviewed empirical research articles (hypothesis, operational definitions, ethical guidelines, quantitative data interpretation, generalizability)",
+      "Evidence-Based Question (EBQ): Synthesizing multiple empirical psychological research studies to construct a defensible claim supported by cited evidence and explained with distinct CED concepts",
+      "Research methodology: Distinguishing experimental manipulation (IV, DV, random assignment, control group) from non-experimental designs (correlational, case study, naturalistic observation, meta-analysis)",
+      "Statistical reasoning: Interpreting mean, median, range, standard deviation, scatterplots, correlation coefficients (-1.0 to +1.0), and p-value statistical significance (p < 0.05)",
+      "Ethical standards: APA guidelines including informed consent, protection from harm/discomfort, confidentiality/anonymity, deception justification, and comprehensive post-study debriefing",
+      "Generalizability & sampling: Explaining how representative random sampling determines population generalizability, distinguishing sample representativeness from mere sample size"
+    ],
+    units: {
+      "1": [
+        "Neuron structure & action potential: Resting membrane potential (-70mV), sodium influx depolarization, potassium efflux repolarization, refractory periods, and all-or-none law",
+        "Synaptic neurotransmission: Neurotransmitter vesicle release, receptor binding, reuptake mechanisms, and agonistic vs antagonistic pharmacology (e.g. dopamine, serotonin, GABA, glutamate, acetylcholine)",
+        "Endocrine system interactions: Hypothalamic-pituitary-adrenal (HPA) axis, cortisol stress response, and sympathetic vs parasympathetic nervous system autonomic balance",
+        "Brain structure localization: Frontal lobe executive function/Broca's area, temporal lobe/Wernicke's area, parietal lobe somatosensory cortex, occipital visual cortex, hippocampus, amygdala, and cerebellum",
+        "Split-brain research & neuroplasticity: Corpus callosum resection effects on contralateral sensory processing and hemispheric lateralization (Gazzaniga & Sperry)",
+        "Sleep architecture & circadian rhythms: REM vs NREM sleep stages, EEG brain wave frequencies (beta, alpha, theta, delta), suprachiasmatic nucleus (SCN), and melatonin secretion"
+      ],
+      "2": [
+        "Sensory transduction & absolute thresholds: Signal detection theory, Weber's law difference threshold (JND), sensory adaptation, and top-down vs bottom-up perceptual processing",
+        "Visual & auditory pathways: Trichromatic vs opponent-process color vision theories, feature detectors, place theory vs frequency theory of pitch, and Gestalt perceptual grouping principles",
+        "Memory stage model (Atkinson-Shiffrin): Sensory memory, working/short-term memory capacity (7\xB12 chunks), maintenance vs elaborative rehearsal, and long-term memory encoding",
+        "Long-term memory taxonomy: Explicit declarative (episodic and semantic) vs implicit nondeclarative (procedural skills and classical conditioning), and hippocampal vs cerebellar storage",
+        "Forgetting & memory retrieval: Proactive vs retroactive interference, serial position effect (primacy and recency), retrieval cues, context/state-dependent memory, and Elizabeth Loftus misinformation effect",
+        "Problem solving & decision heuristics: Algorithms, representativeness and availability heuristics, confirmation bias, mental set, framing effects, and belief perseverance",
+        "Theories of intelligence & testing: Spearman's general factor (g), Gardner's multiple intelligences, Sternberg's triarchic theory, test standardization, reliability, and content/construct validity"
+      ],
+      "3": [
+        "Classical conditioning paradigms: Pavlovian unconditioned stimulus (UCS), unconditioned response (UCR), conditioned stimulus (CS), conditioned response (CR), acquisition, extinction, spontaneous recovery, generalization, and discrimination",
+        "Operant conditioning mechanics: Thorndike's law of effect, Skinnerian positive/negative reinforcement vs positive/negative punishment, and schedules of reinforcement (FR, VR, FI, VI)",
+        "Social-cognitive & observational learning: Bandura's Bobo doll experiment, vicarious reinforcement, mirror neuron systems, and self-efficacy beliefs",
+        "Developmental cognitive stages (Piaget): Sensorimotor (object permanence), preoperational (egocentrism, lack of conservation), concrete operational, formal operational, and schema assimilation vs accommodation",
+        "Psychosocial & moral development: Erikson's eight psychosocial crises (e.g. trust vs mistrust, identity vs role confusion) and Kohlberg's levels of moral reasoning (preconventional, conventional, postconventional)",
+        "Attachment theory & parenting styles: Mary Ainsworth strange situation (secure, insecure-ambivalent, insecure-avoidant attachment), Harlow's contact comfort with surrogate mothers, and Baumrind's parenting styles (authoritative, authoritarian, permissive, neglectful)"
+      ],
+      "4": [
+        "Attribution theory & social cognition: Fundamental attribution error (FAE), actor-observer bias, self-serving bias, just-world hypothesis, and false consensus effect",
+        "Conformity, compliance & obedience: Asch line judgment conformity experiments, normative vs informational social influence, and Milgram obedience shock experiments",
+        "Group dynamics & performance: Social facilitation, social loafing, deindividuation in crowds, group polarization, groupthink, and bystander effect / diffusion of responsibility",
+        "Prejudice, discrimination & intergroup conflict: In-group bias, out-group homogeneity, scapegoat theory, stereotype threat, and Sherif's Robbers Cave superordinate goals",
+        "Theories of emotion & motivation: James-Lange, Cannon-Bard, Schachter-Singer two-factor theory of emotion, Yerkes-Dodson arousal law, drive-reduction theory, and intrinsic vs extrinsic motivation",
+        "Personality theories & assessment: Freud's psychoanalytic id/ego/superego and defense mechanisms, Rogers' humanistic unconditional positive regard, and the Big Five trait dimensions (OCEAN)"
+      ],
+      "5": [
+        "Psychological disorder classification: DSM-5 diagnostic criteria, medical model vs biopsychosocial etiology, and labeling stigmas (Rosenhan study)",
+        "Anxiety, obsessive-compulsive & trauma-related disorders: Generalized anxiety, panic disorder, specific phobias, agoraphobia, OCD obsessions vs compulsions, and PTSD symptoms",
+        "Depressive & bipolar disorders: Major depressive disorder symptoms, learned helplessness (Seligman), cognitive triad (Beck), and bipolar I vs bipolar II cycling",
+        "Schizophrenia spectrum: Positive symptoms (hallucinations, delusions) vs negative symptoms (flat affect, avolition), and the dopamine hypothesis / diathesis-stress model",
+        "Evidence-based therapeutic modalities: Psychodynamic therapy, client-centered active listening, Cognitive Behavioral Therapy (CBT - cognitive restructuring), exposure therapies / systematic desensitization, and psychopharmacology",
+        "Stress, health & psychoneuroimmunology: Selye's General Adaptation Syndrome (alarm, resistance, exhaustion), Type A vs Type B personality cardiac risks, coping mechanisms, and locus of control"
+      ]
+    }
   }
 };
 function getGranularSubjectArchetypes(subject, unitOrTopic, count) {
   const s = (subject || "").toLowerCase();
   const u = (unitOrTopic || "").toLowerCase();
   let bundle = AP_SUBJECT_ARCHETYPES.general_academic;
-  if (s.includes("geography") || s.includes("aphg") || s.includes("human")) {
+  if (s.includes("english") || s.includes("lang")) {
+    bundle = AP_SUBJECT_ARCHETYPES.englishLang;
+  } else if (s.includes("geography") || s.includes("aphg") || s.includes("human")) {
     bundle = AP_SUBJECT_ARCHETYPES.human_geography;
   } else if (s.includes("environmental") || s.includes("apes")) {
     bundle = AP_SUBJECT_ARCHETYPES.environmental_science;
@@ -4857,7 +5518,11 @@ function getGranularSubjectArchetypes(subject, unitOrTopic, count) {
   } else if (s.includes("stat")) {
     bundle = AP_SUBJECT_ARCHETYPES.statistics;
   } else if (s.includes("calculus")) {
-    bundle = AP_SUBJECT_ARCHETYPES.calculus;
+    if (s.includes("bc") || s.includes("calculus bc")) {
+      bundle = AP_SUBJECT_ARCHETYPES.calculus_bc;
+    } else {
+      bundle = AP_SUBJECT_ARCHETYPES.calculus_ab;
+    }
   } else if (s.includes("biology")) {
     bundle = AP_SUBJECT_ARCHETYPES.biology;
   } else if (s.includes("chemistry")) {
@@ -4873,28 +5538,527 @@ function getGranularSubjectArchetypes(subject, unitOrTopic, count) {
   }
   const unitMatch = u.match(/(?:unit|period|chapter|u|p)\s*([0-9]+)/i);
   const detectedUnit = unitMatch ? unitMatch[1] : null;
+  if ((s.includes("bc") || s.includes("calculus bc")) && !detectedUnit) {
+    const bcCanonicalSix = [
+      "[Part A - Calculator Active | Q1 Canonical Archetype] Rate In/Rate Out Accumulation & Tabular Modeling: Non-uniform data table or analytical rate model, average value formula, average rate of change with units, Riemann/trapezoidal sum, and Extreme Value Theorem absolute extrema via Candidates Test table.",
+      "[Part A - Calculator Active | Q2 Canonical Archetype] BC Polar Curves or 2D Parametric Vector Motion: Polar area bounded between curves Area = (1/2)*int(r_1^2 - r_2^2) dtheta, extreme distance from coordinate axes, related rate dr/dt = (dr/dtheta)*(dtheta/dt) OR velocity <x'(t), y'(t)>, acceleration, speed, and total distance arc length.",
+      "[Part B - No Calculator | Q3 Canonical Archetype] Contextual Differential Equations & Slope Fields: Solution curve sketch through initial condition, tangent line approximation, second derivative d^2y/dt^2 concavity justification for overestimate/underestimate, and separation of variables with particular solution.",
+      "[Part B - No Calculator | Q4 Canonical Archetype] Graphical Analysis of f' & Accumulation Function: Graph of continuous f' consisting of semicircles and line segments, accumulation g(x) = int_c^x f(t)dt, FTC g'(x) = f(x), points of inflection where f' changes increasing/decreasing, and Candidates Test for absolute extrema on closed interval.",
+      "[Part B - No Calculator | Q5 Canonical Archetype] Advanced BC Calculus: Euler's method 2-step table approximation, implicit differentiation d^2y/dx^2, Lagrange error bound, or improper integrals lim_{b->inf} int_a^b.",
+      "[Part B - No Calculator | Q6 Canonical Archetype] The Signature BC Infinite Series & Taylor Polynomials: Ratio Test for interval of convergence with independent endpoint testing (AST / Harmonic comparison), term-by-term derivative f'(x) or integral, general term, geometric series sum S = a/(1 - r), and error bounds."
+    ];
+    if (count === 6) {
+      return [...bcCanonicalSix];
+    }
+    if (count === 5) {
+      return [bcCanonicalSix[0], bcCanonicalSix[1], bcCanonicalSix[2], bcCanonicalSix[3], bcCanonicalSix[5]];
+    }
+    if (count === 10) {
+      return [
+        bcCanonicalSix[0],
+        bcCanonicalSix[1],
+        bcCanonicalSix[2],
+        bcCanonicalSix[3],
+        bcCanonicalSix[4],
+        bcCanonicalSix[5],
+        "[Part A - Calculator Active | Q1/Q2 Mixed Variation] Contextual Rate In/Rate Out Accumulation & Tabular Function with Average Value and Riemann Sums",
+        "[Part A - Calculator Active | Q2 Mixed Variation] BC Polar Curves Bounded Area & Extreme Distance OR 2D Parametric Vector Motion & Arc Length",
+        "[Part B - No Calculator | Q3/Q4 Mixed Variation] Differential Equations Separation of Variables with Particular Solution & Tangent Line Concavity",
+        "[Part B - No Calculator | Q5/Q6 Mixed Variation] The Signature BC Infinite Series: Ratio Test Interval of Convergence, Independent Endpoint Analysis & Taylor Polynomials"
+      ];
+    }
+    if (count === 15) {
+      return [
+        ...bcCanonicalSix,
+        "[Part A - Calculator Active | Q1 Cycle 2 Variation] Contextual Rate Accumulation & Non-Uniform Table Modeling with EVT Candidates Test",
+        "[Part A - Calculator Active | Q2 Cycle 2 Variation] BC Polar Curves Enclosed Area with Intersection Angles OR Parametric Particle Motion Speed & Distance",
+        "[Part B - No Calculator | Q3 Cycle 2 Variation] Differential Equations Particular Solution via Separation of Variables & Slope Field Behavior",
+        "[Part B - No Calculator | Q4 Cycle 2 Variation] Accumulation Function g(x) = int_c^x f(t)dt from Semicircles/Line Segments Graph with Sign Reversals",
+        "[Part B - No Calculator | Q5 Cycle 2 Variation] Advanced BC Calculus: Euler's Method 2-Step Table, Implicit Second Derivative & Lagrange Remainder",
+        "[Part B - No Calculator | Q6 Cycle 2 Variation] Power Series Term-by-Term Differentiation/Integration, Geometric Sum Formula & Alternating Error Bound",
+        "[Part A - Calculator Active | Q1/Q2 High-Yield Synthesis] Non-Uniform Tabular Data Modeling with Average Rate Difference Quotient & Units",
+        "[Part B - No Calculator | Q4 Graphical Synthesis] Derivative Graph Analysis, Inflection Points and Global Extrema Candidates Test Table",
+        "[Part B - No Calculator | Q6 Series Mastery] Taylor/Maclaurin Polynomial Expansion with Ratio Test and AST Endpoint Convergence Verification"
+      ];
+    }
+    const pool = [];
+    while (pool.length < count) {
+      pool.push(bcCanonicalSix[pool.length % bcCanonicalSix.length]);
+    }
+    return pool;
+  }
+  if ((s.includes("chemistry") || s.includes("chem")) && !detectedUnit) {
+    const chemCanonicalSeven = [
+      "[Section II - Long FRQ 10 Points | Q1 Canonical Archetype] Solution Stoichiometry, Titration Curves & Buffer Equilibria: Weak acid/base titration curve, half-equivalence point where pH = pKa, Henderson-Hasselbalch buffer calculations, balanced net ionic equations, particulate drawings of spectator and conjugate pairs, and molarity calculations.",
+      "[Section II - Long FRQ 10 Points | Q2 Canonical Archetype] Chemical Kinetics, Initial Rates & Reaction Mechanisms: Determining rate laws and rate constant k with units from initial rates data tables, zero/first/second order integrated rate law graphical linearity ([A], ln[A], 1/[A] vs time), multi-step elementary mechanisms with slow rate-determining step verification, and Maxwell-Boltzmann / Arrhenius activation energy with catalysts.",
+      "[Section II - Long FRQ 10 Points | Q3 Canonical Archetype] Chemical Thermodynamics, Calorimetry & Equilibrium Systems: Constant-pressure coffee-cup calorimetry q = mc*Delta*T (strict 2 sig figs from Delta*T), molar enthalpy Delta*H_rxn = -q/n, Hess's Law or enthalpies of formation, standard entropy Delta*S microstates, Gibbs free energy Delta*G = Delta*H - T*Delta*S with kJ/J conversions, and equilibrium constant K_eq response to temperature shifts.",
+      "[Section II - Short FRQ 4 Points | Q4 Canonical Archetype] Molecular Structure, Lewis Diagrams & Hybridization: Drawing optimal Lewis electron-dot diagrams minimizing nonzero formal charges, VSEPR electron-domain vs molecular geometries (trigonal pyramidal, seesaw, square planar, T-shaped), bond angle distortion from lone pair repulsions, hybridization (sp, sp2, sp3), and net molecular dipole moment vector cancellation.",
+      "[Section II - Short FRQ 4 Points | Q5 Canonical Archetype] Gas Laws, Kinetic Molecular Theory & Intermolecular Forces: Ideal gas calculations PV = nRT, Dalton's law of partial pressures for gas collected over water (P_tot = P_gas + P_H2O), real gas deviations from ideality at high P / low T, and vapor pressure / boiling point ranking justified by electron cloud polarizability (more electrons/shells, NEVER citing molar mass alone).",
+      "[Section II - Short FRQ 4 Points | Q6 Canonical Archetype] Electrochemistry, Galvanic Cells & Faraday's Law: Complete galvanic cell diagram (anode oxidation, cathode reduction, salt bridge ion flow: cations to cathode, anions to anode), standard cell potential E\xB0_cell = E\xB0_cathode - E\xB0_anode (intensive property, NEVER multiplied), non-standard Nernst qualitative voltage shift, and electrolytic Faraday current stoichiometry I = q/t with electrode mass changes comparing both mole ratios and molar masses.",
+      "[Section II - Short FRQ 4 Points | Q7 Canonical Archetype] Solubility Equilibria (K_sp) or Spectrophotometry & PES: Saturated solution molar solubility calculation from K_sp (pure solids strictly excluded from denominator), predicting precipitate formation (Q > K_sp criterion), common ion effect suppression of solubility, OR Beer-Lambert Law (A = epsilon*b*c) spectrophotometric calibration curve analysis and Photoelectron Spectroscopy (PES) subshell binding energy peaks."
+    ];
+    if (count === 7) {
+      return [...chemCanonicalSeven];
+    }
+    if (count === 5) {
+      return [chemCanonicalSeven[0], chemCanonicalSeven[1], chemCanonicalSeven[2], chemCanonicalSeven[3], chemCanonicalSeven[4]];
+    }
+    if (count === 10) {
+      return [
+        chemCanonicalSeven[0],
+        chemCanonicalSeven[1],
+        chemCanonicalSeven[2],
+        chemCanonicalSeven[3],
+        chemCanonicalSeven[4],
+        chemCanonicalSeven[5],
+        chemCanonicalSeven[6],
+        "[Section II - Long FRQ Mixed Variation | Q1/Q3 Synthesis] Solution Stoichiometry, Weak Acid Buffers & Calorimetric Enthalpy of Neutralization",
+        "[Section II - Short FRQ Mixed Variation | Q4/Q5 Synthesis] Lewis Structures, VSEPR Geometries, Bond Angles & Electron Cloud Polarizability / Intermolecular Forces",
+        "[Section II - Short FRQ Mixed Variation | Q6/Q7 Synthesis] Electrochemistry Galvanic Cells, Salt Bridge Migration & K_sp Precipitation Equilibrium"
+      ];
+    }
+    if (count === 15) {
+      return [
+        ...chemCanonicalSeven,
+        "[Section II - Long FRQ Cycle 2 Variation | Q1] Gravimetric Precipitation Analysis, Redox Titration Curve & Particulate Solution Models",
+        "[Section II - Long FRQ Cycle 2 Variation | Q2] Integrated Rate Laws Graphic Linearity, Intermediate vs Catalyst & Activation Energy Energy Profiles",
+        "[Section II - Long FRQ Cycle 2 Variation | Q3] Hess's Law Enthalpy Cycle, Microstate Entropy Delta S, Gibbs Free Energy Delta G & Thermodynamic Favorability",
+        "[Section II - Short FRQ Cycle 2 Variation | Q4] Resonance Contributors, Formal Charge Optimization, Molecular Dipoles & Hybridization",
+        "[Section II - Short FRQ Cycle 2 Variation | Q5] Maxwell-Boltzmann Speed Distribution, Dalton's Partial Pressures & Ideal Gas Deviations",
+        "[Section II - Short FRQ Cycle 2 Variation | Q6] Electrolytic Cell Stoichiometry, Faraday's Law Amperage Timing & Standard Cell Potentials",
+        "[Section II - Short FRQ Cycle 2 Variation | Q7] Common Ion Effect Solubility Shift, pH-Dependent Hydroxide Dissolution & Q vs K_sp Verification",
+        "[Section II - Synthesis Capstone | Q1/Q3/Q6 High-Yield Integration] Coupled Reactions, Free Energy Delta G\xB0 = -RT ln K = -nFE\xB0, and Beer-Lambert Law Spectrophotometry"
+      ];
+    }
+    const pool = [];
+    while (pool.length < count) {
+      pool.push(chemCanonicalSeven[pool.length % chemCanonicalSeven.length]);
+    }
+    return pool;
+  }
+  if ((s.includes("biology") || s.includes("bio")) && !detectedUnit) {
+    const bioCanonicalSix = [
+      "[Section II - Long FRQ 9 Points | Q1 Canonical Archetype] Interpreting and Evaluating Experimental Results: Experimental biological investigation with setup description and quantitative data table. Parts A (1 pt: identify/describe biological process or cellular component), B (3 pts: B1 identify dependent variable, B2 justify negative or positive control group mechanism, B3 describe experimental trend or relationship), C (3 pts: C1 identify independent variable, C2 identify specific experimental condition/group, C3 calculate rate of change, percent difference, or nucleotide-to-amino acid translation ratio), D (2 pts: D1 predict effect of environmental alteration or genetic mutation, D2 justify prediction using biochemical principles or feedback loops).",
+      "[Section II - Long FRQ 9 Points | Q2 Canonical Archetype] Interpreting and Evaluating Experimental Results with Graphing: Quantitative laboratory study with sample means and standard error of the mean (\xB12 SE_x). Parts A (1 pt: describe chemical or cellular membrane property), B (4 pts: B1 determine appropriate graph type, B2 plot points/bars with accurate \xB12 SE_x error bars, B3 label axes with units and consistent linear scaling, B4 interpret plotted relationship), C (2 pts: C1 identify critical quantitative threshold e.g. >50% response or peak activity, C2 predict physiological consequence of pathway inhibition), D (2 pts: D1 support or refute claim using statistical significance based on error bar overlap rule, D2 explain ecological or agricultural application).",
+      "[Section II - Short FRQ 4 Points | Q3 Canonical Archetype] Scientific Investigation: Controlled biological experiment in ecology, physiology, or cell transport. Parts A (1 pt: describe ecological role, keystone species interaction, or transport mechanism), B (1 pt: identify negative control group and justify why it is necessary to isolate the variable), C (1 pt: state the null hypothesis strictly asserting that the independent variable has NO effect or NO difference on the dependent variable), D (1 pt: justify directional experimental modification or predict result if control is altered).",
+      "[Section II - Short FRQ 4 Points | Q4 Canonical Archetype] Conceptual Analysis: Evolutionary biology, genetics, or cellular communication without extensive data tables. Parts A (1 pt: state genetic evidence of evolution strictly defined as a change in allele/gene frequency in a population over time), B (1 pt: explain mechanism of speciation or adaptation, e.g. geographic isolation leading to allopatric speciation and reproductive isolation), C (1 pt: predict effect of altered selective pressures, resource availability, or gene dosage), D (1 pt: justify prediction linking molecular/genetic mechanism to organismal/population phenotype).",
+      "[Section II - Short FRQ 4 Points | Q5 Canonical Archetype] Analyze Model or Visual Representation: Visual diagram or biochemical model of enzyme kinetics, organelle structure, or cell signaling pathway. Parts A (1 pt: describe molecular interaction, e.g. enzyme active site shape and charge complementarity with substrate), B (1 pt: explain regulatory mechanism, e.g. allosteric noncompetitive inhibitor binding to non-active site causing conformational change), C (1 pt: identify intermediate, receptor, or organelle from visual model), D (1 pt: predict and explain denaturation or mutation consequences, e.g. extreme pH disrupting hydrogen/ionic bonds in tertiary structure).",
+      "[Section II - Short FRQ 4 Points | Q6 Canonical Archetype] Analyze Data: Quantitative data presentation (gel electrophoresis, qPCR relative expression, flow cytometry, or box plot). Parts A (1 pt: identify baseline, median, or specific molecular marker from data/figure), B (1 pt: describe differences between groups or identify phenotypic patterns from gel bands/expression levels), C (1 pt: synthesize data across two figures or conditions to evaluate a scientific claim), D (1 pt: explain molecular or genetic mechanism linking observed molecular data to organism's phenotype or disease state)."
+    ];
+    if (count === 6) {
+      return [...bioCanonicalSix];
+    }
+    if (count === 5) {
+      return [bioCanonicalSix[0], bioCanonicalSix[1], bioCanonicalSix[2], bioCanonicalSix[3], bioCanonicalSix[4]];
+    }
+    if (count === 10) {
+      return [
+        bioCanonicalSix[0],
+        bioCanonicalSix[1],
+        bioCanonicalSix[2],
+        bioCanonicalSix[3],
+        bioCanonicalSix[4],
+        bioCanonicalSix[5],
+        "[Section II - Long FRQ Mixed Variation | Q1/Q2 Synthesis] Experimental Design & Data Interpretation: Cellular Respiration / Photosynthesis with Control Justification, Rate Calculation & Pathway Disruption",
+        "[Section II - Long FRQ Mixed Variation | Q2 Synthesis] Quantitative Physiology & Signal Transduction with Error Bar Statistical Significance & Membrane Transport Properties",
+        "[Section II - Short FRQ Mixed Variation | Q3/Q4 Synthesis] Scientific Investigation & Natural Selection: Null Hypothesis Formulation, Control Group Isolation & Allele Frequency Evolution",
+        "[Section II - Short FRQ Mixed Variation | Q5/Q6 Synthesis] Biochemical Pathway Model & Expression Data: Enzyme Allosteric Regulation, Denaturation & Gel Electrophoresis / qPCR Phenotype Correlation"
+      ];
+    }
+    if (count === 15) {
+      return [
+        ...bioCanonicalSix,
+        "[Section II - Long FRQ Cycle 2 Variation | Q1] Cellular Energy & Enzymatic Inhibition: Kinetic Data, Negative Control Mechanism & Amino Acid Translation Math",
+        "[Section II - Long FRQ Cycle 2 Variation | Q2] Plant Phototropism / Transpiration: Standard Error (\xB12 SE_x) Overlap Significance, Stomatal Regulation & Ecological Impact",
+        "[Section II - Short FRQ Cycle 2 Variation | Q3] Ecological Trophic Cascade: Keystone Species Removal, Null Hypothesis & Experimental Control Isolation",
+        "[Section II - Short FRQ Cycle 2 Variation | Q4] Population Genetics & Gene Flow: Bottleneck / Founder Effect, Allele Frequency Shift & Reproductive Isolation",
+        "[Section II - Short FRQ Cycle 2 Variation | Q5] Signal Transduction Cascade: G-Protein Coupled Receptor (GPCR) Phosphorylation Model & Second Messenger Amplification Disruption",
+        "[Section II - Short FRQ Cycle 2 Variation | Q6] Molecular Genetics & Gene Expression: Operon / Transcription Factor Data, qPCR Relative Fold Change & Phenotypic Justification",
+        "[Section II - Synthesis Capstone | Q1/Q2 Experimental Mastery] Dual Variable Experimental Design, Error Bar Overlap Rule & Feedback Loop Regulation",
+        "[Section II - Synthesis Capstone | Q3/Q4 Evolutionary Ecology] Null Hypothesis Formulation, Natural Selection Pressure & Allele Frequency Trajectory",
+        "[Section II - Synthesis Capstone | Q5/Q6 Molecular Regulation] Allosteric Enzyme Kinetics, Denaturation & Genotype-Phenotype Correlation"
+      ];
+    }
+    const pool = [];
+    while (pool.length < count) {
+      pool.push(bioCanonicalSix[pool.length % bioCanonicalSix.length]);
+    }
+    return pool;
+  }
+  if ((s.includes("physics 1") || s.includes("phys")) && !detectedUnit) {
+    const physCanonicalFour = [
+      "[Section II - FRQ 10 Points | Q1 Canonical Archetype] Mathematical Routines (MR): Kinematics, Linear Momentum & Inelastic Collisions, or Fluids. Multi-step algebraic derivation starting strictly from fundamental laws or reference equations (e.g. p_i = p_f or Sigma F = ma or Delta K = K_f - K_i). Includes component sketches (horizontal/vertical velocity v_x, v_y vs time or momentum p_x vs time) and qualitative physical justification (internal vs external forces, why momentum remains constant, or why narrower nozzle increases maximum height).",
+      "[Section II - FRQ 12 Points | Q2 Canonical Archetype] Translation Between Representations (TBR): Conservation of Mechanical Energy, Incline Dynamics & Spring Mechanics. Energy bar charts (LOL diagrams) where the sum of bars across all positions strictly equals total mechanical energy (e.g. 12*E_0). Multi-step derivation of spring constant k or velocity in terms of M, theta, D with incline geometry Delta y = Delta x * sin(theta). Graphical sketches of total mechanical energy E (horizontal continuous line) and gravitational potential energy U_g (linear decreasing line) vs position, followed by speed comparison justified by energy curve relationships.",
+      "[Section II - FRQ 10 Points | Q3 Canonical Archetype] Experimental Design and Analysis (LAB): Torque, Rotational Dynamics, Friction, or SHM with Limited Lab Equipment. Part A: Experimental procedure to collect data for unknown quantity (mass m_0 or friction coefficient mu_k) using only provided apparatus (meterstick, spring scale, photogate) with explicit steps to reduce experimental uncertainty (repeated trials across multiple positions). Part B: Analytical equation linearization (identifying vertical and horizontal axes so slope yields target quantity). Part C: Constructing scatter plot on grid with BOTH variable names AND matching units (e.g. F_T (N) and 1/sin(theta) or v^2 (m^2/s^2) and d (m)), linear scaling, and drawing a smooth single straight line of best fit. Part D: Calculating experimental value strictly from two coordinates on the drawn best-fit line.",
+      "[Section II - FRQ 8 Points | Q4 Canonical Archetype] Qualitative/Quantitative Translation (QQT): Fluids (Archimedes Buoyancy & Density) or Rotational Dynamics (Comparative Rotational Inertia & Torque). Part A: Qualitative physical claim (e.g. a_1 < a_2 or omega_Y > omega_X) with thorough qualitative justification referencing ALL forces or torques without mathematical equations. Part B: Rigorous symbolic derivation starting from Newton's Second Law in translational form (Sigma F = m*a -> F_b - mg = m*a) or rotational form (tau_net = I*alpha -> F_0*r_0 = I*alpha) for initial acceleration or angular speed. Part C: Consistency bridge evaluating functional dependence ('directly proportional', 'numerator', 'inverse relationship') to evaluate whether the Part B mathematical derivation agrees with the Part A qualitative claim."
+    ];
+    if (count === 4) {
+      return [...physCanonicalFour];
+    }
+    if (count === 5) {
+      return [
+        physCanonicalFour[0],
+        physCanonicalFour[1],
+        physCanonicalFour[2],
+        physCanonicalFour[3],
+        "[Section II - Synthesis Capstone | Q1/Q4 High-Yield Integration] Angular Momentum & Torque-Impulse: Disk vs Hoop Rotational Acceleration, Work-Energy Comparison & Paragraph-Length Response Justification"
+      ];
+    }
+    if (count === 10) {
+      return [
+        physCanonicalFour[0],
+        physCanonicalFour[1],
+        physCanonicalFour[2],
+        physCanonicalFour[3],
+        "[Section II - MR Mixed Variation | Q1 Synthesis] Projectile Water Droplet Trajectory: Component Velocity Sketches, Maximum Height Derivation & Volume Flow Rate Continuity",
+        "[Section II - TBR Mixed Variation | Q2 Synthesis] Elastic Collision & Center of Mass Position-Time Graphs: Momentum Vector Bars, Center of Mass Line Continuity & Impulse Equality",
+        "[Section II - LAB Mixed Variation | Q3 Synthesis] Inclined Rough Ramp Photogate Investigation: Equation Linearization v^2 = 2g(sin(theta) - mu_k*cos(theta))d, Grid Best-Fit Line & Friction Analysis",
+        "[Section II - QQT Mixed Variation | Q4 Synthesis] Rotational Dynamics of Wrapped Axle Toys: Rotational Inertia Comparison, Work-Energy Derivation & Functional Dependence",
+        "[Section II - MR/TBR Hybrid | Rotation & Energy] Hinged Beam Static Equilibrium: Tension Angle Variation, Torque Form Newton's Second Law & Angular Speed vs Time Curve",
+        "[Section II - QQT Mixed Variation | Fluids & Gravity] Submerged Object in Immiscible Fluids: Buoyant Force vs Weight, Net Upward Acceleration & Density Dependence Justification"
+      ];
+    }
+    if (count === 15) {
+      return [
+        ...physCanonicalFour,
+        "[Section II - MR Cycle 2 Variation | Q1] Horizontal Spring-Cart System Dropped Mass: Momentum Continuity Graph, Final Velocity Derivation & Kinetic Energy Dissipation",
+        "[Section II - TBR Cycle 2 Variation | Q2] Ramp-Spring Mechanical Energy Transformation: LOL Bar Charts (Total 12*E_0), Spring Constant Derivation & Speed Comparison",
+        "[Section II - LAB Cycle 2 Variation | Q3] Meterstick Balance Investigation: Experimental Uncertainty Reduction, Force vs Distance Linearization & Mass Determination from Slope",
+        "[Section II - QQT Cycle 2 Variation | Q4] Planetary Gravitational Field & Simple Pendulum: Work Done Comparison, Restoring Torque & Length-Dependent Period",
+        "[Section II - MR Cycle 3 Variation | Q1] Two Colliding Disks on Air Track: Momentum-Time Graph, Kinetic Energy Loss Derivation & Action-Reaction Impulse Equality",
+        "[Section II - TBR Cycle 3 Variation | Q2] Vertical Circular Track Loop: Minimum Release Height Derivation, Normal Force Zero Condition & Mechanical Energy vs Height",
+        "[Section II - LAB Cycle 3 Variation | Q3] Simple Harmonic Oscillator with Force Sensor: Spring Constant Determination, Velocity-Time & Force-Time Graph Impulse Estimation",
+        "[Section II - QQT Cycle 3 Variation | Q4] Fluid Buoyancy Acceleration in Stratified Liquids: Density Proportionality Claim, Newton's 2nd Law Derivation & Functional Link",
+        "[Section II - Synthesis Capstone | Experimental Mastery] Linearization Protocol, Grid Scaling with Units & Slope-to-Mass Error Propagation",
+        "[Section II - Synthesis Capstone | Rotational Mechanics] Angular Momentum Conservation, Torque-Impulse Theorem & Rolling Without Slipping",
+        "[Section II - Synthesis Capstone | Multi-System Energy] Work-Energy Theorem, LOL Energy Bar Conservation & Non-Conservative Energy Dissipation"
+      ];
+    }
+    const pool = [];
+    while (pool.length < count) {
+      pool.push(physCanonicalFour[pool.length % physCanonicalFour.length]);
+    }
+    return pool;
+  }
+  if ((s.includes("english") || s.includes("lang")) && !detectedUnit) {
+    const langCanonicalThree = [
+      "[Section II - Q1 Synthesis Essay | 6 Points] Comprehensive Source Synthesis: 6 Multi-Perspective Sources (A-F) with Qualitative Data/Table, Defensible Thesis, Integration of >= 3 Sources & Nuanced Line of Reasoning",
+      "[Section II - Q2 Rhetorical Analysis Essay | 6 Points] Rhetorical Situation & Authorial Strategy: Nonfiction Text Excerpt (700-1000 words), Speaker-Audience-Exigence Analysis, Multiple Rhetorical Choices & Functional Commentary",
+      "[Section II - Q3 Argument Essay | 6 Points] Philosophical / Cultural Claim Argument: Provocative Quotation, Defensible Position, Layered Evidence from History/Literature/Society & Toulmin/Stasis Line of Reasoning"
+    ];
+    if (count === 3) {
+      return [...langCanonicalThree];
+    }
+    if (count === 5) {
+      return [
+        langCanonicalThree[0],
+        langCanonicalThree[1],
+        langCanonicalThree[2],
+        "[Section II - Synthesis Mixed Variation | Q1 Synthesis] Science & Technology Policy Debate: 6 Diverse Sources with Data Table, Ethical Implications & Environmental Trade-Offs",
+        "[Section II - Rhetorical Analysis Mixed Variation | Q2 Analysis] Historical Civil Rights & Identity Memoir: Nonfiction Excerpt, Tone Shifts, Juxtaposition & Audience Receptivity"
+      ];
+    }
+    if (count === 10) {
+      return [
+        langCanonicalThree[0],
+        langCanonicalThree[1],
+        langCanonicalThree[2],
+        "[Section II - Synthesis Mixed Variation | Q1 Synthesis] Environmental Conservation vs Urban Infrastructure: 6 Multi-Perspective Sources with Quantitative Survey Breakdown",
+        "[Section II - Rhetorical Analysis Mixed Variation | Q2 Analysis] Contemporary Public Address / Op-Ed: Rhetorical Situation, Exemplification, Extended Analogy & Call to Action",
+        "[Section II - Argument Mixed Variation | Q3 Argument] Cultural Value of Solitude vs Interconnected Community: Non-Binary Claim with Literary & Historical Evidence",
+        "[Section II - Synthesis Mixed Variation | Q1 Synthesis] Digital Automation & the Future of Labor: Policy Briefs, Economic Wage Data & Technological Vulnerability Analysis",
+        "[Section II - Rhetorical Analysis Mixed Variation | Q2 Analysis] Literary Acceptance Speech / Commencement: Metaphorical Imagery, Self-Deprecation & Philosophical Reflection",
+        "[Section II - Argument Mixed Variation | Q3 Argument] Optimism in Adversity vs Pragmatic Realism: Stasis Theory Line of Reasoning with Contemporary & Societal Case Studies",
+        "[Section II - Synthesis Mixed Variation | Q1 Synthesis] Public Health & Circadian Wellness: Scientific Studies, Corporate Policies & Statistical Demographic Charts"
+      ];
+    }
+    if (count === 15) {
+      return [
+        ...langCanonicalThree,
+        "[Section II - Synthesis Cycle 2 Variation | Q1] Space Exploration & Space Debris Management: Commercial vs Defense Satellites Data Chart, Liability Treaties & 3+ Sources",
+        "[Section II - Rhetorical Analysis Cycle 2 Variation | Q2] Native American Reservation Culture Excerpt: Ethos Construction, Historical Allusions & Juxtaposition Analysis",
+        "[Section II - Argument Cycle 2 Variation | Q3] Material Wealth vs Narrative Fulfillment: Defensible Thesis, Personal Anecdote & Toulmin Qualification",
+        "[Section II - Synthesis Cycle 3 Variation | Q1] Navigation Software & Algorithmic Traffic: Municipal Regulations, Spatial Memory Impact Graph & 6 Sources",
+        "[Section II - Rhetorical Analysis Cycle 3 Variation | Q2] Immigrant Identity & Linguistic Assimilation Memoir: Second-Person Direct Address, Irony & Emotional Resonance",
+        "[Section II - Argument Cycle 3 Variation | Q3] Present-Moment Awareness vs Future Planning: Multi-Claim Line of Reasoning with Historical & Philosophical Parallels",
+        "[Section II - Synthesis Cycle 4 Variation | Q1] Historic Building Preservation vs Green Urbanism: Economic Incentives, Architectural Heritage & Survey Visual Chart",
+        "[Section II - Rhetorical Analysis Cycle 4 Variation | Q2] Ecological Literacy & Dirt Engagement Op-Ed: Sensory Imagery, Personification & Indigenous Ancestral Legacy",
+        "[Section II - Argument Cycle 4 Variation | Q3] The Value of Exploring the Unknown: Intellectual Curiosity vs Comfort Zone with Science & Literature Evidence",
+        "[Section II - Synthesis Capstone | Cross-Disciplinary Mastery] 6-Source Synthesis with Economic Multi-Line Chart, Concession Rebuttal & Sophistication Row C",
+        "[Section II - Rhetorical Analysis Capstone | High-Stakes Speech] Presidential Address Rhetoric, Complex Tensions, Anaphora & Sophistication Row C",
+        "[Section II - Argument Capstone | Philosophical Nuance] Exploring Tensions Between Competing Societal Virtues, Complex Stasis Line of Reasoning & Sophistication Row C"
+      ];
+    }
+    const pool = [];
+    while (pool.length < count) {
+      pool.push(langCanonicalThree[pool.length % langCanonicalThree.length]);
+    }
+    return pool;
+  }
+  if (s.includes("psych") && !detectedUnit) {
+    const psychCanonicalTwo = [
+      "[Section II - Q1 Article Analysis Question (AAQ) | 7 Points] Empirical Research Analysis: Full peer-reviewed article summary with authentic scenario, sample, and quantitative findings. Part A (Research Design: Experiment vs Correlational/Case Study/Observation), Part B (Operational Definition of specific variable), Part C (Statistical Interpretation: quantitative finding, mean/difference direction, or p-value significance in context), Part D (Ethical Guideline: APA standard explicitly cited in text), Part E (Generalizability: Target population characteristics & representativeness - NOT sample size!), Part F (Argumentation with Psychological Concept: 2 Points - Point 1 for citing specific research finding + Point 2 for explaining how it supports or contradicts a designated psychological concept from the CED).",
+      "[Section II - Q2 Evidence-Based Question (EBQ) | 7 Points] Multi-Source Psychological Synthesis: 3 Empirical Research Summaries (Source 1, Source 2, Source 3) with methodologies, participant details, and statistical findings. Part A (Defensible Claim: Articulate an overarching scientific claim responding to the prompt), Part B(i) (Evidence: Specific empirical finding from Source 1 or 2 with citation), Part B(ii) (Reasoning with Concept: Link evidence to claim + apply an authentic AP Psychology CED Concept - 2 Points), Part C(i) (Different Evidence: Specific empirical finding from a DIFFERENT source with citation), Part C(ii) (Reasoning with a DIFFERENT Psychological Concept: Link new evidence to claim + apply a DISTINCT second AP Psychology CED Concept - 2 Points)."
+    ];
+    if (count === 2) {
+      return [...psychCanonicalTwo];
+    }
+    if (count === 5) {
+      return [
+        psychCanonicalTwo[0],
+        psychCanonicalTwo[1],
+        "[Section II - Article Analysis Question (AAQ) Mixed Variation | Q1 AAQ 7 Pts] Cognitive & Biological Research Study: Prefrontal cortex activation and sleep deprivation on episodic memory retrieval, with Parts A-F (Method, Operational Definition, Statistical Mean Difference & SD, APA Informed Consent, Representative Adolescent Sample, and Retrieval Cues Concept Application).",
+        "[Section II - Evidence-Based Question (EBQ) Mixed Variation | Q2 EBQ 7 Pts] Social & Developmental Psychology Dossier: 3 Empirical Research Summaries on social media usage, peer conformity, and self-esteem across adolescent cohorts. Prompt: How do digital peer interactions affect adolescent identity formation? Parts A, B(i), B(ii) (Normative Social Influence), C(i), C(ii) (Erikson's Identity vs Role Confusion).",
+        "[Section II - Article Analysis Question (AAQ) Mixed Variation | Q1 AAQ 7 Pts] Clinical & Health Psychology Study: Double-blind clinical trial comparing Cognitive Behavioral Therapy (CBT) vs Mindfulness-Based Stress Reduction for generalized anxiety, with Parts A-F (Experimental Design, Anxiety Metric Operationalization, p-value Interpretation, Deception/Debriefing, College Student Generalizability Limit, and Diathesis-Stress Model Application)."
+      ];
+    }
+    if (count === 10) {
+      return [
+        psychCanonicalTwo[0],
+        psychCanonicalTwo[1],
+        "[Section II - AAQ Cycle 2 | Q1 AAQ 7 Pts] Unit 1 Biological Bases: Research article on hippocampal neurogenesis and aerobic exercise in middle-aged adults; Parts A-F (Correlational vs Quasi-Experimental, Spatial Memory Maze Operationalization, Correlation Coefficient r interpretation, Ethics, Community Volunteer Generalizability, and Long-Term Potentiation concept).",
+        "[Section II - EBQ Cycle 2 | Q2 EBQ 7 Pts] Unit 2 Cognition & Intelligence: 3 Empirical Research Summaries on bilingualism, working memory capacity, and cognitive flexibility across lifespan. Prompt: Evaluate the extent to which dual-language acquisition alters executive cognitive function. Parts A, B(i), B(ii) (Selective Attention), C(i), C(ii) (Cognitive Reserve).",
+        "[Section II - AAQ Cycle 3 | Q1 AAQ 7 Pts] Unit 3 Development & Learning: Controlled experiment on variable ratio vs fixed interval gamified token reinforcement in elementary school mathematics engagement; Parts A-F (Independent/Dependent Variables, Engagement Operational Definition, Bar Graph / Mean Rate Interpretation, Parental Consent, Socioeconomic Generalizability, and Operant Extinction concept).",
+        "[Section II - EBQ Cycle 3 | Q2 EBQ 7 Pts] Unit 4 Social Psychology & Motivation: 3 Empirical Summaries on intrinsic motivation, performance-contingent rewards, and academic self-efficacy in secondary education. Prompt: Analyze how external incentives impact intrinsic task persistence. Parts A, B(i), B(ii) (Overjustification Effect), C(i), C(ii) (Locus of Control).",
+        "[Section II - AAQ Cycle 4 | Q1 AAQ 7 Pts] Unit 5 Mental & Physical Health: Randomized controlled study on virtual reality graded exposure therapy vs pharmacotherapy for specific arachnophobia; Parts A-F (Research Method, Subjective Distress Units Operationalization, Standard Deviation & Effect Size, Ethical Debriefing, Urban Clinical Sample Generalizability, and Systematic Desensitization concept).",
+        "[Section II - EBQ Cycle 4 | Q2 EBQ 7 Pts] Unit 1 & 4 Stress & Interpersonal Health: 3 Research Summaries on social support systems, oxytocin release, and cardiovascular recovery following acute psychological stress. Prompt: Assess how close social bonds mitigate the physiological stress response. Parts A, B(i), B(ii) (General Adaptation Syndrome), C(i), C(ii) (Sympathetic Nervous System).",
+        "[Section II - AAQ Master Capstone | Q1 AAQ 7 Pts] Cross-Unit Synthesis Study: Longitudinal study on early childhood attachment security (Strange Situation) predicting adult emotional resilience and HPA-axis cortisol reactivity; Parts A-F (Longitudinal Design, Attachment Security Operationalization, Scatterplot / Statistical Significance, Protection from Harm, Representativeness, and Epigenetics concept).",
+        "[Section II - EBQ Master Capstone | Q2 EBQ 7 Pts] Comprehensive Synthesis Dossier: 3 Multidisciplinary Studies on sleep restriction, emotional dysregulation, and amygdala reactivity in shift workers. Prompt: Evaluate how chronic sleep debt influences socio-emotional decision making. Parts A, B(i), B(ii) (Circadian Rhythm Disruption), C(i), C(ii) (Heuristics / Availability Bias)."
+      ];
+    }
+    if (count === 15) {
+      return [
+        ...psychCanonicalTwo,
+        "[Section II - AAQ Cycle 2 | Q1 AAQ 7 Pts] Neuroimaging Study on Semantic vs Episodic Encoding: fMRI study comparing left prefrontal cortex activation during depth of processing tasks; Parts A-F (Method, Op Def of Recall Accuracy, p-value < 0.01 Statistical Finding, IRB Approval, College Student Sample Limit, Levels of Processing concept).",
+        "[Section II - EBQ Cycle 2 | Q2 EBQ 7 Pts] Cognitive Bias & Financial Risk Dossier: 3 Empirical Studies on framing effects, loss aversion, and anchoring in consumer decisions. Prompt: How do cognitive heuristics shape economic risk-taking? Parts A, B(i), B(ii) (Framing Effect), C(i), C(ii) (Confirmation Bias).",
+        "[Section II - AAQ Cycle 3 | Q1 AAQ 7 Pts] Classical Conditioning in Taste Aversion: Animal model study on Garcia effect and evolutionary preparedness with radiation-induced nausea; Parts A-F (Experimental Design, Fluid Intake Operationalization, Latency Time Data Interpretation, Animal Welfare Guidelines, Cross-Species Generalizability, Biological Preparedness concept).",
+        "[Section II - EBQ Cycle 3 | Q2 EBQ 7 Pts] Parenting Styles & Adolescent Autonomy: 3 Studies on authoritative vs authoritarian parenting, emotional self-regulation, and academic achievement. Prompt: Evaluate the impact of parental control styles on adolescent psychological adjustment. Parts A, B(i), B(ii) (Authoritative Parenting), C(i), C(ii) (External Locus of Control).",
+        "[Section II - AAQ Cycle 4 | Q1 AAQ 7 Pts] Social Facilitation in Athletic Performance: Field experiment observing novice vs expert swimmers with audience present; Parts A-F (Naturalistic / Quasi-Experimental, Lap Time Operationalization, Interaction Effect Graph Interpretation, Informed Consent Waiver, Elite Athlete Representativeness, Yerkes-Dodson Law concept).",
+        "[Section II - EBQ Cycle 4 | Q2 EBQ 7 Pts] Intergroup Conflict & Prejudice Reduction: 3 Empirical Studies on jigsaw classroom cooperative learning, contact hypothesis, and implicit bias. Prompt: Analyze the conditions under which structured intergroup cooperation decreases prejudicial attitudes. Parts A, B(i), B(ii) (Superordinate Goals), C(i), C(ii) (In-Group Favoritism).",
+        "[Section II - AAQ Cycle 5 | Q1 AAQ 7 Pts] Pharmacotherapy vs Psychotherapy in Depression: Clinical trial examining SSRIs vs Cognitive Behavioral Therapy on Hamilton Depression Rating Scale scores; Parts A-F (Double-Blind Clinical Trial, Score Reduction Operationalization, Standard Deviation Overlap, Placebo Control Ethics, Outpatient Generalizability, Neuroplasticity concept).",
+        "[Section II - EBQ Cycle 5 | Q2 EBQ 7 Pts] Chronic Stress & Immune Function: 3 Studies on caregiver strain, telemetric heart rate variability, and natural killer cell suppression. Prompt: Synthesize how prolonged psychosocial stressors impair somatic health. Parts A, B(i), B(ii) (General Adaptation Syndrome), C(i), C(ii) (Cortisol / Endocrine Regulation).",
+        "[Section II - AAQ Cycle 6 | Q1 AAQ 7 Pts] Eyewitness Testimony & Leading Questions: Laboratory experiment replicating post-event misinformation in automotive collision estimations; Parts A-F (Experimental Design, Speed Estimate Operationalization, F-Statistic / ANOVA Significance, Deception Debriefing, Community Sample Representativeness, Misinformation Effect concept).",
+        "[Section II - EBQ Cycle 6 | Q2 EBQ 7 Pts] Motivation & Goal Setting in Workplace: 3 Studies on goal-setting theory, feedback loops, and extrinsic bonuses on creative problem solving. Prompt: Assess how goal specificity and incentive structures influence creative output. Parts A, B(i), B(ii) (Overjustification Effect), C(i), C(ii) (Self-Determination Theory).",
+        "[Section II - AAQ Cycle 7 | Q1 AAQ 7 Pts] Circadian Clock Shift in High School Students: Quasi-experiment assessing 8:30 AM vs 7:30 AM school start times on adolescent sleep duration and mood; Parts A-F (Quasi-Experimental Design, Sleep Diary Operationalization, Pre-Post Mean Shift Interpretation, Student Assent/Parental Consent, District Generalizability, Melatonin Regulation concept).",
+        "[Section II - EBQ Cycle 7 | Q2 EBQ 7 Pts] Altruism & Diffusion of Responsibility: 3 Studies on bystander intervention, emergency simulation, and perceived victim similarity. Prompt: Evaluate the factors that determine individual bystander responsiveness in urgent crises. Parts A, B(i), B(ii) (Bystander Effect / Diffusion of Responsibility), C(i), C(ii) (Empathy-Altruism Hypothesis).",
+        "[Section II - Master Synthesis Capstone | Q2 EBQ 7 Pts] Comprehensive Multidisciplinary Synthesis: 3 Peer-Reviewed Studies spanning neurobiology, cognitive schemas, and social support in resilience following natural disaster trauma. Prompt: Defend a claim regarding the relative contributions of neurobiological stress regulation versus cognitive reframing in psychological post-traumatic resilience. Parts A, B(i), B(ii) (Cognitive Restructuring), C(i), C(ii) (Prefrontal Cortex Regulation)."
+      ];
+    }
+    const pool = [];
+    while (pool.length < count) {
+      pool.push(psychCanonicalTwo[pool.length % psychCanonicalTwo.length]);
+    }
+    return pool;
+  }
+  if ((s.includes("computer science a") || s.includes("csa") || s.includes("computer") && !s.includes("principles") && !s.includes("csp")) && !detectedUnit) {
+    const csaCanonicalFour = [
+      "[Section II - Q1 Methods & Control Structures | 7-9 Points] Real-World Method & Algorithm Implementation: A provided Java class with helper methods and preconditions. Part (a): Implement helper method (e.g. searching/filtering available slots, calculating single unit usage, boundary comparisons) calling instance methods on instance variables; Part (b): Implement driver method using a loop to process a range of inputs/hours, calling part (a) method safely without redundant side effects, accumulating totals or finding conditional bonuses.",
+      "[Section II - Q2 Class Design | 7-9 Points] Complete Java Class from Scratch: Design a complete new class modeling a real-world object/system (e.g. scoreboard, electronic text signer, liquid dispenser, step counter). Declare appropriate private instance variables (encapsulation), write public constructor header & initialization, and implement required public accessor and mutator methods conforming to a 3-column Sample Execution Trace Table. Proper String methods (.equals(), .substring(), .indexOf()) or numeric state mutation.",
+      "[Section II - Q3 Array / ArrayList Data Analysis | 5-9 Points] 1D Array and ArrayList Processing: Reasoning about collections of custom objects. Writing constructor and/or analysis methods: traversing ArrayList<E>, filtering, instantiating new objects with the 'new' keyword, dual-pointer inward traversal from both ends, or nested iteration across two lists to match IDs and compare metrics without modifying original lists.",
+      "[Section II - Q4 2D Arrays | 6-9 Points] 2D Matrix Algorithms & Spatial Grid Reasoning: Manipulating a 2D array (int[][] or Object[][]). Writing constructor/methods to traverse rows and columns (row-major), neighbor comparison (below vs right, or adjacent cells), row/column score calculation, or pair clearing algorithms with strict self-pairing guard ('!(r == row && c == col)' or 'r != row || c != col') and correct bounds checking."
+    ];
+    if (count === 4) {
+      return [...csaCanonicalFour];
+    }
+    if (count === 5) {
+      return [
+        ...csaCanonicalFour,
+        "[Section II - Q4 2D Arrays Mixed Variation | 6-9 Points] Advanced 2D Grid Game / Puzzle: Traversal over a two-dimensional grid representing a labyrinth or terrain map; checking valid moves, computing obstacle density along a path, and returning optimal coordinate Location object."
+      ];
+    }
+    if (count === 10) {
+      return [
+        csaCanonicalFour[0],
+        csaCanonicalFour[1],
+        csaCanonicalFour[2],
+        csaCanonicalFour[3],
+        "[Section II - Q1 Methods & Control Cycle 2] Autonomous Vehicle Charging Station: Tracking battery charging bays, peak vs off-peak rate multipliers, and allocating available power without exceeding maximum amperage limits.",
+        "[Section II - Q2 Class Design Cycle 2] Fitness Activity Monitor Class: Complete DailyTracker class tracking active calories, step milestones, and heart-rate zone intervals with private instance variables and execution trace table.",
+        "[Section II - Q3 ArrayList Cycle 2] Healthcare Patient Triage Queue: Processing ArrayList<PatientRecord> objects, priority sorting by acuity level, and matching patients to available specialists without data destruction.",
+        "[Section II - Q4 2D Array Cycle 2] Satellite Weather Imaging Matrix: 2D temperature/reflectance array; identifying storm clusters, calculating local average pixel intensities, and applying noise filtering masks.",
+        "[Section II - Q1 Methods & Control Cycle 3] E-Commerce Inventory Restock Simulator: Warehouse shelf capacity calculations, conditional bulk order discounts, and shift delivery scheduling.",
+        "[Section II - Q3 ArrayList Cycle 3] Flight Manifest & Seat Assignment: Managing ArrayList<Passenger> objects, grouping family reservations, and calculating baggage weight allocations."
+      ];
+    }
+    if (count === 15) {
+      return [
+        ...csaCanonicalFour,
+        "[Section II - Q1 Methods & Control Cycle 2] Autonomous Fleet Telemetry: Monitoring vehicle battery ranges, route efficiency calculations, and calculating overtime bonuses during extreme weather shifts.",
+        "[Section II - Q2 Class Design Cycle 2] E-Sports Tournament Scoreboard: Complete MatchScoreboard class tracking team turns, kill/death ratios, and lead change streaks with state encapsulation.",
+        "[Section II - Q3 ArrayList Cycle 2] Library Media Catalog System: Filtering ArrayList<BookItem> by genre and publication decade, removing checked-out items safely without concurrent modification bugs.",
+        "[Section II - Q4 2D Array Cycle 2] Urban Traffic Grid Flow: 2D congestion matrix; identifying bottleneck intersections and calculating average throughput along north-south vs east-west corridors.",
+        "[Section II - Q1 Methods & Control Cycle 3] Smart Home Thermostat Energy Optimization: Power consumption tracking, peak tariff scheduling, and vacation mode eco-temp regulation.",
+        "[Section II - Q2 Class Design Cycle 3] Bank Account Transaction Ledger: Complete AccountLedger class tracking running balances, overdraft penalty thresholds, and formatted statement string generation.",
+        "[Section II - Q3 ArrayList Cycle 3] Genomic DNA Motif Search: Analyzing ArrayList<String> gene sequences, finding overlapping k-mers, and building consensus frequency tables.",
+        "[Section II - Q4 2D Array Cycle 3] Forest Fire Spread Simulation: 2D grid of burn states; checking 4-directional adjacent neighbors and modeling probabilistic ignition front propagation.",
+        "[Section II - Q1 Methods & Control Cycle 4] Hospital Bed Occupancy Dispatcher: Allocating intensive care units based on triage severity, shift staffing levels, and emergency overflow protocols.",
+        "[Section II - Q2 Class Design Cycle 4] Audio Playlist Crossfader: Complete AudioTrack class managing track durations, volume fade curves, and gapless transition string generation.",
+        "[Section II - Q4 2D Array Master Capstone] Autonomous Robot Rover Pathfinding: 2D elevation terrain map; finding path of least resistance from landing site to research station avoiding hazards."
+      ];
+    }
+    const pool = [];
+    while (pool.length < count) {
+      pool.push(csaCanonicalFour[pool.length % csaCanonicalFour.length]);
+    }
+    return pool;
+  }
+  if ((s.includes("macro") || s.includes("economics") || s.includes("econ")) && !detectedUnit) {
+    const macroCanonicalThree = [
+      "[Section II - Q1 Long FRQ | 10 Points] Macroeconomic Equilibrium & Cascades: AD-AS or Phillips Curve Graph (Y1, PL1, YF or point X/Un), Long-run self-adjustment vs Fiscal/Private shock, Loanable funds market graph (r vs Q), Foreign Exchange (Forex) market graph (currency fraction), Capital & Financial Account (CFA) capital flows, and Balance of Payments identity (CA + CFA = 0)",
+      "[Section II - Q2 Short FRQ | 5 Points] Monetary Policy Framework: Ample Reserves Banking System (Administered Rates / Interest on Reserves [IORB], Reserve Market Graph with horizontal floor, vertical SR) vs Limited Reserves (Open Market bond operations, Money Market graph), and bond price inverse relationship",
+      "[Section II - Q3 Short FRQ | 5 Points] Macroeconomic Data & Multipliers: Production & Price Data Table across Year 1 and 2, Real vs Nominal GDP base year comparison, GDP Deflator, Spending Multiplier (1/(1-MPC)) & Minimum Change in Government Spending (Delta G = Output Gap / Multiplier with explicit work), and Automatic Stabilizers"
+    ];
+    if (count === 3) {
+      return [...macroCanonicalThree];
+    }
+    if (count === 5) {
+      return [
+        macroCanonicalThree[0],
+        macroCanonicalThree[1],
+        macroCanonicalThree[2],
+        "[Section II - Long FRQ Mixed Variation | Q1 Long 10 Pts] Inflationary Gap Shock & Phillips Curve: SRPC & LRPC graph with point X, contractionary fiscal policy, loanable funds demand shift, currency appreciation & net exports decline",
+        "[Section II - Short FRQ Mixed Variation | Q2 Short 5 Pts] Central Bank Open Market Operations in Limited Reserves: Central bank bond purchase/sale, Money Market nominal interest rate shift, interest-sensitive investment spending & aggregate demand effect"
+      ];
+    }
+    if (count === 10) {
+      return [
+        macroCanonicalThree[0],
+        macroCanonicalThree[1],
+        macroCanonicalThree[2],
+        "[Section II - Long FRQ Cycle 2 | Q1 Long 10 Pts] Cost-Push Stagflation Shock: Negative SRAS supply shock, short-run price level surge, long-run wage adjustment, loanable funds crowding out, and forex currency depreciation",
+        "[Section II - Short FRQ Cycle 2 | Q2 Short 5 Pts] Ample Reserves Contractionary Monetary Policy: Central bank raises Interest on Reserve Balances (IORB), Reserve Market policy rate shift, higher borrowing costs & bond price decline",
+        "[Section II - Short FRQ Cycle 2 | Q3 Short 5 Pts] National Output Gap & Multipliers: Table with Consumer vs Capital Goods, GDP deflator inflation rate, Tax Multiplier vs Spending Multiplier, and progressive income tax automatic stabilizers",
+        "[Section II - Long FRQ Cycle 3 | Q1 Long 10 Pts] Open Economy Tariff & Exchange Rate Shock: Domestic tariffs on trading partner, Forex currency supply shift and appreciation, net export reduction, and Balance of Payments CFA offset",
+        "[Section II - Short FRQ Cycle 3 | Q2 Short 5 Pts] Limited Reserves Expansionary Policy: Central bank buys government bonds, commercial bank excess reserves expansion, Money Market graph, and real output expansion",
+        "[Section II - Short FRQ Cycle 3 | Q3 Short 5 Pts] Labor Force Demographics & Multipliers: Civilian noninstitutional population, labor force participation rate, natural vs cyclical unemployment rate calculation, and fiscal policy gap closure",
+        "[Section II - Master Capstone | Q1 Long 10 Pts] Comprehensive Macro Synthesis: Full-employment long-run equilibrium, residential construction shock, loanable funds real interest rate, international financial capital inflows, and employment impact"
+      ];
+    }
+    if (count === 15) {
+      return [
+        ...macroCanonicalThree,
+        "[Section II - Long FRQ Cycle 2 | Q1 Long 10 Pts] Inflationary Gap Shock: SRPC & LRPC graph with point X, contractionary fiscal policy, loanable funds demand shift, currency appreciation & net exports decline",
+        "[Section II - Short FRQ Cycle 2 | Q2 Short 5 Pts] Ample Reserves Contractionary Policy: Central bank raises administered IORB rate, Reserve Market graph, borrowing cost increase & bond price drop",
+        "[Section II - Short FRQ Cycle 2 | Q3 Short 5 Pts] Output Gap & Spending Multiplier: GDP Deflator calculation from table, 1/(1-MPC), minimum government spending reduction to close gap, automatic stabilizers",
+        "[Section II - Long FRQ Cycle 3 | Q1 Long 10 Pts] Recessionary Gap & Fiscal Expansion: AD-AS graph with recessionary gap, government spending increase, loanable funds real interest rate rise, foreign capital inflow & currency appreciation",
+        "[Section II - Short FRQ Cycle 3 | Q2 Short 5 Pts] Limited Reserves Open Market Operations: Central bank sells bonds, money market graph with leftward MS shift, nominal interest rate rise & investment spending drop",
+        "[Section II - Short FRQ Cycle 3 | Q3 Short 5 Pts] Unemployment & Production Possibilities: Civilian population, labor force participation, cyclical unemployment, PPC graph with point inside curve, and discouraged worker effect",
+        "[Section II - Long FRQ Cycle 4 | Q1 Long 10 Pts] Open Economy Tariff Shock: Imposition of tariffs, Forex supply curve shift and appreciation, net export contraction, and CA + CFA = 0 balance of payments offset",
+        "[Section II - Short FRQ Cycle 4 | Q2 Short 5 Pts] Ample Reserves Expansionary Policy: Central bank decreases administered interest rates on reserves, Reserve Market graph, lower policy rate & bond price increase",
+        "[Section II - Short FRQ Cycle 4 | Q3 Short 5 Pts] Base Year Economic Data Table: Real vs Nominal GDP calculation, price index, spending multiplier with MPC = 0.8, and government transfer payments",
+        "[Section II - Long FRQ Capstone 1 | Q1 Long 10 Pts] Long-Run Self-Adjustment vs Policy: Economy below full employment, nominal wage deflation, SRAS rightward shift to LRAS, vs discretionary monetary policy comparison",
+        "[Section II - Short FRQ Capstone 2 | Q2 Short 5 Pts] Central Bank Currency Intervention: Central bank buys/sells currency in forex market to maintain target exchange rate, and effect on domestic money supply",
+        "[Section II - Short FRQ Capstone 3 | Q3 Short 5 Pts] Comprehensive Multipliers & Gap Analysis: Closed vs open economy multipliers, marginal propensity to save (MPS), crowding-out effect on private investment"
+      ];
+    }
+    const pool = [];
+    while (pool.length < count) {
+      pool.push(macroCanonicalThree[pool.length % macroCanonicalThree.length]);
+    }
+    return pool;
+  }
+  if ((s.includes("world history") || s.includes("whap") || s.includes("world") && s.includes("history") || s.includes("history") && !s.includes("u.s.") && !s.includes("us") && !s.includes("euro")) && !detectedUnit) {
+    const whapCanonicalFive = [
+      "[Section I Part B - SAQ 1 | 3 Points] Secondary Source Analysis (1200\u20132001): Scholarly historian excerpt analyzing global commercial networks, imperial consolidation, or environmental transformations. Parts (a) describe author's argument, (b) explain one historical development (1200\u20131750) supporting the argument, (c) explain one historical development refuting or qualifying the argument. ACE Method required.",
+      "[Section I Part B - SAQ 2 | 3 Points] Primary Source / Visual Artifact Analysis (1200\u20132001): Written primary source excerpt (imperial decree, merchant diary, travelogue like Ibn Battuta / Marco Polo / Evliya \xC7elebi) OR Visual Artifact / Map. Parts (a) identify historical situation/context, (b) explain author's point of view, purpose, or intended audience (HIPP sourcing), (c) explain how source illustrates broader global historical process. ACE Method required.",
+      "[Section I Part B - SAQ 3 | 3 Points] Non-Stimulus Conceptual / CCOT / Comparative Question: No stimulus. Parts (a) identify one similarity or continuity in political administration or trans-regional trade, (b) explain one difference or change over time resulting from cross-cultural interaction or state centralization, (c) explain one broader global consequence across Afro-Eurasia or the Americas. ACE Method required.",
+      "[Section II Part A - DBQ | 7 Points] Document-Based Question (1450\u20132001): Comprehensive historical prompt with 7 distinct documents (mix of official state edicts, merchant accounts, diplomatic dispatches, indigenous testimonies, and visual/cultural artifacts). College Board 7-Point Rubric: Thesis/Claim (1 pt), Contextualization (1 pt), Evidence from 4+ Docs (2 pts), Outside Evidence (1 pt), Sourcing/HIPP for 2+ Docs (1 pt), Complex Understanding (1 pt).",
+      "[Section II Part B - LEQ | 6 Points] Long Essay Question (Choice prompt across Units 1\u20134, Units 3\u20136, or Units 7\u20139): Essay prompt requiring historical reasoning (causation, comparison, or continuity and change over time). College Board 6-Point Rubric: Thesis/Claim (1 pt), Contextualization (1 pt), Evidence with 2+ specific facts (2 pts), Historical Reasoning structure (1 pt), Complex Understanding/Nuance (1 pt)."
+    ];
+    if (count === 5) {
+      return [...whapCanonicalFive];
+    }
+    if (count === 10) {
+      return [
+        whapCanonicalFive[0],
+        whapCanonicalFive[1],
+        whapCanonicalFive[2],
+        whapCanonicalFive[3],
+        whapCanonicalFive[4],
+        "[Section I Part B - SAQ 1 Cycle 2 | 3 Points] Modern Secondary Source Analysis (1750\u20131900): Historian analysis of industrial capitalism, European imperial expansion in Africa/Asia, or labor migrations (indentured servitude). Parts (a) describe historian's thesis on economic coercion, (b) explain one 18th/19th-century development supporting thesis, (c) explain one limitation or counter-argument. ACE Method.",
+        "[Section I Part B - SAQ 2 Cycle 2 | 3 Points] 20th-Century Primary Source / Visual Analysis (1900\u2013Present): Primary speech, anti-colonial manifesto, or propaganda poster from WWI/WWII or Cold War proxy conflicts. Parts (a) identify historical situation, (b) explain creator's purpose or intended audience (HIPP), (c) explain connection to global geopolitical realignment. ACE Method.",
+        "[Section I Part B - SAQ 3 Cycle 2 | 3 Points] Modern Comparative / CCOT Question (1750\u20132001): Non-stimulus prompt comparing responses to Western imperialism (e.g. Meiji Japan vs Qing Self-Strengthening vs Ottoman Tanzimat) or ideological conflicts. Parts (a) identify one difference in state modernization strategy, (b) explain one internal factor causing difference, (c) explain one consequence on global power balance. ACE Method.",
+        "[Section II Part A - DBQ Cycle 2 | 7 Points] Modern Document-Based Question (1750\u20132001): Prompt evaluating the extent to which anti-colonial movements or ideological revolutions reshaped global social hierarchies or state power. 7 authentic documents with 7-Point College Board Rubric.",
+        "[Section II Part B - LEQ Cycle 2 | 6 Points] Modern Long Essay Question (1750\u2013Present): In the period 1900 to present, evaluate the extent to which technological innovations or ideological struggles transformed international political systems. 6-Point College Board Rubric."
+      ];
+    }
+    if (count === 15) {
+      return [
+        ...whapCanonicalFive,
+        "[Section I Part B - SAQ 1 Cycle 2 | 3 Points] Early Modern Secondary Source (1450\u20131750): Historian analysis of maritime trade chartered companies (VOC, British East India Company) and mercantilist bullion accumulation. Parts (a) describe core claim, (b) explain supportive global trade evidence, (c) explain counter-evidence. ACE Method.",
+        "[Section I Part B - SAQ 2 Cycle 2 | 3 Points] Gunpowder Empires Primary Source (1450\u20131750): Imperial taxation or religious administration document (Ottoman Devshirme, Mughal Akbar's Sulh-i-kul, or Qing Imperial Edict). Parts (a) identify context, (b) explain author point of view/purpose (HIPP), (c) explain link to imperial legitimation. ACE Method.",
+        "[Section I Part B - SAQ 3 Cycle 2 | 3 Points] Transatlantic & Transpacific Exchange CCOT (1450\u20131750): Non-stimulus analysis of the Columbian Exchange and Spanish silver flow via Manila galleons. Parts (a) identify one demographic continuity, (b) explain one economic transformation in Ming/Qing China or the Americas, (c) explain ecological effect.",
+        "[Section II Part A - DBQ Cycle 2 | 7 Points] Early Modern DBQ (1450\u20131750): Evaluate the extent to which European transoceanic maritime connections disrupted existing indigenous economic and social systems in the Americas and Indian Ocean basin. 7 Documents + 7-Point Rubric.",
+        "[Section II Part B - LEQ Cycle 2 | 6 Points] Early Modern LEQ (1450\u20131750): Evaluate the extent to which land-based empires in Eurasia relied on military gunpowder technologies versus religious legitimacy to consolidate rule. 6-Point Rubric.",
+        "[Section I Part B - SAQ 1 Cycle 3 | 3 Points] Contemporary Secondary Source (1900\u2013Present): Historian analysis of 20th-century Cold War non-alignment, proxy wars, or post-WWII economic integration. Parts (a) describe historian's argument, (b) explain supportive geopolitical event, (c) explain qualifying event.",
+        "[Section I Part B - SAQ 2 Cycle 3 | 3 Points] Decolonization & Cold War Primary Source (1945\u2013Present): Speech by Pan-African or Asian nationalist leader (e.g. Bandung Conference, Kwame Nkrumah, Ho Chi Minh, Gamal Abdel Nasser). Parts (a) identify historical situation, (b) explain intended audience/purpose (HIPP), (c) explain connection to global superpower rivalry.",
+        "[Section I Part B - SAQ 3 Cycle 3 | 3 Points] 20th-Century Global Economic Integration CCOT (1900\u2013Present): Non-stimulus comparative analysis of free-market neoliberalism vs state-controlled economic planning (e.g. Deng Xiaoping's Four Modernizations vs Soviet Five-Year Plans). Parts (a) identify one policy difference, (b) explain one domestic cause, (c) explain one global trade effect.",
+        "[Section II Part A - DBQ Cycle 3 | 7 Points] 20th-Century DBQ (1900\u2013Present): Evaluate the extent to which ideological conflicts during the Cold War shaped anti-imperialist independence struggles and social reforms in Africa, Asia, or Latin America. 7 Documents + 7-Point Rubric.",
+        "[Section II Part B - LEQ Cycle 3 | 6 Points] Contemporary LEQ (1900\u2013Present): In the period 1945 to the present, evaluate the extent to which rapid population growth and technological globalization altered global environmental systems or human disease epidemiology. 6-Point Rubric."
+      ];
+    }
+    const pool = [];
+    while (pool.length < count) {
+      pool.push(whapCanonicalFive[pool.length % whapCanonicalFive.length]);
+    }
+    return pool;
+  }
   let candidatePool = [];
   if (detectedUnit && bundle.units[detectedUnit] && bundle.units[detectedUnit].length > 0) {
-    candidatePool = [...bundle.units[detectedUnit]];
-    if (candidatePool.length < count) {
-      candidatePool.push(...bundle.general);
+    const unitList = [...bundle.units[detectedUnit]];
+    for (let i = unitList.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [unitList[i], unitList[j]] = [unitList[j], unitList[i]];
     }
+    while (candidatePool.length < count) {
+      candidatePool.push(...unitList);
+    }
+    candidatePool = candidatePool.slice(0, count).map((arch) => `[Unit ${detectedUnit} Focus] ${arch}`);
+    return candidatePool;
   } else {
-    const allUnitItems = Object.values(bundle.units).flat();
-    candidatePool = [...allUnitItems, ...bundle.general];
-  }
-  const shuffled = [...candidatePool];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  if (shuffled.length > 0 && shuffled.length < count) {
-    const base = [...shuffled];
-    while (shuffled.length < count) {
-      shuffled.push(...base);
+    const unitKeys = Object.keys(bundle.units).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+    if (unitKeys.length > 0) {
+      const buckets = {};
+      for (const uk of unitKeys) {
+        const items = [...bundle.units[uk]];
+        for (let i = items.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [items[i], items[j]] = [items[j], items[i]];
+        }
+        buckets[uk] = items;
+      }
+      let uIdx = 0;
+      while (candidatePool.length < count) {
+        const currentKey = unitKeys[uIdx % unitKeys.length];
+        if (buckets[currentKey] && buckets[currentKey].length > 0) {
+          candidatePool.push(`[Unit ${currentKey}] ${buckets[currentKey].shift()}`);
+        } else if (bundle.units[currentKey] && bundle.units[currentKey].length > 0) {
+          const fresh = [...bundle.units[currentKey]];
+          for (let i = fresh.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [fresh[i], fresh[j]] = [fresh[j], fresh[i]];
+          }
+          buckets[currentKey] = fresh;
+          candidatePool.push(`[Unit ${currentKey}] ${buckets[currentKey].shift()}`);
+        } else {
+          break;
+        }
+        uIdx++;
+      }
+      return candidatePool.slice(0, count);
+    } else {
+      candidatePool = [...bundle.general];
+      const shuffled = [...candidatePool];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      while (shuffled.length < count) {
+        shuffled.push(...candidatePool);
+      }
+      return shuffled.slice(0, count);
     }
   }
-  return shuffled.slice(0, count);
 }
 
 // src/data/apPromptGuidelines.ts
@@ -4913,19 +6077,98 @@ function getCollegeBoardSubjectGuidelines(subject, questionType) {
   6. Cities & Urban Land-Use (Burgess Concentric Zone, Hoyt Sector, Harris-Ullman Multiple Nuclei, Galactic model, Christaller's Central Place Theory, rank-size rule, primate cities, gentrification, New Urbanism).
   7. Industrial & Economic Development (Wallerstein World Systems [Core/Periphery], Rostow 5 Stages of Economic Growth, Weber Least Cost Theory, HDI, UN SDGs).
 - Stimulus Requirement: Ground questions in realistic geographic stimuli (demographic data charts, regional map descriptions, population pyramid profiles, or geographic case studies).
-- Distractors: Plausible 9th-grade misconceptions (e.g., confusing environmental determinism with possibilism, confusing hierarchical with contagious diffusion, or misidentifying DTM stages).`;
+- Distractors: Plausible 9th-grade misconceptions (e.g., confusing environmental determinism with possibilism, confusing hierarchical with contagious diffusion, or misidentifying DTM stages).
+- MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+  Before finalizing any MCQ, perform an internal self-audit:
+  1. Geographic Fact Check: Verify demographic numbers, geographic models (DTM 1-5, Von Th\xFCnen, Burgess, Rostow, Wallerstein), and regional associations.
+  2. Single Unambiguous Key Check: Ensure exactly ONE option (the key) is unequivocally correct based on College Board CED definitions. The other 3 options must be distinct 9th-grade student misconceptions.
+  3. Stimulus Solvability: If referring to a data table or map description, ensure all needed evidence is explicitly given.
+  4. Instant Self-Healing: If you find ANY ambiguity, incorrect geographic fact, or invalid distractor during your self-check, DO NOT output it. Discard and completely regenerate or heal the question immediately before returning the final JSON.`;
     } else {
-      return `AP HUMAN GEOGRAPHY FREE RESPONSE STANDARDS (College Board CED - 7-Part FRQ):
-- Format: Real 7-PART College Board Free Response Questions with parts (A), (B), (C), (D), (E), (F), and (G). Total Points: Exactly 7 Points (1 point per part).
-- Official FRQ Types:
-  1. Question 1 (No Stimulus): Tests geographic concepts, spatial models, and processes.
-  2. Question 2 (One Stimulus): Anchored to a thematic map, demographic chart, or spatial model.
-  3. Question 3 (Two Stimuli): Comparative synthesis between two geographic datasets or regions.
-- Command Verbs & Scaffolding:
-  - "Identify" / "Define" (1-2 sentences stating the specific concept or pattern).
-  - "Describe" (Provide relevant characteristics or spatial trends).
-  - "Explain" (Must clearly establish cause-and-effect line of reasoning: 'how' or 'why' X causes Y in geographic context).
-- Rubric: Exactly 7 points (+1 pt for each part A through G) with crystal-clear scoring criteria and model responses.`;
+      return `AP HUMAN GEOGRAPHY FREE RESPONSE EXAM STANDARDS (COLLEGE BOARD SECTION II - 100% AUTHENTIC REPLICA):
+PEDAGOGICAL INTELLIGENCE DERIVED FROM OFFICIAL EXAM SETS (2023, 2024, 2025, 2026):
+You are the College Board AP Human Geography Chief Reader and Lead Exam Developer. Section II consists of 3 free-response questions (1 hour 15 minutes, 25 minutes per question). Every question you generate MUST strictly follow this official College Board CED blueprint:
+
+1. MANDATORY 7-PART SUB-QUESTION ANATOMY (PARTS A THROUGH G):
+- Every single Free Response Question MUST consist of EXACTLY 7 distinct parts labeled:
+  A. [Sub-question]
+  B. [Sub-question]
+  C. [Sub-question]
+  D. [Sub-question]
+  E. [Sub-question]
+  F. [Sub-question]
+  G. [Sub-question]
+- Outputting fewer than 7 parts or more than 7 parts is STRICTLY FORBIDDEN.
+- TOTAL POINTS: EXACTLY 7 POINTS (Each part A through G is worth exactly 1 point: +1 pt per part).
+
+2. STRICT COLLEGE BOARD TASK VERB HIERARCHY (NO 'EVALUATE' / NO 'JUSTIFY'):
+- In AP Human Geography FRQs, College Board NEVER awards points based on 'Evaluate' or 'Justify'. These verbs belong to other AP exams (DBQs or Math/Physics).
+- STRICTLY FORBIDDEN TASK VERBS:
+  * NEVER use "Evaluate" (e.g., DO NOT write "Evaluate a potential limitation...").
+  * NEVER use "Justify" (e.g., DO NOT write "Justify why it is mathematically impossible...").
+- APPROVED COLLEGE BOARD TASK VERBS ONLY:
+  * "Identify..." (1 concise sentence identifying a specific data point, pattern, or term).
+  * "Define..." (Clear, formal academic definition of a geographic term or concept).
+  * "Describe..." (Provide relevant observable characteristics, spatial patterns, or historical conditions).
+  * "Explain..." (MUST provide a clear cause-and-effect line of reasoning showing HOW or WHY mechanism X leads to outcome Y in geographic context).
+  * "Compare..." (Directly compare a similarity or difference between two geographic phenomena or regions).
+- SIGNATURE COLLEGE BOARD PROMPT (MANDATORY IN PART F OR G):
+  "Explain the degree to which [phenomenon]... (Response must indicate the degree [low, moderate, high] and provide an explanation.)"
+
+3. UNIT PURITY & CURRICULUM CONTAINMENT (CRITICAL - NO LEAKAGE):
+- If the student selects a SPECIFIC Unit (e.g., "Unit 1: Thinking Geographically"):
+  * ALL 7 parts (A through G) MUST be 100% strictly anchored in that specific unit's CED topics!
+  * STRICTLY FORBIDDEN: DO NOT include models or concepts from later units!
+    - In Unit 1: NO Burgess Model, NO Hoyt Model, NO Von Th\xFCnen Model, NO Demographic Transition Model (DTM), NO Wallerstein World Systems, NO Gentrification. Unit 1 is strictly: GIS/GPS/remote sensing, scales of analysis, formal/functional/vernacular regions, environmental determinism vs possibilism, map projections/distortion, and thematic maps.
+    - In Unit 2: Strictly Population & Migration (DTM stages 1-5, population pyramids, dependency ratios, Malthus/Boserup, push/pull, refugees/IDPs, pronatalist/antinatalist policies).
+    - In Unit 3: Strictly Cultural Patterns (diffusion types, language families/branches/dialects/isogloss/lingua franca, religions, cultural landscape, acculturation/assimilation/syncretism).
+    - In Unit 4: Strictly Political Patterns (sovereignty, nation-state, stateless nations, devolution, gerrymandering, UNCLOS, boundaries, supranationalism).
+    - In Unit 5: Strictly Agriculture (revolutions, intensive/extensive, Von Th\xFCnen model, rural surveys, environmental impacts, global supply chains).
+    - In Unit 6: Strictly Cities & Urban (Burgess, Hoyt, multiple nuclei, galactic/edge cities, Central Place Theory, rank-size/primate cities, gentrification, urban sustainability, redlining/blockbusting).
+    - In Unit 7: Strictly Industrial & Economic Development (Wallerstein, Rostow, Weber, HDI, deindustrialization, EPZs, commodity dependence, trade interdependence).
+- Cross-unit synthesis is ONLY permissible when the user specifically selects "All Curriculum Units (Comprehensive AP Review)" or "Timed Exam Simulation".
+
+4. THE 3 OFFICIAL COLLEGE BOARD QUESTION ARCHETYPES:
+- QUESTION TYPE 1 (NO STIMULUS - CONCEPTUAL / SPATIAL SCENARIO):
+  * Opens with a 1-2 sentence real-world geographic scenario setting the spatial and thematic context.
+  * Followed immediately by: "Respond to parts A, B, C, D, E, F, and G."
+  * MUST NOT mention "Source 1", "Source 2", "in the table", or "in the map". Pure conceptual scenario.
+- QUESTION TYPE 2 (ONE STIMULUS - AUTHENTIC DATA TABLE OR CANONICAL THEMATIC MAP):
+  * Rooted in EXACTLY ONE concrete, complete stimulus provided in the text:
+    [PILLAR 1: CANONICAL THEMATIC MAP / SPATIAL MODEL]:
+    - To test a visual stimulus, open the prompt with one of the canonical College Board figures:
+      * Unit 2 (Population & Migration): "Figure 1: Demographic Transition Model (DTM Stages 1\u20135)" OR "Figure 1: Global Total Fertility Rates (TFR) Thematic Choropleth Map" OR "Figure 1: Major Global Transnational Migration Corridors and Labor Flows Map"
+      * Unit 5 (Agriculture): "Figure 1: Von Th\xFCnen Model of Agricultural Land-Use"
+      * Unit 6 (Cities & Urban): "Figure 1: Burgess Concentric Zone Urban Model" OR "Figure 1: Hoyt Sector Model (Axial Urban Corridors)" OR "Figure 1: Harris-Ullman Multiple Nuclei and Galactic Edge City Model"
+      * Unit 7 (Industrial & Economic Development): "Figure 1: Wallerstein World Systems Theory (Core-Periphery Spatial Model)"
+      (NOTE: The platform automatically injects pixel-perfect, dark-mode-ready vector SVG maps whenever these canonical titles or models are referenced!)
+    [PILLAR 2: AUTHENTIC DEMOGRAPHIC / SPATIAL MARKDOWN DATA TABLE - THE #1 MOST COMMON COLLEGE BOARD STIMULUS]:
+    - If using tabular data, format as a clean standard GitHub Markdown table (| Region/Country | CBR | CDR | TFR | GNI per Capita |) with authentic institutional citations (e.g. "Source: United Nations Population Division", "Source: World Bank Development Indicators", "Source: Food and Agriculture Organization [FAO]").
+  * Parts A & B MUST explicitly reference the stimulus: "Using the map shown in Figure 1, identify..." or "Using the data in the table, identify...".
+- QUESTION TYPE 3 (TWO STIMULI - COMPARATIVE SPATIAL SYNTHESIS):
+  * Rooted in TWO complementary sources labeled "Source 1" and "Source 2":
+    [PILLAR 3: PAIRED SPATIAL REGIONAL CASE SCENARIOS]:
+    - Source 1: Thematic Map or Spatial Boundary Scenario (e.g. "Source 1: Figure 1 - Major Global Transnational Migration Corridors Map" OR subnational administrative governance scenario).
+    - Source 2: Paired Demographic, Economic, or Remittance Survey Data Table (e.g. "Source 2: Table 1 - Foreign Remittance Inflows and Emigration Statistics by Country of Origin").
+  * Prompt opens with Source 1 and Source 2, followed by: "Respond to parts A, B, C, D, E, F, and G."
+  * Requires explicit comparative synthesis between Source 1 and Source 2 across subparts (e.g., Part A analyzes Source 1, Part B analyzes Source 2, Part C explains how the spatial flows in Source 1 produce the economic outcomes in Source 2).
+
+5. DATA TABLE FORMATTING MANDATE (MOBILE COMPLIANCE):
+- ALWAYS format all tables as standard GitHub Markdown tables (| Header 1 | Header 2 |).
+- STRICTLY FORBIDDEN: NEVER format tables as LaTeX math arrays ($$\\begin{array}...\\end{array}$$). LaTeX arrays break mobile screens and cause horizontal clipping.
+
+6. OFFICIAL COLLEGE BOARD SCORING GUIDELINES & MULTI-PATHWAY RUBRICS:
+- In "totalPoints", specify exactly 7.
+- In "scoringRubric", provide a comprehensive 7-item array (+1 pt for each part A through G) formatted like official College Board Scoring Guidelines:
+  * "Part A [1 point]: 1 pt for correctly identifying X (Acceptable responses include: \u2022 A1 ... \u2022 A2 ...)"
+  * "Part B [1 point]: 1 pt for describing Y (Acceptable responses include: \u2022 B1 ... \u2022 B2 ...)"
+  * "Part G [1 point]: 1 pt for indicating degree [low, moderate, high] AND providing a valid geographic causal explanation (Acceptable explanations include: \u2022 G1 ... \u2022 G2 ...)"
+- In "modelAnswer", provide complete, high-scoring prose for each part: "Part A: [Complete model response]\\n\\nPart B: [Full explanation]...\\n\\nPart G: [Statement of degree + complete causal explanation]".
+
+7. TARGET AUDIENCE & COGNITIVE CALIBRATION:
+- Calibrated strictly for Grade 9-10 introductory high-school geography students.
+- Ground questions in real-world geographic places, countries, and case studies (e.g., Montreal bilingual signs, Sahel desertification, Japan aging demography, Paraguay soybean exports).
+- Avoid graduate-level mathematics or physics terms (DO NOT mention "Gaussian curvature", "differential geometry", etc.).`;
     }
   }
   if (s.includes("environmental") || s.includes("apes")) {
@@ -4939,13 +6182,72 @@ function getCollegeBoardSubjectGuidelines(subject, questionType) {
 - Quantitative Reasoning: Include realistic environmental math (Rule of 70, LD50 toxicity, percent change, metric conversions).
 - Distractors: Represent common student traps (confusing ozone depletion with global warming, confusing point vs nonpoint pollution).`;
     } else {
-      return `AP ENVIRONMENTAL SCIENCE FREE RESPONSE STANDARDS (College Board CED):
-- Format: Real 10-POINT multi-part questions with sub-parts (a), (b), (c), (d), (e). Total Points: Exactly 10 Points.
-- Official FRQ Archetypes:
-  1. Design an Investigation: Hypothesis, independent/dependent/control variables, data collection procedures, and experimental validity.
-  2. Analyze an Environmental Problem & Propose a Solution: Ecological impacts, identifying root causes, and proposing realistic, sustainable solutions with environmental or economic justifications.
-  3. Quantitative Environmental Problem & Solution: Multi-step mathematical calculations (with units and dimensional analysis) paired with an environmental mitigation recommendation.
-- Rubric: Exactly 10 points breakdown with step-by-step partial-credit criteria.`;
+      return `AP ENVIRONMENTAL SCIENCE FREE RESPONSE EXAM STANDARDS (COLLEGE BOARD SECTION II - 100% AUTHENTIC REPLICA):
+PEDAGOGICAL INTELLIGENCE DERIVED FROM OFFICIAL EXAM SETS (2024, 2025, 2026 DIGITAL STANDARDS):
+You are the College Board AP Environmental Science (APES) Chief Reader and Lead Exam Developer. Section II consists of 3 free-response questions (1 hour 10 minutes, suggested 22 minutes per question).
+Every single Free Response Question you generate MUST strictly conform to this exact official blueprint:
+
+1. MANDATORY 10-POINT ATOMIC ANATOMY (POINT 01 TO POINT 10):
+- Every single FRQ MUST yield EXACTLY 10 discrete, binary scoring points (Earned = 1, Not Earned = 0). Total Points: EXACTLY 10 POINTS.
+- Structure subparts clearly as Parts A through J (or Parts A through G/H with labeled subparts (i) and (ii)) such that the sum of all points is EXACTLY 10.
+- Outputting fewer than 10 points or more than 10 points is STRICTLY FORBIDDEN.
+
+2. THE 3 CANONICAL COLLEGE BOARD APES QUESTION ARCHETYPES (ROTATE EVENLY):
+- QUESTION ARCHETYPE 1: "DESIGN AN INVESTIGATION" (10 POINTS):
+  * Stimulus: Opens with a real-world ecological or lab investigation scenario accompanied by a data table, graph, or food web diagram (e.g. aquatic stream dissolved oxygen/BOD gradient, elevational avian community distribution, or soil fertility under different agricultural regimes).
+  * 10-Point Distribution Structure:
+    - Concept Application (2-3 pts): Connect to foundational ecology (trophic levels/cascades, r/K selection strategies, generalist vs specialist traits, ecosystem resistance/resilience).
+    - Data Analysis (2-3 pts): Read specific datum from stimulus ("Identify the value of... at [condition]"), describe overall trend ("Describe the relationship between X and Y - direct, inverse, or nonlinear"), and evaluate whether given data support or refute a stated hypothesis.
+    - Scientific Inquiry & Experimental Design (4-5 pts):
+      * Identify a testable scientific question or hypothesis (must state directional relationship).
+      * Identify the Independent Variable (IV) and Dependent Variable (DV) with laboratory precision.
+      * Describe the purpose of a control group or baseline treatment.
+      * Explain how an experimental modification (e.g. seasonal temperature shift, change in substrate/sediment, disturbance) would alter the experimental results.
+      * Explain why a diverse community recovers faster from disturbance (genetic diversity, niche partitioning) or describe an anthropogenic habitat disruption effect (habitat fragmentation, edge effect).
+
+- QUESTION ARCHETYPE 2: "ANALYZE AN ENVIRONMENTAL PROBLEM & PROPOSE A SOLUTION" (10 POINTS):
+  * Stimulus: Anchored to a real geographic map, geological/climatological diagram, or multi-decade land-use trend (e.g. tectonic rift valley/convergent plate boundary, El Ni\xF1o/La Ni\xF1a sea-surface temperature and jet-stream shifts, or land cover changes from 1700-present).
+  * 10-Point Distribution Structure:
+    - Earth Systems & Biomes (2-3 pts): Identify plate boundary type, atmospheric circulation pattern, or contrast climatic conditions between two terrestrial biomes.
+    - Environmental Problem & Mechanism (3-4 pts): Explain the causal chain of an ecological or environmental disturbance (e.g. impervious surfaces causing urban stormwater flooding, clear-cutting increasing water temperature, invasive species outcompeting natives, or pesticide treadmill).
+    - Propose a Realistic Solution (1 pt): Must propose an authentic, actionable engineering, agricultural, or policy intervention (e.g. permeable pavement, green roofs, wildlife overpass corridor, crop rotation, Integrated Pest Management).
+    - SIGNATURE COLLEGE BOARD TWIN-POINT RULE - JUSTIFY WITH CO-BENEFIT (1 pt):
+      "Justify the solution proposed in part [X] by providing an additional advantage OTHER THAN [the primary problem solved in part X]." (e.g. permeable pavement also recharges groundwater aquifers and reduces runoff pollutants; green roofs also mitigate the urban heat island effect and improve building insulation).
+    - Environmental Tradeoff / Sustainable Practice (2 pts): Secondary succession process, sustainable forestry (prescribed burns, brush clearing), or biocontrol methods.
+
+- QUESTION ARCHETYPE 3: "ANALYZE AN ENVIRONMENTAL PROBLEM - DOING CALCULATIONS" (10 POINTS):
+  * Stimulus: Grounded in energy generation (coal, natural gas, nuclear, solar), resource consumption (water usage, vehicle fuel economy), or wildlife population demographics.
+  * 10-Point Distribution Structure:
+    - Qualitative Environmental Problem & Source (3 pts): Identify anthropogenic pollutant source (e.g. particulate matter from industrial boilers/mining), describe pollution control mechanisms (vapor recovery nozzles, electrostatic precipitators, wet scrubbers), or explain acid rain chemistry.
+    - Environmental Solution & Justification (2 pts): Realistic conservation policy or technology upgrade with co-benefit justification.
+    - Multi-Step Quantitative Calculations (5 pts total):
+      * Minimum 2 distinct calculation problems, each awarded as PAIRED POINTS:
+        - 1 Point for Correct Formula Setup (numbers and mathematical relationship clearly displayed).
+        - 1 Point for Correct Numerical Calculation.
+      * Calculation Types to deploy:
+        1. Percent Change: ((New - Old) / Old) * 100
+        2. Rule of 70 Doubling Time: Time = 70 / r (where r is the annual growth percentage)
+        3. Dimensional Analysis / Unit Conversions: Fuel consumption per household, kWh to pounds of coal combusted, metric conversions, or energy efficiency.
+      * MANDATORY CLEAN NUMBERS RULE: Numbers MUST be mathematically pre-calibrated to produce clean, realistic integers or simple 1-decimal values (e.g. 11,000 houses, 0.88 kWh/lb, 14 gallons). NEVER generate messy irrational decimals that distract from scientific methodology.
+
+3. OFFICIAL COLLEGE BOARD COMMAND VERB HIERARCHY:
+- "Identify...": 1 concise factual phrase or numerical value directly from stimulus. No elaborate explanations.
+- "Describe...": State specific observable characteristics, biological adaptations, or directional trends.
+- "Explain...": STRICT REQUIREMENT - Must provide an unbroken cause-and-effect chain: [Cause] --> [Biophysical Mechanism] --> [Resulting Outcome]. Mentioning the outcome alone without the scientific mechanism earns 0 points!
+- "Propose a realistic solution...": Actionable, implementable environmental or engineering solution.
+- "Justify...": Must provide a distinct secondary ecological, public health, or economic advantage.
+- "Calculate... Show your work": Include explicit work setup and final answer with appropriate units.
+
+4. ORIGINALITY & ANTI-HALLUCINATION SAFEGUARD (NO VERBATIM COPYING):
+- Under NO circumstances copy the exact organisms, data tables, or questions from the 2024/2025/2026 released PDF exams (DO NOT reuse Chickadees, Ocelots, or Serengeti Wildebeest verbatim).
+- Use them strictly as pedagogical blueprints.
+- Invent 100% fresh, authentic environmental scenarios rooted in real geographic systems: Chesapeake Bay watershed, Everglades restoration, Mono Lake water diversion, Amazonian deforestation corridors, Colorado River water rights, or Three Gorges Dam impacts.
+- SCIENTIFIC REALITY BOUNDS: Dissolved Oxygen must be 0-14 mg/L; natural water pH 5.0-8.5; power plant efficiency 30-45%; trophic transfer strictly conforms to 10% rule.
+
+5. SCORING RUBRIC & EXEMPLARY MODEL ANSWER:
+- In "totalPoints", specify exactly 10.
+- In "scoringRubric", provide a strict 10-item array (Point 01 through Point 10) specifying exact point-by-point criteria and acceptable student response variations.
+- In "modelAnswer", provide a complete exemplary 10/10 response with clear part labels (e.g. "Part A: ... \\n\\nPart B: ...").`;
     }
   }
   if (s.includes("principles") || s.includes("csp")) {
@@ -4955,50 +6257,352 @@ function getCollegeBoardSubjectGuidelines(subject, questionType) {
 - Scope: Creative development, binary/hex numbers, data compression (lossy vs lossless), pseudocode algorithms (robot grid traversal, conditional iteration, list filtering), Internet architecture (IP, TCP/IP, packet routing, fault tolerance), cybersecurity (public-key encryption, phishing, DDoS), and computing ethics.
 - Distractors: Represent algorithmic off-by-one errors, Boolean logic inversion (AND vs OR), or confusing lossy vs lossless compression.`;
     } else {
-      return `AP COMPUTER SCIENCE PRINCIPLES WRITTEN RESPONSE / PERFORMANCE TASK STANDARDS:
-- Format: 4-Part Written Response (6 Points Total) based on computational artifacts and program development:
-  - Part (a): Program Function and Purpose (explaining user inputs, outputs, and overall functionality).
-  - Part (b): Data Abstraction (identifying list/collection name, data represented, and how complexity is managed).
-  - Part (c): Algorithmic Logic & Sequencing (explaining iteration, selection, sequencing, and algorithmic outcome).
-  - Part (d): Testing & Parameter Behavior (describing two different calls/inputs, expected conditions, and resulting outputs).
-- Rubric: Precise College Board CED 6-point scoring criteria.`;
+      return `AP COMPUTER SCIENCE PRINCIPLES (AP CSP) SECTION II: WRITTEN RESPONSE (College Board 2024-2026 Official Standard):
+- Exam Structure: Section II lasts 60 minutes and consists of 2 Questions (4 Written-Response Prompts) based on a student's "Personalized Project Reference" (PPR).
+- Total Written Response Score: Exactly 4 Points (1 point each for WR 1, WR 2a, WR 2b, WR 2c). Overall Create Performance Task is 6 points (Video 1 pt + Program Requirements 1 pt + 4 WR pts).
+- STEP 1 (MANDATORY STUDENT PPR GENERATION):
+  Before asking the prompts, you MUST provide a realistic student Personalized Project Reference (PPR) in Python or JavaScript from a plausible domain (e.g. Smart Fitness Tracker, E-Commerce Cart, Weather Station Logger, Gaming Inventory, Playlist Shuffler, Gradebook):
+  1. List Section: Contains a non-trivial list with multiple elements (>= 4 dynamic elements).
+  2. Procedure Section: A student-developed procedure with at least ONE EXPLICIT PARAMETER, containing SELECTION ('if'/'else') and ITERATION ('for'/'while' loop) traversing or manipulating the list.
+- STEP 2 (THE 4 OFFICIAL WRITTEN-RESPONSE PROMPTS):
+  * Question 1 (Written Response 1 - 1 Point): Program Design, Function, and Purpose.
+    - Angle: Valid input & program action OR Unexpected/invalid input handling OR Example output demonstrating functionality OR Code documentation rationale for another programmer.
+  * Question 2(a) (Written Response 2a - 1 Point): Algorithm Development.
+    - Angle: Describing what is accomplished by the body of the first iteration statement OR identifying the Boolean expression in the first selection statement with specific values evaluating to true/false with causal reasoning OR iteration stopping condition and terminating boundary values.
+  * Question 2(b) (Written Response 2b - 1 Point): Errors and Testing.
+    - Angle: Providing two procedure calls with specific arguments causing two different code segments to execute OR proposing a modification that introduces a LOGIC ERROR (not a syntax error) and describing the deviated behavioral outcome OR accepted arguments causing edge-case failure.
+  * Question 2(c) (Written Response 2c - 1 Point): Data and Procedural Abstraction.
+    - Angle: Explaining how the list uses abstraction to manage complexity and describing how the code would be rewritten without lists (e.g. separate individual variables) OR explaining how code adapts when new elements are added to the list OR explaining procedural maintainability.
+- STRICT SANITY & ANTI-HALLUCINATION GUARDRAILS:
+  - ZERO PDF REPETITION / ZERO COPYING: Do NOT copy verbatim prompts or code from official exam releases. Invent 100% original scenarios.
+  - CODE-PROMPT DEPENDENCY LOCK: If a prompt asks about iteration, the code MUST have a loop. If it asks about selection, the code MUST have an if-statement. If it asks for two calls executing different segments, the procedure MUST have at least two reachable branches.
+  - MATHEMATICALLY SOLVABLE DATA: All conditions must have reachable true and false branches. Never ask impossible mathematical statements like 'x > 10 and x < 2'.
+  - LOGIC ERROR DEFINITION: A logic error is a mistake in an algorithm causing incorrect behavior/output, NOT a syntax/compile error.
+- SCORING RUBRIC & DECISION RULES:
+  - In 'totalPoints', specify 4 (or 6 if including video/program requirements).
+  - Provide a strict 4-item rubric with explicit Decision Rules detailing exactly when to award (+1) and 'Do NOT award a point if' (e.g. trivial iteration, one-element list, repeating code without explaining accomplishment, missing explicit parameter, vague explanation).`;
+    }
+  }
+  if (s.includes("computer science a") || s.includes("csa") || s.includes("computer") && !s.includes("principles") && !s.includes("csp")) {
+    if (questionType === "objective") {
+      return `AP COMPUTER SCIENCE A (JAVA) EXAM SPECIFICATIONS (College Board Java Subset):
+- Format: 40 Multiple-Choice Questions in 90 minutes (2 minutes 15 seconds per question).
+- Topics Covered (College Board CED Units 1-10 or 2026 Units 1-4):
+  * Primitive Types, Arithmetic Expressions, and Modulus (%) Operator
+  * Boolean Expressions, Short-Circuit Evaluation, and De Morgan's Laws
+  * Iteration: while loops, for loops, nested loops, loop invariants, and off-by-one boundary conditions
+  * Writing Classes: Encapsulation, private instance variables, constructors, static vs instance methods, keyword 'this'
+  * 1D Arrays: Array declaration, indexing, enhanced for-each loops, finding min/max, linear search, insertions
+  * ArrayList: Autoboxing/unboxing, dynamic sizing, add(e), add(i, e), get(i), set(i, e), remove(i), traversal while modifying
+  * 2D Arrays: Matrix row-major order, nested indexing [r][c], bounds (length vs [0].length)
+  * Inheritance & Polymorphism: Subclassing, super constructor call, method overriding, dynamic binding (for classic forms)
+  * Recursion: Base cases, call stack tracing, binary search, merge sort traces.
+- Distractors: Represent realistic student bugs: off-by-one loop indexing, integer division truncation, using == on Strings, or modifying ArrayList elements during enhanced for-each.`;
+    } else {
+      return `AP COMPUTER SCIENCE A SECTION II: FREE RESPONSE (COLLEGE BOARD OFFICIAL 2023\u20132026 STANDARDS - 100% AUTHENTIC REPLICA):
+PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM 2023, 2024, 2025, 2026 OFFICIAL AP EXAM SETS & CHIEF READER REPORTS (DON BLAHETA, LONGWOOD UNIVERSITY - 93,906 STUDENTS):
+
+1. EXAM STRUCTURE & CANONICAL 4-QUESTION BLUEPRINT:
+- Exactly 4 Free-Response Questions (90 Minutes Total = 1 Hour 30 Minutes).
+- Canonical Question Order:
+  * Question 1: Methods and Control Structures (7 points in 2026 CED, 9 points in 2023-2025).
+    - Part (a): Implement a helper/accessor method using conditionals and helper method calls on instance variables.
+    - Part (b): Implement a driver/accumulator method using a loop to iterate across a range of hours/units, calling part (a) without redundant side effects.
+  * Question 2: Class Design (7 points in 2026 CED, 9 points in 2023-2025).
+    - Write a COMPLETE class from scratch!
+    - Class header: public class Name.
+    - Private instance variables (MANDATORY ENCAPSULATION).
+    - Public constructor(s) initializing instance variables from parameters.
+    - Public methods with correct return types matching an explicit 3-column Sample Execution Trace Table (Statement | Return Value | Explanation).
+  * Question 3: Array / ArrayList Data Analysis (5 points in 2026 CED, 9 points in 2023-2025).
+    - Reasoning about 1D Array and ArrayList<E> collections of custom objects.
+    - Traversing, filtering, and constructing new objects with 'new' keyword.
+    - Inward dual-pointer traversal from both ends (low & high) or nested iteration across two lists to match IDs without modifying original collections.
+  * Question 4: 2D Arrays (6 points in 2026 CED, 9 points in 2023-2025).
+    - Manipulating 2D arrays (int[][] or Object[][]).
+    - Row-major traversal, bounds checking, row/column point accumulation.
+    - Self-pairing guard: STRICTLY USE '!(r == row && c == col)' or 'r != row || c != col'. (NEVER use 'r != row && c != col' which erroneously excludes entire rows/columns!).
+
+2. STRICT CHIEF READER SCORING MANDATES & FATAL TRAPS TO PREVENT:
+- TRAP 1 (STATIC FALLACY): Always call helper methods on the instance variable object (e.g. 'company.numAvailableDogs(hour)'), NOT on the class name ('DogWalkCompany.numAvailableDogs(hour)').
+- TRAP 2 (LOOP SIDE EFFECT REDUNDANCY): If a method has state-altering side effects (e.g. walkDogs, updateAmount), call it ONCE and store the result in a local variable inside the loop! NEVER call it multiple times in conditions.
+- TRAP 3 (STRING EQUALITY): In Java, NEVER compare Strings with '=='. Always use '.equals()' (e.g. 'firstName.equals("")' or 'currColor.equals(firstColor)').
+- TRAP 4 (OBJECT INSTANTIATION): Always use the 'new' keyword when constructing objects for collections (e.g. 'list.add(new Match(p1, p2))').
+- TRAP 5 (PREMATURE EARLY RETURN): Never place 'return false;' or 'return null;' inside a loop before verifying all elements.
+- TRAP 6 (PERSISTENT DATA DESTRUCTION): Do not alter or remove elements from input lists unless explicitly instructed.
+
+3. SCORING GUIDELINES & DECISION RULES:
+- 1-Point Penalty for: Array/collection access confusion ([] vs get), printing to console instead of returning, local variable used without declaration, destruction of persistent data, or returning a value from void/constructor.
+- No Penalty for: Spelling discrepancies without ambiguity (ArayList), = instead of ==, length/size confusion with or without (), missing semicolons/braces where indentation clearly conveys intent.
+- Model Answer MUST be 100% syntactically valid Java code inside standard Markdown fenced blocks (\`\`\`java ... \`\`\`).`;
+    }
+  }
+  if (s.includes("chemistry") || s.includes("chem")) {
+    if (questionType === "objective") {
+      return `AP CHEMISTRY EXAM SPECIFICATIONS (College Board CED Units 1-9):
+- Format & Rigor: 60 Multiple-Choice Questions in 90 minutes. High college-level conceptual and quantitative rigor.
+- Stimulus-Driven: Base questions on particulate diagrams of molecules/solutions, Photoelectron Spectroscopy (PES) binding energy plots, acid-base titration curves, spectrophotometric Beer-Lambert calibration graphs, reaction coordinate potential energy profiles, Maxwell-Boltzmann kinetic energy distributions, and electrochemical cell schematics.
+- Curriculum Scope:
+  * Unit 1: Atomic Structure & Properties (PES, moles, mass spec, periodic trends, Z_eff, Coulomb's law).
+  * Unit 2: Molecular & Ionic Structure (Lewis resonance, formal charges, VSEPR geometries, bond angles, hybridization sp/sp2/sp3).
+  * Unit 3: Intermolecular Forces & Properties (LDF polarizability, dipole-dipole, H-bonding, ideal gas laws PV=nRT, Dalton's partial pressures, deviations from ideality, Beer-Lambert Law A = ebc).
+  * Unit 4: Chemical Reactions (net ionic equations, stoichiometry, limiting reactants, titrations, redox balancing).
+  * Unit 5: Kinetics (rate laws from initial rates tables, integrated rate laws, graphical linearity, mechanisms, elementary steps, catalysis, Arrhenius activation energy).
+  * Unit 6: Thermodynamics (calorimetry q=mcDeltaT with 2 sig figs in Delta T, molar enthalpy Delta H_rxn, Hess's Law, bond energies, Delta H\xB0_f).
+  * Unit 7: Equilibrium (Kc, Kp, Q vs K, Le Ch\xE2telier shifts, K_sp solubility product, common ion effect, precipitation Q > K_sp).
+  * Unit 8: Acids & Bases (strong/weak pH, Ka/Kb ICE tables, titration curves, half-equivalence point pH = pKa, buffer solutions, Henderson-Hasselbalch).
+  * Unit 9: Thermodynamics Applications & Electrochemistry (Delta S\xB0 microstates, Delta G\xB0 = Delta H\xB0 - T Delta S\xB0, thermodynamic favorability vs kinetic control, galvanic cells, E\xB0_cell, Faraday's law I=q/t).
+- Distractors: Sophisticated student misconceptions: attributing LDF to molar mass instead of electron cloud polarizability, multiplying E\xB0 by stoichiometric coefficients, failing to omit pure solids from equilibrium expressions, or confusing reaction rate with equilibrium constant.`;
+    } else {
+      return `AP CHEMISTRY SECTION II: FREE RESPONSE (COLLEGE BOARD OFFICIAL 2023\u20132026 STANDARDS - 100% AUTHENTIC REPLICA):
+PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM 2023, 2024, 2025, 2026 OFFICIAL AP EXAM SETS & CHIEF READER REPORTS (KYLE A. BERAN):
+You are the College Board AP Chemistry Chief Reader and Lead Exam Developer. Section II consists of 7 Free-Response Questions lasting 105 minutes (46 Total Points):
+  * Questions 1 to 3: LONG Free-Response Questions (10 Points each, recommended ~23 minutes each, subparts spanning (a) through (f) or (g)).
+  * Questions 4 to 7: SHORT Free-Response Questions (4 Points each, recommended ~9 minutes each, subparts spanning (a) through (c) or (d)).
+
+1. THE 7 CANONICAL COLLEGE BOARD AP CHEMISTRY FRQ ARCHETYPES (ROTATE EVENLY OR ALIGN TO QUESTION NUMBER):
+- QUESTION 1 ARCHETYPE (LONG FRQ, 10 POINTS, ~23 MIN): SOLUTION STOICHIOMETRY, TITRATIONS & BUFFER EQUILIBRIA
+  * Stem: Laboratory investigation involving a weak acid/base titration, gravimetric precipitation, or buffer preparation with experimental data table and/or titration curve.
+  * Sub-parts (a)-(g) [Total: 10 Points]:
+    - Net ionic equation for neutralization or precipitation with correct physical state symbols. [1 pt]
+    - Molarity / mole calculations from volumetric titration data. [1 pt]
+    - Determining pKa and Ka from the half-equivalence point on a titration curve where pH = pKa. [2 pts]
+    - Particulate representation: Drawing/identifying species present in solution at the equivalence point or in a buffer zone (showing conjugate pairs, unreacted species, spectator ions). [2 pts]
+    - Buffer calculation using Henderson-Hasselbalch equation (pH = pKa + log([A-]/[HA])) or calculating pH after adding strong acid/base. [2 pts]
+    - Experimental error analysis: Predicting the effect of an experimental error (e.g. buret rinsed with water, air bubble in tip) on the calculated concentration. [2 pts]
+
+- QUESTION 2 ARCHETYPE (LONG FRQ, 10 POINTS, ~23 MIN): CHEMICAL KINETICS, INTEGRATED RATE LAWS & REACTION MECHANISMS
+  * Stem: Kinetic study of a gas-phase or aqueous decomposition/reaction with an initial rates data table or concentration-time graphical data.
+  * Sub-parts (a)-(f) [Total: 10 Points]:
+    - Determining the order of reaction with respect to each reactant from initial rates data with mathematical justification. [2 pts]
+    - Writing the overall rate law and calculating the numerical value and specific units of the rate constant k (e.g. M^-1 s^-1, s^-1, M^-2 s^-1). [2 pts]
+    - Integrated rate laws: Identifying the reaction order from graphical linearity ([A], ln[A], or 1/[A] vs time) and determining half-life. [2 pts]
+    - Reaction mechanism: Proposing or evaluating a multi-step elementary mechanism, identifying reaction intermediates vs catalysts, and verifying that the slow rate-determining step matches the observed rate law. [2 pts]
+    - Temperature dependence / Catalysis: Maxwell-Boltzmann kinetic energy distribution or reaction energy profile showing activation energy (Ea) reduction in the presence of a catalyst. [2 pts]
+
+- QUESTION 3 ARCHETYPE (LONG FRQ, 10 POINTS, ~23 MIN): THERMODYNAMICS, CALORIMETRY & EQUILIBRIUM SYSTEMS
+  * Stem: Investigation involving constant-pressure coffee-cup calorimetry for a dissolution or reaction, coupled with equilibrium and thermodynamic analysis.
+  * Sub-parts (a)-(g) [Total: 10 Points]:
+    - Heat calculation using q = mc*Delta*T (STRICT REQUIREMENT: Delta*T = T_f - T_i limits significant figures to typically 2 sig figs!). [2 pts]
+    - Molar enthalpy of reaction calculation: Delta*H_rxn = -q / n (in kJ/mol_rxn) with correct algebraic sign (negative for exothermic). [2 pts]
+    - Hess's Law or standard enthalpies of formation calculation: Delta*H\xB0_rxn = sum(Delta*H\xB0_f(prod)) - sum(Delta*H\xB0_f(react)). [2 pts]
+    - Standard entropy change (Delta*S\xB0): Predicting and justifying the sign based on changes in particle microstates and dispersal of matter/energy (NEVER using the word 'disorder'). [1 pt]
+    - Gibbs free energy calculation: Delta*G\xB0 = Delta*H\xB0 - T*Delta*S\xB0 (mandatory unit consistency: converting kJ and J with factor of 1000) and determining the temperature range of thermodynamic favorability. [2 pts]
+    - Equilibrium constant relationship: Delta*G\xB0 = -RT ln K and Le Ch\xE2telier response to temperature changes. [1 pt]
+
+- QUESTION 4 ARCHETYPE (SHORT FRQ, 4 POINTS, ~9 MIN): MOLECULAR STRUCTURE, LEWIS DIAGRAMS & HYBRIDIZATION
+  * Stem: Comparison of two or three covalent molecules or polyatomic ions.
+  * Sub-parts (a)-(c) [Total: 4 Points]:
+    - Drawing complete Lewis electron-dot diagrams including all nonbonding valence electron pairs and resonance contributors. [1 pt]
+    - Formal charge calculation and minimizing formal charges to determine the most significant resonance contributor. [1 pt]
+    - Predicting electron-domain geometry, molecular geometry, and bond angles based on VSEPR theory and lone pair repulsions. [1 pt]
+    - Identifying hybridization (sp, sp2, sp3) of central atoms and assessing net molecular polarity based on dipole vector symmetry/cancellation. [1 pt]
+
+- QUESTION 5 ARCHETYPE (SHORT FRQ, 4 POINTS, ~9 MIN): GAS LAWS, KMT & INTERMOLECULAR FORCES
+  * Stem: Experimental collection of a gas over water or comparison of physical properties of substances.
+  * Sub-parts (a)-(d) [Total: 4 Points]:
+    - Dalton's law of partial pressures: P_total = P_gas + P_H2O and ideal gas law PV = nRT to find moles or molar mass. [1 pt]
+    - Deviations from ideal gas behavior: Explaining why a real gas deviates from ideal behavior at high pressure (finite particle volume) or low temperature (intermolecular attractions). [1 pt]
+    - Comparing intermolecular forces (LDF, dipole-dipole, H-bonding) to explain differences in boiling point, vapor pressure, or enthalpy of vaporization. [1 pt]
+    - MANDATORY POLARIZABILITY RULE: Explaining stronger London dispersion forces strictly in terms of a "larger, more polarizable electron cloud due to more electrons / occupied shells" (NEVER citing molar mass alone). [1 pt]
+
+- QUESTION 6 ARCHETYPE (SHORT FRQ, 4 POINTS, ~9 MIN): ELECTROCHEMISTRY, GALVANIC CELLS & FARADAY'S LAW
+  * Stem: Standard electrochemical galvanic or electrolytic cell setup with reduction potentials table.
+  * Sub-parts (a)-(d) [Total: 4 Points]:
+    - Identifying anode and cathode, writing balanced oxidation and reduction half-reactions, and overall cell reaction. [1 pt]
+    - Calculating standard cell potential E\xB0_cell = E\xB0_cathode - E\xB0_anode (INTENSIVE PROPERTY: never multiply E\xB0 by stoichiometric coefficients!). [1 pt]
+    - Direction of electron flow in external wire and ion migration through the salt bridge (cations migrate toward the cathode, anions migrate toward the anode). [1 pt]
+    - Faraday's Law electrolysis stoichiometry (I = q/t, q = nF) OR qualitative Nernst effect: explaining how non-standard concentrations (Q < 1 or Q > 1) shift cell voltage. [1 pt]
+
+- QUESTION 7 ARCHETYPE (SHORT FRQ, 4 POINTS, ~9 MIN): SOLUBILITY EQUILIBRIA (K_sp) OR SPECTROPHOTOMETRY & PES
+  * Stem: Saturated solution of a sparingly soluble salt or spectrophotometric Beer-Lambert Law investigation.
+  * Sub-parts (a)-(c) [Total: 4 Points]:
+    - Writing the K_sp equilibrium expression (pure solids strictly omitted from the denominator!). [1 pt]
+    - Calculating molar solubility from K_sp or calculating K_sp from experimental solubility data. [1 pt]
+    - Common ion effect or precipitation prediction: Calculating reaction quotient Q and comparing to K_sp (precipitation occurs only if Q > K_sp). [1 pt]
+    - Spectrophotometry / PES alternative: Beer-Lambert Law calculation (A = epsilon * b * c) or Photoelectron Spectroscopy (PES) peak analysis. [1 pt]
+
+2. STRICT CHIEF READER SCORING MANDATES & AVOIDANCE OF FATAL TRAPS (KYLE A. BERAN):
+1. SIGNIFICANT FIGURES IN CALORIMETRY: When calculating Delta*T = T_f - T_i, subtraction limits sig figs (e.g. 22.38 - 22.00 = 0.38\xB0C -> exactly 2 sig figs). Final q and Delta*H must be rounded to 2 sig figs (e.g., 160 J or 0.16 kJ). Readers strictly enforce this!
+2. COULOMB'S LAW: Explanations of lattice energy, ionization energy, or ionic attraction MUST explicitly cite BOTH ionic charge and internuclear separation distance (r). Citing only radius without charge loses points!
+3. ENTROPY: Disallow "disorder" or "chaos". College Board readers mandate "dispersal of energy and matter" or "increase in the number of accessible microstates".
+4. INTERMOLECULAR FORCES (LDF): Citing molar mass alone earns 0 points! Students must cite "larger, more polarizable electron cloud due to greater number of electrons / occupied shells".
+5. HYDROGEN BONDING CRITERIA: A hydrogen bond requires an H atom covalently bonded to a small, highly electronegative atom (N, O, F) attracted to a lone pair on an adjacent N, O, F. (C-H ... O does not count).
+6. CELL POTENTIAL IS INTENSIVE: E\xB0 values are never multiplied by stoichiometric coefficients. For electrode mass changes, students must compare both mole ratios from half-reactions and the molar masses of the metals.
+7. EQUILIBRIUM & K_sp: Pure solids (s) and liquids (l) NEVER appear in equilibrium expressions. Precipitation occurs only if Q > K_sp.
+
+3. MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+- PASS 1 (Chemical & Mathematical Pre-Solving): Before outputting, internally solve every subpart. Verify that chemical equations are atom- and charge-balanced, all Kelvin temperatures are strictly positive, enthalpy of neutralization is exothermic (-), Delta*G\xB0 and Delta*H\xB0/Delta*S\xB0 calculations use consistent units (kJ vs J), and equilibrium concentrations are physically positive.
+- PASS 2 (Rubric Consistency): Verify point breakdown: exactly 10 points for Q1\u2013Q3 (Point 01 to Point 10 labeled), exactly 4 points for Q4\u2013Q7 (Point 01 to Point 04 labeled). Subparts match prompt labels exactly.
+- SELF-HEALING: If ANY unbalanced equation, impossible temperature, or arithmetic mismatch is detected, immediately discard and regenerate or heal the question before outputting.
+
+4. CRITICAL ANTI-PLAGIARISM & ORIGINALITY DIRECTIVE:
+- NEVER copy verbatim questions, numbers, or exact scenarios from the released 2023\u20132026 AP exam PDFs (do NOT reuse exact molar masses, concentrations, or reaction setups).
+- Use the official exam materials strictly as structural and pedagogical blueprints to invent 100% fresh, authentic, solvable chemistry scenarios.`;
     }
   }
   if (s.includes("calculus bc")) {
     if (questionType === "objective") {
-      return `AP CALCULUS BC EXAM SPECIFICATIONS (College Board CED):
-- Coverage: Full AB curriculum PLUS BC-exclusive topics: Parametric equations, vector motion in 2D (velocity/acceleration vectors, speed = sqrt((x')^2 + (y')^2)), polar functions (polar area = (1/2)*integral(r^2 dTheta)), integration by parts, partial fractions, improper integrals, Euler's method, logistic differential equations (dP/dt = kP(1 - P/M)), and Infinite Series.
-- Infinite Series focus: Geometric series, Taylor/Maclaurin polynomial approximations, nth-term divergence, Ratio test for radius & interval of convergence, Alternating Series Test.
-- Distractors must represent classic student misconceptions: omitting chain rule in parametric derivatives, sign errors in integration by parts, forgetting to check endpoints in interval of convergence.
-- Format all math expressions cleanly using LaTeX ($...$).`;
+      return `AP CALCULUS BC EXAM SPECIFICATIONS (College Board CED Units 1-10):
+- Coverage: Full AB curriculum (Units 1-8) PLUS BC-exclusive topics:
+  * Unit 9: Parametric equations, vector motion in 2D (velocity/acceleration vectors, speed = sqrt((x')^2 + (y')^2), total distance = int_a^b sqrt((x')^2 + (y')^2) dt), polar functions (polar area = (1/2)*int_alpha^beta r(theta)^2 dtheta).
+  * Unit 6/7 BC Topics: Integration by parts, partial fractions decomposition, improper integrals, Euler's method numerical approximation (Delta x steps), logistic differential equations (dP/dt = kP(1 - P/M), carrying capacity M, fastest growth at M/2).
+  * Unit 10: Infinite Sequences & Series: Geometric series (a/(1-r)), nth-term divergence test, Integral test, p-series, Comparison & Limit Comparison tests, Alternating Series Test & Error Bound (|S - S_N| <= a_{N+1}), Ratio Test for radius and interval of convergence (ALWAYS test endpoints separately), Taylor & Maclaurin polynomials, Lagrange Error Bound.
+- Mathematical Exactness: Format all math expressions cleanly in LaTeX ($...$). Distractors must represent legitimate BC student traps: forgetting endpoint convergence checks, sign flips in integration by parts, omitting the (1/2) in polar area.`;
     } else {
-      return `AP CALCULUS BC FREE RESPONSE STANDARDS (College Board CED):
-- Format: Real 9-POINT multi-part questions with sub-parts (a), (b), (c), (d).
-- Priority Archetypes:
-  1. Infinite Series (Taylor/Maclaurin series, finding general term, computing radius/interval of convergence using Ratio Test, Alternating Series Error Bound or Lagrange Error Bound).
-  2. Parametric / Polar Motion (position vector, velocity, total distance traveled / arc length integral, polar area enclosed between curves).
-  3. Logistic Differential Equations & Euler's Method step-by-step approximation.
-  4. Area & Volume of solids of revolution (disk/washer/cross sections) or Rate In / Rate Out Accumulation.
-- Total Points MUST be 9 points. Rubric must award partial points step-by-step (+1 pt for setup/derivative, +1 pt for antiderivative, +1 pt for justification/units).`;
+      return `AP CALCULUS BC SECTION II: FREE RESPONSE (COLLEGE BOARD OFFICIAL 2023\u20132026 STANDARDS - 100% AUTHENTIC REPLICA):
+PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM 2023, 2024, 2025, 2026 OFFICIAL AP EXAM SETS & CHIEF READER REPORTS (SHARON TAYLOR):
+You are the College Board AP Calculus BC Chief Reader and Lead Exam Developer. Section II consists of 6 Free-Response Questions lasting 90 minutes (15 minutes per question):
+  * Part A: Questions 1 & 2 (30 minutes, Graphing Calculator REQUIRED in RADIAN mode).
+  * Part B: Questions 3 to 6 (60 minutes, NO Calculator permitted).
+Every single Free Response Question MUST consist of subparts labeled (a), (b), (c), and (d) and MUST have "totalPoints": 9. Exactly 9 points per FRQ.
+
+1. THE 6 CANONICAL COLLEGE BOARD BC FRQ ARCHETYPES (ROTATE EVENLY OR ALIGN TO QUESTION NUMBER):
+- QUESTION 1 ARCHETYPE (Part A, Calculator Active): RATE IN / RATE OUT ACCUMULATION & NON-UNIFORM TABULAR MODELING
+  * Stem: Contextual real-world rate model (fluid dynamics, thermal transfer, population arrival/migration, or chemical reaction) presented either as a non-uniform data table or an analytical rate function.
+  * Sub-part (a) [2 Points: P1, P2]: Average rate of change using difference quotient [f(b) - f(a)] / (b - a) with mandatory physical units (e.g. gal/sec^2, words/min^2, \xB0C/min), OR Average Value Formula: (1 / (b - a)) * int_a^b f(t) dt.
+  * Sub-part (b) [2 Points: P3, P4]: Definite integral approximation using Riemann sums (Left, Right, Midpoint, or Trapezoidal with non-uniform intervals). Meaning of integral interpretation in context: "integral gives the net change / total accumulation of [quantity] from t=a to t=b [units]".
+  * Sub-part (c) [2 Points: P5, P6]: Symbolic limit expression describing end-behavior (e.g. lim_{t->inf} C'(t) = 0), OR finding time t where instantaneous rate equals average rate via calculator solver.
+  * Sub-part (d) [3 Points: P7, P8, P9]: Optimization / Net Accumulation Function A(t) = C(t) - int_a^t rate(x) dx: finding absolute maximum/minimum on closed interval [a, b]. MANDATORY CANDIDATES TEST TABLE evaluating endpoints and all critical points.
+
+- QUESTION 2 ARCHETYPE (Part A, Calculator Active): BC POLAR CURVES & AREA OR 2D PARAMETRIC VECTOR MOTION
+  * Sub-option 2A: POLAR CURVES r(theta) (BC Exclusive Signature):
+    - Sub-part (a) [1 Point: P1]: Rate of change dr/dtheta at theta = theta_0 with calculator numerical derivative.
+    - Sub-part (b) [3 Points: P2, P3, P4]: Polar area bounded between two curves: Area = (1/2) * int_alpha^beta (r_1(theta)^2 - r_2(theta)^2) dtheta. (Note: Must square each r individually; (r1 - r2)^2 is strictly incorrect). Limits alpha and beta found via calculator solver.
+    - Sub-part (c) [3 Points: P5, P6, P7]: Extreme distance from y-axis (x = r*cos(theta), solve dx/dtheta = 0) or from x-axis (y = r*sin(theta), solve dy/dtheta = 0) with global Candidates Test justification.
+    - Sub-part (d) [2 Points: P8, P9]: Rate of change of distance from origin with respect to time: dr/dt = (dr/dtheta) * (dtheta/dt).
+  * Sub-option 2B: 2D PARAMETRIC VECTOR MOTION (BC Exclusive):
+    - Position <x(t), y(t)>, velocity vector <x'(t), y'(t)>, acceleration vector <x''(t), y''(t)>.
+    - Speed at t = t_0: ||v(t_0)|| = sqrt((x'(t_0))^2 + (y'(t_0))^2).
+    - Slope of tangent line: dy/dx = y'(t) / x'(t).
+    - Position from initial condition: x(t) = x(t_0) + int_{t_0}^t x'(u) du.
+    - Total distance traveled (arc length): int_a^b sqrt((x'(t))^2 + (y'(t))^2) dt.
+
+- QUESTION 3 ARCHETYPE (Part B, No Calculator): CONTEXTUAL DIFFERENTIAL EQUATIONS & SLOPE FIELDS
+  * Stem: Real-world contextual differential equation dy/dt = (1/k)(A - y) * g(t) with initial condition (t_0, y_0).
+  * Sub-part (a) [2 Points: P1, P2]: Slope field verification / sketch of solution curve passing through (t_0, y_0) respecting asymptotes.
+  * Sub-part (b) [2 Points: P3, P4]: Tangent line equation y = y_0 + m(t - t_0) to approximate solution at nearby value t_1.
+  * Sub-part (c) [2 Points: P5, P6]: Determining overestimate vs underestimate using second derivative d^2y/dt^2 via implicit differentiation and chain rule. If d^2y/dt^2 > 0 -> concave up -> tangent line lies below curve -> UNDERESTIMATE. If d^2y/dt^2 < 0 -> concave down -> OVERESTIMATE.
+  * Sub-part (d) [3 Points: P7, P8, P9]: Separation of Variables: int dy/h(y) = int g(t) dt. Must separate variables (+1), find antiderivatives (+1), incorporate constant of integration C with initial condition and solve explicitly for y (+1).
+
+- QUESTION 4 ARCHETYPE (Part B, No Calculator): GRAPHICAL ANALYSIS OF f' & ACCUMULATION FUNCTION g(x) = int_c^x f(t) dt
+  * Stem: Continuous function f defined on closed interval [-a, b]. The graph of f' consists of geometric semicircles and straight line segments.
+  * Sub-part (a) [2 Points: P1, P2]: Evaluating g'(x) = f(x) and specific derivative value using Fundamental Theorem of Calculus (FTC Part 1).
+  * Sub-part (b) [2 Points: P3, P4]: Points of inflection of g: locations where f' changes from increasing to decreasing (or vice versa), or f' attains relative extrema. Reason must be tied directly to graph of f'.
+  * Sub-part (c) [2 Points: P5, P6]: Geometric evaluation of g(x) using triangle, trapezoid, and semicircle areas ((1/2)*pi*r^2), correctly handling sign and limit reversal: int_c^0 f(t) dt = -int_0^c f(t) dt.
+  * Sub-part (d) [3 Points: P7, P8, P9]: Absolute minimum / maximum on closed interval using CANDIDATES TEST. Must evaluate critical points where f(x) = 0 AND endpoints.
+
+- QUESTION 5 ARCHETYPE (Part B, No Calculator): ADVANCED BC CALCULUS (EULER'S METHOD / IMPROPER INTEGRALS / PARTS)
+  * Sub-part (a) [2 Points: P1, P2]: Higher-order implicit derivative d^2y/dx^2 at point (x_0, y_0) using product and chain rules.
+  * Sub-part (b) [2 Points: P3, P4]: Second-degree Taylor polynomial for f about center x = c.
+  * Sub-part (c) [2 Points: P5, P6]: Lagrange Error Bound: Bounding remainder |f(x) - P_n(x)| <= [max |f^{(n+1)}(t)| / (n+1)!] * |x - c|^{n+1}. CRITICAL RULE: Inequality MUST use '<=' (writing '=' or '<' forfeits point).
+  * Sub-part (d) [3 Points: P7, P8, P9]: Euler's Method: Approximating f(x_2) starting at (x_0, y_0) with 2 steps of equal size Delta x. Table of steps (x, y, dy/dx, Delta y) with explicit numerical substitution, OR Improper Integrals int_a^inf g(x) dx = lim_{b->inf} int_a^b g(x) dx.
+
+- QUESTION 6 ARCHETYPE (Part B, No Calculator): THE SIGNATURE BC INFINITE SERIES & TAYLOR POLYNOMIALS
+  * Stem: Given Taylor/Maclaurin series sum_{n=1}^inf a_n (x - c)^n or function with derivatives of all orders.
+  * Sub-part (a) [4-5 Points: P1, P2, P3, P4, P5]: Ratio Test for Interval of Convergence:
+    - Set up ratio lim_{n->inf} |a_{n+1} / a_n| (+1 pt).
+    - Evaluate limit of ratio in terms of |x - c| (+1 pt).
+    - Interior interval of convergence (c - R, c + R) (+1 pt).
+    - Consider BOTH endpoints individually (+1 pt).
+    - Rigorous endpoint analysis (using Alternating Series Test, p-series, or Limit Comparison Test to harmonic series) and final interval (+1 pt).
+  * Sub-part (b) [2 Points: P6, P7]: Term-by-term differentiation or integration to find first 3-4 nonzero terms and general term of f'(x) or int f(x) dx.
+  * Sub-part (c) [1-2 Points: P8]: Geometric series verification: Identify first term a and common ratio r, verify sum S = a / (1 - r) on interval of convergence.
+  * Sub-part (d) [1 Point: P9]: Alternating Series Error Bound: |f(x) - P_n(x)| <= |a_{n+1}| (magnitude of first omitted term), or convergence testing at outside point.
+
+2. STRICT CHIEF READER SCORING PRINCIPLES & FATAL TRAPS (ENFORCE IN RUBRICS):
+- THE CANDIDATES TEST MANDATE: To earn the justification point for absolute extrema on a closed interval [a, b], students MUST evaluate the function at ALL critical points AND both endpoints in a table. A local First Derivative Test alone earns 0 justification points.
+- "DIFFERENTIABLE IMPLIES CONTINUOUS": When using IVT or EVT, students must explicitly write "Because f is differentiable, f is continuous". Stating only that f is continuous without justification loses the hypothesis point.
+- 3-DECIMAL PRECISION RULE: In calculator-active questions, final numerical answers must be accurate to at least 3 decimal places (rounded or truncated, e.g. 2.778 or 2.777).
+- NO ARITHMETIC WITH INFINITY: Writing expressions like '38 / (25 + inf^2) = 0' is treated as informal scratch work and loses credit. Students must write proper limit notation lim_{t->inf}.
+- NO SIMPLIFICATION REQUIRED: Answers like (100 - 90)/2 or (1/4)(11.112896) earn full credit without simplification.
+- SPEED INCREASING/DECREASING: Speed increases if velocity and acceleration have the SAME sign; decreases if OPPOSITE signs. Mentioning acceleration alone earns 0 points.
+- POLAR AREA FACTOR: Must include 1/2 factor and square each radius individually: (1/2)*int (r_1^2 - r_2^2) dtheta.
+
+3. CRITICAL ANTI-PLAGIARISM & ORIGINALITY DIRECTIVE:
+- Under NO circumstances copy verbatim functions, characters, or numbers from released exam PDFs (do NOT reuse 7.6arctan(0.2t), coffee cooling, milk warming, or reading rate table verbatim).
+- Use them strictly as pedagogical blueprints to invent 100% fresh, solvable, mathematically elegant scenarios.
+
+4. MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+- PASS 1 (Analytical Pre-Solving): Before finalizing any question, internally solve every subpart. Verify that all integrals yield clean real values, critical points lie strictly within the designated domain, Euler's method steps do not divide by zero, and series ratio tests produce valid non-zero radii.
+- PASS 2 (Rubric Consistency): Verify that total points = exactly 9 points (P1 to P9 labeled), all subparts (a)-(d) have corresponding model answers and scoring breakdown, and no impossible physical data exists.
+- SELF-HEALING: If ANY calculation error, sign mistake, asymptote within interval, or unsolvable equation is detected, immediately discard and regenerate or heal the question before outputting.`;
     }
   }
   if (s.includes("calculus ab") || s.includes("calculus")) {
     if (questionType === "objective") {
-      return `AP CALCULUS AB EXAM SPECIFICATIONS (College Board CED):
-- Coverage: Limits & Continuity (including L'Hopital's Rule), Derivatives (Chain rule, Product/Quotient rule, Implicit differentiation), Mean Value Theorem, Particle Motion in 1D (position, velocity, acceleration, speed increasing/decreasing), Definite & Indefinite Integrals, Fundamental Theorem of Calculus, Riemann Sums, Differential Equations (separable).
-- Distractors must reflect real student math traps: forgetting chain rule factors, arithmetic sign slips, forgetting '+ C', confusing velocity with acceleration.
-- Format all equations cleanly in LaTeX ($...$).`;
+      return `AP CALCULUS AB EXAM SPECIFICATIONS (College Board CED Units 1-8 STRICTLY):
+- STRICT CURRICULUM BOUNDARY: Under NO circumstances include Calculus BC topics!
+  * FORBIDDEN: NO Infinite Series, NO Sequences, NO Ratio Test, NO Alternating Series, NO Taylor/Maclaurin series.
+  * FORBIDDEN: NO Euler's Method, NO Logistic Differential Equations (dP/dt = kP(1-P/M)).
+  * FORBIDDEN: NO Integration by Parts, NO Partial Fractions, NO Parametric/Polar curves.
+- Permitted Coverage:
+  * Unit 1: Limits & Continuity (evaluating limits algebraically, one-sided limits, vertical/horizontal asymptotes, IVT).
+  * Unit 2 & 3: Differentiation Fundamentals & Composite/Implicit (power, product, quotient, chain rule, implicit differentiation dy/dx, derivatives of exp/log/trig/inverse trig).
+  * Unit 4 & 5: Contextual & Analytical Applications (related rates, straight-line 1D particle motion [s(t), v(t), a(t), speed], MVT, EVT, First/Second Derivative Tests, concavity, optimization).
+  * Unit 6: Integration and Accumulation (Riemann sums [left, right, midpoint, trapezoidal], FTC Part 1 & 2, u-substitution, net change).
+  * Unit 7: Differential Equations (slope fields, separable differential equations dy/dx = g(x)h(y), exponential growth/decay dy/dt = ky).
+  * Unit 8: Applications of Integration (average value of a function, area between curves, volume of solids of revolution [disk/washer method], volume with known cross-sections).
+- Format all equations cleanly in LaTeX ($...$). Distractors must represent real student misconceptions (omitting chain rule factor, forgetting '+ C', confusing velocity with acceleration).`;
     } else {
-      return `AP CALCULUS AB FREE RESPONSE STANDARDS (College Board CED):
-- Format: Real 9-POINT multi-part questions with sub-parts (a), (b), (c), (d).
-- Classic AP FRQ Archetypes:
-  1. Rate In / Rate Out Accumulation: Net change integral formula integral(R_in(t) - R_out(t))dt, checking critical times.
-  2. Particle Motion: Analyzing velocity v(t), determining when speed is increasing/decreasing, total distance traveled integral(|v(t)|dt).
-  3. Graph Analysis of f'(x): Identifying relative extrema, points of inflection, justifying with First/Second Derivative Test, EVT.
-  4. Area & Volume: Area between two curves, volume of solid of revolution (disk/washer), volume with known cross sections (squares/semicircles).
-  5. Differential Equations: Slope fields, separation of variables to find particular solution y = f(x) with initial condition.
-  6. Riemann Sums & Tables: Estimating definite integrals using Trapezoidal rule or Left/Right sums with physical units.
-- Total Points MUST be 9 points. Rubric must assign exact points per sub-part.`;
+      return `AP CALCULUS AB SECTION II: FREE RESPONSE (College Board 2023-2026 Official CED Standards - 9 Points per FRQ):
+- Exam Architecture: Section II consists of 6 Free-Response Questions lasting 90 minutes (54 total points):
+  * Part A: Questions 1 & 2 (30 minutes, Graphing Calculator REQUIRED in RADIAN mode).
+  * Part B: Questions 3 to 6 (60 minutes, NO Calculator permitted).
+- Scoring Scale: Every single FRQ is worth EXACTLY 9 Points (P1 through P9), broken into 3 to 4 subparts: (a), (b), (c), (d).
+
+1. THE 6 CANONICAL COLLEGE BOARD FRQ ARCHETYPES (ROTATE EVENLY ACROSS SESSIONS):
+- ARCHETYPE 1 (Part A, Calculator Active): RATE IN / RATE OUT ACCUMULATION & TABULAR FUNCTIONS
+  * Real-World Context: Fluid flow, thermal cooling/heating, population migration, or vehicle arrival rates.
+  * Sub-part 1: Average rate of change over [a, b] using difference quotient with physical units (e.g. gal/sec^2).
+  * Sub-part 2: Approximating definite integral using Riemann sums (Right, Left, Midpoint, or Trapezoidal) with table data. Meaning of integral: "gives the net change in [quantity] from t=a to t=b [units]".
+  * Sub-part 3: Applying Mean Value Theorem (MVT) or IVT: MUST verify prerequisite ("f is differentiable on (a, b) implies f is continuous on [a, b]").
+  * Sub-part 4: Average value formula: (1/(b - a)) * int_a^b f(t) dt or finding instantaneous rate equal to average rate.
+- ARCHETYPE 2 (Part A, Calculator Active): RECTILINEAR PARTICLE MOTION OR AREA & KNOWN CROSS-SECTIONS
+  * Motion Subparts:
+    - Direction change: Must establish v(t) = 0 AND velocity changes sign (not just v(t) = 0).
+    - Speeding up vs Slowing down: Must evaluate signs of BOTH velocity v(t) AND acceleration a(t) = v'(t). If same sign -> speeding up; opposite signs -> slowing down.
+    - Total Distance: int_a^b |v(t)| dt vs Displacement: int_a^b v(t) dt.
+  * Area/Volume Subparts:
+    - Area: int_a^b (top - bottom) dx.
+    - Known Cross-Section: Volume = int_a^b Area(x) dx (Rectangles b*h, Squares s^2, Semicircles (pi/8)s^2).
+    - Revolution: pi * int_a^b (R(x)^2 - r(x)^2) dx about horizontal line y = k.
+- ARCHETYPE 3 (Part B, No Calculator): DIFFERENTIAL EQUATIONS & SLOPE FIELDS
+  * Sub-part 1: Slope field sketch passing through initial point (x_0, y_0) respecting asymptotes.
+  * Sub-part 2: Tangent line equation y = y_0 + m(x - x_0) to approximate value at x_1.
+  * Sub-part 3: Determining overestimate vs underestimate using second derivative d^2y/dx^2 via chain rule. If d^2y/dx^2 > 0 -> concave up -> tangent line lies below curve -> UNDERESTIMATE.
+  * Sub-part 4: Separation of Variables (4 Points): int dy/h(y) = int g(x) dx. Must separate variables (+1), find antiderivatives (+1), incorporate constant of integration C with initial condition (+1), and solve explicitly for y (+1).
+- ARCHETYPE 4 (Part B, No Calculator): GRAPHICAL ANALYSIS OF f' & ACCUMULATION FUNCTION g(x) = int_a^x f'(t) dt
+  * Given graph of f'(x) consisting of line segments and semicircles on closed interval [a, b].
+  * Sub-part 1: Evaluating g'(x) = f'(x) using Fundamental Theorem of Calculus (FTC Part 1).
+  * Sub-part 2: Points of inflection of g: locations where f' changes from increasing to decreasing (or vice versa), or f' attains relative extrema.
+  * Sub-part 3: Geometric evaluation of g(x) using triangle/trapezoid/semicircle areas with sign respect.
+  * Sub-part 4: Absolute minimum / maximum on [a, b] using CANDIDATES TEST (Must evaluate critical points where f'(x) = 0 AND endpoints x = a, x = b).
+- ARCHETYPE 5 (Part B, No Calculator): FUNCTIONS FROM A TABLE & DIFFERENTIATION RULES
+  * Table of twice-differentiable functions f(x), f'(x), g(x), g'(x).
+  * Sub-part 1: Chain Rule: h'(x) = f'(g(x)) * g'(x) evaluated at table value.
+  * Sub-part 2: Product/Quotient Rule with second derivative concavity: k''(x) sign analysis.
+  * Sub-part 3: Fundamental Theorem of Calculus: int_0^a f'(3x) dx = (1/3)(f(3a) - f(0)).
+  * Sub-part 4: IVT / MVT existence justification with continuous/differentiable preconditions.
+- ARCHETYPE 6 (Part B, No Calculator): IMPLICIT DIFFERENTIATION & RELATED RATES
+  * Curve defined implicitly: F(x, y) = C.
+  * Sub-part 1: Show that dy/dx = N(x, y) / D(x, y) using product rule on xy and chain rule on y^n.
+  * Sub-part 2: Horizontal tangent (N(x, y) = 0) vs Vertical tangent (D(x, y) = 0), verifying point lies on curve.
+  * Sub-part 3: Tangent line approximation at given point.
+  * Sub-part 4: Related Rates: Differentiating with respect to time t to find dy/dt given dx/dt.
+
+2. STRICT ANTI-HALLUCINATION & MATHEMATICAL SOLVABILITY LOCKS:
+- ZERO PDF COPYING / ZERO REPETITION: Do NOT copy functions or exact numbers from the 2023-2026 PDF exams (do NOT reuse Stephen swimming, milk bottle warming, or coffee cup). Invent 100% fresh, authentic scenarios.
+- NO ASYMPTOTES IN INTERVALS: Never define an integral on [a, b] where the integrand has a vertical asymptote or division by zero inside the interval.
+- CANDIDATES TEST MANDATE: Global extrema on a closed interval MUST use a candidates test table evaluating both critical points and endpoints. A local First Derivative Test alone is insufficient for global extrema.
+- CLEAN 3-DECIMAL ACCURACY: In calculator-active questions, all numerical answers must be accurate to at least 3 decimal places (rounded or truncated).
+- STRICT 9-POINT RUBRIC: 'totalPoints' must be exactly 9. Scoring rubric must provide 9 distinct points (P1 to P9) with specific scoring notes explaining point-award conditions and common student misconceptions.
+
+3. MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+Before outputting any Calculus AB FRQ, execute an internal solver verification:
+- Pass 1: Solve the problem step-by-step. Verify that derivatives, integrals, and limits are analytically correct.
+- Pass 2: Check that curves intersect at the claimed bounds. Check that Candidate Test table values match the function. Check that separation of variables produces an algebraically valid solution.
+- Self-Healing: If ANY calculation error, sign mistake, or unsolvable equation is detected, immediately correct and re-solve the question before returning the final JSON.`;
     }
   }
   if (s.includes("biology")) {
@@ -5071,11 +6675,77 @@ function getCollegeBoardSubjectGuidelines(subject, questionType) {
 - Historical Thinking Skills: Contextualization, causation, continuity and change over time (CCOT), comparison.
 - Distractors: Factually true statements from a DIFFERENT historical era or claims that mischaracterize the author's argument.`;
     } else {
-      return `AP U.S. HISTORY (APUSH) FREE RESPONSE STANDARDS (College Board CED):
-- Formats:
-  1. DBQ (Document-Based Question, 7-Point Rubric): Provide 7 distinct historical source documents (Author, Source, Year, Excerpt). Rubric: Thesis (1 pt), Contextualization (1 pt), Evidence from 3+ docs (1 pt) or 6+ docs (2 pts), Outside Evidence (1 pt), Sourcing/HIPP analysis (1 pt), Historical Complexity (1 pt).
-  2. LEQ (Long Essay Question, 6-Point Rubric): Historical prompt testing Causation, CCOT, or Comparison without documents.
-  3. SAQ (Short Answer Question): 3 parts (a), (b), (c) strictly requiring the ACE format (Answer, Cite specific evidence, Explain connection).`;
+      return `AP U.S. HISTORY (APUSH) SHORT-ANSWER QUESTION (SAQ) EXAM STANDARDS (COLLEGE BOARD SECTION I, PART B - 100% REPLICA):
+PEDAGOGICAL INTELLIGENCE DERIVED FROM OFFICIAL EXAM SETS (2023, 2025, 2026):
+You are the College Board AP U.S. History Chief Reader and Test Developer. Every Short-Answer Question (SAQ) you generate MUST strictly follow this exact real-exam blueprint:
+
+1. MANDATORY 3-PART ANATOMY (PARTS A, B, AND C) & EXACT 3 POINTS:
+- Every single SAQ MUST consist of EXACTLY 3 distinct sub-questions labeled:
+  A. [Sub-question]
+  B. [Sub-question]
+  C. [Sub-question]
+- Outputting fewer than 3 parts or more than 3 parts is STRICTLY FORBIDDEN.
+- TOTAL POINTS: EXACTLY 3 POINTS (Each part A, B, and C is worth exactly 1 point: +1 pt per part).
+
+2. THE 3 OFFICIAL COLLEGE BOARD APUSH QUESTION ARCHETYPES:
+- QUESTION TYPE 1 (PAIRED SECONDARY SOURCES - TWO HISTORIANS - COMPULSORY Q1 STYLE):
+  * Features TWO conflicting historical interpretations of a major development (e.g. New Deal, Reconstruction, Revolution, Cold War origins, Jeffersonian democracy).
+  * Excerpts MUST include: Source: [Historian Name], historian, [Book Title], published in [Year].
+  * Formulated with strict College Board prompt structure:
+    "Using the excerpts, respond to parts A, B, and C."
+    - A. Briefly describe one major difference between [Historian 1]'s and [Historian 2]'s historical interpretations of [topic].
+    - B. Briefly explain how one specific event or development from [Year A to Year B] NOT explicitly mentioned in the excerpts could be used to support [Historian 1]'s argument.
+    - C. Briefly explain how one specific event or development from [Year A to Year B] NOT explicitly mentioned in the excerpts could be used to support [Historian 2]'s argument.
+- QUESTION TYPE 2 (SINGLE PRIMARY SOURCE - HISTORICAL TEXT OR POLITICAL CARTOON - COMPULSORY Q2 STYLE):
+  * Rooted in ONE authentic primary source excerpt (e.g. speech by political leader, muckraker critique, women's rights pamphlet, court ruling, presidential address, or indigenous leader speech).
+  * Excerpts MUST include: Source: [Author Name], [Title / Context], [Year].
+  * Formulated with HAPP / Sourcing analysis:
+    "Using the excerpt, respond to parts A, B, and C."
+    - A. Briefly describe the author's point of view, purpose, or intended audience as expressed in the excerpt.
+    - B. Briefly explain how one specific historical development between [Year A] and [Year B] contributed to the ideas expressed in the excerpt.
+    - C. Briefly explain how ideas such as those reflected in the excerpt resulted in one specific effect between [Year B] and [Year C].
+- QUESTION TYPE 3 (NO STIMULUS - HISTORICAL REASONING & COMPARISON - Q3/Q4 STYLE):
+  * Non-stimulus prompt testing historical reasoning (Comparison, Causation, or Continuity and Change over Time [CCOT]) across periods.
+  * Formulated with comparative regional or group analysis:
+    "Respond to parts A, B, and C."
+    - A. Briefly describe one way that [factor/movement] influenced [debates/migration/reforms] from [Year A] to [Year B].
+    - B. Briefly explain one similarity in how [factor] influenced the development of two regions/groups in the United States from [Year A] to [Year B].
+    - C. Briefly explain one difference in how [factor] influenced the development of two regions/groups in the United States from [Year A] to [Year B].
+
+3. STRATIFIED DISTRIBUTION BY SESSION QUESTION COUNT:
+When generating a batch of questions, assign archetypes based on total requested question count:
+- IF COUNT == 3 (Official Exam Simulation Set):
+  * Question 1 = Type 1 (Paired Historians)
+  * Question 2 = Type 2 (Single Primary Source)
+  * Question 3 = Type 3 (No Stimulus Comparative Reasoning)
+- IF COUNT == 5 (Practice Bank):
+  * Questions 1 & 2 = Type 1 (Paired Historians)
+  * Questions 3 & 4 = Type 2 (Single Primary Source)
+  * Question 5 = Type 3 (No Stimulus)
+- IF COUNT == 10 (Marathon Bank):
+  * Questions 1, 2, 3 = Type 1 (Paired Historians)
+  * Questions 4, 5, 6 = Type 2 (Single Primary Source)
+  * Questions 7, 8, 9, 10 = Type 3 (No Stimulus)
+- IF COUNT == 15 (Mega Practice Bank):
+  * Questions 1 to 5 = Type 1 (Paired Historians across diverse periods)
+  * Questions 6 to 10 = Type 2 (Single Primary Source across diverse periods)
+  * Questions 11 to 15 = Type 3 (No Stimulus Comparative Drills)
+
+4. UNIT SCOPE & SYLLABUS INTEGRATION:
+- If a specific APUSH Period (Period 1 to Period 9) is selected, ALL questions in the session MUST be strictly anchored to that chosen historical era!
+- If Full Units / All Periods is selected, questions MUST be evenly distributed across Periods 1 to 9 (Colonial 1491-1754, Revolutionary 1754-1800, Early Republic 1800-1848, Civil War/Reconstruction 1844-1877, Gilded Age 1865-1898, Progressive/WWI/WWII 1890-1945, Cold War/Civil Rights 1945-1980, Modern 1980-Present).
+
+5. THE UNIVERSAL SAQ SCORING STANDARD: THE ACE METHOD:
+In "modelAnswer", every part (A, B, C) MUST be written in explicit, exemplary ACE format:
+- A (Answer): Direct, historically defensible 1-sentence answer to the prompt.
+- C (Cite): Specific historical proper noun evidence (e.g. *Wagner Act, Compromise of 1850, Proclamation of 1763, Interstate Commerce Act, Marshall Plan*).
+- E (Explain): 1-2 sentences explaining HOW/WHY this specific evidence directly proves the claim.
+- In "scoringRubric", provide a strict 3-item array:
+  ["Part A [1 point]: 1 pt for identifying/describing core difference/point of view", "Part B [1 point]: 1 pt for outside historical evidence with valid explanation", "Part C [1 point]: 1 pt for outside historical evidence with valid explanation"].
+
+6. COPYRIGHT & ORIGINALITY SAFEGUARD:
+- DO NOT copy verbatim excerpts, historian passages, or questions from official College Board PDFs.
+- Invent original, realistic historical excerpts, simulated historian debates, and authentic primary source texts.`;
     }
   }
   if (s.includes("world history")) {
@@ -5134,11 +6804,631 @@ function getCollegeBoardSubjectGuidelines(subject, questionType) {
 - Rubric: Explicit points for graph labeling, curve shift directions, and numerical calculations.`;
     }
   }
+  if (s.includes("biology") || s.includes("bio")) {
+    if (questionType === "objective") {
+      return `AP BIOLOGY EXAM SPECIFICATIONS (College Board CED):
+- Target Audience: High School Biology Students taking the official AP Biology Exam.
+- Stimulus-Based: Ground questions in experimental setups, data tables, biological diagrams, metabolic pathways, gel electrophoresis, or phylogenetic trees across Units 1\u20138.
+- Scientific Practices: Concept explanation, visual representations, questions & methods, representing & describing data, statistical tests (Chi-square, standard error of the mean \xB12 SE_x), argumentation.
+- Content: Chemistry of Life, Cell Structure & Function, Cellular Energetics (photosynthesis, cellular respiration, enzymes), Cell Communication & Cell Cycle, Heredity & Meiosis, Gene Expression & Regulation, Natural Selection & Evolution, Ecology.
+- Distractors: Common biological misconceptions (e.g. confusing allosteric with competitive inhibition, confusing natural selection with individual adaptation, misinterpreting overlapping error bars).`;
+    } else {
+      return `AP BIOLOGY FREE RESPONSE EXAM STANDARDS (COLLEGE BOARD SECTION II - 100% AUTHENTIC REPLICA):
+PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL EXAM SETS (2023, 2024, 2025, 2026) & CHIEF READER REPORTS (JAY MAGER, AMY DOLING):
+Section II consists of 6 Free-Response Questions (90 Minutes, 34 Points Total). Every single question you generate MUST strictly follow this official College Board CED blueprint:
+
+1. MANDATORY SECTION II STRUCTURE & POINT ALLOCATION:
+- Exactly 6 Free Response Questions (90 Minutes, 34 Points Total).
+- Questions 1 & 2 (LONG FREE-RESPONSE QUESTIONS): Exactly 9 points each (~25 minutes each).
+- Questions 3 to 6 (SHORT FREE-RESPONSE QUESTIONS): Exactly 4 points each (~10 minutes each).
+
+2. THE 6 CANONICAL COLLEGE BOARD AP BIOLOGY ARCHETYPES:
+- QUESTION 1 (Long FRQ, 9 Points, ~25 Min) \u2014 Interpreting and Evaluating Experimental Results:
+  * Scenario: Real-world biological experiment with an experimental setup, data table, and biochemical/physiological scenario.
+  * Subparts:
+    - Part (a) [1 pt]: Identify/describe the biological process or cellular component (e.g. enzyme function, transport across membrane, cellular respiration pathway).
+    - Part (b) [3 pts]:
+      \u2022 b1 [1 pt]: Identify the dependent variable.
+      \u2022 b2 [1 pt]: Justify the inclusion of the negative or positive control group (must explain the specific variable being isolated, NOT vague "to see what is normal").
+      \u2022 b3 [1 pt]: Describe the experimental trend or quantitative relationship across experimental groups.
+    - Part (c) [3 pts]:
+      \u2022 c1 [1 pt]: Identify the independent variable.
+      \u2022 c2 [1 pt]: Identify a specific experimental group or condition.
+      \u2022 c3 [1 pt]: Perform a quantitative calculation (e.g. nucleotide-to-amino acid ratio where nucleotides divided by 3 = amino acids, rate of reaction change, or percentage difference).
+    - Part (d) [2 pts]:
+      \u2022 d1 [1 pt]: Predict the effect of an environmental perturbation, chemical inhibitor, or genetic mutation on the system.
+      \u2022 d2 [1 pt]: Justify the prediction using biological principles, negative/positive feedback, or biochemical pathways.
+
+- QUESTION 2 (Long FRQ, 9 Points, ~25 Min) \u2014 Interpreting and Evaluating Experimental Results with Graphing:
+  * Scenario: Quantitative investigation containing sample mean data and standard error of the mean (\xB12 SE_x) with graphing and statistical significance analysis.
+  * Subparts:
+    - Part (a) [1 pt]: Describe a fundamental chemical or biological property (e.g. polarity, hydrogen bonding, phospholipid bilayer permeability).
+    - Part (b) [4 pts]:
+      \u2022 b1 [1 pt]: Select appropriate graph type (bar graph for discrete categories, line graph for continuous time/concentration).
+      \u2022 b2 [1 pt]: Plot points or construct bars with accurate standard error bars (\xB12 SE_x).
+      \u2022 b3 [1 pt]: Label axes with proper variable names and units, using uniform, linear scales.
+      \u2022 b4 [1 pt]: Interpret data or determine rate of change from the graph.
+    - Part (c) [2 pts]:
+      \u2022 c1 [1 pt]: Identify a specific quantitative threshold (e.g. concentration producing >50% response) from the plotted data.
+      \u2022 c2 [1 pt]: Predict physiological or cellular outcome if the pathway is disrupted.
+    - Part (d) [2 pts]:
+      \u2022 d1 [1 pt]: Support or refute a scientific claim using statistical significance based on whether the \xB12 SE_x error bars overlap or do not overlap (overlapping = no statistically significant difference).
+      \u2022 d2 [1 pt]: Explain an agricultural, ecological, or evolutionary implication of the experimental findings.
+
+- QUESTION 3 (Short FRQ, 4 Points, ~10 Min) \u2014 Scientific Investigation:
+  * Scenario: Field ecology, cellular biology, or physiological investigation testing a scientific question.
+  * Subparts:
+    - Part (a) [1 pt]: Describe an ecological role, trophic cascade, keystone species interaction, or cellular mechanism.
+    - Part (b) [1 pt]: Identify the negative control group and explain why it is essential to establish baseline data.
+    - Part (c) [1 pt]: State the null hypothesis for the investigation (MUST strictly assert that the independent variable has NO effect or that there is NO difference between treatment groups).
+    - Part (d) [1 pt]: Justify a directional experimental modification or predict result if control conditions are altered.
+
+- QUESTION 4 (Short FRQ, 4 Points, ~10 Min) \u2014 Conceptual Analysis:
+  * Scenario: Evolutionary biology, genetics, or cellular communication scenario without full data tables.
+  * Subparts:
+    - Part (a) [1 pt]: State genetic evidence of evolution (MUST be defined as a change in allele or gene frequencies in a population over time).
+    - Part (b) [1 pt]: Explain the mechanism of speciation or adaptation (e.g. geographic isolation preventing gene flow leading to allopatric speciation and accumulation of reproductive barriers).
+    - Part (c) [1 pt]: Predict the effect of altered selective pressures, resource availability, or gene dosage.
+    - Part (d) [1 pt]: Justify the prediction connecting molecular/genetic mechanism to organismal/population phenotype.
+
+- QUESTION 5 (Short FRQ, 4 Points, ~10 Min) \u2014 Analyze Model or Visual Representation:
+  * Scenario: Visual model or diagram of a biochemical cascade, organelle structure, or enzyme kinetics.
+  * Subparts:
+    - Part (a) [1 pt]: Describe a molecular interaction or structural feature (e.g. enzyme active site shape and charge complementarity with substrate).
+    - Part (b) [1 pt]: Explain a regulatory mechanism (e.g. allosteric noncompetitive inhibitor binding to an allosteric site inducing a conformational change that reduces substrate affinity).
+    - Part (c) [1 pt]: Identify an intermediate, receptor, or organelle from the visual model.
+    - Part (d) [1 pt]: Predict and explain the consequence of denaturation or mutation (e.g. extreme pH or temperature disrupting hydrogen/ionic bonds in tertiary structure).
+
+- QUESTION 6 (Short FRQ, 4 Points, ~10 Min) \u2014 Analyze Data:
+  * Scenario: Quantitative data presentation (gel electrophoresis, qPCR expression, flow cytometry, or box plot).
+  * Subparts:
+    - Part (a) [1 pt]: Identify a baseline, median, or specific molecular marker from the data/figure.
+    - Part (b) [1 pt]: Describe differences between experimental groups or identify phenotypic patterns from gel bands/expression levels.
+    - Part (c) [1 pt]: Synthesize data across two figures or conditions to support or evaluate a scientific claim.
+    - Part (d) [1 pt]: Explain the molecular or genetic mechanism linking the observed molecular data to the organism's phenotype or disease state.
+
+3. STRICT CHIEF READER SCORING MANDATES & AVOIDANCE OF FATAL TRAPS:
+1. NULL HYPOTHESIS RULE: Writing an alternative hypothesis or directional prediction earns 0 points! The null hypothesis MUST state: "The [independent variable] has NO effect on [dependent variable]" or "There is NO difference in [dependent variable] between [groups]".
+2. CONTROL GROUP JUSTIFICATION: Vague answers like "to see what is normal" or "to compare results" earn 0 points! The student must explicitly state what variable is being held constant to isolate the treatment effect.
+3. ERROR BAR OVERLAP RULE (\xB12 SE_x): If error bars overlap, there is NO statistically significant difference between the means. Citing numerical differences when error bars overlap loses the point!
+4. GENETIC DEFINITION OF EVOLUTION: Answering with "animals adapt" or "traits change" earns 0 points! The student MUST specify: "a change in allele (or gene) frequencies in a population over time (or generations)".
+5. CODON TRANSLATION MATH: Each amino acid corresponds to 3 nucleotides. Dividing nucleotides by 3 yields amino acids.
+6. ALLOSTERIC VS COMPETITIVE INHIBITION: An inhibitor binding to a site other than the active site causing a conformational change is an ALLOSTERIC / NONCOMPETITIVE inhibitor, NEVER competitive.
+7. COMMAND VERBS: "Describe" = state features/patterns; "Explain" = provide mechanism (cause -> molecular link -> effect); "Justify" = cite biological principles or evidence to support claim.
+
+4. MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+- PASS 1 (Biological & Mathematical Pre-Solving):
+  * Check null hypothesis syntax (no effect / no difference).
+  * Check codon translation math (nucleotides divisible by 3).
+  * Check that standard error bars (\xB12 SE_x) are non-negative and mathematically plausible.
+  * Check that allele frequencies p and q satisfy 0 <= p, q <= 1 and p + q = 1.
+- PASS 2 (Rubric Consistency):
+  * For Q1 & Q2: Exactly 9 points labeled Part (a) [1 pt], Part (b) [3 pts: b1, b2, b3], Part (c) [3 pts: c1, c2, c3], Part (d) [2 pts: d1, d2].
+  * For Q3\u2013Q6: Exactly 4 points labeled Part (a) [1 pt], Part (b) [1 pt], Part (c) [1 pt], Part (d) [1 pt].
+- SELF-HEALING:
+  * If ANY scientific inaccuracy, contradictory error bar, or rubric mismatch is detected, immediately heal or regenerate before outputting.
+
+5. ZERO VERBATIM COPYING / ANTI-PLAGIARISM DIRECTIVE:
+- NEVER copy verbatim scenarios, organisms, numbers, or questions from released 2023\u20132026 AP exam PDFs.
+- Use released exams strictly as architectural blueprints to generate 100% original, scientifically accurate, and solvable scenarios.`;
+    }
+  }
+  if (s.includes("physics 1") || s.includes("phys")) {
+    if (questionType === "objective") {
+      return `AP PHYSICS 1: ALGEBRA-BASED EXAM SPECIFICATIONS (College Board CED):
+- Target Audience: High School Physics students taking the official AP Physics 1 Exam.
+- Exam Structure: 40 Multiple-Choice Questions (80 Minutes, 2 minutes per question).
+- Units Covered (Units 1\u20138):
+  1. Kinematics (1D/2D motion, projectile trajectories, velocity-time graph slopes and areas).
+  2. Force and Translational Dynamics (Newton's 1st/2nd/3rd laws, free-body diagrams, static/kinetic friction, circular motion).
+  3. Work, Energy, and Power (Conservation of mechanical energy, work-energy theorem, spring potential energy, power).
+  4. Linear Momentum (Impulse-momentum theorem, elastic/inelastic collisions, center of mass velocity, internal vs external forces).
+  5. Torque and Rotational Dynamics (Rotational equilibrium, Newton's 2nd law in rotational form tau = I*alpha, angular momentum).
+  6. Energy and Momentum of Rotating Systems (Rolling without slipping, rotational kinetic energy K = (1/2)I*omega^2).
+  7. Oscillations (Simple harmonic motion, mass-spring systems T = 2*pi*sqrt(m/k), simple pendulums T = 2*pi*sqrt(L/g)).
+  8. Fluids (Density rho = m/V, buoyant force F_b = rho*V*g, Archimedes principle, continuity equation A1*v1 = A2*v2, Bernoulli's equation).
+- Distractors: Classic physics misconceptions (confusing mass with weight, confusing velocity with acceleration, misinterpreting Newton's 3rd law action-reaction pairs, treating normal force as always equal to mg on inclines).`;
+    } else {
+      return `AP PHYSICS 1 FREE RESPONSE EXAM STANDARDS (COLLEGE BOARD SECTION II - 100% AUTHENTIC 2025/2026 REVAMP):
+PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL EXAM SETS (2023, 2024, 2025, 2026) & CHIEF READER REPORTS (BRIAN UTTER, UC MERCED - 174,992 STUDENTS):
+Section II consists of EXACTLY 4 Free-Response Questions (1 Hour 40 Minutes = 100 Minutes Total, 40 Points Total). Every single question you generate MUST strictly follow this official 2025/2026 College Board CED blueprint:
+
+1. MANDATORY SECTION II STRUCTURE & POINT ALLOCATION (EXACTLY 4 QUESTIONS \u2022 40 POINTS \u2022 100 MINUTES):
+- Question 1 (MATHEMATICAL ROUTINES - MR): Exactly 10 points (~25 minutes).
+- Question 2 (TRANSLATION BETWEEN REPRESENTATIONS - TBR): Exactly 12 points (~25-30 minutes).
+- Question 3 (EXPERIMENTAL DESIGN AND ANALYSIS - LAB): Exactly 10 points (~25-30 minutes).
+- Question 4 (QUALITATIVE/QUANTITATIVE TRANSLATION - QQT): Exactly 8 points (~20 minutes).
+
+2. THE 4 CANONICAL COLLEGE BOARD AP PHYSICS 1 ARCHETYPES:
+- QUESTION 1 (10 Points, ~25 Min) \u2014 Mathematical Routines (MR):
+  * Topics: Kinematics, Linear Momentum & Collisions, or Fluids.
+  * Anatomy:
+    - Part A (i) [2 pts]: Graph sketching of physical components (e.g. horizontal velocity v_x as a nonzero horizontal line and vertical velocity v_y as a line with constant negative slope crossing horizontal axis; OR momentum p_x as a continuous horizontal line across all time intervals).
+    - Part A (ii) [2 pts]: Multi-step derivation for velocity/speed (e.g. exit speed v = sqrt(2gh_1)/sin(theta_0) or post-collision speed v_f = (5/6)v_c) starting strictly from fundamental laws (p_i = p_f or kinematics/energy).
+    - Part A (iii) [3 pts]: Multi-step derivation of secondary quantity (e.g. volume flow rate V/t = A*v = pi*r_0^2 * v or change in kinetic energy Delta K = K_f - K_i = -(1/12)m_c*v_c^2) with correct mass/geometry substitutions.
+    - Part B [3 pts]: Qualitative claim (e.g. h_2 > h_1 or momentum 'Remains constant') with thorough qualitative justification linking physical causes (e.g. smaller radius -> smaller area -> greater speed from continuity -> greater vertical height; OR frictional contact forces are internal to system -> net external force is zero -> momentum conserved).
+
+- QUESTION 2 (12 Points, ~25-30 Min) \u2014 Translation Between Representations (TBR):
+  * Topics: Mechanical Energy Conservation, Incline Dynamics & Springs, or Collisions with Position-Time Graphs.
+  * Anatomy:
+    - Part A [3 pts]: Energy bar chart (LOL diagram) completion. Sum of bar heights in every single state MUST strictly equal the declared total mechanical energy (e.g. 12*E_0). Single bar for pure potential energy at release (12*E_0), split bars for intermediate positions.
+    - Part B [4 pts]: Multi-step derivation of physical parameter (e.g. spring constant k = (3/2)*(Mg*sin(theta)/D)) starting with E_i = E_f, with accurate geometric substitution for incline height Delta y = 12D*sin(theta) and spring compression Delta x = 4D (recognizing (4D)^2 = 16D^2).
+    - Part C [3 pts]: Multi-curve graphing on coordinate grid:
+      \u2022 Sketching total mechanical energy E as a horizontal continuous line at 12*E_0.
+      \u2022 Sketching gravitational potential energy U_g as a straight decreasing line starting at (8D, 4E_0) and reaching 0 at 12D.
+    - Part D [2 pts]: Speed comparison claim (e.g. v_9D > v_8D) with justification consistent with the sketched graph curves (showing U_g + U_s is lower at 9D, leaving higher kinetic energy K).
+
+- QUESTION 3 (10 Points, ~25-30 Min) \u2014 Experimental Design and Analysis (LAB):
+  * Topics: Torque & Meterstick Balance, Photogate & Incline Friction, or Harmonic Motion with Limited Equipment.
+  * Anatomy:
+    - Part A [2 pts]: Experimental procedure to determine unknown physical quantity (mass m_0 or friction coefficient mu_k) using only specified apparatus (meterstick, spring scale, photogate). Must include explicit steps to reduce experimental uncertainty (repeated trials across multiple distinct positions).
+    - Part B [2 pts]: Equation linearization analysis. Indicate quantities to plot on vertical and horizontal axes such that the slope yields the unknown quantity, and explicitly state how the slope is mathematically related to the unknown.
+    - Part C [4 pts]: Coordinate grid plotting and graphing:
+      \u2022 Part C (i) [1 pt]: Label vertical axis with proper physical quantity.
+      \u2022 Part C (ii) [2 pts]: Label axis with uniform linear numerical scale AND matching units (e.g. F_T (N) or v^2 (m^2/s^2)), and plot data points accurately.
+      \u2022 Part C (iii) [1 pt]: Draw a single, smooth straight line of best fit representing the trend (NEVER connect-the-dots).
+    - Part D [2 pts]: Calculate experimental value of target quantity using the slope of the drawn best-fit line (must pick two coordinates ON the line, NOT raw table points) and solve for the unknown within realistic experimental range.
+
+- QUESTION 4 (8 Points, ~20 Min) \u2014 Qualitative/Quantitative Translation (QQT):
+  * Topics: Fluids (Buoyancy & Fluid Density) or Rotational Dynamics (Rotational Inertia & Torque).
+  * Anatomy:
+    - Part A [3 pts]: Qualitative physical comparison (e.g. a_1 < a_2 or omega_Y > omega_X) with qualitative justification referencing ALL forces or torques without mathematical equations (e.g. identical downward weight mg, larger buoyant force in denser fluid, thus greater net upward force and greater acceleration).
+    - Part B [3 pts]: Mathematical derivation starting from Newton's Second Law in translational form (Sigma F = ma -> F_b - mg = ma -> a = (rho*V*g)/m - g) or rotational form (tau = I*alpha -> F_0*r_0 = I*alpha -> omega = sqrt(2F_0*ell_0 / I)) for the acceleration or angular speed.
+    - Part C [2 pts]: Consistency evaluation bridging Part B's derived equation to Part A's claim, explicitly utilizing functional dependence terminology ('directly proportional', 'numerator', 'inversely related') to prove consistency.
+
+3. STRICT CHIEF READER SCORING MANDATES & AVOIDANCE OF FATAL TRAPS (BRIAN UTTER REPORT):
+1. FIRST PRINCIPLES MANDATE: Every derivation MUST explicitly begin with an equation from the reference sheet (p_i = p_f, Sigma F = ma, E_i = E_f, tau = I*alpha). Starting with substituted numbers or intermediate expressions forfeits the first point!
+2. INTERNAL VS EXTERNAL FORCES: Frictional contact force between colliding bodies (block sliding on cart) is an INTERNAL force. Because net external force is zero, total momentum strictly remains constant. Saying friction decreases total system momentum loses all justification points!
+3. INCLINE HEIGHT GEOMETRY: Height change on an incline of length D and angle theta is Delta y = D*sin(theta). Forgetting sin(theta) causes derivation point loss.
+4. ALGEBRAIC SQUARING INTEGRITY: (4D)^2 = 16D^2, NOT 4D^2.
+5. GRAPH AXES REQUIRE BOTH NAME AND UNIT: Writing only 'Force' or only 'N' loses credit; both are required (e.g. 'Force (N)' or 'F_T (N)').
+6. BEST-FIT LINE CALCULATION: Slopes MUST be calculated from two points ON the best-fit line, NOT from raw data points in the table. Never draw connect-the-dots lines.
+7. FLUID VARIABLE NOTATION: Greek letter rho (density) must NEVER be confused with p (momentum/pressure). Buoyant acceleration must account for both buoyant force AND weight: a = (rho*V*g - mg)/m.
+8. QQT FUNCTIONAL DEPENDENCE: Part C must explicitly use functional dependence terminology ('directly proportional', 'in the numerator', 'as rho increases, a increases') to link Part B derivation to Part A claim.
+
+4. MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+- PASS 1 (Physics & Conservation Law Pre-Solving):
+  * Verify mechanical energy conservation in LOL charts (sum of bars = 12*E_0 in all states).
+  * Verify linear momentum conservation in collisions with zero net external force.
+  * Verify non-negative kinetic energy and real-valued speeds (no imaginary roots).
+  * Verify linear slope is physically realistic (0 < mu_k < 1.0).
+- PASS 2 (Rubric Consistency & Point Parity):
+  * For Q1 (MR): Exactly 10 points (A(i): 2, A(ii): 2, A(iii): 3, B: 3).
+  * For Q2 (TBR): Exactly 12 points (A: 3, B: 4, C: 3, D: 2).
+  * For Q3 (LAB): Exactly 10 points (A: 2, B: 2, C: 4, D: 2).
+  * For Q4 (QQT): Exactly 8 points (A: 3, B: 3, C: 2).
+- SELF-HEALING:
+  * If ANY physical impossibility, broken conservation law, or rubric point mismatch is detected, immediately heal or regenerate before outputting.
+
+5. ZERO VERBATIM COPYING / ANTI-PLAGIARISM DIRECTIVE:
+- NEVER copy verbatim scenarios, numbers, or questions from released 2023\u20132026 AP Physics 1 exam PDFs.
+- Use released exams strictly as architectural blueprints to generate 100% original, scientifically accurate, and solvable scenarios.`;
+    }
+  }
+  if (s.includes("macro") || s.includes("economics") || s.includes("econ")) {
+    if (questionType === "objective") {
+      return `AP MACROECONOMICS EXAM SPECIFICATIONS (College Board CED Units 1-6):
+- Target Level: Grade 11-12 College-Level Introductory Macroeconomics. Rigorous analytical reasoning, model interpretation, and policy mechanism tracing across Units 1\u20136.
+- Curriculum Scope:
+  * Unit 1: Basic Economic Concepts (Scarcity, Opportunity Cost, Production Possibilities Curve [PPC], Comparative Advantage and Terms of Trade, Marginal Analysis).
+  * Unit 2: Economic Indicators and the Business Cycle (Circular Flow, Real vs Nominal GDP, GDP Deflator, Unemployment categories [Frictional, Structural, Cyclical, Natural Rate], CPI and Inflation, Costs of Inflation).
+  * Unit 3: National Income and Price Determination (Aggregate Demand [AD] components, Multipliers [Spending Multiplier = 1/(1-MPC), Tax Multiplier = -MPC/(1-MPC)], Short-Run Aggregate Supply [SRAS], Long-Run Aggregate Supply [LRAS], Macroeconomic Equilibrium, Output Gaps [Recessionary vs Inflationary], Long-Run Self-Adjustment, Automatic Stabilizers).
+  * Unit 4: Financial Sector (Financial Assets [Money, Bonds, Stocks], Nominal vs Real Interest Rates [Fisher Equation], Banking and Money Creation, Money Market [Limited Reserves], Loanable Funds Market, Central Bank Tools [Ample Reserves Framework: Administered Rates / Interest on Reserves vs Limited Reserves: OMO, Discount Rate, Reserve Ratio]).
+  * Unit 5: Long-Run Consequences of Stabilization Policies (Fiscal and Monetary Policy interactions, Government Deficits and National Debt, Crowding Out, Phillips Curve [Short-Run SRPC vs Long-Run LRPC], Money Growth and Inflation [Quantity Theory MV=PY], Economic Growth and Productivity).
+  * Unit 6: Open Economy - International Trade and Finance (Balance of Payments [Current Account CA + Capital and Financial Account CFA = 0], Foreign Exchange [Forex] Market, Exchange Rate determinants, Net Exports and Capital Inflows).
+- Distractors: Sophisticated student traps identified in Chief Reader reports (e.g. confusing administered rates with open market operations in ample reserves, inverting Forex currency fractions, miscalculating multiplier effects by multiplying rather than dividing by multiplier, or confusing movements along Phillips curve with shifts).
+- MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+  1. Formula and Math Check: Verify all calculations (GDP Deflator, CPI, Unemployment rates, Multipliers) yield clean whole integers or standard halves/tenths.
+  2. Economic Model Integrity: Ensure 100% CED theoretical consistency (e.g. higher real interest rate -> increased foreign capital inflow -> currency appreciates -> net exports decrease).
+  3. Single Unambiguous Key Check: Ensure exactly ONE option is unequivocally correct according to College Board definitions.
+  4. Self-Healing: If any numerical contradiction or economic inconsistency is found during self-check, regenerate immediately.`;
+    } else {
+      return `AP MACROECONOMICS FREE RESPONSE EXAM STANDARDS (COLLEGE BOARD SECTION II - 100% AUTHENTIC REPLICA):
+PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL 2023, 2024, 2025, 2026 AP EXAM SETS & CHIEF READER REPORTS (SAM ANDOH, SOUTHERN CONNECTICUT STATE UNIVERSITY - 176,938 STUDENTS):
+You are the College Board AP Macroeconomics Chief Reader and Lead Exam Developer. Section II consists of 3 Free-Response Questions (1 Hour Total: 10 minutes reading/planning + 50 minutes writing; 20 Points Total).
+Every question generated MUST strictly conform to this official College Board CED blueprint:
+
+1. THE 3 OFFICIAL CANONICAL AP MACRO QUESTION ARCHETYPES & POINT PARITY:
+- QUESTION 1: LONG FREE-RESPONSE QUESTION [EXACTLY 10 POINTS] (~25 Minutes):
+  * Themes: Comprehensive Macroeconomic Equilibrium, Policy Shocks, Graphical Cascades, and Global Open Economy Linkages.
+  * Anatomy & 10-Point Distribution (Points 1 through 10):
+    - Initial State & Baseline Graph (Points 1 & 2): State initial equilibrium (Recessionary Gap, Inflationary Gap, or Long-Run Equilibrium).
+      \u2022 Part (a) [2 pts]: Draw a correctly labeled graph of either:
+        (1) Aggregate Demand, Short-Run Aggregate Supply, and Long-Run Aggregate Supply (AD, SRAS, LRAS) with equilibrium real output and price level labeled Y1 and PL1, and full-employment output labeled YF; OR
+        (2) Short-Run and Long-Run Phillips Curves (SRPC, LRPC) with current short-run equilibrium labeled point X and natural unemployment plotted.
+    - Long-Run Self-Adjustment OR Policy Shock (Points 3 & 4):
+      \u2022 Part (b) [2 pts]: (i) Explain how the economy adjusts in the long run (wages/input prices adjust, shifting SRAS or SRPC) OR analyze the short-run effect of a fiscal/private investment shock on real output. (ii) On the graph in part (a), show the new short-run equilibrium labeled PL2 or point S/Z.
+    - Financial / Loanable Funds Market Link (Points 5 & 6):
+      \u2022 Part (c) / (d) [2 pts]: Draw a correctly labeled graph of the Loanable Funds Market (Real interest rate r vs Quantity of loanable funds Q) showing the effect of government borrowing / budget deficit or savings changes on the equilibrium real interest rate.
+    - Open Economy, Forex & Balance of Payments Link (Points 7 to 10):
+      \u2022 Part (d) / (e) / (f) [4 pts]:
+        - Flow of international financial capital into/out of the economy based solely on the real interest rate differential with economic explanation (foreign investors seek higher returns).
+        - Correctly labeled graph of the Foreign Exchange (Forex) market for the currency (Vertical axis MUST be labeled as a fraction, e.g. RHM/VTC or USD/ZAR, and show shift in Demand or Supply with directional arrows).
+        - Effect on the international value of the currency (Appreciation or Depreciation).
+        - Effect on Net Exports and short-run Employment.
+        - Mandatory Balance of Payments Identity: State whether Capital and Financial Account (CFA) balance moves into surplus/deficit and explain that the Current Account (CA) moved into deficit/surplus and balance of payments must balance (CA + CFA = 0).
+
+- QUESTION 2: SHORT FREE-RESPONSE QUESTION [EXACTLY 5 POINTS] (~12.5 Minutes):
+  * Themes: Monetary Policy Tools & Banking Mechanics (Ample Reserves vs Limited Reserves Framework), Reserve Market Graph, and Financial Assets.
+  * Anatomy & 5-Point Distribution (Points 1 through 5):
+    - Policy Identification (Points 1 & 2):
+      \u2022 Prompt explicitly states whether the banking system has "AMPLE RESERVES" or "LIMITED RESERVES".
+      \u2022 If AMPLE RESERVES: Central bank tool is strictly **decreasing or increasing administered interest rates (Interest on Reserve Balances / IORB)**. Open market operations of buying/selling bonds do NOT shift the policy rate in ample reserves!
+      \u2022 If LIMITED RESERVES: Central bank tool is **Open Market Operations (Buying or Selling government bonds)**, Discount Rate, or Reserve Ratio.
+    - The Reserve Market or Money Market Graph (Points 3 & 4):
+      \u2022 If Ample Reserves, draw a correctly labeled graph of the Reserve Market (Vertical axis = Policy Rate, Horizontal axis = Quantity of Reserves). Show downward-sloping demand curve that becomes a horizontal floor in the range of ample reserves, vertical supply curve SR, and show shift in administered rates resulting in a change in the policy rate.
+      \u2022 If Limited Reserves, draw the Money Market graph (Vertical axis = Nominal Interest Rate, Horizontal axis = Quantity of Money, vertical MS curve shifted right or left, downward-sloping MD).
+    - Asset Price & Macroeconomic Ripple Effect (Point 5):
+      \u2022 State effect of policy rate on price of previously issued bonds (inverse relationship: higher interest rate -> bond prices decrease).
+      \u2022 Explain effect on price level or real output through interest-sensitive spending (consumption, investment, or net exports) affecting aggregate demand.
+
+- QUESTION 3: SHORT FREE-RESPONSE QUESTION [EXACTLY 5 POINTS] (~12.5 Minutes):
+  * Themes: Macroeconomic Data Tables, Multipliers, Output Gaps & Automatic Stabilizers.
+  * Anatomy & 5-Point Distribution (Points 1 through 5):
+    - Data Analysis from Table (Points 1 & 2):
+      \u2022 Table provides 2-3 goods, prices, and quantities across Year 1 (base year) and Year 2.
+      \u2022 Point 1 [1 pt]: Real vs Nominal GDP comparison in base year with explanation (Real GDP = Nominal GDP in base year because no price level changes have occurred, and real values always equal nominal values in base year).
+      \u2022 Point 2 [1 pt]: Calculate Real GDP in Year 2 with explicit numerical work: Real GDP = sum of (Base Year Price * Current Year Quantity).
+    - Multiplier & Output Gap Calculation (Points 3 & 4):
+      \u2022 Point 3 [1 pt]: Draw correctly labeled AD-AS graph showing short-run equilibrium relative to potential GDP (YF), indicating recessionary or inflationary gap.
+      \u2022 Point 4 [1 pt]: Given MPC (e.g. 0.75, 0.8, 0.9), calculate minimum change and state direction of change in government spending required to close the output gap in the short run:
+        Spending Multiplier = 1 / (1 - MPC). Minimum Change = Output Gap / Spending Multiplier. (Must show formula setup and work!).
+    - Automatic Stabilizers / Economic Policy (Point 5):
+      \u2022 Point 5 [1 pt]: Explain how automatic stabilizers (e.g. progressive income taxes or transfer payments) reduce the effect of the output fluctuation in the short run without discretionary action.
+
+2. STRICT COMMAND VERBS & THE "EXPLAIN" STANDARD (CHIEF READER SAM ANDOH STANDARD):
+- "Identify" / "State": 1 concise sentence asserting the specific economic outcome or policy tool.
+- "Calculate ... Show your work": MUST include formula setup with substituted numbers and final answer with correct units/currency (e.g. "Decrease of $100 million" or "Increase of $150 million").
+- "Draw a correctly labeled graph":
+  * Both axes explicitly labeled (e.g. Price Level and Real GDP; Inflation Rate (%) and Unemployment Rate (%)).
+  * All curves clearly labeled (AD, SRAS, LRAS; SRPC, LRPC; SR, DR; SLF, DLF).
+  * Equilibrium points and dotted lines to axes (Y1, PL1; point X; r1, Q1; PR1, Q1).
+  * Directional arrows or clear labels indicating curve shifts or movements along curves.
+- "Explain": FULL TRANSMISSION CHAIN MANDATE:
+  * Stating an assertion alone ("Output will increase") when asked to "Explain" EARNS 0 POINTS!
+  * Every explanation MUST trace the complete causal mechanism:
+    - Example for Interest Rate: [Policy Action] -> [Cost of Borrowing / Interest Rate] -> [Interest-sensitive Investment & Consumption] -> [Aggregate Demand shift] -> [Price level / Real GDP outcome].
+    - Example for Forex/CFA: [Higher Real Interest Rate] -> [Foreign investors seek higher returns] -> [Increased financial capital inflow] -> [CFA moves into surplus / Demand for currency increases -> Appreciation].
+
+3. EXAM SIMULATION VS PRACTICE MODE STRUCTURE:
+- EXAM SIMULATION MODE:
+  * Exactly 3 Questions (The Authentic Triad):
+    - Question 1: Long FRQ (10 Points)
+    - Question 2: Short FRQ - Monetary Policy & Banking (5 Points)
+    - Question 3: Short FRQ - Data Tables & Multipliers (5 Points)
+    - Total = Exactly 20 Points.
+- PRACTICE BANK MODE (5, 10, or 15 QUESTIONS):
+  * When student selects 5, 10, or 15 questions, cycle across the 3 canonical archetypes in repeating, mixed sequences:
+    - For 5 Questions: Question 1 (Long, 10 pts) -> Question 2 (Short Ample, 5 pts) -> Question 3 (Short Data, 5 pts) -> Question 4 (Long Phillips/Forex, 10 pts) -> Question 5 (Short Limited Reserves, 5 pts).
+    - For 10 Questions: 3 full cycles of the 3 canonical archetypes with diverse macro shocks (Recessionary, Inflationary, Stagflation, Open Economy) + 1 comprehensive capstone question.
+    - For 15 Questions: 5 full cycles rotating across all Units 1-6 with diverse real-world macro shocks.
+
+4. MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING QUALITY GATE:
+Before outputting any question, execute this internal quality audit:
+- AUDIT 1 (Math & Solvability Verification):
+  * Unemployment math: Actual Rate = Natural Rate + Cyclical Rate. Numbers must add up cleanly.
+  * Multiplier calculation: Verify MPC + MPS = 1 and Output Gap / Multiplier produces clean integers (no messy irrational decimals).
+  * Tables: Base year Real GDP must equal Nominal GDP.
+- AUDIT 2 (Ample vs Limited Reserves Policy Guardrail):
+  * If prompt states "The banking system has ample reserves", the correct policy action CANNOT be buying/selling bonds! It MUST be changing administered interest rates or interest on reserves (IOR).
+  * If prompt states "limited reserves", OMO bond purchases/sales apply.
+- AUDIT 3 (Balance of Payments & Forex Verification):
+  * Verify the balance of payments identity CA + CFA = 0.
+  * In Forex graph, verify vertical axis is written as a currency fraction (e.g. Currency A / Currency B).
+- AUDIT 4 (Zero Verbatim Copying / Anti-Plagiarism Directive):
+  * NEVER copy fictitious countries (Vanderlandia, Noralandia, Zeta, Northland, Maltrose, Vortania, Barrikos, Jenland, Middleland, Micanapy, Foxhound, Lizland) or exact numbers verbatim from released exams.
+  * Invent 100% fresh, original nations (e.g., Aveloria, Valdoria, Oakhaven, Solaria, Zephyria, Mirandis, Kaeland) with authentic, original macroeconomic scenarios.
+- SELF-HEALING: If ANY mathematical contradiction, policy mismatch, or rubric flaw is detected during self-audit, immediately heal or regenerate the question before delivering JSON.`;
+    }
+  }
+  if (s.includes("english") || s.includes("lang")) {
+    if (questionType === "objective") {
+      return `AP ENGLISH LANGUAGE & COMPOSITION EXAM SPECIFICATIONS (College Board CED Units 1-9):
+- Target Level: Grade 11 AP Track (Advanced Rhetorical Analysis & Critical Writing).
+- Exam Structure: 45 MCQs, 60 minutes (~80 seconds per question).
+- Section I Breakdown:
+  * Reading Questions (23\u201325 Questions): 3\u20134 non-fiction prose passages (memoirs, speeches, journalistic essays, scientific/philosophical treatises).
+    - Rhetorical Analysis: Identify authorial purpose, rhetorical situation (speaker, audience, exigence), main claim, and underlying assumptions.
+    - Argumentative Reasoning: Evaluate the author's line of reasoning, warrants, grounds, and structural transitions.
+    - Rhetorical Devices & Style: Analyze the function of diction, syntax, tone shifts, juxtaposition, antithesis, parallelism, and figurative analogies.
+  * Writing Questions (20\u201322 Questions): 3\u20134 draft student essays/passages.
+    - Revising for Rhetorical Effectiveness: Choose the best sentence to introduce a paragraph, select the most defensible thesis revision, or enhance sentence variety.
+    - Cohesion & Transitions: Choose optimal transitional words or phrases (e.g. furthermore, consequently, nevertheless, in contrast) to link claims logically.
+    - Evidence Integration: Select the most effective and relevant evidence to substantiate a specific claim, or embed quoted material smoothly with signal phrases.
+- Distractors: Common AP student traps identified in Chief Reader reports (e.g. confusing the author's voice with a cited opposing argument, mistaking tone for mood, selecting overly broad or indefensible thesis revisions, or choosing grammatically correct but rhetorically weak revisions).
+- MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING QUALITY GATE:
+  1. Passage Rigor: Non-fiction passages must possess genuine rhetorical depth, sophisticated syntax, and identifiable authorial stance.
+  2. Single Unambiguous Key Check: Ensure exactly ONE option is undeniably the most effective rhetorical choice according to College Board standards.
+  3. Plausible Distractors: Incorrect choices must reflect authentic student writing misconceptions.
+  4. Self-Healing: Discard and regenerate any ambiguous or simplistic questions before final output.`;
+    } else {
+      return `AP ENGLISH LANGUAGE & COMPOSITION FREE RESPONSE EXAM STANDARDS (COLLEGE BOARD SECTION II - 100% AUTHENTIC REPLICA):
+PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL EXAM SETS (2023, 2024, 2025, 2026) & CHIEF READER REPORTS (MICHAEL NEAL, FLORIDA STATE UNIVERSITY - 617,689 STUDENTS):
+
+You are the College Board AP English Language Chief Reader and Lead Exam Developer. Section II consists of 3 Free-Response Essay Questions (2 Hours 15 Minutes total = 135 Minutes Total; Suggested: 15 min reading/planning + 40 min per essay). Every question generated MUST strictly follow this official College Board CED blueprint:
+
+1. THE 3 CANONICAL AP ENGLISH LANGUAGE ESSAY ARCHETYPES:
+- QUESTION 1 (6 Points, Suggested 55 Min: 15 min reading + 40 min writing) \u2014 SYNTHESIS ESSAY:
+  * Structure & Anatomy:
+    - Context & Prompt: Introduce a timely, multifaceted, and controversial public debate (e.g., Space Debris Regulation, Digital Navigation & Spatial Memory, Urban Rewilding, Historic Building Preservation, Workplace Napping & Health).
+    - Task Mandate: "Carefully read the following six sources, including the introductory information for each source. Write an essay that synthesizes material from at least three of the sources and develops your position on [the issue]."
+    - EXACTLY SIX DIVERSE SOURCES (Sources A through F) with full MLA-style citations:
+      \u2022 Source A: In-depth newspaper article or investigative report with specific claims.
+      \u2022 Source B: Quantitative data table, infographic, or survey chart with concrete numbers/percentages.
+      \u2022 Source C: Legal, policy, or governmental treaty brief with regulatory analysis.
+      \u2022 Source D: Analytical opinion essay, critique, or industry editorial.
+      \u2022 Source E: Academic journal, university research laboratory finding, or psychological study.
+      \u2022 Source F: Book excerpt, historical case study, or editorial cartoon/photograph description.
+    - MANDATORY: At least ONE source MUST contain a structured, clean GitHub Markdown Data Table (| Metric | Group 1 | Group 2 |) with concrete statistics and percentages.
+    - Student Prompt Checklist included in prompt:
+      \u2022 Respond to the prompt with a thesis that presents a defensible position.
+      \u2022 Select and use evidence from at least three of the provided sources to support your line of reasoning. Indicate clearly the sources used through direct quotation, paraphrase, or summary. Sources may be cited as Source A, Source B, etc., or by using the description in parentheses.
+      \u2022 Explain how the evidence supports your line of reasoning.
+      \u2022 Use appropriate grammar and punctuation in communicating your argument.
+
+- QUESTION 2 (6 Points, Suggested 40 Min) \u2014 RHETORICAL ANALYSIS ESSAY:
+  * Structure & Anatomy:
+    - Explicit Rhetorical Situation in introductory paragraph:
+      \u2022 Speaker: Renowned author, statesman, scientist, or activist with biographical credentials.
+      \u2022 Occasion & Context: Historical event, date, venue, or publishing platform (e.g., Commencement address, congressional hearing, op-ed, memoir).
+      \u2022 Audience: Distinct intended group with specific expectations or beliefs.
+      \u2022 Exigence & Purpose: The urgent need or motivation that prompted the speaker, and their overarching objective.
+    - The Excerpt: A high-caliber, cohesive non-fiction passage (700\u20131000 words) with numbered paragraphs (Par. 1, 2, 3...) containing rich, identifiable rhetorical choices:
+      \u2022 Shifts in tone (e.g., from celebratory to urgent, or reflective to demanding).
+      \u2022 Structural juxtapositions, contrasting imagery, historical allusions, analogies, or anaphora.
+    - Task Mandate: "Read the passage carefully. Write an essay that analyzes the rhetorical choices [Author] makes to [convey their message / achieve their purpose / develop their argument]."
+
+- QUESTION 3 (6 Points, Suggested 40 Min) \u2014 ARGUMENT ESSAY:
+  * Structure & Anatomy:
+    - A thought-provoking, non-trivial quotation from an author, thinker, or public figure expressing a philosophical, cultural, or societal perspective (e.g., Naomi Osaka on living in the moment, Amanda Gorman on optimism in dialogue with pessimism, Mae Jemison on rejecting others' limited imaginations).
+    - Task Mandate: "Write an essay that argues your position on the extent to which [Author]'s claim about [Theme] is valid."
+    - Open Evidence: Students draw evidence from their own reading, observation, history, literature, or personal experience.
+
+2. UNIVERSAL 6-POINT ANALYTIC SCORING RUBRIC (ROW A, ROW B, ROW C):
+Every AP Lang essay is graded on the strict College Board 6-Point Analytic Scale:
+- ROW A: THESIS (0\u20131 Point):
+  * 0 pts: Mere restatement of prompt, summary of issue without a stance ("There are pros and cons to space exploration"), or obvious indisputable fact.
+  * 1 pt: Defensible thesis that takes a clear position (Synthesis/Argument) or analyzes the writer's rhetorical choices (Rhetorical Analysis). Can be anywhere in the essay.
+- ROW B: EVIDENCE AND COMMENTARY (0\u20134 Points):
+  * 0 pts: Incoherent, irrelevant, or references fewer than 2 sources in Synthesis.
+  * 1 pt: General evidence; summarizes sources/text without explaining how it supports the argument.
+  * 2 pts: Mix of specific evidence and broad generalities; explains how some evidence relates, but NO line of reasoning or faulty line of reasoning.
+  * 3 pts: Specific evidence supporting all claims in a line of reasoning (Synthesis: >= 3 sources); commentary explains how evidence supports reasoning, but may leave a key claim unsupported.
+  * 4 pts (Gold Standard): Uniformly specific evidence + consistent, insightful commentary. Explains the causal mechanism linking evidence to the line of reasoning. For Q2: explains how multiple rhetorical choices contribute to the author's purpose.
+- ROW C: SOPHISTICATION (0\u20131 Point):
+  * 0 pts: Sweeping generalizations ("Since the dawn of time..."), superficial counterarguments, or ornate but ineffective prose.
+  * 1 pt: Complex understanding of the rhetorical situation or multifaceted argument:
+    1. Exploring tensions or complexities across sources/texts.
+    2. Articulating implications or limitations of the argument within a broader context.
+    3. Making effective rhetorical choices throughout the essay.
+    4. Employing a consistently vivid and persuasive writing style.
+
+3. STRICT CHIEF READER SCORING MANDATES & AVOIDANCE OF FATAL TRAPS (MICHAEL NEAL REPORT):
+1. THE "SUMMARY TRAP" FORBIDDEN: In Synthesis, writing a paragraph summarizing Source A, then a paragraph summarizing Source B is heavily penalized! Sources must interact within paragraphs (e.g. "While Source B emphasizes the economic growth of commercial satellites, Source D reveals the hidden taxpayer burden of space junk remediation...").
+2. NO "DEVICE HUNTING" OR "GROCERY LISTING": In Rhetorical Analysis, identifying devices ("The author uses metaphors, imagery, and ethos") without analyzing their function on the audience earns 0 points. Students must analyze choices in relation to purpose!
+3. NO FLOATING QUOTES: Direct quotations must always be embedded within the student's own syntax using signal phrases.
+4. NO BINARY OVERSIMPLIFICATION: In Argument, avoid arguing that an idea is 100% good or 100% bad. High-scoring responses explore nuanced qualifications, concessions, and stasis theory (fact, definition, quality, policy).
+5. NO DICTIONARY DEFINITION HOOKS: Opening an essay with "Webster's dictionary defines bravery as..." is a classic low-scoring trope.
+
+4. EXAM SIMULATION VS PRACTICE BANK STRUCTURE:
+- EXAM SIMULATION MODE:
+  * Automatically locked to EXACTLY 3 ESSAYS (135 Minutes Total, 18 Points Total):
+    - Question 1: Synthesis Essay (6 Points, Suggested 55 Min)
+    - Question 2: Rhetorical Analysis Essay (6 Points, Suggested 40 Min)
+    - Question 3: Argument Essay (6 Points, Suggested 40 Min)
+- PRACTICE BANK MODE (5, 10, or 15 QUESTIONS):
+  * When student selects 5, 10, or 15 questions, cycle across the 3 canonical archetypes in repeating, mixed sequences:
+    - For 5 Questions: Q1 Synthesis (6 pts) -> Q2 Rhetorical Analysis (6 pts) -> Q3 Argument (6 pts) -> Q4 Synthesis Variation (6 pts) -> Q5 Rhetorical Analysis Variation (6 pts).
+    - For 10 Questions: Canonical Q1, Q2, Q3 in exact order + 7 mixed variations cycling across Synthesis, Rhetorical Analysis, and Argument with diverse themes.
+    - For 15 Questions: 4 full 3-question cycles (12 questions) + 3 mixed capstones (15 total).
+
+5. MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING QUALITY GATE:
+Before outputting any question, execute this internal quality audit:
+- AUDIT 1 (Synthesis Completeness): If generating Q1 Synthesis, verify that EXACTLY 6 distinct sources (Sources A-F) are labeled and provided, and that at least one contains a quantitative Markdown data table. If sources are missing, immediately heal or regenerate.
+- AUDIT 2 (Rhetorical Situation Check): If generating Q2 Rhetorical Analysis, verify that Speaker, Occasion, Audience, Exigence, and Purpose are clearly established, and the text has numbered paragraphs.
+- AUDIT 3 (Argument Debatability): If generating Q3 Argument, verify the quotation presents a defensible philosophical/cultural perspective rather than a trivial factual statement.
+- AUDIT 4 (Rubric Parity): Verify that "totalPoints" = exactly 6, and the rubric provides explicit Row A (1 pt), Row B (4 pts), and Row C (1 pt) criteria.
+- AUDIT 5 (Zero Verbatim Copying): NEVER copy published exam texts or scenarios verbatim from 2023\u20132026 PDFs. Invent 100% fresh, authentic, high-caliber non-fiction materials.
+- SELF-HEALING: If any audit fails, discard and regenerate immediately before delivering JSON.`;
+    }
+  }
+  if (s.includes("world history") || s.includes("whap") || s.includes("history") && !s.includes("u.s.") && !s.includes("us") && !s.includes("euro")) {
+    if (questionType === "objective") {
+      return `AP WORLD HISTORY: MODERN (WHAP) EXAM SPECIFICATIONS (College Board CED Units 1-9):
+- Target Level: Grade 10 AP Track (Foundational Global History, 1200 CE to Present).
+- Exam Structure: 55 MCQs, 55 minutes (~60 seconds per question), stimulus-driven.
+- Curriculum Scope:
+  * Unit 1: The Global Tapestry (1200\u20131450: Song China, Dar al-Islam, South/Southeast Asia, Americas, Africa, Europe).
+  * Unit 2: Networks of Exchange (1200\u20131450: Silk Roads, Mongol Empire/Pax Mongolica, Indian Ocean trade, Trans-Saharan routes, Cultural & Environmental consequences).
+  * Unit 3: Land-Based Empires (1450\u20131750: Gunpowder Empires [Ottoman, Safavid, Mughal, Qing, Russian], Administration, Tax farming, Devshirme, Religion & Legitimacy).
+  * Unit 4: Transoceanic Interconnections (1450\u20131750: Maritime tech [Caravels, Fluyts, Astrolabe], Columbian Exchange, Mercantilism, Coerced labor [Chattel slavery, Encomienda, Mita], Silver flow).
+  * Unit 5: Revolutions (1750\u20131900: Enlightenment, Atlantic Revolutions [American, French, Haitian, Latin American], Industrial Revolution, Social/Gender changes).
+  * Unit 6: Consequences of Industrialization (1750\u20131900: Imperialism, Scramble for Africa, Social Darwinism, Anti-colonial resistance, Global migrations).
+  * Unit 7: Global Conflict (1900\u2013present: WWI, Russian Revolution, Interwar crises, WWII, Holocaust, Total War).
+  * Unit 8: Cold War and Decolonization (1900\u2013present: US vs USSR, Proxy wars, Non-Aligned Movement, Decolonization in Asia & Africa).
+  * Unit 9: Globalization (1900\u2013present: Tech & Medical advances, Global economy, Disease, Green Revolution, Human rights).
+- Distractors: Represent common student traps (periodization confusion, attributing 19th-century tech to 16th century, failing to identify historical POV).
+- MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+  1. Chronology Verification: Ensure all historical actors, empires, and technologies exist strictly within the declared era.
+  2. Single Unambiguous Key Check: Ensure exactly ONE option is unequivocally correct according to historical facts.
+  3. Self-Healing: Discard and regenerate any ambiguous questions before final output.`;
+    } else {
+      return `AP WORLD HISTORY: MODERN FREE RESPONSE EXAM STANDARDS (COLLEGE BOARD SECTION I PART B & SECTION II - 100% AUTHENTIC REPLICA):
+PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL 2023, 2024, 2025, 2026 AP EXAM SETS & CHIEF READER REPORTS (CRAIG MILLER - 412,964 STUDENTS):
+You are the College Board AP World History: Modern Chief Reader and Lead Exam Developer. The Free-Response section covers Section I Part B (Short-Answer Questions) and Section II (DBQ & LEQ).
+Every question generated MUST strictly conform to this official College Board CED blueprint:
+
+1. THE CANONICAL AP WORLD HISTORY QUESTION ARCHETYPES & POINT PARITY:
+- ARCHETYPE 1: SAQ 1 \u2014 SECONDARY SOURCE ANALYSIS [EXACTLY 3 POINTS] (~13 Minutes):
+  * Stimulus: 1-2 paragraph analytical excerpt from a modern historian/scholar (e.g. Jack Weatherford, Tom Standage, Ralph Austen) analyzing a global historical development with full citation (Author, book/article title, year).
+  * Format: Parts A, B, and C (1 Point Each):
+    - Part A [1 pt]: Identify ONE argument/claim the author makes in the passage.
+    - Part B [1 pt]: Describe ONE historical development or cause related to the claim.
+    - Part C [1 pt]: Explain how ONE additional piece of outside historical evidence (not in passage) supports or challenges the author's claim.
+
+- ARCHETYPE 2: SAQ 2 \u2014 PRIMARY SOURCE / VISUAL ANALYSIS [EXACTLY 3 POINTS] (~13 Minutes):
+  * Stimulus: Primary source text (historical letter, speech, decree, treaty from 1200\u2013present) OR a rich visual stimulus (historical photograph, election poster, political cartoon, artwork) with complete provenance and context note.
+  * Format: Parts A, B, and C (1 Point Each):
+    - Part A [1 pt]: Identify the author's perspective/POV, audience, or political purpose.
+    - Part B [1 pt]: Describe the historical situation/context reflected in the stimulus.
+    - Part C [1 pt]: Explain how the stimulus illustrates broader continuities, changes, or resistance to imperial/state authority.
+
+- ARCHETYPE 3: SAQ 3 / 4 \u2014 NON-STIMULUS CONCEPTUAL / CCOT [EXACTLY 3 POINTS] (~13 Minutes):
+  * No Stimulus: Pure conceptual reasoning prompt covering Unit 1-4 (1200\u20131750) or Unit 5-9 (1750\u2013present).
+  * Format: Parts A, B, and C (1 Point Each):
+    - Part A [1 pt]: Identify a technology, economic practice, or political factor.
+    - Part B [1 pt]: Explain how this factor affected state building or trade.
+    - Part C [1 pt]: Explain a broader social, cultural, or demographic change resulting from this development.
+
+- ARCHETYPE 4: DBQ \u2014 DOCUMENT-BASED QUESTION [EXACTLY 7 POINTS] (Suggested 60 Minutes):
+  * Prompt: "Evaluate the extent to which [historical process/conflict/technology] transformed [society/gender/state] in the period circa [Start Year] to [End Year]."
+  * Documents: MUST PROVIDE EXACTLY 7 HISTORICAL DOCUMENTS (Document 1 through Document 7) with authentic provenance lines:
+    - Author, status/role, source title, location, year, and a 2-4 sentence authentic primary excerpt or visual description.
+  * 7-Point Scoring Rubric:
+    - Thesis/Claim (0-1 pt): Historically defensible thesis establishing line of reasoning in intro or conclusion.
+    - Contextualization (0-1 pt): Broader historical context (more than a passing phrase).
+    - Evidence from Documents (0-2 pts): 1 pt for describing >= 3 documents; 2 pts for supporting argument using >= 4 documents.
+    - Evidence Beyond Documents (0-1 pt): At least 1 specific piece of outside historical evidence not found in documents.
+    - Sourcing / HIPP (0-1 pt): For >= 2 documents, explains how/why POV, purpose, historical situation, or audience is relevant to argument.
+    - Complex Understanding (0-1 pt): Sophisticated nuance (contradictory perspectives, continuities alongside changes, or cross-period connections).
+
+- ARCHETYPE 5: LEQ \u2014 LONG ESSAY QUESTION [EXACTLY 6 POINTS] (Suggested 40 Minutes):
+  * Prompt: Broad evaluative historical prompt testing Causation, Comparison, or Continuity/Change (CCOT) across CED eras.
+  * 6-Point Scoring Rubric:
+    - Thesis/Claim (0-1 pt): Defensible claim with clear line of reasoning.
+    - Contextualization (0-1 pt): Broader historical background.
+    - Evidence (0-2 pts): 1 pt for providing >= 2 specific historical examples; 2 pts for supporting an argument using >= 2 examples.
+    - Historical Reasoning (0-1 pt): Explicit use of causation, comparison, or CCOT to frame argument.
+    - Complex Understanding (0-1 pt): Demonstrates historical nuance, multiple perspectives, or qualifying arguments.
+
+2. STRICT CHIEF READER SCORING MANDATES & AVOIDANCE OF SCORE-LOSING TRAPS:
+1. THE DIRECT QUOTE PENALTY: Quoting document text directly without paraphrasing earns 0 points! Responses must explain document content in student's own words.
+2. HIPP SOURCING REQUIREMENT: Stating the author's title or job alone earns 0 points. Students must explain HOW or WHY that point of view or purpose influenced what the author wrote or omitted.
+3. STRICT PERIODIZATION FIREWALL: Evidence outside the prompt's declared dates (e.g. citing 1989 Tiananmen Square for an 1850-1950 prompt) earns 0 credit!
+4. THESIS WITH LINE OF REASONING: Merely restating "There were many changes" earns 0 points. A thesis must establish specific analytical categories (e.g. "While X, Y because Z").
+5. EVIDENCE BEYOND DOCUMENTS: Must introduce specific proper-noun historical facts (e.g. King Leopold in Congo, Maji Maji Rebellion, Tanzimat Reforms) completely absent from the 7 documents.
+
+3. EXAM SIMULATION VS PRACTICE MODE STRUCTURE:
+- EXAM SIMULATION MODE:
+  * Complete authentic 5-question Free-Response Examination Flow (22 Points Total):
+    - Q1: SAQ 1 (Secondary Source, 3 pts)
+    - Q2: SAQ 2 (Primary Source / Visual, 3 pts)
+    - Q3: SAQ 3 (Non-Stimulus Historical Reasoning, 3 pts)
+    - Q4: DBQ (Document-Based Question with 7 Documents, 7 pts)
+    - Q5: LEQ (Long Essay Question, 6 pts)
+- PRACTICE BANK MODE (5, 10, or 15 QUESTIONS):
+  * Cycles through this exact comprehensive 5-question sequence in mixed, repeating variations:
+    - For 5 Questions: 1 full exam set (SAQ 1, SAQ 2, SAQ 3, DBQ, LEQ).
+    - For 10 Questions: 2 full cycles rotating across different historical eras (Units 1-4 vs Units 5-9).
+    - For 15 Questions: 3 full cycles covering the complete 1200\u2013Present curriculum.
+
+4. MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING QUALITY GATE:
+Before outputting any question, execute this internal quality audit:
+- AUDIT 1 (Chronology & Anachronism Check): Verify that every cited ruler, empire, battle, and technology fits strictly within the question's stated era (no railroads in 1600; no nuclear weapons in 1914).
+- AUDIT 2 (Zero Ghost Documents): Verify that all documents in SAQ/DBQ have their full text/excerpt and provenance line explicitly printed. Never write "In the document provided" without providing the text.
+- AUDIT 3 (Rubric Point Parity): SAQ prompts MUST have exactly 3 points (Parts A, B, C labeled Point A, B, C); DBQs MUST have exactly 7 points (Rows A-D); LEQs MUST have exactly 6 points.
+- AUDIT 4 (Zero Verbatim Copying): Under NO circumstances copy exact excerpts, author names, or prompts from released 2023\u20132026 AP exam PDFs (do NOT reuse Anthony Pagden, Spodek/Louro, Standage, or Padmore verbatim). Invent 100% fresh, authentic, solvable historical sources.
+- SELF-HEALING: If ANY chronological error, missing document text, or rubric mismatch occurs during self-audit, immediately heal or regenerate before outputting.`;
+    }
+  }
+  if (s.includes("psych")) {
+    if (questionType === "objective") {
+      return `AP PSYCHOLOGY EXAM SPECIFICATIONS (College Board CED 2025\u20132026 Curriculum):
+- Section I: 75 Multiple-Choice Questions (90 Minutes, 1m 12s per question). 66.7% of total exam score.
+- 5 Units Framework:
+  1. Biological Bases of Behavior (15\u201325%): Neural transmission, brain anatomy/lateralization, endocrine system/HPA axis, genetics/epigenetics, sleep architecture & circadian rhythms.
+  2. Cognition (15\u201325%): Sensation & perception (thresholds, transduction, Gestalt), memory models (Atkinson-Shiffrin, encoding, interference, Loftus misinformation), thinking, problem solving, heuristics, decision-making biases, intelligence theories & psychometrics.
+  3. Development and Learning (15\u201325%): Classical conditioning, operant conditioning schedules, social-cognitive learning (Bandura), cognitive development (Piaget), moral development (Kohlberg), psychosocial development (Erikson), attachment & parenting styles.
+  4. Social Psychology and Personality (15\u201325%): Attribution theory (FAE), social influence (conformity, obedience, bystander effect, groupthink), prejudice/discrimination, motivation & emotion theories, personality theories (psychoanalytic, humanistic, Big Five OCEAN traits).
+  5. Mental and Physical Health (15\u201325%): DSM-5 psychological disorder diagnostic criteria, etiology (biopsychosocial model, diathesis-stress), evidence-based therapies (CBT, exposure, psychopharmacology), stress, coping & health psychology (Selye GAS).
+- Question Stimuli: Empirical research scenarios, scatterplots, correlation coefficients, bar graphs with standard error / deviation, and clinical vignettes.
+- Distractors: Authentic psychological misconceptions (e.g., confusing negative reinforcement with punishment, confusing proactive with retroactive interference, confusing availability with representativeness heuristic, mistaking correlation for causation).
+- MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+  1. Conceptual Fact Check: Confirm definitions and principles align strictly with the official CED 5-unit curriculum.
+  2. Unambiguous Key Check: Ensure exactly ONE option is unequivocally correct according to psychological science.
+  3. Self-Healing: Discard and regenerate any ambiguous questions before final output.`;
+    } else {
+      return `AP PSYCHOLOGY FREE RESPONSE EXAM STANDARDS (COLLEGE BOARD SECTION II - 100% AUTHENTIC REPLICA):
+PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL 2023, 2024, 2025, 2026 AP EXAM SETS & CHIEF READER REPORTS (PROF. ELLIOTT HAMMER, XAVIER UNIV OF LOUISIANA - 334,960 STUDENTS):
+You are the College Board AP Psychology Chief Reader and Lead Exam Developer. Section II consists of EXACTLY 2 FREE RESPONSE QUESTIONS (1 hour 10 minutes total: 70 Minutes, 14 Total Points). 33.3% of total exam score.
+Every question generated MUST strictly conform to this official College Board 2025-2026 Section II blueprint:
+
+================================================================================
+QUESTION 1: ARTICLE ANALYSIS QUESTION (AAQ)  [EXACTLY 7 POINTS] (~25 Minutes)
+================================================================================
+STIMULUS SPECIFICATIONS:
+- Complete summary of a peer-reviewed psychological study (200-350 words) with authentic methodology:
+  * Purpose / Hypothesis: Clear research objective and directional hypothesis.
+  * Participants / Sample: Specific demographic characteristics and recruitment procedure (e.g. 140 undergraduate college students, 85 clinical outpatients).
+  * Methodology: Exact procedure (experimental conditions vs control, surveys, observations, or physiological measurements).
+  * Quantitative Results: Concrete empirical data presented as numbers, descriptive statistics (Means, Standard Deviations), inferential statistics (p-values, e.g. p = 0.02, or correlation r = 0.58), or a clean Markdown Data Table.
+  * Ethical Safeguards: Explicit mention of APA guidelines implemented (e.g. institutional review board [IRB] approval, signed informed consent, debriefing session).
+
+MANDATORY 6-PART ANATOMY (PARTS A THROUGH F) [TOTAL: 7 POINTS]:
+- Part A [1 Point]: Research Design / Method
+  * Prompt: "Identify the research design/method used by the researchers in the study."
+  * Approved Answers: Experiment, Correlational study, Case study, Naturalistic observation, or Meta-analysis.
+  * Chief Reader Rule: Merely writing "survey" or "questionnaire" or "interview" EARNS 0 POINTS because those are data-collection tools, NOT research designs. If participants were randomly assigned to manipulate an IV, it is an experiment; if two variables are measured without manipulation, it is a correlational study.
+- Part B [1 Point]: Operational Definition
+  * Prompt: "Describe the operational definition of [independent/dependent variable, e.g. sleep quality, anxiety, memory performance] used in the study."
+  * Chief Reader Rule: The definition MUST be a quantifiable, measurable behavior or specific scale score stated in the article (e.g. "number of words correctly recalled out of 30", "score on the 21-item Beck Depression Inventory"). Giving a conceptual/abstract definition earns 0 points!
+- Part C [1 Point]: Statistical Interpretation
+  * Prompt: "Describe what the [mean difference / standard deviation / correlation / p-value] indicates in the context of the study."
+  * Chief Reader Rule: The student MUST explain what the statistic means in context, including the DIRECTION of the difference or relationship (e.g. "Participants who received mindfulness training had a statistically significant lower mean anxiety score than participants in the control group"). Simply restating the numerical values without contextual interpretation earns 0 points!
+- Part D [1 Point]: Ethical Guideline
+  * Prompt: "Identify an ethical guideline that the researchers [followed / addressed] in the study."
+  * Chief Reader Rule: Must identify an ethical guideline explicitly stated in the study text (e.g. informed consent, debriefing, protection from physical/psychological harm, confidentiality/anonymity, or institutional review board approval).
+- Part E [1 Point]: Generalizability
+  * Prompt: "Explain whether the researchers can generalize their findings to [a broader population, e.g., all adults / all high school students]."
+  * CHIEF READER CRITICAL RULE (THE SAMPLE SIZE TRAP): Stating "the sample size was too small" EARNS ZERO POINTS! In AP Psychology, generalizability is determined by sample REPRESENTATIVENESS (whether the sample shares relevant characteristics with the population via random selection), NOT sample size. The response must state that findings cannot be generalized because the sample (e.g. college students at one university) is not representative of all adults, OR that it can be generalized only to individuals sharing those specific characteristics.
+- Part F [EXACTLY 2 POINTS]: Argumentation / Theory Application
+  * Prompt: "Explain how a specific finding from the study [supports / challenges] the psychological concept of [Target Concept from CED, e.g. Levels of Processing / Self-Efficacy / Normative Social Influence / Diathesis-Stress Model]."
+  * Point 1 (Evidence): Citing a specific empirical finding from the study results.
+  * Point 2 (Explanation of Mechanism): Explaining HOW that finding demonstrates or aligns with the specified psychological concept/theory.
+
+================================================================================
+QUESTION 2: EVIDENCE-BASED QUESTION (EBQ)  [EXACTLY 7 POINTS] (~45 Minutes)
+================================================================================
+STIMULUS SPECIFICATIONS:
+- You MUST provide THREE DISTINCT EMPIRICAL RESEARCH SUMMARIES labeled "Source 1", "Source 2", and "Source 3":
+  * Source 1: Authentic empirical study with author/year (e.g., "Source 1: Adapted from Chen & Patel, 2022"), methodology, participant demographics, and concrete quantitative findings.
+  * Source 2: Complementary or contrasting empirical study (e.g., "Source 2: Adapted from Marcus et al., 2021") with methodology, participants, and numerical findings.
+  * Source 3: Distinct empirical study (e.g., "Source 3: Adapted from Alvarez & Gomez, 2023") providing an alternative perspective, developmental angle, or physiological measure.
+- The overarching research prompt poses an empirical question (e.g., "Analyze the extent to which digital technology use impacts adolescent psychological well-being" OR "Evaluate the relative influence of cognitive restructuring versus physiological regulation in managing acute performance anxiety").
+
+MANDATORY 3-PART ANATOMY (PARTS A THROUGH C) [TOTAL: 7 POINTS]:
+- Part A [1 Point]: Defensible Scientific Claim
+  * Prompt: "Articulate a defensible claim that responds to the prompt."
+  * Chief Reader Rule: Must be a scientifically defensible statement that takes a position with a line of reasoning (e.g. "While moderate digital connectivity supports adolescent peer bonding, excessive screen use (> 4 hours daily) degrades subjective well-being by displacing restorative sleep and triggering social comparison"). Restating the prompt or writing a vague assertion earns 0 points.
+- Part B [3 Points]: First Piece of Evidence & Psychological Reasoning
+  * Part B(i) [1 Point]: Support the claim by describing specific empirical evidence from Source 1 or Source 2, citing the source. (Must include concrete data/finding from the source).
+  * Part B(ii) [2 Points]:
+    - 1 Point: Explain how this evidence supports the claim made in Part A.
+    - 1 Point: Apply a RELEVANT PSYCHOLOGICAL CONCEPT from the CED to explain the underlying psychological mechanism. (Chief Reader Rule: Citing generic research terms like "independent variable" or "experiment" earns 0 points; must be a substantive CED concept such as "Upward Social Comparison", "Operant Extinction", "Neuroplasticity", or "Selective Attention").
+- Part C [3 Points]: Second Piece of Evidence & DISTINCT Psychological Reasoning
+  * Part C(i) [1 Point]: Support the claim by describing a DIFFERENT piece of specific empirical evidence from a DIFFERENT source (e.g. Source 3), citing the source.
+  * Part C(ii) [2 Points]:
+    - 1 Point: Explain how this new evidence supports the claim made in Part A.
+    - 1 Point: Apply a DIFFERENT PSYCHOLOGICAL CONCEPT from the CED to explain the underlying psychological mechanism.
+    - CHIEF READER CRITICAL RULE (THE REPEATED CONCEPT PENALTY): The psychological concept applied in Part C(ii) MUST BE COMPLETELY DIFFERENT from the concept used in Part B(ii)! If a student repeats the same concept, they forfeit this point entirely!
+
+================================================================================
+RUBRIC POINT PARITY & FORMAT RULES:
+================================================================================
+1. TOTAL POINTS: EXACTLY 7 POINTS FOR QUESTION 1 + EXACTLY 7 POINTS FOR QUESTION 2 = 14 TOTAL POINTS.
+2. ZERO VERBATIM COPYING: Under NO circumstances copy exact excerpts, data tables, or authors verbatim from released College Board exams (e.g. do not copy the 2023-2026 PDFs word-for-word). Create 100% original, academically rigorous studies that follow this exact College Board architecture.
+3. DATA FORMATTING: Format all numerical data, sample demographics, and statistics in clear Markdown tables or bulleted sections.
+4. TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING:
+   - Verification Pass 1: Confirm Question 1 has Parts A, B, C, D, E, F and totals exactly 7 points. Confirm Question 2 has 3 full research sources and Parts A, B(i), B(ii), C(i), C(ii) totaling exactly 7 points.
+   - Verification Pass 2: Verify that generalizability in Q1 tests representativeness (not sample size), and Q2 requires two distinct CED concepts.
+   - Instant Self-Healing: If any section is incomplete or deviates from the 7-point schema, repair immediately before outputting JSON.`;
+    }
+  }
   return `College Board AP Course and Exam Description standards for ${subject}. High rigor, analytical thinking, stimulus-based.`;
 }
 function getDynamicTopicVariation(subject, unitOrTopic, count) {
   const archetypes = getGranularSubjectArchetypes(subject, unitOrTopic, count);
-  return archetypes.map((arch, idx2) => `  - Question ${idx2 + 1} Target Archetype: ${arch}`).join("\n");
+  return archetypes.map((arch, idx) => `  - Question ${idx + 1} Target Archetype: ${arch}`).join("\n");
 }
 
 // src/data/quiz/expandedBattleQuestions.ts
@@ -15012,6 +17302,22 @@ var AP_SUBJECT_WHITELISTS = {
       // Avoid Java AP CSA code leaking into CSP pseudocode
     ]
   },
+  "ap-computer-science": {
+    subjectId: "ap-computer-science",
+    subjectName: "AP Computer Science A",
+    category: "tech",
+    mathExpected: false,
+    canonicalUnits: [
+      { unitNumber: 1, title: "Primitive Types & Calling Methods", keywords: ["int", "double", "boolean", "arithmetic", "modulus", "casting", "Math.random", "parameters", "return values"] },
+      { unitNumber: 2, title: "Control Structures & Iteration", keywords: ["boolean expressions", "relational operators", "if-else", "while loop", "for loop", "nested loops", "iteration bounds"] },
+      { unitNumber: 3, title: "Class Design & Encapsulation", keywords: ["class header", "private instance variables", "constructors", "accessor", "mutator", "this", "String methods", "substring", "indexOf", "equals"] },
+      { unitNumber: 4, title: "Arrays, ArrayLists & 2D Arrays", keywords: ["1D array", "ArrayList", "add", "get", "set", "remove", "size", "2D array", "matrix", "nested traversal", "bounds checking"] }
+    ],
+    allowedDomains: ["computer science", "java programming", "object oriented programming", "algorithms", "data structures", "matrices", "arraylist"],
+    forbiddenSignatures: [
+      /\b(?:definite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|chloroplast|mitosis|rotational\s+inertia|stoichiometry|balance\s+of\s+payments|aggregate\s+demand|dtm|von\s+thunen)\b/i
+    ]
+  },
   "ap-calculus-ab": {
     subjectId: "ap-calculus-ab",
     subjectName: "AP Calculus AB",
@@ -15029,7 +17335,12 @@ var AP_SUBJECT_WHITELISTS = {
     ],
     allowedDomains: ["limits", "derivatives", "integrals", "differential equations", "particle motion", "rates of change"],
     forbiddenSignatures: [
-      /\b(?:gentrification|von\s+thunen|supranationalism|wallerstein|malthus|cold\s+war|french\s+revolution|hamlet|chloroplast|mitochondria|dna\s+replication|operon)\b/i
+      // Human Geography / Humanities leakage
+      /\b(?:gentrification|von\s+thunen|supranationalism|wallerstein|malthus|cold\s+war|french\s+revolution|hamlet|chloroplast|mitochondria|dna\s+replication|operon)\b/i,
+      // Generic fallback markers
+      /\b(?:spatial\s+pattern|affected\s+stakeholders|regional\s+context|spatial\s+trends)\b/i,
+      // Strictly Forbidden Calculus BC Exclusive Topics
+      /\b(?:taylor\s+series|maclaurin\s+series|taylor\s+polynomial|maclaurin\s+polynomial|ratio\s+test|radius\s+of\s+convergence|interval\s+of\s+convergence|euler's\s+method|eulers\s+method|logistic\s+differential|carrying\s+capacity|polar\s+area|polar\s+coordinates|parametric\s+equations|vector-valued|integration\s+by\s+parts|partial\s+fractions|improper\s+integral|alternating\s+series\s+error\s+bound|lagrange\s+error\s+bound)\b/i
     ]
   },
   "ap-calculus-bc": {
@@ -15144,15 +17455,15 @@ var AP_SUBJECT_WHITELISTS = {
     category: "social_science",
     mathExpected: false,
     canonicalUnits: [
-      { unitNumber: 1, title: "Biological Bases of Behavior", keywords: ["neuron", "action potential", "synapse", "neurotransmitter", "dopamine", "serotonin", "endorphins", "central nervous system", "brain structures", "cerebral cortex", "hippocampus", "amygdala", "neuroplasticity"] },
-      { unitNumber: 2, title: "Cognition", keywords: ["memory", "encoding", "storage", "retrieval", "sensory memory", "short-term memory", "long-term memory", "chunking", "amnesia", "problem solving", "heuristics", "biases", "language acquisition"] },
-      { unitNumber: 3, title: "Development & Learning", keywords: ["classical conditioning", "pavlov", "unconditioned stimulus", "conditioned response", "operant conditioning", "skinner", "reinforcement", "punishment", "social learning", "bandura", "piaget", "erikson", "kohlberg"] },
-      { unitNumber: 4, title: "Social Psychology & Personality", keywords: ["conformity", "asch", "obedience", "milgram", "attribution theory", "fundamental attribution error", "cognitive dissonance", "bystander effect", "in-group bias", "freud", "big five traits"] },
-      { unitNumber: 5, title: "Mental & Physical Health", keywords: ["dsm-5", "anxiety disorders", "major depressive disorder", "bipolar", "schizophrenia", "obsessive-compulsive", "ptsd", "psychotherapy", "cbt", "biopsychosocial model"] }
+      { unitNumber: 1, title: "Biological Bases of Behavior", keywords: ["neuroscience", "brain structure", "hemispheric specialization", "neurons", "neurotransmitters", "action potential", "synapse", "endocrine system", "sleep architecture", "circadian rhythm", "genetics"] },
+      { unitNumber: 2, title: "Cognition", keywords: ["memory encoding", "storage", "retrieval", "misinformation effect", "schemas", "working memory", "spacing effect", "heuristics", "biases", "problem solving", "intelligence", "language acquisition"] },
+      { unitNumber: 3, title: "Development and Learning", keywords: ["classical conditioning", "operant conditioning", "reinforcement", "punishment", "stimulus discrimination", "generalization", "observational learning", "Piaget", "Vygotsky", "attachment styles", "moral development"] },
+      { unitNumber: 4, title: "Social Psychology and Personality", keywords: ["bystander effect", "diffusion of responsibility", "social facilitation", "social loafing", "conformity", "obedience", "attribution theory", "fundamental attribution error", "in-group bias", "Big Five personality traits", "self-efficacy"] },
+      { unitNumber: 5, title: "Mental and Physical Health", keywords: ["psychological disorders", "DSM-5", "anxiety disorders", "depressive disorders", "schizophrenia", "bipolar", "psychotherapy", "CBT", "psychopharmacology", "stress response", "General Adaptation Syndrome", "locus of control"] }
     ],
-    allowedDomains: ["psychology", "neuroscience", "cognition", "behavior", "development", "mental health"],
+    allowedDomains: ["psychology", "cognitive science", "neuroscience", "developmental psychology", "social psychology", "clinical psychology", "research methodology", "article analysis", "evidence-based argumentation"],
     forbiddenSignatures: [
-      /\b(?:definite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|von\s+thunen)\b/i
+      /\b(?:definite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|chloroplast|mitosis|rotational\s+inertia|stoichiometry|balance\s+of\s+payments|aggregate\s+demand)\b/i
     ]
   },
   "ap-statistics": {
@@ -15193,6 +17504,27 @@ var AP_SUBJECT_WHITELISTS = {
     forbiddenSignatures: [
       /\b(?:definite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|chloroplast|mitosis)\b/i
     ]
+  },
+  "ap-english-lang": {
+    subjectId: "ap-english-lang",
+    subjectName: "AP English Language & Composition",
+    category: "humanities",
+    mathExpected: false,
+    canonicalUnits: [
+      { unitNumber: 1, title: "Rhetorical Situation: Reading & Writing", keywords: ["rhetorical situation", "exigence", "speaker", "audience", "purpose", "context", "message", "claims", "evidence"] },
+      { unitNumber: 2, title: "Rhetorical Situation: Appeals & Evidence", keywords: ["ethos", "pathos", "logos", "thesis", "defensible position", "anecdote", "analogy", "facts", "statistics"] },
+      { unitNumber: 3, title: "Reasoning & Organization", keywords: ["line of reasoning", "inductive reasoning", "deductive reasoning", "organization", "transitions", "stasis theory", "toulmin model"] },
+      { unitNumber: 4, title: "Selecting & Integrating Evidence", keywords: ["synthesis", "embedded quotation", "signal phrase", "paraphrase", "source integration", "counterargument", "rebuttal"] },
+      { unitNumber: 5, title: "Developing a Line of Reasoning", keywords: ["commentary", "claim and evidence", "cause and effect", "comparison and contrast", "definition and classification"] },
+      { unitNumber: 6, title: "Rhetorical Analysis: Style & Choice", keywords: ["rhetorical choices", "diction", "syntax", "tone", "tone shift", "juxtaposition", "parallelism", "antithesis", "allusion"] },
+      { unitNumber: 7, title: "Complex Arguments & Qualifications", keywords: ["qualification", "concession", "complexity", "tension", "implications", "limitations", "nuance"] },
+      { unitNumber: 8, title: "Style & Persuasive Voice", keywords: ["metaphor", "personification", "hyperbole", "understatement", "irony", "vivid prose", "rhetorical question"] },
+      { unitNumber: 9, title: "Sophistication & Holistic Synthesis", keywords: ["sophistication", "broader context", "alternative perspectives", "stylistic maturity", "holistic argument"] }
+    ],
+    allowedDomains: ["rhetoric", "composition", "nonfiction analysis", "argumentation", "synthesis", "critical reading", "persuasive writing"],
+    forbiddenSignatures: [
+      /\b(?:definite\s+integral|indefinite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|chloroplast|mitosis|rotational\s+inertia|stoichiometry)\b/i
+    ]
   }
 };
 function getSubjectWhitelist(subjectIdentifier) {
@@ -15204,9 +17536,11 @@ function getSubjectWhitelist(subjectIdentifier) {
       return wl;
     }
   }
+  if (s.includes("english") || s.includes("lang")) return AP_SUBJECT_WHITELISTS["ap-english-lang"];
   if (s.includes("geography") || s.includes("aphg")) return AP_SUBJECT_WHITELISTS["ap-human-geography"];
   if (s.includes("environmental") || s.includes("apes")) return AP_SUBJECT_WHITELISTS["ap-environmental-science"];
   if (s.includes("principles") || s.includes("csp")) return AP_SUBJECT_WHITELISTS["ap-computer-science-principles"];
+  if (s.includes("computer") && (s.includes("science a") || s.includes("csa") || !s.includes("principles")) || s === "csa") return AP_SUBJECT_WHITELISTS["ap-computer-science"];
   if (s.includes("calculus bc")) return AP_SUBJECT_WHITELISTS["ap-calculus-bc"];
   if (s.includes("calculus")) return AP_SUBJECT_WHITELISTS["ap-calculus-ab"];
   if (s.includes("physics")) return AP_SUBJECT_WHITELISTS["ap-physics-1"];
@@ -15451,12 +17785,666 @@ var HOYT_SECTOR_MODEL_SVG = `<svg viewBox='0 0 400 220' xmlns='http://www.w3.org
   <text x='240' y='181' fill='#a7f3d0' font-size='8' font-family='sans-serif' font-weight='bold'>5. High-Class Residential</text>
   <text x='240' y='191' fill='#94a3b8' font-size='7' font-family='sans-serif'>Along spine / clean environmental axis</text>
 </svg>`;
+var APHG_CHOROPLETH_FERTILITY_MAP_SVG = `<svg viewBox='0 0 520 280' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>
+  <defs>
+    <pattern id='hatch-high-tfr' width='8' height='8' patternTransform='rotate(45 0 0)' patternUnits='userSpaceOnUse'>
+      <line x1='0' y1='0' x2='0' y2='8' stroke='#f43f5e' stroke-width='2'/>
+    </pattern>
+  </defs>
+  <rect width='520' height='280' fill='#09090b' rx='10' stroke='#27272a' stroke-width='1.5'/>
+  
+  <!-- Header -->
+  <text x='260' y='20' text-anchor='middle' fill='#f8fafc' font-size='10.5' font-family='system-ui, sans-serif' font-weight='800' letter-spacing='0.5'>
+    FIGURE 1: GLOBAL TOTAL FERTILITY RATES (TFR) BY MACRO-GEOGRAPHIC REGION
+  </text>
+
+  <!-- World Macro-Region Schematic Polygons -->
+  <!-- North America (TFR < 2.1 - Low/Aging) -->
+  <polygon points='40,50 140,50 150,90 120,120 70,110 40,75' fill='#0284c7' fill-opacity='0.65' stroke='#38bdf8' stroke-width='1.5'/>
+  <text x='85' y='80' text-anchor='middle' fill='#ffffff' font-size='8.5' font-family='sans-serif' font-weight='bold'>North America</text>
+  <text x='85' y='92' text-anchor='middle' fill='#bae6fd' font-size='7.5' font-family='sans-serif'>TFR: 1.6 (Stage 4)</text>
+
+  <!-- Latin America & Caribbean (TFR ~1.9 - Replacement) -->
+  <polygon points='95,130 145,130 170,180 150,230 115,220 90,165' fill='#0d9488' fill-opacity='0.65' stroke='#2dd4bf' stroke-width='1.5'/>
+  <text x='130' y='170' text-anchor='middle' fill='#ffffff' font-size='8.5' font-family='sans-serif' font-weight='bold'>Latin America</text>
+  <text x='130' y='182' text-anchor='middle' fill='#99f6e4' font-size='7.5' font-family='sans-serif'>TFR: 1.9 (Stage 3/4)</text>
+
+  <!-- Western & Northern Europe (TFR < 2.1 - Sub-replacement) -->
+  <polygon points='205,50 270,50 280,95 240,105 200,90' fill='#0284c7' fill-opacity='0.65' stroke='#38bdf8' stroke-width='1.5'/>
+  <text x='240' y='72' text-anchor='middle' fill='#ffffff' font-size='8.5' font-family='sans-serif' font-weight='bold'>Europe</text>
+  <text x='240' y='84' text-anchor='middle' fill='#bae6fd' font-size='7.5' font-family='sans-serif'>TFR: 1.5 (Stage 4/5)</text>
+
+  <!-- Middle East & North Africa (TFR 2.1-3.5 - Moderate) -->
+  <polygon points='200,105 295,105 285,135 210,135' fill='#d97706' fill-opacity='0.6' stroke='#fbbf24' stroke-width='1.5'/>
+  <text x='245' y='122' text-anchor='middle' fill='#ffffff' font-size='7.5' font-family='sans-serif' font-weight='bold'>MENA (TFR: 2.7)</text>
+
+  <!-- Sub-Saharan Africa (TFR > 3.5 - High Fertility Stage 2) -->
+  <polygon points='210,140 295,140 280,225 240,235 215,190' fill='url(#hatch-high-tfr)' stroke='#f43f5e' stroke-width='1.8'/>
+  <rect x='215' y='165' width='70' height='30' fill='#18181b' fill-opacity='0.85' rx='4'/>
+  <text x='250' y='178' text-anchor='middle' fill='#fca5a5' font-size='8' font-family='sans-serif' font-weight='bold'>Sub-Saharan</text>
+  <text x='250' y='189' text-anchor='middle' fill='#ffffff' font-size='7.5' font-family='sans-serif'>TFR: 4.6 (Stage 2)</text>
+
+  <!-- South Asia (TFR ~2.0 - Near Replacement) -->
+  <polygon points='310,105 375,105 365,160 330,175 315,140' fill='#0d9488' fill-opacity='0.65' stroke='#2dd4bf' stroke-width='1.5'/>
+  <text x='342' y='132' text-anchor='middle' fill='#ffffff' font-size='8' font-family='sans-serif' font-weight='bold'>South Asia</text>
+  <text x='342' y='143' text-anchor='middle' fill='#99f6e4' font-size='7' font-family='sans-serif'>TFR: 2.0 (Stage 3)</text>
+
+  <!-- East Asia (TFR < 2.1 - Rapid Decline) -->
+  <polygon points='365,55 450,55 460,110 400,120 360,95' fill='#0284c7' fill-opacity='0.65' stroke='#38bdf8' stroke-width='1.5'/>
+  <text x='410' y='80' text-anchor='middle' fill='#ffffff' font-size='8.5' font-family='sans-serif' font-weight='bold'>East Asia</text>
+  <text x='410' y='92' text-anchor='middle' fill='#bae6fd' font-size='7.5' font-family='sans-serif'>TFR: 1.1 (Stage 5)</text>
+
+  <!-- Australia & Oceania (TFR < 2.1) -->
+  <polygon points='400,175 480,175 470,225 410,225' fill='#0284c7' fill-opacity='0.65' stroke='#38bdf8' stroke-width='1.5'/>
+  <text x='440' y='198' text-anchor='middle' fill='#ffffff' font-size='8' font-family='sans-serif' font-weight='bold'>Oceania</text>
+  <text x='440' y='209' text-anchor='middle' fill='#bae6fd' font-size='7' font-family='sans-serif'>TFR: 1.7</text>
+
+  <!-- North Arrow Compass -->
+  <g transform='translate(485, 45)'>
+    <circle cx='0' cy='0' r='14' fill='#18181b' stroke='#3f3f46' stroke-width='1'/>
+    <polygon points='0,-10 -4,3 0,0 4,3' fill='#ef4444'/>
+    <text x='0' y='-12' text-anchor='middle' fill='#f8fafc' font-size='7' font-family='sans-serif' font-weight='bold'>N</text>
+  </g>
+
+  <!-- Legend Box (Bottom) -->
+  <rect x='20' y='244' width='480' height='28' fill='#18181b' rx='6' stroke='#27272a' stroke-width='1'/>
+  <text x='30' y='261' fill='#94a3b8' font-size='8' font-family='sans-serif' font-weight='bold'>CHOROPLETH TFR TIERS:</text>
+
+  <rect x='160' y='251' width='16' height='12' fill='url(#hatch-high-tfr)' stroke='#f43f5e' stroke-width='1'/>
+  <text x='182' y='261' fill='#fca5a5' font-size='8' font-family='sans-serif'>High (&gt; 3.5)</text>
+
+  <rect x='270' y='251' width='16' height='12' fill='#d97706' stroke='#fbbf24' stroke-width='1'/>
+  <text x='292' y='261' fill='#fed7aa' font-size='8' font-family='sans-serif'>Moderate (2.1 - 3.5)</text>
+
+  <rect x='410' y='251' width='16' height='12' fill='#0284c7' stroke='#38bdf8' stroke-width='1'/>
+  <text x='432' y='261' fill='#bae6fd' font-size='8' font-family='sans-serif'>Sub-Repl. (&lt; 2.1)</text>
+</svg>`;
+var APHG_TRANSNATIONAL_MIGRATION_FLOW_MAP_SVG = `<svg viewBox='0 0 520 280' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>
+  <defs>
+    <marker id='mig-arrow-blue' viewBox='0 0 10 10' refX='6' refY='5' markerWidth='7' markerHeight='7' orient='auto'>
+      <path d='M 0,1 L 10,5 L 0,9 z' fill='#38bdf8'/>
+    </marker>
+    <marker id='mig-arrow-amber' viewBox='0 0 10 10' refX='6' refY='5' markerWidth='7' markerHeight='7' orient='auto'>
+      <path d='M 0,1 L 10,5 L 0,9 z' fill='#fbbf24'/>
+    </marker>
+  </defs>
+  <rect width='520' height='280' fill='#09090b' rx='10' stroke='#27272a' stroke-width='1.5'/>
+  
+  <!-- Title -->
+  <text x='260' y='20' text-anchor='middle' fill='#f8fafc' font-size='10.5' font-family='system-ui, sans-serif' font-weight='800' letter-spacing='0.5'>
+    FIGURE 1: MAJOR GLOBAL TRANSNATIONAL MIGRATION CORRIDORS &amp; LABOR FLOWS
+  </text>
+
+  <!-- Regional Nodes -->
+  <!-- Node: North America -->
+  <rect x='40' y='65' width='105' height='55' rx='8' fill='#1e293b' stroke='#38bdf8' stroke-width='1.5'/>
+  <text x='92' y='88' text-anchor='middle' fill='#ffffff' font-size='9' font-family='sans-serif' font-weight='bold'>North America</text>
+  <text x='92' y='102' text-anchor='middle' fill='#38bdf8' font-size='7.5' font-family='sans-serif'>Major Destination (Pull)</text>
+
+  <!-- Node: Latin America -->
+  <rect x='40' y='170' width='105' height='55' rx='8' fill='#1e293b' stroke='#94a3b8' stroke-width='1.5'/>
+  <text x='92' y='193' text-anchor='middle' fill='#ffffff' font-size='9' font-family='sans-serif' font-weight='bold'>Latin America</text>
+  <text x='92' y='207' text-anchor='middle' fill='#94a3b8' font-size='7.5' font-family='sans-serif'>Origin (Push Factors)</text>
+
+  <!-- Corridor 1: Latin America -> North America -->
+  <path d='M 92,170 Q 75,145 92,125' fill='none' stroke='#38bdf8' stroke-width='3.5' marker-end='url(#mig-arrow-blue)'/>
+  <text x='112' y='148' fill='#bae6fd' font-size='7.5' font-family='sans-serif' font-weight='bold'>Corridor A</text>
+
+  <!-- Node: Western Europe -->
+  <rect x='205' y='65' width='110' height='55' rx='8' fill='#1e293b' stroke='#38bdf8' stroke-width='1.5'/>
+  <text x='260' y='88' text-anchor='middle' fill='#ffffff' font-size='9' font-family='sans-serif' font-weight='bold'>Western Europe</text>
+  <text x='260' y='102' text-anchor='middle' fill='#38bdf8' font-size='7.5' font-family='sans-serif'>Destination (Schengen)</text>
+
+  <!-- Node: North & Sub-Saharan Africa -->
+  <rect x='205' y='170' width='110' height='55' rx='8' fill='#1e293b' stroke='#94a3b8' stroke-width='1.5'/>
+  <text x='260' y='193' text-anchor='middle' fill='#ffffff' font-size='9' font-family='sans-serif' font-weight='bold'>Africa (North/Sub)</text>
+  <text x='260' y='207' text-anchor='middle' fill='#94a3b8' font-size='7.5' font-family='sans-serif'>Origin (Economic Push)</text>
+
+  <!-- Corridor 2: Africa -> Europe -->
+  <path d='M 260,170 Q 240,145 260,125' fill='none' stroke='#38bdf8' stroke-width='3' marker-end='url(#mig-arrow-blue)'/>
+  <text x='280' y='148' fill='#bae6fd' font-size='7.5' font-family='sans-serif' font-weight='bold'>Corridor B</text>
+
+  <!-- Node: Arabian Gulf (GCC States) -->
+  <rect x='375' y='65' width='115' height='55' rx='8' fill='#1e293b' stroke='#fbbf24' stroke-width='1.5'/>
+  <text x='432' y='88' text-anchor='middle' fill='#ffffff' font-size='9' font-family='sans-serif' font-weight='bold'>Arabian Gulf (GCC)</text>
+  <text x='432' y='102' text-anchor='middle' fill='#fbbf24' font-size='7.5' font-family='sans-serif'>Guest Contract Workers</text>
+
+  <!-- Node: South & Southeast Asia -->
+  <rect x='375' y='170' width='115' height='55' rx='8' fill='#1e293b' stroke='#94a3b8' stroke-width='1.5'/>
+  <text x='432' y='193' text-anchor='middle' fill='#ffffff' font-size='9' font-family='sans-serif' font-weight='bold'>South / SE Asia</text>
+  <text x='432' y='207' text-anchor='middle' fill='#94a3b8' font-size='7.5' font-family='sans-serif'>Origin (Remittance Relying)</text>
+
+  <!-- Corridor 3: South Asia -> Gulf GCC -->
+  <path d='M 432,170 Q 412,145 432,125' fill='none' stroke='#fbbf24' stroke-width='3.5' marker-end='url(#mig-arrow-amber)'/>
+  <text x='452' y='148' fill='#fef08a' font-size='7.5' font-family='sans-serif' font-weight='bold'>Corridor C</text>
+
+  <!-- Remittance Return Dotted Arrow -->
+  <path d='M 410,125 Q 395,145 410,165' fill='none' stroke='#10b981' stroke-width='2' stroke-dasharray='4,3'/>
+  <text x='355' y='148' fill='#6ee7b7' font-size='7' font-family='sans-serif'>$ Remittances</text>
+
+  <!-- Bottom Key -->
+  <rect x='20' y='244' width='480' height='28' fill='#18181b' rx='6' stroke='#27272a' stroke-width='1'/>
+  <text x='30' y='261' fill='#94a3b8' font-size='8' font-family='sans-serif' font-weight='bold'>MIGRATION MECHANISMS:</text>
+  <line x1='160' y1='258' x2='180' y2='258' stroke='#38bdf8' stroke-width='3'/>
+  <text x='188' y='261' fill='#e2e8f0' font-size='8' font-family='sans-serif'>Permanent / Asylee Flow</text>
+  <line x1='310' y1='258' x2='330' y2='258' stroke='#fbbf24' stroke-width='3'/>
+  <text x='338' y='261' fill='#e2e8f0' font-size='8' font-family='sans-serif'>Temporary Contract Labor</text>
+  <line x1='450' y1='258' x2='470' y2='258' stroke='#10b981' stroke-width='2' stroke-dasharray='3,2'/>
+  <text x='475' y='261' fill='#6ee7b7' font-size='7.5' font-family='sans-serif'>Cash Flow</text>
+</svg>`;
+var APHG_WALLERSTEIN_CORE_PERIPHERY_SVG = `<svg viewBox='0 0 520 280' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>
+  <defs>
+    <marker id='arrow-core' viewBox='0 0 10 10' refX='6' refY='5' markerWidth='7' markerHeight='7' orient='auto'>
+      <path d='M 0,1 L 10,5 L 0,9 z' fill='#38bdf8'/>
+    </marker>
+    <marker id='arrow-periphery' viewBox='0 0 10 10' refX='6' refY='5' markerWidth='7' markerHeight='7' orient='auto'>
+      <path d='M 0,1 L 10,5 L 0,9 z' fill='#f43f5e'/>
+    </marker>
+  </defs>
+  <rect width='520' height='280' fill='#09090b' rx='10' stroke='#27272a' stroke-width='1.5'/>
+  
+  <text x='260' y='20' text-anchor='middle' fill='#f8fafc' font-size='10.5' font-family='system-ui, sans-serif' font-weight='800' letter-spacing='0.5'>
+    FIGURE 1: WALLERSTEIN'S WORLD SYSTEMS THEORY (SPATIAL DIVISION OF LABOR)
+  </text>
+
+  <!-- Left: Concentric Hierarchy (Center at x=135, y=140) -->
+  <!-- Outer Ring: Periphery -->
+  <circle cx='135' cy='140' r='95' fill='#881337' fill-opacity='0.4' stroke='#f43f5e' stroke-width='1.5'/>
+  <!-- Middle Ring: Semi-Periphery -->
+  <circle cx='135' cy='140' r='68' fill='#78350f' fill-opacity='0.5' stroke='#f59e0b' stroke-width='1.5'/>
+  <!-- Inner Core -->
+  <circle cx='135' cy='140' r='38' fill='#0369a1' fill-opacity='0.7' stroke='#38bdf8' stroke-width='2'/>
+  <text x='135' y='136' text-anchor='middle' fill='#ffffff' font-size='9' font-family='sans-serif' font-weight='bold'>CORE</text>
+  <text x='135' y='148' text-anchor='middle' fill='#bae6fd' font-size='7' font-family='sans-serif'>High Tech/Capital</text>
+
+  <text x='135' y='86' text-anchor='middle' fill='#fef08a' font-size='8' font-family='sans-serif' font-weight='bold'>SEMI-PERIPHERY</text>
+  <text x='135' y='58' text-anchor='middle' fill='#fecdd3' font-size='8' font-family='sans-serif' font-weight='bold'>PERIPHERY</text>
+
+  <!-- Right: Economic Trade Flows -->
+  <rect x='250' y='40' width='250' height='190' rx='8' fill='#18181b' stroke='#27272a' stroke-width='1'/>
+  <text x='260' y='58' fill='#f8fafc' font-size='9' font-family='sans-serif' font-weight='800'>SPATIAL INTERACTION &amp; UNEQUAL EXCHANGE:</text>
+
+  <!-- Flow 1: Periphery -> Core (Raw Materials) -->
+  <rect x='260' y='72' width='230' height='40' rx='6' fill='#27272a' stroke='#f43f5e' stroke-width='1'/>
+  <text x='270' y='86' fill='#fca5a5' font-size='8' font-family='sans-serif' font-weight='bold'>Periphery to Core:</text>
+  <text x='270' y='98' fill='#e2e8f0' font-size='7' font-family='sans-serif'>Inexpensive raw agricultural goods, minerals &amp; low-wage labor</text>
+
+  <!-- Flow 2: Core -> Periphery (Manufactured Goods) -->
+  <rect x='260' y='122' width='230' height='40' rx='6' fill='#27272a' stroke='#38bdf8' stroke-width='1'/>
+  <text x='270' y='136' fill='#7dd3fc' font-size='8' font-family='sans-serif' font-weight='bold'>Core to Periphery &amp; Semi-Periphery:</text>
+  <text x='270' y='148' fill='#e2e8f0' font-size='7' font-family='sans-serif'>High-profit manufactured goods, machinery &amp; financial credit</text>
+
+  <!-- Semi-periphery role -->
+  <rect x='260' y='172' width='230' height='46' rx='6' fill='#27272a' stroke='#f59e0b' stroke-width='1'/>
+  <text x='270' y='186' fill='#fde047' font-size='8' font-family='sans-serif' font-weight='bold'>Role of Semi-Periphery (BRICS):</text>
+  <text x='270' y='198' fill='#cbd5e1' font-size='7' font-family='sans-serif'>Buffer zone; exploits periphery while being exploited by core</text>
+
+  <!-- Bottom Key -->
+  <rect x='20' y='244' width='480' height='28' fill='#18181b' rx='6' stroke='#27272a' stroke-width='1'/>
+  <text x='260' y='261' text-anchor='middle' fill='#94a3b8' font-size='7.5' font-family='sans-serif'>
+    Core Countries: US, Western Europe, Japan | Semi-Periphery: China, Brazil, India, Mexico | Periphery: Sub-Saharan Africa
+  </text>
+</svg>`;
+var APHG_HARRIS_ULLMAN_MULTIPLE_NUCLEI_SVG = `<svg viewBox='0 0 520 280' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>
+  <rect width='520' height='280' fill='#09090b' rx='10' stroke='#27272a' stroke-width='1.5'/>
+  
+  <text x='260' y='20' text-anchor='middle' fill='#f8fafc' font-size='10.5' font-family='system-ui, sans-serif' font-weight='800' letter-spacing='0.5'>
+    FIGURE 1: HARRIS-ULLMAN MULTIPLE NUCLEI &amp; GALACTIC EDGE CITY MODEL
+  </text>
+
+  <!-- Left: Geometric Urban Map (x: 20 to 260) -->
+  <!-- Orbital Highway Beltway Ring -->
+  <ellipse cx='140' cy='135' rx='110' ry='85' fill='none' stroke='#64748b' stroke-width='2' stroke-dasharray='6,4'/>
+  <text x='140' y='46' text-anchor='middle' fill='#94a3b8' font-size='7.5' font-family='sans-serif'>Interstate Orbital Highway Beltway</text>
+
+  <!-- Node 1: CBD -->
+  <rect x='110' y='110' width='45' height='35' fill='#eab308' stroke='#fde047' stroke-width='1.5' rx='4'/>
+  <text x='132' y='132' text-anchor='middle' fill='#000000' font-size='9' font-family='sans-serif' font-weight='bold'>1</text>
+
+  <!-- Node 2: Wholesale & Light Manufacturing -->
+  <rect x='70' y='100' width='35' height='45' fill='#ea580c' stroke='#f97316' stroke-width='1.5' rx='4'/>
+  <text x='87' y='127' text-anchor='middle' fill='#ffffff' font-size='9' font-family='sans-serif' font-weight='bold'>2</text>
+
+  <!-- Node 3: Low-Class Residential -->
+  <rect x='60' y='150' width='55' height='35' fill='#b91c1c' stroke='#ef4444' stroke-width='1.5' rx='4'/>
+  <text x='87' y='172' text-anchor='middle' fill='#ffffff' font-size='9' font-family='sans-serif' font-weight='bold'>3</text>
+
+  <!-- Node 4: Medium-Class Residential -->
+  <polygon points='160,110 210,100 215,160 160,150' fill='#0284c7' stroke='#38bdf8' stroke-width='1.5'/>
+  <text x='185' y='135' text-anchor='middle' fill='#ffffff' font-size='9' font-family='sans-serif' font-weight='bold'>4</text>
+
+  <!-- Node 5: High-Class Residential -->
+  <polygon points='160,65 210,60 215,95 160,105' fill='#059669' stroke='#34d399' stroke-width='1.5'/>
+  <text x='185' y='87' text-anchor='middle' fill='#ffffff' font-size='9' font-family='sans-serif' font-weight='bold'>5</text>
+
+  <!-- Node 6: Heavy Industry Outlying Node -->
+  <rect x='45' y='70' width='35' height='25' fill='#713f12' stroke='#a16207' stroke-width='1.5' rx='4'/>
+  <text x='62' y='87' text-anchor='middle' fill='#ffffff' font-size='8' font-family='sans-serif' font-weight='bold'>6</text>
+
+  <!-- Node 7: Outlying Business District (Suburban CBD) -->
+  <rect x='185' y='175' width='35' height='25' fill='#eab308' stroke='#fde047' stroke-width='1.5' rx='4'/>
+  <text x='202' y='192' text-anchor='middle' fill='#000000' font-size='8' font-family='sans-serif' font-weight='bold'>7</text>
+
+  <!-- Node 8: Residential Suburb -->
+  <rect x='120' y='190' width='55' height='25' fill='#0284c7' stroke='#38bdf8' stroke-width='1.5' rx='4'/>
+  <text x='147' y='207' text-anchor='middle' fill='#ffffff' font-size='8' font-family='sans-serif' font-weight='bold'>8</text>
+
+  <!-- Node 9: Galactic Edge City along Beltway Intersection -->
+  <circle cx='235' cy='180' r='16' fill='#7c3aed' stroke='#a78bfa' stroke-width='2'/>
+  <text x='235' y='184' text-anchor='middle' fill='#ffffff' font-size='8' font-family='sans-serif' font-weight='bold'>9</text>
+  <text x='235' y='206' text-anchor='middle' fill='#c4b5fd' font-size='7' font-family='sans-serif' font-weight='bold'>Edge City</text>
+
+  <!-- Right: Legend Box -->
+  <rect x='270' y='36' width='235' height='230' rx='8' fill='#18181b' stroke='#27272a' stroke-width='1'/>
+  <text x='280' y='52' fill='#f8fafc' font-size='9' font-family='sans-serif' font-weight='800'>MULTIPLE NUCLEI ZONING KEY:</text>
+
+  <text x='280' y='72' fill='#fef08a' font-size='7.5' font-family='sans-serif'><b>1.</b> Central Business District (CBD)</text>
+  <text x='280' y='90' fill='#fed7aa' font-size='7.5' font-family='sans-serif'><b>2.</b> Wholesale &amp; Light Manufacturing</text>
+  <text x='280' y='108' fill='#fca5a5' font-size='7.5' font-family='sans-serif'><b>3.</b> Low-Class Residential (Near factories)</text>
+  <text x='280' y='126' fill='#7dd3fc' font-size='7.5' font-family='sans-serif'><b>4.</b> Medium-Class Residential</text>
+  <text x='280' y='144' fill='#86efac' font-size='7.5' font-family='sans-serif'><b>5.</b> High-Class Residential (Farthest from smog)</text>
+  <text x='280' y='162' fill='#ca8a04' font-size='7.5' font-family='sans-serif'><b>6.</b> Heavy Manufacturing Node</text>
+  <text x='280' y='180' fill='#fef08a' font-size='7.5' font-family='sans-serif'><b>7.</b> Outlying Suburban Business District</text>
+  <text x='280' y='198' fill='#7dd3fc' font-size='7.5' font-family='sans-serif'><b>8.</b> Residential Suburb</text>
+  <text x='280' y='216' fill='#d8b4fe' font-size='7.5' font-family='sans-serif'><b>9.</b> Galactic Edge City (Jobs along Beltway)</text>
+
+  <text x='280' y='245' fill='#94a3b8' font-size='7' font-family='sans-serif'>
+    Harris-Ullman (1945): Polycentric urban structure based on automobile transport.
+  </text>
+</svg>`;
+var ENSO_LA_NINA_PACIFIC_MAP_SVG = `<svg viewBox='0 0 540 420' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>
+  <defs>
+    <!-- Pattern 1: Diagonal Hatch for Cooler Ocean Water -->
+    <pattern id='enso-cool-hatch' width='10' height='10' patternTransform='rotate(45 0 0)' patternUnits='userSpaceOnUse'>
+      <line x1='0' y1='0' x2='0' y2='10' stroke='#38bdf8' stroke-width='2'/>
+    </pattern>
+
+    <!-- Pattern 2: Horizontal Stripes for Warmer Ocean Water -->
+    <pattern id='enso-warm-stripes' width='10' height='8' patternUnits='userSpaceOnUse'>
+      <line x1='0' y1='4' x2='10' y2='4' stroke='#fb923c' stroke-width='2.5'/>
+    </pattern>
+
+    <!-- Arrow Marker for Trade Winds -->
+    <marker id='enso-arrow-head' viewBox='0 0 10 10' refX='2' refY='5' markerWidth='8' markerHeight='8' orient='auto'>
+      <path d='M 10,0 L 0,5 L 10,10 z' fill='#f8fafc'/>
+    </marker>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width='540' height='420' fill='#09090b' rx='12' stroke='#27272a' stroke-width='1.5'/>
+
+  <!-- Figure Title Header (Exact match to official College Board prompt) -->
+  <text x='270' y='22' text-anchor='middle' fill='#f8fafc' font-size='10.5' font-family='system-ui, sans-serif' font-weight='800' letter-spacing='0.3'>
+    FIGURE 1. EFFECTS OF CHANGES IN SEA SURFACE CONDITIONS IN EQUATORIAL PACIFIC OCEAN
+  </text>
+
+  <!-- Map Frame Box (x=20, y=34, width=500, height=240) -->
+  <rect x='20' y='34' width='500' height='240' fill='#0f172a' stroke='#334155' stroke-width='1.5'/>
+
+  <!-- Latitudes Lines & Labels -->
+  <!-- 30\xB0 North -->
+  <line x1='20' y1='95' x2='520' y2='95' stroke='#64748b' stroke-width='1' stroke-dasharray='5,5'/>
+  <rect x='225' y='87' width='90' height='16' fill='#0f172a' rx='3'/>
+  <text x='270' y='99' text-anchor='middle' fill='#cbd5e1' font-size='9' font-family='system-ui, sans-serif' font-weight='700'>30\xB0 North</text>
+
+  <!-- Equator 0\xB0 -->
+  <line x1='20' y1='165' x2='520' y2='165' stroke='#64748b' stroke-width='1' stroke-dasharray='5,5'/>
+  <rect x='225' y='157' width='90' height='16' fill='#0f172a' rx='3'/>
+  <text x='270' y='169' text-anchor='middle' fill='#cbd5e1' font-size='9' font-family='system-ui, sans-serif' font-weight='700'>Equator 0\xB0</text>
+
+  <!-- Continents Silhouettes -->
+  <!-- 1. Asia / East Eurasia (Top Left) -->
+  <path d='M 20,34 L 150,34 Q 165,55 175,80 Q 160,110 145,130 Q 120,150 95,170 Q 75,185 55,200 L 20,200 Z' fill='#334155' stroke='#475569' stroke-width='1.2'/>
+  <!-- Japan Arc -->
+  <path d='M 172,78 Q 182,95 175,115' fill='none' stroke='#94a3b8' stroke-width='3' stroke-linecap='round'/>
+  <!-- SE Asia & Indonesian Islands -->
+  <ellipse cx='105' cy='180' rx='14' ry='5' fill='#475569' stroke='#94a3b8'/>
+  <ellipse cx='135' cy='188' rx='20' ry='6' fill='#475569' stroke='#94a3b8'/>
+  <ellipse cx='175' cy='190' rx='22' ry='7' fill='#475569' stroke='#94a3b8'/>
+
+  <!-- 2. North America (Top Right) -->
+  <path d='M 320,34 L 520,34 L 520,140 Q 480,135 445,115 Q 420,95 385,80 Q 350,60 320,34 Z' fill='#334155' stroke='#475569' stroke-width='1.2'/>
+  <!-- Central America & Mexico Isthmus -->
+  <path d='M 445,115 Q 465,130 475,155 Q 465,168 450,172' fill='none' stroke='#334155' stroke-width='12' stroke-linecap='round'/>
+
+  <!-- 3. South America (Bottom Right) -->
+  <path d='M 450,172 Q 480,180 520,182 L 520,274 L 455,274 Q 440,245 442,215 Q 442,190 450,172 Z' fill='#334155' stroke='#475569' stroke-width='1.2'/>
+
+  <!-- 4. Australia (Bottom Left) - Split into West (Normal) and East (Black Shaded: High Precipitation) -->
+  <!-- West Australia (Normal Light Fill) -->
+  <path d='M 105,225 Q 130,215 145,216 L 145,274 Q 128,274 112,262 Q 98,248 105,225 Z' fill='#1e293b' stroke='#64748b' stroke-width='1.5'/>
+  <!-- East Australia (Solid Black Fill: Increased Chance of Precipitation) -->
+  <path d='M 145,216 Q 165,215 180,228 Q 185,250 176,270 Q 158,275 145,274 Z' fill='#000000' stroke='#38bdf8' stroke-width='2'/>
+  <!-- New Zealand -->
+  <ellipse cx='205' cy='268' rx='4' ry='11' transform='rotate(25 205 268)' fill='#475569' stroke='#94a3b8'/>
+
+  <!-- Oceanic Thermal Conditions (Thematic Layers) -->
+  <!-- Layer A: Warm Pool in Western Equatorial Pacific (Horizontal Stripes) -->
+  <path d='M 80,145 Q 140,130 200,140 Q 225,165 220,198 Q 205,225 155,220 Q 105,215 75,188 Z' 
+        fill='url(#enso-warm-stripes)' stroke='#fb923c' stroke-width='1.5' stroke-dasharray='4,2'/>
+
+  <!-- Layer B: Cool Tongue in Eastern Equatorial Pacific (Diagonal Hatch) -->
+  <path d='M 255,155 Q 330,135 410,132 Q 460,142 458,168 Q 445,190 405,192 Q 335,185 255,172 Z' 
+        fill='url(#enso-cool-hatch)' stroke='#38bdf8' stroke-width='1.5' stroke-dasharray='4,2'/>
+
+  <!-- Caribbean / Gulf of Mexico Cool Patch -->
+  <ellipse cx='465' cy='135' rx='25' ry='12' fill='url(#enso-cool-hatch)' stroke='#38bdf8' stroke-width='1.2' stroke-dasharray='3,2'/>
+
+  <!-- Stronger than Normal Trade Winds Arrow (Thick Arrow pointing West along Equator) -->
+  <line x1='365' y1='165' x2='210' y2='165' stroke='#f8fafc' stroke-width='5.5' marker-end='url(#enso-arrow-head)'/>
+
+  <!-- Compass Rose (South Pacific, x=415, y=232) -->
+  <g transform='translate(415, 232)'>
+    <circle cx='0' cy='0' r='18' fill='#0f172a' stroke='#64748b' stroke-width='1'/>
+    <line x1='0' y1='-16' x2='0' y2='16' stroke='#94a3b8' stroke-width='1.5'/>
+    <line x1='-16' y1='0' x2='16' y2='0' stroke='#94a3b8' stroke-width='1.5'/>
+    <polygon points='0,-16 3,-5 0,0 -3,-5' fill='#f8fafc'/>
+    <polygon points='0,16 3,5 0,0 -3,5' fill='#64748b'/>
+    <polygon points='16,0 5,3 0,0 5,-3' fill='#64748b'/>
+    <polygon points='-16,0 -5,3 0,0 -5,-3' fill='#64748b'/>
+    <text x='0' y='-20' text-anchor='middle' fill='#f8fafc' font-size='8.5' font-family='sans-serif' font-weight='800'>N</text>
+    <text x='0' y='27' text-anchor='middle' fill='#94a3b8' font-size='7.5' font-family='sans-serif' font-weight='700'>S</text>
+    <text x='25' y='3' text-anchor='middle' fill='#94a3b8' font-size='7.5' font-family='sans-serif' font-weight='700'>E</text>
+    <text x='-25' y='3' text-anchor='middle' fill='#94a3b8' font-size='7.5' font-family='sans-serif' font-weight='700'>W</text>
+  </g>
+
+  <!-- Bottom Official College Board Legend Box -->
+  <rect x='110' y='286' width='320' height='120' fill='#0f172a' rx='8' stroke='#334155' stroke-width='1.5'/>
+
+  <!-- Legend Item 1: Cooler Water -->
+  <rect x='125' y='298' width='22' height='14' fill='url(#enso-cool-hatch)' stroke='#38bdf8' stroke-width='1'/>
+  <text x='158' y='310' fill='#e2e8f0' font-size='8.5' font-family='system-ui, sans-serif' font-weight='700'>Ocean water cooler than average</text>
+
+  <!-- Legend Item 2: Warmer Water -->
+  <rect x='125' y='322' width='22' height='14' fill='url(#enso-warm-stripes)' stroke='#fb923c' stroke-width='1'/>
+  <text x='158' y='334' fill='#e2e8f0' font-size='8.5' font-family='system-ui, sans-serif' font-weight='700'>Ocean water warmer than average</text>
+
+  <!-- Legend Item 3: Increased Precipitation -->
+  <rect x='125' y='346' width='22' height='14' fill='#000000' stroke='#38bdf8' stroke-width='1.5'/>
+  <text x='158' y='358' fill='#e2e8f0' font-size='8.5' font-family='system-ui, sans-serif' font-weight='700'>Increased chance of precipitation</text>
+
+  <!-- Legend Item 4: Stronger Trade Winds -->
+  <g transform='translate(125, 376)'>
+    <line x1='22' y1='4' x2='2' y2='4' stroke='#f8fafc' stroke-width='3.5' marker-end='url(#enso-arrow-head)'/>
+  </g>
+  <text x='158' y='382' fill='#e2e8f0' font-size='8.5' font-family='system-ui, sans-serif' font-weight='700'>Stronger than normal trade winds</text>
+
+  <!-- Climatological Subtitle -->
+  <text x='270' y='400' text-anchor='middle' fill='#38bdf8' font-size='8' font-family='system-ui, sans-serif' font-weight='700'>
+    CLIMATOLOGICAL CONDITION: LA NI\xD1A (ENHANCED PACIFIC CIRCULATION)
+  </text>
+</svg>`;
+var ENSO_EL_NINO_PACIFIC_MAP_SVG = `<svg viewBox='0 0 540 420' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>
+  <defs>
+    <pattern id='el-nino-warm' width='10' height='8' patternUnits='userSpaceOnUse'>
+      <line x1='0' y1='4' x2='10' y2='4' stroke='#f43f5e' stroke-width='2.5'/>
+    </pattern>
+    <pattern id='el-nino-dry' width='10' height='10' patternTransform='rotate(45 0 0)' patternUnits='userSpaceOnUse'>
+      <line x1='0' y1='0' x2='0' y2='10' stroke='#eab308' stroke-width='1.8'/>
+    </pattern>
+    <marker id='el-nino-arrow' viewBox='0 0 10 10' refX='8' refY='5' markerWidth='7' markerHeight='7' orient='auto'>
+      <path d='M 0,0 L 10,5 L 0,10 z' fill='#f43f5e'/>
+    </marker>
+  </defs>
+
+  <rect width='540' height='420' fill='#09090b' rx='12' stroke='#27272a' stroke-width='1.5'/>
+  <text x='270' y='22' text-anchor='middle' fill='#f8fafc' font-size='10.5' font-family='system-ui, sans-serif' font-weight='800' letter-spacing='0.3'>
+    FIGURE 1. EFFECTS OF CHANGES IN SEA SURFACE CONDITIONS: EL NI\xD1O (ENSO)
+  </text>
+
+  <rect x='20' y='34' width='500' height='240' fill='#0f172a' stroke='#334155' stroke-width='1.5'/>
+
+  <!-- Latitudes -->
+  <line x1='20' y1='95' x2='520' y2='95' stroke='#64748b' stroke-width='1' stroke-dasharray='5,5'/>
+  <rect x='225' y='87' width='90' height='16' fill='#0f172a' rx='3'/>
+  <text x='270' y='99' text-anchor='middle' fill='#cbd5e1' font-size='9' font-family='system-ui, sans-serif' font-weight='700'>30\xB0 North</text>
+
+  <line x1='20' y1='165' x2='520' y2='165' stroke='#64748b' stroke-width='1' stroke-dasharray='5,5'/>
+  <rect x='225' y='157' width='90' height='16' fill='#0f172a' rx='3'/>
+  <text x='270' y='169' text-anchor='middle' fill='#cbd5e1' font-size='9' font-family='system-ui, sans-serif' font-weight='700'>Equator 0\xB0</text>
+
+  <!-- Land Masses -->
+  <path d='M 20,34 L 150,34 Q 165,55 175,80 Q 160,110 145,130 Q 120,150 95,170 Q 75,185 55,200 L 20,200 Z' fill='#334155' stroke='#475569' stroke-width='1.2'/>
+  <path d='M 320,34 L 520,34 L 520,140 Q 480,135 445,115 Q 420,95 385,80 Q 350,60 320,34 Z' fill='#334155' stroke='#475569' stroke-width='1.2'/>
+  <path d='M 450,172 Q 480,180 520,182 L 520,274 L 455,274 Q 440,245 442,215 Q 442,190 450,172 Z' fill='#334155' stroke='#475569' stroke-width='1.2'/>
+
+  <!-- Australia with Drought / Dry Hatch -->
+  <path d='M 105,225 Q 140,215 175,225 Q 185,255 170,275 Q 130,280 105,255 Z' fill='url(#el-nino-dry)' stroke='#eab308' stroke-width='1.5'/>
+
+  <!-- Eastward Shifted Warm Pool (Spanning Central and Eastern Pacific along Equator) -->
+  <path d='M 220,150 Q 310,128 410,130 Q 465,145 460,185 Q 425,205 320,198 Q 240,195 220,175 Z' 
+        fill='url(#el-nino-warm)' stroke='#f43f5e' stroke-width='1.8' stroke-dasharray='4,2'/>
+
+  <!-- Weakened / Reversed Trade Winds (Dashed Eastward Arrow) -->
+  <line x1='190' y1='165' x2='300' y2='165' stroke='#f43f5e' stroke-width='4' stroke-dasharray='6,3' marker-end='url(#el-nino-arrow)'/>
+
+  <!-- Bottom Legend Box -->
+  <rect x='110' y='286' width='320' height='120' fill='#0f172a' rx='8' stroke='#334155' stroke-width='1.5'/>
+  <rect x='125' y='298' width='22' height='14' fill='url(#el-nino-warm)' stroke='#f43f5e' stroke-width='1'/>
+  <text x='158' y='310' fill='#e2e8f0' font-size='8.5' font-family='system-ui, sans-serif' font-weight='700'>Ocean water warmer than average (Displaced East)</text>
+
+  <rect x='125' y='322' width='22' height='14' fill='url(#el-nino-dry)' stroke='#eab308' stroke-width='1'/>
+  <text x='158' y='334' fill='#e2e8f0' font-size='8.5' font-family='system-ui, sans-serif' font-weight='700'>Drought risk / Decreased precipitation</text>
+
+  <rect x='125' y='346' width='22' height='14' fill='#0284c7' stroke='#38bdf8' stroke-width='1'/>
+  <text x='158' y='358' fill='#e2e8f0' font-size='8.5' font-family='system-ui, sans-serif' font-weight='700'>Suppressed marine nutrient upwelling off Peru</text>
+
+  <g transform='translate(125, 376)'>
+    <line x1='2' y1='4' x2='22' y2='4' stroke='#f43f5e' stroke-width='2.5' stroke-dasharray='4,2' marker-end='url(#el-nino-arrow)'/>
+  </g>
+  <text x='158' y='382' fill='#e2e8f0' font-size='8.5' font-family='system-ui, sans-serif' font-weight='700'>Weakened / Reversed trade winds (Eastward flow)</text>
+
+  <text x='270' y='400' text-anchor='middle' fill='#f43f5e' font-size='8' font-family='system-ui, sans-serif' font-weight='700'>
+    CLIMATOLOGICAL CONDITION: EL NI\xD1O (SUPPRESSED WALKER CIRCULATION)
+  </text>
+</svg>`;
+var RAIN_SHADOW_EFFECT_SVG = `<svg viewBox='0 0 500 280' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>
+  <defs>
+    <linearGradient id='ocean-grad' x1='0%' y1='0%' x2='100%' y2='0%'>
+      <stop offset='0%' stop-color='#0369a1'/>
+      <stop offset='100%' stop-color='#0284c7'/>
+    </linearGradient>
+    <linearGradient id='mountain-grad' x1='0%' y1='0%' x2='100%' y2='0%'>
+      <stop offset='0%' stop-color='#15803d'/>
+      <stop offset='45%' stop-color='#475569'/>
+      <stop offset='65%' stop-color='#a16207'/>
+      <stop offset='100%' stop-color='#78350f'/>
+    </linearGradient>
+    <marker id='air-arrow' viewBox='0 0 10 10' refX='6' refY='5' markerWidth='6' markerHeight='6' orient='auto'>
+      <path d='M 0,0 L 10,5 L 0,10 z' fill='#38bdf8'/>
+    </marker>
+    <marker id='dry-arrow' viewBox='0 0 10 10' refX='6' refY='5' markerWidth='6' markerHeight='6' orient='auto'>
+      <path d='M 0,0 L 10,5 L 0,10 z' fill='#fb923c'/>
+    </marker>
+  </defs>
+
+  <rect width='500' height='280' fill='#09090b' rx='10' stroke='#27272a' stroke-width='1.5'/>
+  <text x='250' y='20' text-anchor='middle' fill='#f8fafc' font-size='11' font-family='system-ui, sans-serif' font-weight='800' letter-spacing='0.5'>
+    THE RAIN SHADOW EFFECT (OROGRAPHIC PRECIPITATION)
+  </text>
+
+  <!-- Ocean (Left) -->
+  <rect x='15' y='210' width='105' height='55' fill='url(#ocean-grad)' rx='4'/>
+  <text x='67' y='242' text-anchor='middle' fill='#e0f2fe' font-size='9' font-family='sans-serif' font-weight='bold'>Pacific Ocean</text>
+
+  <!-- Mountain Profile -->
+  <path d='M 120,225 L 240,75 L 340,210 L 485,225 L 485,265 L 120,265 Z' fill='url(#mountain-grad)' stroke='#334155' stroke-width='1.5'/>
+
+  <!-- Windward Slope (Moist, Lush Side) -->
+  <text x='155' y='180' fill='#4ade80' font-size='9' font-family='sans-serif' font-weight='bold'>WINDWARD</text>
+  <text x='155' y='192' fill='#86efac' font-size='7.5' font-family='sans-serif'>Moist, rising air cools</text>
+  <text x='155' y='202' fill='#86efac' font-size='7.5' font-family='sans-serif'>Condensation &amp; Heavy Rain</text>
+
+  <!-- Rising Wind Arrows -->
+  <path d='M 60,195 Q 110,190 150,150 Q 185,115 220,80' fill='none' stroke='#38bdf8' stroke-width='3' marker-end='url(#air-arrow)'/>
+
+  <!-- Clouds & Rain at Peak -->
+  <ellipse cx='215' cy='75' rx='35' ry='16' fill='#64748b' fill-opacity='0.8'/>
+  <ellipse cx='235' cy='68' rx='25' ry='14' fill='#94a3b8' fill-opacity='0.9'/>
+  <!-- Rain dashes -->
+  <line x1='195' y1='95' x2='185' y2='125' stroke='#38bdf8' stroke-width='2' stroke-dasharray='4,3'/>
+  <line x1='215' y1='95' x2='205' y2='125' stroke='#38bdf8' stroke-width='2' stroke-dasharray='4,3'/>
+
+  <!-- Leeward Slope (Arid Rain Shadow) -->
+  <text x='355' y='150' fill='#fb923c' font-size='9' font-family='sans-serif' font-weight='bold'>LEEWARD (RAIN SHADOW)</text>
+  <text x='355' y='163' fill='#fed7aa' font-size='7.5' font-family='sans-serif'>Dry air descends &amp; warms</text>
+  <text x='355' y='174' fill='#fed7aa' font-size='7.5' font-family='sans-serif'>Low precipitation / Arid desert</text>
+
+  <!-- Descending Dry Warm Air Arrow -->
+  <path d='M 255,80 Q 295,120 340,175 Q 370,210 440,218' fill='none' stroke='#fb923c' stroke-width='3' marker-end='url(#dry-arrow)'/>
+
+  <!-- Bottom Legend / Concept Note -->
+  <rect x='15' y='240' width='470' height='28' fill='#18181b' rx='6' stroke='#27272a' stroke-width='1'/>
+  <text x='250' y='257' text-anchor='middle' fill='#cbd5e1' font-size='8' font-family='system-ui, sans-serif'>
+    Physical Mechanism: Adiabatic cooling &amp; condensation on windward slope; adiabatic warming &amp; moisture depletion on leeward slope.
+  </text>
+</svg>`;
+var APHG_EPIDEMIOLOGICAL_TRANSITION_MODEL_SVG = `<svg viewBox='0 0 520 280' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>
+  <rect width='520' height='280' fill='#09090b' rx='10' stroke='#27272a' stroke-width='1.5'/>
+  
+  <text x='260' y='20' text-anchor='middle' fill='#f8fafc' font-size='10.5' font-family='system-ui, sans-serif' font-weight='800' letter-spacing='0.5'>
+    FIGURE 1: EPIDEMIOLOGICAL TRANSITION MODEL (OMRAN'S 5 STAGES)
+  </text>
+
+  <!-- Stage 1 -->
+  <rect x='25' y='36' width='90' height='150' fill='#18181b' rx='6' stroke='#27272a' stroke-width='1'/>
+  <text x='70' y='52' text-anchor='middle' fill='#ef4444' font-size='8.5' font-family='sans-serif' font-weight='bold'>Stage 1</text>
+  <text x='70' y='63' text-anchor='middle' fill='#ffffff' font-size='7.5' font-family='sans-serif' font-weight='bold'>Pestilence &amp; Famine</text>
+  <line x1='35' y1='70' x2='105' y2='70' stroke='#3f3f46' stroke-width='1'/>
+  <text x='70' y='88' text-anchor='middle' fill='#fca5a5' font-size='7' font-family='sans-serif'>High Mortality</text>
+  <text x='70' y='100' text-anchor='middle' fill='#e2e8f0' font-size='6.5' font-family='sans-serif'>Infectious Diseases</text>
+  <text x='70' y='110' text-anchor='middle' fill='#e2e8f0' font-size='6.5' font-family='sans-serif'>Parasites &amp; Famine</text>
+  <text x='70' y='125' text-anchor='middle' fill='#94a3b8' font-size='6.5' font-family='sans-serif'>Black Plague, Cholera</text>
+  <text x='70' y='145' text-anchor='middle' fill='#f87171' font-size='7' font-family='sans-serif' font-weight='bold'>Life Exp: &lt;30 yrs</text>
+
+  <!-- Stage 2 -->
+  <rect x='120' y='36' width='90' height='150' fill='#18181b' rx='6' stroke='#27272a' stroke-width='1'/>
+  <text x='165' y='52' text-anchor='middle' fill='#f59e0b' font-size='8.5' font-family='sans-serif' font-weight='bold'>Stage 2</text>
+  <text x='165' y='63' text-anchor='middle' fill='#ffffff' font-size='7.5' font-family='sans-serif' font-weight='bold'>Receding Pandemics</text>
+  <line x1='130' y1='70' x2='200' y2='70' stroke='#3f3f46' stroke-width='1'/>
+  <text x='165' y='88' text-anchor='middle' fill='#fcd34d' font-size='7' font-family='sans-serif'>Plummeting CDR</text>
+  <text x='165' y='100' text-anchor='middle' fill='#e2e8f0' font-size='6.5' font-family='sans-serif'>Public Sanitation</text>
+  <text x='165' y='110' text-anchor='middle' fill='#e2e8f0' font-size='6.5' font-family='sans-serif'>Clean Piped Water</text>
+  <text x='165' y='125' text-anchor='middle' fill='#94a3b8' font-size='6.5' font-family='sans-serif'>Industrial Revolution</text>
+  <text x='165' y='145' text-anchor='middle' fill='#fbbf24' font-size='7' font-family='sans-serif' font-weight='bold'>Life Exp: ~50 yrs</text>
+
+  <!-- Stage 3 -->
+  <rect x='215' y='36' width='90' height='150' fill='#18181b' rx='6' stroke='#27272a' stroke-width='1'/>
+  <text x='260' y='52' text-anchor='middle' fill='#38bdf8' font-size='8.5' font-family='sans-serif' font-weight='bold'>Stage 3</text>
+  <text x='260' y='63' text-anchor='middle' fill='#ffffff' font-size='7.5' font-family='sans-serif' font-weight='bold'>Degenerative Diseases</text>
+  <line x1='225' y1='70' x2='295' y2='70' stroke='#3f3f46' stroke-width='1'/>
+  <text x='260' y='88' text-anchor='middle' fill='#7dd3fc' font-size='7' font-family='sans-serif'>Chronic Pathologies</text>
+  <text x='260' y='100' text-anchor='middle' fill='#e2e8f0' font-size='6.5' font-family='sans-serif'>Cardiovascular Disease</text>
+  <text x='260' y='110' text-anchor='middle' fill='#e2e8f0' font-size='6.5' font-family='sans-serif'>Cancer &amp; Stroke</text>
+  <text x='260' y='125' text-anchor='middle' fill='#94a3b8' font-size='6.5' font-family='sans-serif'>Infectious deaths drop</text>
+  <text x='260' y='145' text-anchor='middle' fill='#38bdf8' font-size='7' font-family='sans-serif' font-weight='bold'>Life Exp: ~70 yrs</text>
+
+  <!-- Stage 4 -->
+  <rect x='310' y='36' width='90' height='150' fill='#18181b' rx='6' stroke='#27272a' stroke-width='1'/>
+  <text x='355' y='52' text-anchor='middle' fill='#10b981' font-size='8.5' font-family='sans-serif' font-weight='bold'>Stage 4</text>
+  <text x='355' y='63' text-anchor='middle' fill='#ffffff' font-size='7.5' font-family='sans-serif' font-weight='bold'>Delayed Degenerative</text>
+  <line x1='320' y1='70' x2='390' y2='70' stroke='#3f3f46' stroke-width='1'/>
+  <text x='355' y='88' text-anchor='middle' fill='#6ee7b7' font-size='7' font-family='sans-serif'>Advanced Medicine</text>
+  <text x='355' y='100' text-anchor='middle' fill='#e2e8f0' font-size='6.5' font-family='sans-serif'>Bypass Surgeries</text>
+  <text x='355' y='110' text-anchor='middle' fill='#e2e8f0' font-size='6.5' font-family='sans-serif'>Chemotherapy / Diet</text>
+  <text x='355' y='125' text-anchor='middle' fill='#94a3b8' font-size='6.5' font-family='sans-serif'>Deaths delayed to 75+</text>
+  <text x='355' y='145' text-anchor='middle' fill='#34d399' font-size='7' font-family='sans-serif' font-weight='bold'>Life Exp: &gt;80 yrs</text>
+
+  <!-- Stage 5 -->
+  <rect x='405' y='36' width='90' height='150' fill='#18181b' rx='6' stroke='#27272a' stroke-width='1'/>
+  <text x='450' y='52' text-anchor='middle' fill='#a855f7' font-size='8.5' font-family='sans-serif' font-weight='bold'>Stage 5</text>
+  <text x='450' y='63' text-anchor='middle' fill='#ffffff' font-size='7.5' font-family='sans-serif' font-weight='bold'>Reemerging Infections</text>
+  <line x1='415' y1='70' x2='485' y2='70' stroke='#3f3f46' stroke-width='1'/>
+  <text x='450' y='88' text-anchor='middle' fill='#d8b4fe' font-size='7' font-family='sans-serif'>Global Diffusion</text>
+  <text x='450' y='100' text-anchor='middle' fill='#e2e8f0' font-size='6.5' font-family='sans-serif'>Antimicrobial Resistance</text>
+  <text x='450' y='110' text-anchor='middle' fill='#e2e8f0' font-size='6.5' font-family='sans-serif'>Air Travel Spread</text>
+  <text x='450' y='125' text-anchor='middle' fill='#94a3b8' font-size='6.5' font-family='sans-serif'>Poverty &amp; Urbanization</text>
+  <text x='450' y='145' text-anchor='middle' fill='#c084fc' font-size='7' font-family='sans-serif' font-weight='bold'>SARS, COVID, MRSA</text>
+
+  <!-- Bottom Transition Axis -->
+  <rect x='25' y='194' width='470' height='36' fill='#1e293b' rx='4' stroke='#334155' stroke-width='1'/>
+  <text x='260' y='208' text-anchor='middle' fill='#ffffff' font-size='7.5' font-family='sans-serif' font-weight='bold'>SHIFT IN LEADING CAUSES OF MORTALITY OVER TIME</text>
+  <text x='70' y='222' text-anchor='middle' fill='#fca5a5' font-size='7' font-family='sans-serif'>Infectious &amp; Parasitic</text>
+  <text x='260' y='222' text-anchor='middle' fill='#93c5fd' font-size='7' font-family='sans-serif'>Degenerative &amp; Cardiovascular</text>
+  <text x='450' y='222' text-anchor='middle' fill='#d8b4fe' font-size='7' font-family='sans-serif'>Antibiotic Resistant</text>
+
+  <!-- Bottom Citation Bar -->
+  <rect x='25' y='240' width='470' height='28' fill='#18181b' rx='6' stroke='#27272a' stroke-width='1'/>
+  <text x='260' y='257' text-anchor='middle' fill='#94a3b8' font-size='7.5' font-family='sans-serif'>
+    Correlates Abdel Omran's Epidemiological Framework with Demographic Transition Model (DTM) Stages 1\u20135
+  </text>
+</svg>`;
+var APHG_CHOROPLETH_VS_DOT_DENSITY_MAP_SVG = `<svg viewBox='0 0 520 280' xmlns='http://www.w3.org/2000/svg' width='100%' height='auto'>
+  <rect width='520' height='280' fill='#09090b' rx='10' stroke='#27272a' stroke-width='1.5'/>
+  
+  <text x='260' y='20' text-anchor='middle' fill='#f8fafc' font-size='10.5' font-family='system-ui, sans-serif' font-weight='800' letter-spacing='0.5'>
+    FIGURE 1: COMPARATIVE POPULATION MAPPING TECHNIQUES (CHOROPLETH VS. DOT DENSITY)
+  </text>
+
+  <!-- Left Map: Choropleth (x: 25 to 255) -->
+  <rect x='25' y='34' width='230' height='195' fill='#18181b' rx='8' stroke='#27272a' stroke-width='1.5'/>
+  <text x='140' y='50' text-anchor='middle' fill='#38bdf8' font-size='8.5' font-family='sans-serif' font-weight='bold'>SOURCE 1: CHOROPLETH MAP</text>
+  <text x='140' y='62' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='sans-serif'>County-Level Population Density (People/sq mi)</text>
+
+  <!-- County Boundaries (Choropleth Shaded Polygons) -->
+  <polygon points='40,75 110,75 125,125 45,130' fill='#0284c7' stroke='#e2e8f0' stroke-width='1.5'/>
+  <text x='80' y='105' text-anchor='middle' fill='#ffffff' font-size='8' font-family='sans-serif' font-weight='bold'>&gt;500</text>
+
+  <polygon points='110,75 220,75 235,120 125,125' fill='#0369a1' stroke='#e2e8f0' stroke-width='1.5'/>
+  <text x='170' y='105' text-anchor='middle' fill='#ffffff' font-size='8' font-family='sans-serif' font-weight='bold'>100\u2013500</text>
+
+  <polygon points='45,130 125,125 110,185 35,180' fill='#075985' stroke='#e2e8f0' stroke-width='1.5'/>
+  <text x='80' y='160' text-anchor='middle' fill='#ffffff' font-size='8' font-family='sans-serif' font-weight='bold'>20\u2013100</text>
+
+  <polygon points='125,125 235,120 220,185 110,185' fill='#0c4a6e' stroke='#e2e8f0' stroke-width='1.5'/>
+  <text x='170' y='160' text-anchor='middle' fill='#ffffff' font-size='8' font-family='sans-serif' font-weight='bold'>&lt;20</text>
+
+  <text x='140' y='210' text-anchor='middle' fill='#fca5a5' font-size='7' font-family='sans-serif'>Limitation: Assumes uniform spread; masks clusters</text>
+
+  <!-- Right Map: Dot Density (x: 265 to 495) -->
+  <rect x='265' y='34' width='230' height='195' fill='#18181b' rx='8' stroke='#27272a' stroke-width='1.5'/>
+  <text x='380' y='50' text-anchor='middle' fill='#34d399' font-size='8.5' font-family='sans-serif' font-weight='bold'>SOURCE 2: DOT DENSITY MAP</text>
+  <text x='380' y='62' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='sans-serif'>1 Dot = 500 Residents (Actual Settlement Sites)</text>
+
+  <!-- Faint County Boundaries -->
+  <polygon points='280,75 350,75 365,125 285,130' fill='none' stroke='#64748b' stroke-width='1' stroke-dasharray='3,3'/>
+  <polygon points='350,75 460,75 475,120 365,125' fill='none' stroke='#64748b' stroke-width='1' stroke-dasharray='3,3'/>
+  <polygon points='285,130 365,125 350,185 275,180' fill='none' stroke='#64748b' stroke-width='1' stroke-dasharray='3,3'/>
+  <polygon points='365,125 475,120 460,185 350,185' fill='none' stroke='#64748b' stroke-width='1' stroke-dasharray='3,3'/>
+
+  <!-- Clustered Dots in Urban Core (Metro Node) -->
+  <g fill='#34d399'>
+    <circle cx='320' cy='95' r='2.5'/><circle cx='324' cy='97' r='2.5'/><circle cx='318' cy='102' r='2.5'/>
+    <circle cx='327' cy='101' r='2.5'/><circle cx='322' cy='105' r='2.5'/><circle cx='330' cy='98' r='2.5'/>
+    <circle cx='315' cy='96' r='2.5'/><circle cx='321' cy='92' r='2.5'/><circle cx='328' cy='105' r='2.5'/>
+    <circle cx='332' cy='102' r='2.5'/><circle cx='318' cy='108' r='2.5'/><circle cx='325' cy='110' r='2.5'/>
+    <!-- Suburban Cluster along Highway -->
+    <circle cx='380' cy='95' r='2'/><circle cx='384' cy='98' r='2'/><circle cx='388' cy='94' r='2'/>
+    <circle cx='392' cy='96' r='2'/><circle cx='385' cy='102' r='2'/>
+    <!-- Sparse Rural Dots -->
+    <circle cx='300' cy='155' r='1.8'/><circle cx='330' cy='165' r='1.8'/><circle cx='420' cy='150' r='1.8'/>
+    <circle cx='445' cy='135' r='1.8'/><circle cx='450' cy='170' r='1.8'/><circle cx='410' cy='85' r='1.8'/>
+  </g>
+  <text x='325' y='125' text-anchor='middle' fill='#a7f3d0' font-size='7' font-family='sans-serif' font-weight='bold'>Urban Core</text>
+  <text x='435' y='160' text-anchor='middle' fill='#94a3b8' font-size='7' font-family='sans-serif'>Rural Sparsity</text>
+
+  <text x='380' y='210' text-anchor='middle' fill='#86efac' font-size='7' font-family='sans-serif'>Strength: Accurately reveals agglomeration vs rural space</text>
+
+  <!-- Bottom Synthesis Box -->
+  <rect x='25' y='240' width='470' height='28' fill='#18181b' rx='6' stroke='#27272a' stroke-width='1'/>
+  <text x='260' y='257' text-anchor='middle' fill='#cbd5e1' font-size='7.5' font-family='system-ui, sans-serif'>
+    Cartographic Analysis: Choropleths aggregate into arbitrary political boundaries (Ecological Fallacy); Dot density reveals spatial settlement patterns.
+  </text>
+</svg>`;
 function getStandardizedModelSvg(text, subjectId) {
   if (!text) return null;
   const t = text.toLowerCase();
   const s = (subjectId || "").toLowerCase();
   if (s.includes("geography") || s.includes("aphg") || s.includes("human")) {
-    if (t.includes("demographic transition") || t.includes("dtm") || t.includes("crude birth") && t.includes("crude death")) {
+    if (t.includes("epidemiological") || t.includes("epidemiologic") || t.includes("omran")) {
+      return APHG_EPIDEMIOLOGICAL_TRANSITION_MODEL_SVG;
+    }
+    if (!t.includes("epidemiolog") && (t.includes("demographic transition") || t.includes("dtm") || t.includes("crude birth") && t.includes("crude death"))) {
       return DTM_STANDARDIZED_SVG;
     }
     if (t.includes("von thunen") || t.includes("von th\xFCnen") || t.includes("bid-rent") || t.includes("isolated state")) {
@@ -15468,10 +18456,43 @@ function getStandardizedModelSvg(text, subjectId) {
     if (t.includes("hoyt") || t.includes("sector model") || t.includes("axial growth")) {
       return HOYT_SECTOR_MODEL_SVG;
     }
+    if (t.includes("multiple nuclei") || t.includes("harris-ullman") || t.includes("harris and ullman") || t.includes("edge city") || t.includes("galactic city")) {
+      return APHG_HARRIS_ULLMAN_MULTIPLE_NUCLEI_SVG;
+    }
+    if (t.includes("dot density") && (t.includes("choropleth") || t.includes("map")) || t.includes("choropleth") && t.includes("dot density") || t.includes("choropleth") && t.includes("ecological fallacy")) {
+      return APHG_CHOROPLETH_VS_DOT_DENSITY_MAP_SVG;
+    }
+    if (t.includes("choropleth") || t.includes("fertility") && t.includes("map") || t.includes("tfr") && (t.includes("map") || t.includes("rate")) || t.includes("macro-geographic") || t.includes("global total fertility")) {
+      return APHG_CHOROPLETH_FERTILITY_MAP_SVG;
+    }
+    if (t.includes("migration corridor") || t.includes("migration flow") || t.includes("transnational") && t.includes("migration") || t.includes("migration") && (t.includes("map") || t.includes("stream") || t.includes("corridor") || t.includes("labor")) || t.includes("labor flow") && (t.includes("gcc") || t.includes("gulf"))) {
+      return APHG_TRANSNATIONAL_MIGRATION_FLOW_MAP_SVG;
+    }
+    if (t.includes("wallerstein") || t.includes("world systems") || t.includes("core-periphery") || t.includes("core periphery") || t.includes("spatial division of labor")) {
+      return APHG_WALLERSTEIN_CORE_PERIPHERY_SVG;
+    }
+    if (t.includes("la nina") || t.includes("la ni\xF1a") || t.includes("equatorial pacific") && t.includes("trade wind")) {
+      return ENSO_LA_NINA_PACIFIC_MAP_SVG;
+    }
+    if (t.includes("el nino") || t.includes("el ni\xF1o")) {
+      return ENSO_EL_NINO_PACIFIC_MAP_SVG;
+    }
   }
   if (s.includes("environmental") || s.includes("apes")) {
     if (t.includes("demographic transition") || t.includes("crude birth") && t.includes("crude death")) {
       return DTM_STANDARDIZED_SVG;
+    }
+    if (t.includes("la nina") || t.includes("la ni\xF1a") || t.includes("sea surface conditions") && t.includes("pacific") || t.includes("equatorial pacific") && (t.includes("trade wind") || t.includes("precipitation") || t.includes("australia")) || t.includes("trade winds") && t.includes("pacific") && !t.includes("el nino") && !t.includes("el ni\xF1o")) {
+      return ENSO_LA_NINA_PACIFIC_MAP_SVG;
+    }
+    if (t.includes("el nino") || t.includes("el ni\xF1o") || t.includes("enso") && t.includes("suppressed upwelling")) {
+      return ENSO_EL_NINO_PACIFIC_MAP_SVG;
+    }
+    if (t.includes("enso") || t.includes("walker circulation") && t.includes("pacific")) {
+      return ENSO_LA_NINA_PACIFIC_MAP_SVG;
+    }
+    if (t.includes("rain shadow") || t.includes("windward") && t.includes("leeward") || t.includes("orographic")) {
+      return RAIN_SHADOW_EFFECT_SVG;
     }
   }
   return null;
@@ -15486,11 +18507,15 @@ function createUsedConceptsTracker() {
 }
 function countSubParts(text) {
   if (!text) return { count: 0, labels: [] };
-  const regex = /(?:\((a|b|c|d|e|f|g)\)|(?:^|\n)\s*(?:part|question)\s+([a-g])\b)/gi;
-  const matches = [...text.matchAll(regex)];
+  const regex = /(?:\((a|b|c|d|e|f|g)\)|(?:^|\n)\s*(?:part|question)\s+([a-g])\b|(?:^|\n)\s*([a-g])[.)])/gi;
+  const matches = [];
+  let m;
+  while ((m = regex.exec(text)) !== null) {
+    matches.push(m);
+  }
   const found = /* @__PURE__ */ new Set();
-  for (const m of matches) {
-    const label = (m[1] || m[2]).toLowerCase();
+  for (const m2 of matches) {
+    const label = (m2[1] || m2[2] || m2[3]).toLowerCase();
     found.add(label);
   }
   const sortedLabels = Array.from(found).sort();
@@ -15520,17 +18545,41 @@ function calculateRealTotalPoints(q, subjectId) {
   const { count: partCount } = countSubParts(fullText);
   if (partCount >= 2) {
     const rawPoints = Number(q.totalPoints);
+    if (!isNaN(rawPoints) && (rawPoints === 12 || rawPoints === 10 || rawPoints === 9 || rawPoints === 8 || rawPoints === 7 || rawPoints === 6 || rawPoints === 4 || rawPoints === 3)) {
+      return rawPoints;
+    }
     if (!isNaN(rawPoints) && rawPoints >= partCount) {
       return rawPoints;
     }
     return partCount;
   }
   const s = (subjectId || "").toLowerCase();
+  if (s.includes("english") || s.includes("lang")) return 6;
+  if (s.includes("psych")) return 7;
+  if (s.includes("computer science a") || s.includes("csa") || s.includes("computer") && !s.includes("principles") && !s.includes("csp")) {
+    const raw2 = Number(q.totalPoints);
+    if (raw2 === 9 || raw2 === 7 || raw2 === 6 || raw2 === 5) return raw2;
+    return 7;
+  }
   if (s.includes("stat")) return 4;
   if (s.includes("human") || s.includes("geography")) return 7;
-  if (s.includes("history") || s.includes("apush")) return 6;
+  if (s.includes("history") || s.includes("apush")) return 3;
   if (s.includes("gov")) return 4;
-  if (s.includes("chem") || s.includes("bio")) return 8;
+  if (s.includes("chem")) {
+    const raw2 = Number(q.totalPoints);
+    if (raw2 === 10 || raw2 === 4) return raw2;
+    return 10;
+  }
+  if (s.includes("bio")) {
+    const raw2 = Number(q.totalPoints);
+    if (raw2 === 9 || raw2 === 4) return raw2;
+    return 9;
+  }
+  if (s.includes("phys")) {
+    const raw2 = Number(q.totalPoints);
+    if (raw2 === 12 || raw2 === 10 || raw2 === 8) return raw2;
+    return 10;
+  }
   const raw = Number(q.totalPoints);
   return !isNaN(raw) && raw > 0 ? raw : 6;
 }
@@ -15538,13 +18587,56 @@ function stripRawSvgMarkup(text) {
   if (!text) return "";
   return text.replace(/<svg[\s\S]*?<\/svg>/gi, "").replace(/<svg\b[^>]*>/gi, "").replace(/<\/svg>/gi, "").replace(/<path\b[^>]*>/gi, "").replace(/<rect\b[^>]*>/gi, "").replace(/<circle\b[^>]*>/gi, "").replace(/<text\b[^>]*>[\s\S]*?<\/text>/gi, "").trim();
 }
-function resolveCanonicalUnit(subjectId, unitInput) {
+function convertLatexArrayToMarkdownTable(text) {
+  if (!text || !text.includes("begin{array}") && !text.includes("begin{tabular}")) {
+    return text;
+  }
+  return text.replace(/\$\$?\s*\\begin\{(?:array|tabular)\}(?:\{[^}]*\})?([\s\S]*?)\\end\{(?:array|tabular)\}\s*\$\$?/g, (_match, body) => {
+    const rawRows = body.split("\\\\").map((r) => r.trim()).filter(Boolean);
+    if (rawRows.length === 0) return "";
+    const parsedRows = rawRows.map((row) => {
+      const cleanRow = row.replace(/\\(?:hline|toprule|midrule|bottomrule)/g, "").trim();
+      if (!cleanRow) return [];
+      const cells = cleanRow.split("&").map((cell) => {
+        let c = cell.trim();
+        c = c.replace(/\\text\{([^}]*)\}/g, "$1");
+        c = c.replace(/\\mathbf\{([^}]*)\}/g, "$1");
+        c = c.replace(/\\mathit\{([^}]*)\}/g, "$1");
+        c = c.replace(/[$]/g, "").replace(/\\/g, "").trim();
+        return c;
+      });
+      return cells;
+    }).filter((r) => r.length > 0);
+    if (parsedRows.length === 0) return "";
+    const headerRow = parsedRows[0];
+    const separatorRow = headerRow.map(() => ":---");
+    const dataRows = parsedRows.slice(1);
+    const mdLines = [
+      `| ${headerRow.join(" | ")} |`,
+      `| ${separatorRow.join(" | ")} |`,
+      ...dataRows.map((r) => {
+        while (r.length < headerRow.length) r.push("-");
+        return `| ${r.join(" | ")} |`;
+      })
+    ];
+    return `
+
+${mdLines.join("\n")}
+
+`;
+  });
+}
+function resolveCanonicalUnit(subjectId, unitInput, questionText) {
   const whitelist = getSubjectWhitelist(subjectId);
   if (!whitelist || whitelist.canonicalUnits.length === 0) {
-    return { unitNumber: 1, title: typeof unitInput === "string" ? unitInput : "General Course Content" };
+    return { unitNumber: 1, title: typeof unitInput === "string" && unitInput.trim() ? unitInput : "General Course Content" };
   }
-  const inputStr = String(unitInput || "").toLowerCase();
-  const numMatch = inputStr.match(/(?:unit|period|u|p)?\s*([0-9]+)/i);
+  if (typeof unitInput === "number" && !isNaN(unitInput)) {
+    const found = whitelist.canonicalUnits.find((u) => u.unitNumber === unitInput);
+    if (found) return { unitNumber: found.unitNumber, title: found.title };
+  }
+  const inputStr = String(unitInput || "").toLowerCase().trim();
+  const numMatch = inputStr.match(/\b(?:unit|period|u|p)\s*([0-9]+)\b/i) || inputStr.match(/^([0-9]+)$/);
   if (numMatch) {
     const num = parseInt(numMatch[1], 10);
     const found = whitelist.canonicalUnits.find((u) => u.unitNumber === num);
@@ -15560,6 +18652,25 @@ function resolveCanonicalUnit(subjectId, unitInput) {
       }
     }
   }
+  if (questionText && questionText.trim()) {
+    const qLower = questionText.toLowerCase();
+    let bestUnit = null;
+    let maxScore = 0;
+    for (const u of whitelist.canonicalUnits) {
+      let score = 0;
+      if (qLower.includes(u.title.toLowerCase())) score += 5;
+      for (const kw of u.keywords) {
+        if (qLower.includes(kw.toLowerCase())) score += 2;
+      }
+      if (score > maxScore) {
+        maxScore = score;
+        bestUnit = u;
+      }
+    }
+    if (bestUnit && maxScore >= 2) {
+      return { unitNumber: bestUnit.unitNumber, title: bestUnit.title };
+    }
+  }
   const first = whitelist.canonicalUnits[0];
   return { unitNumber: first.unitNumber, title: first.title };
 }
@@ -15570,6 +18681,7 @@ function validateAndHealApQuestion(q, subjectId, targetTopic, tracker) {
   const rawModel = typeof q.modelAnswer === "string" ? q.modelAnswer : q.explanation || "";
   const rawRubric = Array.isArray(q.scoringRubric) ? q.scoringRubric.join(" ") : "";
   const combinedText = `${rawPrompt} ${rawModel} ${rawRubric}`.toLowerCase();
+  const isAphg = (subjectId || "").toLowerCase().includes("geography") || (subjectId || "").toLowerCase().includes("aphg") || (subjectId || "").toLowerCase().includes("human");
   if (whitelist && Array.isArray(whitelist.forbiddenSignatures)) {
     for (const sig of whitelist.forbiddenSignatures) {
       const match = combinedText.match(sig);
@@ -15583,9 +18695,38 @@ function validateAndHealApQuestion(q, subjectId, targetTopic, tracker) {
       }
     }
   }
-  let cleanPrompt = stripRawSvgMarkup(rawPrompt);
-  let cleanModel = stripRawSvgMarkup(rawModel);
+  if (isAphg && targetTopic) {
+    const tLower = targetTopic.toLowerCase();
+    const isTargetingUnit1 = tLower.includes("unit 1") || tLower.includes("thinking geographically");
+    if (isTargetingUnit1) {
+      const forbiddenLaterModels = /\b(?:burgess|hoyt|concentric\s+zone|sector\s+model|multiple\s+nuclei|von\s+th[uü]nen|bid-rent|demographic\s+transition|dtm|population\s+pyramid|wallerstein|world\s+systems|rostow|stages\s+of\s+economic\s+growth|gentrification)\b/i;
+      const match = combinedText.match(forbiddenLaterModels);
+      if (match) {
+        return {
+          isValid: false,
+          rejectionReason: `Unit 1 Violation: Question references "${match[0]}" from later units (Unit 2, 5, 6, or 7). Unit 1 practice must be 100% strictly Thinking Geographically.`,
+          sanitizedQuestion: q,
+          detectedConcepts: []
+        };
+      }
+    }
+  }
+  let cleanPrompt = convertLatexArrayToMarkdownTable(stripRawSvgMarkup(rawPrompt));
+  let cleanModel = convertLatexArrayToMarkdownTable(stripRawSvgMarkup(rawModel));
   let cleanRubric = Array.isArray(q.scoringRubric) ? q.scoringRubric.map((r) => stripRawSvgMarkup(String(r))) : [];
+  if (isAphg) {
+    cleanPrompt = cleanPrompt.replace(/(\([a-g]\)|(?:^|\n)\s*[A-G][.)])\s*Evaluate\b/gi, "$1 Explain").replace(/(\([a-g]\)|(?:^|\n)\s*[A-G][.)])\s*Justify\s+why\b/gi, "$1 Explain why").replace(/(\([a-g]\)|(?:^|\n)\s*[A-G][.)])\s*Justify\s+how\b/gi, "$1 Explain how").replace(/(\([a-g]\)|(?:^|\n)\s*[A-G][.)])\s*Justify\b/gi, "$1 Explain why");
+    cleanRubric = cleanRubric.map(
+      (r) => r.replace(/\bEvaluate\b/gi, "Explain").replace(/\bJustify\s+why\b/gi, "Explain why").replace(/\bJustify\b/gi, "Explain")
+    );
+    const earlyModelCheck = getStandardizedModelSvg(`${cleanPrompt} ${cleanModel}`, subjectId);
+    if (!q.diagramSvg && !earlyModelCheck) {
+      cleanPrompt = cleanPrompt.replace(/\b(?:as\s+shown\s+in\s+the\s+(?:satellite\s+image|imagery|photograph|photo|map|diagram|graphic)\s+(?:above|below|provided))\b/gi, "in contemporary spatial patterns").replace(/\b(?:referring\s+to\s+the\s+(?:satellite\s+image|imagery|photograph|photo|map|diagram|graphic)\s+(?:above|below|provided))\b/gi, "considering contemporary spatial patterns");
+    }
+    if (/degree\s+to\s+which/i.test(cleanPrompt) && !/indicate\s+the\s+degree/i.test(cleanPrompt)) {
+      cleanPrompt = cleanPrompt.replace(/(Explain\s+the\s+degree\s+to\s+which[^\n.?!]+[.?!]?)/gi, "$1 (Response must indicate the degree [low, moderate, high] and provide an explanation.)");
+    }
+  }
   let finalDiagramSvg = q.diagramSvg || "";
   if (!finalDiagramSvg) {
     const svgMatch = rawPrompt.match(/<svg[\s\S]*?<\/svg>/i);
@@ -15606,7 +18747,7 @@ function validateAndHealApQuestion(q, subjectId, targetTopic, tracker) {
     scoringRubric: cleanRubric,
     totalPoints: q.totalPoints
   }, subjectId);
-  const canonicalUnit = resolveCanonicalUnit(subjectId, q.skill || targetTopic);
+  const canonicalUnit = resolveCanonicalUnit(subjectId, q.skill || targetTopic, cleanPrompt);
   if (whitelist) {
     for (const unit of whitelist.canonicalUnits) {
       for (const kw of unit.keywords) {
@@ -15620,12 +18761,15 @@ function validateAndHealApQuestion(q, subjectId, targetTopic, tracker) {
       }
     }
   }
+  const hasDiagram = Boolean(finalDiagramSvg && finalDiagramSvg.trim());
+  const hasMarkdownTable = Boolean(cleanPrompt && /[|].+[|].*\n\s*[|][-:\s|]+[|]/.test(cleanPrompt));
+  const hasSource1 = /source\s*1\b/i.test(cleanPrompt);
+  const hasSource2 = /source\s*2\b/i.test(cleanPrompt);
   let stimulusType = "none";
-  if (finalDiagramSvg || cleanPrompt.toLowerCase().includes("data table") || cleanPrompt.toLowerCase().includes("figure 1")) {
-    stimulusType = "single";
-  }
-  if (cleanPrompt.toLowerCase().includes("figure 2") || finalDiagramSvg && cleanPrompt.toLowerCase().includes("table 1")) {
+  if (hasSource1 && hasSource2 || hasDiagram && hasMarkdownTable || /figure\s*2\b/i.test(cleanPrompt) || hasDiagram && hasSource1) {
     stimulusType = "two";
+  } else if (hasDiagram || hasMarkdownTable || hasSource1 || /figure\s*1\b/i.test(cleanPrompt) || /table\s*1\b/i.test(cleanPrompt) || /the\s+table\s+below/i.test(cleanPrompt) || cleanPrompt.toLowerCase().includes("data table")) {
+    stimulusType = "single";
   }
   const sanitized = {
     ...q,
@@ -15954,6 +19098,1506 @@ var TOP_10_AP_SUBJECTS = [
     ]
   }
 ];
+
+// src/utils/apMultiStageVerification.ts
+function verifyMathAndFeasibility(q, subjectId) {
+  const issues = [];
+  const s = (subjectId || "").toLowerCase();
+  const prompt = String(q.prompt || q.question || "");
+  const modelAnswer = String(q.modelAnswer || "");
+  const combined = `${prompt} ${modelAnswer}`;
+  if (s.includes("calculus") && !s.includes("bc")) {
+    const asymptoteMatch = prompt.match(/\/(?:x\s*-\s*([0-9]+))/i);
+    if (asymptoteMatch) {
+      const c = parseInt(asymptoteMatch[1], 10);
+      const intervalMatch = prompt.match(/\[\s*([0-9]+)\s*,\s*([0-9]+)\s*\]/);
+      if (intervalMatch) {
+        const a = parseInt(intervalMatch[1], 10);
+        const b = parseInt(intervalMatch[2], 10);
+        if (c > a && c < b) {
+          issues.push(`Vertical asymptote at x=${c} lies within interval [${a}, ${b}] without improper integral treatment (BC only).`);
+        }
+      }
+    }
+  }
+  const depthMatch = combined.match(/depth\s+(?:is|=)\s+([0-9]+(?:\.[0-9]+)?)/i);
+  const heightMatch = combined.match(/height\s+(?:is|=)\s+([0-9]+(?:\.[0-9]+)?)/i);
+  if (depthMatch && heightMatch) {
+    const depth = parseFloat(depthMatch[1]);
+    const height = parseFloat(heightMatch[1]);
+    if (depth > height) {
+      issues.push(`Physical impossibility: Liquid depth (${depth}) exceeds container height (${height}).`);
+    }
+  }
+  const promptParts = countSubParts(prompt);
+  const answerParts = countSubParts(modelAnswer);
+  if (promptParts.count > 0 && answerParts.count > 0) {
+    if (promptParts.count !== answerParts.count) {
+      issues.push(`Subpart count mismatch: Prompt has ${promptParts.count} parts (${promptParts.labels.join(",")}) but model answer addresses ${answerParts.count} parts (${answerParts.labels.join(",")}).`);
+    }
+  }
+  if (s.includes("bc") || s.includes("calculus bc")) {
+    if (combined.includes("interval of convergence") || combined.includes("ratio test")) {
+      const testsEndpoints = /(?:endpoint|x\s*=\s*-?\d+|converges\s+at|diverges\s+at)/i.test(modelAnswer);
+      if (!testsEndpoints) {
+        issues.push("Ratio Test Endpoint Omission: Finding interval of convergence requires explicitly testing both endpoints.");
+      }
+    }
+  }
+  if (s.includes("human") || s.includes("geography") || s.includes("aphg")) {
+    if (promptParts.count > 0 && promptParts.count !== 7) {
+      issues.push(`AP Human Geography 7-Part Violation: Prompt contains ${promptParts.count} parts (${promptParts.labels.join(",")}), but College Board CED strictly mandates exactly 7 parts (A through G).`);
+    }
+    const tfrRegex = /(?:tfr|fertility\s+rate)\s*(?:is|=|:)?\s*([0-9]+(?:\.[0-9]+)?)/gi;
+    let tfrMatch;
+    while ((tfrMatch = tfrRegex.exec(combined)) !== null) {
+      const val = parseFloat(tfrMatch[1]);
+      if (val > 10 || val < 0.5 && val > 0) {
+        issues.push(`Demographic data hallucination: TFR value ${val} violates real-world demographic boundaries (realistic range: 0.8 to 8.5).`);
+      }
+    }
+    const pctRegex = /([0-9]+(?:\.[0-9]+)?)\s*%/g;
+    let pctMatch;
+    while ((pctMatch = pctRegex.exec(combined)) !== null) {
+      const val = parseFloat(pctMatch[1]);
+      if (val > 100 && !combined.includes("increase") && !combined.includes("growth") && !combined.includes("change")) {
+        issues.push(`Percentage hallucination: Proportional demographic share ${val}% exceeds 100%.`);
+      }
+    }
+  }
+  if (s.includes("chemistry") || s.includes("chem")) {
+    const kelvinMatch = combined.match(/-\s*([0-9]+(?:\.[0-9]+)?)\s*(?:K\b|kelvin)/i);
+    if (kelvinMatch) {
+      issues.push(`Absolute temperature violation: Negative Kelvin temperature (-${kelvinMatch[1]} K) is physically impossible.`);
+    }
+    if (combined.includes("k_sp") || combined.includes("ksp")) {
+      const solidDenominatorMatch = combined.match(/k_?sp\s*=\s*\[[^\]]+\]\s*\/\s*\[/i);
+      if (solidDenominatorMatch) {
+        issues.push("K_sp expression violation: Pure solids must NEVER appear in the denominator of a solubility product constant expression.");
+      }
+    }
+    if ((combined.includes("\\delta g") || combined.includes("delta g")) && (combined.includes("\\delta h") || combined.includes("delta h")) && (combined.includes("\\delta s") || combined.includes("delta s"))) {
+      const hasUnitConversion = /(?:\/\s*1000|10\^?-3|0\.001|\*\s*1000|10\^3)/.test(modelAnswer);
+      if (!hasUnitConversion && (modelAnswer.includes("kJ") || modelAnswer.includes("kj")) && (modelAnswer.includes("J/") || modelAnswer.includes("j/"))) {
+        issues.push("Thermodynamic unit inconsistency: Gibbs free energy calculation requires converting Delta S from J/(mol*K) to kJ/(mol*K) (dividing by 1000).");
+      }
+    }
+  }
+  if (s.includes("biology") || s.includes("bio")) {
+    if (combined.includes("null hypothesis")) {
+      const statesNoEffectOrDiff = /(?:no\s+effect|no\s+difference|not\s+affect|does\s+not\s+differ|no\s+significant\s+difference|equal|independent\s+of)/i.test(modelAnswer);
+      if (!statesNoEffectOrDiff) {
+        issues.push("Null Hypothesis Violation: Null hypothesis must state that the independent variable has NO effect or that there is NO difference between groups.");
+      }
+    }
+    const nucleotideMatch = combined.match(/(\d+)\s*(?:nucleotides?|base\s*pairs?|bp)\b/i);
+    const aminoAcidMatch = combined.match(/(\d+)\s*(?:amino\s*acids?|residues?)\b/i);
+    if (nucleotideMatch && aminoAcidMatch && combined.includes("cod")) {
+      const nuc = parseInt(nucleotideMatch[1], 10);
+      const aa = parseInt(aminoAcidMatch[1], 10);
+      if (nuc % 3 !== 0) {
+        issues.push(`Codon Translation Math Violation: Nucleotide count ${nuc} is not divisible by 3 (each codon requires exactly 3 nucleotides).`);
+      }
+      if (Math.abs(Math.floor(nuc / 3) - aa) > 2) {
+        issues.push(`Codon Math Discrepancy: ${nuc} nucleotides should translate to approximately ${Math.floor(nuc / 3)} amino acids, but ${aa} was stated.`);
+      }
+    }
+    const alleleFreqMatch = combined.match(/\b(?:p|q)\s*=\s*([0-9]+(?:\.[0-9]+)?)/i);
+    if (alleleFreqMatch) {
+      const freq = parseFloat(alleleFreqMatch[1]);
+      if (freq > 1 || freq < 0) {
+        issues.push(`Allele Frequency Violation: Hardy-Weinberg allele frequency p or q (${freq}) must be between 0.0 and 1.0.`);
+      }
+    }
+    if (combined.includes("se_") || combined.includes("standard error") || combined.includes("error bar")) {
+      const negativeSeMatch = combined.match(/(?:-\s*[0-9]+(?:\.[0-9]+)?)\s*(?:se|standard error)/i);
+      if (negativeSeMatch) {
+        issues.push("Standard Error Violation: Standard error cannot be negative.");
+      }
+    }
+  }
+  if (s.includes("physics 1") || s.includes("phys")) {
+    if (combined.includes("collision") || combined.includes("collides")) {
+      if ((combined.includes("no net external force") || combined.includes("frictionless surface") || combined.includes("horizontal surface")) && combined.includes("momentum")) {
+        const statesMomentumChanges = /(?:momentum\s+(?:decreases|increases|changes|is\s+not\s+conserved))/i.test(modelAnswer);
+        if (statesMomentumChanges && !combined.includes("external force")) {
+          issues.push("Conservation of Momentum Violation: Horizontal momentum must remain constant during collisions if net external force is zero.");
+        }
+      }
+    }
+    const negativeKeMatch = combined.match(/(?:kinetic\s+energy|K|KE)\s*(?:is|=)\s*-\s*([0-9]+(?:\.[0-9]+)?)\s*J/i);
+    if (negativeKeMatch) {
+      issues.push(`Kinetic Energy Violation: Kinetic energy cannot be negative (-${negativeKeMatch[1]} J).`);
+    }
+    const freeFallAccelMatch = combined.match(/(?:free\s*fall|in\s+the\s+air|projectile).*?acceleration\s*(?:is|=)\s*([0-9]+(?:\.[0-9]+)?)\s*m\/s\^?2/i);
+    if (freeFallAccelMatch) {
+      const aVal = parseFloat(freeFallAccelMatch[1]);
+      if (aVal > 11) {
+        issues.push(`Kinematics Violation: Free-fall vertical acceleration (${aVal} m/s^2) cannot exceed g (9.8 m/s^2) without an external driving force.`);
+      }
+    }
+    if (combined.includes("energy bar chart") || combined.includes("figure 2 and figure 3")) {
+      const sumMatch = combined.match(/(?:sum|total\s+height|total\s+energy).*?equals\s*([0-9]+E_?0)/i);
+      if (sumMatch && !modelAnswer.includes(sumMatch[1])) {
+        issues.push(`Energy Bar Chart Conservation Violation: Sum of bars across all states must equal declared total energy (${sumMatch[1]}).`);
+      }
+    }
+  }
+  if (s.includes("macro") || s.includes("economics") || s.includes("econ")) {
+    const naturalMatch = combined.match(/natural\s+(?:rate\s+of\s+)?unemployment(?:\s+rate)?\s*(?:is|=|:)?\s*([0-9]+(?:\.[0-9]+)?)\s*%/i);
+    const cyclicalMatch = combined.match(/cyclical\s+unemployment(?:\s+rate)?\s*(?:is|=|:)?\s*([0-9]+(?:\.[0-9]+)?)\s*%/i);
+    const actualMatch = combined.match(/actual\s+unemployment(?:\s+rate)?\s*(?:is|=|:)?\s*([0-9]+(?:\.[0-9]+)?)\s*%/i);
+    if (naturalMatch && cyclicalMatch && actualMatch) {
+      const nat = parseFloat(naturalMatch[1]);
+      const cyc = parseFloat(cyclicalMatch[1]);
+      const act = parseFloat(actualMatch[1]);
+      const expectedActual = Math.round((nat + cyc) * 10) / 10;
+      if (Math.abs(act - expectedActual) > 0.1) {
+        issues.push(`Unemployment Rate Math Error: Actual unemployment rate (${act}%) must equal natural rate (${nat}%) + cyclical rate (${cyc}%) = ${expectedActual}%.`);
+      }
+    }
+    if (combined.includes("ample reserves")) {
+      const proposesBondOperations = /(?:central\s+bank\s+(?:would|should|will)\s+(?:buy|sell|purchase)\s+bonds|open\s+market\s+operations\s+to\s+buy)/i.test(modelAnswer);
+      if (proposesBondOperations) {
+        issues.push("Ample Reserves Framework Violation: In a banking system with ample reserves, monetary policy is conducted via administered interest rates (Interest on Reserves / IORB), NOT open-market bond operations.");
+      }
+    }
+    const mpcMatch = combined.match(/(?:marginal\s+propensity\s+to\s+consume|mpc)\s*(?:is|=|:)?\s*([0-9]+(?:\.[0-9]+)?)/i);
+    if (mpcMatch) {
+      const mpcVal = parseFloat(mpcMatch[1]);
+      if (mpcVal <= 0 || mpcVal >= 1) {
+        issues.push(`MPC Bound Violation: Marginal Propensity to Consume (${mpcVal}) must strictly be between 0 and 1.`);
+      }
+    }
+    if (combined.includes("capital and financial account") && (combined.includes("current account") || combined.includes("balance of payments"))) {
+      if (combined.includes("current account") && combined.includes("deficit")) {
+        const cfaDeficit = /(?:capital\s+and\s+financial\s+account|cfa).*?(?:move\s+into\s+deficit|in\s+deficit)/i.test(modelAnswer);
+        if (cfaDeficit) {
+          issues.push("Balance of Payments Violation: If the current account moves into deficit, the capital and financial account (CFA) must move into surplus (CA + CFA = 0).");
+        }
+      }
+    }
+  }
+  if (s.includes("english") || s.includes("lang")) {
+    if (q.totalPoints && q.totalPoints !== 6) {
+      issues.push(`AP English Language Score Scaling Violation: Section II essays are scored on a universal 6-point analytic scale (Row A: 1, Row B: 4, Row C: 1). Stated total points: ${q.totalPoints}.`);
+    }
+    if (prompt.includes("Synthesis") || prompt.includes("Source A") || combined.includes("synthesize at least")) {
+      const hasSources = /Source\s+[A-D]/i.test(prompt);
+      if (!hasSources) {
+        issues.push("AP Lang Synthesis Violation: Synthesis prompts must include multiple distinct labeled sources (Sources A-F) embedded in the prompt.");
+      }
+    }
+    if (prompt.includes("Rhetorical Analysis") || prompt.includes("rhetorical choices")) {
+      const hasRhetoricalSituation = /(?:speech|article|letter|essay|address|author|speaker|audience|published)/i.test(prompt);
+      if (!hasRhetoricalSituation) {
+        issues.push("AP Lang Rhetorical Analysis Violation: Must provide a rich rhetorical situation (speaker, audience, context/exigence, and purpose).");
+      }
+    }
+  }
+  if (s.includes("psych")) {
+    if (q.totalPoints && q.totalPoints !== 7) {
+      issues.push(`AP Psychology Score Parity Violation: Both AAQ (Q1) and EBQ (Q2) are worth exactly 7 points each (14 points total). Stated total points: ${q.totalPoints}.`);
+    }
+    const corrMatch = combined.match(/\br\s*=\s*(-?[0-9]+(?:\.[0-9]+)?)/i);
+    if (corrMatch) {
+      const rVal = parseFloat(corrMatch[1]);
+      if (rVal < -1 || rVal > 1) {
+        issues.push(`Statistical Calculation Violation: Correlation coefficient r (${rVal}) must be between -1.0 and +1.0.`);
+      }
+    }
+    const sdMatch = combined.match(/(?:standard\s+deviation|SD)\s*(?:is|=|:)?\s*(-[0-9]+(?:\.[0-9]+)?)/i);
+    if (sdMatch) {
+      issues.push(`Statistical Impossibility: Standard deviation cannot be negative (${sdMatch[1]}).`);
+    }
+    const pMatch = combined.match(/\bp\s*(?:<|>|=)\s*([0-9]+(?:\.[0-9]+)?)/i);
+    if (pMatch) {
+      const pVal = parseFloat(pMatch[1]);
+      if (pVal > 1 || pVal < 0) {
+        issues.push(`Probability Value Hallucination: p-value (${pVal}) must be between 0 and 1.0.`);
+      }
+    }
+    if (prompt.includes("ARTICLE ANALYSIS") || prompt.includes("AAQ") || prompt.includes("Article Analysis")) {
+      const hasParts = countSubParts(prompt);
+      if (hasParts.count > 0 && hasParts.count < 5) {
+        issues.push(`AP Psychology AAQ Structure Violation: Article Analysis Questions require Parts A through F (Method, Operational Definition, Statistical Interpretation, Ethical Guideline, Generalizability, and Argumentation). Found only ${hasParts.count} parts.`);
+      }
+    }
+    if (prompt.includes("EVIDENCE-BASED") || prompt.includes("EBQ") || prompt.includes("Evidence-Based")) {
+      const hasSources = prompt.includes("Source 1") && prompt.includes("Source 2") && prompt.includes("Source 3");
+      if (!hasSources) {
+        issues.push("AP Psychology EBQ Structure Violation: Evidence-Based Questions require 3 distinct empirical research summaries (Source 1, Source 2, and Source 3) embedded in the prompt.");
+      }
+    }
+  }
+  if (s.includes("world history") || s.includes("whap") || s.includes("world") && s.includes("history") || s.includes("history") && !s.includes("u.s.") && !s.includes("us") && !s.includes("euro")) {
+    const title = String(q.title || "");
+    const isDbq = prompt.includes("DOCUMENT-BASED") || prompt.includes("DBQ") || title.includes("DBQ");
+    const isLeq = prompt.includes("LONG ESSAY") || prompt.includes("LEQ") || title.includes("LEQ");
+    const isSaq = prompt.includes("SHORT-ANSWER") || prompt.includes("SAQ") || title.includes("SAQ") || title.includes("SHORT");
+    if (isDbq) {
+      if (q.totalPoints && q.totalPoints !== 7) {
+        issues.push(`AP World History DBQ Score Parity Violation: Document-Based Questions must be scored on a 7-point rubric (Thesis, Context, Evidence 4+ docs 2 pts, Outside Evidence, Sourcing 2+ docs, Complexity). Stated points: ${q.totalPoints}.`);
+      }
+      const hasSevenDocs = /Document\s+1/i.test(prompt) && /Document\s+7/i.test(prompt);
+      if (!hasSevenDocs) {
+        issues.push("AP World History DBQ Source Violation: DBQ prompts must provide 7 distinct labeled documents (Document 1 through Document 7).");
+      }
+    } else if (isLeq) {
+      if (q.totalPoints && q.totalPoints !== 6) {
+        issues.push(`AP World History LEQ Score Parity Violation: Long Essay Questions must be scored on a 6-point rubric (Thesis, Context, Evidence 2 pts, Historical Reasoning, Complexity). Stated points: ${q.totalPoints}.`);
+      }
+    } else if (isSaq) {
+      if (q.totalPoints && q.totalPoints !== 3) {
+        issues.push(`AP World History SAQ Score Parity Violation: Short-Answer Questions must be scored on a 3-point scale (Parts A, B, C). Stated points: ${q.totalPoints}.`);
+      }
+      const hasThreeParts = countSubParts(prompt);
+      if (hasThreeParts.count > 0 && hasThreeParts.count < 3) {
+        issues.push(`AP World History SAQ Structure Violation: SAQs must have 3 distinct parts (A, B, and C). Found ${hasThreeParts.count} parts.`);
+      }
+    }
+    if (combined.includes("1200") && (combined.includes("1450") || combined.includes("1500"))) {
+      if (/\b(?:steam\s+engine|railroad|telegraph|machine\s+gun|airplane|atomic\s+bomb|cold\s+war|soviet)\b/i.test(combined)) {
+        issues.push("Historical Chronology Anachronism: Post-1750/Industrial/Modern technologies or entities mentioned in 1200\u20131450/1500 context.");
+      }
+    }
+  }
+  if (s.includes("computer science a") || s.includes("csa") || s.includes("computer") && !s.includes("principles") && !s.includes("csp")) {
+    if (q.totalPoints && ![9, 7, 6, 5].includes(q.totalPoints)) {
+      issues.push(`AP Computer Science A Score Parity Violation: FRQ point value must be 9 (classic) or 7/5/6 (2026 CED). Stated points: ${q.totalPoints}.`);
+    }
+    if (prompt.includes("Class Design") || prompt.includes("class") || combined.includes("Write the complete") || combined.includes("public class")) {
+      if (model.includes("class ") && !model.includes("private ")) {
+        issues.push("AP CSA Encapsulation Violation: Instance variables in Class Design questions MUST be declared private.");
+      }
+    }
+    const badStringEq = /"(?:[^"\\]|\\.)*"\s*==|==\s*"(?:[^"\\]|\\.)*"/i.test(model);
+    if (badStringEq) {
+      issues.push("AP CSA String Equality Violation: Strings in Java must be compared using .equals(), NOT ==.");
+    }
+    if (prompt.includes("2D") || prompt.includes("two-dimensional") || combined.includes("[][]")) {
+      if (model.includes("r != row && c != col")) {
+        issues.push("AP CSA 2D Array Fatal Bug: Self-pairing guard 'r != row && c != col' incorrectly excludes the entire row and column instead of just the single coordinate. Use '!(r == row && c == col)' or 'r != row || c != col'.");
+      }
+    }
+  }
+  return {
+    isValid: issues.length === 0,
+    issues
+  };
+}
+function verifyBlindSolvability(q) {
+  const issues = [];
+  const prompt = String(q.prompt || q.question || "");
+  const diagramSvg = q.diagramSvg || "";
+  const refersToVisual = /\b(?:graph\s+shown\s+below|figure\s+shown\s+below|on\s+the\s+provided\s+grid|shown\s+in\s+the\s+figure)\b/i.test(prompt);
+  const hasCoordinatesOrFormula = /\b(?:consisting\s+of|f\(x\)\s*=|from\s+x\s*=\s*-?\d+\s+to\s+x\s*=\s*-?\d+|line\s+segments?\s+and|semicircle|quarter\s+circle)\b/i.test(prompt);
+  if (refersToVisual && !diagramSvg && !hasCoordinatesOrFormula) {
+    issues.push("Unsolvable question stem: Refers to an external graph or figure but contains no analytical coordinates or diagramSvg.");
+  }
+  if (/\b(?:synthesize\s+at\s+least\s+three\s+sources|refer\s+to\s+the\s+sources)\b/i.test(prompt) && !prompt.includes("Source A")) {
+    issues.push("AP Lang Synthesis Blind Solver Failure: Prompt instructs student to synthesize sources, but Source text is not embedded in the prompt.");
+  }
+  if (/\b(?:Evidence-Based|EBQ|synthesize\s+the\s+three\s+sources)\b/i.test(prompt) && (!prompt.includes("Source 1") || !prompt.includes("Source 2") || !prompt.includes("Source 3"))) {
+    issues.push("AP Psych EBQ Blind Solver Failure: Prompt instructs student to write an Evidence-Based Question, but Source 1, Source 2, or Source 3 summaries are missing.");
+  }
+  if (/\b(?:DBQ|Document-Based\s+Question)\b/i.test(prompt) && (!prompt.includes("Document 1") || !prompt.includes("Document 7"))) {
+    issues.push("AP World History DBQ Blind Solver Failure: Prompt is a DBQ but Documents 1 through 7 are not fully embedded in the prompt.");
+  }
+  const hasTaskVerbs = /\b(?:find|calculate|determine|explain|justify|show\s+that|evaluate|identify|synthesize|analyze|argue|write\s+an\s+essay)\b/i.test(prompt);
+  if (!hasTaskVerbs) {
+    issues.push("Missing authentic College Board directive verbs (Find, Calculate, Determine, Justify, Explain, Synthesize, Analyze, Argue).");
+  }
+  return {
+    isSolvable: issues.length === 0,
+    issues
+  };
+}
+function verifyCurriculumScope(q, subjectId) {
+  const reasons = [];
+  const whitelist = getSubjectWhitelist(subjectId);
+  const combined = `${q.prompt || ""} ${q.modelAnswer || ""} ${Array.isArray(q.scoringRubric) ? q.scoringRubric.join(" ") : ""}`.toLowerCase();
+  if (whitelist && Array.isArray(whitelist.forbiddenSignatures)) {
+    for (const sig of whitelist.forbiddenSignatures) {
+      const match = combined.match(sig);
+      if (match) {
+        reasons.push(`Curriculum boundary breach: Contains forbidden concept "${match[0]}" for subject "${whitelist.subjectName}".`);
+      }
+    }
+  }
+  const s = (subjectId || "").toLowerCase();
+  if (s.includes("calculus") && !s.includes("bc")) {
+    const bcSignatures = ["taylor", "maclaurin", "ratio test", "euler", "logistic", "polar", "parametric", "integration by parts"];
+    for (const term of bcSignatures) {
+      if (combined.includes(term)) {
+        reasons.push(`AP Calculus AB Scope Failure: Contains BC-exclusive topic "${term}".`);
+      }
+    }
+  }
+  return {
+    inScope: reasons.length === 0,
+    reasons
+  };
+}
+function verifyAphgGeographicalAccuracy(q, targetTopic) {
+  const issues = [];
+  const prompt = String(q.prompt || q.question || "");
+  const modelAnswer = String(q.modelAnswer || "");
+  const combined = `${prompt} ${modelAnswer}`.toLowerCase();
+  if (combined.includes("stage 2") && (combined.includes("low birth rate") || combined.includes("low cbr") || combined.includes("falling birth rate rapidly"))) {
+    issues.push("DTM Stage 2 Hallucination: Stage 2 has high CBR with rapidly falling CDR, not low CBR.");
+  }
+  if ((combined.includes("stage 4") || combined.includes("stage 5")) && (combined.includes("rapid natural increase") || combined.includes("high nir") || combined.includes("rapidly expanding population"))) {
+    issues.push("DTM Stage 4/5 Hallucination: Stage 4/5 exhibits low birth rates with zero or negative population growth.");
+  }
+  if (combined.includes("von thunen") || combined.includes("von th\xFCnen")) {
+    if (combined.includes("dairy") && (combined.includes("outermost ring") || combined.includes("furthest ring") || combined.includes("ring 4"))) {
+      issues.push("Von Th\xFCnen Spatial Inversion: Dairy farming is in the innermost ring closest to market due to perishability, not outer rings.");
+    }
+    if (combined.includes("ranching") && (combined.includes("innermost ring") || combined.includes("closest to market") || combined.includes("ring 1"))) {
+      issues.push("Von Th\xFCnen Spatial Inversion: Extensive cattle ranching is located in outer rings where land rent per hectare is lowest.");
+    }
+  }
+  if (combined.includes("environmental determinism") && (combined.includes("modern accepted theory") || combined.includes("current geographic consensus"))) {
+    issues.push("Philosophical Hallucination: Environmental determinism is rejected in modern AP Human Geography as environmentally simplistic; possibilism is the accepted framework.");
+  }
+  const tLower = (targetTopic || "").toLowerCase();
+  if (tLower.includes("unit 1") || tLower.includes("thinking geographically")) {
+    const laterModels = /\b(?:burgess|hoyt|concentric\s+zone|sector\s+model|multiple\s+nuclei|von\s+th[uü]nen|demographic\s+transition|dtm|population\s+pyramid|wallerstein|world\s+systems|rostow|stages\s+of\s+economic\s+growth|gentrification)\b/i;
+    const match = combined.match(laterModels);
+    if (match) {
+      issues.push(`Unit 1 Boundary Breach: Question contains concept "${match[0]}" from later units (Unit 2-7).`);
+      return { isValid: false, issues, canHeal: false };
+    }
+  }
+  const parts = countSubParts(prompt);
+  let canHeal = true;
+  if (parts.count > 0 && parts.count !== 7) {
+    issues.push(`APHG FRQ Structure Anomaly: Found ${parts.count} subparts instead of the mandatory 7 parts (A through G).`);
+    if (parts.count < 5) canHeal = false;
+  }
+  if (/\b(?:evaluate|justify)\b/i.test(prompt)) {
+    issues.push("APHG Prohibited Verb Notice: Contains 'Evaluate' or 'Justify' (auto-healed to Explain).");
+  }
+  return {
+    isValid: issues.length === 0,
+    issues,
+    canHeal: canHeal && !issues.some((i) => i.includes("Boundary Breach") || i.includes("Hallucination") || i.includes("Inversion"))
+  };
+}
+function healAphgQuestion(q) {
+  let prompt = convertLatexArrayToMarkdownTable(stripRawSvgMarkup(String(q.prompt || q.question || "")));
+  let modelAnswer = convertLatexArrayToMarkdownTable(stripRawSvgMarkup(String(q.modelAnswer || "")));
+  let scoringRubric = Array.isArray(q.scoringRubric) ? q.scoringRubric.map((r) => stripRawSvgMarkup(String(r))) : [];
+  prompt = prompt.replace(/(\([a-g]\)|(?:^|\n)\s*[A-G][.)])\s*Evaluate\b/gi, "$1 Explain").replace(/(\([a-g]\)|(?:^|\n)\s*[A-G][.)])\s*Justify\s+why\b/gi, "$1 Explain why").replace(/(\([a-g]\)|(?:^|\n)\s*[A-G][.)])\s*Justify\s+how\b/gi, "$1 Explain how").replace(/(\([a-g]\)|(?:^|\n)\s*[A-G][.)])\s*Justify\b/gi, "$1 Explain why");
+  scoringRubric = scoringRubric.map(
+    (r) => r.replace(/\bEvaluate\b/gi, "Explain").replace(/\bJustify\s+why\b/gi, "Explain why").replace(/\bJustify\b/gi, "Explain")
+  );
+  if (!q.diagramSvg) {
+    prompt = prompt.replace(/\b(?:as\s+shown\s+in\s+the\s+(?:satellite\s+image|imagery|photograph|photo|map|diagram|graphic)\s+(?:above|below|provided))\b/gi, "in contemporary spatial patterns").replace(/\b(?:referring\s+to\s+the\s+(?:satellite\s+image|imagery|photograph|photo|map|diagram|graphic)\s+(?:above|below|provided))\b/gi, "considering contemporary spatial patterns");
+  }
+  if (/degree\s+to\s+which/i.test(prompt) && !/indicate\s+the\s+degree/i.test(prompt)) {
+    prompt = prompt.replace(/(Explain\s+the\s+degree\s+to\s+which[^\n.?!]+[.?!]?)/gi, "$1 (Response must indicate the degree [low, moderate, high] and provide an explanation.)");
+  }
+  const parts = countSubParts(prompt);
+  if (parts.count === 6 && !parts.labels.includes("g")) {
+    prompt += "\n\nG. Explain the degree to which contemporary technological or economic changes accelerate this spatial process. (Response must indicate the degree [low, moderate, high] and provide an explanation.) [1 point]";
+    modelAnswer += "\n\nPart G:\nModerate to high degree: Rapid advancements in digital communication and regional trade networks accelerate spatial interaction and diffusion, while local regulations and physical barriers can moderate the overall rate of adoption.";
+    scoringRubric.push("Part (g) [1 point]: 1 point for indicating the degree (e.g. moderate/high) and providing a valid explanation of technological or economic acceleration.");
+  }
+  return {
+    ...q,
+    prompt,
+    modelAnswer,
+    scoringRubric,
+    totalPoints: 7
+  };
+}
+var APHG_UNIT_PRISTINE_VAULT = {
+  1: {
+    title: "FREE RESPONSE QUESTION 1  [7 POINTS]",
+    prompt: "Geographic Information Systems (GIS) and remote sensing technologies have fundamentally transformed how spatial data is gathered, analyzed, and applied across scales.\n\n(a) Define the concept of a geographic information system (GIS). [1 point]\n\n(b) Describe ONE difference between reference maps and thematic maps. [1 point]\n\n(c) Explain how map projections, such as the Mercator projection, introduce spatial distortion. [1 point]\n\n(d) Describe ONE real-world application of remote sensing data in environmental monitoring or disaster management. [1 point]\n\n(e) Explain why geographers analyze spatial phenomena at different scales of analysis (e.g., local, national, global). [1 point]\n\n(f) Describe ONE difference between the geographic philosophies of environmental determinism and possibilism. [1 point]\n\n(g) Explain the degree to which crowdsourced geospatial data (volunteered geographic information) is reliable for municipal emergency disaster response. (Response must indicate the degree [low, moderate, high] and provide an explanation.) [1 point]",
+    totalPoints: 7,
+    unitNumber: 1,
+    unitTitle: "Thinking Geographically",
+    skill: "Unit 1: Geospatial Technologies & Spatial Thinking",
+    modelAnswer: "Part A:\nA Geographic Information System (GIS) is a computer hardware and software system designed to capture, store, manipulate, analyze, manage, and present spatially referenced geographic data through multi-layered digital mapping.\n\nPart B:\nReference maps emphasize the precise absolute locations of geographic features (e.g., topographic contours, highways, water bodies, national boundaries), whereas thematic maps display the spatial distribution, density, or patterns of a specific theme, attribute, or phenomenon (e.g., choropleth maps of population density).\n\nPart C:\nBecause the Earth is a three-dimensional sphere, flattening it onto a two-dimensional surface mathematically distorts shape, area, distance, or direction. For example, the cylindrical Mercator projection preserves compass bearings (conformal) but severely distorts landmass area near the poles, making Greenland appear as large as South America.\n\nPart D:\nSatellite sensors and aerial drones gather multispectral infrared imagery to monitor deforestation rates in tropical rainforests, map the spread of active wildfires in real time, or assess flood inundation zones without physical contact.\n\nPart E:\nAnalyzing phenomena at different scales reveals patterns that may be invisible at another scale; for example, a national scale may obscure high local concentrations of poverty or wealth within specific census tracts (the aggregation problem).\n\nPart F:\nEnvironmental determinism claims that physical environment, climate, and topography directly dictate and constrain human cultural and social development, whereas possibilism asserts that the physical environment limits human choices, but humans possess the agency and technology to adapt and alter their surroundings.\n\nPart G:\nModerate degree: While crowdsourced data provides rapid, real-time ground-level updates on road closures and hazard locations from affected citizens, it often suffers from spatial bias, uneven smartphone access among vulnerable populations, and a lack of official verification.",
+    scoringRubric: [
+      "Part (a) [1 point]: 1 point for defining GIS as a computer-based system that layers, manages, and analyzes spatial data.",
+      "Part (b) [1 point]: 1 point for describing reference maps showing absolute locations/features vs thematic maps displaying specific distributions/patterns.",
+      "Part (c) [1 point]: 1 point for explaining flattening a 3D sphere distorts area, shape, distance, or direction (e.g., polar exaggeration on Mercator).",
+      "Part (d) [1 point]: 1 point for describing drone/satellite imagery used for wildfire tracking, flood mapping, or deforestation monitoring.",
+      "Part (e) [1 point]: 1 point for explaining different scales reveal local nuances hidden by national aggregated averages.",
+      "Part (f) [1 point]: 1 point for describing environmental determinism as environment dictating human culture vs possibilism where humans adapt using agency and technology.",
+      "Part (g) [1 point]: 1 point for stating degree (e.g. moderate/high) and explaining real-time citizen reporting balanced against data verification or demographic bias."
+    ]
+  },
+  2: {
+    title: "FREE RESPONSE QUESTION 2  [7 POINTS]",
+    prompt: "The Demographic Transition Model (DTM) illustrates historical population changes in birth rates and death rates over time across different societies.\n\n| Country | Crude Birth Rate (CBR) | Crude Death Rate (CDR) | Total Fertility Rate (TFR) | Female Secondary Schooling (%) | GNI per Capita (USD) |\n| :--- | :--- | :--- | :--- | :--- | :--- |\n| Country X | 36 per 1,000 | 11 per 1,000 | 4.8 | 32% | $1,800 |\n| Country Y | 18 per 1,000 | 7 per 1,000 | 2.1 | 84% | $12,400 |\n| Country Z | 9 per 1,000 | 11 per 1,000 | 1.3 | 96% | $44,500 |\n\n(a) Using the data in the table, identify the country that is most clearly in Stage 2 of the Demographic Transition Model. [1 point]\n\n(b) Describe ONE demographic characteristic of a country in Stage 4 of the Demographic Transition Model. [1 point]\n\n(c) Using the data in the table, explain how female secondary schooling rates influence the Total Fertility Rate (TFR). [1 point]\n\n(d) Explain ONE economic consequence of an aging population for Country Z. [1 point]\n\n(e) Describe ONE pull factor that could attract migrants from Country X to Country Z. [1 point]\n\n(f) Explain how a high youth dependency ratio in Country X creates challenges for the provision of public services. [1 point]\n\n(g) Explain the degree to which pronatalist government policies (e.g., subsidized childcare, paid parental leave) are effective in raising birth rates in countries like Country Z. [1 point]",
+    totalPoints: 7,
+    unitNumber: 2,
+    unitTitle: "Population & Migration Patterns",
+    skill: "Unit 2: Demographic Transition & Development",
+    modelAnswer: "Part A:\nCountry X is most clearly in Stage 2 of the DTM, evidenced by a very high crude birth rate (36 per 1,000) and a rapidly declining death rate (11 per 1,000), producing high natural increase.\n\nPart B:\nStage 4 countries exhibit low birth rates and low death rates that converge near replacement level, resulting in zero or near-zero natural population increase.\n\nPart C:\nAs female secondary schooling increases (e.g., from 32% in Country X to 96% in Country Z), women gain greater economic autonomy, delay marriage and childbirth, and gain better reproductive healthcare access, which causes the TFR to decline from 4.8 to 1.3.\n\nPart D:\nAn aging population increases the old-age dependency ratio, placing heavy fiscal strain on state-funded pension systems and healthcare infrastructure while shrinking the active income-tax-paying labor force.\n\nPart E:\nHigher wages and abundant employment opportunities in Country Z (GNI per capita $44,500 vs $1,800 in Country X) serve as powerful economic pull factors for migrant workers.\n\nPart F:\nA large youth cohort requires substantial public investment in elementary education, pediatric healthcare, and immunization programs, diverting scarce capital away from broader infrastructure modernization.\n\nPart G:\nModerate degree: While cash allowances and parental leave alleviate financial barriers for young families, deep cultural norms prioritizing dual-career households and high living/housing costs in advanced economies limit substantial long-term rebounds in TFR.",
+    scoringRubric: [
+      "Part (a) [1 point]: 1 point for identifying Country X with high CBR and falling CDR.",
+      "Part (b) [1 point]: 1 point for describing low birth and death rates, stabilized population, or rectangular population pyramid.",
+      "Part (c) [1 point]: 1 point for explaining delayed marriage, career entry, or reproductive autonomy reducing fertility.",
+      "Part (d) [1 point]: 1 point for explaining rising pension/healthcare costs or workforce contraction.",
+      "Part (e) [1 point]: 1 point for describing higher wages, better jobs, or superior living standards in the receiving nation.",
+      "Part (f) [1 point]: 1 point for explaining strain on schools, teacher shortages, or diverted capital expenditure.",
+      "Part (g) [1 point]: 1 point for stating degree (e.g. moderate/low) and explaining socio-economic barriers or modest fertility upticks."
+    ]
+  },
+  3: {
+    title: "FREE RESPONSE QUESTION 3  [7 POINTS]",
+    prompt: "Cultural landscapes reflect the interaction between human societies and their natural physical environment over time through architecture, language, and sacred spaces.\n\n(a) Define the concept of cultural landscape. [1 point]\n\n(b) Describe ONE visible feature of the cultural landscape that reflects religious adherence. [1 point]\n\n(c) Describe ONE difference between universalizing religions and ethnic religions. [1 point]\n\n(d) Explain how European colonialism contributed to the global diffusion of dominant lingua francas, such as English or Spanish. [1 point]\n\n(e) Explain how the rapid diffusion of popular culture can lead to cultural divergence or uniform landscapes (placelessness). [1 point]\n\n(f) Describe ONE way indigenous communities actively preserve endangered minority languages. [1 point]\n\n(g) Explain the degree to which digital streaming media and internet social networks threaten the preservation of traditional folk cultural practices. (Response must indicate the degree [low, moderate, high] and provide an explanation.) [1 point]",
+    totalPoints: 7,
+    unitNumber: 3,
+    unitTitle: "Cultural Patterns & Processes",
+    skill: "Unit 3: Cultural Landscapes & Diffusion",
+    modelAnswer: "Part A:\nThe cultural landscape is the visible human imprint and modification of the Earth's physical environment by a cultural group, including buildings, agricultural systems, toponyms, and religious architecture.\n\nPart B:\nProminent architectural elements such as church spires, mosque minarets, Hindu temple gopurams, or roadside Buddhist stupas serve as visible manifestations of religious identity on the landscape.\n\nPart C:\nUniversalizing religions (e.g., Christianity, Islam, Buddhism) actively seek converts globally through missionary work regardless of ethnic background, whereas ethnic religions (e.g., Judaism, Hinduism) are closely tied to a specific ethnic group or geographical location without active proselytization.\n\nPart D:\nColonial administrations established bureaucratic governance, legal codes, and public schooling entirely in the European colonizer's tongue, forcing local elites to adopt English or Spanish for commerce and statecraft, permanently embedding them as global lingua francas.\n\nPart E:\nPopular culture promotes standardized commercial architecture, franchise retail stores, and American fast-food chains, replacing unique regional building styles with uniform, homogenous commercial strips (placelessness).\n\nPart F:\nIndigenous communities establish immersion schools, publish bilingual children's literature, and organize cultural youth festivals to transmit ancestral oral vocabularies to younger generations.\n\nPart G:\nModerate to high degree: Constant exposure to mainstream global popular culture among youth accelerates adoption of global secular norms and consumer lifestyles, though digital archiving and online cultural groups also empower revitalization efforts.",
+    scoringRubric: [
+      "Part (a) [1 point]: 1 point for defining cultural landscape as the visible human imprint or modification of the physical environment.",
+      "Part (b) [1 point]: 1 point for describing minarets, church steeples, shrines, or cemetery iconography.",
+      "Part (c) [1 point]: 1 point for describing universalizing religions seeking global converts vs ethnic religions tied to a specific group/homeland.",
+      "Part (d) [1 point]: 1 point for explaining colonial administrative control, missionary schooling, and trade establishing colonial tongues.",
+      "Part (e) [1 point]: 1 point for explaining commercial franchises and mass consumerism producing standardized, homogenous landscapes (placelessness).",
+      "Part (f) [1 point]: 1 point for describing immersion schools, bilingual curricula, or tribal elders recording oral histories.",
+      "Part (g) [1 point]: 1 point for stating degree (e.g. moderate/high) and explaining youth assimilation into global consumer culture vs digital preservation tools."
+    ]
+  },
+  4: {
+    title: "FREE RESPONSE QUESTION 4  [7 POINTS]",
+    prompt: "Devolutionary pressures and shifting political boundaries continually shape the contemporary geopolitical map.\n\n(a) Define the concept of devolution in a political geography context. [1 point]\n\n(b) Describe ONE spatial or geographical factor that can contribute to devolutionary pressures within a state. [1 point]\n\n(c) Describe ONE cultural or linguistic difference that can foster regional identity and autonomy movements. [1 point]\n\n(d) Explain how supranational organizations (e.g., the European Union) can challenge traditional state sovereignty. [1 point]\n\n(e) Explain ONE economic challenge that can emerge when a region attempts to achieve full political independence. [1 point]\n\n(f) Explain how physical geography (such as rugged mountain topography or insular archipelagos) can hinder political integration. [1 point]\n\n(g) Explain the degree to which modern telecommunications and digital social media can either promote national integration or accelerate regional political fragmentation. [1 point]",
+    totalPoints: 7,
+    unitNumber: 4,
+    unitTitle: "Political Patterns & Processes",
+    skill: "Unit 4: Devolution & Supranationalism",
+    modelAnswer: "Part A:\nDevolution is the statutory delegation of powers from the central government of a sovereign state to govern at a subnational level, such as a regional or local administration, or the fracturing of a state into autonomous regional units.\n\nPart B:\nDistance decay and physical isolation from the national capital or core economic region can weaken administrative control and create feelings of political neglect among peripheral populations.\n\nPart C:\nDistinct ethno-linguistic groups with historic linguistic ties (such as Basque in Spain or Quebecois French in Canada) maintain distinct cultural landscapes and communal identity that motivate demands for self-determination.\n\nPart D:\nMember states of supranational organizations must surrender portions of their sovereignty by adopting common supranational trade regulations, environmental standards, or open-border agreements (e.g., Schengen Agreement).\n\nPart E:\nNewly independent regions often face trade barriers, loss of national subsidy transfers, disputes over resource ownership, and the significant cost of establishing independent currency and financial systems.\n\nPart F:\nComplex mountainous terrain or dispersed island chains create physical transport bottlenecks that isolate communities, making central government infrastructure delivery and policing difficult.\n\nPart G:\nHigh degree: Digital social media allows regionally concentrated minority groups to rapidly organize, document grievances, and disseminate separatist narratives globally, greatly accelerating devolutionary mobilization.",
+    scoringRubric: [
+      "Part (a) [1 point]: 1 point for defining devolution as the transfer of political power from central government to regional levels.",
+      "Part (b) [1 point]: 1 point for describing spatial isolation, peripheral distance from core, or spatial friction.",
+      "Part (c) [1 point]: 1 point for describing distinct language, religious minority status, or shared historical memory.",
+      "Part (d) [1 point]: 1 point for explaining loss of policy autonomy to supranational treaties, judicial rulings, or common trade rules.",
+      "Part (e) [1 point]: 1 point for explaining capital flight, currency instability, loss of federal subsidies, or tariff exposure.",
+      "Part (f) [1 point]: 1 point for explaining physical barriers limiting transportation, communication, and administrative oversight.",
+      "Part (g) [1 point]: 1 point for explaining the degree (e.g. high/moderate) with cause-and-effect reasoning on digital mobilization or counter-state networking."
+    ]
+  },
+  5: {
+    title: "FREE RESPONSE QUESTION 5  [7 POINTS]",
+    prompt: "Agricultural land use is influenced by distance to markets and the economic rent of land, as conceptualized in spatial agricultural models.\n\nSource 1: Classical spatial modeling demonstrates that agricultural activities locate concentric to the central marketplace based on perishability, bulk, and land rent (Bid-Rent Theory).\nSource 2: Over the past three decades, rapid suburban expansion has converted thousands of hectares of prime agricultural land on the urban periphery into low-density residential subdivisions and commercial corridors.\n\n(a) Using Source 1, identify the agricultural land-use zone located immediately adjacent to the central market. [1 point]\n\n(b) Describe the primary assumption of the bid-rent theory regarding the relationship between land cost and distance from the urban market. [1 point]\n\n(c) Explain why intensive commercial agriculture (e.g., dairy and market gardening) occupies high-rent land closer to the market compared to extensive cattle ranching. [1 point]\n\n(d) Using Source 2, describe ONE negative consequence of converting prime agricultural land into suburban residential developments. [1 point]\n\n(e) Explain how technological advancements in refrigerated transport and highway freight systems have altered spatial land-use patterns described in Source 1. [1 point]\n\n(f) Describe ONE land-use planning policy (such as urban growth boundaries or greenbelts) used by municipal governments to preserve agricultural land from suburban sprawl. [1 point]\n\n(g) Explain the degree to which urban vertical farming and hydroponic greenhouse facilities can sustainably supply a metropolitan population's nutritional demands. [1 point]",
+    totalPoints: 7,
+    unitNumber: 5,
+    unitTitle: "Agriculture & Rural Land-Use",
+    skill: "Unit 5: Von Th\xFCnen & Agricultural Land Use",
+    modelAnswer: "Part A:\nMarket gardening and fresh commercial dairy farming are located immediately adjacent to the central market.\n\nPart B:\nBid-rent theory assumes that land value and rent decrease with increasing distance from the central commercial market, as transportation costs increase.\n\nPart C:\nIntensive dairy and horticulture produce highly perishable goods with high weight-to-value ratios requiring rapid, frequent delivery to market; their high profit margins per acre allow them to outbid extensive cattle ranching for expensive inner-ring land.\n\nPart D:\nSuburban conversion leads to permanent loss of highly fertile topsoil, fragmentation of farm infrastructure, increased urban runoff, and higher food transportation distances.\n\nPart E:\nRefrigerated rail and trucking (reefer units) have dramatically reduced spoilage over long distances, allowing perishable dairy and produce to be grown in distant regions where land and labor are cheaper, expanding the rings outward.\n\nPart F:\nUrban growth boundaries (UGBs) legally designate a perimeter outside of which high-density residential development is prohibited, strictly preserving surrounding farmland and open greenbelts.\n\nPart G:\nLow to moderate degree: While vertical hydroponic facilities efficiently provide leafy greens and herbs with minimal water usage, they consume substantial electricity for artificial lighting and cannot efficiently produce calorie-dense staple crops (e.g., wheat, rice, corn) that form the bulk of human caloric intake.",
+    scoringRubric: [
+      "Part (a) [1 point]: 1 point for identifying market gardening, horticulture, or intensive dairy farming.",
+      "Part (b) [1 point]: 1 point for describing inverse relationship between land cost and distance from market.",
+      "Part (c) [1 point]: 1 point for explaining high perishability, daily transport needs, or high revenue per hectare outbidding extensive ranching.",
+      "Part (d) [1 point]: 1 point for describing loss of fertile arable land, increased food miles, or habitat loss.",
+      "Part (e) [1 point]: 1 point for explaining refrigeration allowing distant production where land costs are lower.",
+      "Part (f) [1 point]: 1 point for describing greenbelts, urban growth boundaries, or agricultural preservation zoning.",
+      "Part (g) [1 point]: 1 point for stating degree (e.g. low/moderate) and explaining high energy costs and inability to produce staple grain crops."
+    ]
+  },
+  6: {
+    title: "FREE RESPONSE QUESTION 6  [7 POINTS]",
+    prompt: "Urban spatial structure, suburbanization, and renewal policies continuously transform metropolitan internal geographies.\n\n(a) Identify ONE spatial zone in the Burgess concentric zone model. [1 point]\n\n(b) Describe the primary assumption of the Hoyt sector model regarding how transportation corridors shape urban residential growth. [1 point]\n\n(c) Describe ONE historical consequence of institutional redlining on contemporary neighborhood wealth accumulation. [1 point]\n\n(d) Explain ONE economic cause of gentrification in inner-city metropolitan neighborhoods. [1 point]\n\n(e) Explain ONE negative social consequence of gentrification for long-term lower-income residents. [1 point]\n\n(f) Explain how smart-growth principles or transit-oriented development (TOD) reduce automobile dependency in urban areas. [1 point]\n\n(g) Explain the degree to which municipal greenbelts or urban growth boundaries are effective in curbing suburban sprawl. (Response must indicate the degree [low, moderate, high] and provide an explanation.) [1 point]",
+    totalPoints: 7,
+    unitNumber: 6,
+    unitTitle: "Cities & Urban Land-Use",
+    skill: "Unit 6: Internal Urban Structure & Gentrification",
+    modelAnswer: "Part A:\nThe Central Business District (CBD), the Zone of Transition, the Zone of Independent Workers' Homes, the Zone of Better Residences, or the Commuter Zone.\n\nPart B:\nThe Hoyt sector model posits that cities develop in wedges or sectors radiating outward along major transportation corridors (rail lines, arterial highways), with high-income housing locating along the most desirable environmental avenues away from industrial rail corridors.\n\nPart C:\nRedlining systematically denied mortgage lending and investment in minority neighborhoods, locking residents out of homeownership equity and creating generational wealth disparities that persist today.\n\nPart D:\nSubstantial rent gaps between depressed inner-city land values and potential commercial returns attract private developers seeking inexpensive historic housing stock close to CBD employment.\n\nPart E:\nRising property valuations and escalating property taxes price out long-term working-class tenants, leading to displacement and dissolution of established neighborhood community bonds.\n\nPart F:\nTransit-oriented development clusters high-density, mixed-use commercial and residential spaces within a five-minute walk of rapid transit stations, allowing residents to meet daily needs and commute without personal motor vehicles.\n\nPart G:\nModerate to high degree: Legally enforced growth boundaries successfully prevent low-density tract housing on surrounding rural land and incentivize brownfield infill redevelopment, although they can also drive up inner-city housing prices.",
+    scoringRubric: [
+      "Part (a) [1 point]: 1 point for identifying CBD, zone of transition, or commuter zone.",
+      "Part (b) [1 point]: 1 point for describing growth radiating outward along transportation axes (rail/highways).",
+      "Part (c) [1 point]: 1 point for describing denial of mortgages preventing home equity and generational wealth accumulation.",
+      "Part (d) [1 point]: 1 point for explaining rent gap, low initial property prices, or proximity to downtown professional jobs.",
+      "Part (e) [1 point]: 1 point for explaining displacement of long-term tenants due to rising rents and property taxes.",
+      "Part (f) [1 point]: 1 point for explaining compact pedestrian density around transit hubs reducing car trips.",
+      "Part (g) [1 point]: 1 point for stating degree (e.g. moderate/high) and explaining greenbelt containment of sprawl balanced against increased housing costs."
+    ]
+  },
+  7: {
+    title: "FREE RESPONSE QUESTION 7  [7 POINTS]",
+    prompt: "Spatial patterns of economic development and industrialization reflect uneven global integration, international trade, and shifting labor markets.\n\n(a) Define the economic concept of gross national income (GNI) per capita. [1 point]\n\n(b) Describe ONE difference between primary economic activities and tertiary economic activities. [1 point]\n\n(c) Describe ONE spatial characteristic of export processing zones (EPZs) or special economic zones (SEZs). [1 point]\n\n(d) Using Wallerstein's World Systems Theory, explain how core countries economically interact with peripheral countries. [1 point]\n\n(e) Explain how deindustrialization in traditional manufacturing regions (e.g., the American Rust Belt) impacts local employment structures. [1 point]\n\n(f) Describe ONE indicator used in the United Nations Human Development Index (HDI) other than GNI per capita. [1 point]\n\n(g) Explain the degree to which microloans and microfinance programs empower women economically in developing peripheral countries. (Response must indicate the degree [low, moderate, high] and provide an explanation.) [1 point]",
+    totalPoints: 7,
+    unitNumber: 7,
+    unitTitle: "Industrial & Economic Development",
+    skill: "Unit 7: World Systems & Economic Geography",
+    modelAnswer: "Part A:\nGross National Income (GNI) per capita is the total domestic and foreign income generated by a country's residents and businesses divided by the total national population.\n\nPart B:\nPrimary economic activities involve direct extraction of natural resources from the earth (e.g., mining, agriculture, forestry), whereas tertiary activities involve providing services to individuals and businesses (e.g., retail, healthcare, financial management, education).\n\nPart C:\nEPZs are typically located near deep-water maritime ports, international borders, or major airports to minimize transport costs and offer tariff-free customs incentives and subsidized utility infrastructure to multinational corporations.\n\nPart D:\nCore countries exploit peripheral countries by importing inexpensive raw materials and low-wage assembly labor, while exporting high-value manufactured consumer goods and financial capital back to the periphery, perpetuating an unequal terms of trade.\n\nPart E:\nDeindustrialization causes widespread layoffs in high-paying unionized factory jobs, forcing displaced workers into lower-paying, non-unionized service-sector positions or leading to structural unemployment and out-migration.\n\nPart F:\nLife expectancy at birth (health dimension) or mean/expected years of schooling (education dimension).\n\nPart G:\nModerate to high degree: Small, low-interest collateral-free loans enable women to purchase agricultural equipment or establish micro-enterprises, increasing household income and social standing, though structural market barriers can limit scaling into large enterprises.",
+    scoringRubric: [
+      "Part (a) [1 point]: 1 point for defining GNI per capita as total resident/foreign income divided by population.",
+      "Part (b) [1 point]: 1 point for describing raw extraction (primary) vs service provision (tertiary).",
+      "Part (c) [1 point]: 1 point for describing location near ports/borders, tax exemptions, or export orientation.",
+      "Part (d) [1 point]: 1 point for explaining core extracting cheap raw materials/labor and selling back high-value manufactured goods.",
+      "Part (e) [1 point]: 1 point for explaining factory job losses, transition to lower-wage service work, or regional economic decline.",
+      "Part (f) [1 point]: 1 point for describing life expectancy at birth or mean/expected years of schooling.",
+      "Part (g) [1 point]: 1 point for stating degree (e.g. moderate/high) and explaining small business formation and financial independence."
+    ]
+  }
+};
+function getAphgPristineUnitQuestion(unitNum, targetTopic, idx = 0) {
+  let u = unitNum;
+  if (!u && targetTopic) {
+    const match = targetTopic.match(/unit\s*([1-7])/i);
+    if (match) u = parseInt(match[1], 10);
+  }
+  if (!u || u < 1 || u > 7) {
+    u = idx % 7 + 1;
+  }
+  const q = APHG_UNIT_PRISTINE_VAULT[u] || APHG_UNIT_PRISTINE_VAULT[1];
+  return { ...q, id: idx + 1 };
+}
+var PRISTINE_GOLDEN_QUESTIONS = {
+  "aphg": Object.values(APHG_UNIT_PRISTINE_VAULT),
+  "ap-human-geography": Object.values(APHG_UNIT_PRISTINE_VAULT),
+  "apes": [
+    {
+      title: "FREE RESPONSE QUESTION 1  [10 POINTS]",
+      prompt: "Agricultural runoff carrying synthetic fertilizers enters an estuarine watershed, resulting in periodic algal blooms and fish mortality events.\n\n(A) Identify one primary nutrient found in synthetic agricultural runoff that causes cultural eutrophication. [1 point]\n\n(B) Describe the sequence of biological events that leads to hypoxia following an algal bloom in an aquatic ecosystem. [1 point]\n\n(C) Identify the level of dissolved oxygen (in mg/L) below which an aquatic zone is considered hypoxic. [1 point]\n\n(D) Describe one physiological effect that low dissolved oxygen levels have on fish species inhabiting the estuary. [1 point]\n\n(E) Researchers design an investigation to test the effectiveness of riparian buffer zones in reducing nitrate concentrations in agricultural runoff. They establish three 100-meter test plots: Plot A with a 0-meter buffer (bare field to stream), Plot B with a 15-meter grass buffer, and Plot C with a 30-meter forested buffer. Stream water samples are collected weekly for 6 months.\n(i) Identify a testable hypothesis for the researchers' investigation. [1 point]\n(ii) Identify the independent variable in this experiment. [1 point]\n(iii) Identify the dependent variable in this experiment. [1 point]\n(iv) Explain why Plot A was included in the experimental design. [1 point]\n\n(F) Propose a realistic agricultural management practice, other than planting riparian buffers, that farmers could implement to reduce nutrient runoff into waterways. [1 point]\n\n(G) Justify the solution proposed in part (F) by providing an additional environmental or economic advantage other than reducing runoff pollution. [1 point]",
+      totalPoints: 10,
+      unitNumber: 8,
+      unitTitle: "Aquatic and Terrestrial Pollution",
+      skill: "Unit 8: Cultural Eutrophication and Investigation Design",
+      modelAnswer: "Part A:\nNitrates (or phosphates / nitrogen / phosphorus).\n\nPart B:\nExcess nutrients cause a rapid population explosion of algae. When the algae die, aerobic decomposers (bacteria) consume dissolved oxygen as they break down the dead biomass, causing dissolved oxygen concentrations in the water column to drop precipitously.\n\nPart C:\nBelow 2.0 mg/L (or 2 to 3 mg/L).\n\nPart D:\nFish experience respiratory stress, reduced metabolic rates, suffocation, or are forced to flee the area, leading to fish mortality events.\n\nPart E:\n(i) Hypothesis: If the width of the riparian buffer zone increases, then the concentration of nitrates in the adjacent stream runoff will decrease.\n(ii) Independent Variable: The width or type of riparian buffer zone (0 m, 15 m grass, 30 m forested).\n(iii) Dependent Variable: The concentration of nitrates (mg/L) in the stream water samples.\n(iv) Plot A serves as a control group (baseline) to measure runoff nitrate levels in the complete absence of a buffer zone.\n\nPart F:\nFarmers can adopt precision agriculture (applying fertilizer only where and when needed based on soil testing) or plant non-commercial cover crops (such as clover or rye) during fallow seasons to absorb excess soil nutrients.\n\nPart G:\nPlanting cover crops also prevents wind and water soil erosion, improves soil organic matter and moisture retention, and reduces the need for expensive synthetic fertilizer purchases in subsequent planting cycles.",
+      scoringRubric: [
+        "Part A [1 point]: 1 point for identifying nitrogen/nitrate or phosphorus/phosphate.",
+        "Part B [1 point]: 1 point for explaining algae die -> bacterial decomposition consumes dissolved oxygen -> hypoxia.",
+        "Part C [1 point]: 1 point for identifying <= 2 mg/L or 2-3 mg/L.",
+        "Part D [1 point]: 1 point for describing respiratory distress, suffocation, or fish kills.",
+        "Part E(i) [1 point]: 1 point for testable hypothesis stating directional relationship between buffer width and nitrate levels.",
+        "Part E(ii) [1 point]: 1 point for identifying buffer width/presence as IV.",
+        "Part E(iii) [1 point]: 1 point for identifying nitrate concentration in stream as DV.",
+        "Part E(iv) [1 point]: 1 point for describing Plot A as the control/baseline.",
+        "Part F [1 point]: 1 point for proposing precision fertilizer application, cover crops, or drip fertigation.",
+        "Part G [1 point]: 1 point for justifying with an additional co-benefit: reduced soil erosion, increased soil fertility, or cost savings on fertilizers."
+      ]
+    }
+  ],
+  "ap-environmental-science": [
+    // Alias to apes
+  ],
+  "ap-calculus-ab": [
+    {
+      title: "FREE RESPONSE QUESTION 1  [9 POINTS]",
+      prompt: "A chemical processing plant discharges treated effluent into a storage reservoir at a rate modeled by $R(t) = 400 + 120\\sin\\left(\\frac{t^2}{10}\\right)$, measured in liters per hour, for $0 \\le t \\le 8$ hours. Water evaporates from the reservoir at a constant rate of $250$ liters per hour. At time $t = 0$, the reservoir holds $5000$ liters of treated effluent.\n\n(a) Is the amount of treated effluent in the reservoir increasing or decreasing at time $t = 3$ hours? Give a reason for your answer. [2 points]\n\n(b) Write an integral expression for the total volume $V(t)$, in liters, of effluent in the reservoir at any time $t$. [2 points]\n\n(c) Find the total amount of effluent, in liters, discharged into the reservoir during the interval $0 \\le t \\le 8$. [2 points]\n\n(d) At what time $t$, for $0 \\le t \\le 8$, is the amount of effluent in the reservoir at an absolute minimum? Justify your answer. [3 points]",
+      totalPoints: 9,
+      unitNumber: 6,
+      unitTitle: "Integration & Accumulation of Change",
+      skill: "Unit 6: Rate In / Rate Out Accumulation",
+      modelAnswer: "Part (a):\nThe net rate of change of effluent in the reservoir is given by $N(t) = R(t) - 250$.\nAt $t = 3$, $N(3) = R(3) - 250 = 400 + 120\\sin(0.9) - 250 = 150 + 120(0.7833) = 244.0 > 0$.\nSince $N(3) > 0$, the amount of treated effluent in the reservoir is increasing at time $t = 3$.\n\nPart (b):\nThe volume at any time $t$ is $V(t) = 5000 + \\int_0^t (R(u) - 250) \\, du$.\n\nPart (c):\nTotal effluent discharged is $\\int_0^8 R(t) \\, dt = \\int_0^8 \\left(400 + 120\\sin\\left(\\frac{t^2}{10}\\right)\\right) dt = 400(8) + 120 \\int_0^8 \\sin\\left(\\frac{t^2}{10}\\right) dt \\approx 3200 + 494.3 = 3694.3$ liters.\n\nPart (d):\nCandidates for absolute minimum on $[0, 8]$ are critical points where $N(t) = R(t) - 250 = 0$, and endpoints $t = 0, 8$.\nSince $R(t) = 400 + 120\\sin(t^2/10) \\ge 400 - 120 = 280 > 250$ for all $t$, $N(t) > 0$ strictly for all $t \\in [0, 8]$.\nBecause $V'(t) = N(t) > 0$ on $[0, 8]$, $V(t)$ is strictly increasing on the entire interval.\nTherefore, the absolute minimum occurs at the left endpoint $t = 0$ hours with $V(0) = 5000$ liters.",
+      scoringRubric: [
+        "Part (a) [2 points]: 1 point for evaluating net rate N(3) = R(3) - 250, 1 point for correct conclusion that amount is increasing with reasoning.",
+        "Part (b) [2 points]: 1 point for definite integral setup with limits, 1 point for including initial condition 5000.",
+        "Part (c) [2 points]: 1 point for integrand R(t), 1 point for numerical evaluation with correct units.",
+        "Part (d) [3 points]: 1 point for considering N(t) = 0 or analyzing sign of V'(t), 1 point for identifying t = 0 as candidate, 1 point for justification using Extreme Value Theorem or monotonic behavior."
+      ]
+    },
+    {
+      title: "FREE RESPONSE QUESTION 2  [9 POINTS]",
+      prompt: "A particle moves along the $x$-axis so that its velocity at time $t$ is given by the differentiable function $v(t) = 2t\\cos(t) - 3$, for $0 \\le t \\le 6$. At time $t = 0$, the particle's position is $x(0) = 4$.\n\n(a) Find the acceleration of the particle at time $t = 2$. [2 points]\n\n(b) Is the speed of the particle increasing or decreasing at time $t = 2$? Explain your reasoning. [2 points]\n\n(c) Find the total distance traveled by the particle over the time interval $0 \\le t \\le 6$. [2 points]\n\n(d) During the interval $0 \\le t \\le 6$, does the particle ever change directions? Justify your answer. [3 points]",
+      totalPoints: 9,
+      unitNumber: 4,
+      unitTitle: "Contextual Applications of Differentiation",
+      skill: "Unit 4: Straight-Line Particle Motion",
+      modelAnswer: "Part (a):\n$a(t) = v'(t) = \\frac{d}{dt}(2t\\cos(t) - 3) = 2\\cos(t) - 2t\\sin(t)$.\nAt $t = 2$, $a(2) = 2\\cos(2) - 4\\sin(2) \\approx 2(-0.4161) - 4(0.9093) = -0.832 - 3.637 = -4.469$.\n\nPart (b):\nVelocity at $t = 2$: $v(2) = 2(2)\\cos(2) - 3 = 4(-0.4161) - 3 = -1.664 - 3 = -4.664 < 0$.\nAcceleration at $t = 2$: $a(2) \\approx -4.469 < 0$.\nSince both velocity $v(2)$ and acceleration $a(2)$ have the same sign (both negative), the speed of the particle is increasing at time $t = 2$.\n\nPart (c):\nTotal distance traveled is given by the definite integral of speed: $\\text{Total Distance} = \\int_0^6 |v(t)| \\, dt = \\int_0^6 |2t\\cos(t) - 3| \\, dt \\approx 18.271$.\n\nPart (d):\nThe particle changes direction if and only if its velocity $v(t)$ changes sign.\nSince $\\cos(t) \\le 1$ for all $t$, $2t\\cos(t) \\le 2t$.\nOn $[0, 1]$, $2t\\cos(t) \\le 2$, so $v(t) \\le 2 - 3 = -1 < 0$.\nSolving $v(t) = 0 \\iff 2t\\cos(t) = 3$: On $[0, 6]$, $v(t) < 0$ except where $2t\\cos(t) > 3$.\nAt $t = 5$, $2(5)\\cos(5) = 10(0.2837) = 2.837 < 3$, so $v(t) < 0$.\nAt $t = 6$, $2(6)\\cos(6) = 12(0.9602) = 11.52 > 3$, so $v(6) = 11.52 - 3 = 8.52 > 0$.\nSince $v(t)$ is continuous, $v(0) = -3 < 0$, and $v(6) > 0$, by the Intermediate Value Theorem $v(t) = 0$ for some $t \\in (0, 6)$, and changes sign from negative to positive. Therefore, the particle changes direction.",
+      scoringRubric: [
+        "Part (a) [2 points]: 1 point for derivative setup a(t) = v'(t), 1 point for accurate acceleration value a(2).",
+        "Part (b) [2 points]: 1 point for finding signs of v(2) and a(2), 1 point for correct conclusion that speed is increasing with justification.",
+        "Part (c) [2 points]: 1 point for absolute value definite integral expression, 1 point for evaluated distance.",
+        "Part (d) [3 points]: 1 point for condition v(t) changes sign, 1 point for applying Intermediate Value Theorem or finding root, 1 point for valid conclusion."
+      ]
+    },
+    {
+      title: "FREE RESPONSE QUESTION 3  [9 POINTS]",
+      prompt: "Consider the differential equation $\\frac{dy}{dx} = (y - 2)(x + 1)$. Let $y = f(x)$ be the particular solution to the differential equation with the initial condition $f(0) = 5$.\n\n(a) A portion of the slope field for the differential equation is given. Sketch the solution curve that passes through $(0, 5)$. [1 point]\n\n(b) Write an equation for the line tangent to the graph of $f$ at $x = 0$. Use this tangent line to approximate $f(0.2)$. [2 points]\n\n(c) Find $\\frac{d^2y}{dx^2}$ in terms of $x$ and $y$. Determine whether the approximation in part (b) is an overestimate or an underestimate of $f(0.2)$. Justify your answer. [2 points]\n\n(d) Find the particular solution $y = f(x)$ to the differential equation with initial condition $f(0) = 5$. [4 points]",
+      totalPoints: 9,
+      unitNumber: 7,
+      unitTitle: "Differential Equations & Slope Fields",
+      skill: "Unit 7: Separation of Variables & Tangent Approximation",
+      modelAnswer: "Part (a):\nThe solution curve starts at $(0, 5)$ and follows the tangent segments upward and rightward as $x > 0$.\n\nPart (b):\nAt $(0, 5)$, $\\frac{dy}{dx} = (5 - 2)(0 + 1) = 3(1) = 3$.\nThe tangent line equation is $y - 5 = 3(x - 0) \\implies y = 3x + 5$.\nAt $x = 0.2$, $f(0.2) \\approx 3(0.2) + 5 = 0.6 + 5 = 5.6$.\n\nPart (c):\n$\\frac{d^2y}{dx^2} = \\frac{d}{dx}[(y - 2)(x + 1)] = \\frac{dy}{dx}(x + 1) + (y - 2)(1) = (y - 2)(x + 1)^2 + (y - 2) = (y - 2)[(x + 1)^2 + 1]$.\nNear $(0, 5)$ for $x \\in [0, 0.2]$ where $y > 2$: $(y - 2) > 0$ and $(x + 1)^2 + 1 > 0$, so $\\frac{d^2y}{dx^2} > 0$.\nSince the second derivative is strictly positive, the graph of $f$ is concave up on this interval.\nTherefore, the tangent line lies below the curve, meaning the approximation $5.6$ is an underestimate.\n\nPart (d):\n$\\frac{dy}{dx} = (y - 2)(x + 1) \\implies \\frac{1}{y - 2} \\, dy = (x + 1) \\, dx$.\nIntegrating both sides: $\\int \\frac{1}{y - 2} \\, dy = \\int (x + 1) \\, dx \\implies \\ln|y - 2| = \\frac{x^2}{2} + x + C$.\nUsing initial condition $f(0) = 5$: $\\ln|5 - 2| = 0 + 0 + C \\implies C = \\ln(3)$.\n$\\ln|y - 2| = \\frac{x^2}{2} + x + \\ln(3) \\implies |y - 2| = e^{\\frac{x^2}{2} + x + \\ln(3)} = 3e^{\\frac{x^2}{2} + x}$.\nSince $y(0) = 5 > 2$, $y - 2 = 3e^{\\frac{x^2}{2} + x} \\implies y = 3e^{\\frac{x^2}{2} + x} + 2$.",
+      scoringRubric: [
+        "Part (a) [1 point]: 1 point for drawing continuous curve through (0, 5) adhering to slope direction.",
+        "Part (b) [2 points]: 1 point for tangent line slope and equation y = 3x + 5, 1 point for evaluation 5.6.",
+        "Part (c) [2 points]: 1 point for implicit second derivative computation, 1 point for stating concave up with conclusion of underestimate.",
+        "Part (d) [4 points]: 1 point for separation of variables, 1 point for antiderivatives ln|y-2| and x^2/2 + x, 1 point for constant of integration C = ln(3), 1 point for explicit solution y = 3e^(x^2/2 + x) + 2."
+      ]
+    }
+  ],
+  "ap-calculus-bc": [
+    {
+      title: "FREE RESPONSE QUESTION 1  [9 POINTS]",
+      prompt: "The Taylor series for a function $f$ about $x = 2$ is given by $\\sum_{n=1}^\\infty \\frac{(x - 2)^n}{n \\cdot 4^n} = \\frac{x-2}{4} + \\frac{(x-2)^2}{2 \\cdot 16} + \\frac{(x-2)^3}{3 \\cdot 64} + \\dots$ and converges to $f(x)$ on its interval of convergence.\n\n(a) Using the ratio test, find the interval of convergence of the Taylor series for $f$ about $x = 2$. Justify your answer. [5 points]\n\n(b) Find the first three nonzero terms and the general term of the Taylor series for $f'$, the derivative of $f$, about $x = 2$. [2 points]\n\n(c) The Taylor series for $f'$ is a geometric series. For all $x$ in the interval of convergence of $f'$, show that $f'(x) = \\frac{1}{6 - x}$. [1 point]\n\n(d) The second-degree Taylor polynomial for $f$ about $x = 2$ is used to approximate $f(2.5)$. Given that $|f'''(x)| \\le 0.05$ for all $x \\in [2, 2.5]$, use the Lagrange error bound to show that this approximation differs from $f(2.5)$ by at most $0.002$. [1 point]",
+      totalPoints: 9,
+      unitNumber: 10,
+      unitTitle: "Infinite Sequences and Series",
+      skill: "Unit 10: Ratio Test, Power Series & Error Bounds",
+      modelAnswer: "Part (a):\nRatio test setup: $\\lim_{n \\to \\infty} \\left| \\frac{(x - 2)^{n+1}}{(n+1) \\cdot 4^{n+1}} \\cdot \\frac{n \\cdot 4^n}{(x - 2)^n} \\right| = \\lim_{n \\to \\infty} \\left( \\frac{|x - 2|}{4} \\cdot \\frac{n}{n+1} \\right) = \\frac{|x - 2|}{4}$.\nFor absolute convergence: $\\frac{|x - 2|}{4} < 1 \\iff |x - 2| < 4 \\iff -2 < x < 6$.\nTesting endpoints individually:\nAt $x = -2$: The series is $\\sum_{n=1}^\\infty \\frac{(-4)^n}{n \\cdot 4^n} = \\sum_{n=1}^\\infty \\frac{(-1)^n}{n}$, which converges by the Alternating Series Test since $\\frac{1}{n} > 0$, $\\frac{1}{n}$ is strictly decreasing, and $\\lim_{n\\to\\infty} \\frac{1}{n} = 0$.\nAt $x = 6$: The series is $\\sum_{n=1}^\\infty \\frac{4^n}{n \\cdot 4^n} = \\sum_{n=1}^\\infty \\frac{1}{n}$, which is the harmonic series ($p$-series with $p = 1$) and diverges.\nTherefore, the interval of convergence is $[-2, 6)$.\n\nPart (b):\nDifferentiating term-by-term: $f'(x) = \\frac{d}{dx} \\left[ \\frac{x-2}{4} + \\frac{(x-2)^2}{32} + \\frac{(x-2)^3}{192} + \\dots + \\frac{(x-2)^n}{n \\cdot 4^n} + \\dots \\right] = \\frac{1}{4} + \\frac{x-2}{16} + \\frac{(x-2)^2}{64} + \\dots$.\nThe general term is $\\frac{(x - 2)^{n-1}}{4^n}$ for $n \\ge 1$.\n\nPart (c):\nThe series for $f'(x)$ is a geometric series with first term $a = \\frac{1}{4}$ and common ratio $r = \\frac{x - 2}{4}$.\nSince $|r| = \\frac{|x-2|}{4} < 1$ for all $x \\in (-2, 6)$, the infinite sum is:\n$f'(x) = \\frac{a}{1 - r} = \\frac{1/4}{1 - \\frac{x - 2}{4}} = \\frac{1/4}{\\frac{4 - (x - 2)}{4}} = \\frac{1}{6 - x}$.\n\nPart (d):\nBy the Lagrange error bound: $|f(2.5) - P_2(2.5)| \\le \\frac{\\max_{2 \\le t \\le 2.5} |f'''(t)|}{3!} |2.5 - 2|^3$.\nGiven that $\\max |f'''(t)| \\le 0.05$ on $[2, 2.5]$:\n$\\text{Error} \\le \\frac{0.05}{6} (0.5)^3 = \\frac{0.05 \\cdot 0.125}{6} = \\frac{0.00625}{6} \\approx 0.001042 \\le 0.002$.\nTherefore, the approximation differs from $f(2.5)$ by at most $0.002$.",
+      scoringRubric: [
+        "Part (a) [5 points]: 1 point for setting up ratio with absolute values, 1 point for limit of ratio |x - 2|/4, 1 point for interior interval (-2, 6), 1 point for considering both endpoints x = -2 and x = 6, 1 point for analysis at endpoints (AST at x = -2, harmonic divergence at x = 6) and final interval [-2, 6).",
+        "Part (b) [2 points]: 1 point for first three nonzero terms 1/4 + (x-2)/16 + (x-2)^2/64, 1 point for general term (x-2)^(n-1)/4^n.",
+        "Part (c) [1 point]: 1 point for identifying geometric series ratio (x-2)/4 and showing algebraic equivalence to 1/(6-x).",
+        "Part (d) [1 point]: 1 point for Lagrange error bound form (0.05/6)*(0.5)^3 and explicitly connecting with inequality <= 0.002."
+      ]
+    },
+    {
+      title: "FREE RESPONSE QUESTION 2  [9 POINTS]",
+      prompt: "Curve $C$ is defined by the polar equation $r(\\theta) = 3 + 2\\cos(2\\theta)$ for $0 \\le \\theta \\le \\pi$. The circle $r = 3$ is also graphed in the $xy$-plane.\n\n(a) Find the rate of change of $r$ with respect to $\\theta$ at the point on curve $C$ where $\\theta = \\frac{\\pi}{3}$. Show the setup for your calculations. [1 point]\n\n(b) Find the area of the region that lies inside curve $C$ but outside the circle $r = 3$. Show the setup for your calculations. [3 points]\n\n(c) Find the value of $\\theta$ in the interval $0 \\le \\theta \\le \\frac{\\pi}{2}$ that corresponds to the point on curve $C$ with the maximum distance from the origin. Justify your answer. [3 points]\n\n(d) A particle moves along curve $C$ such that $\\frac{d\\theta}{dt} = 4$ radians per second for all $t$. Find the rate at which the particle's distance from the origin changes with respect to time when $\\theta = \\frac{\\pi}{3}$. Show the setup for your calculations. [2 points]",
+      totalPoints: 9,
+      unitNumber: 9,
+      unitTitle: "Parametric Equations, Polar Coordinates, & Vector-Valued Functions",
+      skill: "Unit 9: Polar Area & Motion on Polar Curves",
+      modelAnswer: "Part (a):\n$\\frac{dr}{d\\theta} = \\frac{d}{d\\theta}(3 + 2\\cos(2\\theta)) = -4\\sin(2\\theta)$.\nAt $\\theta = \\frac{\\pi}{3}$, $\\frac{dr}{d\\theta}\\Big|_{\\theta = \\pi/3} = -4\\sin\\left(\\frac{2\\pi}{3}\\right) = -4\\left(\\frac{\\sqrt{3}}{2}\\right) = -2\\sqrt{3} \\approx -3.464$.\n\nPart (b):\nCurve $C$ and circle intersect where $3 + 2\\cos(2\\theta) = 3 \\iff \\cos(2\\theta) = 0$.\nOn $[0, \\pi]$, $2\\theta = \\frac{\\pi}{2}$ and $2\\theta = \\frac{3\\pi}{2} \\implies \\theta = \\frac{\\pi}{4}$ and $\\theta = \\frac{3\\pi}{4}$.\n$C$ lies outside $r = 3$ where $2\\cos(2\\theta) > 0$, which occurs on $[0, \\frac{\\pi}{4}]$ and $[\\frac{3\\pi}{4}, \\pi]$.\nBy symmetry, Area $= 2 \\cdot \\frac{1}{2} \\int_0^{\\pi/4} \\left( (3 + 2\\cos(2\\theta))^2 - 3^2 \\right) d\\theta = \\int_0^{\\pi/4} (12\\cos(2\\theta) + 4\\cos^2(2\\theta)) \\, d\\theta \\approx 7.571$.\n\nPart (c):\nThe distance from the origin is $r(\\theta) = 3 + 2\\cos(2\\theta)$.\nOn $[0, \\frac{\\pi}{2}]$, critical points occur where $\\frac{dr}{d\\theta} = -4\\sin(2\\theta) = 0 \\implies 2\\theta = 0 \\implies \\theta = 0$.\nCandidates test on $[0, \\frac{\\pi}{2}]$:\nAt $\\theta = 0$: $r(0) = 3 + 2\\cos(0) = 5$.\nAt $\\theta = \\frac{\\pi}{2}$: $r(\\pi/2) = 3 + 2\\cos(\\pi) = 1$.\nBy the Candidates Test, the maximum distance from the origin is $5$, occurring at $\\theta = 0$.\n\nPart (d):\nBy the chain rule, $\\frac{dr}{dt} = \\frac{dr}{d\\theta} \\cdot \\frac{d\\theta}{dt}$.\nFrom part (a), $\\frac{dr}{d\\theta}\\Big|_{\\theta = \\pi/3} = -2\\sqrt{3}$.\nGiven $\\frac{d\\theta}{dt} = 4$: $\\frac{dr}{dt} = (-2\\sqrt{3})(4) = -8\\sqrt{3} \\approx -13.856$ units per second.",
+      scoringRubric: [
+        "Part (a) [1 point]: 1 point for derivative setup and correct evaluation dr/dtheta = -2*sqrt(3) (or -3.464).",
+        "Part (b) [3 points]: 1 point for limits of integration theta = pi/4 and 3pi/4 (or 0 to pi/4 with symmetry factor 2), 1 point for integrand with squared difference of radii ((3+2cos(2theta))^2 - 3^2), 1 point for correct numerical area 7.571.",
+        "Part (c) [3 points]: 1 point for considering dr/dtheta = 0, 1 point for global Candidates Test evaluating endpoints theta = 0, pi/2, 1 point for answer theta = 0 with maximum distance 5.",
+        "Part (d) [2 points]: 1 point for product of derivatives (dr/dtheta)*(dtheta/dt), 1 point for correct rate of change -8*sqrt(3) (or -13.856)."
+      ]
+    },
+    {
+      title: "FREE RESPONSE QUESTION 3  [9 POINTS]",
+      prompt: "Consider the differential equation $\\frac{dy}{dx} = (2 - x)(y - 1)^2$ with initial condition $f(1) = 2$. Let $y = f(x)$ be the particular solution to the differential equation.\n\n(a) Find $f''(1)$, the value of $\\frac{d^2y}{dx^2}$ at the point $(1, 2)$. Show the work that leads to your answer. [2 points]\n\n(b) Write an equation for the line tangent to the graph of $f$ at $x = 1$. Use this line to approximate $f(1.1)$. [2 points]\n\n(c) Use Euler's method, starting at $x = 1$ with two steps of equal size $\\Delta x = 0.1$, to approximate $f(1.2)$. Show the computations that lead to your answer. [2 points]\n\n(d) Use separation of variables to find the particular solution $y = f(x)$ to the differential equation with initial condition $f(1) = 2$. [3 points]",
+      totalPoints: 9,
+      unitNumber: 7,
+      unitTitle: "Differential Equations",
+      skill: "Unit 7: Euler's Method, Higher Derivatives & Separation of Variables",
+      modelAnswer: "Part (a):\nAt $(1, 2)$: $\\frac{dy}{dx}\\Big|_{(1, 2)} = (2 - 1)(2 - 1)^2 = 1(1) = 1$.\nDifferentiating using the product rule and chain rule:\n$\\frac{d^2y}{dx^2} = \\frac{d}{dx}[(2 - x)(y - 1)^2] = -1(y - 1)^2 + (2 - x) \\cdot 2(y - 1)\\frac{dy}{dx}$.\nEvaluating at $(1, 2)$ with $\\frac{dy}{dx} = 1$:\n$f''(1) = -(2 - 1)^2 + (2 - 1) \\cdot 2(2 - 1)(1) = -1 + 2 = 1$.\n\nPart (b):\nThe tangent line at $(1, 2)$ with slope $m = 1$ is $y - 2 = 1(x - 1) \\implies y = x + 1$.\nAt $x = 1.1$: $f(1.1) \\approx 1.1 + 1 = 2.1$.\n\nPart (c):\nStep size $\\Delta x = 0.1$.\nStep 1: At $(x_0, y_0) = (1, 2)$:\n$\\frac{dy}{dx}\\Big|_{(1, 2)} = (2 - 1)(2 - 1)^2 = 1$.\n$f(1.1) \\approx y_1 = 2 + 1(0.1) = 2.1$.\nStep 2: At $(x_1, y_1) = (1.1, 2.1)$:\n$\\frac{dy}{dx}\\Big|_{(1.1, 2.1)} = (2 - 1.1)(2.1 - 1)^2 = 0.9(1.1)^2 = 0.9(1.21) = 1.089$.\n$f(1.2) \\approx y_2 = 2.1 + 1.089(0.1) = 2.1 + 0.1089 = 2.2089 \\approx 2.209$.\n\nPart (d):\n$\\frac{dy}{dx} = (2 - x)(y - 1)^2 \\implies \\frac{1}{(y - 1)^2} \\, dy = (2 - x) \\, dx$.\nIntegrating both sides: $\\int (y - 1)^{-2} \\, dy = \\int (2 - x) \\, dx \\implies -\\frac{1}{y - 1} = 2x - \\frac{x^2}{2} + C$.\nApplying initial condition $f(1) = 2$:\n$-\\frac{1}{2 - 1} = -1 = 2(1) - \\frac{1}{2} + C \\implies -1 = \\frac{3}{2} + C \\implies C = -\\frac{5}{2}$.\n$-\\frac{1}{y - 1} = 2x - \\frac{x^2}{2} - \\frac{5}{2} = \\frac{4x - x^2 - 5}{2} \\implies \\frac{1}{y - 1} = \\frac{x^2 - 4x + 5}{2}$.\n$y - 1 = \\frac{2}{x^2 - 4x + 5} \\implies y = 1 + \\frac{2}{x^2 - 4x + 5}$.",
+      scoringRubric: [
+        "Part (a) [2 points]: 1 point for product and chain rule application, 1 point for f''(1) = 1.",
+        "Part (b) [2 points]: 1 point for tangent line equation y = x + 1, 1 point for approximation 2.1.",
+        "Part (c) [2 points]: 1 point for first Euler step with y_1 = 2.1, 1 point for second Euler step with approximation 2.209 (or 2.2089).",
+        "Part (d) [3 points]: 1 point for separation of variables and antiderivatives, 1 point for constant C = -5/2, 1 point for explicit particular solution y = 1 + 2/(x^2 - 4x + 5)."
+      ]
+    }
+  ],
+  "ap-chemistry": [
+    {
+      title: "LONG FREE-RESPONSE QUESTION 1  [10 POINTS]",
+      prompt: "A student titrates a $25.0\\text{ mL}$ sample of an unknown monoprotic weak acid, $\\text{HA}$, with a standardized $0.100\\text{ M } \\text{NaOH}(aq)$ solution using a calibrated pH meter. The titration reaches the equivalence point after the addition of $35.0\\text{ mL}$ of the titrant. The pH of the solution at the half-equivalence point ($17.5\\text{ mL}$ of $\\text{NaOH}$ added) is $4.82$.\n\n(a) Write the balanced net ionic equation for the reaction that occurs during the titration. [1 point]\n\n(b) Calculate the initial molar concentration of the weak acid $\\text{HA}$ in the original $25.0\\text{ mL}$ sample. [1 point]\n\n(c) Determine the value of the acid-dissociation constant, $K_a$, of the weak acid $\\text{HA}$. [2 points]\n\n(d) State whether the pH at the equivalence point is greater than, less than, or equal to $7.00$. Justify your answer with a chemical equation. [2 points]\n\n(e) In a separate experiment, a buffer solution is prepared containing $0.120\\text{ M } \\text{HA}$ and $0.180\\text{ M } \\text{NaA}$. Calculate the pH of this buffer solution. [2 points]\n\n(f) A student suggests using an indicator with a $pK_a$ of $4.5$ to detect the equivalence point of this titration. Explain why this indicator is unsuitable for this titration. [2 points]",
+      totalPoints: 10,
+      unitNumber: 8,
+      unitTitle: "Acids and Bases",
+      skill: "Unit 8: Weak Acid Titrations, Buffers & Acid Equilibria",
+      modelAnswer: "Part (a):\n$\\text{HA}(aq) + \\text{OH}^-(aq) \\rightarrow \\text{A}^-(aq) + \\text{H}_2\\text{O}(l)$\n\nPart (b):\nMoles of $\\text{OH}^-$ added at equivalence point:\n$n = (0.0350\\text{ L})(0.100\\text{ mol/L}) = 0.00350\\text{ mol } \\text{OH}^-$\nBecause the stoichiometric ratio is $1:1$, moles of $\\text{HA} = 0.00350\\text{ mol}$.\nInitial concentration:\n$[\\text{HA}] = \\frac{0.00350\\text{ mol}}{0.0250\\text{ L}} = 0.140\\text{ M}$\n\nPart (c):\nAt the half-equivalence point ($17.5\\text{ mL}$), exactly half of the initial $\\text{HA}$ has been converted to its conjugate base $\\text{A}^-$, so $[\\text{HA}] = [\\text{A}^-]$.\nBy the Henderson-Hasselbalch equation, $\\text{pH} = pK_a + \\log\\left(\\frac{[\\text{A}^-]}{[\\text{HA}]}\\right) = pK_a + \\log(1) = pK_a$.\nTherefore, $pK_a = 4.82$.\n$K_a = 10^{-pK_a} = 10^{-4.82} = 1.51 \\times 10^{-5}$ (or $1.5 \\times 10^{-5}$).\n\nPart (d):\nThe pH at the equivalence point is greater than $7.00$.\nJustification: At the equivalence point, all $\\text{HA}$ and $\\text{OH}^-$ have reacted to produce the conjugate base $\\text{A}^-$, which hydrolyzes in water to produce hydroxide ions:\n$\\text{A}^-(aq) + \\text{H}_2\\text{O}(l) \\rightleftharpoons \\text{HA}(aq) + \\text{OH}^-(aq)$\nThe generation of excess $\\text{OH}^-$ ions results in a basic solution ($\\text{pH} > 7.00$).\n\nPart (e):\nUsing the Henderson-Hasselbalch equation:\n$\\text{pH} = pK_a + \\log\\left(\\frac{[\\text{A}^-]}{[\\text{HA}]}\\right) = 4.82 + \\log\\left(\\frac{0.180}{0.120}\\right) = 4.82 + \\log(1.50) = 4.82 + 0.176 = 5.00$\n\nPart (f):\nAn indicator changes color near its $pK_a$ (range $\\approx pK_a \\pm 1$, or pH $3.5$ to $5.5$).\nBecause the titration involves a weak acid and a strong base, the equivalence point occurs at a basic pH ($\\text{pH} > 7.00$, typically $\\approx 8.5-9.0$).\nAn indicator with $pK_a = 4.5$ would change color in the acidic buffer region long before the true equivalence point is reached, leading to a significant premature endpoint error.",
+      scoringRubric: [
+        "Part (a) [1 point]: Point 01 [1 pt] for correct balanced net ionic equation HA(aq) + OH-(aq) -> A-(aq) + H2O(l).",
+        "Part (b) [1 point]: Point 02 [1 pt] for stoichiometric calculation yielding [HA] = 0.140 M.",
+        "Part (c) [2 points]: Point 03 [1 pt] for stating that pH = pKa at the half-equivalence point; Point 04 [1 pt] for calculating Ka = 10^(-4.82) = 1.5 x 10^(-5).",
+        "Part (d) [2 points]: Point 05 [1 pt] for stating pH > 7.00; Point 06 [1 pt] for hydrolysis equation A-(aq) + H2O(l) <=> HA(aq) + OH-(aq) demonstrating OH- formation.",
+        "Part (e) [2 points]: Point 07 [1 pt] for Henderson-Hasselbalch setup pH = 4.82 + log(0.180/0.120); Point 08 [1 pt] for final pH = 5.00.",
+        "Part (f) [2 points]: Point 09 [1 pt] for identifying that the equivalence point pH is basic (> 7); Point 10 [1 pt] for explaining that an indicator with pKa = 4.5 changes color prematurely in the acidic region."
+      ]
+    },
+    {
+      title: "SHORT FREE-RESPONSE QUESTION 4  [4 POINTS]",
+      prompt: "Consider the sulfur tetrafluoride molecule, $\\text{SF}_4$.\n\n(a) Draw a complete Lewis electron-dot diagram for the $\\text{SF}_4$ molecule, showing all nonbonding valence electron pairs. [1 point]\n\n(b) Based on VSEPR theory, state the electron-domain geometry and the molecular geometry of $\\text{SF}_4$. [1 point]\n\n(c) Identify the hybridization of the sulfur atom in $\\text{SF}_4$. [1 point]\n\n(d) Explain whether the $\\text{SF}_4$ molecule is polar or nonpolar, referencing bond dipoles and molecular symmetry. [1 point]",
+      totalPoints: 4,
+      unitNumber: 2,
+      unitTitle: "Molecular and Ionic Compound Structure and Properties",
+      skill: "Unit 2: Lewis Structures, VSEPR & Hybridization",
+      modelAnswer: "Part (a):\nThe sulfur atom has 6 valence electrons and each of the 4 fluorine atoms contributes 7 valence electrons: $6 + 4(7) = 34$ valence electrons.\nThe central S atom forms 4 single covalent bonds to the 4 F atoms (8 bonding electrons), each F atom receives 3 lone pairs (24 nonbonding electrons), and the remaining 2 valence electrons form 1 nonbonding lone pair on the central sulfur atom.\n\nPart (b):\nThe central sulfur atom has 5 electron domains (4 bonding pairs + 1 lone pair).\nElectron-domain geometry: Trigonal bipyramidal.\nMolecular geometry: Seesaw.\n\nPart (c):\nWith 5 electron domains surrounding the central sulfur atom, the hybridization is $sp^3d$.\n\nPart (d):\nThe $\\text{SF}_4$ molecule is polar.\nJustification: The S-F bonds are polar due to the electronegativity difference between sulfur and fluorine. Because the seesaw molecular geometry is asymmetric (the lone pair occupies an equatorial position, causing bond angle distortion), the individual S-F bond dipole moments do not cancel out, resulting in a net nonzero molecular dipole moment.",
+      scoringRubric: [
+        "Part (a) [1 point]: Point 01 [1 pt] for valid Lewis diagram with central S having 4 single bonds to F, 3 lone pairs on each F, and 1 lone pair on S (34 total valence electrons).",
+        "Part (b) [1 point]: Point 02 [1 pt] for identifying electron-domain geometry as trigonal bipyramidal and molecular geometry as seesaw.",
+        "Part (c) [1 point]: Point 03 [1 pt] for stating sp3d hybridization.",
+        "Part (d) [1 point]: Point 04 [1 pt] for stating that the molecule is polar because polar S-F bond dipoles do not cancel due to asymmetric seesaw geometry."
+      ]
+    }
+  ],
+  "chemistry": [
+    // Alias to ap-chemistry
+  ],
+  "ap-biology": [
+    {
+      title: "LONG FREE-RESPONSE QUESTION 1  [9 POINTS]",
+      prompt: "Yeast cells (*Saccharomyces cerevisiae*) carry out cellular respiration using various carbohydrate substrates. Researchers investigated the rate of respiration by measuring carbon dioxide ($CO_2$) production in respirometers over a 30-minute period at $25^\\circ\\text{C}$. Four treatment flasks were prepared with identical yeast suspensions: Flask 1 received no carbohydrate; Flask 2 received $5\\%\\text{ glucose}$; Flask 3 received $5\\%\\text{ maltose}$; and Flask 4 received $5\\%\\text{ lactose}$. The rate of $CO_2$ production was recorded as follows: Flask 1: $0.05\\text{ mL/min}$; Flask 2: $1.42\\text{ mL/min}$; Flask 3: $0.88\\text{ mL/min}$; Flask 4: $0.06\\text{ mL/min}$.\n\n(a) Identify the cellular organelle and the specific sub-compartment where the pyruvate dehydrogenase complex decarboxylates pyruvate in eukaryotic cells. [1 point]\n\n(b) In reference to the experimental setup:\n(i) Identify the dependent variable in this experiment. [1 point]\n(ii) Justify the inclusion of Flask 1 in the experimental design. [1 point]\n(iii) Describe the quantitative trend in carbon dioxide production observed across the four treatment groups. [1 point]\n\n(c) In reference to metabolic pathways:\n(i) Identify the independent variable in this experiment. [1 point]\n(ii) Identify the carbohydrate treatment that yeast cells were least capable of metabolizing. [1 point]\n(iii) A yeast gene encoding an enzyme required for disaccharide cleavage has a coding sequence of $1,272$ nucleotides. Calculate the length, in amino acid residues, of the resulting polypeptide assuming no post-translational splicing. [1 point]\n\n(d) Researchers introduce sodium azide, a potent inhibitor of cytochrome c oxidase in Complex IV of the electron transport chain, to Flask 2 ($5\\%\\text{ glucose}$).\n(i) Predict the effect of sodium azide on the rate of carbon dioxide production in Flask 2 under aerobic conditions. [1 point]\n(ii) Justify your prediction using your knowledge of oxidative phosphorylation and feedback regulation of the citric acid cycle. [1 point]",
+      totalPoints: 9,
+      unitNumber: 3,
+      unitTitle: "Cellular Energetics",
+      skill: "Unit 3: Cellular Respiration, Control Groups & Metabolic Calculations",
+      modelAnswer: "Part (a):\nThe mitochondrion, specifically the mitochondrial matrix.\n\nPart (b):\n(i) The dependent variable is the rate of carbon dioxide ($CO_2$) gas production (measured in mL/min).\n(ii) Flask 1 serves as a negative control to demonstrate that substantial $CO_2$ evolution requires an exogenous carbohydrate substrate and to establish the baseline level of endogenous respiration in the yeast cells.\n(iii) Glucose supported the highest rate of respiration ($1.42\\text{ mL/min}$), maltose supported a moderate rate ($0.88\\text{ mL/min}$), and lactose supported a negligible rate ($0.06\\text{ mL/min}$) that was virtually identical to the negative control lacking carbohydrate ($0.05\\text{ mL/min}$).\n\nPart (c):\n(i) The independent variable is the type of carbohydrate substrate provided to the yeast cells.\n(ii) Lactose (Flask 4), because its $CO_2$ production rate of $0.06\\text{ mL/min}$ was not significantly different from the carbohydrate-free control ($0.05\\text{ mL/min}$).\n(iii) Each codon consists of 3 nucleotides: $1,272\\text{ nucleotides} \\div 3 = 424\\text{ amino acid residues}$.\n\nPart (d):\n(i) The rate of $CO_2$ production will significantly decrease.\n(ii) Sodium azide blocks electron transfer from Complex IV to oxygen, halting the electron transport chain and proton gradient formation. Consequently, NADH cannot be reoxidized to $\\text{NAD}^+$ via aerobic respiration. Depletion of the $\\text{NAD}^+$ pool stalls the citric acid cycle (which requires $\\text{NAD}^+$ as an electron acceptor), dramatically decreasing overall metabolic decarboxylation and $CO_2$ release.",
+      scoringRubric: [
+        "Part (a) [1 point]: Point A1 [1 pt] for identifying the mitochondrion / mitochondrial matrix.",
+        "Part (b) [3 points]: Point B1 [1 pt] for identifying CO2 production rate as DV; Point B2 [1 pt] for justifying Flask 1 as negative control isolating carbohydrate dependence; Point B3 [1 pt] for describing trend (glucose highest > maltose > lactose \u2248 control).",
+        "Part (c) [3 points]: Point C1 [1 pt] for identifying type of carbohydrate as IV; Point C2 [1 pt] for identifying lactose group; Point C3 [1 pt] for calculation: 1272 / 3 = 424 amino acids.",
+        "Part (d) [2 points]: Point D1 [1 pt] for predicting decreased CO2 production; Point D2 [1 pt] for justifying via NADH accumulation and NAD+ depletion halting citric acid cycle."
+      ]
+    },
+    {
+      title: "LONG FREE-RESPONSE QUESTION 2  [9 POINTS]",
+      prompt: "Transpiration in vascular plants is regulated by environmental factors that influence water vapor diffusion through stomatal pores. Botanists investigated the transpiration rate of bean seedlings (*Phaseolus vulgaris*) under four environmental conditions: Room temperature still air (Control), High wind velocity, High relative humidity, and High ambient temperature. The mean transpiration rates and standard errors of the mean ($\\pm 2\\text{SE}_{\\bar{x}}$) were determined:\n- Control: $4.2 \\pm 0.4\\text{ }\\mu\\text{L/min}\\cdot\\text{cm}^2$\n- High Wind: $7.8 \\pm 0.6\\text{ }\\mu\\text{L/min}\\cdot\\text{cm}^2$\n- High Humidity: $1.5 \\pm 0.3\\text{ }\\mu\\text{L/min}\\cdot\\text{cm}^2$\n- High Temperature: $7.2 \\pm 0.5\\text{ }\\mu\\text{L/min}\\cdot\\text{cm}^2$\n\n(a) Describe the physical property of water molecules that generates the continuous hydrostatic tensile column pulling water from roots to leaves through xylem tracheids. [1 point]\n\n(b) Using the data provided:\n(i) Identify the appropriate type of graph to represent the experimental data across the four distinct treatment conditions. [1 point]\n(ii) Describe how standard error of the mean ($\\pm 2\\text{SE}_{\\bar{x}}$) error bars should be visually constructed on the graph for the High Wind and High Temperature groups. [1 point]\n(iii) Identify the appropriate variable and units that should be placed on the vertical (y) axis. [1 point]\n(iv) Describe the relationship between relative humidity and plant transpiration rate. [1 point]\n\n(c) In reference to physiological thresholds:\n(i) Identify which treatment conditions resulted in a greater than $50\\%$ increase in transpiration rate compared to the control condition. [1 point]\n(ii) Under severe water stress, plants synthesize the phytohormone abscisic acid (ABA). Predict the physiological effect of ABA on guard cells and stomatal aperture. [1 point]\n\n(d) A student claims that the High Wind condition caused a statistically significantly higher transpiration rate than the High Temperature condition.\n(i) Based on the data, state whether you support or refute the student's claim. Use the standard error of the mean ($\\pm 2\\text{SE}_{\\bar{x}}$) to justify your answer. [1 point]\n(ii) Explain ONE agricultural strategy or leaf morphological adaptation that reduces excessive transpiration losses in arid environments. [1 point]",
+      totalPoints: 9,
+      unitNumber: 2,
+      unitTitle: "Cell Structure and Function",
+      skill: "Unit 2: Water Potential, Transpiration & Statistical Significance",
+      modelAnswer: "Part (a):\nCohesion, which is the intermolecular hydrogen bonding between water molecules that enables them to form an unbroken, continuous column under negative hydrostatic tension, combined with adhesion to xylem cell walls.\n\nPart (b):\n(i) A bar graph (or column chart) with discrete, non-continuous categories on the horizontal axis.\n(ii) For High Wind, plot a bar to $7.8$ with an error bar extending from $7.2$ ($7.8 - 0.6$) to $8.4$ ($7.8 + 0.6$). For High Temperature, plot a bar to $7.2$ with an error bar extending from $6.7$ ($7.2 - 0.5$) to $7.7$ ($7.2 + 0.5$).\n(iii) Mean Transpiration Rate, with units of $\\mu\\text{L/min}\\cdot\\text{cm}^2$.\n(iv) An inverse (or negative) relationship: As relative humidity increases, the water potential gradient between the moist substomatal cavity and the atmosphere decreases, causing the transpiration rate to decrease.\n\nPart (c):\n(i) A $50\\%$ increase above the control ($4.2$) is $4.2 + 2.1 = 6.3\\text{ }\\mu\\text{L/min}\\cdot\\text{cm}^2$. Both the High Wind ($7.8$) and High Temperature ($7.2$) conditions exceed this threshold.\n(ii) ABA triggers an efflux of potassium ions ($K^+$) and anions from guard cells, causing water to exit by osmosis; the loss of turgor pressure causes guard cells to become flaccid, closing the stomatal pore.\n\nPart (d):\n(i) Refute the claim. The lower bound of the High Wind error bar ($7.8 - 0.6 = 7.2$) and the upper bound of the High Temperature error bar ($7.2 + 0.5 = 7.7$) overlap (range $7.2$ to $7.7$). Because the $\\pm 2\\text{SE}_{\\bar{x}}$ error bars overlap, there is no statistically significant difference between the two treatment means.\n(ii) Planting windbreaks around fields to reduce wind velocity at crop canopy level, or selecting crop varieties with thick waxy cuticles, trichomes (leaf hairs) that trap boundary layer moisture, or sunken stomata.",
+      scoringRubric: [
+        "Part (a) [1 point]: Point A1 [1 pt] for describing cohesion / hydrogen bonding between water molecules.",
+        "Part (b) [4 points]: Point B1 [1 pt] for identifying bar graph; Point B2 [1 pt] for constructing error bars [7.2-8.4] and [6.7-7.7]; Point B3 [1 pt] for y-axis title and units; Point B4 [1 pt] for describing inverse relationship between humidity and transpiration.",
+        "Part (c) [2 points]: Point C1 [1 pt] for identifying High Wind and High Temperature (> 6.3 uL/min*cm^2); Point C2 [1 pt] for predicting guard cell flaccidity and stomatal closure.",
+        "Part (d) [2 points]: Point D1 [1 pt] for refuting claim citing error bar overlap between 7.2 and 7.7 (no statistically significant difference); Point D2 [1 pt] for explaining thick cuticle, sunken stomata, trichomes, or windbreaks."
+      ]
+    },
+    {
+      title: "SHORT FREE-RESPONSE QUESTION 3  [4 POINTS]",
+      prompt: "Marine ecologists investigated the role of the predatory sea star *Pisaster ochraceus* in intertidal rocky shore ecosystems. In an experimental manipulation, researchers established two adjacent 10-meter coastal plots: Plot A was maintained in its natural state with sea stars present, while in Plot B, all sea stars were manually removed and continually excluded for two years. After two years, researchers measured the species richness of primary producers (algae) and sessile invertebrates.\n\n(a) Describe the ecological role of a keystone predator in maintaining biodiversity within a community. [1 point]\n\n(b) Identify the control group in this investigation and explain why it was necessary to include this group. [1 point]\n\n(c) State the null hypothesis for this ecological investigation. [1 point]\n\n(d) Following predator removal in Plot B, the blue mussel (*Mytilus californianus*) rapidly monopolized over $90\\%$ of available rock space, reducing total community species richness from 15 species to 1 species. Justify this ecological outcome using the principle of competitive exclusion. [1 point]",
+      totalPoints: 4,
+      unitNumber: 8,
+      unitTitle: "Ecology",
+      skill: "Unit 8: Community Ecology, Keystone Species & Null Hypothesis",
+      modelAnswer: "Part (a):\nA keystone predator exerts strong top-down regulation disproportionate to its abundance by preying on competitively dominant herbivores or filter feeders, preventing competitive exclusion and thereby preserving high species diversity across the community.\n\nPart (b):\nPlot A (with sea stars present) is the control group. It is necessary because it establishes baseline species richness under natural environmental conditions (e.g., wave action, seasonal temperature fluctuations) to ensure that any observed changes in Plot B are directly attributable to the removal of the predator rather than confounding climatic variables.\n\nPart (c):\nThe removal of the predatory sea star *Pisaster ochraceus* has NO effect on the species richness of sessile invertebrates and algae in the intertidal rocky community.\n\nPart (d):\nBlue mussels are superior competitors for space on rocky intertidal surfaces. Under natural conditions, sea star predation controls mussel populations; in the absence of predation pressure, mussels outcompete all subordinate invertebrate and algal species for limited physical attachment space, competitively excluding them until only the dominant competitor persists.",
+      scoringRubric: [
+        "Part (a) [1 point]: 1 pt for describing keystone predator preventing competitive dominance to maintain community diversity.",
+        "Part (b) [1 point]: 1 pt for identifying Plot A as control AND explaining that it isolates predator presence from background environmental factors.",
+        "Part (c) [1 point]: 1 pt for stating null hypothesis that predator removal has NO effect on species richness/diversity.",
+        "Part (d) [1 point]: 1 pt for justifying outcome via competitive exclusion: mussels outcompete other species for limited space in absence of predation."
+      ]
+    }
+  ],
+  "biology": [
+    // Alias to ap-biology
+  ],
+  "ap-physics-1": [
+    {
+      title: "QUESTION 1: MATHEMATICAL ROUTINES (MR)  [10 POINTS]",
+      prompt: "Water exits the nozzle of an ornamental fountain at an angle $\\theta_0$ above the horizontal.\n\nAt time $t = 0$, a droplet of water exits the nozzle and follows a parabolic trajectory through the air. The droplet reaches a maximum vertical height $h_1$ above the nozzle. At time $t = t_f$, the droplet returns to the original vertical height of the nozzle. Atmospheric drag is negligible.\n\nPart A\n(i) On rectangular coordinate axes, sketch graphs of the horizontal component $v_x(t)$ and vertical component $v_y(t)$ of the velocity of the water droplet as functions of time $t$ from $t = 0$ to $t = t_f$. [2 points]\n\n(ii) Starting with a fundamental kinematic principle or an equation from the reference information, derive an expression for the launch speed $v_0$ of the water exiting the nozzle. Express your answer in terms of $\\theta_0$, $h_1$, and fundamental constants. [2 points]\n\n(iii) The nozzle has a circular cross-section with radius $r_0$. Derive an expression for the volume flow rate $Q = \\frac{V}{t}$ of the water exiting the nozzle. Express your answer in terms of $\\theta_0$, $h_1$, $r_0$, and fundamental constants. [3 points]\n\nPart B\nThe fountain nozzle is replaced with a narrower nozzle of radius $r_2 < r_0$. The water exits the new nozzle at the exact same angle $\\theta_0$ above the horizontal, and the volume flow rate $Q$ exiting the new nozzle is identical to the volume flow rate exiting the original nozzle. A water droplet exiting the new nozzle reaches a maximum height $h_2$ above the nozzle.\n\nIndicate whether $h_2$ is greater than, less than, or equal to $h_1$:\n\u2022 $h_2 > h_1$\n\u2022 $h_2 < h_1$\n\u2022 $h_2 = h_1$\n\nJustify your answer. In your justification, include qualitative physical reasoning beyond mathematical equations. [3 points]",
+      totalPoints: 10,
+      unitNumber: 8,
+      unitTitle: "Fluids & Kinematics",
+      skill: "Unit 8: Continuity Equation, Fluid Flow Rate & 2D Kinematics",
+      modelAnswer: "Part A (i):\n- Horizontal velocity $v_x(t)$: A continuous, horizontal line at a constant positive value ($v_{x0} = v_0\\cos\\theta_0$) from $t = 0$ to $t = t_f$, since there are no horizontal forces.\n- Vertical velocity $v_y(t)$: A straight line with a constant negative slope of $-g$, beginning at $+v_0\\sin\\theta_0$ at $t = 0$, crossing zero at $t = t_f / 2$ (maximum height), and reaching $-v_0\\sin\\theta_0$ at $t = t_f$.\n\nPart A (ii):\nStarting with the kinematic relation from the equation sheet:\n$$v_y^2 = v_{y0}^2 + 2a_y(y - y_0)$$\nAt maximum height $y = h_1$, the vertical velocity is zero ($v_y = 0$), and the vertical acceleration is $a_y = -g$:\n$$0 = (v_0\\sin\\theta_0)^2 - 2gh_1$$\n$$(v_0\\sin\\theta_0)^2 = 2gh_1 \\implies v_0\\sin\\theta_0 = \\sqrt{2gh_1}$$\n$$v_0 = \\frac{\\sqrt{2gh_1}}{\\sin\\theta_0}$$\n\nPart A (iii):\nStarting with the definition of volume flow rate from the equation sheet:\n$$Q = \\frac{V}{t} = A v_0$$\nFor a circular cross-section of radius $r_0$, the cross-sectional area is $A = \\pi r_0^2$. Substituting $v_0$ from Part A (ii):\n$$Q = (\\pi r_0^2) \\left( \\frac{\\sqrt{2gh_1}}{\\sin\\theta_0} \\right) = \\frac{\\pi r_0^2\\sqrt{2gh_1}}{\\sin\\theta_0}$$\n\nPart B:\nClaim: $h_2 > h_1$\nJustification:\nFrom the principle of continuity for incompressible fluid flow, the volume flow rate is the product of cross-sectional area and exit speed ($Q = Av$). Because the new nozzle has a smaller radius, its cross-sectional area is reduced. Since the volume flow rate remains constant, the water must exit the narrower nozzle with a greater initial launch speed ($v_2 > v_0$). Because the launch angle $\\theta_0$ is unchanged, the vertical component of launch velocity is also greater. The maximum height reached depends directly on the initial vertical kinetic energy transformed into gravitational potential energy; therefore, a greater vertical launch speed results in a greater maximum vertical height ($h_2 > h_1$).",
+      scoringRubric: [
+        "Part A (i) [2 points]: Point A1 [1 pt] for sketching a nonzero, horizontal line for the horizontal component of velocity from t = 0 to t_f; Point A2 [1 pt] for sketching a straight line with a constant negative slope that crosses the horizontal axis at t = t_f / 2 for the vertical velocity.",
+        "Part A (ii) [2 points]: Point A3 [1 pt] for starting with a kinematic equation (v_y^2 = v_y0^2 + 2a_y(y - y0)) or conservation of energy relating speed and height; Point A4 [1 pt] for correctly substituting v_y0 = v0*sin(theta_0), v_y = 0 at max height, and isolating v0 = sqrt(2gh_1) / sin(theta_0).",
+        "Part A (iii) [3 points]: Point A5 [1 pt] for including the product of cross-sectional area and speed (Q = Av); Point A6 [1 pt] for substituting A = pi*r0^2; Point A7 [1 pt] for substituting v0 consistent with Part A (ii) to yield Q = pi*r0^2 * sqrt(2gh_1) / sin(theta_0).",
+        "Part B [3 points]: Point B1 [1 pt] for indicating h2 > h1; Point B2 [1 pt] for qualitatively explaining that smaller nozzle area with constant flow rate requires a greater exit speed; Point B3 [1 pt] for qualitatively linking the greater exit speed (and vertical component) to a greater maximum height."
+      ]
+    },
+    {
+      title: "QUESTION 2: TRANSLATION BETWEEN REPRESENTATIONS (TBR)  [12 POINTS]",
+      prompt: "A block of mass $M$ is released from rest at position $x = 0$ near the top of an incline making an angle $\\theta$ with the horizontal. The surface is frictionless. At position $x = 8D$, the block contacts an uncompressed spring with spring constant $k$. The block compresses the spring and momentarily comes to rest at position $x = 12D$. Gravitational potential energy $U_g$ is defined to be zero at $x = 12D$.\n\nPart A\nComplete the energy bar charts (LOL diagrams) representing the kinetic energy $K$, gravitational potential energy $U_g$, and spring potential energy $U_s$ of the block-spring-Earth system at $x = 0$ and $x = 6D$. At $x = 10D$, the system has $K = 7E_0$, $U_g = 2E_0$, and $U_s = 3E_0$. [3 points]\n\nPart B\nStarting with conservation of mechanical energy, derive an expression for the spring constant $k$. Express your answer in terms of $M$, $\\theta$, $D$, and physical constants. [4 points]\n\nPart C\nOn coordinate axes from $x = 8D$ to $x = 12D$:\n(i) Sketch and label a line or curve representing the total mechanical energy $E$ of the system. [1 point]\n(ii) Sketch and label a line or curve representing the gravitational potential energy $U_g$ of the system. [2 points]\n\nPart D\nIndicate whether the speed $v_{9D}$ of the block at $x = 9D$ is greater than, less than, or equal to the speed $v_{8D}$ of the block at $x = 8D$:\n\u2022 $v_{9D} > v_{8D}$\n\u2022 $v_{9D} < v_{8D}$\n\u2022 $v_{9D} = v_{8D}$\nJustify how your response is consistent with the energy curves in Part C. [2 points]",
+      totalPoints: 12,
+      unitNumber: 3,
+      unitTitle: "Work, Energy & Power",
+      skill: "Unit 3: Mechanical Energy Conservation & Incline Geometry",
+      modelAnswer: "Part A:\n- At $x = 0$: The block is at rest ($K = 0$), the spring is uncompressed ($U_s = 0$), and all energy is gravitational potential energy. Since total mechanical energy is $E_{total} = K + U_g + U_s = 7E_0 + 2E_0 + 3E_0 = 12E_0$, the bar chart for $x = 0$ has a single bar for $U_g$ of height $12E_0$.\n- At $x = 6D$: The block has descended halfway to the spring ($U_s = 0$). Gravitational potential energy has decreased linearly from $12E_0$ to $6E_0$. By conservation of energy, the remaining energy is kinetic: $K = 6E_0$ and $U_g = 6E_0$ (summing to $12E_0$).\n\nPart B:\nStarting with conservation of mechanical energy between $x = 0$ (release from rest) and $x = 12D$ (momentary rest against compressed spring):\n$$E_i = E_f$$\n$$U_{g,i} + K_i + U_{s,i} = U_{g,f} + K_f + U_{s,f}$$\n$$Mg\\Delta y + 0 + 0 = 0 + 0 + \\frac{1}{2}k(\\Delta x)^2$$\nAlong the incline of angle $\\theta$, the vertical descent over distance $12D$ is $\\Delta y = 12D\\sin\\theta$. The spring compression distance from $x = 8D$ to $x = 12D$ is $\\Delta x = 12D - 8D = 4D$:\n$$Mg(12D\\sin\\theta) = \\frac{1}{2}k(4D)^2$$\n$$12MgD\\sin\\theta = \\frac{1}{2}k(16D^2) = 8kD^2$$\n$$k = \\frac{12MgD\\sin\\theta}{8D^2} = \\frac{3Mg\\sin\\theta}{2D}$$\n\nPart C:\n(i) Total mechanical energy $E$: A horizontal, continuous straight line at constant value $12E_0$ from $x = 8D$ to $x = 12D$.\n(ii) Gravitational potential energy $U_g$: A straight line with constant negative slope starting at $(8D, 4E_0)$ and decreasing linearly to $(12D, 0)$.\n\nPart D:\nClaim: $v_{9D} > v_{8D}$\nJustification:\nFrom the conservation of mechanical energy equation $K = E_{total} - (U_g + U_s)$, the kinetic energy at any point equals the total energy ($12E_0$) minus the sum of potential energies. At $x = 8D$, $U_g = 4E_0$ and $U_s = 0$, giving $K_{8D} = 8E_0$. At $x = 9D$, the block has lost $1E_0$ of gravitational potential energy ($U_g = 3E_0$), but the parabolic spring potential energy curve shows $U_s < 1E_0$ (specifically $U_s = \\frac{1}{16}(12E_0) = 0.75E_0$). Thus, the total potential energy at $9D$ is $3.75E_0 < 4.0E_0$, leaving $K_{9D} = 8.25E_0 > 8E_0$. Since mass is constant, higher kinetic energy implies greater speed ($v_{9D} > v_{8D}$).",
+      scoringRubric: [
+        "Part A [3 points]: Point A1 [1 pt] for drawing one bar in Figure 2 showing only gravitational potential energy (Ug); Point A2 [1 pt] for including only K and Ug in Figure 3; Point A3 [1 pt] for drawing bars in both figures whose total heights respectively equal 12E0.",
+        "Part B [4 points]: Point B1 [1 pt] for a multistep derivation beginning with conservation of energy (E0 = Ef); Point B2 [1 pt] for equating gravitational potential energy to spring potential energy; Point B3 [1 pt] for substituting Delta y = 12D*sin(theta) and Delta x = 4D (with (4D)^2 = 16D^2); Point B4 [1 pt] for correctly isolating k = (3/2)*(Mg*sin(theta)/D).",
+        "Part C [3 points]: Point C1 [1 pt] for sketching a horizontal continuous line at 12E0 labeled E; Point C2 [1 pt] for sketching a straight decreasing line labeled Ug; Point C3 [1 pt] for starting the Ug line at (8D, 4E0) and ending at (12D, 0).",
+        "Part D [2 points]: Point D1 [1 pt] for indicating v_9D > v_8D consistent with graph; Point D2 [1 pt] for a justification correctly relating speed to kinetic energy and showing that the sum of Ug + Us decreases between 8D and 9D."
+      ]
+    },
+    {
+      title: "QUESTION 3: EXPERIMENTAL DESIGN AND ANALYSIS (LAB)  [10 POINTS]",
+      prompt: "Students investigate rotational equilibrium using a uniform meterstick of mass $M = 0.20\\text{ kg}$ pivoted at its center ($50\\text{ cm}$ mark). A spring scale is attached to the $10\\text{ cm}$ mark, exerting a downward force to keep the stick horizontal. A block of unknown mass $m_0$ is suspended from various hole locations on the opposite side of the pivot. The students cannot attach the block directly to the spring scale.\n\nPart A\n(i) Describe an experimental procedure to collect data allowing the students to determine $m_0$ using a linear graph. [1 point]\n(ii) Describe an experimental step necessary to reduce experimental uncertainty. [1 point]\n\nPart B\n(i) Indicate quantities that could be plotted on the horizontal and vertical axes to yield a straight line whose slope can be used to determine $m_0$. [1 point]\n(ii) Describe mathematically how the slope of this graph is related to the mass $m_0$. [1 point]\n\nPart C\nIn a second trial, the meterstick is attached to an axle at the wall and suspended horizontally by a string at angle $\\theta$, measured by a spring scale. The tension is given by $F_T = \\frac{5Mg}{6\\sin\\theta}$.\n(i) Indicate what quantity could be plotted on the vertical axis against $\\frac{1}{\\sin\\theta}$ on the horizontal axis to yield a linear graph. [1 point]\n(ii) Plot the data on a grid with proper labels and units. [2 points]\n(iii) Draw a straight best-fit line. [1 point]\n\nPart D\nUsing the slope of the best-fit line, calculate an experimental value for $M$. [2 points]",
+      totalPoints: 10,
+      unitNumber: 5,
+      unitTitle: "Torque & Rotational Equilibrium",
+      skill: "Unit 5: Static Equilibrium, Torque Balance & Linearization",
+      modelAnswer: "Part A (i):\nAttach the block of unknown mass $m_0$ at the $60\\text{ cm}$ mark. Apply a downward vertical force with the spring scale at the $10\\text{ cm}$ mark ($40\\text{ cm}$ from pivot) until the meterstick is completely horizontal. Record the distance $d$ from the pivot to the block and the spring scale reading $F_s$. Repeat this procedure by attaching the block at different hole positions ($70\\text{ cm}, 80\\text{ cm}, 90\\text{ cm}$).\n\nPart A (ii):\nTo reduce experimental uncertainty, take multiple repeated force readings (3 to 5 trials) at each individual block location and calculate the average force before changing the block's position.\n\nPart B (i):\nVertical axis: Spring scale force $F_s$ (in $\\text{N}$)\nHorizontal axis: Distance from pivot to block $d$ (in $\\text{m}$)\n\nPart B (ii):\nSetting net torque about the pivot equal to zero:\n$$\\Sigma \\tau = F_s d_{scale} - m_0 g d = 0 \\implies F_s = \\left( \\frac{m_0 g}{d_{scale}} \\right) d$$\nSince $d_{scale} = 0.40\\text{ m}$, the slope of the $F_s$ vs. $d$ graph is $\\text{Slope} = \\frac{m_0 g}{d_{scale}}$. Therefore:\n$$m_0 = \\frac{\\text{Slope} \\cdot d_{scale}}{g}$$\n\nPart C (i):\nVertical axis: Tension force $F_T$ (in $\\text{N}$)\n\nPart C (ii) & (iii):\nVertical axis is labeled $F_T\\text{ (N)}$ with a linear scale from $0$ to $25\\text{ N}$. Data points are plotted accurately, and a single, smooth straight line of best fit is drawn passing evenly through the scatter plot.\n\nPart D:\nFrom the given relationship $F_T = \\left( \\frac{5Mg}{6} \\right) \\left( \\frac{1}{\\sin\\theta} \\right)$, the slope of the best-fit line is $\\text{Slope} = \\frac{5Mg}{6}$.\nSelecting two points on the best-fit line: $(0.5, 4.0\\text{ N})$ and $(2.5, 21.0\\text{ N})$:\n$$\\text{Slope} = \\frac{21.0\\text{ N} - 4.0\\text{ N}}{2.5 - 0.5} = \\frac{17.0}{2.0} = 8.5\\text{ N}$$\n$$M = \\frac{6 \\cdot \\text{Slope}}{5g} = \\frac{6(8.5\\text{ N})}{5(9.8\\text{ m/s}^2)} = \\frac{51.0}{49.0} \\approx 1.04\\text{ kg}$$",
+      scoringRubric: [
+        "Part A [2 points]: Point A1 [1 pt] for describing procedure measuring force while block is attached at various measured distances; Point A2 [1 pt] for indicating multiple trials for each location to reduce uncertainty.",
+        "Part B [2 points]: Point B1 [1 pt] for indicating appropriate quantities that yield linear dependence (e.g. Fs vs d); Point B2 [1 pt] for correctly relating slope to m0 (m0 = slope * d_scale / g).",
+        "Part C [4 points]: Point C1 [1 pt] for listing FT on vertical axis; Point C2 [2 pts] for labeling axis with linear scale AND units (N) and correctly plotting points; Point C3 [1 pt] for drawing an appropriate straight best-fit line.",
+        "Part D [2 points]: Point D1 [1 pt] for correctly relating slope to M (M = 6*slope / (5g)); Point D2 [1 pt] for calculating value of M within accepted experimental range (0.90 kg to 1.15 kg) using points on the line."
+      ]
+    },
+    {
+      title: "QUESTION 4: QUALITATIVE/QUANTITATIVE TRANSLATION (QQT)  [8 POINTS]",
+      prompt: "In Scenario 1, a diver holds a solid block of mass $m$ and volume $V$ completely submerged at rest in a freshwater tank of density $\\rho_1$. The block is released from rest and accelerates upward with initial acceleration $a_1$. Viscous drag is negligible.\n\nIn Scenario 2, the diver holds the identical block at rest submerged in saltwater of density $\\rho_2 > \\rho_1$. The block is released from rest and accelerates upward with initial acceleration $a_2$.\n\nPart A\nIndicate whether $a_1$ is greater than, less than, or equal to $a_2$:\n\u2022 $a_1 > a_2$\n\u2022 $a_1 < a_2$\n\u2022 $a_1 = a_2$\nJustify your answer in terms of ALL forces exerted on the block in each scenario. Use qualitative physical reasoning beyond referencing equations. [3 points]\n\nPart B\nConsider the general case where a block of mass $m$ and volume $V$ is completely submerged in a fluid of density $\\rho$.\nStarting with Newton's second law, derive an expression for the initial upward acceleration $a$ of the block when released from rest. Express your answer in terms of $m$, $V$, $\\rho$, and fundamental constants. [3 points]\n\nPart C\nIndicate whether your derived expression for acceleration $a$ in Part B is consistent with your claim in Part A. Briefly justify your answer using functional dependence reasoning referencing your Part B derivation. [2 points]",
+      totalPoints: 8,
+      unitNumber: 8,
+      unitTitle: "Fluids & Dynamics",
+      skill: "Unit 8: Archimedes Buoyancy, Fluid Density & Newton's Second Law",
+      modelAnswer: "Part A:\nClaim: $a_1 < a_2$\nJustification:\nTwo vertical forces act on the block in each liquid: a downward gravitational force (weight $mg$) and an upward buoyant force exerted by the displaced fluid. Because the block is identical in both scenarios, the downward force of gravity is identical in both tanks. The upward buoyant force is directly proportional to the density of the fluid displaced by the submerged volume. Because the saltwater has a greater density than freshwater ($\\rho_2 > \\rho_1$), the buoyant force on the block is greater in saltwater. Consequently, the net upward force (buoyant force minus weight) is greater in saltwater, which imparts a greater upward acceleration ($a_2 > a_1$).\n\nPart B:\nStarting with Newton's second law in translational form from the reference sheet:\n$$\\Sigma F_y = m a$$\nTaking upward as the positive direction, the net vertical force is the upward buoyant force minus the downward gravitational force:\n$$F_b - F_g = m a$$\nFrom the reference information, the buoyant force for a submerged volume $V$ in fluid density $\\rho$ is $F_b = \\rho V g$, and $F_g = mg$:\n$$\\rho V g - mg = m a$$\nDividing both sides by the mass $m$:\n$$a = \\frac{\\rho V g - mg}{m} = \\frac{\\rho V g}{m} - g$$\n\nPart C:\nClaim: Yes, consistent.\nJustification:\nThe mathematical expression derived in Part B shows that the initial upward acceleration $a$ is directly proportional to the fluid density $\\rho$, since $\\rho$ appears as a linear factor in the numerator of the positive driving term $\\frac{\\rho V g}{m}$. As fluid density increases from $\\rho_1$ to $\\rho_2$, the value of $\\frac{\\rho V g}{m}$ increases while the subtracted gravitational term $g$ remains constant. Therefore, a larger density produces a larger acceleration, which directly validates the qualitative claim made in Part A that $a_2 > a_1$.",
+      scoringRubric: [
+        "Part A [3 points]: Point A1 [1 pt] for indicating a1 < a2; Point A2 [1 pt] for indicating that the downward gravitational force (weight) is identical in both fluids; Point A3 [1 pt] for justifying that the saltwater exerts a larger upward buoyant force because it is denser, creating a larger net upward force.",
+        "Part B [3 points]: Point B1 [1 pt] for starting derivation with Newton's second law (Sigma F = ma); Point B2 [1 pt] for substituting Fb = rho*V*g for buoyant force; Point B3 [1 pt] for correct isolated expression for upward acceleration a = (rho*V*g)/m - g.",
+        "Part C [2 points]: Point C1 [1 pt] for addressing the functional dependence between acceleration a and density rho (e.g. proportional, numerator); Point C2 [1 pt] for correctly demonstrating that because rho is in the numerator, higher density leads to higher acceleration, consistent with Part A."
+      ]
+    }
+  ],
+  "ap-physics": [],
+  "physics": [],
+  "ap-english-lang": [
+    {
+      title: "QUESTION 1: SYNTHESIS ESSAY  [6 POINTS]",
+      prompt: `**Suggested reading and writing time: 55 minutes (15 minutes reading and analyzing sources, 40 minutes writing)**
+
+Directions: The following prompt is based on the accompanying six sources (Sources A\u2013F).
+
+This question requires you to integrate a variety of sources into a coherent, well-written essay. Refer to the sources to support your position; avoid merely summarizing the sources. Support your line of reasoning with an argument that responds to the prompt. Synthesize at least three of the sources.
+
+### Introduction
+In contemporary public life, digital platforms and news aggregators increasingly rely on algorithmic recommendation engines to curate information feeds tailored to individual user behaviors and preferences. While proponents argue that algorithmic filtering maximizes informational efficiency and democratizes access to relevant knowledge, critics contend that predictive curation encloses citizens within ideological echo chambers, diminishes exposure to contrasting perspectives, and fractures the shared factual baseline essential for democratic deliberation.
+
+### Assignment
+Carefully read the following six sources, including the introductory information for each source. Write an essay that synthesizes at least three of the sources for support and takes a position on the extent to which algorithmic content curation enhances or impedes informed democratic citizenship.
+
+---
+
+### Source A (Monograph)
+*Adapted from Elena Vance, The Architecture of Certainty: Machine Learning and Civic Epistemology, University Academic Press, 2023.*
+
+"When information systems prioritize engagement over epistemic diversity, they fundamentally reshape the civic posture of the user. In physical public squares, exposure to dissenting viewpoints is an inevitable by-product of geographic co-presence. Algorithmic curation, by contrast, operates on the logic of friction minimization: it delivers content pre-calibrated to affirm preexisting cognitive frameworks. Over time, this predictive tailoring creates an illusion of universal consensus within the user's localized digital sphere, rendering opposing claims not merely unconvincing, but unfathomable. The danger is not simply misinformation; it is epistemic closure."
+
+---
+
+### Source B (Quantitative Data Table)
+*Adapted from the Pew Research Initiative on Media and Democracy, "Survey of Public News Consumption and Algorithmic Trust Across Demographics," 2024.*
+
+| Age Demographic | % Relying on Algorithmic Feeds as Primary News Source | % Who Report Algorithmic Feeds Help Discover Novel Topics | % Who Report Encountering Opposing Political Views Weekly | % Trusting Curated Feeds More Than Traditional Editorial Gatekeepers |
+| :--- | :---: | :---: | :---: | :---: |
+| 18\u201329 | 74% | 68% | 27% | 58% |
+| 30\u201349 | 59% | 54% | 34% | 46% |
+| 50\u201364 | 41% | 38% | 46% | 32% |
+| 65+ | 28% | 29% | 53% | 22% |
+
+---
+
+### Source C (Policy Editorial)
+*Adapted from Marcus Reed, "The Myth of the Passive Citizen in the Algorithmic Age," Technological Policy Review, 2022.*
+
+"To characterize users of algorithmic platforms as passive sheep herdable into extremism is to underestimate human agency and the historical reality of media consumption. Before personalized curation, broadcast media was controlled by a handful of corporate conglomerates that enforced a sterile, homogenizing Overton window. Today's algorithmic discovery empowers marginalized voices, subcultures, and localized grassroots investigative reporting that traditional broadcast gatekeepers routinely ignored. The algorithm does not dictate our curiosity; it amplifies our latent interests, granting ordinary citizens unprecedented autonomy over their intellectual trajectories."
+
+---
+
+### Source D (Sociological Study)
+*Adapted from Dr. Aris Thorne and Dr. Maya Lin, "Cognitive Friction and Deliberative Fatigue in Digital Public Spheres," Journal of Social Informatics, 2023.*
+
+"Deliberative democracy requires a threshold level of cognitive friction\u2014the uncomfortable confrontation with evidence that challenges one's cherished convictions. When platforms optimize for seamless user retention, they systematically eliminate this friction. Our neuro-behavioral trials indicate that participants exposed to curated algorithmic feeds experience significantly lower cognitive dissonance than those navigating unstructured archives. However, when subsequently placed in cross-partisan deliberative panels, algorithm-acclimated subjects exhibited higher hostility indices and a decreased willingness to accept factual compromises."
+
+---
+
+### Source E (Legal Commentary)
+*Adapted from Justice Sarah Morales, "Algorithmic Gatekeeping and the First Amendment Tradition," Columbia Constitutional Law Journal, 2024.*
+
+"The First Amendment was conceived to prevent government orthodoxy, operating on Justice Holmes's celebrated premise of a 'free trade in ideas.' Yet the invisible hand of the commercial marketplace has yielded proprietary algorithms whose sorting mechanisms are trade secrets shielded from public accountability. When private entities mediate public discourse through opacity-shrouded code designed exclusively to maximize ad-revenue monetization, the structural conditions prerequisite for informed consent of the governed are eroded from within, without a single state actor ever passing a censorship statute."
+
+---
+
+### Source F (Analytical Synthesis Chart)
+*Adapted from Global Digital Governance Monitor, "Comparative Information Health Across News Delivery Paradigms," 2024.*
+
+"Studies measuring information health reveal a clear trade-off: Algorithmic feeds score highest in user discovery of niche educational topics (8.2/10) and speed of emergency information dissemination (9.1/10), but score lowest in cross-partisan empathy (3.1/10) and resilience against coordinated computational propaganda (2.9/10). In contrast, curated public broadcasting scores moderately across all dimensions (6.5/10), preserving civic stability at the cost of informational velocity."`,
+      totalPoints: 6,
+      unitNumber: 1,
+      unitTitle: "Unit 1: Synthesis & Line of Reasoning",
+      skill: "Synthesis Essay (Row A: Thesis 0-1, Row B: Evidence & Commentary 0-4, Row C: Sophistication 0-1)",
+      modelAnswer: `While digital algorithms offer unprecedented speed in niche knowledge discovery and dismantle traditional corporate gatekeeping, algorithmic content curation fundamentally impedes informed democratic citizenship by optimizing for cognitive ease rather than epistemic friction, thereby sequestering citizens into ideologically insulated enclaves that fracture the shared factual baseline required for meaningful civic self-governance.
+
+Democracy has never functioned as a frictionless marketplace of passive amusement; rather, it demands that citizens engage in deliberative friction\u2014an active wrestling with contradictory viewpoints to negotiate collective policy. As Elena Vance observes in Source A, physical public spaces historically compelled citizens into spontaneous encounters with opposing perspectives, whereas algorithmic feeds operate on "friction minimization," systematically isolating users within an "architecture of certainty" that breeds epistemic closure. This psychological isolation is corroborated by empirical data from the Pew Research Initiative (Source B), which reveals a stark democratic vulnerability: among younger voters (ages 18\u201329), 74% rely primarily on algorithmic feeds, yet only 27% report encountering opposing political viewpoints on a weekly basis, compared to 53% among older generations navigating more traditional media. When nearly three-quarters of rising voters consume news engineered to eliminate intellectual dissonance, civic deliberation is supplanted by the dogmatic reinforcement of preexisting biases.
+
+Proponents such as Marcus Reed (Source C) counter that algorithmic platforms liberate the public from the narrow, monolithic orthodoxy of mid-twentieth-century broadcast conglomerates, decentralizing power and allowing grassroots movements to flourish. While Reed rightly identifies that personalized curation enhances informational agency for marginalized subcultures, his argument conflates individual discovery with collective civic competence. Empowering an individual to locate niche communities does not compensate for the loss of a coherent public square. When private corporate platforms, as Justice Morales warns in Source E, mediate democratic discourse using proprietary algorithms shielded from public scrutiny and designed solely to maximize commercial engagement, the constitutional "free trade in ideas" degenerates into a monetization of outrage. Without deliberate structural friction (Source D), exposure to algorithmic purity leaves citizens psychologically ill-equipped to accept the compromises inherent in democratic governance.
+
+Ultimately, informed citizenship cannot be measured merely by the volume or velocity of content an individual consumes. It requires the capacity to evaluate contradictory arguments and recognize the legitimacy of fellow citizens' competing interests. By replacing public deliberation with private behavioral prediction, algorithmic curation transforms active democratic participants into atomized epistemic consumers, undermining the very foundation of self-governance.`,
+      scoringRubric: [
+        "Row A: Thesis (0-1 point) [1 pt]: 1 point for a defensible thesis that establishes a clear line of reasoning taking a position on the extent to which algorithmic curation enhances or impedes informed democratic citizenship. Must be more than a restatement of the prompt.",
+        "Row B: Evidence and Commentary (0-4 points) [4 pts]: 4 points for synthesizing evidence from at least three sources (e.g., Sources A, B, and E) with sustained, insightful commentary that explicitly explains how the evidence supports the line of reasoning connecting cognitive friction and corporate monetization to the erosion of democratic deliberation.",
+        "Row C: Sophistication (0-1 point) [1 pt]: 1 point for demonstrating a complex understanding of the rhetorical situation, acknowledging the tension between individual informational empowerment (Reed, Source C) and institutional civic fragility (Morales, Source E), and maintaining a persuasive, rhetorically mature style throughout."
+      ]
+    },
+    {
+      title: "QUESTION 2: RHETORICAL ANALYSIS ESSAY  [6 POINTS]",
+      prompt: `**Suggested time: 40 minutes**
+
+Directions: The following prompt is based on the passage below.
+
+### Introduction & Rhetorical Situation
+In October 1968, renowned marine biologist and conservation advocate Dr. Evelyn Montgomery addressed the National Association of Chemical Manufacturers at their annual symposium in New York City. At the time, the rapid postwar expansion of synthetic petrochemicals and persistent pesticides was generating enormous corporate profits, while emerging scientific evidence pointed to irreversible bioaccumulation in aquatic ecosystems and threats to avian biodiversity. Montgomery was invited to deliver the keynote address to an audience of industrial executives, chemical engineers, and corporate investors who were largely skeptical of environmental regulations.
+
+### Assignment
+Carefully read the text of Dr. Montgomery's speech below. Write an essay that analyzes the rhetorical choices Montgomery makes to convey her message regarding the ethical responsibility of chemical innovators to harmonize industrial ambition with ecological permanence.
+
+---
+
+### Speech Excerpt: Dr. Evelyn Montgomery (October 1968)
+"Gentlemen of the Association:
+
+I stand before you this morning not as an adversary of human ingenuity, nor as an apostle of primitive austerity, but as a fellow investigator of the natural world. In this grand hall, surrounded by men whose patents have conquered famine, vanquished typhus, and synthesized fibers that clothe millions, it would be churlish to deny that chemistry is the bedrock of modern civilization. You have spent four decades bending refractory atoms to the sovereign will of human necessity. That triumph is real, and it is magnificent.
+
+Yet, as I walked along the shoreline of Long Island Sound at dawn yesterday, I did not find the triumph of human intellect; I found the silent calculus of its collateral debt. In the marsh grasses, where the incoming tide once stirred the vibrant feeding of terns and ospreys, there was an unnatural, brooding hush. The osprey clutches lay cracked in their aeries\u2014eggshells thinned to brittle translucence by chlorinated hydrocarbons that your laboratories synthesized with brilliant precision, but without ecological forethought.
+
+You have measured your success with calibrated instruments: fractional distillation yields, corporate balance sheets, and parts per million of crop yield enhancement. But the biosphere does not keep its books in quarterly dividends. Nature keeps an eternal ledger, and its arithmetic is unforgiving. When you inject into the global bloodstream synthetic compounds whose molecular bonds no living enzyme can dismantle, you are not merely engineering convenience; you are writing promissory notes that will be foreclosed by your children.
+
+Consider the paradox of our shared inheritance. The chemist looks at an organochlorine molecule and sees an intellectual masterpiece\u2014a stable lattice of carbon and chlorine engineered to resist fungal rot and withstand the elements. But in biology, that very stability is a sentence of permanent trespass. What you celebrate as endurance, the sea experiences as an unyielding poison. An atom that never breaks down never leaves; it ascends through trophic tiers, concentrating with mathematical malice in the fatty tissues of plankton, of shad, of bluefish, until it breaches the nurseries of the sea.
+
+Let us speak with the candor that belongs to scientists. You have been told by your marketing counsels that regulation is an ideological impediment, a bureaucratic dampener on enterprise. I ask you today to transcend the narrow horizon of the balance sheet. True genius does not conquer nature by fracturing its cycles; true genius imitates the closed loops of the living cosmos, where every byproduct is the cradle of future life. You possess the intellectual capital, the synthetic acumen, and the research facilities to inaugurate a new era of benign molecular architecture. The question before this assembly is not whether mankind will continue to manufacture the material fabric of its existence; the question is whether you will choose to be the architects of a sustainable renaissance or the prosperous caretakers of an impoverished earth."`,
+      totalPoints: 6,
+      unitNumber: 2,
+      unitTitle: "Unit 2: Rhetorical Situation & Analysis",
+      skill: "Rhetorical Analysis Essay (Row A: Thesis 0-1, Row B: Evidence & Commentary 0-4, Row C: Sophistication 0-1)",
+      modelAnswer: `In her 1968 address to the National Association of Chemical Manufacturers, Dr. Evelyn Montgomery confronts a hostile audience of corporate executives and chemical engineers by establishing a shared professional ethos, contrasting micro-level industrial triumphs with macro-level biological reckonings, and reframing technological stewardship as the highest manifestation of scientific genius in order to persuade her listeners that genuine innovation requires molecular responsibility toward ecological permanence.
+
+Montgomery begins by deliberately disarming an audience predisposed to dismiss conservationists as anti-progress agitators. Rather than adopting an antagonistic posture, she introduces herself as a "fellow investigator of the natural world," validating their professional pride by explicitly praising their "triumph" in conquering famine and synthesizing essential materials. By deploying elevated, admiring diction\u2014terming their achievements "magnificent" and acknowledging their mastery over "refractory atoms"\u2014Montgomery builds common ground grounded in empirical discipline. This tactical concession flatters the executives' intellect, lowering their defensive guard so they are receptive to the ethical challenge that follows.
+
+Having established this collegiate solidarity, Montgomery abruptly pivots from abstract praise to visceral sensory contrast, exposing the devastating gap between laboratory intentions and ecological reality. She juxtaposes the "grand hall" of human celebration with the "unnatural, brooding hush" of Long Island Sound, grounding her critique in poignant empirical observation: osprey clutches cracked due to eggshells "thinned to brittle translucence." Through financial metaphors, she contrasts their "quarterly dividends" with nature's "eternal ledger," warning that synthetic compounds are "promissory notes that will be foreclosed by your children." Furthermore, by analyzing the dual nature of chemical stability\u2014noting that the very molecular permanence chemists celebrate as an "intellectual masterpiece" functions in biology as a "sentence of permanent trespass"\u2014she exposes the myopic reductionism of industrial chemistry without insulting the chemists' intelligence.
+
+Finally, Montgomery elevates the speech into a moral challenge by redefining the very definition of scientific "genius." Rejecting corporate counsels who frame ecological safeguards as bureaucratic impediments, she urges the assembly to abandon the "narrow horizon of the balance sheet" and deploy their "intellectual capital" toward "benign molecular architecture." By framing the choice not as commerce versus nature, but as becoming "architects of a sustainable renaissance" versus "prosperous caretakers of an impoverished earth," Montgomery enlists their ambition, transforming environmental restraint from a corporate loss into an inspiring frontier of technological leadership.`,
+      scoringRubric: [
+        "Row A: Thesis (0-1 point) [1 pt]: 1 point for a defensible thesis that analyzes Montgomery's rhetorical choices (e.g., establishing collegial ethos, contrasting industrial and biological scales of permanence, and redefining scientific genius) to convey her message regarding environmental responsibility.",
+        "Row B: Evidence and Commentary (0-4 points) [4 pts]: 4 points for providing specific textual evidence and insightful commentary that explains how Montgomery's rhetorical choices navigate audience skepticism, expose the tragic irony of chemical persistence, and appeal to the executives' professional ambition.",
+        "Row C: Sophistication (0-1 point) [1 pt]: 1 point for demonstrating a complex understanding of the rhetorical situation (particularly the hostile corporate audience in 1968) and analyzing the nuanced relationship between speaker ethos, commercial exigence, and moral persuasion."
+      ]
+    },
+    {
+      title: "QUESTION 3: ARGUMENT ESSAY  [6 POINTS]",
+      prompt: `**Suggested time: 40 minutes**
+
+Directions: The following prompt is based on the quotation below.
+
+### Prompt Context & Quotation
+In a 1953 philosophical lecture on the nature of democratic institutions and scientific inquiry, political theorist Hannah Arendt observed:
+
+> *"The most radical revolutionary will become a conservative the day after the revolution, for the human mind craves the security of settled orthodoxy far more deeply than it loves the disruptive pursuit of truth."*
+
+### Assignment
+Carefully consider Arendt's assertion regarding the human tendency to trade intellectual and political disruption for the comfort of established orthodoxy.
+
+Write an essay that argues your position on the extent to which progress in human societies requires the continuous disruption of settled orthodoxies rather than the consolidation of stable consensus.`,
+      totalPoints: 6,
+      unitNumber: 7,
+      unitTitle: "Unit 7: Complex Argumentation & Sophistication",
+      skill: "Argument Essay (Row A: Thesis 0-1, Row B: Evidence & Commentary 0-4, Row C: Sophistication 0-1)",
+      modelAnswer: `While the consolidation of stable consensus is essential for codifying civil rights into enduring legal frameworks and enabling coordinated civic life, substantive human progress fundamentally relies upon the continuous disruption of settled orthodoxies, because unexamined consensus inevitably stagnates into dogmatic complacency that protects entrenched power and blinds societies to emerging ethical and scientific truths.
+
+Human history demonstrates that institutional consensus frequently functions not as the objective culmination of truth, but as a normalized defense of societal inequity. In the nineteenth-century United States, the compromise-driven political consensus regarding the legality of chattel slavery\u2014exemplified by the Missouri Compromise of 1820 and the Compromise of 1850\u2014attempted to preserve national stability by treating human bondage as a settled property right. It was only through the unyielding, disruptive agitation of abolitionists such as Frederick Douglass and Harriet Tubman, who intentionally shattered the comforting illusions of Northern neutrality, that the moral atrocity of the institution was forced onto the national conscience. Douglass understood that settled orthodoxy was the enemy of justice, recognizing that power concedes nothing without a demand. Had society prioritized the maintenance of tranquil consensus, the structural brutality of legal enslavement would have persisted indefinitely under the guise of civic harmony.
+
+Similarly, in the history of science, intellectual advancement requires shattering deeply held dogmas. In the early seventeenth century, the geocentric Ptolemaic model enjoyed the overwhelming consensus of both the Catholic Church and classical European academia, offering a comforting, anthropocentric worldview that anchored cosmic order. When Galileo Galilei championed heliocentrism, his observational evidence disrupted centuries of settled theology and natural philosophy. Despite facing the Roman Inquisition, Galileo's refusal to capitulate to institutional orthodoxy catalyzed the Scientific Revolution, establishing empirical falsification rather than authoritarian deference as the engine of scientific progress.
+
+Critics of perpetual disruption, echoing Arendt's warning regarding revolutionary volatility, legitimately contend that unmitigated rebellion can devolve into nihilistic chaos, as demonstrated by the Jacobin Reign of Terror during the French Revolution, which dismantled all societal scaffolding without establishing functional governance. True progress undoubtedly requires periodic consolidation: the disruptive moral breakthroughs of the Civil Rights Movement of the 1960s ultimately required the stabilizing codification of the Civil Rights Act of 1964 and Voting Rights Act of 1965 to produce lasting structural protections. Yet consolidation must always be understood as a temporary harbor, never a final destination. When consensus becomes sacrosanct, it breeds ideological ossification. Therefore, while institutional stability preserves the hard-won gains of the past, continuous intellectual and moral disruption remains the indispensable catalyst that propels human societies toward higher states of justice and enlightenment.`,
+      scoringRubric: [
+        "Row A: Thesis (0-1 point) [1 pt]: 1 point for a defensible thesis establishing a clear line of reasoning that qualifies the tension between continuous disruption and stabilizing consensus in societal progress.",
+        "Row B: Evidence and Commentary (0-4 points) [4 pts]: 4 points for providing multiple specific, varied pieces of historical, scientific, or cultural evidence (e.g., 19th-century abolitionist disruption of political compromise, Galileo's scientific challenge to Ptolemaic orthodoxy, and the post-disruption codification of the 1964 Civil Rights Act) supported by sustained commentary linking evidence to the line of reasoning.",
+        "Row C: Sophistication (0-1 point) [1 pt]: 1 point for demonstrating a complex understanding of the argument by effectively qualifying the claim (differentiating productive disruption from nihilistic chaos like the French Reign of Terror and acknowledging the vital role of legal consolidation), maintaining a sophisticated academic voice throughout."
+      ]
+    }
+  ],
+  "ap-psychology": [
+    {
+      title: "QUESTION 1: ARTICLE ANALYSIS QUESTION (AAQ)  [7 POINTS]",
+      prompt: `**Suggested reading and writing time: 25 minutes (10 minutes reading and 15 minutes writing)**
+
+Directions: Read the summary of the empirical research article below and respond to parts A, B, C, D, E, and F.
+
+### Study Summary: "The Impact of Active Retrieval Practice on Memory Retention Under Acute Evaluative Stress"
+*Adapted from Harrison, K. L., & Chen, J. M. (2023). Cognitive Neuropsychology and Memory Systems, 38(2), 142\u2013158.*
+
+**Background & Purpose:**
+Cognitive psychologists have long recognized that testing during the learning phase (retrieval practice) promotes long-term retention more effectively than passive restudy. However, real-world educational testing frequently induces acute psychosocial stress, which elevates circulating glucocorticoids and can impair memory retrieval from hippocampal networks. Researchers conducted a study to examine whether the protective benefits of retrieval practice persist when participants are subjected to acute evaluative stress prior to final memory testing.
+
+**Participants & Recruitment:**
+A sample of 120 undergraduate students (mean age = 19.4 years; 68 female, 52 male) was recruited from introductory psychology lecture courses at a large Midwestern state university. Participants received course extra credit for their participation. The study received formal approval from the university Institutional Review Board (IRB), and all participants signed an informed consent document acknowledging they could withdraw at any time without penalty.
+
+**Methodology:**
+Participants were randomly assigned to one of two initial learning conditions for 40 unfamiliar Swahili-English vocabulary word pairs: (1) **Retrieval Practice Condition**, in which participants engaged in three successive cycles of active cued recall with feedback, or (2) **Restudy Condition**, in which participants viewed the word pairs across three successive timed reading exposures of identical duration. Forty-eight hours later, all participants returned to the laboratory and were randomly assigned to either the **Trier Social Stress Test (TSST)**\u2014which involved delivering an unexpected 5-minute videotaped speech before a stone-faced evaluation committee followed by mental arithmetic\u2014or a **Non-Stress Control Task** involving reading non-evaluative magazines. Immediately following the stress or control manipulation, all participants completed a 40-item cued-recall test to measure retention.
+
+**Results:**
+| Initial Learning Condition | Stress Condition | Mean Vocabulary Pairs Recalled (out of 40) | Standard Deviation (SD) |
+| :--- | :--- | :---: | :---: |
+| Retrieval Practice | Acute Stress (TSST) | 28.4 | 3.2 |
+| Retrieval Practice | No Stress Control | 29.1 | 2.9 |
+| Restudy | Acute Stress (TSST) | 14.2 | 3.8 |
+| Restudy | No Stress Control | 21.6 | 3.4 |
+
+A two-way analysis of variance revealed a statistically significant interaction between learning condition and stress ($F(1, 116) = 18.72, p < 0.001$). Post-hoc testing confirmed that participants in the Restudy condition suffered a statistically significant 34.3% decline in recall when exposed to acute stress ($p < 0.01$), whereas participants in the Retrieval Practice condition demonstrated no statistically significant reduction in recall between the stress and control conditions ($p = 0.42$). Following testing, researchers conducted a debriefing session explaining the nature of the TSST stress manipulation.
+
+---
+
+### Questions
+(A) Identify the research design/method used by the researchers in the study. [1 point]
+
+(B) Describe the operational definition of memory retention used in the study. [1 point]
+
+(C) Describe what the difference in mean recall scores between the stressed and non-stressed Restudy groups indicates in the context of the study. [1 point]
+
+(D) Identify an ethical guideline that the researchers followed in the study. [1 point]
+
+(E) Explain whether the researchers can generalize their findings regarding memory retention under stress to all adults in the general population. [1 point]
+
+(F) Explain how the findings from the Retrieval Practice group support the psychological concept of levels of processing (or elaborative rehearsal). [2 points: 1 point for citing specific research finding; 1 point for explaining psychological mechanism]`,
+      totalPoints: 7,
+      unitNumber: 2,
+      unitTitle: "Unit 2: Cognition & Memory",
+      skill: "Article Analysis Question (Parts A-F, 7 Points)",
+      modelAnswer: `Part A:
+The researchers used a controlled experiment (specifically a 2x2 factorial laboratory experiment with random assignment).
+
+Part B:
+The operational definition of memory retention was the number of Swahili-English vocabulary word pairs correctly recalled out of 40 on the cued-recall test administered 48 hours after learning.
+
+Part C:
+The lower mean recall score of the stressed Restudy group (14.2 pairs) compared to the non-stressed Restudy group (21.6 pairs) indicates that acute psychosocial stress significantly impairs long-term memory retrieval when material has only been encoded through passive restudy.
+
+Part D:
+The researchers followed the ethical guideline of informed consent (all participants signed an informed consent form before the study), institutional review board (IRB) approval, protection from harm/debriefing (participants were debriefed about the stress manipulation after testing), or the right to withdraw without penalty.
+
+Part E:
+The researchers cannot generalize their findings to all adults because the sample was drawn exclusively from undergraduate college students at a single university, who are not demographically or cognitively representative of the broader adult population across different age brackets and educational backgrounds. (Generalizability is limited by sample representativeness, not sample size).
+
+Part F:
+Point 1 (Finding): Participants in the Retrieval Practice condition maintained a high mean recall score (28.4 out of 40) under acute stress, showing no statistically significant impairment compared to the non-stress retrieval group (29.1).
+Point 2 (Concept Connection): This finding supports the concept of levels of processing because active retrieval practice requires deeper semantic cognitive elaboration and active reconstructive effort than passive reading, creating stronger and more resilient synaptic memory traces that resist the disruptive interference of stress hormones on retrieval.`,
+      scoringRubric: [
+        "Part A [1 point]: 1 point for identifying the research design as an experiment (or factorial laboratory experiment). Chief Reader Note: Stating 'survey' or 'test' earns 0 points.",
+        "Part B [1 point]: 1 point for describing the operational definition as the number of vocabulary pairs correctly recalled out of 40 on the 48-hour cued-recall test. Must be quantifiable.",
+        "Part C [1 point]: 1 point for explaining that acute stress reduced recall performance in the restudy group (including direction of difference in context). Simply restating numbers without direction earns 0 points.",
+        "Part D [1 point]: 1 point for identifying informed consent, debriefing, IRB approval, or right to withdraw from the text.",
+        "Part E [1 point]: 1 point for explaining that findings cannot be generalized to all adults because the college student sample is not representative of the broader adult population. Chief Reader Note: Citing 'sample size too small' earns 0 points.",
+        "Part F [2 points]: 1 point for citing specific empirical finding showing retrieval practice preserved recall under stress (28.4 vs 14.2) + 1 point for explaining how active retrieval fosters deeper semantic processing/elaborative encoding that creates stronger memory pathways resistant to stress disruption."
+      ]
+    },
+    {
+      title: "QUESTION 2: EVIDENCE-BASED QUESTION (EBQ)  [7 POINTS]",
+      prompt: `**Suggested reading and writing time: 45 minutes (15 minutes reading and 30 minutes writing)**
+
+Directions: Synthesize the three empirical research studies provided below to respond to the prompt in parts A, B, and C.
+
+### Overarching Research Question
+Analyze the extent to which digital media use influences adolescent psychological well-being.
+
+---
+
+### Source 1: Longitudinal Study on Screen Time Modality and Affective Symptoms
+*Adapted from Kowalski, R. M., & Patel, S. T. (2023). Journal of Youth and Adolescence, 52(4), 789\u2013804.*
+
+**Method & Sample:**
+Researchers conducted a two-year prospective longitudinal cohort study tracking 850 adolescents (aged 13\u201316 at baseline) across eight diverse public school districts. Participants completed bi-annual validated psychometric assessments measuring daily digital screen time divided into two modalities: (1) **Passive Consumption** (passively scrolling social media feeds, viewing algorithmically curated short videos) and (2) **Active Interactive Engagement** (direct peer messaging, collaborative digital gaming, video calls with family/friends). Depressive symptoms and self-esteem were assessed using the Beck Depression Inventory for Youth (BDI-Y) and Rosenberg Self-Esteem Scale.
+
+**Findings:**
+Hierarchical regression analyses revealed that higher hours of daily passive screen consumption at baseline significantly predicted elevated depressive symptom scores two years later ($\\beta = 0.38, p < 0.001$) and lower self-esteem ($\\beta = -0.31, p < 0.01$). In contrast, daily hours spent in active interactive digital communication predicted higher perceived social connectedness and was associated with a slight decrease in depressive symptoms ($\\beta = -0.14, p = 0.03$). The authors concluded that the psychological consequence of screen time is contingent upon the functional modality of engagement rather than gross screen duration alone.
+
+---
+
+### Source 2: Controlled Experiment on Social Comparison Feeds and Body Image Distress
+*Adapted from Nguyen, T. H., Alvarez, M. C., & Becker, D. E. (2022). Clinical Psychological Science, 10(6), 1145\u20131160.*
+
+**Method & Sample:**
+A sample of 220 female adolescents (aged 14\u201317) was recruited for a randomized laboratory experiment. Participants were randomly assigned to one of two 20-minute smartphone browsing conditions: (1) **Curated Idealized Feed Condition**, browsing an active Instagram account populated with digitally enhanced peer and influencer lifestyle/fitness images, or (2) **Neutral Nature Feed Condition**, browsing an active account populated with wildlife and scenic photography. Immediately before and after the browsing session, participants completed the State Body Dissatisfaction Scale and Positive and Negative Affect Schedule (PANAS).
+
+**Findings:**
+Participants in the Curated Idealized Feed condition exhibited a statistically significant post-browsing surge in state body dissatisfaction ($t(108) = 6.42, p < 0.001, d = 0.84$) and a significant increase in negative affect ($p < 0.01$). Participants in the Neutral Nature Feed condition showed no significant change in body satisfaction or affect ($p = 0.76$). Furthermore, 82% of participants in the idealized feed group explicitly reported comparing their physical appearance unfavorably to the images displayed.
+
+---
+
+### Source 3: Cross-Sectional Neuro-Behavioral Survey on Nocturnal Device Use and Sleep Debt
+*Adapted from Thorne, E. B., & Martinez, G. R. (2024). Sleep Medicine and Adolescent Neurodevelopment, 45(1), 58\u201371.*
+
+**Method & Sample:**
+Researchers surveyed 1,100 high school students (grades 9\u201312) using wearable actigraphy sleep monitors and self-reported sleep quality diaries over a consecutive 14-day school testing period. The study measured nocturnal smartphone notifications, screen use within 60 minutes of bedtime, sleep latency (minutes required to fall asleep), and total rapid eye movement (REM) sleep duration.
+
+**Findings:**
+Students who reported active screen engagement within 60 minutes of bedtime experienced an average sleep latency of 48.6 minutes, compared to 19.2 minutes for students with zero pre-sleep screen use ($t = 9.81, p < 0.001$). Actigraphy recordings revealed a significant 22% reduction in total REM sleep duration among nocturnal screen users ($p < 0.01$). Prolonged sleep latency and reduced REM sleep were both strongly correlated with self-reported daytime emotional dysregulation ($r = 0.54, p < 0.001$) and generalized academic anxiety.
+
+---
+
+### Instructions & Tasks
+Respond to parts A, B, and C.
+
+(A) Articulate a defensible claim that responds to the prompt. [1 point]
+
+(B) Support your claim using evidence and psychological reasoning: [3 points]
+(i) Describe a specific piece of empirical evidence from Source 1 or Source 2 that supports your claim, including the source citation. [1 point]
+(ii) Explain how this evidence supports your claim, applying a RELEVANT PSYCHOLOGICAL CONCEPT from the AP Psychology CED to explain the underlying psychological mechanism. [2 points: 1 point for linking evidence to claim; 1 point for concept application]
+
+(C) Support your claim using a DIFFERENT piece of evidence and psychological reasoning: [3 points]
+(i) Describe a DIFFERENT specific piece of empirical evidence from a DIFFERENT source (e.g., Source 3) that supports your claim, including the source citation. [1 point]
+(ii) Explain how this new evidence supports your claim, applying a DIFFERENT PSYCHOLOGICAL CONCEPT from the AP Psychology CED to explain the underlying psychological mechanism. [2 points: 1 point for linking evidence to claim; 1 point for applying a DISTINCT second psychological concept]`,
+      totalPoints: 7,
+      unitNumber: 4,
+      unitTitle: "Unit 4: Social Psychology & Mental Health",
+      skill: "Evidence-Based Question (EBQ - Parts A-C, 7 Points)",
+      modelAnswer: `Part A:
+While active digital communication can foster positive peer connectedness, passive and nocturnal digital media use significantly diminishes adolescent psychological well-being by facilitating harmful social comparison processes and disrupting restorative sleep architecture.
+
+Part B:
+(i) Evidence from Source 2:
+In a controlled experiment by Nguyen et al. (2022, Source 2), female adolescents who spent 20 minutes browsing a curated idealized lifestyle and appearance feed exhibited a statistically significant surge in state body dissatisfaction (t = 6.42, p < 0.001, d = 0.84) and negative affect, with 82% reporting unfavorable self-evaluations.
+
+(ii) Reasoning & Psychological Concept Application (Upward Social Comparison / Relative Deprivation):
+This evidence demonstrates that digital media harms well-being when users passively consume idealized portrayals of peers. The underlying mechanism is explained by the psychological concept of upward social comparison: when adolescents contrast their own unfiltered daily lives against curated, filtered highlights of others, they perceive themselves as inferior, which triggers relative deprivation, diminishes self-worth, and escalates depressive feelings.
+
+Part C:
+(i) Evidence from Source 3:
+In the neuro-behavioral study by Thorne and Martinez (2024, Source 3), high school students who engaged with screens within 60 minutes of bedtime experienced significantly longer sleep latency (48.6 minutes vs 19.2 minutes) and a 22% reduction in total REM sleep duration, which strongly correlated with daytime emotional dysregulation (r = 0.54, p < 0.001).
+
+(ii) Reasoning & DIFFERENT Psychological Concept Application (Circadian Rhythm Disruption / Melatonin Suppression):
+This evidence supports the claim by illustrating how nocturnal device use impairs affective health through a physiological pathway. The underlying mechanism is circadian rhythm disruption: exposure to blue light emitted by smartphone screens suppresses melatonin secretion by the pineal gland via the suprachiasmatic nucleus (SCN), delaying sleep onset and fragmenting REM sleep architecture, which impairs the prefrontal cortex's ability to regulate mood and increases vulnerability to anxiety. (This concept is distinct from upward social comparison used in Part B).`,
+      scoringRubric: [
+        "Part A [1 point]: 1 point for a defensible scientific claim that establishes a line of reasoning evaluating the impact of digital media on adolescent well-being. Must take a position beyond mere prompt restatement.",
+        "Part B(i) [1 point]: 1 point for describing specific empirical evidence from Source 1 or Source 2 with citation (e.g. Nguyen et al. body dissatisfaction t=6.42, d=0.84, or Kowalski passive screen beta=0.38).",
+        "Part B(ii) [2 points]: 1 point for explaining how evidence supports claim + 1 point for applying a substantive CED concept (e.g. Upward Social Comparison, Relative Deprivation, or Normative Social Influence). Chief Reader Note: Generic terms like 'variable' or 'experiment' earn 0 points.",
+        "Part C(i) [1 point]: 1 point for describing different empirical evidence from a different source (Source 3) with citation (e.g. Thorne & Martinez sleep latency 48.6m vs 19.2m and 22% REM reduction).",
+        "Part C(ii) [2 points]: 1 point for explaining how new evidence supports claim + 1 point for applying a DISTINCT second CED concept (e.g. Circadian Rhythm Disruption, Melatonin/SCN Regulation, or Sleep Deprivation on Prefrontal Executive Function). Chief Reader Note: Repeating the concept from Part B earns 0 points for concept application."
+      ]
+    }
+  ],
+  "ap-computer-science": [
+    {
+      title: "QUESTION 1: METHODS AND CONTROL STRUCTURES  [7 POINTS]",
+      prompt: `This question involves scheduling charging sessions at an electric vehicle (EV) charging station. The charging station has a fixed number of charging bays, numbered 1 through 10. The \`ChargingStation\` class contains two helper methods: \`isBayAvailable\` and \`reserveBay\`.
+
+\`\`\`java
+public class ChargingStation {
+    /** Returns true if bay is available for charging; false otherwise.
+     *  Precondition: 1 <= bay <= 10
+     */
+    private boolean isBayAvailable(int bay)
+    { /* implementation not shown */ }
+
+    /** Reserves the bay for an EV vehicle.
+     *  Precondition: 1 <= bay <= 10
+     */
+    private void reserveBay(int bay)
+    { /* implementation not shown */ }
+
+    /** Searches bays from startBay to endBay, inclusive, for the first available bay.
+     *  Returns the bay number of the first available bay found, or -1 if no bay is available.
+     *  Precondition: 1 <= startBay <= endBay <= 10
+     */
+    public int findFirstAvailableBay(int startBay, int endBay)
+    { /* to be implemented in part (a) */ }
+
+    /** Searches bays from startBay to endBay for an available bay. If found, reserves the
+     *  bay and returns true; otherwise returns false.
+     *  Precondition: 1 <= startBay <= endBay <= 10
+     */
+    public boolean bookChargingSession(int startBay, int endBay)
+    { /* to be implemented in part (b) */ }
+}
+\`\`\`
+
+**Part (a)**: Write the \`findFirstAvailableBay\` method, which searches bays from \`startBay\` to \`endBay\`, inclusive, and returns the lowest-numbered available bay. If no available bay is found, it returns \`-1\`.
+
+**Part (b)**: Write the \`bookChargingSession\` method, which searches from \`startBay\` to \`endBay\`, inclusive. If an available bay is found, it calls \`reserveBay\` on that bay and returns \`true\`; otherwise returns \`false\`.`,
+      totalPoints: 7,
+      unitNumber: 1,
+      unitTitle: "Unit 1 & 2: Methods and Control Structures",
+      skill: "Methods & Control Structures (Q1)",
+      modelAnswer: `\`\`\`java
+// Part (a)
+public int findFirstAvailableBay(int startBay, int endBay) {
+    for (int bay = startBay; bay <= endBay; bay++) {
+        if (isBayAvailable(bay)) {
+            return bay;
+        }
+    }
+    return -1;
+}
+
+// Part (b)
+public boolean bookChargingSession(int startBay, int endBay) {
+    int bay = findFirstAvailableBay(startBay, endBay);
+    if (bay != -1) {
+        reserveBay(bay);
+        return true;
+    }
+    return false;
+}
+\`\`\``,
+      scoringRubric: [
+        "Part (a) Point 1 [1 pt]: Correctly loops through all bays from startBay to endBay, inclusive (no off-by-one errors).",
+        "Part (a) Point 2 [1 pt]: Calls isBayAvailable with bay as parameter within the loop.",
+        "Part (a) Point 3 [1 pt]: Returns the first available bay number, and returns -1 after checking all bays (algorithm).",
+        "Part (b) Point 4 [1 pt]: Calls findFirstAvailableBay with correct parameters startBay and endBay.",
+        "Part (b) Point 5 [1 pt]: Checks whether the returned bay number represents an available bay (bay != -1).",
+        "Part (b) Point 6 [1 pt]: Calls reserveBay with the identified bay number when available.",
+        "Part (b) Point 7 [1 pt]: Returns true if reserved, false otherwise without calling findFirstAvailableBay multiple times (algorithm)."
+      ]
+    },
+    {
+      title: "QUESTION 2: CLASS DESIGN  [7 POINTS]",
+      prompt: `This question involves designing a complete Java class named \`StepTracker\` that tracks daily physical activity.
+
+A \`StepTracker\` object is created with an \`int\` parameter representing the minimum number of steps required for a day to be considered "active". The class provides the following methods:
+- \`addDailySteps(int steps)\`: Records the step count for a day.
+- \`activeDays()\`: Returns the number of active days.
+- \`averageSteps()\`: Returns the average number of steps per day as a \`double\`. If no days have been tracked, returns \`0.0\`.
+
+### Sample Execution Trace Table
+| Statement | Return Value | Explanation |
+| :--- | :--- | :--- |
+| \`StepTracker tr = new StepTracker(10000);\` | | Initialized with 10,000 steps active threshold |
+| \`tr.activeDays();\` | \`0\` | No days tracked yet |
+| \`tr.averageSteps();\` | \`0.0\` | No days tracked, returns 0.0 |
+| \`tr.addDailySteps(9000);\` | | Day 1 tracked (not active) |
+| \`tr.addDailySteps(5000);\` | | Day 2 tracked (not active) |
+| \`tr.activeDays();\` | \`0\` | No active days |
+| \`tr.averageSteps();\` | \`7000.0\` | (9000 + 5000) / 2 = 7000.0 |
+| \`tr.addDailySteps(13000);\` | | Day 3 tracked (active, >= 10000) |
+| \`tr.activeDays();\` | \`1\` | 1 active day |
+| \`tr.averageSteps();\` | \`9000.0\` | (9000 + 5000 + 13000) / 3 = 9000.0 |
+
+Write the complete \`StepTracker\` class. Your implementation must meet all specifications and conform to the examples shown in the table.`,
+      totalPoints: 7,
+      unitNumber: 3,
+      unitTitle: "Unit 3: Class Design & Encapsulation",
+      skill: "Class Design (Q2)",
+      modelAnswer: `\`\`\`java
+public class StepTracker {
+    private int minSteps;
+    private int totalSteps;
+    private int numDays;
+    private int numActiveDays;
+
+    public StepTracker(int minActiveSteps) {
+        minSteps = minActiveSteps;
+        totalSteps = 0;
+        numDays = 0;
+        numActiveDays = 0;
+    }
+
+    public void addDailySteps(int steps) {
+        totalSteps += steps;
+        numDays++;
+        if (steps >= minSteps) {
+            numActiveDays++;
+        }
+    }
+
+    public int activeDays() {
+        return numActiveDays;
+    }
+
+    public double averageSteps() {
+        if (numDays == 0) {
+            return 0.0;
+        }
+        return (double) totalSteps / numDays;
+    }
+}
+\`\`\``,
+      scoringRubric: [
+        "Point 1 [1 pt]: Declares class header: public class StepTracker without parentheses.",
+        "Point 2 [1 pt]: Declares all appropriate private instance variables (minSteps, totalSteps, numDays, numActiveDays).",
+        "Point 3 [1 pt]: Declares public constructor header StepTracker(int ...) and initializes all instance variables correctly.",
+        "Point 4 [1 pt]: Declares method headers: public void addDailySteps(int), public int activeDays(), public double averageSteps().",
+        "Point 5 [1 pt]: In addDailySteps, updates total steps and total days, and conditionally increments active days.",
+        "Point 6 [1 pt]: In averageSteps, guards against division by zero when numDays == 0 and returns 0.0.",
+        "Point 7 [1 pt]: In averageSteps, calculates and returns floating-point quotient (double) totalSteps / numDays (algorithm)."
+      ]
+    },
+    {
+      title: "QUESTION 3: ARRAY / ARRAYLIST  [5 POINTS]",
+      prompt: `This question involves analyzing student attendance records across courses. The \`CourseRecord\` class has methods \`getStudentID()\` and \`getAbsences()\`.
+
+The \`Attendance\` class maintains two \`ArrayList<CourseRecord>\` instance variables: \`historyList\` and \`mathList\`.
+
+\`\`\`java
+public class Attendance {
+    private ArrayList<CourseRecord> historyList;
+    private ArrayList<CourseRecord> mathList;
+
+    /** Returns the number of students who are enrolled in both the history course and the math course
+     *  but have more absences in the history course than the math course.
+     *  Preconditions:
+     *  - No student ID appears multiple times in historyList or mathList.
+     *  - historyList and mathList do not contain null elements.
+     *  Postcondition: historyList and mathList are unchanged.
+     */
+    public int moreHistoryThanMathAbsences()
+    { /* to be implemented */ }
+}
+\`\`\`
+
+Write the \`moreHistoryThanMathAbsences\` method. Elements of \`historyList\` and \`mathList\` must remain unchanged.`,
+      totalPoints: 5,
+      unitNumber: 4,
+      unitTitle: "Unit 4: Arrays and ArrayList",
+      skill: "Data Analysis with ArrayList (Q3)",
+      modelAnswer: `\`\`\`java
+public int moreHistoryThanMathAbsences() {
+    int count = 0;
+    for (CourseRecord hst : historyList) {
+        for (CourseRecord mth : mathList) {
+            if (hst.getStudentID().equals(mth.getStudentID())) {
+                if (hst.getAbsences() > mth.getAbsences()) {
+                    count++;
+                }
+            }
+        }
+    }
+    return count;
+}
+\`\`\``,
+      scoringRubric: [
+        "Point 1 [1 pt]: Accesses all elements in historyList and mathList using nested loops (no bounds errors).",
+        "Point 2 [1 pt]: Calls getStudentID() on CourseRecord elements from both lists and compares using .equals().",
+        "Point 3 [1 pt]: Calls getAbsences() on matching CourseRecord objects and compares with > operator.",
+        "Point 4 [1 pt]: Initializes count accumulator to 0 and increments within conditional block.",
+        "Point 5 [1 pt]: Returns correct count of students with more history absences without modifying original lists (algorithm)."
+      ]
+    },
+    {
+      title: "QUESTION 4: 2D ARRAYS  [6 POINTS]",
+      prompt: `This question involves evaluating game board rows represented by a 2D array of \`Space\` objects. The \`Space\` class contains \`getColor()\` (returns \`String\`) and \`getPoints()\` (returns \`int\`).
+
+The \`GameBoard\` class maintains a 2D array of \`Space\` objects:
+
+\`\`\`java
+public class GameBoard {
+    private Space[][] board;
+
+    /** Returns the point value of the row in board specified by targetRow.
+     *  The point value is the sum of the points in the row, or two times the sum
+     *  if all spaces in the row have the same color.
+     *  Preconditions: No elements of board are null. board has at least 2 rows and 2 cols.
+     *  targetRow is a valid row index.
+     */
+    public int getPointsForRow(int targetRow)
+    { /* to be implemented */ }
+}
+\`\`\`
+
+Write the \`getPointsForRow\` method. The point value is the sum of points in \`board[targetRow]\`, multiplied by 2 if every space in that row has identical color.`,
+      totalPoints: 6,
+      unitNumber: 4,
+      unitTitle: "Unit 4: 2D Arrays",
+      skill: "2D Array Row Traversal & Comparison (Q4)",
+      modelAnswer: `\`\`\`java
+public int getPointsForRow(int targetRow) {
+    int sum = 0;
+    boolean sameColor = true;
+    String firstColor = board[targetRow][0].getColor();
+
+    for (int col = 0; col < board[targetRow].length; col++) {
+        Space current = board[targetRow][col];
+        sum += current.getPoints();
+        if (!current.getColor().equals(firstColor)) {
+            sameColor = false;
+        }
+    }
+
+    if (sameColor) {
+        return sum * 2;
+    }
+    return sum;
+}
+\`\`\``,
+      scoringRubric: [
+        "Point 1 [1 pt]: Accesses all elements of board[targetRow] across all columns (no bounds errors).",
+        "Point 2 [1 pt]: Calls getColor() and getPoints() on Space elements of the row.",
+        "Point 3 [1 pt]: Compares space colors using .equals() (NOT ==).",
+        "Point 4 [1 pt]: Accumulates points of all spaces in target row into a sum variable.",
+        "Point 5 [1 pt]: Correctly determines whether all spaces in the row share the same color (algorithm).",
+        "Point 6 [1 pt]: Returns sum * 2 if all colors match, or sum otherwise without early return (algorithm)."
+      ]
+    }
+  ]
+};
+PRISTINE_GOLDEN_QUESTIONS["chemistry"] = PRISTINE_GOLDEN_QUESTIONS["ap-chemistry"];
+PRISTINE_GOLDEN_QUESTIONS["biology"] = PRISTINE_GOLDEN_QUESTIONS["ap-biology"];
+PRISTINE_GOLDEN_QUESTIONS["ap-physics"] = PRISTINE_GOLDEN_QUESTIONS["ap-physics-1"];
+PRISTINE_GOLDEN_QUESTIONS["physics"] = PRISTINE_GOLDEN_QUESTIONS["ap-physics-1"];
+PRISTINE_GOLDEN_QUESTIONS["ap-lang"] = PRISTINE_GOLDEN_QUESTIONS["ap-english-lang"];
+PRISTINE_GOLDEN_QUESTIONS["ap-english"] = PRISTINE_GOLDEN_QUESTIONS["ap-english-lang"];
+PRISTINE_GOLDEN_QUESTIONS["english-lang"] = PRISTINE_GOLDEN_QUESTIONS["ap-english-lang"];
+PRISTINE_GOLDEN_QUESTIONS["ap-psych"] = PRISTINE_GOLDEN_QUESTIONS["ap-psychology"];
+PRISTINE_GOLDEN_QUESTIONS["psychology"] = PRISTINE_GOLDEN_QUESTIONS["ap-psychology"];
+PRISTINE_GOLDEN_QUESTIONS["psych"] = PRISTINE_GOLDEN_QUESTIONS["ap-psychology"];
+PRISTINE_GOLDEN_QUESTIONS["csa"] = PRISTINE_GOLDEN_QUESTIONS["ap-computer-science"];
+PRISTINE_GOLDEN_QUESTIONS["ap-csa"] = PRISTINE_GOLDEN_QUESTIONS["ap-computer-science"];
+PRISTINE_GOLDEN_QUESTIONS["computer-science-a"] = PRISTINE_GOLDEN_QUESTIONS["ap-computer-science"];
+function runMultiStageVerificationPipeline(rawQuestions, subjectId, targetTopic) {
+  const verifiedQuestions = [];
+  let passedDirect = 0;
+  let healed = 0;
+  let replacedFromVault = 0;
+  const s = (subjectId || "").toLowerCase();
+  const isAphg = s.includes("geography") || s.includes("aphg") || s.includes("human");
+  const isApes = s.includes("environmental") || s.includes("apes");
+  const isCalculusBc = s.includes("bc") || s.includes("calculus bc");
+  const isChem = s.includes("chemistry") || s.includes("chem");
+  const isBio = s.includes("biology") || s.includes("bio");
+  const isPhys1 = s.includes("physics 1") || s.includes("phys");
+  const isLang = s.includes("english") || s.includes("lang");
+  const isPsych = s.includes("psych");
+  const isCsa = s.includes("computer science a") || s.includes("csa") || s.includes("computer") && !s.includes("principles") && !s.includes("csp");
+  const goldenKey = isCsa ? "ap-computer-science" : isPsych ? "ap-psychology" : isLang ? "ap-english-lang" : isAphg ? "aphg" : isApes ? "apes" : isCalculusBc ? "ap-calculus-bc" : isChem ? "ap-chemistry" : isBio ? "ap-biology" : isPhys1 ? "ap-physics-1" : s.includes("calculus") ? "ap-calculus-ab" : s;
+  const goldenBank = PRISTINE_GOLDEN_QUESTIONS[goldenKey] || PRISTINE_GOLDEN_QUESTIONS[s] || (isCsa ? PRISTINE_GOLDEN_QUESTIONS["ap-computer-science"] : isPsych ? PRISTINE_GOLDEN_QUESTIONS["ap-psychology"] : isLang ? PRISTINE_GOLDEN_QUESTIONS["ap-english-lang"] : isCalculusBc ? PRISTINE_GOLDEN_QUESTIONS["ap-calculus-bc"] : isChem ? PRISTINE_GOLDEN_QUESTIONS["ap-chemistry"] : isBio ? PRISTINE_GOLDEN_QUESTIONS["ap-biology"] : isPhys1 ? PRISTINE_GOLDEN_QUESTIONS["ap-physics-1"] : isAphg ? PRISTINE_GOLDEN_QUESTIONS["aphg"] : isApes ? PRISTINE_GOLDEN_QUESTIONS["apes"] : PRISTINE_GOLDEN_QUESTIONS["ap-calculus-ab"]) || [];
+  for (let idx = 0; idx < rawQuestions.length; idx++) {
+    const rawQ = rawQuestions[idx];
+    let processedQ = rawQ;
+    if (isAphg) {
+      processedQ = healAphgQuestion(processedQ);
+      healed++;
+    }
+    const promptStr = String(processedQ.prompt || processedQ.question || "");
+    const canonical = resolveCanonicalUnit(subjectId, processedQ.unitNumber || processedQ.unitTitle || targetTopic, promptStr);
+    const getFallback = (qIndex) => {
+      if (isAphg) {
+        return getAphgPristineUnitQuestion(canonical.unitNumber, targetTopic, qIndex);
+      }
+      return goldenBank[qIndex % goldenBank.length] || processedQ;
+    };
+    const scopeCheck = verifyCurriculumScope(processedQ, subjectId);
+    if (!scopeCheck.inScope) {
+      console.warn(`[MultiStageVerification] Q${idx + 1} REJECTED by Scope Gate:`, scopeCheck.reasons);
+      const fallback = getFallback(idx);
+      verifiedQuestions.push({ ...fallback, id: idx + 1 });
+      replacedFromVault++;
+      continue;
+    }
+    const solvabilityCheck = verifyBlindSolvability(processedQ);
+    if (!solvabilityCheck.isSolvable) {
+      console.warn(`[MultiStageVerification] Q${idx + 1} REJECTED by Blind Solver Gate:`, solvabilityCheck.issues);
+      const fallback = getFallback(idx);
+      verifiedQuestions.push({ ...fallback, id: idx + 1 });
+      replacedFromVault++;
+      continue;
+    }
+    const mathCheck = verifyMathAndFeasibility(processedQ, subjectId);
+    if (!mathCheck.isValid) {
+      console.warn(`[MultiStageVerification] Q${idx + 1} REJECTED by Math Feasibility Gate:`, mathCheck.issues);
+      const fallback = getFallback(idx);
+      verifiedQuestions.push({ ...fallback, id: idx + 1 });
+      replacedFromVault++;
+      continue;
+    }
+    if (isAphg) {
+      const aphgCheck = verifyAphgGeographicalAccuracy(processedQ, targetTopic);
+      if (!aphgCheck.isValid) {
+        console.warn(`[MultiStageVerification] Q${idx + 1} APHG Geographical Model Gate FAILED:`, aphgCheck.issues);
+        if (!aphgCheck.canHeal) {
+          console.warn(`[MultiStageVerification] Q${idx + 1} Cannot be safely healed. Replacing with Unit ${canonical.unitNumber} pristine Golden Vault question.`);
+          const fallback = getFallback(idx);
+          verifiedQuestions.push({ ...fallback, id: idx + 1 });
+          replacedFromVault++;
+          continue;
+        }
+      }
+    }
+    const realPoints = isAphg ? 7 : isApes ? 10 : isPsych ? 7 : calculateRealTotalPoints(processedQ, subjectId);
+    const healedQuestion = {
+      ...processedQ,
+      id: idx + 1,
+      totalPoints: realPoints,
+      prompt: stripRawSvgMarkup(processedQ.prompt || processedQ.question || ""),
+      modelAnswer: stripRawSvgMarkup(processedQ.modelAnswer || ""),
+      unitNumber: canonical.unitNumber,
+      unitTitle: canonical.title,
+      skill: `Unit ${canonical.unitNumber}: ${canonical.title}`
+    };
+    verifiedQuestions.push(healedQuestion);
+    passedDirect++;
+  }
+  return {
+    verifiedQuestions,
+    stats: {
+      total: rawQuestions.length,
+      passedDirect,
+      healed,
+      replacedFromVault
+    }
+  };
+}
 
 // server.ts
 dotenv.config();
@@ -16415,9 +21059,9 @@ ${text}`.trim() },
   }
   let lastError = null;
   let anyQuotaExceeded = false;
-  for (const model of modelsToTry) {
+  for (const model2 of modelsToTry) {
     const currentParams = {
-      model,
+      model: model2,
       contents: clonedParams.contents
     };
     if (clonedParams.config) {
@@ -16438,7 +21082,7 @@ ${text}`.trim() },
         const generatePromise = aiClient.models.generateContent(currentParams);
         const timeoutMs = params.timeoutMs && typeof params.timeoutMs === "number" ? params.timeoutMs : 25e3;
         const timeoutPromise = new Promise(
-          (_, reject) => setTimeout(() => reject(new Error(`Timeout: Model ${model} took longer than ${timeoutMs}ms`)), timeoutMs)
+          (_, reject) => setTimeout(() => reject(new Error(`Timeout: Model ${model2} took longer than ${timeoutMs}ms`)), timeoutMs)
         );
         const response = await Promise.race([generatePromise, timeoutPromise]);
         return response;
@@ -16447,17 +21091,17 @@ ${text}`.trim() },
         const errorStr = String(error.message || error).toLowerCase();
         const isRateLimitOrOverloaded = errorStr.includes("429") || errorStr.includes("503") || errorStr.includes("quota") || errorStr.includes("limit") || errorStr.includes("resource_exhausted") || errorStr.includes("unavailable") || errorStr.includes("overloaded") || errorStr.includes("demand") || errorStr.includes("timeout") || errorStr.includes("not_found") || errorStr.includes("404");
         if (isRateLimitOrOverloaded) {
-          console.warn(`[ai-client] Model ${model} (attempt ${attempt}/${retries}) hit rate-limit or quota constraint:`, errorStr);
+          console.warn(`[ai-client] Model ${model2} (attempt ${attempt}/${retries}) hit rate-limit or quota constraint:`, errorStr);
         } else {
-          console.error(`[ai-client] Model ${model} (attempt ${attempt}/${retries}) failed:`, errorStr);
+          console.error(`[ai-client] Model ${model2} (attempt ${attempt}/${retries}) failed:`, errorStr);
         }
         if (isRateLimitOrOverloaded) {
           anyQuotaExceeded = true;
           lastQuotaExceededTime2 = Date.now();
-          rateLimitedModels2[model] = Date.now();
+          rateLimitedModels2[model2] = Date.now();
           const hasSearch = currentParams?.config?.tools?.some((t) => t.googleSearch);
           if (hasSearch) {
-            console.warn(`[ai-client] Search grounding quota exhausted. Stripping googleSearch tool and retrying model ${model} without search...`);
+            console.warn(`[ai-client] Search grounding quota exhausted. Stripping googleSearch tool and retrying model ${model2} without search...`);
             if (currentParams?.config?.tools) {
               currentParams.config.tools = currentParams.config.tools.filter((t) => !t.googleSearch);
               if (currentParams.config.tools.length === 0) {
@@ -16470,28 +21114,28 @@ ${text}`.trim() },
           const isHardQuotaLimit = errorStr.includes("quota") || errorStr.includes("resource_exhausted") || errorStr.includes("503") || errorStr.includes("unavailable") || errorStr.includes("overloaded") || errorStr.includes("demand") || errorStr.includes("timeout") || errorStr.includes("not_found") || errorStr.includes("404") || errorStr.includes("429") && !errorStr.includes("overloaded");
           const isModelNotFound = errorStr.includes("not_found") || errorStr.includes("404");
           if (isModelNotFound) {
-            console.warn(`[ai-client] Model ${model} is deprecated or not found (404). Skipping retries...`);
+            console.warn(`[ai-client] Model ${model2} is deprecated or not found (404). Skipping retries...`);
             break;
           }
           const isHardDailyQuota = errorStr.includes("quota exceeded for metric") || errorStr.includes("limit: 20") || errorStr.includes("generaterequestsperday") || errorStr.includes("free_tier_requests");
           if (isHardDailyQuota) {
-            rateLimitedModelsCooldown2[model] = 36e5;
-            console.warn(`[ai-client] Model ${model} reached daily quota. Skipping retries immediately to fail over without delay...`);
+            rateLimitedModelsCooldown2[model2] = 36e5;
+            console.warn(`[ai-client] Model ${model2} reached daily quota. Skipping retries immediately to fail over without delay...`);
             break;
           }
           const isOverloadedOrDemandSpike = errorStr.includes("503") || errorStr.includes("unavailable") || errorStr.includes("overloaded") || errorStr.includes("demand");
           if (isOverloadedOrDemandSpike) {
-            rateLimitedModelsCooldown2[model] = 12e4;
-            console.warn(`[ai-client] Model ${model} is experiencing high demand / 503 unavailable. Immediately failing over to next model without delay...`);
+            rateLimitedModelsCooldown2[model2] = 12e4;
+            console.warn(`[ai-client] Model ${model2} is experiencing high demand / 503 unavailable. Immediately failing over to next model without delay...`);
             break;
           }
           if (attempt < retries) {
             const waitTime = Math.max(delay * Math.pow(2, attempt - 1), 1200);
-            console.warn(`[ai-client] Model ${model} hit transient constraint (${errorStr.slice(0, 60)}). Retrying attempt ${attempt + 1}/${retries} in ${waitTime}ms...`);
+            console.warn(`[ai-client] Model ${model2} hit transient constraint (${errorStr.slice(0, 60)}). Retrying attempt ${attempt + 1}/${retries} in ${waitTime}ms...`);
             await new Promise((resolve) => setTimeout(resolve, waitTime));
             continue;
           } else {
-            console.warn(`[ai-client] Model ${model} failed after all ${retries} attempts. Trying fallback model...`);
+            console.warn(`[ai-client] Model ${model2} failed after all ${retries} attempts. Trying fallback model...`);
           }
         }
         break;
@@ -16806,11 +21450,11 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
       }
       let responseStream = null;
       let successModel = "";
-      for (const model of modelsToTry) {
+      for (const model2 of modelsToTry) {
         try {
           const aiClient2 = getAI();
           responseStream = await aiClient2.models.generateContentStream({
-            model,
+            model: model2,
             contents,
             config: {
               systemInstruction: { parts: [{ text: systemInstruction }] },
@@ -16820,16 +21464,16 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
               candidateCount: 1
             }
           });
-          successModel = model;
+          successModel = model2;
           break;
         } catch (err) {
           const errStr = String(err.message || err).toLowerCase();
           const isRateLimitOrQuota = errStr.includes("429") || errStr.includes("503") || errStr.includes("502") || errStr.includes("quota") || errStr.includes("resource_exhausted") || errStr.includes("limit") || errStr.includes("unavailable") || errStr.includes("overloaded") || errStr.includes("demand") || errStr.includes("temporary");
           if (isRateLimitOrQuota) {
-            console.warn(`[chat stream] Model ${model} hit rate-limit, 503, or quota constraint:`, errStr);
-            rateLimitedModels2[model] = Date.now();
+            console.warn(`[chat stream] Model ${model2} hit rate-limit, 503, or quota constraint:`, errStr);
+            rateLimitedModels2[model2] = Date.now();
           } else {
-            console.error(`Stream start failed for model ${model}:`, err);
+            console.error(`Stream start failed for model ${model2}:`, err);
           }
         }
       }
@@ -17386,12 +22030,12 @@ function shuffleAndBalanceTestPrepQuestions(questions) {
     }
     if (currentCorrectIdx === -1) currentCorrectIdx = 0;
     const origLetter = MCQ_LETTERS[currentCorrectIdx];
-    const items = rawOptions.slice(0, 4).map((opt, idx2) => ({
+    const items = rawOptions.slice(0, 4).map((opt, idx) => ({
       content: opt.replace(/^[A-Da-d][\)\.:\s]\s*/, "").trim(),
-      isCorrect: idx2 === currentCorrectIdx
+      isCorrect: idx === currentCorrectIdx
     }));
     const correctItem = items[currentCorrectIdx];
-    const distractorItems = items.filter((_, idx2) => idx2 !== currentCorrectIdx);
+    const distractorItems = items.filter((_, idx) => idx !== currentCorrectIdx);
     for (let d = distractorItems.length - 1; d > 0; d--) {
       const rand = Math.floor(Math.random() * (d + 1));
       [distractorItems[d], distractorItems[rand]] = [distractorItems[rand], distractorItems[d]];
@@ -17483,8 +22127,8 @@ function sanitizeAndBalancePsychometricRates(traps, seed = 0) {
     finalDistractorRates = [safeTemplate[1], safeTemplate[2], safeTemplate[3]];
   }
   let dIdx = 0;
-  return traps.map((trap, idx2) => {
-    if (idx2 === targetIdx) {
+  return traps.map((trap, idx) => {
+    if (idx === targetIdx) {
       return {
         ...trap,
         isCorrect: true,
@@ -17532,17 +22176,17 @@ function shuffleAndBalanceTrapRadarQuestions(questions) {
       if (foundIdx >= 0) currentCorrectIdx = foundIdx;
     }
     if (currentCorrectIdx === -1) currentCorrectIdx = 0;
-    const items = rawOptions.slice(0, 4).map((opt, idx2) => {
+    const items = rawOptions.slice(0, 4).map((opt, idx) => {
       const cleanText = opt.replace(/^[A-Da-d][\)\.:\s]\s*/, "").trim();
-      const trap = Array.isArray(q.traps) && q.traps[idx2] ? { ...q.traps[idx2] } : null;
+      const trap = Array.isArray(q.traps) && q.traps[idx] ? { ...q.traps[idx] } : null;
       return {
         content: cleanText,
-        isCorrect: idx2 === currentCorrectIdx,
+        isCorrect: idx === currentCorrectIdx,
         trap
       };
     });
     const correctItem = items[currentCorrectIdx];
-    const distractorItems = items.filter((_, idx2) => idx2 !== currentCorrectIdx);
+    const distractorItems = items.filter((_, idx) => idx !== currentCorrectIdx);
     for (let d = distractorItems.length - 1; d > 0; d--) {
       const rand = Math.floor(Math.random() * (d + 1));
       [distractorItems[d], distractorItems[rand]] = [distractorItems[rand], distractorItems[d]];
@@ -17589,18 +22233,1357 @@ function shuffleAndBalanceTrapRadarQuestions(questions) {
     };
   });
 }
+function generateAuthenticSubjectiveFallback(subject, targetTopic, idx, fallbackUnitNumber, fallbackUnitTitle) {
+  const s = (subject || "").toLowerCase();
+  const isBc = s.includes("calculus bc") || s.includes("calculus") && s.includes("bc");
+  const isCalc = s.includes("calculus");
+  const isBio = s.includes("bio");
+  const isChem = s.includes("chem");
+  const isPhys = s.includes("phys");
+  const isCsp = s.includes("principles") || s.includes("csp");
+  const isAphg = s.includes("geography") || s.includes("aphg") || s.includes("human");
+  const isApes = s.includes("environmental") || s.includes("apes");
+  const isApush = s.includes("history") || s.includes("apush");
+  const isGov = s.includes("gov") || s.includes("politics");
+  const isLang = s.includes("english") || s.includes("lang");
+  const isPsych = s.includes("psych");
+  const isCsa = s.includes("computer science a") || s.includes("csa") || s.includes("computer") && !s.includes("principles") && !s.includes("csp");
+  if (isCalc) {
+    if (isBc) {
+      const bcArchetypes = [
+        {
+          unit: 10,
+          title: "Infinite Sequences & Series",
+          points: 9,
+          prompt: `A function $f$ has derivatives of all orders for all real numbers $x$. A portion of the graph of $f$ is shown, and the Taylor series for $f$ about $x = 0$ is given by $\\sum_{n=1}^\\infty \\frac{(-1)^{n+1} x^n}{n \\cdot 4^n}$.
+
+(a) Determine the radius and interval of convergence of the Taylor series for $f$ about $x = 0$. Show your work and test both endpoints. [4 points]
+
+(b) Write the first four nonzero terms and the general term for the Taylor series for $f'(x)$ about $x = 0$. [2 points]
+
+(c) The alternating series error bound states that the error in approximating $f(1)$ using the third-degree Taylor polynomial $P_3(1)$ is bounded by the magnitude of the fourth term. Find the numerical value of this bound. [3 points]`,
+          modelAnswer: `Part (a): Use Ratio Test: $\\lim_{n \\to \\infty} \\left|\\frac{(-1)^{n+2} x^{n+1}}{(n+1)4^{n+1}} \\cdot \\frac{n 4^n}{(-1)^{n+1} x^n}\\right| = \\frac{|x|}{4} \\lim_{n \\to \\infty} \\frac{n}{n+1} = \\frac{|x|}{4} < 1 \\implies |x| < 4$. Radius $R = 4$.
+Testing $x = 4$: $\\sum_{n=1}^\\infty \\frac{(-1)^{n+1} 4^n}{n \\cdot 4^n} = \\sum_{n=1}^\\infty \\frac{(-1)^{n+1}}{n}$, which converges by the Alternating Series Test (terms decrease monotonically in magnitude toward 0).
+Testing $x = -4$: $\\sum_{n=1}^\\infty \\frac{(-1)^{n+1}(-4)^n}{n \\cdot 4^n} = \\sum_{n=1}^\\infty \\frac{-1}{n} = -\\sum_{n=1}^\\infty \\frac{1}{n}$, which diverges by the p-series test ($p=1$, harmonic series).
+Therefore, the interval of convergence is $(-4, 4]$.
+
+Part (b): Differentiate term-by-term: $f(x) = \\frac{x}{4} - \\frac{x^2}{32} + \\frac{x^3}{192} - \\frac{x^4}{1024} + \\dots$
+$f'(x) = \\frac{1}{4} - \\frac{x}{16} + \\frac{x^2}{64} - \\frac{x^3}{256} + \\dots + \\frac{(-1)^{n+1} x^{n-1}}{4^n} + \\dots$
+
+Part (c): By the Alternating Series Error Bound, $|f(1) - P_3(1)| \\le |a_4| = \\left|\\frac{(-1)^5 (1)^4}{4 \\cdot 4^4}\\right| = \\frac{1}{4 \\cdot 256} = \\frac{1}{1024} \\approx 0.0009765$.`,
+          rubric: [
+            "Part (a) [4 points]: 1 pt Ratio Test setup; 1 pt interior limit |x| < 4; 1 pt convergence at x = 4 (AST); 1 pt divergence at x = -4 (harmonic series) and interval (-4, 4].",
+            "Part (b) [2 points]: 1 pt first four terms of f'(x); 1 pt general term for derivative.",
+            "Part (c) [3 points]: 1 pt for citing Alternating Series Error Bound; 1 pt for fourth term formula; 1 pt for exact evaluation 1/1024."
+          ]
+        },
+        {
+          unit: 9,
+          title: "Parametric Equations, Polar Coordinates & Vector-Valued Functions",
+          points: 9,
+          prompt: `A particle moves in the $xy$-plane such that its position vector at time $t$ is given by $\\vec{r}(t) = \\langle x(t), y(t) \\rangle$ for $0 \\le t \\le 4$. The velocity vector of the particle is $\\vec{v}(t) = \\langle 2t - 3, \\sqrt{t + 5} \\rangle$. At time $t = 1$, the particle is at position $(4, -2)$.
+
+(a) Find the speed of the particle and its acceleration vector at time $t = 3$. [2 points]
+
+(b) Find the slope of the tangent line to the particle's path at time $t = 3$. [2 points]
+
+(c) Find the $x$-coordinate of the position of the particle at time $t = 4$. [2 points]
+
+(d) Write, but do not evaluate, an integral expression for the total distance traveled by the particle over the interval $0 \\le t \\le 4$. [3 points]`,
+          modelAnswer: `Part (a): At $t = 3$, $\\vec{v}(3) = \\langle 2(3) - 3, \\sqrt{3 + 5} \\rangle = \\langle 3, \\sqrt{8} \\rangle = \\langle 3, 2\\sqrt{2} \\rangle$. Speed $= \\sqrt{3^2 + (2\\sqrt{2})^2} = \\sqrt{9 + 8} = \\sqrt{17}$.
+Acceleration is $\\vec{a}(t) = \\vec{v}'(t) = \\langle 2, \\frac{1}{2\\sqrt{t+5}} \\rangle$. At $t = 3$, $\\vec{a}(3) = \\langle 2, \\frac{1}{2\\sqrt{8}} \\rangle = \\langle 2, \\frac{1}{4\\sqrt{2}} \\rangle = \\langle 2, \\frac{\\sqrt{2}}{8} \\rangle$.
+
+Part (b): Slope $\\frac{dy}{dx} = \\frac{y'(3)}{x'(3)} = \\frac{\\sqrt{8}}{3} = \\frac{2\\sqrt{2}}{3}$.
+
+Part (c): $x(4) = x(1) + \\int_1^4 x'(t) \\, dt = 4 + \\int_1^4 (2t - 3) \\, dt = 4 + [t^2 - 3t]_1^4 = 4 + ((16 - 12) - (1 - 3)) = 4 + (4 - (-2)) = 4 + 6 = 10$.
+
+Part (d): Total distance $= \\int_0^4 \\sqrt{(x'(t))^2 + (y'(t))^2} \\, dt = \\int_0^4 \\sqrt{(2t - 3)^2 + (t + 5)} \\, dt$.`,
+          rubric: [
+            "Part (a) [2 points]: 1 pt speed = sqrt(17); 1 pt acceleration vector a(3) = <2, sqrt(2)/8>.",
+            "Part (b) [2 points]: 1 pt dy/dx expression; 1 pt slope = 2*sqrt(2)/3.",
+            "Part (c) [2 points]: 1 pt integral setup x(1) + int_1^4 x'(t) dt; 1 pt correct value x(4) = 10.",
+            "Part (d) [3 points]: 1 pt limits 0 to 4; 2 pt integrand sqrt((2t-3)\xB2 + (t+5))."
+          ]
+        }
+      ];
+      const pick2 = bcArchetypes[idx % bcArchetypes.length];
+      return {
+        id: idx + 1,
+        title: `FREE RESPONSE QUESTION ${idx + 1}  [${pick2.points} POINTS]`,
+        prompt: pick2.prompt,
+        diagramSvg: "",
+        diagramType: "none",
+        modelAnswer: pick2.modelAnswer,
+        totalPoints: pick2.points,
+        scoringRubric: pick2.rubric,
+        unitNumber: fallbackUnitNumber || pick2.unit,
+        unitTitle: fallbackUnitTitle || pick2.title,
+        skill: `Unit ${fallbackUnitNumber || pick2.unit}: ${fallbackUnitTitle || pick2.title}`
+      };
+    }
+    const abArchetypes = [
+      {
+        unit: 6,
+        title: "Integration & Accumulation of Change",
+        points: 9,
+        prompt: `Water flows into an empty reservoir at a rate modeled by $R(t) = 400 \\sin^2\\left(\\frac{t}{4}\\right)$ gallons per hour for $0 \\le t \\le 8$, where $t$ is measured in hours. Water is pumped out of the reservoir at a constant rate of $250$ gallons per hour.
+
+(a) How many gallons of water flow into the reservoir during the interval $0 \\le t \\le 4$? [2 points]
+
+(b) Is the amount of water in the reservoir increasing or decreasing at time $t = 3$? Justify your answer. [2 points]
+
+(c) At what time $t$, for $0 \\le t \\le 8$, is the amount of water in the reservoir at an absolute maximum? Show the analysis that leads to your conclusion. [3 points]
+
+(d) Write, but do not evaluate, an expression involving an integral that gives the total amount of water in the reservoir at any time $t \\in [0, 8]$. [2 points]`,
+        modelAnswer: `Part (a): Total water inflow is $\\int_0^4 400 \\sin^2(t/4) \\, dt = 400 \\int_0^4 \\frac{1 - \\cos(t/2)}{2} \\, dt = 200 [t - 2\\sin(t/2)]_0^4 = 200(4 - 2\\sin(2)) \\approx 436.35$ gallons.
+
+Part (b): Net rate of change is $A'(t) = R(t) - 250$. At $t = 3$, $R(3) = 400 \\sin^2(3/4) \\approx 400(0.6816)^2 \\approx 185.86$ gallons/hr. Since $A'(3) = 185.86 - 250 = -64.14 < 0$, the amount of water is decreasing at $t = 3$.
+
+Part (c): Critical points occur where $A'(t) = R(t) - 250 = 0$, giving $\\sin^2(t/4) = 250/400 = 0.625$, so $\\sin(t/4) = \\sqrt{0.625} \\approx 0.7906$, giving $t/4 \\approx 0.9117 \\implies t_1 \\approx 3.65$ hours, and $t/4 = \\pi - 0.9117 \\approx 2.2299 \\implies t_2 \\approx 8.92$ (outside $[0,8]$). Testing candidates: $A(0) = 0$; $A(3.65) = \\int_0^{3.65} (R(t) - 250) \\, dt > 0$; $A(8) = \\int_0^8 (R(t) - 250) \\, dt = 400(4) - 250(8) = 1600 - 2000 = -400 < 0$. Therefore, absolute maximum occurs at $t \\approx 3.65$ hours.
+
+Part (d): $W(t) = \\int_0^t (R(u) - 250) \\, du$.`,
+        rubric: [
+          "Part (a) [2 points]: 1 point for definite integral setup; 1 point for correct numerical answer with units.",
+          "Part (b) [2 points]: 1 point for computing A'(3) = R(3) - 250; 1 point for conclusion with justification comparing R(3) and 250.",
+          "Part (c) [3 points]: 1 point for setting R(t) - 250 = 0; 1 point for finding interior critical value t \u2248 3.65; 1 point for justifying absolute maximum by evaluating endpoints and critical point.",
+          "Part (d) [2 points]: 1 point for integrand (R(u) - 250); 1 point for limits of integration from 0 to t."
+        ]
+      },
+      {
+        unit: 4,
+        title: "Contextual Applications of Differentiation",
+        points: 9,
+        prompt: `A particle moves along a straight horizontal line so that its velocity $v$ at time $t$ is given by $v(t) = t^2 - 6t + 8$ for $0 \\le t \\le 5$, where $t$ is measured in seconds and $v(t)$ in meters per second. At time $t = 0$, the particle is at position $s(0) = 3$.
+
+(a) Find the acceleration of the particle at time $t = 2$. [2 points]
+
+(b) Find all values of $t$ in the interval $0 \\le t \\le 5$ at which the particle changes direction. Justify your answer. [2 points]
+
+(c) Is the speed of the particle increasing or decreasing at time $t = 1$? Give a reason for your answer. [2 points]
+
+(d) Find the total distance traveled by the particle from $t = 0$ to $t = 5$. [3 points]`,
+        modelAnswer: `Part (a): Acceleration is $a(t) = v'(t) = 2t - 6$. At $t = 2$, $a(2) = 2(2) - 6 = -2$ m/s\xB2.
+
+Part (b): $v(t) = (t - 2)(t - 4) = 0 \\implies t = 2$ and $t = 4$. For $0 \\le t < 2$, $v(t) > 0$. For $2 < t < 4$, $v(t) < 0$. For $4 < t \\le 5$, $v(t) > 0$. Because $v(t)$ changes sign at both $t = 2$ and $t = 4$, the particle changes direction at $t = 2$ and $t = 4$.
+
+Part (c): At $t = 1$, $v(1) = 1^2 - 6(1) + 8 = 3 > 0$, and $a(1) = 2(1) - 6 = -4 < 0$. Because velocity and acceleration have opposite signs at $t = 1$, the speed of the particle is decreasing.
+
+Part (d): Total distance is $\\int_0^5 |v(t)| \\, dt = \\int_0^2 (t^2 - 6t + 8) \\, dt - \\int_2^4 (t^2 - 6t + 8) \\, dt + \\int_4^5 (t^2 - 6t + 8) \\, dt$. Antiderivative is $F(t) = \\frac{t^3}{3} - 3t^2 + 8t$. $F(0) = 0$, $F(2) = 8/3 - 12 + 16 = 20/3$, $F(4) = 64/3 - 48 + 32 = 16/3$, $F(5) = 125/3 - 75 + 40 = 20/3$. Distance $= (20/3 - 0) + |16/3 - 20/3| + (20/3 - 16/3) = 20/3 + 4/3 + 4/3 = 28/3$ meters.`,
+        rubric: [
+          "Part (a) [2 points]: 1 point for a(t) = 2t - 6; 1 point for a(2) = -2 m/s\xB2.",
+          "Part (b) [2 points]: 1 point for identifying t = 2 and t = 4; 1 point for justification that v(t) changes sign at these times.",
+          "Part (c) [2 points]: 1 point for computing v(1) and a(1); 1 point for conclusion with reason (opposite signs).",
+          "Part (d) [3 points]: 1 point for integral setup int_0^5 |v(t)| dt; 1 point for antiderivative F(t); 1 point for correct final answer 28/3 meters."
+        ]
+      },
+      {
+        unit: 7,
+        title: "Differential Equations & Slope Fields",
+        points: 9,
+        prompt: `Consider the differential equation $\\frac{dy}{dx} = \\frac{x(y - 1)}{2}$ with initial condition $y(2) = 3$.
+
+(a) The slope field for the differential equation has horizontal tangent segments at all points where $y = 1$ and $x = 0$. Find the second derivative $\\frac{d^2y}{dx^2}$ in terms of $x$ and $y$. [2 points]
+
+(b) Use the tangent line to the graph of $y$ at $x = 2$ to approximate $y(2.1)$. [2 points]
+
+(c) Find the particular solution $y = f(x)$ to the differential equation with the initial condition $y(2) = 3$. State its domain of validity. [5 points]`,
+        modelAnswer: `Part (a): $\\frac{d^2y}{dx^2} = \\frac{1}{2}(y - 1) + \\frac{x}{2}\\frac{dy}{dx} = \\frac{y-1}{2} + \\frac{x}{2}\\left(\\frac{x(y-1)}{2}\\right) = \\frac{y-1}{2}\\left(1 + \\frac{x^2}{2}\\right)$.
+
+Part (b): At $(2, 3)$, $\\left.\\frac{dy}{dx}\\right|_{(2,3)} = \\frac{2(3-1)}{2} = 2$. Tangent line equation is $y - 3 = 2(x - 2) \\implies y = 2(x - 2) + 3$. Thus, $y(2.1) \\approx 2(2.1 - 2) + 3 = 2(0.1) + 3 = 3.2$.
+
+Part (c): Separate variables: $\\frac{1}{y - 1} \\, dy = \\frac{x}{2} \\, dx$. Integrate: $\\ln|y - 1| = \\frac{x^2}{4} + C$. Using $y(2) = 3$: $\\ln|3 - 1| = \\frac{2^2}{4} + C \\implies \\ln 2 = 1 + C \\implies C = \\ln 2 - 1$. Then $|y - 1| = e^{x^2/4 + \\ln 2 - 1} = 2e^{x^2/4 - 1}$. Since $y(2) = 3 > 1$, $y - 1 = 2e^{x^2/4 - 1} \\implies y = 1 + 2e^{x^2/4 - 1}$. Domain: $(-\\infty, \\infty)$.`,
+        rubric: [
+          "Part (a) [2 points]: 1 point for applying product/chain rule; 1 point for correct expression in terms of x and y.",
+          "Part (b) [2 points]: 1 point for tangent line slope dy/dx = 2; 1 point for approximation y(2.1) \u2248 3.2.",
+          "Part (c) [5 points]: 1 point for separation of variables; 1 point for antiderivatives; 1 point for constant of integration C; 1 point for using initial condition (2,3); 1 point for explicit solution y = 1 + 2e^(x\xB2/4 - 1) with domain (-inf, inf)."
+        ]
+      },
+      {
+        unit: 8,
+        title: "Applications of Integration",
+        points: 9,
+        prompt: `Let $R$ be the region in the first quadrant bounded by the graph of $f(x) = 4 - x^2$, the horizontal line $y = 1$, and the $y$-axis.
+
+(a) Find the area of the region $R$. [3 points]
+
+(b) Write, but do not evaluate, an integral expression that gives the volume of the solid generated when $R$ is rotated about the horizontal line $y = 1$. [3 points]
+
+(c) The region $R$ is the base of a solid. For this solid, each cross section perpendicular to the $x$-axis is a square. Write, but do not evaluate, an integral expression that gives the volume of this solid. [3 points]`,
+        modelAnswer: `Part (a): The curves intersect where $4 - x^2 = 1 \\implies x^2 = 3 \\implies x = \\sqrt{3}$ in the first quadrant. Area $= \\int_0^{\\sqrt{3}} ((4 - x^2) - 1) \\, dx = \\int_0^{\\sqrt{3}} (3 - x^2) \\, dx = [3x - \\frac{x^3}{3}]_0^{\\sqrt{3}} = 3\\sqrt{3} - \\frac{3\\sqrt{3}}{3} = 2\\sqrt{3}$.
+
+Part (b): Rotating about $y = 1$, the radius is $r(x) = (4 - x^2) - 1 = 3 - x^2$. Volume $= \\pi \\int_0^{\\sqrt{3}} (3 - x^2)^2 \\, dx$.
+
+Part (c): The side length of each square cross section is $s(x) = (4 - x^2) - 1 = 3 - x^2$. Area of each cross section is $A(x) = [s(x)]^2 = (3 - x^2)^2$. Volume $= \\int_0^{\\sqrt{3}} (3 - x^2)^2 \\, dx$.`,
+        rubric: [
+          "Part (a) [3 points]: 1 point for limits of integration x = 0 to sqrt(3); 1 point for integrand (3 - x\xB2); 1 point for exact area 2*sqrt(3).",
+          "Part (b) [3 points]: 1 point for limits and constant pi; 2 points for integrand (3 - x\xB2)\xB2.",
+          "Part (c) [3 points]: 1 point for cross-sectional area A(x) = (3 - x\xB2)\xB2; 2 points for integral expression."
+        ]
+      }
+    ];
+    const pick = abArchetypes[idx % abArchetypes.length];
+    return {
+      id: idx + 1,
+      title: `FREE RESPONSE QUESTION ${idx + 1}  [${pick.points} POINTS]`,
+      prompt: pick.prompt,
+      diagramSvg: "",
+      diagramType: "none",
+      modelAnswer: pick.modelAnswer,
+      totalPoints: pick.points,
+      scoringRubric: pick.rubric,
+      unitNumber: fallbackUnitNumber || pick.unit,
+      unitTitle: fallbackUnitTitle || pick.title,
+      skill: `Unit ${fallbackUnitNumber || pick.unit}: ${fallbackUnitTitle || pick.title}`
+    };
+  }
+  if (isBio) {
+    const bioArchetypes = [
+      {
+        unit: 3,
+        title: "Cellular Energetics",
+        points: 9,
+        prompt: `Yeast cells (*Saccharomyces cerevisiae*) carry out cellular respiration using various carbohydrate substrates. Researchers investigated the rate of respiration by measuring carbon dioxide ($CO_2$) production in respirometers over a 30-minute period at $25^\\circ\\text{C}$. Four treatment flasks were prepared with identical yeast suspensions: Flask 1 received no carbohydrate; Flask 2 received $5\\%\\text{ glucose}$; Flask 3 received $5\\%\\text{ maltose}$; and Flask 4 received $5\\%\\text{ lactose}$. The rate of $CO_2$ production was recorded as follows: Flask 1: $0.05\\text{ mL/min}$; Flask 2: $1.42\\text{ mL/min}$; Flask 3: $0.88\\text{ mL/min}$; Flask 4: $0.06\\text{ mL/min}$.
+
+(a) Identify the cellular organelle and the specific sub-compartment where the pyruvate dehydrogenase complex decarboxylates pyruvate in eukaryotic cells. [1 point]
+
+(b) In reference to the experimental setup:
+(i) Identify the dependent variable in this experiment. [1 point]
+(ii) Justify the inclusion of Flask 1 in the experimental design. [1 point]
+(iii) Describe the quantitative trend in carbon dioxide production observed across the four treatment groups. [1 point]
+
+(c) In reference to metabolic pathways:
+(i) Identify the independent variable in this experiment. [1 point]
+(ii) Identify the carbohydrate treatment that yeast cells were least capable of metabolizing. [1 point]
+(iii) A yeast gene encoding an enzyme required for disaccharide cleavage has a coding sequence of $1,272$ nucleotides. Calculate the length, in amino acid residues, of the resulting polypeptide assuming no post-translational splicing. [1 point]
+
+(d) Researchers introduce sodium azide, a potent inhibitor of cytochrome c oxidase in Complex IV of the electron transport chain, to Flask 2 ($5\\%\\text{ glucose}$).
+(i) Predict the effect of sodium azide on the rate of carbon dioxide production in Flask 2 under aerobic conditions. [1 point]
+(ii) Justify your prediction using your knowledge of oxidative phosphorylation and feedback regulation of the citric acid cycle. [1 point]`,
+        modelAnswer: `Part (a): The mitochondrion, specifically the mitochondrial matrix.
+
+Part (b):
+(i) The dependent variable is the rate of carbon dioxide ($CO_2$) gas production (measured in mL/min).
+(ii) Flask 1 serves as a negative control to demonstrate that substantial $CO_2$ evolution requires an exogenous carbohydrate substrate and to establish the baseline level of endogenous respiration in the yeast cells.
+(iii) Glucose supported the highest rate of respiration ($1.42\\text{ mL/min}$), maltose supported a moderate rate ($0.88\\text{ mL/min}$), and lactose supported a negligible rate ($0.06\\text{ mL/min}$) that was virtually identical to the negative control lacking carbohydrate ($0.05\\text{ mL/min}$).
+
+Part (c):
+(i) The independent variable is the type of carbohydrate substrate provided to the yeast cells.
+(ii) Lactose (Flask 4), because its $CO_2$ production rate of $0.06\\text{ mL/min}$ was not significantly different from the carbohydrate-free control ($0.05\\text{ mL/min}$).
+(iii) Each codon consists of 3 nucleotides: $1,272\\text{ nucleotides} \\div 3 = 424\\text{ amino acid residues}$.
+
+Part (d):
+(i) The rate of $CO_2$ production will significantly decrease.
+(ii) Sodium azide blocks electron transfer from Complex IV to oxygen, halting the electron transport chain and proton gradient formation. Consequently, NADH cannot be reoxidized to $\\text{NAD}^+$ via aerobic respiration. Depletion of the $\\text{NAD}^+$ pool stalls the citric acid cycle (which requires $\\text{NAD}^+$ as an electron acceptor), dramatically decreasing overall metabolic decarboxylation and $CO_2$ release.`,
+        rubric: [
+          "Part (a) [1 point]: Point A1 [1 pt] for identifying the mitochondrion / mitochondrial matrix.",
+          "Part (b) [3 points]: Point B1 [1 pt] for identifying CO2 production rate as DV; Point B2 [1 pt] for justifying Flask 1 as negative control isolating carbohydrate dependence; Point B3 [1 pt] for describing trend (glucose highest > maltose > lactose \u2248 control).",
+          "Part (c) [3 points]: Point C1 [1 pt] for identifying type of carbohydrate as IV; Point C2 [1 pt] for identifying lactose group; Point C3 [1 pt] for calculation: 1272 / 3 = 424 amino acids.",
+          "Part (d) [2 points]: Point D1 [1 pt] for predicting decreased CO2 production; Point D2 [1 pt] for justifying via NADH accumulation and NAD+ depletion halting citric acid cycle."
+        ]
+      },
+      {
+        unit: 2,
+        title: "Cell Structure and Function",
+        points: 9,
+        prompt: `Transpiration in vascular plants is regulated by environmental factors that influence water vapor diffusion through stomatal pores. Botanists investigated the transpiration rate of bean seedlings (*Phaseolus vulgaris*) under four environmental conditions: Room temperature still air (Control), High wind velocity, High relative humidity, and High ambient temperature. The mean transpiration rates and standard errors of the mean ($\\pm 2\\text{SE}_{\\bar{x}}$) were determined:
+- Control: $4.2 \\pm 0.4\\text{ }\\mu\\text{L/min}\\cdot\\text{cm}^2$
+- High Wind: $7.8 \\pm 0.6\\text{ }\\mu\\text{L/min}\\cdot\\text{cm}^2$
+- High Humidity: $1.5 \\pm 0.3\\text{ }\\mu\\text{L/min}\\cdot\\text{cm}^2$
+- High Temperature: $7.2 \\pm 0.5\\text{ }\\mu\\text{L/min}\\cdot\\text{cm}^2$
+
+(a) Describe the physical property of water molecules that generates the continuous hydrostatic tensile column pulling water from roots to leaves through xylem tracheids. [1 point]
+
+(b) Using the data provided:
+(i) Identify the appropriate type of graph to represent the experimental data across the four distinct treatment conditions. [1 point]
+(ii) Describe how standard error of the mean ($\\pm 2\\text{SE}_{\\bar{x}}$) error bars should be visually constructed on the graph for the High Wind and High Temperature groups. [1 point]
+(iii) Identify the appropriate variable and units that should be placed on the vertical (y) axis. [1 point]
+(iv) Describe the relationship between relative humidity and plant transpiration rate. [1 point]
+
+(c) In reference to physiological thresholds:
+(i) Identify which treatment conditions resulted in a greater than $50\\%$ increase in transpiration rate compared to the control condition. [1 point]
+(ii) Under severe water stress, plants synthesize the phytohormone abscisic acid (ABA). Predict the physiological effect of ABA on guard cells and stomatal aperture. [1 point]
+
+(d) A student claims that the High Wind condition caused a statistically significantly higher transpiration rate than the High Temperature condition.
+(i) Based on the data, state whether you support or refute the student's claim. Use the standard error of the mean ($\\pm 2\\text{SE}_{\\bar{x}}$) to justify your answer. [1 point]
+(ii) Explain ONE agricultural strategy or leaf morphological adaptation that reduces excessive transpiration losses in arid environments. [1 point]`,
+        modelAnswer: `Part (a): Cohesion, which is the intermolecular hydrogen bonding between water molecules that enables them to form an unbroken, continuous column under negative hydrostatic tension, combined with adhesion to xylem cell walls.
+
+Part (b):
+(i) A bar graph (or column chart) with discrete, non-continuous categories on the horizontal axis.
+(ii) For High Wind, plot a bar to $7.8$ with an error bar extending from $7.2$ ($7.8 - 0.6$) to $8.4$ ($7.8 + 0.6$). For High Temperature, plot a bar to $7.2$ with an error bar extending from $6.7$ ($7.2 - 0.5$) to $7.7$ ($7.2 + 0.5$).
+(iii) Mean Transpiration Rate, with units of $\\mu\\text{L/min}\\cdot\\text{cm}^2$.
+(iv) An inverse (or negative) relationship: As relative humidity increases, the water potential gradient between the moist substomatal cavity and the atmosphere decreases, causing the transpiration rate to decrease.
+
+Part (c):
+(i) A $50\\%$ increase above the control ($4.2$) is $4.2 + 2.1 = 6.3\\text{ }\\mu\\text{L/min}\\cdot\\text{cm}^2$. Both the High Wind ($7.8$) and High Temperature ($7.2$) conditions exceed this threshold.
+(ii) ABA triggers an efflux of potassium ions ($K^+$) and anions from guard cells, causing water to exit by osmosis; the loss of turgor pressure causes guard cells to become flaccid, closing the stomatal pore.
+
+Part (d):
+(i) Refute the claim. The lower bound of the High Wind error bar ($7.8 - 0.6 = 7.2$) and the upper bound of the High Temperature error bar ($7.2 + 0.5 = 7.7$) overlap (range $7.2$ to $7.7$). Because the $\\pm 2\\text{SE}_{\\bar{x}}$ error bars overlap, there is no statistically significant difference between the two treatment means.
+(ii) Planting windbreaks around fields to reduce wind velocity at crop canopy level, or selecting crop varieties with thick waxy cuticles, trichomes (leaf hairs) that trap boundary layer moisture, or sunken stomata.`,
+        rubric: [
+          "Part (a) [1 point]: Point A1 [1 pt] for describing cohesion / hydrogen bonding between water molecules.",
+          "Part (b) [4 points]: Point B1 [1 pt] for identifying bar graph; Point B2 [1 pt] for constructing error bars [7.2-8.4] and [6.7-7.7]; Point B3 [1 pt] for y-axis title and units; Point B4 [1 pt] for describing inverse relationship between humidity and transpiration.",
+          "Part (c) [2 points]: Point C1 [1 pt] for identifying High Wind and High Temperature (> 6.3 uL/min*cm^2); Point C2 [1 pt] for predicting guard cell flaccidity and stomatal closure.",
+          "Part (d) [2 points]: Point D1 [1 pt] for refuting claim citing error bar overlap between 7.2 and 7.7 (no statistically significant difference); Point D2 [1 pt] for explaining thick cuticle, sunken stomata, trichomes, or windbreaks."
+        ]
+      },
+      {
+        unit: 8,
+        title: "Ecology",
+        points: 4,
+        prompt: `Marine ecologists investigated the role of the predatory sea star *Pisaster ochraceus* in intertidal rocky shore ecosystems. In an experimental manipulation, researchers established two adjacent 10-meter coastal plots: Plot A was maintained in its natural state with sea stars present, while in Plot B, all sea stars were manually removed and continually excluded for two years. After two years, researchers measured the species richness of primary producers (algae) and sessile invertebrates.
+
+(a) Describe the ecological role of a keystone predator in maintaining biodiversity within a community. [1 point]
+
+(b) Identify the control group in this investigation and explain why it was necessary to include this group. [1 point]
+
+(c) State the null hypothesis for this ecological investigation. [1 point]
+
+(d) Following predator removal in Plot B, the blue mussel (*Mytilus californianus*) rapidly monopolized over $90\\%$ of available rock space, reducing total community species richness from 15 species to 1 species. Justify this ecological outcome using the principle of competitive exclusion. [1 point]`,
+        modelAnswer: `Part (a): A keystone predator exerts strong top-down regulation disproportionate to its abundance by preying on competitively dominant herbivores or filter feeders, preventing competitive exclusion and thereby preserving high species diversity across the community.
+
+Part (b): Plot A (with sea stars present) is the control group. It is necessary because it establishes baseline species richness under natural environmental conditions (e.g., wave action, seasonal temperature fluctuations) to ensure that any observed changes in Plot B are directly attributable to the removal of the predator rather than confounding climatic variables.
+
+Part (c): The removal of the predatory sea star *Pisaster ochraceus* has NO effect on the species richness of sessile invertebrates and algae in the intertidal rocky community.
+
+Part (d): Blue mussels are superior competitors for space on rocky intertidal surfaces. Under natural conditions, sea star predation controls mussel populations; in the absence of predation pressure, mussels outcompete all subordinate invertebrate and algal species for limited physical attachment space, competitively excluding them until only the dominant competitor persists.`,
+        rubric: [
+          "Part (a) [1 point]: 1 pt for describing keystone predator preventing competitive dominance to maintain community diversity.",
+          "Part (b) [1 point]: 1 pt for identifying Plot A as control AND explaining that it isolates predator presence from background environmental factors.",
+          "Part (c) [1 point]: 1 pt for stating null hypothesis that predator removal has NO effect on species richness/diversity.",
+          "Part (d) [1 point]: 1 pt for justifying outcome via competitive exclusion: mussels outcompete other species for limited space in absence of predation."
+        ]
+      }
+    ];
+    const pick = bioArchetypes[idx % bioArchetypes.length];
+    const isLong = pick.points === 9;
+    return {
+      id: idx + 1,
+      title: `${isLong ? "LONG" : "SHORT"} FREE-RESPONSE QUESTION ${idx + 1}  [${pick.points} POINTS]`,
+      prompt: pick.prompt,
+      diagramSvg: "",
+      diagramType: "none",
+      modelAnswer: pick.modelAnswer,
+      totalPoints: pick.points,
+      scoringRubric: pick.rubric,
+      unitNumber: fallbackUnitNumber || pick.unit,
+      unitTitle: fallbackUnitTitle || pick.title,
+      skill: `Unit ${fallbackUnitNumber || pick.unit}: ${fallbackUnitTitle || pick.title}`
+    };
+  }
+  if (isCsp) {
+    return {
+      id: idx + 1,
+      title: `CREATE PERFORMANCE TASK WRITTEN RESPONSE ${idx + 1}  [6 POINTS]`,
+      prompt: `Refer to your program development artifact for ${targetTopic}:
+
+(a) Program Purpose & Function: Explain the overall purpose of your program, the problem it solves, and how the program functions from user input to output. [1 point]
+
+(b) Data Abstraction: Identify the list or collection used, explain the data it stores, and explain how using this list manages complexity in your program. [2 points]
+
+(c) Procedural Abstraction & Algorithmic Logic: Identify a student-developed procedure with parameters that uses sequencing, selection, and iteration. Explain step-by-step how the algorithm works. [2 points]
+
+(d) Testing & Call Behavior: Describe two distinct calls to this procedure with different arguments, the condition tested in each call, and the resulting behavior. [1 point]`,
+      diagramSvg: "",
+      diagramType: "none",
+      modelAnswer: `Part (a): The program's purpose is to manage and analyze student study sessions. Users input session lengths and subjects; the program computes efficiency scores and suggests break schedules.
+
+Part (b): The list 'studySessions' stores integer durations in minutes. Without this list, the program would require dozens of individual variables, making sorting, dynamic updates, and statistical aggregations unmanageable.
+
+Part (c): The procedure 'calculateOptimalBreaks(durationList, minBreak)' iterates through each session using a loop, checks if duration exceeds 45 minutes using an if-statement, and appends recommended rest intervals to an output schedule.
+
+Part (d): Call 1: calculateOptimalBreaks([25, 30], 5) executes the loop with all items under threshold, producing standard 5-minute intervals. Call 2: calculateOptimalBreaks([90, 120], 10) enters the branch for long blocks, doubling the rest period to 20 minutes.`,
+      totalPoints: 6,
+      scoringRubric: [
+        "Part (a) [1 point]: 1 pt for clearly distinguishing overall purpose from program functionality.",
+        "Part (b) [2 points]: 1 pt for naming list and identifying stored data; 1 pt for explaining how complexity is managed.",
+        "Part (c) [2 points]: 1 pt for procedure with parameters and return/effect; 1 pt for algorithm sequencing, selection, iteration.",
+        "Part (d) [1 point]: 1 pt for two calls with different conditions and distinct resulting outputs."
+      ],
+      unitNumber: fallbackUnitNumber || 3,
+      unitTitle: fallbackUnitTitle || "Algorithms & Programming",
+      skill: `Unit ${fallbackUnitNumber || 3}: ${fallbackUnitTitle || "Algorithms & Programming"}`
+    };
+  }
+  if (isApes) {
+    return {
+      id: idx + 1,
+      title: `FREE RESPONSE QUESTION ${idx + 1}  [10 POINTS]`,
+      prompt: `Environmental scientists investigate the effects of agricultural runoff on aquatic ecosystems near a watershed in ${targetTopic}.
+
+(a) Identify the primary limiting plant nutrient commonly found in synthetic agricultural fertilizers that causes freshwater algal blooms. [1 point]
+
+(b) Describe the biological sequence of events leading from nutrient runoff to hypoxic 'dead zones' in receiving water bodies. [3 points]
+
+(c) Make a claim proposing one viable ecological or agricultural management practice to reduce nutrient leaching into local waterways. [2 points]
+
+(d) A local farm reduces fertilizer application from 180 kg/ha to 135 kg/ha across 400 hectares. Calculate the total reduction in kilograms of fertilizer applied. [2 points]
+
+(e) Justify how riparian buffer zones improve water quality beyond simple nutrient filtration. [2 points]`,
+      diagramSvg: "",
+      diagramType: "none",
+      modelAnswer: `Part (a): Phosphorus (or phosphates) is the primary limiting nutrient in freshwater ecosystems.
+
+Part (b): 1. High nutrient concentrations trigger rapid proliferation of phytoplankton (algal bloom). 2. As algal biomass dies, aerobic decomposers (bacteria) consume dead organic matter. 3. Bacterial cellular respiration depletes dissolved oxygen levels below 2-3 mg/L, creating hypoxic conditions that suffocate fish.
+
+Part (c): Planting cover crops (e.g. winter rye) or establishing riparian vegetative buffer strips intercepts surface runoff and absorbs excess dissolved nitrogen and phosphorus before reaching streams.
+
+Part (d): Reduction per hectare: $180 - 135 = 45$ kg/ha. Total reduction across 400 hectares: $45 \\text{ kg/ha} \\times 400 \\text{ ha} = 18,000$ kg of fertilizer.
+
+Part (e): Riparian buffer zones stabilize riverbanks, preventing sediment erosion that increases turbidity, and deep tree root networks provide shade that lowers water temperatures, increasing dissolved oxygen holding capacity.`,
+      totalPoints: 10,
+      scoringRubric: [
+        "Part (a) [1 point]: 1 pt for identifying phosphorus / phosphates.",
+        "Part (b) [3 points]: 1 pt algal bloom; 1 pt bacterial decomposition; 1 pt dissolved oxygen depletion.",
+        "Part (c) [2 points]: 1 pt for realistic management practice; 1 pt for ecological mechanism.",
+        "Part (d) [2 points]: 1 pt for calculation setup (45 kg/ha * 400 ha); 1 pt for correct answer 18,000 kg.",
+        "Part (e) [2 points]: 1 pt for erosion/turbidity prevention; 1 pt for thermal buffering / shade."
+      ],
+      unitNumber: fallbackUnitNumber || 8,
+      unitTitle: fallbackUnitTitle || "Aquatic & Terrestrial Pollution",
+      skill: `Unit ${fallbackUnitNumber || 8}: ${fallbackUnitTitle || "Aquatic & Terrestrial Pollution"}`
+    };
+  }
+  if (isAphg) {
+    const aphgArchetypes = [
+      {
+        type: "Type 1 (No Stimulus - Conceptual / Spatial Dynamics)",
+        unit: 2,
+        title: "Population & Migration Patterns & Urban Landscape",
+        prompt: `Migration contributes to significant demographic shifts and spatial changes in urban landscapes. As populations increase, metropolitan areas face complex economic, social, and environmental challenges.
+
+Respond to parts A, B, C, D, E, F, and G.
+
+A. Describe one type of voluntary migration.
+
+B. Explain how rural-to-urban migration may affect a city's economic development.
+
+C. Describe one spatial pattern of residential segregation or housing inequality that may occur in urban areas.
+
+D. Explain how a metropolitan area's transportation infrastructure affects spatial access to employment.
+
+E. Describe one environmental challenge to urban sustainability resulting from rapid population growth.
+
+F. Explain how transit-oriented development (TOD) initiatives are intended to promote urban sustainability.
+
+G. Explain the degree to which urban renewal policies may create centrifugal social forces within a city. (Response must indicate the degree [low, moderate, high] and provide an explanation.)`,
+        modelAnswer: `Part A: One type of voluntary migration is transnational economic migration, where individuals choose to relocate across international borders seeking higher wages, employment opportunities, or improved living standards.
+
+Part B: Rural-to-urban migration expands the city's labor supply in both formal and informal sectors, which can lower manufacturing costs and stimulate consumer demand for goods and services, driving overall urban economic growth.
+
+Part C: One spatial pattern is the concentration of low-income or minority populations in inner-city neighborhoods or peripheral settlements due to historical practices like redlining or contemporary socio-economic income sorting.
+
+Part D: Adequate public transit networks connect outlying residential neighborhoods directly to central business districts (CBDs) or edge cities, reducing commute times and expanding employment opportunities for residents without private automobiles.
+
+Part E: Rapid population growth can outpace municipal sewage and wastewater treatment capacity, resulting in untreated runoff contaminating local urban watersheds and contributing to environmental degradation.
+
+Part F: Transit-oriented development (TOD) concentrates compact, mixed-use commercial and high-density residential buildings within walking distance of public transit hubs, reducing reliance on personal motor vehicles and lowering per-capita carbon emissions.
+
+Part G: Moderate to high degree. Urban renewal initiatives frequently lead to gentrification and elevated property values, which displace long-term lower-income residents, disrupting existing social networks and creating cultural tensions that act as centrifugal forces dividing the urban community.`,
+        rubric: [
+          "Part A [1 point]: 1 pt for describing a valid type of voluntary migration (e.g. transnational economic, suburbanization, counter-urbanization).",
+          "Part B [1 point]: 1 pt for explaining how migration expands labor pool or stimulates economic activity.",
+          "Part C [1 point]: 1 pt for describing residential segregation, redlining, or peripheral informal settlements.",
+          "Part D [1 point]: 1 pt for explaining how transit infrastructure connects workers to employment centers.",
+          "Part E [1 point]: 1 pt for describing an environmental sustainability challenge (e.g. sewage overflow, heat island, air pollution).",
+          "Part F [1 point]: 1 pt for explaining how TOD reduces vehicle miles traveled through mixed-use pedestrian-friendly density.",
+          "Part G [1 point]: 1 pt for indicating degree [low/moderate/high] AND explaining gentrification displacement or social division."
+        ]
+      },
+      {
+        type: "Type 2 (One Stimulus - Agricultural Trade & Economic Interdependence)",
+        unit: 5,
+        title: "Agricultural Production, Global Supply Chains & Development",
+        prompt: `**Bilateral Agricultural Trade Data Between Country Alpha (Developed) and Country Beta (Developing), 2024**
+
+| Commodity Category | Exports from Alpha to Beta (Value in Billions) | Exports from Beta to Alpha (Value in Billions) |
+| :--- | :--- | :--- |
+| Meat & Dairy Products | $6.4 billion | $0.8 billion |
+| Processed & Packaged Foods | $8.2 billion | $1.2 billion |
+| Tropical Fruits & Fresh Vegetables | $0.5 billion | $9.6 billion |
+| Cash Crops (Coffee, Cocoa, Soybeans) | $0.3 billion | $7.4 billion |
+| **Total Bilateral Exports** | **$15.4 billion** | **$19.0 billion** |
+
+Country Alpha and Country Beta maintain an established agricultural trade partnership. Country Alpha is a post-industrial developed nation, while Country Beta is an agricultural developing nation.
+
+Respond to parts A, B, C, D, E, F, and G.
+
+A. Using the data in the table, identify the largest agricultural export category from Country Beta to Country Alpha.
+
+B. Using the data in the table, describe one difference between Country Alpha and Country Beta regarding their trade in processed and packaged foods.
+
+C. Define the economic geography concept of comparative advantage.
+
+D. Describe one environmental impact of expanding commercial cash-crop monoculture in developing nations like Country Beta.
+
+E. Explain how advances in cold-chain logistics and refrigeration technology have transformed the global trade of perishable agricultural commodities.
+
+F. Explain how Country Beta's high concentration of exports in fresh produce and cash crops illustrates commodity dependence.
+
+G. Explain the degree to which trade liberalization policies increase economic interdependence between Country Alpha and Country Beta. (Response must indicate the degree [low, moderate, high] and provide an explanation.)`,
+        modelAnswer: `Part A: Tropical Fruits & Fresh Vegetables ($9.6 billion).
+
+Part B: Country Alpha exports a substantially higher value of processed and packaged foods ($8.2 billion) compared to Country Beta ($1.2 billion), reflecting Alpha's advanced food-processing industrial capacity.
+
+Part C: Comparative advantage is the ability of an economic entity or country to produce a specific good or service at a lower opportunity cost than its trading partners.
+
+Part D: Expanding commercial cash-crop monoculture often leads to widespread deforestation, reduced biodiversity, and severe soil nutrient depletion due to intensive chemical fertilizer and pesticide applications.
+
+Part E: Cold-chain refrigeration preserves perishable goods like fruits and seafood across long ocean voyages, allowing distant farmers to access wealthy international markets without spoilage.
+
+Part F: Over 85% of Country Beta's agricultural export earnings rely on raw cash crops and fruits, leaving its national economy highly vulnerable to global commodity price fluctuations and climatic disruptions.
+
+Part G: High degree. Reduced tariffs and trade barriers enable both nations to specialize according to their comparative advantages, meaning Alpha becomes reliant on Beta for year-round fresh tropical produce, while Beta relies on Alpha for manufactured processed foods and export revenues.`,
+        rubric: [
+          "Part A [1 point]: 1 pt for correctly identifying Tropical Fruits & Fresh Vegetables ($9.6B).",
+          "Part B [1 point]: 1 pt for describing Country Alpha's dominance in processed foods compared to Beta.",
+          "Part C [1 point]: 1 pt for defining comparative advantage in terms of lower opportunity cost.",
+          "Part D [1 point]: 1 pt for describing deforestation, monoculture soil degradation, or chemical pollution.",
+          "Part E [1 point]: 1 pt for explaining cold-chain logistics preserving freshness across global distances.",
+          "Part F [1 point]: 1 pt for explaining vulnerability caused by heavy reliance on primary agricultural exports.",
+          "Part G [1 point]: 1 pt for indicating degree [low/moderate/high] AND explaining mutual reliance on specialized goods."
+        ]
+      },
+      {
+        type: "Type 3 (Two Stimuli - Comparative Political Boundaries & Cultural Regions)",
+        unit: 4,
+        title: "Political Organization of Space & Cultural Landscape Synthesis",
+        prompt: `**Source 1: Political Administrative Boundaries and Governance Structure**
+Country North is a federal state organized into semi-autonomous provincial territories, where subnational regional governments exercise jurisdiction over local taxation, land-use zoning, and education.
+
+**Source 2: Linguistic and Cultural Regions Survey Data**
+
+| Subnational Region | Dominant Linguistic Population | Regional Autonomous Assembly Status | Cross-Border Cultural Ties |
+| :--- | :--- | :--- | :--- |
+| Province 1 (Coastal) | 88% National Language | Standard Provincial Council | Low |
+| Province 2 (Highland) | 74% Indigenous Language | Recognized Autonomous Regional Parliament | High (Shares language across border) |
+| Province 3 (Central) | 65% National / 35% Bilingual | Standard Provincial Council | Moderate |
+
+Both sources reflect how political boundaries and cultural geography intersect within Country North.
+
+Respond to parts A, B, C, D, E, F, and G.
+
+A. Using the data in Source 2, identify the subnational region with the highest proportion of indigenous language speakers.
+
+B. Define the concept of a nation-state.
+
+C. Using the data in Source 2, describe the relationship between the concentration of indigenous language speakers and the granting of autonomous regional parliamentary status.
+
+D. Describe one visible feature of the cultural landscape that reflects regional linguistic or religious identity.
+
+E. Explain how a federal system of governance, as described in Source 1, can act as a centripetal force in a multinational state.
+
+F. Explain how supranational political organizations can limit the sovereign authority of national member states.
+
+G. Explain the degree to which modern digital telecommunications may lead to cultural convergence among linguistic minority populations. (Response must indicate the degree [low, moderate, high] and provide an explanation.)`,
+        modelAnswer: `Part A: Province 2 (Highland) with 74% indigenous language speakers.
+
+Part B: A nation-state is a politically organized territory with a sovereign government in which a single distinct nation (a group of people sharing common cultural, ethnic, or linguistic heritage) coincides with the territorial boundaries of the state.
+
+Part C: Regions with the highest concentration of indigenous language speakers (such as Province 2 at 74%) are more likely to be granted recognized autonomous regional parliamentary assemblies to accommodate cultural self-determination.
+
+Part D: Bilingual street signs, place names (toponyms), and religious architecture (such as traditional indigenous shrines or distinct community centers) visibly reflect regional cultural identity.
+
+Part E: Federalism allocates legal power and administrative autonomy to regional subunits, allowing cultural minorities to govern their local affairs without feeling marginalized, thereby reducing separatist tensions and uniting the state.
+
+Part F: Supranational organizations (like the European Union) establish binding supranational laws, environmental treaties, and common trade tariffs that member states must obey, thereby overriding individual domestic policy autonomy.
+
+Part G: Moderate to high degree. Widespread access to global social media, streaming services, and the internet exposes youth to dominant global lingua francas (such as English or Spanish), which often accelerates language shift and homogenizes cultural practices, although digital platforms can also be harnessed for language preservation.`,
+        rubric: [
+          "Part A [1 point]: 1 pt for identifying Province 2 (Highland).",
+          "Part B [1 point]: 1 pt for defining nation-state as spatial coincidence of cultural nation and sovereign state boundary.",
+          "Part C [1 point]: 1 pt for describing relationship between indigenous concentration and autonomous status.",
+          "Part D [1 point]: 1 pt for describing visible cultural landscape feature (e.g. bilingual signs, toponyms, architecture).",
+          "Part E [1 point]: 1 pt for explaining how regional autonomy in federalism satisfies minority groups and preserves unity.",
+          "Part F [1 point]: 1 pt for explaining how supranational binding laws and regulations supersede domestic sovereignty.",
+          "Part G [1 point]: 1 pt for indicating degree [low/moderate/high] AND explaining digital media driving language shift or convergence."
+        ]
+      }
+    ];
+    const q = getAphgPristineUnitQuestion(fallbackUnitNumber, targetTopic, idx);
+    return {
+      ...q,
+      id: idx + 1,
+      unitNumber: fallbackUnitNumber || q.unitNumber,
+      unitTitle: fallbackUnitTitle || q.unitTitle,
+      skill: `Unit ${fallbackUnitNumber || q.unitNumber}: ${fallbackUnitTitle || q.unitTitle}`
+    };
+  }
+  if (isApush) {
+    const apushArchetypes = [
+      {
+        type: "Type 1 (Paired Secondary Sources - Two Historians - Compulsory Q1 Style)",
+        unit: 4,
+        title: "Period 4 (1800\u20131848): Democracy and the Early Republic",
+        prompt: `**Source 1**
+"The rise of mass democracy in the early American republic was not an illusion or a conservative trick. Property qualifications for voting fell away across state after state, opening the franchise to ordinary workingmen, farmers, and urban laborers. The election of Andrew Jackson in 1828 reflected a genuine democratic insurgency that shattered the aristocratic monopoly on public office. Even if women and enslaved African Americans remained disenfranchised, the political democratization of the Jacksonian era permanently empowered ordinary citizens against financial monopolies and hereditary privilege."
+\u2014 Sean Wilentz, historian, *The Rise of American Democracy: Jefferson to Lincoln*, 2005
+
+**Source 2**
+"The dramatic rhetoric of Jacksonian democracy concealed a far darker reality: the systematic containment of popular power. While formal property bars to voting were reduced, state constitutions and judicial decisions erected new legal firewalls that insulated corporate wealth, banking monopolies, and creditor rights from democratic regulation. State legislatures aggressively restricted popular local control over monetary policy, while state militias suppressed debtor protests. Rather than empowering the common folk, the political settlement of the early nineteenth century consolidated political authority in the hands of party bosses and capitalist elites."
+\u2014 Terry Bouton, historian, *Taming Democracy: 'The People,' the Founders, and the Troubled Ending of the American Revolution*, 2007
+
+Using the excerpts, respond to parts A, B, and C.
+
+A. Briefly describe one major difference between Wilentz's and Bouton's historical interpretations of democracy in the early nineteenth century.
+
+B. Briefly explain how one specific event or development from 1800 to 1848 NOT explicitly mentioned in the excerpts could be used to support Wilentz's argument.
+
+C. Briefly explain how one specific event or development from 1800 to 1848 NOT explicitly mentioned in the excerpts could be used to support Bouton's argument.`,
+        modelAnswer: `Part A: Wilentz argues that the Jacksonian era witnessed authentic democratization that empowered ordinary working-class white men by dismantling aristocratic political control and expanding voter access. In contrast, Bouton asserts that political democratization was largely illusory because economic elites and party bosses created institutional barriers to protect capitalist wealth and suppress true popular regulation.
+
+Part B: One specific development supporting Wilentz is the elimination of property ownership requirements for voting in western and northern state constitutions (such as New York's 1821 constitutional convention), which led to massive surges in voter turnout and popular participation in presidential elections such as 1828 and 1840, proving that ordinary citizens gained direct electoral influence.
+
+Part C: One specific development supporting Bouton is Andrew Jackson's use of executive power during the Bank War, specifically his issuance of the Specie Circular in 1836 and distribution of federal funds to favored 'pet banks.' This policy triggered the Panic of 1837 and widespread foreclosures, leaving poor farmers and working debtors devastated while entrenched financial speculators and state elites maintained structural control over the economy.`,
+        rubric: [
+          "Part A [1 point]: 1 pt for describing the fundamental contrast between Wilentz's focus on expanded democratic franchise/popular empowerment vs Bouton's focus on elite institutional containment of economic democracy.",
+          "Part B [1 point]: 1 pt for identifying and explaining specific outside historical evidence from 1800-1848 (e.g. elimination of property qualifications, the expansion of the spoils system, mass voter turnout in 1828/1840, or the anti-monopoly workingmen's parties) supporting Wilentz.",
+          "Part C [1 point]: 1 pt for identifying and explaining specific outside historical evidence from 1800-1848 (e.g. the Specie Circular/Panic of 1837, the suppression of the Dorr Rebellion in Rhode Island, Indian Removal Act displacing Cherokee despite Worcester v. Georgia, or judicial protection of corporate charters in Dartmouth College v. Woodward) supporting Bouton."
+        ]
+      },
+      {
+        type: "Type 2 (Single Primary Source - Historical Text / Sourcing - Compulsory Q2 Style)",
+        unit: 4,
+        title: "Period 4 (1800\u20131848): Federal Supremacy and the Nullification Crisis",
+        prompt: `**Source: Daniel Webster, speech to the United States Senate, January 26, 1830**
+
+"I hold it to be a popular government, erected by the people; those who administer it, responsible to the people; and itself capable of being amended and modified, just as the people may choose it should be. It is as popular, just as truly emanating from the people, as the State governments. It is created for one purpose; the State governments for another. It has its own sovereignty, within the limits of its powers. It is not the creature of the State legislatures; nay, more, if the whole truth must be told, the people of the United States have called this government into being, ordained it, and have taken principles from the States, and granted them to this great government.
+
+When my eyes shall be turned to behold for the last time the sun in heaven, may I not see him shining on the broken and dishonored fragments of a once glorious Union; on States dissevered, discordant, belligerent; on a land rent with civil feuds, or drenched, it may be, in fraternal blood! Let their last feeble and lingering glance rather behold the gorgeous ensign of the republic, now known and honored throughout the earth, still full high advanced... Liberty and Union, now and for ever, one and inseparable!"
+
+Using the excerpt, respond to parts A, B, and C.
+
+A. Briefly describe the author's point of view or purpose in delivering the speech as expressed in the excerpt.
+
+B. Briefly explain how one specific historical development between 1815 and 1830 contributed to the debates referenced in the excerpt.
+
+C. Briefly explain how ideas such as those reflected in the excerpt resulted in one specific political effect between 1830 and 1860.`,
+        modelAnswer: `Part A: Daniel Webster's point of view is that of a nationalist Massachusetts senator arguing that the United States Constitution formed a single, permanent, and sovereign federal union directly ordained by the American people as a whole, rather than a fragile compact between independent sovereign states. His purpose was to refute the South Carolina doctrine of state nullification and secession.
+
+Part B: One development contributing to these debates was the passage of the Tariff of 1828 (the 'Tariff of Abominations'), which imposed high protective duties on imported manufactured goods. While this policy protected northern industrial manufacturing, it angered southern agricultural planters like John C. Calhoun, prompting South Carolina to publish the South Carolina Exposition and Protest asserting that individual states retained sovereign authority to nullify unconstitutional federal laws within their borders.
+
+Part C: Webster's nationalist defense of the perpetual Union directly influenced Northern political ideology, culminating in President Andrew Jackson's Nullification Proclamation of 1832 and the Force Bill, which declared that disunion by armed force is treason. Decades later, Webster's principles formed the ideological bedrock of Abraham Lincoln and the Republican Party during the secession crisis of 1860-1861, motivating the North to fight to preserve the Union.`,
+        rubric: [
+          "Part A [1 point]: 1 pt for describing Webster's nationalist perspective on the constitutional permanence of the Union or his purpose to refute state sovereignty/nullification doctrine.",
+          "Part B [1 point]: 1 pt for explaining how the Tariff of 1828 ('Tariff of Abominations') or John C. Calhoun's South Carolina Exposition and Protest provoked the nullification debates.",
+          "Part C [1 point]: 1 pt for explaining how Unionist ideology led to Jackson's Force Bill (1833), Henry Clay's Compromise Tariff, or Northern resistance to Southern secession in 1860-1861."
+        ]
+      },
+      {
+        type: "Type 3 (No Stimulus - Comparative Reasoning & Regional Analysis - Q3/Q4 Style)",
+        unit: 2,
+        title: "Period 2 (1607\u20131754): Regional British Colonial Development",
+        prompt: `Respond to parts A, B, and C.
+
+A. Briefly describe one way that economic factors influenced British colonization in the Chesapeake region from 1607 to 1754.
+
+B. Briefly explain one similarity in how religious beliefs influenced the development of society in two different British colonial regions from 1607 to 1754.
+
+C. Briefly explain one difference in the labor systems that developed between the Chesapeake and New England colonies from 1607 to 1754.`,
+        modelAnswer: `Part A: Economic factors centered on the cultivation of tobacco as a high-yield commercial cash crop, which established a plantation-based economy in the Chesapeake (Virginia and Maryland) that prioritized large land acquisitions along navigable rivers and created a massive demand for bound labor.
+
+Part B: In both New England (Massachusetts Bay) and the Middle Colonies (Pennsylvania), religious convictions served as the foundational organizing principle of early settlement. Puritans in New England sought to construct a righteous 'City upon a Hill' enforcing Calvinist moral discipline, while Quakers led by William Penn established a 'Holy Experiment' based on Christian pacifism and religious tolerance, with both colonial societies organizing their laws and civic communities around their spiritual doctrines.
+
+Part C: One key difference is that the Chesapeake developed an intensive economy dependent on bound agricultural labor\u2014initially relying on English indentured servants and later transitioning following Bacon's Rebellion (1676) to racialized hereditary chattel slavery on large tobacco plantations. In contrast, New England's cold climate, rocky soil, and family-based subsistence farming resulted in a labor system centered primarily on free family labor and local apprenticeships rather than widespread enslaved plantation labor.`,
+        rubric: [
+          "Part A [1 point]: 1 pt for describing the role of commercial cash crops (tobacco) in shaping Chesapeake settlement and labor demand.",
+          "Part B [1 point]: 1 pt for explaining a valid similarity in how religious faith structured community life or governance (e.g. Puritans in New England and Quakers in Pennsylvania).",
+          "Part C [1 point]: 1 pt for explaining the contrast in labor systems (Chesapeake plantation chattel slavery / indentured servitude vs New England family/subsistence labor)."
+        ]
+      }
+    ];
+    const pick = apushArchetypes[idx % apushArchetypes.length];
+    return {
+      id: idx + 1,
+      title: `SHORT-ANSWER QUESTION ${idx + 1}  [3 POINTS]`,
+      prompt: pick.prompt,
+      diagramSvg: "",
+      diagramType: "none",
+      modelAnswer: pick.modelAnswer,
+      totalPoints: 3,
+      scoringRubric: pick.rubric,
+      unitNumber: fallbackUnitNumber || pick.unit,
+      unitTitle: fallbackUnitTitle || pick.title,
+      skill: `Unit ${fallbackUnitNumber || pick.unit}: ${fallbackUnitTitle || pick.title}`
+    };
+  }
+  if (isLang) {
+    const langArchetypes = [
+      {
+        unit: 1,
+        title: "Synthesis & Line of Reasoning",
+        points: 6,
+        typeTitle: "QUESTION 1: SYNTHESIS ESSAY  [6 POINTS]",
+        prompt: `**Suggested reading and writing time: 55 minutes (15 minutes reading/analyzing sources, 40 minutes writing)**
+
+Directions: The following prompt is based on the accompanying six sources (Sources A\u2013F).
+
+This question requires you to integrate a variety of sources into a coherent, well-written essay. Refer to the sources to support your position; avoid merely summarizing the sources. Support your line of reasoning with an argument that responds to the prompt. Synthesize at least three of the sources.
+
+### Introduction
+In contemporary public life, digital platforms and news aggregators increasingly rely on algorithmic recommendation engines to curate information feeds tailored to individual user behaviors and preferences. While proponents argue that algorithmic filtering maximizes informational efficiency and democratizes access to relevant knowledge, critics contend that predictive curation encloses citizens within ideological echo chambers, diminishes exposure to contrasting perspectives, and fractures the shared factual baseline essential for democratic deliberation.
+
+### Assignment
+Carefully read the following six sources, including the introductory information for each source. Write an essay that synthesizes at least three of the sources for support and takes a position on the extent to which algorithmic content curation enhances or impedes informed democratic citizenship.
+
+---
+
+### Source A (Monograph)
+*Adapted from Elena Vance, The Architecture of Certainty: Machine Learning and Civic Epistemology, University Academic Press, 2023.*
+
+"When information systems prioritize engagement over epistemic diversity, they fundamentally reshape the civic posture of the user. In physical public squares, exposure to dissenting viewpoints is an inevitable by-product of geographic co-presence. Algorithmic curation, by contrast, operates on the logic of friction minimization: it delivers content pre-calibrated to affirm preexisting cognitive frameworks. Over time, this predictive tailoring creates an illusion of universal consensus within the user's localized digital sphere, rendering opposing claims not merely unconvincing, but unfathomable. The danger is not simply misinformation; it is epistemic closure."
+
+---
+
+### Source B (Quantitative Data Table)
+*Adapted from the Pew Research Initiative on Media and Democracy, "Survey of Public News Consumption and Algorithmic Trust Across Demographics," 2024.*
+
+| Age Demographic | % Relying on Algorithmic Feeds as Primary News Source | % Who Report Algorithmic Feeds Help Discover Novel Topics | % Who Report Encountering Opposing Political Views Weekly | % Trusting Curated Feeds More Than Traditional Editorial Gatekeepers |
+| :--- | :---: | :---: | :---: | :---: |
+| 18\u201329 | 74% | 68% | 27% | 58% |
+| 30\u201349 | 59% | 54% | 34% | 46% |
+| 50\u201364 | 41% | 38% | 46% | 32% |
+| 65+ | 28% | 29% | 53% | 22% |
+
+---
+
+### Source C (Policy Editorial)
+*Adapted from Marcus Reed, "The Myth of the Passive Citizen in the Algorithmic Age," Technological Policy Review, 2022.*
+
+"To characterize users of algorithmic platforms as passive sheep herdable into extremism is to underestimate human agency and the historical reality of media consumption. Before personalized curation, broadcast media was controlled by a handful of corporate conglomerates that enforced a sterile, homogenizing Overton window. Today's algorithmic discovery empowers marginalized voices, subcultures, and localized grassroots investigative reporting that traditional broadcast gatekeepers routinely ignored. The algorithm does not dictate our curiosity; it amplifies our latent interests, granting ordinary citizens unprecedented autonomy over their intellectual trajectories."
+
+---
+
+### Source D (Sociological Study)
+*Adapted from Dr. Aris Thorne and Dr. Maya Lin, "Cognitive Friction and Deliberative Fatigue in Digital Public Spheres," Journal of Social Informatics, 2023.*
+
+"Deliberative democracy requires a threshold level of cognitive friction\u2014the uncomfortable confrontation with evidence that challenges one's cherished convictions. When platforms optimize for seamless user retention, they systematically eliminate this friction. Our neuro-behavioral trials indicate that participants exposed to curated algorithmic feeds experience significantly lower cognitive dissonance than those navigating unstructured archives. However, when subsequently placed in cross-partisan deliberative panels, algorithm-acclimated subjects exhibited higher hostility indices and a decreased willingness to accept factual compromises."
+
+---
+
+### Source E (Legal Commentary)
+*Adapted from Justice Sarah Morales, "Algorithmic Gatekeeping and the First Amendment Tradition," Columbia Constitutional Law Journal, 2024.*
+
+"The First Amendment was conceived to prevent government orthodoxy, operating on Justice Holmes's celebrated premise of a 'free trade in ideas.' Yet the invisible hand of the commercial marketplace has yielded proprietary algorithms whose sorting mechanisms are trade secrets shielded from public accountability. When private entities mediate public discourse through opacity-shrouded code designed exclusively to maximize ad-revenue monetization, the structural conditions prerequisite for informed consent of the governed are eroded from within, without a single state actor ever passing a censorship statute."
+
+---
+
+### Source F (Analytical Synthesis Chart)
+*Adapted from Global Digital Governance Monitor, "Comparative Information Health Across News Delivery Paradigms," 2024.*
+
+"Studies measuring information health reveal a clear trade-off: Algorithmic feeds score highest in user discovery of niche educational topics (8.2/10) and speed of emergency information dissemination (9.1/10), but score lowest in cross-partisan empathy (3.1/10) and resilience against coordinated computational propaganda (2.9/10). In contrast, curated public broadcasting scores moderately across all dimensions (6.5/10), preserving civic stability at the cost of informational velocity."`,
+        modelAnswer: `While digital algorithms offer unprecedented speed in niche knowledge discovery and dismantle traditional corporate gatekeeping, algorithmic content curation fundamentally impedes informed democratic citizenship by optimizing for cognitive ease rather than epistemic friction, thereby sequestering citizens into ideologically insulated enclaves that fracture the shared factual baseline required for meaningful civic self-governance.
+
+Democracy has never functioned as a frictionless marketplace of passive amusement; rather, it demands that citizens engage in deliberative friction\u2014an active wrestling with contradictory viewpoints to negotiate collective policy. As Elena Vance observes in Source A, physical public spaces historically compelled citizens into spontaneous encounters with opposing perspectives, whereas algorithmic feeds operate on "friction minimization," systematically isolating users within an "architecture of certainty" that breeds epistemic closure. This psychological isolation is corroborated by empirical data from the Pew Research Initiative (Source B), which reveals a stark democratic vulnerability: among younger voters (ages 18\u201329), 74% rely primarily on algorithmic feeds, yet only 27% report encountering opposing political viewpoints on a weekly basis, compared to 53% among older generations navigating more traditional media. When nearly three-quarters of rising voters consume news engineered to eliminate intellectual dissonance, civic deliberation is supplanted by the dogmatic reinforcement of preexisting biases.
+
+Proponents such as Marcus Reed (Source C) counter that algorithmic platforms liberate the public from the narrow, monolithic orthodoxy of mid-twentieth-century broadcast conglomerates, decentralizing power and allowing grassroots movements to flourish. While Reed rightly identifies that personalized curation enhances informational agency for marginalized subcultures, his argument conflates individual discovery with collective civic competence. Empowering an individual to locate niche communities does not compensate for the loss of a coherent public square. When private corporate platforms, as Justice Morales warns in Source E, mediate democratic discourse using proprietary algorithms shielded from public scrutiny and designed solely to maximize commercial engagement, the constitutional "free trade in ideas" degenerates into a monetization of outrage. Without deliberate structural friction (Source D), exposure to algorithmic purity leaves citizens psychologically ill-equipped to accept the compromises inherent in democratic governance.
+
+Ultimately, informed citizenship cannot be measured merely by the volume or velocity of content an individual consumes. It requires the capacity to evaluate contradictory arguments and recognize the legitimacy of fellow citizens' competing interests. By replacing public deliberation with private behavioral prediction, algorithmic curation transforms active democratic participants into atomized epistemic consumers, undermining the very foundation of self-governance.`,
+        rubric: [
+          "Row A: Thesis (0-1 point) [1 pt]: 1 point for a defensible thesis establishing a clear line of reasoning taking a position on the extent to which algorithmic curation enhances or impedes informed democratic citizenship.",
+          "Row B: Evidence and Commentary (0-4 points) [4 pts]: 4 points for synthesizing evidence from at least three sources (Sources A, B, and E) with sustained commentary explaining how evidence supports the line of reasoning connecting cognitive friction and corporate monetization to the erosion of democratic deliberation.",
+          "Row C: Sophistication (0-1 point) [1 pt]: 1 point for demonstrating a complex understanding of the rhetorical situation, acknowledging the tension between individual informational empowerment (Reed, Source C) and institutional civic fragility (Morales, Source E), with rhetorically mature style throughout."
+        ]
+      },
+      {
+        unit: 2,
+        title: "Rhetorical Situation & Analysis",
+        points: 6,
+        typeTitle: "QUESTION 2: RHETORICAL ANALYSIS ESSAY  [6 POINTS]",
+        prompt: `**Suggested time: 40 minutes**
+
+Directions: The following prompt is based on the passage below.
+
+### Introduction & Rhetorical Situation
+In October 1968, renowned marine biologist and conservation advocate Dr. Evelyn Montgomery addressed the National Association of Chemical Manufacturers at their annual symposium in New York City. At the time, the rapid postwar expansion of synthetic petrochemicals and persistent pesticides was generating enormous corporate profits, while emerging scientific evidence pointed to irreversible bioaccumulation in aquatic ecosystems and threats to avian biodiversity. Montgomery was invited to deliver the keynote address to an audience of industrial executives, chemical engineers, and corporate investors who were largely skeptical of environmental regulations.
+
+### Assignment
+Carefully read the text of Dr. Montgomery's speech below. Write an essay that analyzes the rhetorical choices Montgomery makes to convey her message regarding the ethical responsibility of chemical innovators to harmonize industrial ambition with ecological permanence.
+
+---
+
+### Speech Excerpt: Dr. Evelyn Montgomery (October 1968)
+"Gentlemen of the Association:
+
+I stand before you this morning not as an adversary of human ingenuity, nor as an apostle of primitive austerity, but as a fellow investigator of the natural world. In this grand hall, surrounded by men whose patents have conquered famine, vanquished typhus, and synthesized fibers that clothe millions, it would be churlish to deny that chemistry is the bedrock of modern civilization. You have spent four decades bending refractory atoms to the sovereign will of human necessity. That triumph is real, and it is magnificent.
+
+Yet, as I walked along the shoreline of Long Island Sound at dawn yesterday, I did not find the triumph of human intellect; I found the silent calculus of its collateral debt. In the marsh grasses, where the incoming tide once stirred the vibrant feeding of terns and ospreys, there was an unnatural, brooding hush. The osprey clutches lay cracked in their aeries\u2014eggshells thinned to brittle translucence by chlorinated hydrocarbons that your laboratories synthesized with brilliant precision, but without ecological forethought.
+
+You have measured your success with calibrated instruments: fractional distillation yields, corporate balance sheets, and parts per million of crop yield enhancement. But the biosphere does not keep its books in quarterly dividends. Nature keeps an eternal ledger, and its arithmetic is unforgiving. When you inject into the global bloodstream synthetic compounds whose molecular bonds no living enzyme can dismantle, you are not merely engineering convenience; you are writing promissory notes that will be foreclosed by your children.
+
+Consider the paradox of our shared inheritance. The chemist looks at an organochlorine molecule and sees an intellectual masterpiece\u2014a stable lattice of carbon and chlorine engineered to resist fungal rot and withstand the elements. But in biology, that very stability is a sentence of permanent trespass. What you celebrate as endurance, the sea experiences as an unyielding poison. An atom that never breaks down never leaves; it ascends through trophic tiers, concentrating with mathematical malice in the fatty tissues of plankton, of shad, of bluefish, until it breaches the nurseries of the sea.
+
+Let us speak with the candor that belongs to scientists. You have been told by your marketing counsels that regulation is an ideological impediment, a bureaucratic dampener on enterprise. I ask you today to transcend the narrow horizon of the balance sheet. True genius does not conquer nature by fracturing its cycles; true genius imitates the closed loops of the living cosmos, where every byproduct is the cradle of future life. You possess the intellectual capital, the synthetic acumen, and the research facilities to inaugurate a new era of benign molecular architecture. The question before this assembly is not whether mankind will continue to manufacture the material fabric of its existence; the question is whether you will choose to be the architects of a sustainable renaissance or the prosperous caretakers of an impoverished earth."`,
+        modelAnswer: `In her 1968 address to the National Association of Chemical Manufacturers, Dr. Evelyn Montgomery confronts a hostile audience of corporate executives and chemical engineers by establishing a shared professional ethos, contrasting micro-level industrial triumphs with macro-level biological reckonings, and reframing technological stewardship as the highest manifestation of scientific genius in order to persuade her listeners that genuine innovation requires molecular responsibility toward ecological permanence.
+
+Montgomery begins by deliberately disarming an audience predisposed to dismiss conservationists as anti-progress agitators. Rather than adopting an antagonistic posture, she introduces herself as a "fellow investigator of the natural world," validating their professional pride by explicitly praising their "triumph" in conquering famine and synthesizing essential materials. By deploying elevated, admiring diction\u2014terming their achievements "magnificent" and acknowledging their mastery over "refractory atoms"\u2014Montgomery builds common ground grounded in empirical discipline. This tactical concession flatters the executives' intellect, lowering their defensive guard so they are receptive to the ethical challenge that follows.
+
+Having established this collegiate solidarity, Montgomery abruptly pivots from abstract praise to visceral sensory contrast, exposing the devastating gap between laboratory intentions and ecological reality. She juxtaposes the "grand hall" of human celebration with the "unnatural, brooding hush" of Long Island Sound, grounding her critique in poignant empirical observation: osprey clutches cracked due to eggshells "thinned to brittle translucence." Through financial metaphors, she contrasts their "quarterly dividends" with nature's "eternal ledger," warning that synthetic compounds are "promissory notes that will be foreclosed by your children." Furthermore, by analyzing the dual nature of chemical stability\u2014noting that the very molecular permanence chemists celebrate as an "intellectual masterpiece" functions in biology as a "sentence of permanent trespass"\u2014she exposes the myopic reductionism of industrial chemistry without insulting the chemists' intelligence.
+
+Finally, Montgomery elevates the speech into a moral challenge by redefining the very definition of scientific "genius." Rejecting corporate counsels who frame ecological safeguards as bureaucratic impediments, she urges the assembly to abandon the "narrow horizon of the balance sheet" and deploy their "intellectual capital" toward "benign molecular architecture." By framing the choice not as commerce versus nature, but as becoming "architects of a sustainable renaissance" versus "prosperous caretakers of an impoverished earth," Montgomery enlists their ambition, transforming environmental restraint from a corporate loss into an inspiring frontier of technological leadership.`,
+        rubric: [
+          "Row A: Thesis (0-1 point) [1 pt]: 1 point for a defensible thesis that analyzes Montgomery's rhetorical choices (establishing collegial ethos, contrasting industrial and biological scales of permanence, redefining scientific genius) to convey her message regarding environmental responsibility.",
+          "Row B: Evidence and Commentary (0-4 points) [4 pts]: 4 points for providing specific textual evidence and insightful commentary that explains how Montgomery's rhetorical choices navigate audience skepticism, expose the tragic irony of chemical persistence, and appeal to the executives' professional ambition.",
+          "Row C: Sophistication (0-1 point) [1 pt]: 1 point for demonstrating a complex understanding of the rhetorical situation (particularly the hostile corporate audience in 1968) and analyzing the nuanced relationship between speaker ethos, commercial exigence, and moral persuasion."
+        ]
+      },
+      {
+        unit: 7,
+        title: "Complex Argumentation & Sophistication",
+        points: 6,
+        typeTitle: "QUESTION 3: ARGUMENT ESSAY  [6 POINTS]",
+        prompt: `**Suggested time: 40 minutes**
+
+Directions: The following prompt is based on the quotation below.
+
+### Prompt Context & Quotation
+In a 1953 philosophical lecture on the nature of democratic institutions and scientific inquiry, political theorist Hannah Arendt observed:
+
+> *"The most radical revolutionary will become a conservative the day after the revolution, for the human mind craves the security of settled orthodoxy far more deeply than it loves the disruptive pursuit of truth."*
+
+### Assignment
+Carefully consider Arendt's assertion regarding the human tendency to trade intellectual and political disruption for the comfort of established orthodoxy.
+
+Write an essay that argues your position on the extent to which progress in human societies requires the continuous disruption of settled orthodoxies rather than the consolidation of stable consensus.`,
+        modelAnswer: `While the consolidation of stable consensus is essential for codifying civil rights into enduring legal frameworks and enabling coordinated civic life, substantive human progress fundamentally relies upon the continuous disruption of settled orthodoxies, because unexamined consensus inevitably stagnates into dogmatic complacency that protects entrenched power and blinds societies to emerging ethical and scientific truths.
+
+Human history demonstrates that institutional consensus frequently functions not as the objective culmination of truth, but as a normalized defense of societal inequity. In the nineteenth-century United States, the compromise-driven political consensus regarding the legality of chattel slavery\u2014exemplified by the Missouri Compromise of 1820 and the Compromise of 1850\u2014attempted to preserve national stability by treating human bondage as a settled property right. It was only through the unyielding, disruptive agitation of abolitionists such as Frederick Douglass and Harriet Tubman, who intentionally shattered the comforting illusions of Northern neutrality, that the moral atrocity of the institution was forced onto the national conscience. Douglass understood that settled orthodoxy was the enemy of justice, recognizing that power concedes nothing without a demand. Had society prioritized the maintenance of tranquil consensus, the structural brutality of legal enslavement would have persisted indefinitely under the guise of civic harmony.
+
+Similarly, in the history of science, intellectual advancement requires shattering deeply held dogmas. In the early seventeenth century, the geocentric Ptolemaic model enjoyed the overwhelming consensus of both the Catholic Church and classical European academia, offering a comforting, anthropocentric worldview that anchored cosmic order. When Galileo Galilei championed heliocentrism, his observational evidence disrupted centuries of settled theology and natural philosophy. Despite facing the Roman Inquisition, Galileo's refusal to capitulate to institutional orthodoxy catalyzed the Scientific Revolution, establishing empirical falsification rather than authoritarian deference as the engine of scientific progress.
+
+Critics of perpetual disruption, echoing Arendt's warning regarding revolutionary volatility, legitimately contend that unmitigated rebellion can devolve into nihilistic chaos, as demonstrated by the Jacobin Reign of Terror during the French Revolution, which dismantled all societal scaffolding without establishing functional governance. True progress undoubtedly requires periodic consolidation: the disruptive moral breakthroughs of the Civil Rights Movement of the 1960s ultimately required the stabilizing codification of the Civil Rights Act of 1964 and Voting Rights Act of 1965 to produce lasting structural protections. Yet consolidation must always be understood as a temporary harbor, never a final destination. When consensus becomes sacrosanct, it breeds ideological ossification. Therefore, while institutional stability preserves the hard-won gains of the past, continuous intellectual and moral disruption remains the indispensable catalyst that propels human societies toward higher states of justice and enlightenment.`,
+        rubric: [
+          "Row A: Thesis (0-1 point) [1 pt]: 1 point for a defensible thesis establishing a clear line of reasoning that qualifies the tension between continuous disruption and stabilizing consensus in societal progress.",
+          "Row B: Evidence and Commentary (0-4 points) [4 pts]: 4 points for providing multiple specific, varied pieces of historical, scientific, or cultural evidence (19th-century abolitionist disruption of compromise, Galileo's challenge to Ptolemaic orthodoxy, post-disruption codification of the 1964 Civil Rights Act) supported by sustained commentary linking evidence to line of reasoning.",
+          "Row C: Sophistication (0-1 point) [1 pt]: 1 point for demonstrating a complex understanding of the argument by effectively qualifying the claim (differentiating productive disruption from nihilistic chaos and acknowledging the stabilizing role of legal consolidation), maintaining a sophisticated academic voice throughout."
+        ]
+      }
+    ];
+    const pick = langArchetypes[idx % langArchetypes.length];
+    return {
+      id: idx + 1,
+      title: pick.typeTitle,
+      prompt: pick.prompt,
+      diagramSvg: "",
+      diagramType: "none",
+      modelAnswer: pick.modelAnswer,
+      totalPoints: pick.points,
+      scoringRubric: pick.rubric,
+      unitNumber: fallbackUnitNumber || pick.unit,
+      unitTitle: fallbackUnitTitle || pick.title,
+      skill: `Unit ${fallbackUnitNumber || pick.unit}: ${fallbackUnitTitle || pick.title}`
+    };
+  }
+  if (isPsych) {
+    const psychArchetypes = [
+      {
+        unit: 2,
+        title: "Cognition & Memory",
+        points: 7,
+        typeTitle: "QUESTION 1: ARTICLE ANALYSIS QUESTION (AAQ)  [7 POINTS]",
+        prompt: `**Suggested reading and writing time: 25 minutes (10 minutes reading and 15 minutes writing)**
+
+Directions: Read the summary of the empirical research article below and respond to parts A, B, C, D, E, and F.
+
+### Study Summary: "The Impact of Active Retrieval Practice on Memory Retention Under Acute Evaluative Stress"
+*Adapted from Harrison, K. L., & Chen, J. M. (2023). Cognitive Neuropsychology and Memory Systems, 38(2), 142\u2013158.*
+
+**Background & Purpose:**
+Cognitive psychologists have long recognized that testing during the learning phase (retrieval practice) promotes long-term retention more effectively than passive restudy. However, real-world educational testing frequently induces acute psychosocial stress, which elevates circulating glucocorticoids and can impair memory retrieval from hippocampal networks. Researchers conducted a study to examine whether the protective benefits of retrieval practice persist when participants are subjected to acute evaluative stress prior to final memory testing.
+
+**Participants & Recruitment:**
+A sample of 120 undergraduate students (mean age = 19.4 years; 68 female, 52 male) was recruited from introductory psychology lecture courses at a large Midwestern state university. Participants received course extra credit for their participation. The study received formal approval from the university Institutional Review Board (IRB), and all participants signed an informed consent document acknowledging they could withdraw at any time without penalty.
+
+**Methodology:**
+Participants were randomly assigned to one of two initial learning conditions for 40 unfamiliar Swahili-English vocabulary word pairs: (1) **Retrieval Practice Condition**, in which participants engaged in three successive cycles of active cued recall with feedback, or (2) **Restudy Condition**, in which participants viewed the word pairs across three successive timed reading exposures of identical duration. Forty-eight hours later, all participants returned to the laboratory and were randomly assigned to either the **Trier Social Stress Test (TSST)**\u2014which involved delivering an unexpected 5-minute videotaped speech before a stone-faced evaluation committee followed by mental arithmetic\u2014or a **Non-Stress Control Task** involving reading non-evaluative magazines. Immediately following the stress or control manipulation, all participants completed a 40-item cued-recall test to measure retention.
+
+**Results:**
+| Initial Learning Condition | Stress Condition | Mean Vocabulary Pairs Recalled (out of 40) | Standard Deviation (SD) |
+| :--- | :--- | :---: | :---: |
+| Retrieval Practice | Acute Stress (TSST) | 28.4 | 3.2 |
+| Retrieval Practice | No Stress Control | 29.1 | 2.9 |
+| Restudy | Acute Stress (TSST) | 14.2 | 3.8 |
+| Restudy | No Stress Control | 21.6 | 3.4 |
+
+A two-way analysis of variance revealed a statistically significant interaction between learning condition and stress ($F(1, 116) = 18.72, p < 0.001$). Post-hoc testing confirmed that participants in the Restudy condition suffered a statistically significant 34.3% decline in recall when exposed to acute stress ($p < 0.01$), whereas participants in the Retrieval Practice condition demonstrated no statistically significant reduction in recall between the stress and control conditions ($p = 0.42$). Following testing, researchers conducted a debriefing session explaining the nature of the TSST stress manipulation.
+
+---
+
+### Questions
+(A) Identify the research design/method used by the researchers in the study. [1 point]
+
+(B) Describe the operational definition of memory retention used in the study. [1 point]
+
+(C) Describe what the difference in mean recall scores between the stressed and non-stressed Restudy groups indicates in the context of the study. [1 point]
+
+(D) Identify an ethical guideline that the researchers followed in the study. [1 point]
+
+(E) Explain whether the researchers can generalize their findings regarding memory retention under stress to all adults in the general population. [1 point]
+
+(F) Explain how the findings from the Retrieval Practice group support the psychological concept of levels of processing (or elaborative rehearsal). [2 points: 1 point for citing specific research finding; 1 point for explaining psychological mechanism]`,
+        modelAnswer: `Part A:
+The researchers used a controlled experiment (specifically a 2x2 factorial laboratory experiment with random assignment).
+
+Part B:
+The operational definition of memory retention was the number of Swahili-English vocabulary word pairs correctly recalled out of 40 on the cued-recall test administered 48 hours after learning.
+
+Part C:
+The lower mean recall score of the stressed Restudy group (14.2 pairs) compared to the non-stressed Restudy group (21.6 pairs) indicates that acute psychosocial stress significantly impairs long-term memory retrieval when material has only been encoded through passive restudy.
+
+Part D:
+The researchers followed the ethical guideline of informed consent (all participants signed an informed consent form before the study), institutional review board (IRB) approval, protection from harm/debriefing (participants were debriefed about the stress manipulation after testing), or the right to withdraw without penalty.
+
+Part E:
+The researchers cannot generalize their findings to all adults because the sample was drawn exclusively from undergraduate college students at a single university, who are not demographically or cognitively representative of the broader adult population across different age brackets and educational backgrounds. (Generalizability is limited by sample representativeness, not sample size).
+
+Part F:
+Point 1 (Finding): Participants in the Retrieval Practice condition maintained a high mean recall score (28.4 out of 40) under acute stress, showing no statistically significant impairment compared to the non-stress retrieval group (29.1).
+Point 2 (Concept Connection): This finding supports the concept of levels of processing because active retrieval practice requires deeper semantic cognitive elaboration and active reconstructive effort than passive reading, creating stronger and more resilient synaptic memory traces that resist the disruptive interference of stress hormones on retrieval.`,
+        rubric: [
+          "Part A [1 point]: 1 point for identifying the research design as an experiment (or factorial laboratory experiment). Chief Reader Note: Stating 'survey' or 'test' earns 0 points.",
+          "Part B [1 point]: 1 point for describing the operational definition as the number of vocabulary pairs correctly recalled out of 40 on the 48-hour cued-recall test. Must be quantifiable.",
+          "Part C [1 point]: 1 point for explaining that acute stress reduced recall performance in the restudy group (including direction of difference in context). Simply restating numbers without direction earns 0 points.",
+          "Part D [1 point]: 1 point for identifying informed consent, debriefing, IRB approval, or right to withdraw from the text.",
+          "Part E [1 point]: 1 point for explaining that findings cannot be generalized to all adults because the college student sample is not representative of the broader adult population. Chief Reader Note: Citing 'sample size too small' earns 0 points.",
+          "Part F [2 points]: 1 point for citing specific empirical finding showing retrieval practice preserved recall under stress (28.4 vs 14.2) + 1 point for explaining how active retrieval fosters deeper semantic processing/elaborative encoding that creates stronger memory pathways resistant to stress disruption."
+        ]
+      },
+      {
+        unit: 4,
+        title: "Social Psychology & Mental Health",
+        points: 7,
+        typeTitle: "QUESTION 2: EVIDENCE-BASED QUESTION (EBQ)  [7 POINTS]",
+        prompt: `**Suggested reading and writing time: 45 minutes (15 minutes reading and 30 minutes writing)**
+
+Directions: Synthesize the three empirical research studies provided below to respond to the prompt in parts A, B, and C.
+
+### Overarching Research Question
+Analyze the extent to which digital media use influences adolescent psychological well-being.
+
+---
+
+### Source 1: Longitudinal Study on Screen Time Modality and Affective Symptoms
+*Adapted from Kowalski, R. M., & Patel, S. T. (2023). Journal of Youth and Adolescence, 52(4), 789\u2013804.*
+
+**Method & Sample:**
+Researchers conducted a two-year prospective longitudinal cohort study tracking 850 adolescents (aged 13\u201316 at baseline) across eight diverse public school districts. Participants completed bi-annual validated psychometric assessments measuring daily digital screen time divided into two modalities: (1) **Passive Consumption** (passively scrolling social media feeds, viewing algorithmically curated short videos) and (2) **Active Interactive Engagement** (direct peer messaging, collaborative digital gaming, video calls with family/friends). Depressive symptoms and self-esteem were assessed using the Beck Depression Inventory for Youth (BDI-Y) and Rosenberg Self-Esteem Scale.
+
+**Findings:**
+Hierarchical regression analyses revealed that higher hours of daily passive screen consumption at baseline significantly predicted elevated depressive symptom scores two years later ($\\beta = 0.38, p < 0.001$) and lower self-esteem ($\\beta = -0.31, p < 0.01$). In contrast, daily hours spent in active interactive digital communication predicted higher perceived social connectedness and was associated with a slight decrease in depressive symptoms ($\\beta = -0.14, p = 0.03$). The authors concluded that the psychological consequence of screen time is contingent upon the functional modality of engagement rather than gross screen duration alone.
+
+---
+
+### Source 2: Controlled Experiment on Social Comparison Feeds and Body Image Distress
+*Adapted from Nguyen, T. H., Alvarez, M. C., & Becker, D. E. (2022). Clinical Psychological Science, 10(6), 1145\u20131160.*
+
+**Method & Sample:**
+A sample of 220 female adolescents (aged 14\u201317) was recruited for a randomized laboratory experiment. Participants were randomly assigned to one of two 20-minute smartphone browsing conditions: (1) **Curated Idealized Feed Condition**, browsing an active Instagram account populated with digitally enhanced peer and influencer lifestyle/fitness images, or (2) **Neutral Nature Feed Condition**, browsing an active account populated with wildlife and scenic photography. Immediately before and after the browsing session, participants completed the State Body Dissatisfaction Scale and Positive and Negative Affect Schedule (PANAS).
+
+**Findings:**
+Participants in the Curated Idealized Feed condition exhibited a statistically significant post-browsing surge in state body dissatisfaction ($t(108) = 6.42, p < 0.001, d = 0.84$) and a significant increase in negative affect ($p < 0.01$). Participants in the Neutral Nature Feed condition showed no significant change in body satisfaction or affect ($p = 0.76$). Furthermore, 82% of participants in the idealized feed group explicitly reported comparing their physical appearance unfavorably to the images displayed.
+
+---
+
+### Source 3: Cross-Sectional Neuro-Behavioral Survey on Nocturnal Device Use and Sleep Debt
+*Adapted from Thorne, E. B., & Martinez, G. R. (2024). Sleep Medicine and Adolescent Neurodevelopment, 45(1), 58\u201371.*
+
+**Method & Sample:**
+Researchers surveyed 1,100 high school students (grades 9\u201312) using wearable actigraphy sleep monitors and self-reported sleep quality diaries over a consecutive 14-day school testing period. The study measured nocturnal smartphone notifications, screen use within 60 minutes of bedtime, sleep latency (minutes required to fall asleep), and total rapid eye movement (REM) sleep duration.
+
+**Findings:**
+Students who reported active screen engagement within 60 minutes of bedtime experienced an average sleep latency of 48.6 minutes, compared to 19.2 minutes for students with zero pre-sleep screen use ($t = 9.81, p < 0.001$). Actigraphy recordings revealed a significant 22% reduction in total REM sleep duration among nocturnal screen users ($p < 0.01$). Prolonged sleep latency and reduced REM sleep were both strongly correlated with self-reported daytime emotional dysregulation ($r = 0.54, p < 0.001$) and generalized academic anxiety.
+
+---
+
+### Instructions & Tasks
+Respond to parts A, B, and C.
+
+(A) Articulate a defensible claim that responds to the prompt. [1 point]
+
+(B) Support your claim using evidence and psychological reasoning: [3 points]
+(i) Describe a specific piece of empirical evidence from Source 1 or Source 2 that supports your claim, including the source citation. [1 point]
+(ii) Explain how this evidence supports your claim, applying a RELEVANT PSYCHOLOGICAL CONCEPT from the AP Psychology CED to explain the underlying psychological mechanism. [2 points: 1 point for linking evidence to claim; 1 point for concept application]
+
+(C) Support your claim using a DIFFERENT piece of evidence and psychological reasoning: [3 points]
+(i) Describe a DIFFERENT specific piece of empirical evidence from a DIFFERENT source (e.g., Source 3) that supports your claim, including the source citation. [1 point]
+(ii) Explain how this new evidence supports your claim, applying a DIFFERENT PSYCHOLOGICAL CONCEPT from the AP Psychology CED to explain the underlying psychological mechanism. [2 points: 1 point for linking evidence to claim; 1 point for applying a DISTINCT second psychological concept]`,
+        modelAnswer: `Part A:
+While active digital communication can foster positive peer connectedness, passive and nocturnal digital media use significantly diminishes adolescent psychological well-being by facilitating harmful social comparison processes and disrupting restorative sleep architecture.
+
+Part B:
+(i) Evidence from Source 2:
+In a controlled experiment by Nguyen et al. (2022, Source 2), female adolescents who spent 20 minutes browsing a curated idealized lifestyle and appearance feed exhibited a statistically significant surge in state body dissatisfaction (t = 6.42, p < 0.001, d = 0.84) and negative affect, with 82% reporting unfavorable self-evaluations.
+
+(ii) Reasoning & Psychological Concept Application (Upward Social Comparison / Relative Deprivation):
+This evidence demonstrates that digital media harms well-being when users passively consume idealized portrayals of peers. The underlying mechanism is explained by the psychological concept of upward social comparison: when adolescents contrast their own unfiltered daily lives against curated, filtered highlights of others, they perceive themselves as inferior, which triggers relative deprivation, diminishes self-worth, and escalates depressive feelings.
+
+Part C:
+(i) Evidence from Source 3:
+In the neuro-behavioral study by Thorne and Martinez (2024, Source 3), high school students who engaged with screens within 60 minutes of bedtime experienced significantly longer sleep latency (48.6 minutes vs 19.2 minutes) and a 22% reduction in total REM sleep duration, which strongly correlated with daytime emotional dysregulation (r = 0.54, p < 0.001).
+
+(ii) Reasoning & DIFFERENT Psychological Concept Application (Circadian Rhythm Disruption / Melatonin Suppression):
+This evidence supports the claim by illustrating how nocturnal device use impairs affective health through a physiological pathway. The underlying mechanism is circadian rhythm disruption: exposure to blue light emitted by smartphone screens suppresses melatonin secretion by the pineal gland via the suprachiasmatic nucleus (SCN), delaying sleep onset and fragmenting REM sleep architecture, which impairs the prefrontal cortex's ability to regulate mood and increases vulnerability to anxiety. (This concept is distinct from upward social comparison used in Part B).`,
+        rubric: [
+          "Part A [1 point]: 1 point for a defensible scientific claim that establishes a line of reasoning evaluating the impact of digital media on adolescent well-being. Must take a position beyond mere prompt restatement.",
+          "Part B(i) [1 point]: 1 point for describing specific empirical evidence from Source 1 or Source 2 with citation (e.g. Nguyen et al. body dissatisfaction t=6.42, d=0.84, or Kowalski passive screen beta=0.38).",
+          "Part B(ii) [2 points]: 1 point for explaining how evidence supports claim + 1 point for applying a substantive CED concept (e.g. Upward Social Comparison, Relative Deprivation, or Normative Social Influence). Chief Reader Note: Generic terms like 'variable' or 'experiment' earn 0 points.",
+          "Part C(i) [1 point]: 1 point for describing different empirical evidence from a different source (Source 3) with citation (e.g. Thorne & Martinez sleep latency 48.6m vs 19.2m and 22% REM reduction).",
+          "Part C(ii) [2 points]: 1 point for explaining how new evidence supports claim + 1 point for applying a DISTINCT second CED concept (e.g. Circadian Rhythm Disruption, Melatonin/SCN Regulation, or Sleep Deprivation on Prefrontal Executive Function). Chief Reader Note: Repeating the concept from Part B earns 0 points for concept application."
+        ]
+      }
+    ];
+    const pick = psychArchetypes[idx % psychArchetypes.length];
+    return {
+      id: idx + 1,
+      title: pick.typeTitle,
+      prompt: pick.prompt,
+      diagramSvg: "",
+      diagramType: "none",
+      modelAnswer: pick.modelAnswer,
+      totalPoints: pick.points,
+      scoringRubric: pick.rubric,
+      unitNumber: fallbackUnitNumber || pick.unit,
+      unitTitle: fallbackUnitTitle || pick.title,
+      skill: `Unit ${fallbackUnitNumber || pick.unit}: ${fallbackUnitTitle || pick.title}`
+    };
+  }
+  if (isCsa) {
+    const csaArchetypes = [
+      {
+        unit: 1,
+        title: "Methods and Control Structures",
+        points: 7,
+        typeTitle: "QUESTION 1: METHODS AND CONTROL STRUCTURES  [7 POINTS]",
+        prompt: `This question involves scheduling charging sessions at an electric vehicle (EV) charging station. The charging station has a fixed number of charging bays, numbered 1 through 10. The \`ChargingStation\` class contains two helper methods: \`isBayAvailable\` and \`reserveBay\`.
+
+\`\`\`java
+public class ChargingStation {
+    /** Returns true if bay is available for charging; false otherwise.
+     *  Precondition: 1 <= bay <= 10
+     */
+    private boolean isBayAvailable(int bay)
+    { /* implementation not shown */ }
+
+    /** Reserves the bay for an EV vehicle.
+     *  Precondition: 1 <= bay <= 10
+     */
+    private void reserveBay(int bay)
+    { /* implementation not shown */ }
+
+    /** Searches bays from startBay to endBay, inclusive, for the first available bay.
+     *  Returns the bay number of the first available bay found, or -1 if no bay is available.
+     *  Precondition: 1 <= startBay <= endBay <= 10
+     */
+    public int findFirstAvailableBay(int startBay, int endBay)
+    { /* to be implemented in part (a) */ }
+
+    /** Searches bays from startBay to endBay for an available bay. If found, reserves the
+     *  bay and returns true; otherwise returns false.
+     *  Precondition: 1 <= startBay <= endBay <= 10
+     */
+    public boolean bookChargingSession(int startBay, int endBay)
+    { /* to be implemented in part (b) */ }
+}
+\`\`\`
+
+**Part (a)**: Write the \`findFirstAvailableBay\` method, which searches bays from \`startBay\` to \`endBay\`, inclusive, and returns the lowest-numbered available bay. If no available bay is found, it returns \`-1\`.
+
+**Part (b)**: Write the \`bookChargingSession\` method, which searches from \`startBay\` to \`endBay\`, inclusive. If an available bay is found, it calls \`reserveBay\` on that bay and returns \`true\`; otherwise returns \`false\`.`,
+        modelAnswer: `\`\`\`java
+// Part (a)
+public int findFirstAvailableBay(int startBay, int endBay) {
+    for (int bay = startBay; bay <= endBay; bay++) {
+        if (isBayAvailable(bay)) {
+            return bay;
+        }
+    }
+    return -1;
+}
+
+// Part (b)
+public boolean bookChargingSession(int startBay, int endBay) {
+    int bay = findFirstAvailableBay(startBay, endBay);
+    if (bay != -1) {
+        reserveBay(bay);
+        return true;
+    }
+    return false;
+}
+\`\`\``,
+        rubric: [
+          "Part (a) Point 1 [1 pt]: Correctly loops through all bays from startBay to endBay, inclusive (no off-by-one errors).",
+          "Part (a) Point 2 [1 pt]: Calls isBayAvailable with bay as parameter within the loop.",
+          "Part (a) Point 3 [1 pt]: Returns the first available bay number, and returns -1 after checking all bays (algorithm).",
+          "Part (b) Point 4 [1 pt]: Calls findFirstAvailableBay with correct parameters startBay and endBay.",
+          "Part (b) Point 5 [1 pt]: Checks whether the returned bay number represents an available bay (bay != -1).",
+          "Part (b) Point 6 [1 pt]: Calls reserveBay with the identified bay number when available.",
+          "Part (b) Point 7 [1 pt]: Returns true if reserved, false otherwise without calling findFirstAvailableBay multiple times (algorithm)."
+        ]
+      },
+      {
+        unit: 3,
+        title: "Class Design & Encapsulation",
+        points: 7,
+        typeTitle: "QUESTION 2: CLASS DESIGN  [7 POINTS]",
+        prompt: `This question involves designing a complete Java class named \`StepTracker\` that tracks daily physical activity.
+
+A \`StepTracker\` object is created with an \`int\` parameter representing the minimum number of steps required for a day to be considered "active". The class provides the following methods:
+- \`addDailySteps(int steps)\`: Records the step count for a day.
+- \`activeDays()\`: Returns the number of active days.
+- \`averageSteps()\`: Returns the average number of steps per day as a \`double\`. If no days have been tracked, returns \`0.0\`.
+
+### Sample Execution Trace Table
+| Statement | Return Value | Explanation |
+| :--- | :--- | :--- |
+| \`StepTracker tr = new StepTracker(10000);\` | | Initialized with 10,000 steps active threshold |
+| \`tr.activeDays();\` | \`0\` | No days tracked yet |
+| \`tr.averageSteps();\` | \`0.0\` | No days tracked, returns 0.0 |
+| \`tr.addDailySteps(9000);\` | | Day 1 tracked (not active) |
+| \`tr.addDailySteps(5000);\` | | Day 2 tracked (not active) |
+| \`tr.activeDays();\` | \`0\` | No active days |
+| \`tr.averageSteps();\` | \`7000.0\` | (9000 + 5000) / 2 = 7000.0 |
+| \`tr.addDailySteps(13000);\` | | Day 3 tracked (active, >= 10000) |
+| \`tr.activeDays();\` | \`1\` | 1 active day |
+| \`tr.averageSteps();\` | \`9000.0\` | (9000 + 5000 + 13000) / 3 = 9000.0 |
+
+Write the complete \`StepTracker\` class. Your implementation must meet all specifications and conform to the examples shown in the table.`,
+        modelAnswer: `\`\`\`java
+public class StepTracker {
+    private int minSteps;
+    private int totalSteps;
+    private int numDays;
+    private int numActiveDays;
+
+    public StepTracker(int minActiveSteps) {
+        minSteps = minActiveSteps;
+        totalSteps = 0;
+        numDays = 0;
+        numActiveDays = 0;
+    }
+
+    public void addDailySteps(int steps) {
+        totalSteps += steps;
+        numDays++;
+        if (steps >= minSteps) {
+            numActiveDays++;
+        }
+    }
+
+    public int activeDays() {
+        return numActiveDays;
+    }
+
+    public double averageSteps() {
+        if (numDays == 0) {
+            return 0.0;
+        }
+        return (double) totalSteps / numDays;
+    }
+}
+\`\`\``,
+        rubric: [
+          "Point 1 [1 pt]: Declares class header: public class StepTracker without parentheses.",
+          "Point 2 [1 pt]: Declares all appropriate private instance variables (minSteps, totalSteps, numDays, numActiveDays).",
+          "Point 3 [1 pt]: Declares public constructor header StepTracker(int ...) and initializes all instance variables correctly.",
+          "Point 4 [1 pt]: Declares method headers: public void addDailySteps(int), public int activeDays(), public double averageSteps().",
+          "Point 5 [1 pt]: In addDailySteps, updates total steps and total days, and conditionally increments active days.",
+          "Point 6 [1 pt]: In averageSteps, guards against division by zero when numDays == 0 and returns 0.0.",
+          "Point 7 [1 pt]: In averageSteps, calculates and returns floating-point quotient (double) totalSteps / numDays (algorithm)."
+        ]
+      },
+      {
+        unit: 4,
+        title: "Arrays and ArrayList",
+        points: 5,
+        typeTitle: "QUESTION 3: ARRAY / ARRAYLIST  [5 POINTS]",
+        prompt: `This question involves analyzing student attendance records across courses. The \`CourseRecord\` class has methods \`getStudentID()\` and \`getAbsences()\`.
+
+The \`Attendance\` class maintains two \`ArrayList<CourseRecord>\` instance variables: \`historyList\` and \`mathList\`.
+
+\`\`\`java
+public class Attendance {
+    private ArrayList<CourseRecord> historyList;
+    private ArrayList<CourseRecord> mathList;
+
+    /** Returns the number of students who are enrolled in both the history course and the math course
+     *  but have more absences in the history course than the math course.
+     *  Preconditions:
+     *  - No student ID appears multiple times in historyList or mathList.
+     *  - historyList and mathList do not contain null elements.
+     *  Postcondition: historyList and mathList are unchanged.
+     */
+    public int moreHistoryThanMathAbsences()
+    { /* to be implemented */ }
+}
+\`\`\`
+
+Write the \`moreHistoryThanMathAbsences\` method. Elements of \`historyList\` and \`mathList\` must remain unchanged.`,
+        modelAnswer: `\`\`\`java
+public int moreHistoryThanMathAbsences() {
+    int count = 0;
+    for (CourseRecord hst : historyList) {
+        for (CourseRecord mth : mathList) {
+            if (hst.getStudentID().equals(mth.getStudentID())) {
+                if (hst.getAbsences() > mth.getAbsences()) {
+                    count++;
+                }
+            }
+        }
+    }
+    return count;
+}
+\`\`\``,
+        rubric: [
+          "Point 1 [1 pt]: Accesses all elements in historyList and mathList using nested loops (no bounds errors).",
+          "Point 2 [1 pt]: Calls getStudentID() on CourseRecord elements from both lists and compares using .equals().",
+          "Point 3 [1 pt]: Calls getAbsences() on matching CourseRecord objects and compares with > operator.",
+          "Point 4 [1 pt]: Initializes count accumulator to 0 and increments within conditional block.",
+          "Point 5 [1 pt]: Returns correct count of students with more history absences without modifying original lists (algorithm)."
+        ]
+      },
+      {
+        unit: 4,
+        title: "2D Arrays",
+        points: 6,
+        typeTitle: "QUESTION 4: 2D ARRAYS  [6 POINTS]",
+        prompt: `This question involves evaluating game board rows represented by a 2D array of \`Space\` objects. The \`Space\` class contains \`getColor()\` (returns \`String\`) and \`getPoints()\` (returns \`int\`).
+
+The \`GameBoard\` class maintains a 2D array of \`Space\` objects:
+
+\`\`\`java
+public class GameBoard {
+    private Space[][] board;
+
+    /** Returns the point value of the row in board specified by targetRow.
+     *  The point value is the sum of the points in the row, or two times the sum
+     *  if all spaces in the row have the same color.
+     *  Preconditions: No elements of board are null. board has at least 2 rows and 2 cols.
+     *  targetRow is a valid row index.
+     */
+    public int getPointsForRow(int targetRow)
+    { /* to be implemented */ }
+}
+\`\`\`
+
+Write the \`getPointsForRow\` method. The point value is the sum of points in \`board[targetRow]\`, multiplied by 2 if every space in that row has identical color.`,
+        modelAnswer: `\`\`\`java
+public int getPointsForRow(int targetRow) {
+    int sum = 0;
+    boolean sameColor = true;
+    String firstColor = board[targetRow][0].getColor();
+
+    for (int col = 0; col < board[targetRow].length; col++) {
+        Space current = board[targetRow][col];
+        sum += current.getPoints();
+        if (!current.getColor().equals(firstColor)) {
+            sameColor = false;
+        }
+    }
+
+    if (sameColor) {
+        return sum * 2;
+    }
+    return sum;
+}
+\`\`\``,
+        rubric: [
+          "Point 1 [1 pt]: Accesses all elements of board[targetRow] across all columns (no bounds errors).",
+          "Point 2 [1 pt]: Calls getColor() and getPoints() on Space elements of the row.",
+          "Point 3 [1 pt]: Compares space colors using .equals() (NOT ==).",
+          "Point 4 [1 pt]: Accumulates points of all spaces in target row into a sum variable.",
+          "Point 5 [1 pt]: Correctly determines whether all spaces in the row share the same color (algorithm).",
+          "Point 6 [1 pt]: Returns sum * 2 if all colors match, or sum otherwise without early return (algorithm)."
+        ]
+      }
+    ];
+    const pick = csaArchetypes[idx % csaArchetypes.length];
+    return {
+      id: idx + 1,
+      title: pick.typeTitle,
+      prompt: pick.prompt,
+      diagramSvg: "",
+      diagramType: "none",
+      modelAnswer: pick.modelAnswer,
+      totalPoints: pick.points,
+      scoringRubric: pick.rubric,
+      unitNumber: fallbackUnitNumber || pick.unit,
+      unitTitle: fallbackUnitTitle || pick.title,
+      skill: `Unit ${fallbackUnitNumber || pick.unit}: ${fallbackUnitTitle || pick.title}`
+    };
+  }
+  return {
+    id: idx + 1,
+    title: `FREE RESPONSE QUESTION ${idx + 1}  [7 POINTS]`,
+    prompt: `Analyze the demographic and geographic processes associated with ${targetTopic} in AP ${subject}:
+
+(a) Identify the core College Board model or conceptual framework governing this pattern. [1 point]
+
+(b) Describe TWO key demographic or spatial characteristics associated with this process. [2 points]
+
+(c) Explain ONE economic or environmental push factor that accelerates this transition. [1 point]
+
+(d) Explain ONE political or cultural challenge faced by host regions experiencing this shift. [1 point]
+
+(e) Compare how this process operates differently in high-income vs low-income regions citing specific geographic evidence. [2 points]`,
+    diagramSvg: "",
+    diagramType: "none",
+    modelAnswer: `Part (a): The Demographic Transition Model (DTM) and Ravenstein's Laws of Migration.
+
+Part (b): 1. Declining natural increase rates (NIR) as crude birth rates drop. 2. Rural-to-urban population shifts leading to increased urban agglomeration.
+
+Part (c): Mechanization of commercial agriculture reduces rural labor demand, pushing workers toward industrial manufacturing centers.
+
+Part (d): Municipal governments face strain on public transportation, housing affordability, and infrastructure, often leading to gentrification or suburban sprawl.
+
+Part (e): In high-income countries (e.g. Western Europe), migration is characterized by counter-urbanization and suburban commuting, whereas in low-income countries (e.g. Sub-Saharan Africa), rapid rural-to-urban migration results in informal squatter settlements with limited access to clean water or sanitation.`,
+    totalPoints: 7,
+    scoringRubric: [
+      "Part (a) [1 point]: 1 pt for correctly identifying governing model / theory.",
+      "Part (b) [2 points]: 1 pt each for two distinct demographic/spatial characteristics.",
+      "Part (c) [1 point]: 1 pt for explaining cause-and-effect push factor.",
+      "Part (d) [1 point]: 1 pt for explaining specific structural challenge.",
+      "Part (e) [2 points]: 1 pt for high-income context; 1 pt for low-income contrast with evidence."
+    ],
+    unitNumber: fallbackUnitNumber || 2,
+    unitTitle: fallbackUnitTitle || "Population & Migration Patterns",
+    skill: `Unit ${fallbackUnitNumber || 2}: ${fallbackUnitTitle || "Population & Migration Patterns"}`
+  };
+}
 app.post("/api/generate-ap-questions", async (req, res) => {
   try {
     const { subject, unit, topic, questionType, type: rawType, count, gradeLevel, avoidPrompts, randomSeed, examMode } = req.body;
     if (!subject) {
       return res.status(400).json({ error: "Missing AP Subject" });
     }
-    const type = questionType === "subjective" || rawType === "subjective" ? "subjective" : "objective";
-    const requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 20);
-    const targetTopic = [topic, unit, subject].filter(Boolean).join(" - ");
-    const subjectGuidelines = getCollegeBoardSubjectGuidelines(subject, type);
     const s = (subject || "").toLowerCase();
     const g = (gradeLevel || "").toLowerCase();
+    const type = questionType === "subjective" || rawType === "subjective" ? "subjective" : "objective";
+    const isBcSubject = s.includes("calculus bc") || s.includes("calculus") && s.includes("bc");
+    const isChemSubject = s.includes("chemistry") || s.includes("chem");
+    const isBioSubject = s.includes("biology") || s.includes("bio");
+    const isPhys1Subject = s.includes("physics 1") || s.includes("phys");
+    const isMacroSubject = s.includes("macro") || s.includes("economics") || s.includes("econ");
+    const isLangSubject = s.includes("english") || s.includes("lang");
+    const isPsychSubject = s.includes("psych");
+    const isCsaSubject = s.includes("computer science a") || s.includes("csa") || s.includes("computer") && !s.includes("principles") && !s.includes("csp");
+    const isWhapSubject = s.includes("world history") || s.includes("whap") || s.includes("world") && s.includes("history") || s.includes("history") && !s.includes("u.s.") && !s.includes("us") && !s.includes("euro");
+    let requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 20);
+    if (isChemSubject && (examMode === "mock_exam" || examMode === "exam_simulation") && type === "subjective") {
+      requestedCount = 7;
+    } else if ((isBcSubject || isBioSubject) && (examMode === "mock_exam" || examMode === "exam_simulation") && type === "subjective") {
+      requestedCount = 6;
+    } else if (isWhapSubject && (examMode === "mock_exam" || examMode === "exam_simulation") && type === "subjective") {
+      requestedCount = 5;
+    } else if ((isPhys1Subject || isCsaSubject) && (examMode === "mock_exam" || examMode === "exam_simulation") && type === "subjective") {
+      requestedCount = 4;
+    } else if ((isMacroSubject || isLangSubject) && (examMode === "mock_exam" || examMode === "exam_simulation") && type === "subjective") {
+      requestedCount = 3;
+    } else if (isPsychSubject && (examMode === "mock_exam" || examMode === "exam_simulation") && type === "subjective") {
+      requestedCount = 2;
+    }
+    const targetTopic = [topic, unit, subject].filter(Boolean).join(" - ");
+    const subjectGuidelines = getCollegeBoardSubjectGuidelines(subject, type);
     const dynamicArchetypePlan = getDynamicTopicVariation(subject, targetTopic, requestedCount);
     let antiRepetitionDirective = `
 CRITICAL QUESTION DIVERSITY & NO-REPEAT DIRECTIVE:
@@ -17613,7 +23596,7 @@ MANDATORY QUESTION VARIATION BLUEPRINT FOR THIS SESSION:
 ${dynamicArchetypePlan}
 Ensure every question adheres to its designated archetype and uses distinct functions, numbers, and contexts.`;
     if (Array.isArray(avoidPrompts) && avoidPrompts.length > 0) {
-      const cleanAvoid = avoidPrompts.filter((p) => typeof p === "string" && p.trim()).slice(0, 12).map((p, idx2) => `  [PREVIOUS ${idx2 + 1}]: "${p.replace(/\n+/g, " ").slice(0, 140)}"`).join("\n");
+      const cleanAvoid = avoidPrompts.filter((p) => typeof p === "string" && p.trim()).slice(0, 12).map((p, idx) => `  [PREVIOUS ${idx + 1}]: "${p.replace(/\n+/g, " ").slice(0, 140)}"`).join("\n");
       if (cleanAvoid) {
         antiRepetitionDirective += `
 
@@ -17672,7 +23655,7 @@ OFFICIAL GRADE-LEVEL PEDAGOGICAL CALIBRATION: ADVANCED PLACEMENT (HIGH SCHOOL TO
       const generateObjectiveBatch = async (batchCount, bIdx, extraAvoid = []) => {
         const batchOffset = bIdx >= 80 ? 0 : batchSizes.slice(0, bIdx).reduce((a, b) => a + b, 0);
         const batchArchetypes = allArchetypes.slice(batchOffset, batchOffset + batchCount);
-        const batchArchetypePlan = batchArchetypes.map((arch, idx2) => `  - Question ${batchOffset + idx2 + 1} Target Archetype: ${arch}`).join("\n");
+        const batchArchetypePlan = batchArchetypes.map((arch, idx) => `  - Question ${batchOffset + idx + 1} Target Archetype: ${arch}`).join("\n");
         const batchSeed = `${randomSeed || Date.now()}_b${bIdx + 1}_${Math.random().toString(36).substring(2, 6)}`;
         let combinedAntiRepetition = antiRepetitionDirective;
         if (extraAvoid.length > 0) {
@@ -17690,9 +23673,18 @@ CRITICAL COUNT REQUIREMENT (MANDATORY):
 - You MUST generate EXACTLY ${batchCount} questions for this batch. Outputting fewer than ${batchCount} questions is strictly forbidden.
 - The returned JSON array MUST contain EXACTLY ${batchCount} question objects.
 
-CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
-1. RIGOR & DEPTH: Every question must test deep conceptual understanding, analytical thinking, or multi-step problem solving as defined in the official College Board AP Course and Exam Description (CED). Avoid trivial recall or surface-level trivia.
-2. MANDATORY PRE-SOLVE & OPTION VERIFICATION (CRITICAL):
+CRITICAL COLLEGE BOARD AP EXAM STANDARDS (AP EXAM MCQ SPECIFICATION):
+1. RIGOR & DIFFICULTY LEVEL (MODERATE TO HARD):
+   - Every single question must be calibrated strictly to MODERATE TO HARD College Board AP Exam rigor.
+   - Strictly FORBIDDEN: Do NOT generate trivial, basic, or surface-level definition recall questions.
+   - Questions must require stimulus/scenario interpretation, conceptual synthesis, application of models/theorems, or multi-step deductive problem solving.
+   - Distractors (incorrect options) must be sophisticated and highly plausible, representing authentic student traps, subtle sign/unit inversions, or common misconceptions.
+
+2. UNIT SCOPE & SYLLABUS COVERAGE:
+   - SINGLE-UNIT MODE: If a specific unit is specified (e.g. Unit 2), ALL questions in this batch MUST test concepts strictly confined to that chosen unit.
+   - FULL-COURSE MODE: If full curriculum / all units is selected, the batch MUST adhere to the assigned target archetypes, spanning across ALL units of the subject for comprehensive syllabus coverage.
+
+3. MANDATORY PRE-SOLVE & OPTION VERIFICATION (CRITICAL):
    - Before outputting options, you MUST solve the question step-by-step to arrive at the definite, mathematically and scientifically verified answer.
    - EXACTLY ONE OF THE 4 OPTIONS (A, B, C, or D) MUST BE 100% CORRECT. Under no circumstances should all 4 options be wrong, and under no circumstances should the true answer be missing from the options list!
    - "correctAnswer" MUST BE VERBATIM IDENTICAL: The "correctAnswer" property MUST be an exact character-for-character match to the corresponding option in the "options" array.
@@ -17894,11 +23886,11 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
       }
       if (combinedQuestions.length > 0) {
         const letters = ["A", "B", "C", "D"];
-        const questionsList = combinedQuestions.slice(0, requestedCount).map((q, idx2) => {
+        const questionsList = combinedQuestions.slice(0, requestedCount).map((q, idx) => {
           if (typeof q === "string") {
             return {
-              id: idx2 + 1,
-              title: `Question ${idx2 + 1}`,
+              id: idx + 1,
+              title: `Question ${idx + 1}`,
               prompt: q,
               options: ["A) Option A", "B) Option B", "C) Option C", "D) Option D"],
               correctAnswer: "A) Option A",
@@ -17955,8 +23947,8 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
           if (extQ.diagramSvg) diagramSvg = extQ.diagramSvg;
           return {
             ...q,
-            id: idx2 + 1,
-            title: q.title || `Question ${idx2 + 1}`,
+            id: idx + 1,
+            title: q.title || `Question ${idx + 1}`,
             question: promptStr,
             prompt: promptStr,
             stimulus: stimulusStr,
@@ -17975,12 +23967,12 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
       const fallbackBank = getBattleQuestions(matchedSubject.id);
       if (fallbackBank && fallbackBank.length > 0) {
         const letters = ["A", "B", "C", "D"];
-        const fallbackQuestions = Array.from({ length: requestedCount }).map((_, idx2) => {
-          const b = fallbackBank[idx2 % fallbackBank.length];
+        const fallbackQuestions = Array.from({ length: requestedCount }).map((_, idx) => {
+          const b = fallbackBank[idx % fallbackBank.length];
           const safeCorrectIdx = typeof b.correctIndex === "number" && b.correctIndex >= 0 && b.correctIndex < b.options.length ? b.correctIndex : 0;
           return {
-            id: idx2 + 1,
-            title: `Question ${idx2 + 1}`,
+            id: idx + 1,
+            title: `Question ${idx + 1}`,
             prompt: b.stem,
             question: b.stem,
             options: b.options.map((opt, oIdx) => opt.startsWith(`${letters[oIdx]})`) ? opt : `${letters[oIdx]}) ${opt}`),
@@ -18000,7 +23992,113 @@ If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or A
       const generateSubjectiveBatch = async (batchCount, bIdx, extraAvoid = []) => {
         const batchOffset = bIdx >= 80 ? 0 : batchSizes.slice(0, bIdx).reduce((a, b) => a + b, 0);
         const batchArchetypes = allArchetypes.slice(batchOffset, batchOffset + batchCount);
-        const batchArchetypePlan = batchArchetypes.map((arch, idx2) => `  - Question ${batchOffset + idx2 + 1} Target Archetype: ${arch}`).join("\n");
+        const isAphgSubject = s.includes("geography") || s.includes("aphg") || s.includes("human");
+        const isWhapSubject2 = s.includes("world history") || s.includes("whap") || s.includes("world") && s.includes("history") || s.includes("history") && !s.includes("u.s.") && !s.includes("us") && !s.includes("euro");
+        const isApushSubject2 = !isWhapSubject2 && (s.includes("history") || s.includes("apush"));
+        const isMacroSubject2 = s.includes("macro") || s.includes("economics") || s.includes("econ");
+        const isCsaSubj = s.includes("computer science a") || s.includes("csa") || s.includes("computer") && !s.includes("principles") && !s.includes("csp");
+        const getCsaStratifiedType = (qIdx, total) => {
+          const mod = qIdx % 4;
+          if (mod === 0) {
+            return "QUESTION 1: METHODS AND CONTROL STRUCTURES [7-9 POINTS] (Helper method calls on instance object, range iteration, accumulation, conditional logic)";
+          } else if (mod === 1) {
+            return "QUESTION 2: CLASS DESIGN [7-9 POINTS] (Complete class from scratch, private instance variables, public constructor & methods, execution trace table)";
+          } else if (mod === 2) {
+            return "QUESTION 3: ARRAY / ARRAYLIST DATA ANALYSIS [5-9 POINTS] (1D array & ArrayList<E> traversal, object instantiation with new, dual-pointer or nested list matching)";
+          } else {
+            return "QUESTION 4: 2D ARRAYS [6-9 POINTS] (Matrix row-major traversal, self-pairing guard (!(r==row && c==col)), neighbor checks, row/column point calculation)";
+          }
+        };
+        const getWhapStratifiedType = (qIdx, total) => {
+          const mod = qIdx % 5;
+          if (mod === 0) {
+            return "QUESTION 1: SAQ 1 - SECONDARY SOURCE ANALYSIS [3 POINTS] (Historian argument excerpt, Parts a-c, ACE Method)";
+          } else if (mod === 1) {
+            return "QUESTION 2: SAQ 2 - PRIMARY SOURCE / VISUAL ARTIFACT [3 POINTS] (Document/Visual artifact, HIPP sourcing, Parts a-c, ACE Method)";
+          } else if (mod === 2) {
+            return "QUESTION 3: SAQ 3 - NON-STIMULUS CONCEPTUAL / CCOT [3 POINTS] (Comparative/causation historical reasoning, Parts a-c, ACE Method)";
+          } else if (mod === 3) {
+            return "QUESTION 4: DOCUMENT-BASED QUESTION (DBQ) [7 POINTS] (Historical prompt with 7 distinct documents, 7-Point College Board Rubric)";
+          } else {
+            return "QUESTION 5: LONG ESSAY QUESTION (LEQ) [6 POINTS] (Comprehensive essay prompt across units, 6-Point College Board Rubric)";
+          }
+        };
+        const getMacroStratifiedType = (qIdx, total) => {
+          const mod = qIdx % 3;
+          if (mod === 0) {
+            return "QUESTION 1: LONG FREE-RESPONSE QUESTION [10 POINTS] (Macro Equilibrium, AD-AS or Phillips Curve Graph, Loanable Funds, Forex Market & Balance of Payments CA+CFA=0)";
+          } else if (mod === 1) {
+            return "QUESTION 2: SHORT FREE-RESPONSE QUESTION [5 POINTS] (Monetary Policy: Ample Reserves Framework [Administered Rates/IORB, Reserve Market Graph] vs Limited Reserves, Bond Prices)";
+          } else {
+            return "QUESTION 3: SHORT FREE-RESPONSE QUESTION [5 POINTS] (Macroeconomic Data Table, Base Year Real vs Nominal GDP, Multipliers [1/(1-MPC), Delta G = Output Gap / Multiplier], Automatic Stabilizers)";
+          }
+        };
+        const getAphgStratifiedType = (qIdx, total) => {
+          if (total === 3) {
+            if (qIdx === 0) return "TYPE 1: NO STIMULUS (Conceptual/Spatial Scenario, Parts A-G)";
+            if (qIdx === 1) return "TYPE 2: ONE STIMULUS (Authentic Data Table or Chart/Map, Parts A-G)";
+            return "TYPE 3: TWO STIMULI (Comparative Source 1 & Source 2 synthesis, Parts A-G)";
+          }
+          if (total === 5) {
+            if (qIdx < 2) return "TYPE 1: NO STIMULUS (Conceptual/Spatial Scenario, Parts A-G)";
+            if (qIdx < 4) return "TYPE 2: ONE STIMULUS (Authentic Data Table or Chart/Map, Parts A-G)";
+            return "TYPE 3: TWO STIMULI (Comparative Source 1 & Source 2 synthesis, Parts A-G)";
+          }
+          if (total === 10) {
+            if (qIdx < 3) return "TYPE 1: NO STIMULUS (Conceptual/Spatial Scenario, Parts A-G)";
+            if (qIdx < 6) return "TYPE 2: ONE STIMULUS (Authentic Data Table or Chart/Map, Parts A-G)";
+            return "TYPE 3: TWO STIMULI (Comparative Source 1 & Source 2 synthesis, Parts A-G)";
+          }
+          const tier = Math.floor(total / 3);
+          if (qIdx < tier) return "TYPE 1: NO STIMULUS (Conceptual/Spatial Scenario, Parts A-G)";
+          if (qIdx < tier * 2) return "TYPE 2: ONE STIMULUS (Authentic Data Table or Chart/Map, Parts A-G)";
+          return "TYPE 3: TWO STIMULI (Comparative Source 1 & Source 2 synthesis, Parts A-G)";
+        };
+        const getApushStratifiedType = (qIdx, total) => {
+          if (total === 3) {
+            if (qIdx === 0) return "TYPE 1: PAIRED SECONDARY SOURCES (Two Conflicting Historian Interpretations, Parts A-C, 3 Points, ACE Method)";
+            if (qIdx === 1) return "TYPE 2: SINGLE PRIMARY SOURCE (Speech/Letter/Document HAPP Sourcing Analysis, Parts A-C, 3 Points, ACE Method)";
+            return "TYPE 3: NO STIMULUS (Comparative Historical Reasoning / CCOT across Eras, Parts A-C, 3 Points, ACE Method)";
+          }
+          if (total === 5) {
+            if (qIdx < 2) return "TYPE 1: PAIRED SECONDARY SOURCES (Two Conflicting Historian Interpretations, Parts A-C, 3 Points, ACE Method)";
+            if (qIdx < 4) return "TYPE 2: SINGLE PRIMARY SOURCE (Speech/Letter/Document HAPP Sourcing Analysis, Parts A-C, 3 Points, ACE Method)";
+            return "TYPE 3: NO STIMULUS (Comparative Historical Reasoning / CCOT across Eras, Parts A-C, 3 Points, ACE Method)";
+          }
+          if (total === 10) {
+            if (qIdx < 3) return "TYPE 1: PAIRED SECONDARY SOURCES (Two Conflicting Historian Interpretations, Parts A-C, 3 Points, ACE Method)";
+            if (qIdx < 6) return "TYPE 2: SINGLE PRIMARY SOURCE (Speech/Letter/Document HAPP Sourcing Analysis, Parts A-C, 3 Points, ACE Method)";
+            return "TYPE 3: NO STIMULUS (Comparative Historical Reasoning / CCOT across Eras, Parts A-C, 3 Points, ACE Method)";
+          }
+          const tier = Math.floor(total / 3);
+          if (qIdx < tier) return "TYPE 1: PAIRED SECONDARY SOURCES (Two Conflicting Historian Interpretations, Parts A-C, 3 Points, ACE Method)";
+          if (qIdx < tier * 2) return "TYPE 2: SINGLE PRIMARY SOURCE (Speech/Letter/Document HAPP Sourcing Analysis, Parts A-C, 3 Points, ACE Method)";
+          return "TYPE 3: NO STIMULUS (Comparative Historical Reasoning / CCOT across Eras, Parts A-C, 3 Points, ACE Method)";
+        };
+        const batchArchetypePlan = batchArchetypes.map((arch, idx) => {
+          const globalIdx = batchOffset + idx;
+          if (isCsaSubj) {
+            const csaType = getCsaStratifiedType(globalIdx, requestedCount);
+            return `  - Question ${globalIdx + 1} [${csaType}]: ${arch}`;
+          }
+          if (isWhapSubject2) {
+            const whapType = getWhapStratifiedType(globalIdx, requestedCount);
+            return `  - Question ${globalIdx + 1} [${whapType}]: ${arch}`;
+          }
+          if (isMacroSubject2) {
+            const macroType = getMacroStratifiedType(globalIdx, requestedCount);
+            return `  - Question ${globalIdx + 1} [${macroType}]: ${arch}`;
+          }
+          if (isAphgSubject) {
+            const aphgType = getAphgStratifiedType(globalIdx, requestedCount);
+            return `  - Question ${globalIdx + 1} [${aphgType}]: ${arch}`;
+          }
+          if (isApushSubject2) {
+            const apushType = getApushStratifiedType(globalIdx, requestedCount);
+            return `  - Question ${globalIdx + 1} [${apushType}]: ${arch}`;
+          }
+          return `  - Question ${globalIdx + 1} Target Archetype: ${arch}`;
+        }).join("\n");
         const batchSeed = `${randomSeed || Date.now()}_b${bIdx + 1}_${Math.random().toString(36).substring(2, 6)}`;
         let combinedAntiRepetition = antiRepetitionDirective;
         if (extraAvoid.length > 0) {
@@ -18019,36 +24117,317 @@ ALREADY TESTED CONCEPTS IN THIS SESSION (DEPRIORITIZE REPEATS - SPAN WIDER TOPIC
         }
         const isSocialOrGeog = s.includes("geography") || s.includes("aphg") || s.includes("human") || s.includes("history") || s.includes("gov");
         const isApes = s.includes("environmental") || s.includes("apes");
+        const isCalcSubj = s.includes("calculus");
+        const isBcSubj = isCalcSubj && (s.includes("bc") || s.includes("calculus bc"));
+        const isChemSubj = s.includes("chemistry") || s.includes("chem");
+        const isBioSubj = s.includes("biology") || s.includes("bio");
+        const isPhys1Subj = s.includes("physics 1") || s.includes("phys");
+        const isMacroSubj = s.includes("macro") || s.includes("economics") || s.includes("econ");
+        const isLangSubj = s.includes("english") || s.includes("lang");
+        const isPsychSubj = s.includes("psych");
+        const isWhapSubj = isWhapSubject2;
         const systemInstruction = `You are an AP Exam Chief Reader and Author of official College Board Scoring Guidelines.
 The student is preparing for the AP ${subject} Exam.
 Your task is to generate exactly ${batchCount} authentic, high-yield AP Exam FREE RESPONSE / SUBJECTIVE QUESTIONS for: "${targetTopic}".
 
 CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
-1. CURRICULUM BOUNDARY ENFORCEMENT (CRITICAL - ZERO WRONG-SUBJECT LEAKAGE):
+1. CURRICULUM BOUNDARY ENFORCEMENT (CRITICAL - ZERO CURRICULUM LEAKAGE):
    - You MUST generate content STRICTLY AND EXCLUSIVELY belonging to the College Board Course and Exam Description (CED) for AP ${subject}.
-   ${whitelist && whitelist.forbiddenSignatures.length > 0 ? `- STRICTLY FORBIDDEN: Under NO circumstances include mathematical calculus formulas (derivatives, integrals, slope fields, limits, volume of revolution) or concepts from other AP courses into AP ${subject}!` : ""}
+   ${whitelist && whitelist.forbiddenSignatures.length > 0 ? `- STRICTLY FORBIDDEN: Under NO circumstances include mathematical calculus formulas or concepts from other AP courses into AP ${subject}!` : ""}
+   ${isCalcSubj && !isBcSubj ? `- AP CALCULUS AB FIREWALL (MANDATORY): Under NO circumstances include Calculus BC topics! Strictly FORBIDDEN: NO Infinite Sequences or Series, NO Taylor/Maclaurin Polynomials, NO Ratio Test, NO Alternating Series, NO Euler's Method, NO Logistic Differential Equations, NO Integration by Parts, NO Parametric/Polar curves! Strictly Units 1-8 only.` : ""}
    - Every question must test legitimate, authentic concepts from AP ${subject} Units and Skills.
 
 2. AUTHENTIC MULTI-PART STRUCTURE & POINT VALUES:
-   - For AP Human Geography: Real Section II FRQs typically have 4 to 7 distinct sub-parts labeled (a) through (g) or (a) through (e), testing command verbs: "Identify", "Define", "Describe", and "Explain".
-   - For AP Calculus / Science: Multi-part problems typically have (a), (b), (c), (d).
-   - "totalPoints" MUST BE AN EXACT INTEGER EQUAL TO THE SUM OF ALL SUB-PARTS (e.g. 7 points for a 7-part question). NEVER set totalPoints to 1 when a question has 4 to 7 sub-parts!
-   - In "scoringRubric", provide a precise, point-by-point rubric matching each subpart:
-     e.g. ["Part (a) [1 point]: 1 pt for correctly identifying...", "Part (b) [1 point]: 1 pt for defining...", "Part (c) [2 points]: 1 pt for describing..., 1 pt for explaining..."]
+   - For AP Calculus (AB and BC): Every Section II Free Response Question MUST consist of subparts labeled (a), (b), (c), and (d) and MUST have "totalPoints": 9. Exactly 9 points per FRQ.
+   ${isBcSubj ? `- FOR AP CALCULUS BC (MANDATORY 100% REAL-EXAM REPLICA - COLLEGE BOARD SECTION II):
+     * PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL EXAM SETS (2023, 2024, 2025, 2026) & CHIEF READER REPORTS (SHARON TAYLOR):
+     * Exactly 6 Free Response Questions (90 Minutes, 54 Points Total). Every single question MUST have "totalPoints": 9.
+     * THE 6 CANONICAL COLLEGE BOARD BC ARCHETYPES:
+       - Q1 (Calc Active): Rate In / Rate Out Accumulation or Non-Uniform Data Table Modeling (average value, average rate with units, Riemann/trapezoidal sums, limits, EVT Candidates Test).
+       - Q2 (Calc Active): Polar Curves r(theta) & Area (1/2 int(r_1^2 - r_2^2)dtheta), Farthest from y-axis (x = r cos theta, dx/dtheta = 0 with Candidates Test), dr/dt related rates OR 2D Parametric Vector Motion.
+       - Q3 (No Calc): Contextual Differential Equations & Slope Fields (solution curve sketch, tangent line approximation, concavity d^2y/dt^2 for overestimate/underestimate, separation of variables particular solution).
+       - Q4 (No Calc): Graphical Analysis of f' & Accumulation Function (graph of semicircles and straight lines, FTC g'(x) = f(x), points of inflection, Candidates Test table for absolute extrema).
+       - Q5 (No Calc): Advanced BC Calculus (Euler's method 2-step equal-increment table [x, y, dy/dx, Delta y], implicit 2nd derivative d^2y/dx^2, Lagrange Error Bound [max |f^{(n+1)}|/(n+1)!]*|x-c|^{n+1}, or improper integrals).
+       - Q6 (No Calc): THE SIGNATURE BC Infinite Series & Taylor Polynomials (Ratio Test for radius and interior interval, INDEPENDENT testing of BOTH endpoints via AST or Harmonic comparison, term-by-term derivative f'(x), general term, geometric series sum S = a/(1 - r), error bounds).
+     * STRICT CHIEF READER SCORING MANDATES & AVOIDANCE OF FATAL TRAPS:
+       1. THE CANDIDATES TEST MANDATE: To justify absolute extrema on a closed interval [a, b], students MUST evaluate the function at ALL critical points AND both endpoints in a table. Local derivative tests earn 0 justification points.
+       2. "DIFFERENTIABLE IMPLIES CONTINUOUS": When using IVT or EVT, students must state "Because f is differentiable, f is continuous". Stating only that f is continuous without justification loses the point.
+       3. 3-DECIMAL PRECISION: Calculator answers must be accurate to at least 3 places after the decimal point (rounded or truncated).
+       4. NO ARITHMETIC WITH INFINITY: Expressions like '38/(25 + inf^2) = 0' are penalized. Students must write proper limit expressions lim_{t->inf}.
+       5. NO SIMPLIFICATION REQUIRED: Answers like (100 - 90)/2 or (1/4)(11.112896) earn full credit without simplification.
+       6. POLAR AREA FACTOR: Must include 1/2 factor and square each radius individually: (1/2)*int (r_1^2 - r_2^2) dtheta.
+     * CRITICAL ANTI-PLAGIARISM & ORIGINALITY DIRECTIVE:
+       - NEVER copy verbatim functions, characters, or numbers from released exam PDFs (do NOT reuse 7.6arctan(0.2t), coffee cooling, milk warming, or reading rate table verbatim).
+       - Invent 100% fresh, solvable, mathematically elegant scenarios.
+     * MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+       - PASS 1 (Analytical Pre-Solving): Before finalizing any question, internally solve every subpart. Verify that all integrals yield clean real values, critical points lie strictly within the designated domain, Euler's method steps do not divide by zero, and series ratio tests produce valid non-zero radii.
+       - PASS 2 (Rubric Consistency): Verify that total points = exactly 9 points (P1 to P9 labeled), all subparts (a)-(d) have corresponding model answers and scoring breakdown, and no impossible physical data exists.
+       - SELF-HEALING: If ANY calculation error, sign mistake, asymptote within interval, or unsolvable equation is detected, immediately discard and regenerate or heal the question before outputting.` : ""}
+   ${isChemSubj ? `- FOR AP CHEMISTRY (MANDATORY 100% REAL-EXAM REPLICA - COLLEGE BOARD SECTION II):
+     * PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL EXAM SETS (2023, 2024, 2025, 2026) & CHIEF READER REPORTS (KYLE A. BERAN):
+     * Exactly 7 Free Response Questions (105 Minutes, 46 Points Total).
+     * STRUCTURE & POINT ALLOCATION:
+       - Questions 1 to 3 (LONG FRQs): Exactly 10 points each (~23 minutes each), subparts (a) through (f) or (g).
+       - Questions 4 to 7 (SHORT FRQs): Exactly 4 points each (~9 minutes each), subparts (a) through (c) or (d).
+     * THE 7 CANONICAL COLLEGE BOARD AP CHEMISTRY ARCHETYPES:
+       - Q1 (Long, 10 pts): Solution Stoichiometry, Weak Acid/Base Titration Curves, Half-Equivalence Point pH = pKa, Buffers (Henderson-Hasselbalch), Net Ionic Equations & Particulate Models.
+       - Q2 (Long, 10 pts): Chemical Kinetics from Initial Rates Data, Rate Law & Rate Constant k with Specific Units, Integrated Rate Law Graphical Linearity ([A], ln[A], 1/[A] vs t), Elementary Reaction Mechanisms with Slow Step Verification, and Maxwell-Boltzmann / Catalysis Activation Energy.
+       - Q3 (Long, 10 pts): Chemical Thermodynamics, Calorimetry q = mc*Delta*T (STRICT: Delta*T limits sig figs to 2 sig figs), Molar Enthalpy Delta*H_rxn = -q/n, Hess's Law / Delta*H\xB0_f, Microstate Entropy Delta*S\xB0 (dispersal of matter, never 'disorder'), Gibbs Free Energy Delta*G\xB0 = Delta*H\xB0 - T*Delta*S\xB0 with kJ/J conversions, and Equilibrium Constant K_eq.
+       - Q4 (Short, 4 pts): Molecular Structure, Lewis Electron-Dot Diagrams with Nonzero Formal Charge Minimization, VSEPR Geometries & Bond Angles, Hybridization (sp, sp2, sp3), and Net Dipole Symmetry.
+       - Q5 (Short, 4 pts): Gas Laws PV = nRT, Dalton's Partial Pressures over Water (P_tot = P_gas + P_H2O), Real Gas Deviations (particle volume & attractions), and Intermolecular Forces / Polarizability (larger electron cloud, NEVER citing molar mass alone).
+       - Q6 (Short, 4 pts): Electrochemistry, Galvanic/Voltaic Cells, Standard Cell Potential E\xB0_cell = E\xB0_cathode - E\xB0_anode (INTENSIVE: never multiply by coefficients), Salt Bridge Ion Migration, Non-Standard Voltage Shifts, and Faraday's Law Electrolysis Stoichiometry (I = q/t, comparing mole ratios and molar masses).
+       - Q7 (Short, 4 pts): Solubility Equilibria K_sp (pure solids strictly omitted from denominator), Molar Solubility, Common Ion Effect, Precipitation Criteria (Q > K_sp), OR Beer-Lambert Law (A = epsilon*b*c) & PES Spectrum Analysis.
+     * STRICT CHIEF READER SCORING MANDATES & AVOIDANCE OF FATAL TRAPS:
+       1. SIG FIGS IN CALORIMETRY: Delta*T = T_f - T_i limits answer to 2 sig figs (e.g. 22.38 - 22.00 = 0.38\xB0C -> 2 sig figs). Final q and Delta*H must be rounded to 2 sig figs (160 J or 0.16 kJ).
+       2. COULOMB'S LAW: Explanations of lattice energy or ionic force must explicitly cite BOTH ionic charge and internuclear separation distance (r).
+       3. ENTROPY: Disallow 'disorder/chaos'; mandate 'dispersal of energy and matter / microstates'.
+       4. LDF POLARIZABILITY: Explaining London dispersion forces MUST cite 'larger, more polarizable electron cloud due to greater number of electrons / occupied shells'. Citing molar mass alone earns 0 points!
+       5. HYDROGEN BONDING: Requires H covalently bonded to N, O, or F attracted to a lone pair on adjacent N, O, or F.
+       6. INTENSIVE CELL POTENTIAL: E\xB0 is an intensive property and must never be multiplied by stoichiometric coefficients.
+       7. K_sp EQUILIBRIUM: Pure solids (s) and liquids (l) must never appear in the denominator.
+     * MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+       - PASS 1 (Chemical & Mathematical Pre-Solving): Solve internally first. Verify balanced atoms/charges, positive Kelvin, exothermic neutralizations, unit consistency (kJ vs J in Delta G = Delta H - T Delta S), and positive concentrations.
+       - PASS 2 (Rubric Consistency): Verify point breakdown (10 points for Q1-Q3 labeled Point 01-10, 4 points for Q4-Q7 labeled Point 01-04).
+       - SELF-HEALING: If any chemical impossibility or unbalanced equation occurs, heal or regenerate immediately before outputting.
+     * ANTI-PLAGIARISM DIRECTIVE:
+       - NEVER copy verbatim scenarios, numbers, or questions from released 2023\u20132026 AP exam PDFs. Invent 100% original, solvable problems.` : ""}
+   ${isBioSubj ? `- FOR AP BIOLOGY (MANDATORY 100% REAL-EXAM REPLICA - COLLEGE BOARD SECTION II):
+     * PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL EXAM SETS (2023, 2024, 2025, 2026) & CHIEF READER REPORTS (JAY MAGER, AMY DOLING):
+     * Exactly 6 Free Response Questions (90 Minutes, 34 Points Total).
+     * STRUCTURE & POINT ALLOCATION:
+       - Questions 1 & 2 (LONG FRQs): Exactly 9 points each (~25 minutes each), subparts (a) [1 pt], (b) [3 pts: b1, b2, b3], (c) [3 pts: c1, c2, c3], (d) [2 pts: d1, d2].
+       - Questions 3 to 6 (SHORT FRQs): Exactly 4 points each (~10 minutes each), subparts (a) [1 pt], (b) [1 pt], (c) [1 pt], (d) [1 pt].
+     * THE 6 CANONICAL COLLEGE BOARD AP BIOLOGY ARCHETYPES:
+       - Q1 (Long, 9 pts): Interpreting and Evaluating Experimental Results with negative/positive control justification, rate/codon math calculation, and disruption prediction.
+       - Q2 (Long, 9 pts): Interpreting and Evaluating Experimental Results with Graphing (\xB12 SE_x error bars, axis scaling/units), >50% threshold identification, and statistical significance claim based on error bar overlap.
+       - Q3 (Short, 4 pts): Scientific Investigation with negative control isolation, strict null hypothesis ("independent variable has NO effect / NO difference on dependent variable"), and experimental justification.
+       - Q4 (Short, 4 pts): Conceptual Analysis of evolutionary mechanisms (genetic evidence of evolution = change in allele frequency over time, allopatric speciation, selective pressure).
+       - Q5 (Short, 4 pts): Analyze Model or Visual Representation (enzyme-substrate active site complementarity, allosteric noncompetitive inhibition, environmental denaturation).
+       - Q6 (Short, 4 pts): Analyze Data (gel electrophoresis, qPCR expression, flow cytometry, linking molecular data to organismal phenotype).
+     * STRICT CHIEF READER SCORING MANDATES & FATAL TRAPS:
+       1. NULL HYPOTHESIS: Must assert NO effect or NO difference. Directional predictions earn 0 points!
+       2. CONTROL GROUP JUSTIFICATION: Must state the specific variable being isolated. Vague "to see what is normal" earns 0 points!
+       3. ERROR BAR OVERLAP (\xB12 SE_x): Overlapping error bars = no statistically significant difference between means.
+       4. GENETIC EVOLUTION DEFINITION: Must specify "change in allele (or gene) frequencies in a population over time".
+       5. CODON MATH: Nucleotide count divided by 3 = amino acids.
+       6. ALLOSTERIC VS COMPETITIVE: Non-active site binding causing conformational change is allosteric/noncompetitive.
+     * MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+       - PASS 1: Check null hypothesis wording, codon math, positive standard error bars, and allele frequencies 0 <= p <= 1.
+       - PASS 2: Verify totalPoints (9 points for Q1-Q2, 4 points for Q3-Q6) and rubrics.
+       - SELF-HEALING: If any scientific inaccuracy or rubric mismatch occurs, immediately regenerate or heal before outputting.
+     * ANTI-PLAGIARISM DIRECTIVE:
+       - NEVER copy verbatim scenarios, organisms, or numbers from official 2023\u20132026 AP exam PDFs. Invent 100% original, solvable problems.` : ""}
+   ${isPhys1Subj ? `- FOR AP PHYSICS 1: ALGEBRA-BASED (MANDATORY 100% REAL-EXAM REPLICA - COLLEGE BOARD SECTION II):
+     * PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL EXAM SETS (2023, 2024, 2025, 2026) & CHIEF READER REPORTS (BRIAN UTTER, UC MERCED - 174,992 STUDENTS):
+     * Exactly 4 Free Response Questions (1 Hour 40 Minutes = 100 Minutes Total, 40 Points Total).
+     * STRUCTURE & POINT ALLOCATION:
+       - Q1 (MR - Mathematical Routines, 10 pts, ~25 min): Kinematics, Linear Momentum, or Fluids. Multi-step algebraic derivation starting from fundamental principles (p_i = p_f or Sigma F = ma), component velocity/momentum graph sketches (horizontal continuous line, negative slope line), and qualitative physical justification (internal vs external forces).
+       - Q2 (TBR - Translation Between Representations, 12 pts, ~25-30 min): Mechanical Energy Conservation, Incline Dynamics & Springs. Energy bar charts (LOL diagrams) summing strictly to 12*E_0 in all states, incline geometry Delta y = Delta x * sin(theta), (4D)^2 = 16D^2, graphing total mechanical energy E (horizontal line) and gravitational potential energy U_g (straight decreasing line), and speed comparison justified by energy curve relationships.
+       - Q3 (LAB - Experimental Design and Analysis, 10 pts, ~25-30 min): Torque & Meterstick Balance, Photogate & Ramp Friction, or Oscillations. Part A: Lab procedure with limited equipment and explicit steps to reduce experimental uncertainty (repeated trials at multiple positions). Part B: Analytical equation linearization (identifying vertical and horizontal axes so slope yields target quantity). Part C: Coordinate grid plotting with BOTH variable name AND matching units (e.g. F_T (N), 1/sin(theta)), linear scale, and smooth single best-fit line. Part D: Slope calculation using two coordinates on the line to calculate unknown mass/friction.
+       - Q4 (QQT - Qualitative/Quantitative Translation, 8 pts, ~20 min): Fluids (Buoyancy & Density) or Rotational Dynamics (Torque & Rotational Inertia). Part A: Qualitative physical claim with qualitative justification referencing ALL forces/torques without mathematical equations. Part B: Symbolic derivation starting with Newton's second law in translational form (Sigma F = ma -> F_b - mg = ma -> a = (rho*V*g)/m - g) or rotational form (tau = I*alpha -> F_0*r_0 = I*alpha). Part C: Consistency bridge evaluating functional dependence ('directly proportional', 'numerator', 'inverse relationship') linking Part B to Part A.
+     * STRICT CHIEF READER SCORING MANDATES & FATAL TRAPS:
+       1. FIRST PRINCIPLES MANDATE: Every derivation MUST explicitly begin with an equation from the reference sheet. Starting with numbers or intermediate steps loses credit!
+       2. INTERNAL FORCES IN COLLISIONS: Contact friction between block and cart is internal; total momentum strictly remains constant when net external force is zero.
+       3. INCLINE HEIGHT GEOMETRY: Vertical height change is Delta y = D*sin(theta).
+       4. ALGEBRAIC SQUARING: (4D)^2 = 16D^2, NOT 4D^2.
+       5. GRAPH AXES: MUST include BOTH quantity name and unit (e.g. F_T (N)).
+       6. BEST-FIT LINE: Smooth single line, NEVER connect-the-dots. Slope calculated from points on the line.
+       7. FLUID NOTATION: rho (density) must never be confused with p (momentum/pressure).
+       8. QQT CONSISTENCY: Must explicitly use functional dependence terminology ('directly proportional', 'numerator').
+     * MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+       - PASS 1 (Physical Feasibility): Check conservation of momentum (net external force = 0), mechanical energy sum in LOL charts (= 12*E_0), real non-negative speeds, realistic friction (0 < mu_k < 1.0).
+       - PASS 2 (Rubric Breakdown): Verify 10 pts for Q1, 12 pts for Q2, 10 pts for Q3, 8 pts for Q4.
+       - SELF-HEALING: If any physical law violation or point mismatch occurs, immediately heal or regenerate before outputting.
+     * ANTI-PLAGIARISM DIRECTIVE: NEVER copy verbatim scenarios or numbers from official PDFs; invent fresh, authentic physical systems.` : ""}
+   ${isAphgSubject ? `- FOR AP HUMAN GEOGRAPHY (MANDATORY REAL-EXAM REPLICA - COLLEGE BOARD SECTION II):
+     * Every single Free Response Question MUST consist of EXACTLY 7 distinct parts labeled A, B, C, D, E, F, and G.
+     * "totalPoints" MUST BE EXACTLY 7 (each part A through G is worth exactly 1 point: +1 pt per part).
+     * STRICTLY FORBIDDEN TASK VERBS:
+       - NEVER use "Evaluate" (e.g., DO NOT write "Evaluate a potential limitation...").
+       - NEVER use "Justify" (e.g., DO NOT write "Justify why geographers...").
+       - College Board APHG FRQ readers NEVER award points for 'Evaluate' or 'Justify'.
+     * APPROVED COLLEGE BOARD TASK VERBS ONLY:
+       - "Identify..." (1 concise sentence identifying specific concept, data point, or pattern).
+       - "Define..." (Formal academic definition).
+       - "Describe..." (Observable characteristics, spatial patterns, or historical conditions).
+       - "Explain..." ("Explain how..." or "Explain why..." with clear cause-and-effect line of reasoning).
+       - "Compare..." (Direct contrast or similarity).
+     * SIGNATURE PROMPT (MANDATORY IN PART F OR G):
+       "Explain the degree to which [phenomenon]... (Response must indicate the degree [low, moderate, high] and provide an explanation.)"
+     * UNIT CONTAINMENT MANDATE:
+       - If generating for a specific Unit (e.g. "${targetTopic}"): ALL 7 parts MUST be 100% strictly anchored within that unit! NEVER leak models from later units (e.g., in Unit 1: NO Burgess, NO Hoyt, NO Von Th\xFCnen, NO DTM, NO Wallerstein).
+      * THE 3-PILLAR AUTHENTIC STIMULUS ARCHITECTURE (FOR TYPES 2 & 3):
+        - PILLAR 1 (CANONICAL VECTOR SVG MAPS & SPATIAL MODELS): When testing visual stimuli, explicitly name the canonical figure in the prompt header:
+          \u2022 Unit 2 (Population & Migration): "Figure 1: Demographic Transition Model (DTM Stages 1\u20135)" OR "Figure 1: Global Total Fertility Rates (TFR) Thematic Choropleth Map" OR "Figure 1: Major Global Transnational Migration Corridors and Labor Flows Map"
+          \u2022 Unit 5 (Agriculture): "Figure 1: Von Th\xFCnen Model of Agricultural Land-Use"
+          \u2022 Unit 6 (Cities & Urban): "Figure 1: Burgess Concentric Zone Urban Model" OR "Figure 1: Hoyt Sector Model (Axial Urban Corridors)" OR "Figure 1: Harris-Ullman Multiple Nuclei and Galactic Edge City Model"
+          \u2022 Unit 7 (Industrial & Economic Development): "Figure 1: Wallerstein World Systems Theory (Core-Periphery Spatial Model)"
+          (The system automatically binds verified, dark-mode vector SVGs for these figures.)
+        - PILLAR 2 (AUTHENTIC DEMOGRAPHIC & SPATIAL DATA TABLES): The #1 most frequent stimulus format in College Board PYQs. Format as standard GitHub Markdown tables (| Country/Region | CBR | CDR | TFR | GNI per Capita |) with authentic institutional citations (UN, World Bank, FAO). NEVER use LaTeX math arrays ($$\begin{array}).
+        - PILLAR 3 (PAIRED SPATIAL REGIONAL CASE SCENARIOS): For Type 3 (Two Stimuli), pair Source 1 (Thematic Map or Spatial Boundary Scenario) with Source 2 (Demographic or Remittance Data Table). Parts A-G must require students to synthesize both sources.
+        - ZERO GHOST STIMULI: NEVER write "Source 1 is a map..." without naming the canonical figure or providing the data table! For Type 1 (No Stimulus): 1-2 sentence real-world geographic scenario + parts A to G. NEVER say "Source 1", "Source 2", "in the map", or "in the table".
+     * MANDATORY DUAL-PASS SELF-VERIFICATION & CRITIC AUDIT (INTERNAL AUDIT BEFORE JSON OUTPUT):
+       - AUDIT 1 (Structure Check): Count your subparts. Are there EXACTLY 7 parts (A, B, C, D, E, F, G)? If fewer or more, immediately reconstruct all 7 parts.
+       - AUDIT 2 (Task Verb Audit): Inspect every single part A-G. Did you use "Evaluate" or "Justify"? If yes, change it immediately to "Explain" or "Describe".
+       - AUDIT 3 (Degree Prompt Audit): Check Part F and G. Does it include "(Response must indicate the degree [low, moderate, high] and provide an explanation.)"? If missing, append it immediately.
+       - AUDIT 4 (Unit Boundary Audit): If generating for "${targetTopic}", strictly inspect all questions and answers. If Unit 1 is selected, eliminate any mention of DTM, Burgess, Hoyt, Von Th\xFCnen, or Wallerstein. All 7 parts must be 100% pure Unit 1.
+       - AUDIT 5 (Stimulus & Table Audit): Ensure zero ghost stimuli. Provide data tables as clean standard GitHub Markdown tables (| Col 1 | Col 2 |). Never use LaTeX math arrays ($$\begin{array}) for data tables.
+     * SCORING GUIDELINES & RUBRICS:
+       - In "scoringRubric", provide a comprehensive 7-point array (+1 pt each for parts A-G) with multiple acceptable criteria options (e.g. "Part A [1 point]: 1 pt for any of: \u2022 A1 ... \u2022 A2 ...") matching real College Board exam rubrics.` : isWhapSubj ? `- FOR AP WORLD HISTORY: MODERN (MANDATORY 100% REAL-EXAM REPLICA - SECTION I PART B & SECTION II):
+      * PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL 2023, 2024, 2025, 2026 EXAM SETS & CHIEF READER REPORTS (CRAIG MILLER - 412,964 STUDENTS):
+      * In Exam Simulation Mode: Exactly 5 Free-Response Questions (Section I Part B: SAQ 1, SAQ 2, SAQ 3 [3 pts each] + Section II: DBQ [7 pts] + LEQ [6 pts] = 22 Points Total).
+      * STRUCTURE & POINT ALLOCATION:
+        - Question 1 (SAQ 1 - Secondary Source Analysis, 3 pts): Excerpt from a modern historian analyzing global processes (1200\u20132001). Parts a, b, c (describe argument, explain historical development supporting argument, explain development refuting/qualifying argument). ACE method mandatory.
+        - Question 2 (SAQ 2 - Primary Source / Visual Artifact, 3 pts): Written primary text (travelogue, merchant journal, imperial edict) or Visual Artifact / Map. Parts a, b, c (historical situation, HIPP sourcing [author's point of view, purpose, audience], connection to broader global process). ACE method mandatory.
+        - Question 3 (SAQ 3 - Non-Stimulus Conceptual / CCOT, 3 pts): No stimulus. Parts a, b, c (identify similarity/difference or continuity/change, explain cause/effect, explain global consequence). ACE method mandatory.
+        - Question 4 (DBQ - Document-Based Question, 7 pts): Comprehensive historical prompt with 7 distinct documents (Documents 1 through 7 with full citations). Official 7-Point College Board Rubric:
+          1. Thesis / Claim (1 pt): Historically defensible thesis establishing a clear line of reasoning.
+          2. Contextualization (1 pt): Broader historical context leading up to or framing prompt (3-4 sentences).
+          3. Evidence from Documents (2 pts): Accurately uses content of 3+ docs (1 pt), and supports argument using content of 4+ docs (2 pts).
+          4. Evidence Beyond the Documents (1 pt): Specific historical evidence NOT found in the documents.
+          5. Sourcing / HIPP Analysis (1 pt): Explains HOW or WHY HIPP is relevant to argument for 2+ docs.
+          6. Complex Understanding (1 pt): Nuance, qualification, corroboration, or insightful connections across time/space.
+        - Question 5 (LEQ - Long Essay Question, 6 pts): Comprehensive historical prompt structured around comparison, causation, or continuity and change over time (CCOT). Official 6-Point College Board Rubric:
+          1. Thesis / Claim (1 pt)
+          2. Contextualization (1 pt)
+          3. Evidence (2 pts): Specific historical facts (1 pt), supports argument using specific evidence (2 pts).
+          4. Historical Reasoning (1 pt): Valid comparison, causation, or CCOT structure.
+          5. Complex Understanding (1 pt): Nuance, qualification, or corroboration.
+      * STRICT CHIEF READER SCORING MANDATES & FATAL TRAPS:
+        1. DIRECT QUOTE BAN: Direct quotes from documents earn 0 points! Students must accurately describe and analyze document content in their own words.
+        2. "DRIVE-BY" SOURCING BAN: Simply stating the author's identity or profession earns 0 points for HIPP sourcing. Sourcing MUST explain HOW or WHY the author's background, point of view, purpose, or intended audience influenced the document's content or affected its historical reliability.
+        3. CHRONOLOGY FIREWALL: Outside evidence and contextualization must strictly respect historical periodization (e.g. no Industrial Revolution in 1200\u20131450, no 19th-century steam technology in 16th-century silver trade).
+        4. ACE METHOD FOR SAQs: Every SAQ response MUST follow the ACE format (Answer direct claim, Cite specific proper-noun historical evidence, Explain historical mechanism).
+      * ANTI-PLAGIARISM DIRECTIVE:
+        - NEVER copy verbatim excerpts or prompts from released College Board exams (e.g. do NOT use Anthony Pagden, Spodek/Louro, Tom Standage, or George Padmore verbatim). Invent 100% original, historically authentic scenarios.` : isApushSubject2 ? `- FOR AP U.S. HISTORY (APUSH) SHORT-ANSWER QUESTIONS (MANDATORY REAL-EXAM REPLICA):
+     * Every single Question MUST be an authentic College Board Short-Answer Question (SAQ) consisting of EXACTLY 3 distinct parts labeled A, B, and C.
+     * "totalPoints" MUST BE EXACTLY 3 (each part A, B, and C is worth exactly 1 point: +1 pt per part).
+     * Follow College Board Question Types strictly:
+       - Type 1 (Paired Secondary Sources): Two conflicting historian excerpts with full citations + Parts A, B, C (describe difference, outside evidence supporting Historian 1, outside evidence supporting Historian 2).
+       - Type 2 (Single Primary Source): Historical speech, letter, or document with citation + Parts A, B, C (HAPP author point of view/purpose, preceding cause, subsequent effect).
+       - Type 3 (No Stimulus): Non-stimulus prompt testing comparative reasoning or CCOT across historical eras + Parts A, B, C.
+     * Model answer MUST strictly use the ACE Method (Answer direct claim, Cite specific proper-noun historical evidence, Explain historical mechanism).
+     * NEVER copy verbatim excerpts or questions from official College Board PDFs to ensure originality and prevent copyright issues.` : isMacroSubj ? `- FOR AP MACROECONOMICS (MANDATORY 100% REAL-EXAM REPLICA - COLLEGE BOARD SECTION II):
+      * PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL 2023, 2024, 2025, 2026 EXAM SETS & CHIEF READER REPORTS (SAM ANDOH - 176,938 STUDENTS):
+      * In Exam Simulation Mode: Exactly 3 Free Response Questions (60 Minutes, 20 Points Total).
+        - Question 1 (LONG FRQ): EXACTLY 10 POINTS (~25 min). Multi-part (a) through (e)/(f) testing Macro Equilibrium (AD-AS or Phillips Curve graph with Y1, PL1, YF or point X/Un), Self-Adjustment/Fiscal Shock, Loanable Funds Market (r vs Q), Foreign Exchange (Forex) Market with fraction axis (e.g. RHM/VTC), Capital and Financial Account (CFA), and Balance of Payments identity (CA + CFA = 0).
+        - Question 2 (SHORT FRQ): EXACTLY 5 POINTS (~12.5 min). Monetary Policy with AMPLE RESERVES (Administered interest rates / Interest on Reserves [IORB], Reserve Market graph with flat demand floor and vertical SR) vs LIMITED RESERVES (Open market bond operations, Money Market graph), and bond price inverse relation.
+        - Question 3 (SHORT FRQ): EXACTLY 5 POINTS (~12.5 min). Macro Data Tables (Real vs Nominal GDP, GDP Deflator), Spending Multiplier (1/(1-MPC)) & Minimum Change in Government Spending (Output Gap / Multiplier with explicit work setup), AD-AS shifts, and Automatic Stabilizers.
+      * In Practice Mode (5, 10, 15 Questions): Cycle through these 3 canonical archetypes (Q1 Long 10 pts, Q2 Short Ample 5 pts, Q3 Short Data 5 pts) in repeating, mixed sequences across diverse real-world macroeconomic scenarios.
+      * STRICT CHIEF READER SCORING MANDATES & FATAL TRAPS:
+        1. AMPLE RESERVES TOOL: In an ample reserves banking system, the central bank changes administered rates / IOR. Proposing open-market bond purchases or reserve ratio changes earns 0 points!
+        2. MULTIPLIER DIVIDER: To find change in spending, divide the output gap by the spending multiplier: Delta G = Output Gap / Multiplier. NEVER multiply!
+        3. BALANCE OF PAYMENTS IDENTITY: CFA and CA must offset: CA + CFA = 0. If current account is in deficit, capital/financial account moves into surplus.
+        4. FOREX GRAPH AXIS: The vertical axis MUST be labeled as a currency fraction (e.g., Currency A / Currency B).
+        5. "EXPLAIN" COMMAND VERB: Stating a claim alone without tracing the causal transmission mechanism earns 0 points!
+      * MANDATORY DUAL-PASS SELF-VERIFICATION & QUALITY GATE:
+        - PASS 1 (Mathematical Sanity): Actual Unemployment = Natural + Cyclical. Clean whole numbers for multipliers. Real GDP = Nominal GDP in base year.
+        - PASS 2 (Policy & Rubric Parity): Q1 has exactly 10 points (Point 1-10 labeled in rubric); Q2 and Q3 have exactly 5 points each (Point 1-5 labeled in rubric).
+        - SELF-HEALING: If any calculation error, economic contradiction, or ample/limited tool mismatch is detected, immediately heal or regenerate before outputting.
+      * ANTI-PLAGIARISM DIRECTIVE: NEVER copy country names (Vanderlandia, Noralandia, Zeta, Northland, Maltrose, Vortania, Barrikos, Jenland, Middleland, Micanapy, Foxhound, Lizland) or exact numbers verbatim from released exams. Invent original, authentic scenarios.` : isLangSubj ? `- FOR AP ENGLISH LANGUAGE AND COMPOSITION (MANDATORY 100% REAL-EXAM REPLICA - COLLEGE BOARD SECTION II):
+      * PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL 2023, 2024, 2025, 2026 EXAM SETS & CHIEF READER REPORTS (MICHAEL NEAL - 617,689 STUDENTS):
+      * In Exam Simulation Mode: Exactly 3 Free Response Essays (2 Hours 15 Minutes = 135 Minutes Total, 18 Points Total).
+        - Question 1 (SYNTHESIS ESSAY): EXACTLY 6 POINTS (~55 min: suggested 15 min reading/sources + 40 min writing).
+          \u2022 Must provide 6 distinct, authentically cited sources (Sources A through F) with rich context.
+          \u2022 At least 1 source (Source B or Source F) MUST be a quantitative GitHub Markdown data table (| Demographic | % Metrics |).
+          \u2022 Prompt Assignment: Synthesize at least 3 sources to support an argument taking a position on a nuanced public issue.
+          \u2022 FATAL TRAP TO PREVENT: The "Summary Trap" (summarizing source by source without synthesizing or advancing an original claim).
+        - Question 2 (RHETORICAL ANALYSIS ESSAY): EXACTLY 6 POINTS (~40 min).
+          \u2022 Must provide a substantial, authentic-style 700\u20131000 word nonfiction text (historic address, published essay, or letter).
+          \u2022 Explicit rhetorical triangle in prompt header: Speaker, Occasion, Audience, Exigence, and Purpose.
+          \u2022 Prompt Assignment: Analyze the rhetorical choices made to convey message / achieve purpose.
+          \u2022 FATAL TRAP TO PREVENT: "Device Hunting / Grocery Listing" (merely naming metaphors, polysyndeton, or ethos without analyzing how specific choices move that specific audience).
+        - Question 3 (ARGUMENT ESSAY): EXACTLY 6 POINTS (~40 min).
+          \u2022 Must provide a thought-provoking, non-trivial philosophical or cultural quotation.
+          \u2022 Prompt Assignment: Argue a position on the extent to which the claim holds true, supported by outside evidence.
+          \u2022 FATAL TRAP TO PREVENT: Dictionary definition hooks, hypothetical/clich\xE9 examples, and binary oversimplification.
+      * In Practice Mode (5, 10, 15 Questions):
+        - 5 questions: Canonical Q1, Q2, Q3 in exact order + 2 mixed variations.
+        - 10 questions: Canonical Q1, Q2, Q3 in order + 7 mixed variations across diverse public themes.
+        - 15 questions: 4 full 3-question cycles (12 essays) + 3 mixed capstones.
+      * UNIVERSAL 6-POINT ANALYTIC RUBRIC (FOR ALL 3 ESSAYS):
+        - Row A: Thesis (0-1 pt): Defensible thesis establishing a clear line of reasoning.
+        - Row B: Evidence and Commentary (0-4 pts): Synthesizes/analyzes specific evidence with continuous analytical commentary.
+        - Row C: Sophistication (0-1 pt): Complex understanding, qualifying claims, exploring tensions, or persuasive rhetorical maturity.
+      * MANDATORY DUAL-PASS SELF-VERIFICATION & QUALITY GATE:
+        - PASS 1: Check source counts (Sources A-F in Synthesis), rhetorical situation present in Q2, and valid quotation in Q3.
+        - PASS 2: Verify totalPoints = 6 for each essay and rubric breakdown into Row A (0-1), Row B (0-4), Row C (0-1).
+        - SELF-HEALING: If any passage is missing, sources are fewer than 4, or rubric is generic, immediately heal or regenerate before outputting.
+      * ANTI-PLAGIARISM DIRECTIVE: NEVER copy passages or prompts verbatim from released College Board exams. Invent original, intellectually rigorous scenarios.` : isPsychSubj ? `- FOR AP PSYCHOLOGY (MANDATORY 100% REAL-EXAM REPLICA - COLLEGE BOARD SECTION II):
+      * PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL 2023, 2024, 2025, 2026 AP EXAM SETS & CHIEF READER REPORTS (PROF. ELLIOTT HAMMER, XAVIER UNIV OF LOUISIANA - 334,960 STUDENTS):
+      * In Exam Simulation Mode: Exactly 2 Questions (70 Minutes Total = 1 Hour 10 Minutes, 14 Points Total).
+        - Question 1 (AAQ - ARTICLE ANALYSIS QUESTION): EXACTLY 7 POINTS (~25 min).
+          \u2022 Empirical research article summary (200-350 words) with hypothesis, sample, procedure, numerical results/table, and ethical safeguards.
+          \u2022 Mandatory 6 Parts (A through F):
+            - Part A [1 pt]: Identify research design (Experiment, Correlational study, Case study, Naturalistic observation, Meta-analysis). NEVER accept 'survey' alone.
+            - Part B [1 pt]: Operational definition of a specific variable (must be quantifiable/measurable behavior or scale score from study).
+            - Part C [1 pt]: Statistical interpretation (must explain what statistic indicates in context, including DIRECTION of difference/relationship).
+            - Part D [1 pt]: Ethical guideline followed (explicitly stated APA guideline from study: informed consent, debriefing, IRB, right to withdraw).
+            - Part E [1 pt]: Generalizability (CRITICAL RULE: Stating 'sample size was too small' EARNS ZERO POINTS! Generalizability is determined by sample REPRESENTATIVENESS, not sample size).
+            - Part F [2 pts]: Argumentation with CED Concept (Point 1: Citing specific empirical finding; Point 2: Explaining mechanism connecting finding to the designated CED psychological concept).
+        - Question 2 (EBQ - EVIDENCE-BASED QUESTION): EXACTLY 7 POINTS (~45 min).
+          \u2022 3 Distinct Empirical Research Summaries (Source 1, Source 2, Source 3) with authors, methods, demographics, and quantitative findings.
+          \u2022 Prompt poses an overarching research question.
+          \u2022 Mandatory 3 Parts:
+            - Part A [1 pt]: Defensible scientific claim establishing a line of reasoning.
+            - Part B [3 pts]:
+              \u2022 Part B(i) [1 pt]: Evidence from Source 1 or 2 with citation.
+              \u2022 Part B(ii) [2 pts]: Link evidence to claim + apply a substantive CED psychological concept. (Generic terms like 'variable' earn 0 pts).
+            - Part C [3 pts]:
+              \u2022 Part C(i) [1 pt]: Different evidence from a different source with citation.
+              \u2022 Part C(ii) [2 pts]: Link new evidence to claim + apply a DISTINCT SECOND CED psychological concept.
+              \u2022 FATAL TRAP: Repeating the same concept from Part B in Part C forfeits the concept point!
+      * In Practice Mode (5, 10, 15 Questions):
+        - 5 questions: Canonical Q1 AAQ + Q2 EBQ in order + 3 mixed variations.
+        - 10 questions: Canonical Q1 AAQ + Q2 EBQ in order + 8 mixed variations across all 5 CED units.
+        - 15 questions: Alternating cycles of AAQ and EBQ across distinct research domains.
+      * MANDATORY DUAL-PASS SELF-VERIFICATION & QUALITY GATE:
+        - PASS 1: Check Q1 has Parts A-F (total 7 pts); Q2 has 3 full empirical sources and Parts A, B, C (total 7 pts).
+        - PASS 2: Verify Q1 Part E tests representativeness (not sample size), and Q2 requires two distinct CED concepts.
+        - SELF-HEALING: If any source is missing or points do not equal 7, immediately heal or regenerate before outputting.
+      * ANTI-PLAGIARISM DIRECTIVE: NEVER copy passages or studies verbatim from official College Board PDFs; invent 100% original, rigorous research scenarios.` : isCsaSubj ? `- FOR AP COMPUTER SCIENCE A (MANDATORY 100% REAL-EXAM REPLICA - COLLEGE BOARD SECTION II):
+      * PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL 2023, 2024, 2025, 2026 EXAM SETS & CHIEF READER REPORTS (DON BLAHETA - 93,906 STUDENTS):
+      * In Exam Simulation Mode: Exactly 4 Free Response Questions (90 Minutes Total = 1 Hour 30 Minutes, 25-36 Points Total).
+        - Question 1 (METHODS AND CONTROL STRUCTURES): [7 Points (2026) / 9 Points (2025)] (~22.5 min).
+          \u2022 Provided Java class with preconditions, helper method signatures, and Javadoc contracts.
+          \u2022 Part (a): Write a helper method that calls instance methods on instance variables, performs boundary checks, and returns a calculated value or -1.
+          \u2022 Part (b): Write a driver/accumulator method that iterates with a loop over a range of inputs/hours, calling part (a) without redundant side effects, accumulating totals or conditional bonuses.
+        - Question 2 (CLASS DESIGN): [7 Points (2026) / 9 Points (2025)] (~22.5 min).
+          \u2022 Write a COMPLETE Java class from scratch modeling a real-world object/tracker/formatter!
+          \u2022 Mandatory: Class header, private instance variables (strict encapsulation), public constructor(s), public accessor & mutator methods.
+          \u2022 Must conform to an explicit 3-column Sample Execution Trace Table (Statement | Return Value | Explanation).
+          \u2022 String methods (.equals(), .substring(), .indexOf()) or state mutation.
+        - Question 3 (ARRAY / ARRAYLIST DATA ANALYSIS): [5 Points (2026) / 9 Points (2025)] (~22.5 min).
+          \u2022 Working with ArrayList<E> or 1D arrays of custom objects.
+          \u2022 Dual-pointer inward traversal (low & high) or nested iteration across two lists to match IDs without data destruction.
+          \u2022 Constructing new objects with 'new' keyword.
+        - Question 4 (2D ARRAYS): [6 Points (2026) / 9 Points (2025)] (~22.5 min).
+          \u2022 Manipulating 2D matrix (int[][] or Object[][]).
+          \u2022 Row-major nested traversal, neighbor checks, row/col point accumulation.
+          \u2022 Self-pairing guard: STRICTLY USE '!(r == row && c == col)' or 'r != row || c != col'. (NEVER use 'r != row && c != col' which erroneously excludes entire rows/columns!).
+      * In Practice Mode (5, 10, 15 Questions):
+        - 4 questions: Canonical Q1, Q2, Q3, Q4 in exact order.
+        - 5 questions: Canonical Q1, Q2, Q3, Q4 + 1 mixed variation (e.g. Q4 2D matrix game).
+        - 10 questions: Canonical Q1, Q2, Q3, Q4 in order + 6 mixed variations across the 4 archetypes with diverse real-world CS applications.
+        - 15 questions: Repeating cycles of Q1, Q2, Q3, Q4 with diverse CS domains.
+      * MANDATORY DUAL-PASS SELF-VERIFICATION & QUALITY GATE:
+        - PASS 1: Verify all instance variables in Q2 are 'private'. Check Strings compared using .equals(). Check self-pairing guard in Q4.
+        - PASS 2: Verify execution trace table outputs match canonical code step-by-step.
+        - SELF-HEALING: If any syntax or table mismatch is detected, immediately heal or regenerate before outputting.
+      * ANTI-PLAGIARISM DIRECTIVE: NEVER copy class names or scenarios verbatim from released College Board exams (e.g. no DogWalker, AppointmentBook, SignedText, BoxOfCandy). Invent 100% original, authentic Java scenarios.` : "- For AP Environmental Science: 10 points per FRQ with subparts (a) through (e)."}
+   - "totalPoints" MUST BE AN EXACT INTEGER EQUAL TO THE SUM OF ALL SUB-PARTS.
+   - In "scoringRubric", provide a precise, point-by-point rubric matching each subpart.
 
-3. REALISTIC STIMULUS VARIATION (MATCHING REAL COLLEGE BOARD EXAM FORMAT):
-   - Real AP exams use 3 stimulus categories:
-     * Category 1: No Stimulus (conceptual application, theory, synthesis).
-     * Category 2: Single Stimulus (authentic demographic/spatial data table, population pyramid, or textbook model diagram such as Demographic Transition Model, Von Th\xFCnen rings, or Burgess Concentric Zone).
-     * Category 3: Two Stimuli (comparative data sets, paired maps, or dual charts).
-   - When a question requires a visual model or chart, provide an authentic College Board standard SVG in "diagramSvg" (viewBox='0 0 400 220', with all text labels, numbers, and coordinates styled with fill='#4ade80' font-weight='bold') or format a clean Markdown/LaTeX data table in the prompt.
-   - The question prompt MUST reference specific details from the stimulus in its sub-parts (e.g., "Referring to the data in Table 1...", "Based on Stage 2 in the accompanying diagram...").
+3. MATHEMATICAL & LOGICAL INTEGRITY (NO HALLUCINATIONS):
+   - Prompt functions, numbers, and domains MUST match the model answer and scoring rubric with 100% exactness.
+   - If a prompt has (3x - 12)/(2x - 8), do NOT grade it with absolute values unless |3x - 12| is explicitly written in the prompt.
+   - Verify all derivatives, limits, integrals, and sign analyses step-by-step.
+   - If a problem references a graph or grid, ensure all relevant analytical values and coordinates are fully described in the prompt text.
 
 4. CLEAR FORMATTING & EXEMPLARY MODEL ANSWER:
    - Separate each part with a double newline '\\n\\n' so each part starts on a new line.
    - Provide a complete, maximum-points exemplary student response in 'modelAnswer' with explicit labels:
-     Part (a): [Step-by-step reasoning and complete response.]\\n\\nPart (b): [Full explanation...]\\n\\nPart (c): [Justification...]
-   - NEVER glue parts together.
+     ${isCsaSubj ? "Part (a):\\n```java\\npublic int findFirstAvailableBay(int startBay, int endBay) { ... }\\n```\\n\\nPart (b):\\n```java\\npublic boolean bookChargingSession(int startBay, int endBay) { ... }\\n```" : isAphgSubject ? "Part A: [Complete response]\\n\\nPart B: [Full explanation]...\\n\\nPart G: [Degree + justification]" : isApushSubject2 ? "Part A: [ACE Method: Direct answer claim, cite specific proper noun evidence, explain historical link]\\n\\nPart B: [ACE Method: Direct answer, cite specific outside evidence, explain link]\\n\\nPart C: [ACE Method: Direct answer, cite specific outside evidence, explain link]" : isLangSubj ? "Exemplary 6/6 student essay featuring a defensible thesis with line of reasoning, synthesized evidence with commentary, and sophistication..." : isPsychSubj ? "Part A: Controlled experiment...\\n\\nPart B: Operational definition...\\n\\nPart C: Statistical interpretation with direction...\\n\\nPart D: Ethical guideline...\\n\\nPart E: Generalizability limited by sample representativeness (not sample size)...\\n\\nPart F: Point 1 (Finding)... Point 2 (Mechanism linking finding to CED concept)..." : "Part (a): [Step-by-step reasoning and complete response.]\\n\\nPart (b): [Full explanation...]\\n\\nPart (c): [Justification...]"}
    - NEVER leak raw <svg> markup into the text of 'prompt' or 'modelAnswer'. All SVG code must be strictly in the 'diagramSvg' property!
 
 ${subjectGuidelines}
@@ -18060,8 +24439,9 @@ ${batchArchetypePlan}
 
 CRITICAL CODE, MATH & LATEX FORMATTING:
 - For Computer Science: standard Markdown fenced code blocks (\`\`\`java ... \`\`\`), standard operators '<=', '>=', '!=', '=='.
-- For Mathematics & Science: valid LaTeX syntax ($...$ or $$...$$). Wrap data tables in $$\\begin{array}{c|ccccc}...\\end{array}$$.
-- Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge.
+- For Mathematics & Science: valid LaTeX syntax ($...$ or $$...$$). Wrap math data tables in $$\\begin{array}{c|ccccc}...\\end{array}$$.
+- For Social Sciences and Humanities (AP Lang, AP Psychology & AP Human Geography): ALWAYS format all data tables as standard GitHub Markdown tables (| Header 1 | Header 2 |). NEVER wrap tables in LaTeX arrays or $$\\begin{array}$$, as they break on mobile screens!
+- Always double-escape backslashes in JSON output: \\\\frac, \\\\le, \\\\ge, \\\\int.
 
 STRICT JSON OUTPUT:
 Return ONLY a valid JSON object with key "questions" containing an array of objects:
@@ -18069,22 +24449,84 @@ Return ONLY a valid JSON object with key "questions" containing an array of obje
   "questions": [
     {
       "id": 1,
-      "title": "FRQ 1: Multi-Part Analytical Problem",
-      "prompt": "Scenario/stimulus description followed by:\\n\\n(a) Sub-part A prompt [1 point]...\\n\\n(b) Sub-part B prompt [1 point]...\\n\\n(c) Sub-part C prompt [1 point]...\\n\\n(d) Sub-part D prompt [1 point]...\\n\\n(e) Sub-part E prompt [1 point]...\\n\\n(f) Sub-part F prompt [1 point]...\\n\\n(g) Sub-part G prompt [1 point]...",
-      "diagramSvg": "<svg viewBox='0 0 400 220' xmlns='http://www.w3.org/2000/svg'>...</svg>",
-      "diagramType": "standardized_model",
-      "totalPoints": 7,
-      "modelAnswer": "(a) Full exemplary solution for part a...\\n\\n(b) Full exemplary solution for part b...\\n\\n(c) Full exemplary solution for part c...",
-      "scoringRubric": [
-        "Part (a) [1 point]: 1 point for identifying...",
-        "Part (b) [1 point]: 1 point for defining...",
-        "Part (c) [1 point]: 1 point for describing...",
-        "Part (d) [1 point]: 1 point for explaining...",
-        "Part (e) [1 point]: 1 point for explaining...",
-        "Part (f) [1 point]: 1 point for evaluating...",
-        "Part (g) [1 point]: 1 point for justifying..."
-      ],
-      "skill": "Unit X: Topic Name"
+      "title": "${isCsaSubj ? "QUESTION 1: METHODS AND CONTROL STRUCTURES  [7 POINTS]" : isWhapSubj ? "SECTION I PART B: SHORT-ANSWER QUESTION 1  [3 POINTS]" : isCalcSubj ? "FREE RESPONSE QUESTION 1  [9 POINTS]" : isAphgSubject ? "FREE RESPONSE QUESTION 1  [7 POINTS]" : isApushSubject2 ? "SHORT-ANSWER QUESTION 1  [3 POINTS]" : isChemSubj ? "LONG FREE-RESPONSE QUESTION 1  [10 POINTS]" : isBioSubj ? "LONG FREE-RESPONSE QUESTION 1  [9 POINTS]" : isPhys1Subj ? "QUESTION 1: MATHEMATICAL ROUTINES (MR)  [10 POINTS]" : isMacroSubj ? "QUESTION 1: LONG FREE-RESPONSE QUESTION  [10 POINTS]" : isLangSubj ? "QUESTION 1: SYNTHESIS ESSAY  [6 POINTS]" : isPsychSubj ? "QUESTION 1: ARTICLE ANALYSIS QUESTION (AAQ)  [7 POINTS]" : "FREE RESPONSE QUESTION 1"}",
+      "prompt": "${isCsaSubj ? "Java class description and skeleton with preconditions followed by:\\n\\nWrite the findFirstAvailableBay method in part (a)...\\n\\nWrite the bookChargingSession method in part (b)..." : isWhapSubj ? "Historian excerpt, primary historical document, or conceptual prompt followed by:\\n\\nUsing the excerpt(s)/prompt, respond to parts A, B, and C.\\n\\nA. Briefly describe one argument made in the excerpt...\\n\\nB. Briefly explain one specific historical development (1200\u20131750) supporting the argument...\\n\\nC. Briefly explain one specific historical development refuting or qualifying the argument..." : isAphgSubject ? "Contextual geographic scenario/stimulus followed by:\\n\\nRespond to parts A, B, C, D, E, F, and G.\\n\\nA. Sub-part A prompt...\\n\\nB. Sub-part B prompt...\\n\\nC. Sub-part C prompt...\\n\\nD. Sub-part D prompt...\\n\\nE. Sub-part E prompt...\\n\\nF. Sub-part F prompt...\\n\\nG. Sub-part G prompt..." : isApushSubject2 ? "Historical excerpts or scenario followed by:\\n\\nUsing the excerpt(s), respond to parts A, B, and C.\\n\\nA. Briefly describe one major difference between... historical interpretations...\\n\\nB. Briefly explain how one specific event or development... supports [Historian 1]...\\n\\nC. Briefly explain how one specific event or development... supports [Historian 2]..." : isLangSubj ? "Suggested reading and writing time: 55 minutes (15 min reading/sources + 40 min writing)...\\n\\n### Introduction\\nContextual issue overview...\\n\\n### Assignment\\nSynthesize at least three sources...\\n\\n### Source A...\\n\\n### Source B (Markdown Table)...\\n\\n### Source C..." : isPsychSubj ? "Summary of peer-reviewed empirical research article (200-350 words) with hypothesis, sample, procedure, quantitative data table/results, and ethical safeguards...\\n\\nRespond to parts A, B, C, D, E, and F.\\n\\n(A) Identify the research design/method used by the researchers in the study. [1 point]\\n\\n(B) Describe the operational definition of... used in the study. [1 point]\\n\\n(C) Describe what the difference in mean scores indicates in the context of the study. [1 point]\\n\\n(D) Identify an ethical guideline that the researchers followed in the study. [1 point]\\n\\n(E) Explain whether the researchers can generalize their findings to all adults in the general population. [1 point]\\n\\n(F) Explain how the findings from the study support the psychological concept of [Target CED Concept]. [2 points]" : "Scenario/stimulus description followed by:\\n\\n(a) Sub-part A prompt...\\n\\n(b) Sub-part B prompt...\\n\\n(c) Sub-part C prompt...\\n\\n(d) Sub-part D prompt..."}",
+      "diagramSvg": "",
+      "diagramType": "none",
+      "totalPoints": ${isCsaSubj ? 7 : isWhapSubj ? 3 : isCalcSubj ? 9 : isAphgSubject ? 7 : isApushSubject2 ? 3 : isChemSubj ? 10 : isBioSubj ? 9 : isPhys1Subj ? 10 : isMacroSubj ? 10 : isLangSubj ? 6 : isPsychSubj ? 7 : isApes ? 10 : 8},
+      "modelAnswer": "${isCsaSubj ? "Part (a):\\n```java\\npublic int findFirstAvailableBay(int startBay, int endBay) {\\n    for (int bay = startBay; bay <= endBay; bay++) {\\n        if (isBayAvailable(bay)) {\\n            return bay;\\n        }\\n    }\\n    return -1;\\n}\\n```\\n\\nPart (b):\\n```java\\npublic boolean bookChargingSession(int startBay, int endBay) {\\n    int bay = findFirstAvailableBay(startBay, endBay);\\n    if (bay != -1) {\\n        reserveBay(bay);\\n        return true;\\n    }\\n    return false;\\n}\\n```" : isWhapSubj ? "Part A: [ACE Method: Direct answer claim, Cite specific proper noun historical evidence, Explain historical connection]\\n\\nPart B: [ACE Method: Answer, Cite outside evidence, Explain link]\\n\\nPart C: [ACE Method: Answer, Cite outside evidence, Explain link]" : isAphgSubject ? "Part A: Full model response...\\n\\nPart B: ...\\n\\nPart G: Degree [low/moderate/high] with explanation..." : isApushSubject2 ? "Part A: [ACE Method: Answer direct claim. Cite specific proper noun evidence. Explain link.]\\n\\nPart B: [ACE Method: Answer, Cite outside evidence, Explain link.]\\n\\nPart C: [ACE Method: Answer, Cite outside evidence, Explain link.]" : isLangSubj ? "Exemplary 6/6 student essay featuring a defensible thesis with line of reasoning, synthesized evidence with commentary, and sophistication..." : isPsychSubj ? "Part A: Controlled experiment (factorial laboratory experiment with random assignment).\\n\\nPart B: The operational definition was the number of items correctly recalled on the 48-hour cued recall test...\\n\\nPart C: The difference in mean recall scores indicates that acute stress significantly impaired recall in the restudy group...\\n\\nPart D: Informed consent / debriefing / IRB approval...\\n\\nPart E: Cannot generalize because sample of undergraduate college students is not representative of all adults across varied age brackets...\\n\\nPart F: Point 1 (Empirical finding)... Point 2 (Connection to levels of processing / elaborative rehearsal mechanism)..." : "Part (a): Exemplary solution...\\n\\nPart (b): Exemplary solution...\\n\\nPart (c): Exemplary solution...\\n\\nPart (d): Exemplary solution..."}",
+      "scoringRubric": ${isCsaSubj ? `[
+        "Part (a) Point 1 [1 pt]: Correctly loops through all bays from startBay to endBay, inclusive (no off-by-one errors).",
+        "Part (a) Point 2 [1 pt]: Calls isBayAvailable with bay as parameter within the loop.",
+        "Part (a) Point 3 [1 pt]: Returns the first available bay number, and returns -1 after checking all bays (algorithm).",
+        "Part (b) Point 4 [1 pt]: Calls findFirstAvailableBay with correct parameters startBay and endBay.",
+        "Part (b) Point 5 [1 pt]: Checks whether the returned bay number represents an available bay (bay != -1).",
+        "Part (b) Point 6 [1 pt]: Calls reserveBay with the identified bay number when available.",
+        "Part (b) Point 7 [1 pt]: Returns true if reserved, false otherwise without calling findFirstAvailableBay multiple times (algorithm)."
+      ]` : isWhapSubj ? `[
+        "Part A [1 point]: 1 pt for describing historian argument / historical development (Acceptable: \u2022 A1 ... \u2022 A2 ...)",
+        "Part B [1 point]: 1 pt for explaining outside historical evidence supporting argument (Acceptable: \u2022 B1 ... \u2022 B2 ...)",
+        "Part C [1 point]: 1 pt for explaining outside historical evidence refuting/qualifying argument (Acceptable: \u2022 C1 ... \u2022 C2 ...)"
+      ]` : isAphgSubject ? `[
+        "Part A [1 point]: 1 pt for correctly identifying X (Acceptable: \u2022 A1 ... \u2022 A2 ...)",
+        "Part B [1 point]: 1 pt for describing Y (Acceptable: \u2022 B1 ... \u2022 B2 ...)",
+        "Part C [1 point]: 1 pt for defining Z (Acceptable: \u2022 C1 ... \u2022 C2 ...)",
+        "Part D [1 point]: 1 pt for explaining mechanism D (Acceptable: \u2022 D1 ... \u2022 D2 ...)",
+        "Part E [1 point]: 1 pt for explaining mechanism E (Acceptable: \u2022 E1 ... \u2022 E2 ...)",
+        "Part F [1 point]: 1 pt for explaining process F (Acceptable: \u2022 F1 ... \u2022 F2 ...)",
+        "Part G [1 point]: 1 pt for indicating degree [low, moderate, high] AND providing valid explanation (Acceptable: \u2022 G1 ... \u2022 G2 ...)"
+      ]` : isBcSubj ? `[
+        "Part (a) [2 points]: P1 [1 pt] for correct formula/integral/ratio setup; P2 [1 pt] for correct numerical value/units.",
+        "Part (b) [2 points]: P3 [1 pt] for correct integrand/rule; P4 [1 pt] for answer with supporting work.",
+        "Part (c) [2 points]: P5 [1 pt] for setup/derivative condition; P6 [1 pt] for answer/evaluation.",
+        "Part (d) [3 points]: P7 [1 pt] for considering critical point/equation; P8 [1 pt] for global Candidates Test justification table; P9 [1 pt] for answer with supporting work."
+      ]` : isBioSubj ? `[
+        "Part (a) [1 point]: Point A1 [1 pt] for identifying biological process or cellular component.",
+        "Part (b) [3 points]: Point B1 [1 pt] for identifying dependent variable; Point B2 [1 pt] for justifying negative control mechanism; Point B3 [1 pt] for describing experimental trend.",
+        "Part (c) [3 points]: Point C1 [1 pt] for identifying independent variable; Point C2 [1 pt] for identifying experimental group; Point C3 [1 pt] for calculation with units.",
+        "Part (d) [2 points]: Point D1 [1 pt] for predicting effect of perturbation/mutation; Point D2 [1 pt] for biological mechanism justification."
+      ]` : isPhys1Subj ? `[
+        "Part A (i) [2 points]: Point A1 [1 pt] for sketching a horizontal continuous line for horizontal velocity or momentum; Point A2 [1 pt] for sketching a straight line with constant negative slope for vertical velocity.",
+        "Part A (ii) [2 points]: Point A3 [1 pt] for starting derivation with a fundamental equation from reference sheet; Point A4 [1 pt] for correct substitution and isolated speed expression.",
+        "Part A (iii) [3 points]: Point A5 [1 pt] for kinetic energy or volume flow rate formula; Point A6 [1 pt] for correct mass or area substitution; Point A7 [1 pt] for final expression consistent with Part A (ii).",
+        "Part B [3 points]: Point B1 [1 pt] for indicating correct claim; Point B2 [1 pt] for identifying internal vs external forces or continuity speed effect; Point B3 [1 pt] for qualitative physical justification."
+      ]` : isChemSubj ? `[
+        "Part (a) [1 point]: Point 01 [1 pt] for balanced net ionic equation or initial species identification.",
+        "Part (b) [1 point]: Point 02 [1 pt] for stoichiometry / molar concentration calculation.",
+        "Part (c) [2 points]: Point 03 [1 pt] for formula / equilibrium expression; Point 04 [1 pt] for numerical value with units and proper sig figs.",
+        "Part (d) [2 points]: Point 05 [1 pt] for claim; Point 06 [1 pt] for scientific justification using particulate/thermodynamic principles.",
+        "Part (e) [2 points]: Point 07 [1 pt] for calculation setup; Point 08 [1 pt] for final answer with appropriate units.",
+        "Part (f) [2 points]: Point 09 [1 pt] for predicting directional shift or error impact; Point 10 [1 pt] for mechanistic justification."
+      ]` : isApushSubject2 ? `[
+        "Part A [1 point]: 1 pt for describing point of view / core difference between interpretations",
+        "Part B [1 point]: 1 pt for explaining outside historical evidence supporting argument",
+        "Part C [1 point]: 1 pt for explaining outside historical evidence supporting argument"
+      ]` : isMacroSubj ? `[
+        "Part (a) [2 points]: Point 1 [1 pt] for correctly labeled AD-AS (or SRPC/LRPC) graph showing equilibrium PL1 and Y1; Point 2 [1 pt] for vertical LRAS curve at YF (or vertical LRPC at natural rate of unemployment).",
+        "Part (b) [2 points]: Point 3 [1 pt] for explaining that real output increases because investment spending increases aggregate demand; Point 4 [1 pt] for showing new equilibrium PL2 or point S on graph.",
+        "Part (c) [2 points]: Point 5 [1 pt] for correctly labeled Loanable Funds market graph (or Reserve Market graph); Point 6 [1 pt] for showing rightward shift in demand for loanable funds, resulting in higher equilibrium real interest rate.",
+        "Part (d) [2 points]: Point 7 [1 pt] for stating international financial capital flows into country because foreign investors seek higher returns; Point 8 [1 pt] for correctly labeled Forex graph showing appreciation of currency.",
+        "Part (e) [2 points]: Point 9 [1 pt] for stating net exports decrease (and employment decreases); Point 10 [1 pt] for stating CFA moves into surplus and explaining that current account (CA) moved into deficit and balance of payments must balance (CA + CFA = 0)."
+      ]` : isLangSubj ? `[
+        "Row A: Thesis (0-1 point) [1 pt]: 1 point for a defensible thesis establishing a clear line of reasoning taking a position on the prompt.",
+        "Row B: Evidence and Commentary (0-4 points) [4 pts]: 4 points for synthesizing evidence across multiple sources or analyzing rhetorical choices with continuous, insightful analytical commentary.",
+        "Row C: Sophistication (0-1 point) [1 pt]: 1 point for demonstrating a complex understanding of the prompt/rhetorical situation, qualifying claims, exploring tensions, or maintaining an insightful academic voice."
+      ]` : isPsychSubj ? `[
+        "Part A [1 point]: 1 pt for identifying research design (Experiment, Correlational study, Case study, Naturalistic observation, Meta-analysis).",
+        "Part B [1 point]: 1 pt for describing operational definition of variable as quantifiable/measurable behavior or scale score from study.",
+        "Part C [1 point]: 1 pt for explaining statistical finding in context, including direction of difference or relationship.",
+        "Part D [1 point]: 1 pt for identifying explicitly stated ethical guideline followed in study (informed consent, debriefing, IRB approval).",
+        "Part E [1 point]: 1 pt for explaining generalizability limited by sample representativeness (NOT sample size).",
+        "Part F [2 points]: 1 pt for citing specific empirical finding + 1 pt for explaining mechanism connecting finding to designated CED psychological concept."
+      ]` : `[
+        "Part (a) [2 points]: ...",
+        "Part (b) [2 points]: ...",
+        "Part (c) [3 points]: ...",
+        "Part (d) [2 points]: ..."
+      ]`},
+      "unitNumber": ${isCsaSubj ? 1 : isWhapSubj ? 2 : isAphgSubject ? 2 : isApushSubject2 ? 4 : isLangSubj ? 1 : isPsychSubj ? 2 : 4},
+      "unitTitle": "${isCsaSubj ? "Unit 1: Primitive Types & Calling Methods" : isWhapSubj ? "Networks of Exchange (c. 1200 to c. 1450)" : isAphgSubject ? "Population & Migration Patterns" : isApushSubject2 ? "Period 4 (1800\u20131848)" : isLangSubj ? "Unit 1: Synthesis & Line of Reasoning" : isPsychSubj ? "Unit 2: Cognition & Memory" : "Contextual Applications of Differentiation"}",
+      "skill": "${isCsaSubj ? "Methods and Control Structures (Q1)" : isWhapSubj ? "Historical Sourcing, Causation, and Contextualization" : isAphgSubject ? "Unit 2: Population & Migration Patterns" : isApushSubject2 ? "Period 4 (1800\u20131848)" : isLangSubj ? "Unit 1: Synthesis & Line of Reasoning" : isPsychSubj ? "Scientific Investigation & Data Interpretation" : "Unit 4: Contextual Applications of Differentiation"}"
     }
   ]
 }
@@ -18154,7 +24596,7 @@ Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP
         }
         validatedQuestions.push(vResult.sanitizedQuestion);
       }
-      if (validatedQuestions.length < requestedCount && Date.now() - startTime < 25e3) {
+      if (validatedQuestions.length < requestedCount && Date.now() - startTime < 45e3) {
         const missingCount = requestedCount - validatedQuestions.length;
         console.warn(`[generate-ap-questions] Subjective questions deficit: got ${validatedQuestions.length}/${requestedCount} valid questions. Backfilling ${missingCount} questions...`);
         try {
@@ -18185,62 +24627,15 @@ Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP
           { unitNumber: 3, title: "Advanced Analysis", keywords: ["applications"] }
         ];
         for (let i = 0; i < deficit; i++) {
-          const idx2 = validatedQuestions.length;
-          const unitRef = canonicalUnits2[idx2 % canonicalUnits2.length];
+          const idx = validatedQuestions.length;
+          const unitRef = canonicalUnits2[idx % canonicalUnits2.length];
           const topicName = targetTopic || unitRef.title;
-          const subPrompt = `Consider an authentic scenario concerning ${topicName} in AP ${subject}:
-
-(a) Identify and define the fundamental College Board concept at play [1 point].
-
-(b) Explain the underlying theoretical framework and real-world mechanisms [1 point].
-
-(c) Describe one observable spatial or empirical pattern resulting from this process [1 point].
-
-(d) Explain how changing a primary variable alters system outcomes [1 point].
-
-(e) Compare this scenario with an alternative institutional or regional context [1 point].
-
-(f) Evaluate the long-term consequences for affected stakeholders or environments [1 point].
-
-(g) Justify your conclusions citing authoritative course principles and empirical evidence [1 point].`;
-          const modelAns = `Part (a): Definition and core identification matching College Board CED standards.
-
-Part (b): In-depth analytical explanation of causes and interactions.
-
-Part (c): Clear empirical description of observable spatial trends.
-
-Part (d): Cause-and-effect breakdown of altered parameters.
-
-Part (e): Comparative evaluation contrasting two relevant models or regions.
-
-Part (f): Longitudinal assessment of socio-economic or environmental impacts.
-
-Part (g): Robust justification citing key CED principles and verifiable evidence.`;
-          validatedQuestions.push({
-            id: idx2 + 1,
-            title: `FREE RESPONSE QUESTION ${idx2 + 1}  [7 POINTS]`,
-            prompt: subPrompt,
-            diagramSvg: "",
-            diagramType: "none",
-            modelAnswer: modelAns,
-            totalPoints: 7,
-            scoringRubric: [
-              "Part (a) [1 point]: Correct identification and definition.",
-              "Part (b) [1 point]: Thorough explanation of governing mechanisms.",
-              "Part (c) [1 point]: Accurate description of observable trends.",
-              "Part (d) [1 point]: Logical cause-and-effect relationship.",
-              "Part (e) [1 point]: Sound comparative contextualization.",
-              "Part (f) [1 point]: Evaluative analysis of consequences.",
-              "Part (g) [1 point]: Rigorous justification with course evidence."
-            ],
-            unitNumber: unitRef.unitNumber,
-            unitTitle: unitRef.title,
-            skill: `Unit ${unitRef.unitNumber}: ${unitRef.title}`
-          });
+          const fallbackQ = generateAuthenticSubjectiveFallback(subject, topicName, idx, unitRef.unitNumber, unitRef.title);
+          validatedQuestions.push(fallbackQ);
         }
       }
       if (validatedQuestions.length > 0) {
-        const questionsList = validatedQuestions.slice(0, requestedCount).map((q, idx2) => {
+        const questionsList = validatedQuestions.slice(0, requestedCount).map((q, idx) => {
           const realPoints = calculateRealTotalPoints(q, subject);
           let promptStr = q.prompt || q.question || q.text || q.scenario || "";
           let stimulusStr = q.stimulus || "";
@@ -18253,21 +24648,51 @@ Part (g): Robust justification citing key CED principles and verifiable evidence
           const extP = extractDiagramAndCleanText(promptStr, diagramSvg);
           promptStr = extP.cleanText;
           if (extP.diagramSvg) diagramSvg = extP.diagramSvg;
+          if (!diagramSvg) {
+            const standardModelSvg = getStandardizedModelSvg(`${promptStr} ${stimulusStr} ${q.modelAnswer || ""}`, subject);
+            if (standardModelSvg) diagramSvg = standardModelSvg;
+          }
+          const canonical = resolveCanonicalUnit(subject, q.unitNumber || q.unitTitle || q.skill || targetTopic, promptStr);
+          const chemDefaultPoints = idx < 3 ? 10 : 4;
+          const bioDefaultPoints = idx < 2 ? 9 : 4;
+          const phys1DefaultPoints = idx === 0 ? 10 : idx === 1 ? 12 : idx === 2 ? 10 : 8;
+          const whapDefaultPoints = idx % 5 === 3 ? 7 : idx % 5 === 4 ? 6 : 3;
+          const assignedPoints = isWhapSubject ? realPoints === 7 || realPoints === 6 || realPoints === 3 ? realPoints : whapDefaultPoints : isChemSubject ? realPoints === 10 || realPoints === 4 ? realPoints : chemDefaultPoints : isBioSubject ? realPoints === 9 || realPoints === 4 ? realPoints : bioDefaultPoints : isPhys1Subject ? realPoints === 12 || realPoints === 10 || realPoints === 8 ? realPoints : phys1DefaultPoints : realPoints;
+          const whapTitles = [
+            `SECTION I PART B: SHORT-ANSWER QUESTION ${idx + 1} (SECONDARY SOURCE)  [${assignedPoints} POINTS]`,
+            `SECTION I PART B: SHORT-ANSWER QUESTION ${idx + 1} (PRIMARY SOURCE / VISUAL)  [${assignedPoints} POINTS]`,
+            `SECTION I PART B: SHORT-ANSWER QUESTION ${idx + 1} (NON-STIMULUS CONCEPTUAL)  [${assignedPoints} POINTS]`,
+            `SECTION II PART A: DOCUMENT-BASED QUESTION (DBQ)  [${assignedPoints} POINTS]`,
+            `SECTION II PART B: LONG ESSAY QUESTION (LEQ)  [${assignedPoints} POINTS]`
+          ];
+          const whapTitle = whapTitles[idx % 5];
+          const chemTitle = idx < 3 ? `LONG FREE-RESPONSE QUESTION ${idx + 1}  [${assignedPoints} POINTS]` : `SHORT FREE-RESPONSE QUESTION ${idx + 1}  [${assignedPoints} POINTS]`;
+          const bioTitle = idx < 2 ? `LONG FREE-RESPONSE QUESTION ${idx + 1}  [${assignedPoints} POINTS]` : `SHORT FREE-RESPONSE QUESTION ${idx + 1}  [${assignedPoints} POINTS]`;
+          const phys1Titles = [
+            `QUESTION 1: MATHEMATICAL ROUTINES (MR)  [${assignedPoints} POINTS]`,
+            `QUESTION 2: TRANSLATION BETWEEN REPRESENTATIONS (TBR)  [${assignedPoints} POINTS]`,
+            `QUESTION 3: EXPERIMENTAL DESIGN AND ANALYSIS (LAB)  [${assignedPoints} POINTS]`,
+            `QUESTION 4: QUALITATIVE/QUANTITATIVE TRANSLATION (QQT)  [${assignedPoints} POINTS]`
+          ];
+          const phys1Title = phys1Titles[idx % 4] || `FREE-RESPONSE QUESTION ${idx + 1}  [${assignedPoints} POINTS]`;
+          const defaultTitle = isWhapSubject ? whapTitle : isChemSubject ? chemTitle : isBioSubject ? bioTitle : isPhys1Subject ? phys1Title : isApushSubject ? `SHORT-ANSWER QUESTION ${idx + 1}  [${realPoints} POINTS]` : `FREE RESPONSE QUESTION ${idx + 1}  [${realPoints} POINTS]`;
           return {
             ...q,
-            id: idx2 + 1,
-            totalPoints: realPoints,
-            title: q.title || `FREE RESPONSE QUESTION ${idx2 + 1}  [${realPoints} POINTS]`,
+            id: idx + 1,
+            totalPoints: assignedPoints,
+            title: q.title || defaultTitle,
             question: promptStr,
             prompt: promptStr,
             stimulus: stimulusStr,
             diagramSvg,
-            unitNumber: q.unitNumber,
-            unitTitle: q.unitTitle,
-            skill: q.skill || `Unit ${q.unitNumber || 1}: ${q.unitTitle || targetTopic || subject}`
+            unitNumber: q.unitNumber || canonical.unitNumber,
+            unitTitle: q.unitTitle || canonical.title,
+            skill: `Unit ${q.unitNumber || canonical.unitNumber}: ${q.unitTitle || canonical.title}`
           };
         });
-        return res.json({ questions: questionsList, questionType: "subjective", subject, count: questionsList.length });
+        const { verifiedQuestions, stats } = runMultiStageVerificationPipeline(questionsList, subject, targetTopic);
+        console.log(`[generate-ap-questions] Multi-Stage Pipeline Result: total=${stats.total}, passedDirect=${stats.passedDirect}, healed=${stats.healed}, replacedFromVault=${stats.replacedFromVault}`);
+        return res.json({ questions: verifiedQuestions, questionType: "subjective", subject, count: verifiedQuestions.length });
       }
       console.warn(`[generate-ap-questions] Subjective AI batch returned empty for "${subject}". Engaging authentic curriculum fallback...`);
       const canonicalUnits = whitelist?.canonicalUnits || [
@@ -18275,60 +24700,13 @@ Part (g): Robust justification citing key CED principles and verifiable evidence
         { unitNumber: 2, title: "Systems & Interactions", keywords: ["processes"] },
         { unitNumber: 3, title: "Advanced Analysis", keywords: ["applications"] }
       ];
-      const fallbackSubjectives = Array.from({ length: requestedCount }).map((_, idx2) => {
-        const unitRef = canonicalUnits[idx2 % canonicalUnits.length];
+      const fallbackSubjectives = Array.from({ length: requestedCount }).map((_, idx) => {
+        const unitRef = canonicalUnits[idx % canonicalUnits.length];
         const topicName = targetTopic || unitRef.title;
-        const subPrompt = `Consider an authentic scenario concerning ${topicName} in AP ${subject}:
-
-(a) Identify and define the fundamental College Board concept at play [1 point].
-
-(b) Explain the underlying theoretical framework and real-world mechanisms [1 point].
-
-(c) Describe one observable spatial or empirical pattern resulting from this process [1 point].
-
-(d) Explain how changing a primary variable alters system outcomes [1 point].
-
-(e) Compare this scenario with an alternative institutional or regional context [1 point].
-
-(f) Evaluate the long-term consequences for affected stakeholders or environments [1 point].
-
-(g) Justify your conclusions citing authoritative course principles and empirical evidence [1 point].`;
-        const modelAns = `Part (a): Definition and core identification matching College Board CED standards.
-
-Part (b): In-depth analytical explanation of causes and interactions.
-
-Part (c): Clear empirical description of observable spatial trends.
-
-Part (d): Cause-and-effect breakdown of altered parameters.
-
-Part (e): Comparative evaluation contrasting two relevant models or regions.
-
-Part (f): Longitudinal assessment of socio-economic or environmental impacts.
-
-Part (g): Robust justification citing key CED principles and verifiable evidence.`;
-        return {
-          id: idx2 + 1,
-          title: `FREE RESPONSE QUESTION ${idx2 + 1}  [7 POINTS]`,
-          prompt: subPrompt,
-          diagramSvg: "",
-          diagramType: "none",
-          modelAnswer: modelAns,
-          totalPoints: 7,
-          scoringRubric: [
-            "Part (a) [1 point]: Correct identification and definition.",
-            "Part (b) [1 point]: Thorough explanation of governing mechanisms.",
-            "Part (c) [1 point]: Accurate description of observable trends.",
-            "Part (d) [1 point]: Logical cause-and-effect relationship.",
-            "Part (e) [1 point]: Sound comparative contextualization.",
-            "Part (f) [1 point]: Evaluative analysis of consequences.",
-            "Part (g) [1 point]: Rigorous justification with course evidence."
-          ],
-          unitNumber: unitRef.unitNumber,
-          unitTitle: unitRef.title,
-          skill: `Unit ${unitRef.unitNumber}: ${unitRef.title}`
-        };
+        return generateAuthenticSubjectiveFallback(subject, topicName, idx, unitRef.unitNumber, unitRef.title);
       });
-      return res.json({ questions: fallbackSubjectives, questionType: "subjective", subject, count: fallbackSubjectives.length, fallback: true });
+      const { verifiedQuestions: verifiedFallbacks } = runMultiStageVerificationPipeline(fallbackSubjectives, subject, targetTopic);
+      return res.json({ questions: verifiedFallbacks, questionType: "subjective", subject, count: verifiedFallbacks.length, fallback: true });
     }
   } catch (error) {
     if (error.message === "GEMINI_QUOTA_EXHAUSTED") {
@@ -18591,8 +24969,8 @@ ${errorDesc.replace(/^input is not a valid AP multiple-choice question\.\s*/i, "
         };
       }
       if (parsed && Array.isArray(parsed.traps)) {
-        parsed.traps = parsed.traps.map((t, idx2) => {
-          const rawOpt = String(t.option || String.fromCharCode(65 + idx2)).trim();
+        parsed.traps = parsed.traps.map((t, idx) => {
+          const rawOpt = String(t.option || String.fromCharCode(65 + idx)).trim();
           const opt = /^part\s+/i.test(rawOpt) ? rawOpt : rawOpt.toUpperCase();
           let txt = String(t.text || "").trim();
           txt = txt.replace(new RegExp(`^\\s*${opt}\\s*[:.)-]\\s*`, "i"), "").trim();
@@ -18699,7 +25077,7 @@ ${errorDesc.replace(/^input is not a valid AP multiple-choice question\.\s*/i, "
       }
       return results;
     };
-    const sanitizeFrqQuestion = (q, targetInfo, idx2) => {
+    const sanitizeFrqQuestion = (q, targetInfo, idx) => {
       const promptText = cleanScratchpadText(q.prompt || q.question || "");
       const stimulusText = cleanScratchpadText(q.stimulus || "");
       const hasPhysicalUnits = /\b(?:meters?|seconds?|minutes?|hours?|feet|ft|grams?|kg|liters?|mL|moles?|molar|joules?|kelvin|volts?|amps?|newtons?|°C|usd|\$|mph|cm)\b/i.test(promptText + " " + stimulusText);
@@ -18745,7 +25123,7 @@ ${errorDesc.replace(/^input is not a valid AP multiple-choice question\.\s*/i, "
       }) : [];
       return {
         ...q,
-        id: q.id || idx2 + 1,
+        id: q.id || idx + 1,
         format: "subjective",
         prompt: promptText,
         stimulus: stimulusText,
@@ -18925,7 +25303,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
           return [];
         }
       };
-      const batchPromises2 = batchSizes2.map((cnt, idx2) => generateSubjectiveTrapBatch(cnt, idx2));
+      const batchPromises2 = batchSizes2.map((cnt, idx) => generateSubjectiveTrapBatch(cnt, idx));
       const batchResults2 = await Promise.allSettled(batchPromises2);
       let questionsList2 = [];
       for (const res2 of batchResults2) {
@@ -18955,15 +25333,15 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
           { name: "\u{1FAA4} The Scope Creep / Boundary Trap", issue: "Students omit boundary condition checks or discuss issues outside the specified domain.", fix: "Keep analysis strictly bounded by the conditions required in the prompt." }
         ];
         for (let i = 0; i < deficit; i++) {
-          const idx2 = questionsList2.length;
-          const targetInfo = assignedTargets2[idx2] || {
+          const idx = questionsList2.length;
+          const targetInfo = assignedTargets2[idx] || {
             targetTopic,
             unitLabel: unit || subject,
             subtopicFocus: "Core Concept"
           };
           const trapInfo = FALLBACK_FRQ_TRAP_TYPES[i % FALLBACK_FRQ_TRAP_TYPES.length];
           questionsList2.push({
-            id: idx2 + 1,
+            id: idx + 1,
             format: "subjective",
             totalPoints: 4,
             overallTrapDifficulty: "High (Level 4 FRQ Trap)",
@@ -19028,17 +25406,18 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
           });
         }
       }
-      const sanitizedList = questionsList2.map((q, idx2) => {
-        const targetInfo = assignedTargets2[idx2] || {
+      const sanitizedList = questionsList2.map((q, idx) => {
+        const targetInfo = assignedTargets2[idx] || {
           targetTopic,
           unitLabel: unit || subject,
           subtopicFocus: "Core Concept"
         };
-        return sanitizeFrqQuestion(q, targetInfo, idx2);
+        return sanitizeFrqQuestion(q, targetInfo, idx);
       });
-      const finalized = sanitizedList.slice(0, requestedCount2).map((q, idx2) => ({
+      const { verifiedQuestions: verifiedTrapFrqs } = runMultiStageVerificationPipeline(sanitizedList.slice(0, requestedCount2), subject, targetTopic);
+      const finalized = verifiedTrapFrqs.map((q, idx) => ({
         ...q,
-        id: q.id || idx2 + 1,
+        id: q.id || idx + 1,
         format: "subjective",
         totalPoints: q.totalPoints || (q.parts ? q.parts.reduce((sum, p) => sum + (Number(p.points) || 1), 0) : 4)
       }));
@@ -19229,7 +25608,7 @@ Batch Seed: ${seed}. Return ALL ${batchCount} items with complete distractor tra
       batchSizes.push(take);
       remaining -= take;
     }
-    const batchPromises = batchSizes.map((cnt, idx2) => generateTrapBatch(cnt, idx2));
+    const batchPromises = batchSizes.map((cnt, idx) => generateTrapBatch(cnt, idx));
     const batchResults = await Promise.allSettled(batchPromises);
     let questionsList = [];
     for (const res2 of batchResults) {
@@ -19293,7 +25672,7 @@ Batch Seed: ${seed}. Return ALL ${batchCount} items with complete distractor tra
               };
             }
           });
-          const assigned = assignedTargets[idx] || {
+          const assigned = assignedTargets[i % assignedTargets.length] || {
             targetTopic,
             unitLabel: unit || subject,
             subtopicFocus: "Core Concept"
@@ -19316,11 +25695,11 @@ Batch Seed: ${seed}. Return ALL ${batchCount} items with complete distractor tra
       }
     }
     if (questionsList.length > 0) {
-      const sanitizedMcqs = questionsList.map((q, idx2) => {
-        const assigned = assignedTargets[idx2];
+      const sanitizedMcqs = questionsList.map((q, idx) => {
+        const assigned = assignedTargets[idx];
         return {
           ...q,
-          id: q.id || idx2 + 1,
+          id: q.id || idx + 1,
           format: "objective",
           prompt: cleanScratchpadText(q.prompt || q.question || ""),
           stimulus: cleanScratchpadText(q.stimulus || ""),
@@ -19336,9 +25715,9 @@ Batch Seed: ${seed}. Return ALL ${batchCount} items with complete distractor tra
           })) : []
         };
       });
-      const finalized = sanitizedMcqs.slice(0, requestedCount).map((q, idx2) => ({
+      const finalized = sanitizedMcqs.slice(0, requestedCount).map((q, idx) => ({
         ...q,
-        id: q.id || idx2 + 1,
+        id: q.id || idx + 1,
         format: "objective"
       }));
       const balancedFinalized = shuffleAndBalanceTrapRadarQuestions(finalized);
@@ -19376,8 +25755,8 @@ Batch Seed: ${seed}. Return ALL ${batchCount} items with complete distractor tra
           mindset: "Catches students who rush through multi-step analytical reasoning."
         }
       ];
-      const fallbackQuestions = Array.from({ length: requestedCount }).map((_, idx2) => {
-        const b = fallbackBank[idx2 % fallbackBank.length];
+      const fallbackQuestions = Array.from({ length: requestedCount }).map((_, idx) => {
+        const b = fallbackBank[idx % fallbackBank.length];
         let dCounter = 0;
         const safeCorrectIdx = typeof b.correctIndex === "number" && b.correctIndex >= 0 && b.correctIndex < b.options.length ? b.correctIndex : 0;
         const rawTraps = b.options.map((opt, oIdx) => {
@@ -19393,7 +25772,7 @@ Batch Seed: ${seed}. Return ALL ${batchCount} items with complete distractor tra
               vulnerabilityRate: "Target Answer"
             };
           } else {
-            const arch = FALLBACK_TRAP_ARCHETYPES[(idx2 + dCounter) % FALLBACK_TRAP_ARCHETYPES.length];
+            const arch = FALLBACK_TRAP_ARCHETYPES[(idx + dCounter) % FALLBACK_TRAP_ARCHETYPES.length];
             dCounter++;
             return {
               option: letters[oIdx],
@@ -19407,7 +25786,7 @@ Batch Seed: ${seed}. Return ALL ${batchCount} items with complete distractor tra
           }
         });
         return {
-          id: idx2 + 1,
+          id: idx + 1,
           format: "objective",
           prompt: b.stem,
           options: b.options.map((opt, oIdx) => opt.startsWith(`${letters[oIdx]})`) ? opt : `${letters[oIdx]}) ${opt}`),
@@ -19957,8 +26336,8 @@ Strictly return a raw JSON array of ${requestedCount} objects matching this exac
     try {
       const parsed = safeParseJSON(rawText, "array");
       if (Array.isArray(parsed)) {
-        generated = parsed.map((item, idx2) => ({
-          id: `ai_${Date.now()}_${idx2}_${Math.random().toString(36).substring(2, 6)}`,
+        generated = parsed.map((item, idx) => ({
+          id: `ai_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
           subjectId,
           stem: String(item.stem || "").trim(),
           options: Array.isArray(item.options) && item.options.length === 4 ? item.options.map((o) => String(o).trim()) : ["Option A", "Option B", "Option C", "Option D"],

@@ -895,8 +895,8 @@ export function parseSolutionStepsForPdf(rawText: string, forceCalculation?: boo
   text = text.replace(/([^\n\r])\s*(Distractor\s*(?:Analysis|Breakdown|Review|Walkthrough)|Why\s*(?:Other|Incorrect)\s*Options)/gi, '$1\n\n$2');
 
   // 5. Fix glued subparts and options
-  text = text.replace(/([^\n\r])\s*(\([a-eA-E]\)|Part\s*\(?[A-Ea-e1-9]\)?:?|Step\s*\d+:?)(?=\s+[A-Za-z0-9]|\s*$)/g, '$1\n\n$2 ');
-  text = text.replace(/([^\n\r])\s*(Choice\s*\(?[A-D]\)?|Option\s*\(?[A-D]\)?|Distractor\s*\(?[A-D]\)?)/gi, '$1\n\n$2');
+  text = text.replace(/([^\n\r])\s*(\([a-gA-G]\)|Part\s*\(?[A-Ga-g1-9]\)?:?|Step\s*\d+:?)(?=\s+[A-Za-z0-9]|\s*$)/g, '$1\n\n$2 ');
+  text = text.replace(/([^\n\r])\s*\b(Choice\s*\(?[A-D]\)?|Option\s*\(?[A-D]\)?|Distractor\s*\(?[A-D]\)?)/gi, '$1\n\n$2');
 
   // Detect whether this explanation is calculation-based or theory-based
   const isCalc = forceCalculation ?? isCalculationText(text);
@@ -933,7 +933,7 @@ export function parseSolutionStepsForPdf(rawText: string, forceCalculation?: boo
     }
 
     // 2. MCQ Option Distractor Match (e.g. "Option B:", "Choice B:", "Part (b): is incorrect...", "(b) is incorrect...", "B) is incorrect...")
-    const optPrefixMatch = block.match(/^\s*(?:[•\-\*]\s*)?(?:Choice|Option)\s*\(?([A-Da-d])\)?[:\-\.]?\s*(.*)$/is);
+    const optPrefixMatch = block.match(/^\s*(?:[•\-\*]\s*)?\b(?:Choice|Option)\s*\(?([A-Da-d])\)?[:\-\.]?\s*(.*)$/is);
     const optIncorrectMatch = block.match(/^\s*(?:[•\-\*]\s*)?(?:Part\s*)?\(?([A-Da-d])\)?[:\-\.]?\s+(is incorrect\b.*|is wrong\b.*|cannot be correct\b.*|fails because\b.*|incorrect\b.*)$/is);
     const inDistractorOptMatch = inDistractorSection ? (
       block.match(/^\s*(?:[•\-\*]\s*)?(?:Part\s*)?\(?([A-Da-d])\)[:\-\.]?\s*(.*)$/is) ||
@@ -950,8 +950,8 @@ export function parseSolutionStepsForPdf(rawText: string, forceCalculation?: boo
       continue;
     }
 
-    // 3. FRQ Named Part (e.g. "Part (a):", "Part (b):", "Part 1:")
-    const namedPartMatch = block.match(/^\s*(?:[•\-\*]\s*)?Part\s*\(?([a-eA-E1-9])\)?[:\-\.]?\s*(.*)$/is);
+    // 3. FRQ Named Part (e.g. "Part (a):", "Part A:", "Part (g):", "Part 1:")
+    const namedPartMatch = block.match(/^\s*(?:[•\-\*]\s*)?Part\s*\(?([a-gA-G1-9])\)?[:\-\.]?\s*(.*)$/is);
     if (namedPartMatch && namedPartMatch[1]) {
       const partLetter = namedPartMatch[1].toLowerCase();
       steps.push({
@@ -961,13 +961,24 @@ export function parseSolutionStepsForPdf(rawText: string, forceCalculation?: boo
       continue;
     }
 
-    // 4. Strict Paren Part for FRQs (MUST have both open and close parentheses to avoid matching regular words!)
-    const parenPartMatch = block.match(/^\s*(?:[•\-\*]\s*)?\(([a-eA-E])\)[:\-\.]?\s+(.*)$/s);
+    // 4. Strict Paren Part for FRQs (e.g. "(a)", "(g)")
+    const parenPartMatch = block.match(/^\s*(?:[•\-\*]\s*)?\(([a-gA-G])\)[:\-\.]?\s+(.*)$/s);
     if (parenPartMatch && parenPartMatch[1]) {
       const partLetter = parenPartMatch[1].toLowerCase();
       steps.push({
         label: `Part (${partLetter}):`,
         content: parenPartMatch[2].trim()
+      });
+      continue;
+    }
+
+    // 4b. Bare Dotted Part for FRQs (e.g. "A. Sub-part...", "D. Economic pull...")
+    const dottedPartMatch = block.match(/^\s*(?:[•\-\*]\s*)?([A-Ga-g])[\.\)][: \t]+(.*)$/s);
+    if (!inDistractorSection && dottedPartMatch && dottedPartMatch[1]) {
+      const partLetter = dottedPartMatch[1].toLowerCase();
+      steps.push({
+        label: `Part (${partLetter}):`,
+        content: dottedPartMatch[2].trim()
       });
       continue;
     }

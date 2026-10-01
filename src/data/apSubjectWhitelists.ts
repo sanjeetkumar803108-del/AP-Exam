@@ -84,6 +84,22 @@ export const AP_SUBJECT_WHITELISTS: Record<string, APSubjectWhitelist> = {
       /\b(?:public\s+class\b|System\.out\.println|extends\b|implements\b|private\s+int\b|ArrayList<Integer>)\b/i // Avoid Java AP CSA code leaking into CSP pseudocode
     ]
   },
+  'ap-computer-science': {
+    subjectId: 'ap-computer-science',
+    subjectName: 'AP Computer Science A',
+    category: 'tech',
+    mathExpected: false,
+    canonicalUnits: [
+      { unitNumber: 1, title: 'Primitive Types & Calling Methods', keywords: ['int', 'double', 'boolean', 'arithmetic', 'modulus', 'casting', 'Math.random', 'parameters', 'return values'] },
+      { unitNumber: 2, title: 'Control Structures & Iteration', keywords: ['boolean expressions', 'relational operators', 'if-else', 'while loop', 'for loop', 'nested loops', 'iteration bounds'] },
+      { unitNumber: 3, title: 'Class Design & Encapsulation', keywords: ['class header', 'private instance variables', 'constructors', 'accessor', 'mutator', 'this', 'String methods', 'substring', 'indexOf', 'equals'] },
+      { unitNumber: 4, title: 'Arrays, ArrayLists & 2D Arrays', keywords: ['1D array', 'ArrayList', 'add', 'get', 'set', 'remove', 'size', '2D array', 'matrix', 'nested traversal', 'bounds checking'] }
+    ],
+    allowedDomains: ['computer science', 'java programming', 'object oriented programming', 'algorithms', 'data structures', 'matrices', 'arraylist'],
+    forbiddenSignatures: [
+      /\b(?:definite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|chloroplast|mitosis|rotational\s+inertia|stoichiometry|balance\s+of\s+payments|aggregate\s+demand|dtm|von\s+thunen)\b/i
+    ]
+  },
   'ap-calculus-ab': {
     subjectId: 'ap-calculus-ab',
     subjectName: 'AP Calculus AB',
@@ -101,7 +117,12 @@ export const AP_SUBJECT_WHITELISTS: Record<string, APSubjectWhitelist> = {
     ],
     allowedDomains: ['limits', 'derivatives', 'integrals', 'differential equations', 'particle motion', 'rates of change'],
     forbiddenSignatures: [
-      /\b(?:gentrification|von\s+thunen|supranationalism|wallerstein|malthus|cold\s+war|french\s+revolution|hamlet|chloroplast|mitochondria|dna\s+replication|operon)\b/i
+      // Human Geography / Humanities leakage
+      /\b(?:gentrification|von\s+thunen|supranationalism|wallerstein|malthus|cold\s+war|french\s+revolution|hamlet|chloroplast|mitochondria|dna\s+replication|operon)\b/i,
+      // Generic fallback markers
+      /\b(?:spatial\s+pattern|affected\s+stakeholders|regional\s+context|spatial\s+trends)\b/i,
+      // Strictly Forbidden Calculus BC Exclusive Topics
+      /\b(?:taylor\s+series|maclaurin\s+series|taylor\s+polynomial|maclaurin\s+polynomial|ratio\s+test|radius\s+of\s+convergence|interval\s+of\s+convergence|euler's\s+method|eulers\s+method|logistic\s+differential|carrying\s+capacity|polar\s+area|polar\s+coordinates|parametric\s+equations|vector-valued|integration\s+by\s+parts|partial\s+fractions|improper\s+integral|alternating\s+series\s+error\s+bound|lagrange\s+error\s+bound)\b/i
     ]
   },
   'ap-calculus-bc': {
@@ -216,15 +237,15 @@ export const AP_SUBJECT_WHITELISTS: Record<string, APSubjectWhitelist> = {
     category: 'social_science',
     mathExpected: false,
     canonicalUnits: [
-      { unitNumber: 1, title: 'Biological Bases of Behavior', keywords: ['neuron', 'action potential', 'synapse', 'neurotransmitter', 'dopamine', 'serotonin', 'endorphins', 'central nervous system', 'brain structures', 'cerebral cortex', 'hippocampus', 'amygdala', 'neuroplasticity'] },
-      { unitNumber: 2, title: 'Cognition', keywords: ['memory', 'encoding', 'storage', 'retrieval', 'sensory memory', 'short-term memory', 'long-term memory', 'chunking', 'amnesia', 'problem solving', 'heuristics', 'biases', 'language acquisition'] },
-      { unitNumber: 3, title: 'Development & Learning', keywords: ['classical conditioning', 'pavlov', 'unconditioned stimulus', 'conditioned response', 'operant conditioning', 'skinner', 'reinforcement', 'punishment', 'social learning', 'bandura', 'piaget', 'erikson', 'kohlberg'] },
-      { unitNumber: 4, title: 'Social Psychology & Personality', keywords: ['conformity', 'asch', 'obedience', 'milgram', 'attribution theory', 'fundamental attribution error', 'cognitive dissonance', 'bystander effect', 'in-group bias', 'freud', 'big five traits'] },
-      { unitNumber: 5, title: 'Mental & Physical Health', keywords: ['dsm-5', 'anxiety disorders', 'major depressive disorder', 'bipolar', 'schizophrenia', 'obsessive-compulsive', 'ptsd', 'psychotherapy', 'cbt', 'biopsychosocial model'] }
+      { unitNumber: 1, title: 'Biological Bases of Behavior', keywords: ['neuroscience', 'brain structure', 'hemispheric specialization', 'neurons', 'neurotransmitters', 'action potential', 'synapse', 'endocrine system', 'sleep architecture', 'circadian rhythm', 'genetics'] },
+      { unitNumber: 2, title: 'Cognition', keywords: ['memory encoding', 'storage', 'retrieval', 'misinformation effect', 'schemas', 'working memory', 'spacing effect', 'heuristics', 'biases', 'problem solving', 'intelligence', 'language acquisition'] },
+      { unitNumber: 3, title: 'Development and Learning', keywords: ['classical conditioning', 'operant conditioning', 'reinforcement', 'punishment', 'stimulus discrimination', 'generalization', 'observational learning', 'Piaget', 'Vygotsky', 'attachment styles', 'moral development'] },
+      { unitNumber: 4, title: 'Social Psychology and Personality', keywords: ['bystander effect', 'diffusion of responsibility', 'social facilitation', 'social loafing', 'conformity', 'obedience', 'attribution theory', 'fundamental attribution error', 'in-group bias', 'Big Five personality traits', 'self-efficacy'] },
+      { unitNumber: 5, title: 'Mental and Physical Health', keywords: ['psychological disorders', 'DSM-5', 'anxiety disorders', 'depressive disorders', 'schizophrenia', 'bipolar', 'psychotherapy', 'CBT', 'psychopharmacology', 'stress response', 'General Adaptation Syndrome', 'locus of control'] }
     ],
-    allowedDomains: ['psychology', 'neuroscience', 'cognition', 'behavior', 'development', 'mental health'],
+    allowedDomains: ['psychology', 'cognitive science', 'neuroscience', 'developmental psychology', 'social psychology', 'clinical psychology', 'research methodology', 'article analysis', 'evidence-based argumentation'],
     forbiddenSignatures: [
-      /\b(?:definite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|von\s+thunen)\b/i
+      /\b(?:definite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|chloroplast|mitosis|rotational\s+inertia|stoichiometry|balance\s+of\s+payments|aggregate\s+demand)\b/i
     ]
   },
   'ap-statistics': {
@@ -265,6 +286,27 @@ export const AP_SUBJECT_WHITELISTS: Record<string, APSubjectWhitelist> = {
     forbiddenSignatures: [
       /\b(?:definite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|chloroplast|mitosis)\b/i
     ]
+  },
+  'ap-english-lang': {
+    subjectId: 'ap-english-lang',
+    subjectName: 'AP English Language & Composition',
+    category: 'humanities',
+    mathExpected: false,
+    canonicalUnits: [
+      { unitNumber: 1, title: 'Rhetorical Situation: Reading & Writing', keywords: ['rhetorical situation', 'exigence', 'speaker', 'audience', 'purpose', 'context', 'message', 'claims', 'evidence'] },
+      { unitNumber: 2, title: 'Rhetorical Situation: Appeals & Evidence', keywords: ['ethos', 'pathos', 'logos', 'thesis', 'defensible position', 'anecdote', 'analogy', 'facts', 'statistics'] },
+      { unitNumber: 3, title: 'Reasoning & Organization', keywords: ['line of reasoning', 'inductive reasoning', 'deductive reasoning', 'organization', 'transitions', 'stasis theory', 'toulmin model'] },
+      { unitNumber: 4, title: 'Selecting & Integrating Evidence', keywords: ['synthesis', 'embedded quotation', 'signal phrase', 'paraphrase', 'source integration', 'counterargument', 'rebuttal'] },
+      { unitNumber: 5, title: 'Developing a Line of Reasoning', keywords: ['commentary', 'claim and evidence', 'cause and effect', 'comparison and contrast', 'definition and classification'] },
+      { unitNumber: 6, title: 'Rhetorical Analysis: Style & Choice', keywords: ['rhetorical choices', 'diction', 'syntax', 'tone', 'tone shift', 'juxtaposition', 'parallelism', 'antithesis', 'allusion'] },
+      { unitNumber: 7, title: 'Complex Arguments & Qualifications', keywords: ['qualification', 'concession', 'complexity', 'tension', 'implications', 'limitations', 'nuance'] },
+      { unitNumber: 8, title: 'Style & Persuasive Voice', keywords: ['metaphor', 'personification', 'hyperbole', 'understatement', 'irony', 'vivid prose', 'rhetorical question'] },
+      { unitNumber: 9, title: 'Sophistication & Holistic Synthesis', keywords: ['sophistication', 'broader context', 'alternative perspectives', 'stylistic maturity', 'holistic argument'] }
+    ],
+    allowedDomains: ['rhetoric', 'composition', 'nonfiction analysis', 'argumentation', 'synthesis', 'critical reading', 'persuasive writing'],
+    forbiddenSignatures: [
+      /\b(?:definite\s+integral|indefinite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|chloroplast|mitosis|rotational\s+inertia|stoichiometry)\b/i
+    ]
   }
 };
 
@@ -285,9 +327,11 @@ export function getSubjectWhitelist(subjectIdentifier?: string): APSubjectWhitel
     }
   }
 
+  if (s.includes('english') || s.includes('lang')) return AP_SUBJECT_WHITELISTS['ap-english-lang'];
   if (s.includes('geography') || s.includes('aphg')) return AP_SUBJECT_WHITELISTS['ap-human-geography'];
   if (s.includes('environmental') || s.includes('apes')) return AP_SUBJECT_WHITELISTS['ap-environmental-science'];
   if (s.includes('principles') || s.includes('csp')) return AP_SUBJECT_WHITELISTS['ap-computer-science-principles'];
+  if ((s.includes('computer') && (s.includes('science a') || s.includes('csa') || !s.includes('principles'))) || s === 'csa') return AP_SUBJECT_WHITELISTS['ap-computer-science'];
   if (s.includes('calculus bc')) return AP_SUBJECT_WHITELISTS['ap-calculus-bc'];
   if (s.includes('calculus')) return AP_SUBJECT_WHITELISTS['ap-calculus-ab'];
   if (s.includes('physics')) return AP_SUBJECT_WHITELISTS['ap-physics-1'];

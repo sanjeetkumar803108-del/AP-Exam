@@ -141,6 +141,12 @@ export const getDiagramTypeLabel = (type?: string): string => {
   if (clean.includes('box') || clean.includes('histogram') || clean.includes('scatter') || clean.includes('normal') || clean.includes('stats')) {
     return 'Statistical Distribution / Chart';
   }
+  if (clean.includes('map') || clean.includes('spatial') || clean.includes('thematic') || clean.includes('choropleth') || clean.includes('migration')) {
+    return 'Thematic Geographic Map / Spatial Model';
+  }
+  if (clean.includes('model') || clean.includes('standardized')) {
+    return 'College Board Spatial / Theoretical Model';
+  }
   return 'College Board AP® Diagram';
 };
 

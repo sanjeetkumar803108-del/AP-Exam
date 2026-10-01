@@ -113,6 +113,38 @@
   box-sizing: border-box !important;
 }
 
+/* Responsive Table Container & Styling */
+.markdown-body table {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  border-collapse: collapse !important;
+  margin: 1rem 0 !important;
+  box-sizing: border-box !important;
+}
+
+.markdown-body table th,
+.markdown-body table td {
+  padding: 0.6rem 0.85rem !important;
+  border: 1px solid rgba(148, 163, 184, 0.25) !important;
+  text-align: left !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.35 !important;
+}
+
+.markdown-body table th {
+  background-color: rgba(241, 245, 249, 0.8) !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+}
+
+.dark .markdown-body table th {
+  background-color: rgba(39, 39, 42, 0.8) !important;
+}
+
+
 /* Slim subtle mobile scrollbars so KaTeX math scrolling looks native and clean */
 .katex::-webkit-scrollbar,
 .katex-display::-webkit-scrollbar,

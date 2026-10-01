@@ -5,6 +5,26 @@ import os from "os";
 import crypto from "crypto";
 import { YoutubeTranscript } from "youtube-transcript";
 
+async function fetchWithTimeout(url: string, options: any = {}, timeout = 90000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+}
+
+let lastQuotaExceededTime = 0;
+const rateLimitedModels: Record<string, number> = {};
+const rateLimitedModelsCooldown: Record<string, number> = {};
+
 function getGradePedagogicalDirective(gradeLevel?: string, stream?: string, country?: string): string {
   const g = (gradeLevel || '').toLowerCase().trim();
 
@@ -2421,19 +2441,105 @@ function getCollegeBoardSubjectGuidelines(subject: string, questionType: 'object
   6. Cities & Urban Land-Use (Burgess Concentric Zone, Hoyt Sector, Harris-Ullman Multiple Nuclei, Galactic model, Christaller's Central Place Theory, rank-size rule, primate cities, gentrification, New Urbanism).
   7. Industrial & Economic Development (Wallerstein World Systems [Core/Periphery], Rostow 5 Stages of Economic Growth, Weber Least Cost Theory, HDI, UN SDGs).
 - Stimulus Requirement: Ground questions in realistic geographic stimuli (demographic data charts, regional map descriptions, population pyramid profiles, or geographic case studies).
-- Distractors: Plausible 9th-grade misconceptions (e.g., confusing environmental determinism with possibilism, confusing hierarchical with contagious diffusion, or misidentifying DTM stages).`;
+- Distractors: Plausible 9th-grade misconceptions (e.g., confusing environmental determinism with possibilism, confusing hierarchical with contagious diffusion, or misidentifying DTM stages).
+- MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+  Before finalizing any MCQ, perform an internal self-audit:
+  1. Geographic Fact Check: Verify demographic numbers, geographic models (DTM 1-5, Von Thünen, Burgess, Rostow, Wallerstein), and regional associations.
+  2. Single Unambiguous Key Check: Ensure exactly ONE option (the key) is unequivocally correct based on College Board CED definitions. The other 3 options must be distinct 9th-grade student misconceptions.
+  3. Stimulus Solvability: If referring to a data table or map description, ensure all needed evidence is explicitly given.
+  4. Instant Self-Healing: If you find ANY ambiguity, incorrect geographic fact, or invalid distractor during your self-check, DO NOT output it. Discard and completely regenerate or heal the question immediately before returning the final JSON.`;
     } else {
-      return `AP HUMAN GEOGRAPHY FREE RESPONSE STANDARDS (College Board CED - 7-Part FRQ):
-- Format: Real 7-PART College Board Free Response Questions with parts (A), (B), (C), (D), (E), (F), and (G). Total Points: Exactly 7 Points (1 point per part).
-- Official FRQ Types:
-  1. Question 1 (No Stimulus): Tests geographic concepts, spatial models, and processes.
-  2. Question 2 (One Stimulus): Anchored to a thematic map, demographic chart, or spatial model.
-  3. Question 3 (Two Stimuli): Comparative synthesis between two geographic datasets or regions.
-- Command Verbs & Scaffolding:
-  - "Identify" / "Define" (1-2 sentences stating the specific concept or pattern).
-  - "Describe" (Provide relevant characteristics or spatial trends).
-  - "Explain" (Must clearly establish cause-and-effect line of reasoning: 'how' or 'why' X causes Y in geographic context).
-- Rubric: Exactly 7 points (+1 pt for each part A through G) with crystal-clear scoring criteria and model responses.`;
+      return `AP HUMAN GEOGRAPHY FREE RESPONSE EXAM STANDARDS (COLLEGE BOARD SECTION II - 100% AUTHENTIC REPLICA):
+PEDAGOGICAL INTELLIGENCE DERIVED FROM OFFICIAL EXAM SETS (2023, 2024, 2025, 2026):
+You are the College Board AP Human Geography Chief Reader. Section II has 3 questions (1 hr 15 min). Every question you generate MUST strictly follow this exact real-exam blueprint:
+
+1. MANDATORY 7-PART SUB-QUESTION ANATOMY (PARTS A THROUGH G):
+- Every single Free Response Question MUST consist of EXACTLY 7 distinct parts labeled:
+  A. [Sub-question]
+  B. [Sub-question]
+  C. [Sub-question]
+  D. [Sub-question]
+  E. [Sub-question]
+  F. [Sub-question]
+  G. [Sub-question]
+- Outputting fewer than 7 parts or more than 7 parts is STRICTLY FORBIDDEN.
+- TOTAL POINTS: EXACTLY 7 POINTS (Each part A through G is worth exactly 1 point: +1 pt per part).
+
+2. THE 3 OFFICIAL COLLEGE BOARD QUESTION ARCHETYPES:
+- QUESTION TYPE 1 (NO STIMULUS - CONCEPTUAL / SPATIAL SCENARIO):
+  * Begins with a 1-2 sentence real-world geographic scenario setting the spatial and thematic context.
+  * Followed immediately by: "Respond to parts A, B, C, D, E, F, and G."
+  * No visual, map, or table stimulus. Tests pure spatial concepts, spatial models, and multi-unit linkages.
+- QUESTION TYPE 2 (ONE STIMULUS - AUTHENTIC DATA TABLE OR CANONICAL THEMATIC MAP):
+  * Rooted in EXACTLY ONE authentic stimulus:
+    [PILLAR 1: CANONICAL THEMATIC MAP / SPATIAL MODEL]:
+    - If testing a visual model, open the prompt with one of the canonical College Board figures:
+      * Unit 2 (Population & Migration): "Figure 1: Demographic Transition Model (DTM Stages 1–5)" OR "Figure 1: Global Total Fertility Rates (TFR) Thematic Choropleth Map" OR "Figure 1: Major Global Transnational Migration Corridors and Labor Flows Map"
+      * Unit 5 (Agriculture): "Figure 1: Von Thünen Model of Agricultural Land-Use"
+      * Unit 6 (Cities & Urban): "Figure 1: Burgess Concentric Zone Urban Model" OR "Figure 1: Hoyt Sector Model (Axial Urban Corridors)" OR "Figure 1: Harris-Ullman Multiple Nuclei and Galactic Edge City Model"
+      * Unit 7 (Industrial & Economic Development): "Figure 1: Wallerstein World Systems Theory (Core-Periphery Spatial Model)"
+      (The platform automatically attaches pixel-perfect vector SVG maps for these canonical models!)
+    [PILLAR 2: AUTHENTIC DEMOGRAPHIC / SPATIAL MARKDOWN DATA TABLE - THE #1 MOST COMMON COLLEGE BOARD STIMULUS]:
+    - Format as a clean standard GitHub Markdown table (| Region/Country | CBR | CDR | TFR | GNI per Capita |) with authentic institutional citations (UN, World Bank, FAO). NEVER use LaTeX math arrays ($$\\begin{array}).
+  * Parts A & B MUST explicitly reference the stimulus: "Using the map shown in Figure 1, identify..." or "Using the data in the table, identify...".
+- QUESTION TYPE 3 (TWO STIMULI - COMPARATIVE SYNTHESIS):
+  * Rooted in TWO complementary sources labeled "Source 1" and "Source 2":
+    [PILLAR 3: PAIRED SPATIAL REGIONAL CASE SCENARIOS]:
+    - Source 1: Thematic Map or Spatial Boundary Scenario (e.g. "Source 1: Figure 1 - Major Global Transnational Migration Corridors Map" OR subnational administrative governance scenario).
+    - Source 2: Paired Demographic, Economic, or Remittance Survey Data Table (e.g. "Source 2: Table 1 - Foreign Remittance Inflows and Emigration Statistics by Country of Origin").
+  * Requires comparative synthesis between Source 1 and Source 2 across subparts (e.g. Part A analyzes Source 1, Part B analyzes Source 2, Part C compares the relationship between Source 1 and Source 2).
+
+3. STRATIFIED DISTRIBUTION BY SESSION QUESTION COUNT:
+When generating a batch of questions, assign archetypes based on the total requested question count:
+- IF COUNT == 3 (Official Exam Simulation Set):
+  * Question 1 = Type 1 (No Stimulus)
+  * Question 2 = Type 2 (One Stimulus: Data Table or Thematic Map)
+  * Question 3 = Type 3 (Two Stimuli: Comparative 2 Sources/Maps/Tables)
+- IF COUNT == 5 (Practice Bank):
+  * Questions 1 & 2 = Type 1 (No Stimulus)
+  * Questions 3 & 4 = Type 2 (One Stimulus)
+  * Question 5 = Type 3 (Two Stimuli)
+- IF COUNT == 10 (Marathon Bank):
+  * Questions 1, 2, 3 = Type 1 (No Stimulus)
+  * Questions 4, 5, 6 = Type 2 (One Stimulus)
+  * Questions 7, 8, 9, 10 = Type 3 (Two Stimuli)
+- IF COUNT == 15 (Mega Practice Bank):
+  * Questions 1 to 5 = Type 1 (No Stimulus)
+  * Questions 6 to 10 = Type 2 (One Stimulus)
+  * Questions 11 to 15 = Type 3 (Two Stimuli)
+
+4. OFFICIAL COLLEGE BOARD COMMAND VERB HIERARCHY:
+Each part (A through G) must use an authentic College Board command verb:
+- "Identify..." (1-2 concise sentences identifying the specific concept, spatial trend, or datum from stimulus).
+- "Define..." (Precise academic definition of the geographical term, model, or principle).
+- "Describe..." (Provide relevant observable characteristics, spatial patterns, or demographic trends).
+- "Explain..." (MUST provide cause-and-effect line of reasoning showing HOW or WHY mechanism X leads to outcome Y in geographic context).
+- SIGNATURE COLLEGE BOARD COMMAND VERB (MANDATORY IN PART F OR G):
+  "Explain the degree to which... (Response must indicate the degree [low, moderate, high] and provide an explanation.)"
+
+5. MANDATORY CROSS-UNIT SYNTHESIS (NEVER ISOLATE TO A SINGLE UNIT):
+Real College Board questions synthesize concepts across multiple units:
+- Combine Unit 2 (Population/Migration) + Unit 6 (Cities/Urban land-use/Housing discrimination/Sustainability).
+- Combine Unit 4 (Political/Sovereignty/Federalism) + Unit 6 (Metropolitan transit fragmentation/Edge cities).
+- Combine Unit 5 (Agriculture/Green Revolution) + Unit 7 (Economic development/Trade interdependence/Commodity dependence).
+- Combine Unit 3 (Cultural diffusion/Linguistic patterns) + Unit 4 (Colonialism/Devolution/Indigenous autonomy).
+
+6. COPYRIGHT & ORIGINALITY SAFEGUARD:
+- DO NOT copy verbatim questions, maps, or exact numbers from the official 2023-2026 exam PDFs.
+- Invent 100% fresh, realistic global scenarios (e.g. agricultural commodity exports in Southeast Asia, pastoral migration in Central Asia, metropolitan boundary governance in European/North American transit systems, demographic shifts in aging vs youthful nations).
+
+7. SCORING RUBRIC & EXEMPLARY MODEL ANSWER:
+- In "totalPoints", specify exactly 7.
+- In "scoringRubric", provide a strict 7-item array (+1 point for each part A through G) stating the exact criteria required to earn the point.
+- In "modelAnswer", provide a complete exemplary response with clear labels: "Part A: ...\\n\\nPart B: ...\\n\\nPart C: ...\\n\\nPart D: ...\\n\\nPart E: ...\\n\\nPart F: ...\\n\\nPart G: ...".
+
+8. MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+Before returning any Free Response Question, the AI MUST execute a rigorous internal quality audit:
+- Check 1 (7-Part Completeness): Does the question have EXACTLY 7 parts labeled A through G? (If not, immediately expand or adjust to exactly 7 parts).
+- Check 2 (Points Parity): Is every single part worth exactly 1 point, totaling exactly 7 points? Does the scoring rubric have 7 distinct items (+1 for each part)?
+- Check 3 (College Board Command Verbs): Does part F or G contain the signature command: "Explain the degree to which..."? Do earlier parts correctly use Identify, Define, Describe, and Explain?
+- Check 4 (Geographic Plausibility & Model Integrity): Are all demographic data points (TFR, CBR, CDR, IMR) realistic for the identified countries? Are geographic models (Von Thünen concentric rings, Burgess, Hoyt, Rostow stages, Wallerstein world systems) applied with 100% textbook accuracy without hallucinations?
+- Check 5 (Self-Correction & Regeneration): If ANY part is flawed, ambiguous, or lacks geographic rigor, the AI MUST discard and replace that sub-part, or completely rewrite and heal the question to 100% College Board perfection before outputting.`;
     }
   }
 
@@ -2448,13 +2554,72 @@ function getCollegeBoardSubjectGuidelines(subject: string, questionType: 'object
 - Quantitative Reasoning: Include realistic environmental math (Rule of 70, LD50 toxicity, percent change, metric conversions).
 - Distractors: Represent common student traps (confusing ozone depletion with global warming, confusing point vs nonpoint pollution).`;
     } else {
-      return `AP ENVIRONMENTAL SCIENCE FREE RESPONSE STANDARDS (College Board CED):
-- Format: Real 10-POINT multi-part questions with sub-parts (a), (b), (c), (d), (e). Total Points: Exactly 10 Points.
-- Official FRQ Archetypes:
-  1. Design an Investigation: Hypothesis, independent/dependent/control variables, data collection procedures, and experimental validity.
-  2. Analyze an Environmental Problem & Propose a Solution: Ecological impacts, identifying root causes, and proposing realistic, sustainable solutions with environmental or economic justifications.
-  3. Quantitative Environmental Problem & Solution: Multi-step mathematical calculations (with units and dimensional analysis) paired with an environmental mitigation recommendation.
-- Rubric: Exactly 10 points breakdown with step-by-step partial-credit criteria.`;
+      return `AP ENVIRONMENTAL SCIENCE FREE RESPONSE EXAM STANDARDS (COLLEGE BOARD SECTION II - 100% AUTHENTIC REPLICA):
+PEDAGOGICAL INTELLIGENCE DERIVED FROM OFFICIAL EXAM SETS (2024, 2025, 2026 DIGITAL STANDARDS):
+You are the College Board AP Environmental Science (APES) Chief Reader and Lead Exam Developer. Section II consists of 3 free-response questions (1 hour 10 minutes, suggested 22 minutes per question).
+Every single Free Response Question you generate MUST strictly conform to this exact official blueprint:
+
+1. MANDATORY 10-POINT ATOMIC ANATOMY (POINT 01 TO POINT 10):
+- Every single FRQ MUST yield EXACTLY 10 discrete, binary scoring points (Earned = 1, Not Earned = 0). Total Points: EXACTLY 10 POINTS.
+- Structure subparts clearly as Parts A through J (or Parts A through G/H with labeled subparts (i) and (ii)) such that the sum of all points is EXACTLY 10.
+- Outputting fewer than 10 points or more than 10 points is STRICTLY FORBIDDEN.
+
+2. THE 3 CANONICAL COLLEGE BOARD APES QUESTION ARCHETYPES (ROTATE EVENLY):
+- QUESTION ARCHETYPE 1: "DESIGN AN INVESTIGATION" (10 POINTS):
+  * Stimulus: Opens with a real-world ecological or lab investigation scenario accompanied by a data table, graph, or food web diagram (e.g. aquatic stream dissolved oxygen/BOD gradient, elevational avian community distribution, or soil fertility under different agricultural regimes).
+  * 10-Point Distribution Structure:
+    - Concept Application (2-3 pts): Connect to foundational ecology (trophic levels/cascades, r/K selection strategies, generalist vs specialist traits, ecosystem resistance/resilience).
+    - Data Analysis (2-3 pts): Read specific datum from stimulus ("Identify the value of... at [condition]"), describe overall trend ("Describe the relationship between X and Y - direct, inverse, or nonlinear"), and evaluate whether given data support or refute a stated hypothesis.
+    - Scientific Inquiry & Experimental Design (4-5 pts):
+      * Identify a testable scientific question or hypothesis (must state directional relationship).
+      * Identify the Independent Variable (IV) and Dependent Variable (DV) with laboratory precision.
+      * Describe the purpose of a control group or baseline treatment.
+      * Explain how an experimental modification (e.g. seasonal temperature shift, change in substrate/sediment, disturbance) would alter the experimental results.
+      * Explain why a diverse community recovers faster from disturbance (genetic diversity, niche partitioning) or describe an anthropogenic habitat disruption effect (habitat fragmentation, edge effect).
+
+- QUESTION ARCHETYPE 2: "ANALYZE AN ENVIRONMENTAL PROBLEM & PROPOSE A SOLUTION" (10 POINTS):
+  * Stimulus: Anchored to a real geographic map, geological/climatological diagram, or multi-decade land-use trend (e.g. tectonic rift valley/convergent plate boundary, El Niño/La Niña sea-surface temperature and jet-stream shifts, or land cover changes from 1700-present).
+  * 10-Point Distribution Structure:
+    - Earth Systems & Biomes (2-3 pts): Identify plate boundary type, atmospheric circulation pattern, or contrast climatic conditions between two terrestrial biomes.
+    - Environmental Problem & Mechanism (3-4 pts): Explain the causal chain of an ecological or environmental disturbance (e.g. impervious surfaces causing urban stormwater flooding, clear-cutting increasing water temperature, invasive species outcompeting natives, or pesticide treadmill).
+    - Propose a Realistic Solution (1 pt): Must propose an authentic, actionable engineering, agricultural, or policy intervention (e.g. permeable pavement, green roofs, wildlife overpass corridor, crop rotation, Integrated Pest Management).
+    - SIGNATURE COLLEGE BOARD TWIN-POINT RULE - JUSTIFY WITH CO-BENEFIT (1 pt):
+      "Justify the solution proposed in part [X] by providing an additional advantage OTHER THAN [the primary problem solved in part X]." (e.g. permeable pavement also recharges groundwater aquifers and reduces runoff pollutants; green roofs also mitigate the urban heat island effect and improve building insulation).
+    - Environmental Tradeoff / Sustainable Practice (2 pts): Secondary succession process, sustainable forestry (prescribed burns, brush clearing), or biocontrol methods.
+
+- QUESTION ARCHETYPE 3: "ANALYZE AN ENVIRONMENTAL PROBLEM - DOING CALCULATIONS" (10 POINTS):
+  * Stimulus: Grounded in energy generation (coal, natural gas, nuclear, solar), resource consumption (water usage, vehicle fuel economy), or wildlife population demographics.
+  * 10-Point Distribution Structure:
+    - Qualitative Environmental Problem & Source (3 pts): Identify anthropogenic pollutant source (e.g. particulate matter from industrial boilers/mining), describe pollution control mechanisms (vapor recovery nozzles, electrostatic precipitators, wet scrubbers), or explain acid rain chemistry.
+    - Environmental Solution & Justification (2 pts): Realistic conservation policy or technology upgrade with co-benefit justification.
+    - Multi-Step Quantitative Calculations (5 pts total):
+      * Minimum 2 distinct calculation problems, each awarded as PAIRED POINTS:
+        - 1 Point for Correct Formula Setup (numbers and mathematical relationship clearly displayed).
+        - 1 Point for Correct Numerical Calculation.
+      * Calculation Types to deploy:
+        1. Percent Change: ((New - Old) / Old) * 100
+        2. Rule of 70 Doubling Time: Time = 70 / r (where r is the annual growth percentage)
+        3. Dimensional Analysis / Unit Conversions: Fuel consumption per household, kWh to pounds of coal combusted, metric conversions, or energy efficiency.
+      * MANDATORY CLEAN NUMBERS RULE: Numbers MUST be mathematically pre-calibrated to produce clean, realistic integers or simple 1-decimal values (e.g. 11,000 houses, 0.88 kWh/lb, 14 gallons). NEVER generate messy irrational decimals that distract from scientific methodology.
+
+3. OFFICIAL COLLEGE BOARD COMMAND VERB HIERARCHY:
+- "Identify...": 1 concise factual phrase or numerical value directly from stimulus. No elaborate explanations.
+- "Describe...": State specific observable characteristics, biological adaptations, or directional trends.
+- "Explain...": STRICT REQUIREMENT - Must provide an unbroken cause-and-effect chain: [Cause] --> [Biophysical Mechanism] --> [Resulting Outcome]. Mentioning the outcome alone without the scientific mechanism earns 0 points!
+- "Propose a realistic solution...": Actionable, implementable environmental or engineering solution.
+- "Justify...": Must provide a distinct secondary ecological, public health, or economic advantage.
+- "Calculate... Show your work": Include explicit work setup and final answer with appropriate units.
+
+4. ORIGINALITY & ANTI-HALLUCINATION SAFEGUARD (NO VERBATIM COPYING):
+- Under NO circumstances copy the exact organisms, data tables, or questions from the 2024/2025/2026 released PDF exams (DO NOT reuse Chickadees, Ocelots, or Serengeti Wildebeest verbatim).
+- Use them strictly as pedagogical blueprints.
+- Invent 100% fresh, authentic environmental scenarios rooted in real geographic systems: Chesapeake Bay watershed, Everglades restoration, Mono Lake water diversion, Amazonian deforestation corridors, Colorado River water rights, or Three Gorges Dam impacts.
+- SCIENTIFIC REALITY BOUNDS: Dissolved Oxygen must be 0-14 mg/L; natural water pH 5.0-8.5; power plant efficiency 30-45%; trophic transfer strictly conforms to 10% rule.
+
+5. SCORING RUBRIC & EXEMPLARY MODEL ANSWER:
+- In "totalPoints", specify exactly 10.
+- In "scoringRubric", provide a strict 10-item array (Point 01 through Point 10) specifying exact point-by-point criteria and acceptable student response variations.
+- In "modelAnswer", provide a complete exemplary 10/10 response with clear part labels (e.g. "Part A: ... \\n\\nPart B: ...").`;
     }
   }
 
@@ -2465,13 +2630,30 @@ function getCollegeBoardSubjectGuidelines(subject: string, questionType: 'object
 - Scope: Creative development, binary/hex numbers, data compression (lossy vs lossless), pseudocode algorithms (robot grid traversal, conditional iteration, list filtering), Internet architecture (IP, TCP/IP, packet routing, fault tolerance), cybersecurity (public-key encryption, phishing, DDoS), and computing ethics.
 - Distractors: Represent algorithmic off-by-one errors, Boolean logic inversion (AND vs OR), or confusing lossy vs lossless compression.`;
     } else {
-      return `AP COMPUTER SCIENCE PRINCIPLES WRITTEN RESPONSE / PERFORMANCE TASK STANDARDS:
-- Format: 4-Part Written Response (6 Points Total) based on computational artifacts and program development:
-  - Part (a): Program Function and Purpose (explaining user inputs, outputs, and overall functionality).
-  - Part (b): Data Abstraction (identifying list/collection name, data represented, and how complexity is managed).
-  - Part (c): Algorithmic Logic & Sequencing (explaining iteration, selection, sequencing, and algorithmic outcome).
-  - Part (d): Testing & Parameter Behavior (describing two different calls/inputs, expected conditions, and resulting outputs).
-- Rubric: Precise College Board CED 6-point scoring criteria.`;
+      return `AP COMPUTER SCIENCE PRINCIPLES (AP CSP) SECTION II: WRITTEN RESPONSE (College Board 2024-2026 Official Standard):
+- Exam Structure: Section II lasts 60 minutes and consists of 2 Questions (4 Written-Response Prompts) based on a student's "Personalized Project Reference" (PPR).
+- Total Written Response Score: Exactly 4 Points (1 point each for WR 1, WR 2a, WR 2b, WR 2c). Overall Create Performance Task is 6 points (Video 1 pt + Program Requirements 1 pt + 4 WR pts).
+- STEP 1 (MANDATORY STUDENT PPR GENERATION):
+  Before asking the prompts, you MUST provide a realistic student Personalized Project Reference (PPR) in Python or JavaScript from a plausible domain (e.g. Smart Fitness Tracker, E-Commerce Cart, Weather Station Logger, Gaming Inventory, Playlist Shuffler, Gradebook):
+  1. List Section: Contains a non-trivial list with multiple elements (>= 4 dynamic elements).
+  2. Procedure Section: A student-developed procedure with at least ONE EXPLICIT PARAMETER, containing SELECTION ('if'/'else') and ITERATION ('for'/'while' loop) traversing or manipulating the list.
+- STEP 2 (THE 4 OFFICIAL WRITTEN-RESPONSE PROMPTS):
+  * Question 1 (Written Response 1 - 1 Point): Program Design, Function, and Purpose.
+    - Angle: Valid input & program action OR Unexpected/invalid input handling OR Example output demonstrating functionality OR Code documentation rationale for another programmer.
+  * Question 2(a) (Written Response 2a - 1 Point): Algorithm Development.
+    - Angle: Describing what is accomplished by the body of the first iteration statement OR identifying the Boolean expression in the first selection statement with specific values evaluating to true/false with causal reasoning OR iteration stopping condition and terminating boundary values.
+  * Question 2(b) (Written Response 2b - 1 Point): Errors and Testing.
+    - Angle: Providing two procedure calls with specific arguments causing two different code segments to execute OR proposing a modification that introduces a LOGIC ERROR (not a syntax error) and describing the deviated behavioral outcome OR accepted arguments causing edge-case failure.
+  * Question 2(c) (Written Response 2c - 1 Point): Data and Procedural Abstraction.
+    - Angle: Explaining how the list uses abstraction to manage complexity and describing how the code would be rewritten without lists (e.g. separate individual variables) OR explaining how code adapts when new elements are added to the list OR explaining procedural maintainability.
+- STRICT SANITY & ANTI-HALLUCINATION GUARDRAILS:
+  - ZERO PDF REPETITION / ZERO COPYING: Do NOT copy verbatim prompts or code from official exam releases. Invent 100% original scenarios.
+  - CODE-PROMPT DEPENDENCY LOCK: If a prompt asks about iteration, the code MUST have a loop. If it asks about selection, the code MUST have an if-statement. If it asks for two calls executing different segments, the procedure MUST have at least two reachable branches.
+  - MATHEMATICALLY SOLVABLE DATA: All conditions must have reachable true and false branches. Never ask impossible mathematical statements like 'x > 10 and x < 2'.
+  - LOGIC ERROR DEFINITION: A logic error is a mistake in an algorithm causing incorrect behavior/output, NOT a syntax/compile error.
+- SCORING RUBRIC & DECISION RULES:
+  - In 'totalPoints', specify 4 (or 6 if including video/program requirements).
+  - Provide a strict 4-item rubric with explicit Decision Rules detailing exactly when to award (+1) and 'Do NOT award a point if' (e.g. trivial iteration, one-element list, repeating code without explaining accomplishment, missing explicit parameter, vague explanation).`;
     }
   }
 
@@ -2483,34 +2665,157 @@ function getCollegeBoardSubjectGuidelines(subject: string, questionType: 'object
 - Distractors must represent classic student misconceptions: omitting chain rule in parametric derivatives, sign errors in integration by parts, forgetting to check endpoints in interval of convergence.
 - Format all math expressions cleanly using LaTeX ($...$).`;
     } else {
-      return `AP CALCULUS BC FREE RESPONSE STANDARDS (College Board CED):
-- Format: Real 9-POINT multi-part questions with sub-parts (a), (b), (c), (d).
-- Priority Archetypes:
-  1. Infinite Series (Taylor/Maclaurin series, finding general term, computing radius/interval of convergence using Ratio Test, Alternating Series Error Bound or Lagrange Error Bound).
-  2. Parametric / Polar Motion (position vector, velocity, total distance traveled / arc length integral, polar area enclosed between curves).
-  3. Logistic Differential Equations & Euler's Method step-by-step approximation.
-  4. Area & Volume of solids of revolution (disk/washer/cross sections) or Rate In / Rate Out Accumulation.
-- Total Points MUST be 9 points. Rubric must award partial points step-by-step (+1 pt for setup/derivative, +1 pt for antiderivative, +1 pt for justification/units).`;
+      return `AP CALCULUS BC SECTION II: FREE RESPONSE (College Board 2023-2026 Official CED Standards - 9 Points per FRQ):
+- Exam Architecture: Section II consists of 6 Free-Response Questions lasting 90 minutes (54 total points):
+  * Part A: Questions 1 & 2 (30 minutes, Graphing Calculator REQUIRED in RADIAN mode).
+  * Part B: Questions 3 to 6 (60 minutes, NO Calculator permitted).
+- Scoring Scale: Every single FRQ is worth EXACTLY 9 Points (P1 through P9), broken into 3 to 4 subparts: (a), (b), (c), (d).
+- Mathematical Rigor: The prompt function MUST match the rubric solution with 100% exactness. All series must have provable convergence, all integrals must be solvable, and no impossible physical data is permitted.
+
+1. THE 6 CANONICAL COLLEGE BOARD BC FRQ ARCHETYPES (ROTATE EVENLY ACROSS SESSIONS):
+- ARCHETYPE 1 (Part A, Calculator Active): RATE IN / RATE OUT ACCUMULATION & TABULAR FUNCTIONS
+  * Real-World Context: Fluid flow, thermal cooling/heating, biological arrival rates, or pollutant diffusion.
+  * Sub-part (a): Average rate of change using difference quotient [f(b) - f(a)] / (b - a) with physical units (e.g. gal/sec^2, words/min^2, deg C/min).
+  * Sub-part (b): Approximating definite integral int_a^b f(t) dt using Riemann sums (Right, Left, Midpoint, or Trapezoidal) with table data. Contextual interpretation: "integral gives the net change / total accumulation of [quantity] from t=a to t=b [units]".
+  * Sub-part (c): Average value formula: (1/(b - a)) * int_a^b f(t) dt, or solving f'(t) = average rate of change via calculator.
+  * Sub-part (d): Optimization / Net accumulation function A(t) = C(t) - int_a^t rate(x) dx: finding absolute maximum/minimum on closed interval [a, b] using CANDIDATES TEST (evaluating endpoints and all critical points).
+
+- ARCHETYPE 2 (Part A, Calculator Active): 2D PARAMETRIC VECTOR MOTION OR POLAR CURVES & AREA
+  * Sub-option 2A: POLAR CURVES r(theta) (BC Exclusive):
+    - Rate of change dr/dtheta at theta = theta_0 with calculator derivative.
+    - Polar area bounded between two curves: Area = (1/2) * int_alpha^beta (r_1(theta)^2 - r_2(theta)^2) dtheta. (Note: Must square each r individually; (r1 - r2)^2 is strictly incorrect).
+    - Extreme distance from y-axis (x = r*cos(theta), solve dx/dtheta = 0) or from x-axis (y = r*sin(theta), solve dy/dtheta = 0) with Candidates Test justification.
+    - Chain rule rate of change with respect to time: dr/dt = (dr/dtheta) * (dtheta/dt).
+  * Sub-option 2B: 2D PARAMETRIC VECTOR MOTION (BC Exclusive):
+    - Position <x(t), y(t)>, velocity vector <x'(t), y'(t)>, acceleration vector <x''(t), y''(t)>.
+    - Speed at t = t_0: ||v(t_0)|| = sqrt((x'(t_0))^2 + (y'(t_0))^2).
+    - Slope of tangent line: dy/dx = y'(t) / x'(t).
+    - Total distance traveled (arc length): int_a^b sqrt((x'(t))^2 + (y'(t))^2) dt.
+    - Position from initial condition: x(t) = x(t_0) + int_{t_0}^t x'(u) du.
+
+- ARCHETYPE 3 (Part B, No Calculator): DIFFERENTIAL EQUATIONS & SLOPE FIELDS
+  * Real-world contextual differential equation dy/dt = (1/k)(A - y) * g(t).
+  * Sub-part (a): Slope field sketch passing through initial point (x_0, y_0) respecting horizontal/vertical asymptotes.
+  * Sub-part (b): Tangent line equation y = y_0 + m(x - x_0) to approximate value at x_1.
+  * Sub-part (c): Overestimate vs Underestimate using second derivative d^2y/dx^2 via implicit differentiation and chain rule. If d^2y/dx^2 > 0 -> concave up -> tangent line lies below curve -> UNDERESTIMATE.
+  * Sub-part (d): Separation of Variables (4 Points): int dy/h(y) = int g(x) dx. Must separate variables (+1), find antiderivatives (+1), incorporate constant C with initial condition (+1), and solve explicitly for y (+1).
+
+- ARCHETYPE 4 (Part B, No Calculator): GRAPHICAL ANALYSIS OF f' & ACCUMULATION FUNCTION g(x) = int_a^x f(t) dt
+  * Given graph of continuous f (consisting of line segments and semicircles) on closed interval [a, b].
+  * Sub-part (a): Evaluating g'(x) = f(x) using Fundamental Theorem of Calculus (FTC Part 1).
+  * Sub-part (b): Points of inflection of g: locations where f changes from increasing to decreasing (or vice versa), or f attains relative extrema.
+  * Sub-part (c): Geometric evaluation of g(x) using triangle, trapezoid, and semicircle areas (area = (1/2)*pi*r^2), correctly handling reversal of limits: int_6^0 f(t) dt = -int_0^6 f(t) dt.
+  * Sub-part (d): Absolute minimum / maximum on [a, b] using CANDIDATES TEST (Must evaluate critical points where f(x) = 0 AND endpoints x = a, x = b).
+
+- ARCHETYPE 5 (Part B, No Calculator): ADVANCED INTEGRATION TECHNIQUES & EULER'S METHOD (BC Exclusive)
+  * Sub-part (a): Higher-order implicit derivative d^2y/dx^2 at point (x_0, y_0) using product and chain rules.
+  * Sub-part (b): Euler's Method: Approximating f(x_2) starting at (x_0, y_0) with 2 steps of equal size Delta x. Must clearly present step calculations: y_{k+1} = y_k + (dy/dx)|_{(x_k, y_k)} * Delta x.
+  * Sub-part (c): Advanced Integration: Integration by parts (int u dv = uv - int v du), partial fractions decomposition, or Improper Integral int_a^inf g(x) dx = lim_{b->inf} int_a^b g(x) dx. (MUST use proper limit notation; arithmetic with infinity like 1/inf = 0 is penalised).
+  * Sub-part (d): Taylor polynomial generated from differential equation or error bound.
+
+- ARCHETYPE 6 (Part B, No Calculator): THE SIGNATURE BC INFINITE SERIES & TAYLOR POLYNOMIALS (BC Signature)
+  * Given Taylor/Maclaurin series sum_{n=1}^inf a_n (x - c)^n or function with higher derivatives.
+  * Sub-part (a): Ratio Test for Interval of Convergence (5 Points):
+    - Set up ratio: lim_{n->inf} |a_{n+1} / a_n| (+1 pt).
+    - Evaluate limit of ratio in terms of |x - c| (+1 pt).
+    - Interior interval of convergence (c - R, c + R) (+1 pt).
+    - Consider BOTH endpoints individually (+1 pt).
+    - Detailed analysis of endpoints (using Alternating Series Test, p-series, or Limit Comparison Test to harmonic series) and final interval (+1 pt).
+  * Sub-part (b): Term-by-term differentiation or integration to find first 3-4 nonzero terms and general term of f'(x) or int f(x) dx.
+  * Sub-part (c): Geometric series verification: Identify first term a and common ratio r, verify sum S = a / (1 - r) on interval of convergence.
+  * Sub-part (d): Error Bound Justification:
+    - Alternating Series Error Bound: |f(x) - P_n(x)| <= |a_{n+1}| (first omitted term).
+    - Lagrange Error Bound: |f(x) - P_n(x)| <= [max |f^{(n+1)}(t)| / (n+1)!] * |x - c|^{n+1}.
+    - CRITICAL SCORING RULE: Inequality MUST use '<=' (writing '=' or '<' forfeits the analysis point).
+
+2. CHIEF READER REPORT SCORING PRINCIPLES & TYPICAL TRAPS (ENFORCE IN RUBRICS):
+- Setup Required: A bare numerical answer without integral/differential setup earns 0 points for setup.
+- Candidates Test: To earn the justification point for absolute extrema, students must provide a global argument evaluating the function at ALL critical points AND both endpoints. Local derivative tests earn 0 justification points.
+- Speed Increasing/Decreasing: Speed is increasing if and only if velocity and acceleration have the SAME sign; decreasing if OPPOSITE signs. Mentioning only acceleration earns 0 points.
+- No Arithmetic with Infinity: Do NOT write expressions like '38 / (25 + inf^2) = 0'. Must write 'lim_{t->inf} [expression] = 0'.
+- Polar Area Factor: Must include the 1/2 factor and square the radius: (1/2) * int (r)^2 dtheta.
+- Precision: Decimal approximations must be accurate to 3 decimal places (rounded or truncated).
+
+3. MANDATORY TWO-PASS DOUBLE-VERIFICATION PROTOCOL:
+- PASS 1 (Analytical Pre-Solving): Before finalizing the question, internally solve every subpart. Verify that all integrals yield clean real values, critical points lie strictly within the designated domain, Euler's method steps do not divide by zero, and series ratio tests produce valid non-zero radii.
+- PASS 2 (Rubric Consistency): Verify that total points = exactly 9 points (P1 to P9 labeled), all subparts (a)-(d) have corresponding model answers and scoring breakdown, and no impossible physical data exists.`;
     }
   }
 
   if (s.includes('calculus ab') || s.includes('calculus')) {
     if (questionType === 'objective') {
-      return `AP CALCULUS AB EXAM SPECIFICATIONS (College Board CED):
-- Coverage: Limits & Continuity (including L'Hopital's Rule), Derivatives (Chain rule, Product/Quotient rule, Implicit differentiation), Mean Value Theorem, Particle Motion in 1D (position, velocity, acceleration, speed increasing/decreasing), Definite & Indefinite Integrals, Fundamental Theorem of Calculus, Riemann Sums, Differential Equations (separable).
-- Distractors must reflect real student math traps: forgetting chain rule factors, arithmetic sign slips, forgetting '+ C', confusing velocity with acceleration.
-- Format all equations cleanly in LaTeX ($...$).`;
+      return `AP CALCULUS AB EXAM SPECIFICATIONS (College Board CED Units 1-8 STRICTLY):
+- STRICT CURRICULUM BOUNDARY: Under NO circumstances include Calculus BC topics!
+  * FORBIDDEN: NO Infinite Series, NO Sequences, NO Ratio Test, NO Alternating Series, NO Taylor/Maclaurin series.
+  * FORBIDDEN: NO Euler's Method, NO Logistic Differential Equations (dP/dt = kP(1-P/M)).
+  * FORBIDDEN: NO Integration by Parts, NO Partial Fractions, NO Parametric/Polar curves.
+- Permitted Coverage:
+  * Unit 1: Limits & Continuity (evaluating limits algebraically, one-sided limits, vertical/horizontal asymptotes, IVT).
+  * Unit 2 & 3: Differentiation Fundamentals & Composite/Implicit (power, product, quotient, chain rule, implicit differentiation dy/dx, derivatives of exp/log/trig/inverse trig).
+  * Unit 4 & 5: Contextual & Analytical Applications (related rates, straight-line 1D particle motion [s(t), v(t), a(t), speed], MVT, EVT, First/Second Derivative Tests, concavity, optimization).
+  * Unit 6: Integration and Accumulation (Riemann sums [left, right, midpoint, trapezoidal], FTC Part 1 & 2, u-substitution, net change).
+  * Unit 7: Differential Equations (slope fields, separable differential equations dy/dx = g(x)h(y), exponential growth/decay dy/dt = ky).
+  * Unit 8: Applications of Integration (average value of a function, area between curves, volume of solids of revolution [disk/washer method], volume with known cross-sections).
+- Format all equations cleanly in LaTeX ($...$). Distractors must represent real student misconceptions (omitting chain rule factor, forgetting '+ C', confusing velocity with acceleration).`;
     } else {
-      return `AP CALCULUS AB FREE RESPONSE STANDARDS (College Board CED):
-- Format: Real 9-POINT multi-part questions with sub-parts (a), (b), (c), (d).
-- Classic AP FRQ Archetypes:
-  1. Rate In / Rate Out Accumulation: Net change integral formula integral(R_in(t) - R_out(t))dt, checking critical times.
-  2. Particle Motion: Analyzing velocity v(t), determining when speed is increasing/decreasing, total distance traveled integral(|v(t)|dt).
-  3. Graph Analysis of f'(x): Identifying relative extrema, points of inflection, justifying with First/Second Derivative Test, EVT.
-  4. Area & Volume: Area between two curves, volume of solid of revolution (disk/washer), volume with known cross sections (squares/semicircles).
-  5. Differential Equations: Slope fields, separation of variables to find particular solution y = f(x) with initial condition.
-  6. Riemann Sums & Tables: Estimating definite integrals using Trapezoidal rule or Left/Right sums with physical units.
-- Total Points MUST be 9 points. Rubric must assign exact points per sub-part.`;
+      return `AP CALCULUS AB SECTION II: FREE RESPONSE (College Board 2023-2026 Official CED Standards - 9 Points per FRQ):
+- Exam Architecture: Section II consists of 6 Free-Response Questions lasting 90 minutes (54 total points):
+  * Part A: Questions 1 & 2 (30 minutes, Graphing Calculator REQUIRED in RADIAN mode).
+  * Part B: Questions 3 to 6 (60 minutes, NO Calculator permitted).
+- Scoring Scale: Every single FRQ is worth EXACTLY 9 Points (P1 through P9), broken into 3 to 4 subparts: (a), (b), (c), (d).
+
+1. THE 6 CANONICAL COLLEGE BOARD FRQ ARCHETYPES (ROTATE EVENLY ACROSS SESSIONS):
+- ARCHETYPE 1 (Part A, Calculator Active): RATE IN / RATE OUT ACCUMULATION & TABULAR FUNCTIONS
+  * Real-World Context: Fluid flow, thermal cooling/heating, population migration, or vehicle arrival rates.
+  * Sub-part 1: Average rate of change over [a, b] using difference quotient with physical units (e.g. gal/sec^2).
+  * Sub-part 2: Approximating definite integral using Riemann sums (Right, Left, Midpoint, or Trapezoidal) with table data. Meaning of integral: "gives the net change in [quantity] from t=a to t=b [units]".
+  * Sub-part 3: Applying Mean Value Theorem (MVT) or IVT: MUST verify prerequisite ("f is differentiable on (a, b) implies f is continuous on [a, b]").
+  * Sub-part 4: Average value formula: (1/(b - a)) * int_a^b f(t) dt or finding instantaneous rate equal to average rate.
+- ARCHETYPE 2 (Part A, Calculator Active): RECTILINEAR PARTICLE MOTION OR AREA & KNOWN CROSS-SECTIONS
+  * Motion Subparts:
+    - Direction change: Must establish v(t) = 0 AND velocity changes sign (not just v(t) = 0).
+    - Speeding up vs Slowing down: Must evaluate signs of BOTH velocity v(t) AND acceleration a(t) = v'(t). If same sign -> speeding up; opposite signs -> slowing down.
+    - Total Distance: int_a^b |v(t)| dt vs Displacement: int_a^b v(t) dt.
+  * Area/Volume Subparts:
+    - Area: int_a^b (top - bottom) dx.
+    - Known Cross-Section: Volume = int_a^b Area(x) dx (Rectangles b*h, Squares s^2, Semicircles (pi/8)s^2).
+    - Revolution: pi * int_a^b (R(x)^2 - r(x)^2) dx about horizontal line y = k.
+- ARCHETYPE 3 (Part B, No Calculator): DIFFERENTIAL EQUATIONS & SLOPE FIELDS
+  * Sub-part 1: Slope field sketch passing through initial point (x_0, y_0) respecting asymptotes.
+  * Sub-part 2: Tangent line equation y = y_0 + m(x - x_0) to approximate value at x_1.
+  * Sub-part 3: Determining overestimate vs underestimate using second derivative d^2y/dx^2 via chain rule. If d^2y/dx^2 > 0 -> concave up -> tangent line lies below curve -> UNDERESTIMATE.
+  * Sub-part 4: Separation of Variables (4 Points): int dy/h(y) = int g(x) dx. Must separate variables (+1), find antiderivatives (+1), incorporate constant of integration C with initial condition (+1), and solve explicitly for y (+1).
+- ARCHETYPE 4 (Part B, No Calculator): GRAPHICAL ANALYSIS OF f' & ACCUMULATION FUNCTION g(x) = int_a^x f'(t) dt
+  * Given graph of f'(x) consisting of line segments and semicircles on closed interval [a, b].
+  * Sub-part 1: Evaluating g'(x) = f'(x) using Fundamental Theorem of Calculus (FTC Part 1).
+  * Sub-part 2: Points of inflection of g: locations where f' changes from increasing to decreasing (or vice versa), or f' attains relative extrema.
+  * Sub-part 3: Geometric evaluation of g(x) using triangle/trapezoid/semicircle areas with sign respect.
+  * Sub-part 4: Absolute minimum / maximum on [a, b] using CANDIDATES TEST (Must evaluate critical points where f'(x) = 0 AND endpoints x = a, x = b).
+- ARCHETYPE 5 (Part B, No Calculator): FUNCTIONS FROM A TABLE & DIFFERENTIATION RULES
+  * Table of twice-differentiable functions f(x), f'(x), g(x), g'(x).
+  * Sub-part 1: Chain Rule: h'(x) = f'(g(x)) * g'(x) evaluated at table value.
+  * Sub-part 2: Product/Quotient Rule with second derivative concavity: k''(x) sign analysis.
+  * Sub-part 3: Fundamental Theorem of Calculus: int_0^a f'(3x) dx = (1/3)(f(3a) - f(0)).
+  * Sub-part 4: IVT / MVT existence justification with continuous/differentiable preconditions.
+- ARCHETYPE 6 (Part B, No Calculator): IMPLICIT DIFFERENTIATION & RELATED RATES
+  * Curve defined implicitly: F(x, y) = C.
+  * Sub-part 1: Show that dy/dx = N(x, y) / D(x, y) using product rule on xy and chain rule on y^n.
+  * Sub-part 2: Horizontal tangent (N(x, y) = 0) vs Vertical tangent (D(x, y) = 0), verifying point lies on curve.
+  * Sub-part 3: Tangent line approximation at given point.
+  * Sub-part 4: Related Rates: Differentiating with respect to time t to find dy/dt given dx/dt.
+
+2. STRICT ANTI-HALLUCINATION & MATHEMATICAL SOLVABILITY LOCKS:
+- ZERO PDF COPYING / ZERO REPETITION: Do NOT copy functions or exact numbers from the 2023-2026 PDF exams (do NOT reuse Stephen swimming, milk bottle warming, or coffee cup). Invent 100% fresh, authentic scenarios.
+- NO ASYMPTOTES IN INTERVALS: Never define an integral on [a, b] where the integrand has a vertical asymptote or division by zero inside the interval.
+- CANDIDATES TEST MANDATE: Global extrema on a closed interval MUST use a candidates test table evaluating both critical points and endpoints. A local First Derivative Test alone is insufficient for global extrema.
+- CLEAN 3-DECIMAL ACCURACY: In calculator-active questions, all numerical answers must be accurate to at least 3 decimal places (rounded or truncated).
+- STRICT 9-POINT RUBRIC: 'totalPoints' must be exactly 9. Scoring rubric must provide 9 distinct points (P1 to P9) with specific scoring notes explaining point-award conditions and common student misconceptions.
+
+3. MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+Before outputting any Calculus AB FRQ, execute an internal solver verification:
+- Pass 1: Solve the problem step-by-step. Verify that derivatives, integrals, and limits are analytically correct.
+- Pass 2: Check that curves intersect at the claimed bounds. Check that Candidate Test table values match the function. Check that separation of variables produces an algebraically valid solution.
+- Self-Healing: If ANY calculation error, sign mistake, or unsolvable equation is detected, immediately correct and re-solve the question before returning the final JSON.`;
     }
   }
 
@@ -4298,7 +4603,7 @@ app.post("/api/generate-trivia", async (req, res) => {
     const studentCountry = country || "Global";
 
     const normalizeStr = (s: string) => s ? s.toLowerCase().replace(/[^a-z0-9]/g, "") : "";
-    const excludesSet = new Set((excludeQuestions || []).map((q: string) => normalizeStr(q)));
+    const excludesSet = new Set<string>((excludeQuestions || []).map((q: any) => normalizeStr(String(q || ''))));
 
     const isQuestionSeen = (qText: string) => {
       const norm = normalizeStr(qText);

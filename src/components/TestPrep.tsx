@@ -98,16 +98,24 @@ export const AP_EXAM_TIMING: Record<string, { objectiveSeconds: number; subjecti
   'ap-chemistry': { objectiveSeconds: 90, subjectiveSeconds: 900, label: '1m 30s / MCQ • 15m / FRQ' },
   // AP Physics 1: 40 MCQs in 80 min (120s/q = 2m00s) | 4 FRQs in 100 min (1500s/q = 25m)
   'ap-physics': { objectiveSeconds: 120, subjectiveSeconds: 1500, label: '2m 00s / MCQ • 25m / FRQ' },
+  'ap-physics-1': { objectiveSeconds: 120, subjectiveSeconds: 1500, label: '2m 00s / MCQ • 25m / FRQ' },
   // AP Computer Science A: 40 MCQs in 90 min (135s/q = 2m15s) | 4 FRQs in 90 min (1350s/q = 22.5m)
   'ap-computer-science': { objectiveSeconds: 135, subjectiveSeconds: 1350, label: '2m 15s / MCQ • 22m 30s / FRQ' },
+  'ap-csa': { objectiveSeconds: 135, subjectiveSeconds: 1350, label: '2m 15s / MCQ • 22m 30s / FRQ' },
+  'csa': { objectiveSeconds: 135, subjectiveSeconds: 1350, label: '2m 15s / MCQ • 22m 30s / FRQ' },
+  'computer-science-a': { objectiveSeconds: 135, subjectiveSeconds: 1350, label: '2m 15s / MCQ • 22m 30s / FRQ' },
   // AP U.S. History: 55 MCQs in 55 min (60s/q = 1m00s) | FRQ/DBQ/LEQ/SAQ average 1080s/q (18m)
   'ap-us-history': { objectiveSeconds: 60, subjectiveSeconds: 1080, label: '1m 00s / MCQ • 18m / FRQ' },
   // AP World History: 55 MCQs in 55 min (60s/q = 1m00s) | FRQ/DBQ/LEQ/SAQ average 1080s/q (18m)
   'ap-world-history': { objectiveSeconds: 60, subjectiveSeconds: 1080, label: '1m 00s / MCQ • 18m / FRQ' },
   // AP English Language: 45 MCQs in 60 min (80s/q = 1m20s) | 3 FRQs in 135 min (2700s/q = 45m)
   'ap-english-lang': { objectiveSeconds: 80, subjectiveSeconds: 2700, label: '1m 20s / MCQ • 45m / FRQ' },
+  'ap-english': { objectiveSeconds: 80, subjectiveSeconds: 2700, label: '1m 20s / MCQ • 45m / FRQ' },
+  'ap-lang': { objectiveSeconds: 80, subjectiveSeconds: 2700, label: '1m 20s / MCQ • 45m / FRQ' },
   // AP Psychology: 75 MCQs in 90 min (72s/q = 1m12s) | 2 FRQs in 70 min (2100s/q = 35m)
   'ap-psychology': { objectiveSeconds: 72, subjectiveSeconds: 2100, label: '1m 12s / MCQ • 35m / FRQ' },
+  'ap-psych': { objectiveSeconds: 72, subjectiveSeconds: 2100, label: '1m 12s / MCQ • 35m / FRQ' },
+  'psychology': { objectiveSeconds: 72, subjectiveSeconds: 2100, label: '1m 12s / MCQ • 35m / FRQ' },
   // AP Micro & Macroeconomics: 60 MCQs in 70 min (70s/q = 1m10s) | 3 FRQs in 60 min (1200s/q = 20m)
   'ap-economics': { objectiveSeconds: 70, subjectiveSeconds: 1200, label: '1m 10s / MCQ • 20m / FRQ' }
 };
@@ -127,6 +135,70 @@ export const isComputerSubject = (subj?: APSubject | { name?: string; shortCode?
   return id === 'ap-computer-science-principles' || 
          code === 'CSP' || 
          (name.includes('principles') && name.includes('computer'));
+};
+
+export const isCalculusBcSubject = (subj?: APSubject | { name?: string; shortCode?: string; id?: string } | null): boolean => {
+  if (!subj) return false;
+  const id = (subj.id || '').toLowerCase();
+  const code = (subj.shortCode || '').toUpperCase();
+  const name = (subj.name || '').toLowerCase();
+  return id === 'ap-calculus-bc' || code === 'BC' || (name.includes('calculus') && name.includes('bc'));
+};
+
+export const isChemistrySubject = (subj?: APSubject | { name?: string; shortCode?: string; id?: string } | null): boolean => {
+  if (!subj) return false;
+  const id = (subj.id || '').toLowerCase();
+  const code = (subj.shortCode || '').toUpperCase();
+  const name = (subj.name || '').toLowerCase();
+  return id === 'ap-chemistry' || code === 'CHEM' || name.includes('chem');
+};
+
+export const isBiologySubject = (subj?: APSubject | { name?: string; shortCode?: string; id?: string } | null): boolean => {
+  if (!subj) return false;
+  const id = (subj.id || '').toLowerCase();
+  const code = (subj.shortCode || '').toUpperCase();
+  const name = (subj.name || '').toLowerCase();
+  return id === 'ap-biology' || code === 'BIO' || name.includes('bio');
+};
+
+export const isPhysics1Subject = (subj?: APSubject | { name?: string; shortCode?: string; id?: string } | null): boolean => {
+  if (!subj) return false;
+  const id = (subj.id || '').toLowerCase();
+  const code = (subj.shortCode || '').toUpperCase();
+  const name = (subj.name || '').toLowerCase();
+  return id === 'ap-physics-1' || id === 'ap-physics' || code === 'PHYS1' || code === 'PHYS' || name.includes('phys');
+};
+
+export const isEnglishLangSubject = (subj?: APSubject | { name?: string; shortCode?: string; id?: string } | null): boolean => {
+  if (!subj) return false;
+  const id = (subj.id || '').toLowerCase();
+  const code = (subj.shortCode || '').toUpperCase();
+  const name = (subj.name || '').toLowerCase();
+  return id === 'ap-english-lang' || id === 'ap-english' || id === 'ap-lang' || code === 'LANG' || code === 'ENG' || (name.includes('english') && name.includes('lang')) || (name.includes('english') && !name.includes('lit'));
+};
+
+export const isPsychologySubject = (subj?: APSubject | { name?: string; shortCode?: string; id?: string } | null): boolean => {
+  if (!subj) return false;
+  const id = (subj.id || '').toLowerCase();
+  const code = (subj.shortCode || '').toUpperCase();
+  const name = (subj.name || '').toLowerCase();
+  return id === 'ap-psychology' || id === 'ap-psych' || id === 'psychology' || code === 'PSYCH' || name.includes('psych');
+};
+
+export const isWorldHistorySubject = (subj?: APSubject | { name?: string; shortCode?: string; id?: string } | null): boolean => {
+  if (!subj) return false;
+  const id = (subj.id || '').toLowerCase();
+  const code = (subj.shortCode || '').toUpperCase();
+  const name = (subj.name || '').toLowerCase();
+  return id === 'ap-world-history' || id === 'ap-whap' || code === 'WHAP' || code === 'WORLD' || name.includes('world history') || (name.includes('world') && name.includes('history'));
+};
+
+export const isCsaComputerSubject = (subj?: APSubject | { name?: string; shortCode?: string; id?: string } | null): boolean => {
+  if (!subj) return false;
+  const id = (subj.id || '').toLowerCase();
+  const code = (subj.shortCode || '').toUpperCase();
+  const name = (subj.name || '').toLowerCase();
+  return id === 'ap-computer-science' || id === 'ap-csa' || id === 'csa' || code === 'CSA' || (name.includes('computer') && (name.includes('science a') || name.includes('csa') || !name.includes('principles')));
 };
 
 export function getApExamDurationSeconds(subjectId: string, qType: 'objective' | 'subjective', count: number): number {
@@ -356,6 +428,32 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   const [questionType, setQuestionType] = useState<QuestionType>('objective');
   const [questionCount, setQuestionCount] = useState<number>(5);
   const [examMode, setExamMode] = useState<'practice_bank' | 'mock_exam'>('practice_bank');
+
+  // Subject Archetype Auto-Sync for Exam Simulation:
+  // AP Chemistry: Exactly 7 FRQs (Q1-Q3 Long + Q4-Q7 Short)
+  // AP Calculus BC: Exactly 6 FRQs (Q1-Q2 Calc Active + Q3-Q6 No Calc)
+  // AP Biology: Exactly 6 FRQs (Q1-Q2 Long + Q3-Q6 Short)
+  // AP Physics 1: Exactly 4 FRQs (Q1 MR + Q2 TBR + Q3 LAB + Q4 QQT)
+  // AP English Language: Exactly 3 Essays (Q1 Synthesis + Q2 Rhetorical Analysis + Q3 Argument)
+  // AP Psychology: Exactly 2 Questions (Q1 Article Analysis AAQ + Q2 Evidence-Based Question EBQ)
+  // AP Human Geography / APES: Exactly 3 FRQs
+  const isBcSubject = useMemo(() => isCalculusBcSubject(selectedSubject), [selectedSubject]);
+  const isChemSubject = useMemo(() => isChemistrySubject(selectedSubject), [selectedSubject]);
+  const isBioSubject = useMemo(() => isBiologySubject(selectedSubject), [selectedSubject]);
+  const isPhys1Subject = useMemo(() => isPhysics1Subject(selectedSubject), [selectedSubject]);
+  const isLangSubject = useMemo(() => isEnglishLangSubject(selectedSubject), [selectedSubject]);
+  const isPsychSubject = useMemo(() => isPsychologySubject(selectedSubject), [selectedSubject]);
+  const isWhapSubject = useMemo(() => isWorldHistorySubject(selectedSubject), [selectedSubject]);
+  const isCsaSubject = useMemo(() => isCsaComputerSubject(selectedSubject), [selectedSubject]);
+
+  useEffect(() => {
+    if (examMode === 'mock_exam' && questionType === 'subjective') {
+      const targetCount = isWhapSubject ? 5 : (isChemSubject ? 7 : ((isBcSubject || isBioSubject) ? 6 : ((isPhys1Subject || isCsaSubject) ? 4 : (isLangSubject ? 3 : (isPsychSubject ? 2 : 3)))));
+      if (questionCount !== targetCount) {
+        setQuestionCount(targetCount);
+      }
+    }
+  }, [isBcSubject, isChemSubject, isBioSubject, isPhys1Subject, isLangSubject, isPsychSubject, isWhapSubject, isCsaSubject, examMode, questionType, questionCount]);
 
   // Practice & Results States
   const [loading, setLoading] = useState<boolean>(false);
@@ -682,9 +780,23 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   const calculatorPolicy = useMemo(() => {
     const s = selectedSubject.id.toLowerCase();
     if (s.includes('calculus')) {
+      if (questionType === 'subjective') {
+        // College Board Section II 6-question cycle:
+        // In each 6-question cycle: First 2 (indices 0, 1) are Part A (Calc Active), remaining 4 (indices 2,3,4,5) are Part B (No Calc)
+        const cycleIdx = currentSubIndex % 6;
+        const isCalcActive = cycleIdx < 2;
+        const partLabel = isCalcActive 
+          ? (examMode === 'mock_exam' ? 'Calc Active (Sec II-A: Q1–Q2)' : `Calc Active (Part A: Q${currentSubIndex + 1})`)
+          : (examMode === 'mock_exam' ? 'No Calculator (Sec II-B: Q3–Q6)' : `No Calculator (Part B: Q${currentSubIndex + 1})`);
+        return {
+          allowed: isCalcActive,
+          label: partLabel,
+          color: isCalcActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'
+        };
+      }
       return {
         allowed: true,
-        label: questionType === 'objective' ? 'Calc Active (Sec I-B)' : 'Calc Active (Sec II-A)',
+        label: 'Calc Active (Sec I-B)',
         color: 'bg-emerald-50 text-emerald-700 border-emerald-200'
       };
     }
@@ -700,7 +812,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
       label: 'No Calculator Exam',
       color: 'bg-zinc-100 text-zinc-500 border-zinc-200'
     };
-  }, [selectedSubject, questionType]);
+  }, [selectedSubject, questionType, examMode, currentSubIndex]);
 
   // Auto-reset calculator if current subject does not permit a calculator
   useEffect(() => {
@@ -1579,14 +1691,14 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   // Export PDF Utility & Instant Preview Opener
   const handleExportPDF = async (
     customQuestions?: { type: 'objective'; items: APObjectiveQuestion[] } | { type: 'subjective'; items: APSubjectiveQuestion[] },
-    customSubject?: { name: string; shortCode: string },
+    customSubject?: { name: string; shortCode: string; id?: string },
     customUnitTitle?: string,
     options?: { skipPreview?: boolean }
   ) => {
     triggerVibration(15);
     try {
       const qType = customQuestions ? customQuestions.type : questionType;
-      const subj = customSubject || { name: selectedSubject.name, shortCode: selectedSubject.shortCode };
+      const subj = customSubject ? { id: (customSubject as any).id || selectedSubject.id, ...customSubject } : { id: selectedSubject.id, name: selectedSubject.name, shortCode: selectedSubject.shortCode };
       const uTitle = customUnitTitle || (selectedUnit ? selectedUnit.title : 'All Curriculum Units');
       const objQs = customQuestions && customQuestions.type === 'objective' ? customQuestions.items : objectiveQuestions;
       const subQs = customQuestions && customQuestions.type === 'subjective' ? customQuestions.items : subjectiveQuestions;
@@ -2108,7 +2220,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                     triggerVibration(15);
                     setQuestionType('objective');
                     setExamMode('practice_bank');
-                    if (![3, 5, 10].includes(questionCount)) {
+                    if (![5, 10, 15].includes(questionCount)) {
                       setQuestionCount(5);
                     }
                   }}
@@ -2202,7 +2314,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                     onClick={() => {
                       triggerVibration(10);
                       setExamMode('practice_bank');
-                      if (![3, 5, 10].includes(questionCount)) {
+                      if (![5, 10, 15].includes(questionCount)) {
                         setQuestionCount(5);
                       }
                     }}
@@ -2216,10 +2328,10 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                       <span className="font-black text-xs">📚 Practice Bank</span>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         examMode === 'practice_bank' ? 'bg-zinc-800 text-zinc-200' : 'bg-zinc-100 text-zinc-600'
-                      }`}>Flexible Bank</span>
+                      }`}>Flexible Drills</span>
                     </div>
                     <p className={`text-[11px] mt-1 ${examMode === 'practice_bank' ? 'text-zinc-300' : 'text-zinc-500'}`}>
-                      Flexible unit drills
+                      5, 10, or 15 Question Drills
                     </p>
                   </button>
 
@@ -2229,8 +2341,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                       triggerVibration(15);
                       setExamMode('mock_exam');
                       setQuestionType('subjective');
-                      // Real College Board Section II: 3 FRQs for APHG / 3 for most social sciences
-                      setQuestionCount(3);
+                      // Real College Board Section II: Exactly 7 FRQs for AP Chemistry, 6 FRQs for AP Calculus BC and AP Biology, Exactly 5 Questions for AP World History (SAQs 1-3, DBQ, LEQ), 4 FRQs for AP Physics 1, 3 for AP Lang, 2 for AP Psychology, 3 for other subjects
+                      setQuestionCount(isWhapSubject ? 5 : (isChemSubject ? 7 : ((isBcSubject || isBioSubject) ? 6 : ((isPhys1Subject || isCsaSubject) ? 4 : (isLangSubject ? 3 : (isPsychSubject ? 2 : 3))))));
                     }}
                     className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                       examMode === 'mock_exam'
@@ -2242,10 +2354,10 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                       <span className="font-black text-xs">⏱️ Exam Simulation</span>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         examMode === 'mock_exam' ? 'bg-purple-900 text-purple-200' : 'bg-purple-50 text-purple-700'
-                      }`}>Official Format</span>
+                      }`}>Real Exam Replica</span>
                     </div>
                     <p className={`text-[11px] mt-1 ${examMode === 'mock_exam' ? 'text-purple-100' : 'text-zinc-500'}`}>
-                      Timed exam drills
+                      {isWhapSubject ? 'Auto-Locked 5 Question Exam Set (SAQs + DBQ + LEQ)' : isChemSubject ? 'Auto-Locked 7 FRQ Exam Set (105 Min)' : (isBcSubject || isBioSubject) ? 'Auto-Locked 6 FRQ Exam Set (90 Min)' : isPhys1Subject ? 'Auto-Locked 4 FRQ Exam Set (100 Min)' : isCsaSubject ? 'Auto-Locked 4 FRQ Exam Set (90 Min)' : isLangSubject ? 'Auto-Locked 3 Essay Exam Set (135 Min)' : isPsychSubject ? 'Auto-Locked 2 Question Exam Set (70 Min)' : 'Auto-Locked 3 FRQ Exam Set'}
                     </p>
                   </button>
                 </div>
@@ -2253,11 +2365,18 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
 
               {questionType === 'objective' || examMode === 'practice_bank' ? (
                 <div className="grid grid-cols-3 gap-2 sm:gap-2.5 mt-1">
-                  {[
-                    { count: 3, label: questionType === 'subjective' ? '3 FRQs' : '3 Questions' },
-                    { count: 5, label: questionType === 'subjective' ? '5 FRQs' : '5 Questions' },
-                    { count: 10, label: questionType === 'subjective' ? '10 FRQs' : '10 Questions' }
-                  ].map(item => (
+                  {(questionType === 'objective'
+                    ? [
+                        { count: 5, label: '5 MCQs' },
+                        { count: 10, label: '10 MCQs' },
+                        { count: 20, label: '20 MCQs' }
+                      ]
+                    : [
+                        { count: 5, label: '5 FRQs' },
+                        { count: 10, label: '10 FRQs' },
+                        { count: 15, label: '15 FRQs' }
+                      ]
+                  ).map(item => (
                     <button
                       key={item.count}
                       type="button"
@@ -2275,14 +2394,94 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                     </button>
                   ))}
                 </div>
-              ) : (
-                <div className="p-3 rounded-2xl bg-purple-50/80 border border-purple-200 flex items-center justify-between">
+              ) : isWhapSubject ? (
+                <div className="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200 flex items-center justify-between">
                   <div className="text-xs">
-                    <span className="font-black text-purple-900 block">Section II Structure: 3 Questions</span>
-                    <span className="text-[11px] text-purple-600">75 min timed</span>
+                    <span className="font-black text-amber-950 block text-[13px]">Official AP World History: Modern Replica: 5 Questions (22 Points Total)</span>
+                    <span className="text-[11px] text-amber-700 font-medium">SAQ 1–3 (3 pts ea, ~40 min) • Section II: DBQ (7 Docs, 7 pts, ~60 min) + LEQ (6 pts, ~40 min)</span>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full bg-purple-600 text-white text-[11px] font-black">
-                    3 FRQs Fixed
+                  <span className="px-3 py-1.5 rounded-full bg-amber-700 text-white text-[11px] font-black tracking-wide shadow-sm">
+                    5 Questions Locked
+                  </span>
+                </div>
+              ) : isChemSubject ? (
+                <div className="p-3.5 rounded-2xl bg-teal-50/90 border border-teal-200 flex items-center justify-between">
+                  <div className="text-xs">
+                    <span className="font-black text-teal-950 block text-[13px]">Official AP Chemistry Section II: 7 Questions</span>
+                    <span className="text-[11px] text-teal-700 font-medium">Q1–Q3 Long FRQs (10 pts ea, ~23 min) • Q4–Q7 Short FRQs (4 pts ea, ~9 min)</span>
+                  </div>
+                  <span className="px-3 py-1.5 rounded-full bg-teal-700 text-white text-[11px] font-black tracking-wide shadow-sm">
+                    7 FRQs Locked (105 Min)
+                  </span>
+                </div>
+              ) : isBioSubject ? (
+                <div className="p-3.5 rounded-2xl bg-emerald-50/90 border border-emerald-200 flex items-center justify-between">
+                  <div className="text-xs">
+                    <span className="font-black text-emerald-950 block text-[13px]">Official AP Biology Section II: 6 Questions</span>
+                    <span className="text-[11px] text-emerald-700 font-medium">Q1–Q2 Long FRQs (9 pts ea, ~25 min) • Q3–Q6 Short FRQs (4 pts ea, ~10 min)</span>
+                  </div>
+                  <span className="px-3 py-1.5 rounded-full bg-emerald-700 text-white text-[11px] font-black tracking-wide shadow-sm">
+                    6 FRQs Locked (90 Min)
+                  </span>
+                </div>
+              ) : isBcSubject ? (
+                <div className="p-3.5 rounded-2xl bg-purple-50/90 border border-purple-200 flex items-center justify-between">
+                  <div className="text-xs">
+                    <span className="font-black text-purple-950 block text-[13px]">Official AP Calculus BC Section II: 6 Questions</span>
+                    <span className="text-[11px] text-purple-700 font-medium">Part A: Q1–Q2 (Calc Active) • Part B: Q3–Q6 (No Calculator)</span>
+                  </div>
+                  <span className="px-3 py-1.5 rounded-full bg-purple-700 text-white text-[11px] font-black tracking-wide shadow-sm">
+                    6 FRQs Locked (90 Min)
+                  </span>
+                </div>
+              ) : isPhys1Subject ? (
+                <div className="p-3.5 rounded-2xl bg-sky-50/90 border border-sky-200 flex items-center justify-between">
+                  <div className="text-xs">
+                    <span className="font-black text-sky-950 block text-[13px]">Official AP Physics 1 Section II: 4 Questions</span>
+                    <span className="text-[11px] text-sky-700 font-medium">Q1 MR (10 pts, ~25m) • Q2 TBR (12 pts, ~25m) • Q3 LAB (10 pts, ~30m) • Q4 QQT (8 pts, ~20m)</span>
+                  </div>
+                  <span className="px-3 py-1.5 rounded-full bg-sky-700 text-white text-[11px] font-black tracking-wide shadow-sm">
+                    4 FRQs Locked (100 Min)
+                  </span>
+                </div>
+              ) : isLangSubject ? (
+                <div className="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200 flex items-center justify-between">
+                  <div className="text-xs">
+                    <span className="font-black text-amber-950 block text-[13px]">Official AP English Language Section II: 3 Essays</span>
+                    <span className="text-[11px] text-amber-700 font-medium">Q1 Synthesis (6 pts, ~55m) • Q2 Rhetorical Analysis (6 pts, ~40m) • Q3 Argument (6 pts, ~40m)</span>
+                  </div>
+                  <span className="px-3 py-1.5 rounded-full bg-amber-700 text-white text-[11px] font-black tracking-wide shadow-sm">
+                    3 Essays Locked (135 Min)
+                  </span>
+                </div>
+              ) : isPsychSubject ? (
+                <div className="p-3.5 rounded-2xl bg-rose-50/90 border border-rose-200 flex items-center justify-between">
+                  <div className="text-xs">
+                    <span className="font-black text-rose-950 block text-[13px]">Official AP Psychology Section II: 2 Questions</span>
+                    <span className="text-[11px] text-rose-700 font-medium">Q1 Article Analysis (AAQ, 7 pts, ~25m) • Q2 Evidence-Based Question (EBQ, 7 pts, ~45m)</span>
+                  </div>
+                  <span className="px-3 py-1.5 rounded-full bg-rose-700 text-white text-[11px] font-black tracking-wide shadow-sm">
+                    2 Questions Locked (70 Min)
+                  </span>
+                </div>
+              ) : isCsaSubject ? (
+                <div className="p-3.5 rounded-2xl bg-indigo-50/90 border border-indigo-200 flex items-center justify-between">
+                  <div className="text-xs">
+                    <span className="font-black text-indigo-950 block text-[13px]">Official AP Computer Science A Section II: 4 Questions</span>
+                    <span className="text-[11px] text-indigo-700 font-medium">Q1 Methods & Control • Q2 Class Design • Q3 Array/ArrayList • Q4 2D Arrays</span>
+                  </div>
+                  <span className="px-3 py-1.5 rounded-full bg-indigo-700 text-white text-[11px] font-black tracking-wide shadow-sm">
+                    4 FRQs Locked (90 Min)
+                  </span>
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-2xl bg-purple-50/90 border border-purple-200 flex items-center justify-between">
+                  <div className="text-xs">
+                    <span className="font-black text-purple-950 block text-[13px]">Official Section II: 3 Questions</span>
+                    <span className="text-[11px] text-purple-700 font-medium">Q1 (No Stimulus) + Q2 (1 Stimulus) + Q3 (2 Stimuli)</span>
+                  </div>
+                  <span className="px-3 py-1.5 rounded-full bg-purple-700 text-white text-[11px] font-black tracking-wide shadow-sm">
+                    3 FRQs Locked
                   </span>
                 </div>
               )}

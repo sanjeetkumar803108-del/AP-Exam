@@ -46,6 +46,10 @@ export function stripMarkdownFormatting(text: string): string {
 export function isTableLine(line: string): boolean {
   const trimmed = line.trim();
   if (!trimmed.includes('|')) return false;
+  // A table line must start with | or end with |
+  if (!trimmed.startsWith('|') && !trimmed.endsWith('|')) return false;
+  // Exclude mathematical equations containing equality or limit assignments
+  if (/=\s*\||\|\s*=|->|lim\s*\(/.test(trimmed)) return false;
   const parts = trimmed.split('|').map(p => p.trim());
   return parts.length >= 3;
 }
@@ -389,19 +393,25 @@ export function drawRichTextWithTables(
     // 1. Detect if this line is part of a markdown table
     if (isTableLine(rawLine)) {
       const tableLines: string[] = [];
-      while (lineIdx < lines.length && isTableLine(lines[lineIdx])) {
-        tableLines.push(lines[lineIdx]);
-        lineIdx++;
+      let peekIdx = lineIdx;
+      while (peekIdx < lines.length && isTableLine(lines[peekIdx])) {
+        tableLines.push(lines[peekIdx]);
+        peekIdx++;
       }
 
-      currentY += (4 / scaleFactor);
-      currentY = drawPdfGridTable(doc, tableLines, x, currentY, maxWidth, {
-        fontSize: Math.max(7, fontSize - 0.5),
-        newPageY,
-        checkPageBreak
-      });
-      currentY += (8 / scaleFactor); // Spacing after table
-      continue;
+      // Authentic tables must have at least 2 lines and an explicit column separator row
+      const hasSeparator = tableLines.some(l => /^\|?[\s:\-]+(?:\|[\s:\-]+)+\|?$/.test(l.trim()) && l.includes('--'));
+      if (hasSeparator && tableLines.length >= 2) {
+        lineIdx = peekIdx;
+        currentY += (4 / scaleFactor);
+        currentY = drawPdfGridTable(doc, tableLines, x, currentY, maxWidth, {
+          fontSize: Math.max(7, fontSize - 0.5),
+          newPageY,
+          checkPageBreak
+        });
+        currentY += (8 / scaleFactor); // Spacing after table
+        continue;
+      }
     }
 
     const trimmed = rawLine.trim();
@@ -587,7 +597,7 @@ export function drawRichTextWithTables(
     }
 
     // 5. Standard paragraph text
-    const cleanParagraph = stripMarkdownFormatting(trimmed);
+    const cleanParagraph = stripMarkdownFormatting(sanitizePdfText(trimmed));
     const wrappedLines: string[] = doc.splitTextToSize(cleanParagraph, maxWidth);
     const blockH = (wrappedLines.length * lineH) + paragraphSpacing;
 
