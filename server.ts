@@ -2646,6 +2646,7 @@ app.post("/api/generate-ap-questions", async (req, res) => {
     const isPsychSubject = s.includes('psych');
     const isCsaSubject = (s.includes('computer science a') || s.includes('csa') || (s.includes('computer') && !s.includes('principles') && !s.includes('csp')));
     const isWhapSubject = s.includes('world history') || s.includes('whap') || (s.includes('world') && s.includes('history')) || (s.includes('history') && !s.includes('u.s.') && !s.includes('us') && !s.includes('euro'));
+    const isApushSubject = !isWhapSubject && (s.includes('history') || s.includes('apush'));
     let requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 20);
     // Real College Board Section II: Exactly 7 Questions for AP Chemistry, 6 Questions for AP Calculus BC and AP Biology, Exactly 5 Questions for AP World History (SAQs 1-3, DBQ, LEQ), 4 Questions for AP Physics 1 and AP Computer Science A, Exactly 3 Questions for AP Macroeconomics and AP English Language, Exactly 2 Questions for AP Psychology (AAQ + EBQ)
     if (isChemSubject && (examMode === 'mock_exam' || examMode === 'exam_simulation') && type === 'subjective') {
@@ -3824,6 +3825,12 @@ Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP
           const bioDefaultPoints = idx < 2 ? 9 : 4;
           const phys1DefaultPoints = idx === 0 ? 10 : (idx === 1 ? 12 : (idx === 2 ? 10 : 8));
           const whapDefaultPoints = (idx % 5 === 3) ? 7 : ((idx % 5 === 4) ? 6 : 3);
+          const langDefaultPoints = 6;
+          const psychDefaultPoints = 7;
+          const csaDefaultPoints = (idx % 4 === 0) ? 7 : ((idx % 4 === 1) ? 7 : ((idx % 4 === 2) ? 5 : 6));
+          const macroDefaultPoints = (idx % 3 === 0) ? 10 : 5;
+          const apushDefaultPoints = 3;
+
           const assignedPoints = isWhapSubject
             ? (realPoints === 7 || realPoints === 6 || realPoints === 3 ? realPoints : whapDefaultPoints)
             : isChemSubject
@@ -3832,7 +3839,18 @@ Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP
             ? (realPoints === 9 || realPoints === 4 ? realPoints : bioDefaultPoints)
             : isPhys1Subject
             ? (realPoints === 12 || realPoints === 10 || realPoints === 8 ? realPoints : phys1DefaultPoints)
+            : isLangSubject
+            ? (realPoints === 6 ? realPoints : langDefaultPoints)
+            : isPsychSubject
+            ? (realPoints === 7 ? realPoints : psychDefaultPoints)
+            : isCsaSubject
+            ? (realPoints >= 5 && realPoints <= 9 ? realPoints : csaDefaultPoints)
+            : isMacroSubject
+            ? (realPoints === 10 || realPoints === 5 ? realPoints : macroDefaultPoints)
+            : isApushSubject
+            ? (realPoints === 3 ? realPoints : apushDefaultPoints)
             : realPoints;
+
           const whapTitles = [
             `SECTION I PART B: SHORT-ANSWER QUESTION ${idx + 1} (SECONDARY SOURCE)  [${assignedPoints} POINTS]`,
             `SECTION I PART B: SHORT-ANSWER QUESTION ${idx + 1} (PRIMARY SOURCE / VISUAL)  [${assignedPoints} POINTS]`,
@@ -3850,6 +3868,31 @@ Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP
             `QUESTION 4: QUALITATIVE/QUANTITATIVE TRANSLATION (QQT)  [${assignedPoints} POINTS]`
           ];
           const phys1Title = phys1Titles[idx % 4] || `FREE-RESPONSE QUESTION ${idx + 1}  [${assignedPoints} POINTS]`;
+          const langTitles = [
+            `QUESTION 1: SYNTHESIS ESSAY  [${assignedPoints} POINTS]`,
+            `QUESTION 2: RHETORICAL ANALYSIS ESSAY  [${assignedPoints} POINTS]`,
+            `QUESTION 3: ARGUMENT ESSAY  [${assignedPoints} POINTS]`
+          ];
+          const langTitle = langTitles[idx % 3];
+          const psychTitles = [
+            `QUESTION 1: ARTICLE ANALYSIS QUESTION (AAQ)  [${assignedPoints} POINTS]`,
+            `QUESTION 2: EVIDENCE-BASED QUESTION (EBQ)  [${assignedPoints} POINTS]`
+          ];
+          const psychTitle = psychTitles[idx % 2];
+          const csaTitles = [
+            `QUESTION 1: METHODS AND CONTROL STRUCTURES  [${assignedPoints} POINTS]`,
+            `QUESTION 2: CLASS DESIGN  [${assignedPoints} POINTS]`,
+            `QUESTION 3: ARRAY / ARRAYLIST  [${assignedPoints} POINTS]`,
+            `QUESTION 4: 2D ARRAYS  [${assignedPoints} POINTS]`
+          ];
+          const csaTitle = csaTitles[idx % 4];
+          const macroTitles = [
+            `QUESTION 1: LONG FREE-RESPONSE QUESTION  [${assignedPoints} POINTS]`,
+            `QUESTION 2: SHORT FREE-RESPONSE QUESTION  [${assignedPoints} POINTS]`,
+            `QUESTION 3: SHORT FREE-RESPONSE QUESTION  [${assignedPoints} POINTS]`
+          ];
+          const macroTitle = macroTitles[idx % 3];
+
           const defaultTitle = isWhapSubject
             ? whapTitle
             : isChemSubject
@@ -3858,7 +3901,17 @@ Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP
             ? bioTitle
             : isPhys1Subject
             ? phys1Title
-            : (isApushSubject ? `SHORT-ANSWER QUESTION ${idx + 1}  [${realPoints} POINTS]` : `FREE RESPONSE QUESTION ${idx + 1}  [${realPoints} POINTS]`);
+            : isLangSubject
+            ? langTitle
+            : isPsychSubject
+            ? psychTitle
+            : isCsaSubject
+            ? csaTitle
+            : isMacroSubject
+            ? macroTitle
+            : isApushSubject
+            ? `SHORT-ANSWER QUESTION ${idx + 1}  [${assignedPoints} POINTS]`
+            : `FREE RESPONSE QUESTION ${idx + 1}  [${assignedPoints} POINTS]`;
 
           return {
             ...q,
