@@ -846,14 +846,14 @@ ${extractedText}` };
       ];
       let summaryText = "";
       let summarizeError = null;
-      for (const model2 of summarizeModels) {
+      for (const model of summarizeModels) {
         try {
           const response = await safeGenerateContent2({
             gradeLevel,
             stream,
             country,
             profileContext,
-            model: model2,
+            model,
             timeoutMs: 6e4,
             contents: contentsPayload,
             config: {
@@ -868,7 +868,7 @@ ${extractedText}` };
             break;
           }
         } catch (err) {
-          console.warn(`[summarize] Model ${model2} failed, trying next fallback:`, err?.message || err);
+          console.warn(`[summarize] Model ${model} failed, trying next fallback:`, err?.message || err);
           summarizeError = err;
         }
       }
@@ -1081,18 +1081,18 @@ GIBBERISH / RANDOM TYPING GUARD:
       let streamResponse = null;
       let lastError = null;
       let anyQuotaExceeded = false;
-      for (const model2 of modelsToTry) {
+      for (const model of modelsToTry) {
         try {
           const streamConfig = {
             systemInstruction: { parts: [{ text: systemInstruction }] },
             temperature: 0.15,
             maxOutputTokens: 3e3
           };
-          if (model2.includes("thinking") || model2.includes("2.5")) {
+          if (model.includes("thinking") || model.includes("2.5")) {
             streamConfig.thinkingConfig = { thinkingBudget: 0 };
           }
           streamResponse = await aiClient.models.generateContentStream({
-            model: model2,
+            model,
             contents: [{ parts: contentParts }],
             config: streamConfig
           });
@@ -1102,13 +1102,13 @@ GIBBERISH / RANDOM TYPING GUARD:
           const errStr = String(err.message || err);
           const isRateLimitOrQuota = errStr.includes("429") || errStr.includes("quota") || errStr.includes("RESOURCE_EXHAUSTED") || errStr.includes("resource_exhausted") || errStr.includes("limit");
           if (isRateLimitOrQuota) {
-            console.warn(`[grade-essay stream] Model ${model2} hit rate-limit or quota constraint:`, errStr);
+            console.warn(`[grade-essay stream] Model ${model} hit rate-limit or quota constraint:`, errStr);
             lastQuotaExceededTime = Date.now();
-            rateLimitedModels[model2] = Date.now();
+            rateLimitedModels[model] = Date.now();
             anyQuotaExceeded = true;
             continue;
           } else {
-            console.error(`[grade-essay stream] Model ${model2} failed:`, errStr);
+            console.error(`[grade-essay stream] Model ${model} failed:`, errStr);
           }
         }
       }
@@ -2024,14 +2024,14 @@ You must return your output strictly in JSON format matching the following schem
       ];
       let response = null;
       let grammarError = null;
-      for (const model2 of grammarModels) {
+      for (const model of grammarModels) {
         try {
           response = await safeGenerateContent2({
             gradeLevel,
             stream,
             country,
             profileContext,
-            model: model2,
+            model,
             contents: { parts: contentParts },
             config: {
               systemInstruction: { parts: [{ text: systemInstruction }] },
@@ -2043,7 +2043,7 @@ You must return your output strictly in JSON format matching the following schem
             break;
           }
         } catch (err) {
-          console.warn(`[grammar-enhance] Model ${model2} failed, trying fallback:`, err?.message || err);
+          console.warn(`[grammar-enhance] Model ${model} failed, trying fallback:`, err?.message || err);
           grammarError = err;
         }
       }
@@ -2228,14 +2228,14 @@ OUTPUT QUALITY & MATHEMATICAL FORMULAS (KaTeX):
       ];
       let textSummaryResult = "";
       let textSumError = null;
-      for (const model2 of textSumModels) {
+      for (const model of textSumModels) {
         try {
           const response = await safeGenerateContent2({
             gradeLevel,
             stream,
             country,
             profileContext,
-            model: model2,
+            model,
             contents: { parts: [{ text: trimmedText }] },
             config: { systemInstruction: { parts: [{ text: systemInstruction }] }, maxOutputTokens: 2500, temperature: 0.3 }
           });
@@ -2243,7 +2243,7 @@ OUTPUT QUALITY & MATHEMATICAL FORMULAS (KaTeX):
           textSumError = null;
           break;
         } catch (err) {
-          console.warn(`[summarize-text] Model ${model2} failed, trying next fallback:`, err?.message || err);
+          console.warn(`[summarize-text] Model ${model} failed, trying next fallback:`, err?.message || err);
           textSumError = err;
           continue;
         }
@@ -19376,16 +19376,16 @@ function verifyMathAndFeasibility(q, subjectId) {
       issues.push(`AP Computer Science A Score Parity Violation: FRQ point value must be 9 (classic) or 7/5/6 (2026 CED). Stated points: ${q.totalPoints}.`);
     }
     if (prompt.includes("Class Design") || prompt.includes("class") || combined.includes("Write the complete") || combined.includes("public class")) {
-      if (model.includes("class ") && !model.includes("private ")) {
+      if (modelAnswer.includes("class ") && !modelAnswer.includes("private ")) {
         issues.push("AP CSA Encapsulation Violation: Instance variables in Class Design questions MUST be declared private.");
       }
     }
-    const badStringEq = /"(?:[^"\\]|\\.)*"\s*==|==\s*"(?:[^"\\]|\\.)*"/i.test(model);
+    const badStringEq = /"(?:[^"\\]|\\.)*"\s*==|==\s*"(?:[^"\\]|\\.)*"/i.test(modelAnswer);
     if (badStringEq) {
       issues.push("AP CSA String Equality Violation: Strings in Java must be compared using .equals(), NOT ==.");
     }
     if (prompt.includes("2D") || prompt.includes("two-dimensional") || combined.includes("[][]")) {
-      if (model.includes("r != row && c != col")) {
+      if (modelAnswer.includes("r != row && c != col")) {
         issues.push("AP CSA 2D Array Fatal Bug: Self-pairing guard 'r != row && c != col' incorrectly excludes the entire row and column instead of just the single coordinate. Use '!(r == row && c == col)' or 'r != row || c != col'.");
       }
     }
@@ -20499,6 +20499,136 @@ public int getPointsForRow(int targetRow) {
         "Point 6 [1 pt]: Returns sum * 2 if all colors match, or sum otherwise without early return (algorithm)."
       ]
     }
+  ],
+  "ap-world-history": [
+    {
+      title: "SECTION II PART A: DOCUMENT-BASED QUESTION (DBQ)  [7 POINTS]",
+      prompt: `**Suggested reading and writing time: 60 minutes (15 minutes reading and 45 minutes writing)**
+
+Directions: Question 1 is based on the accompanying Documents 1\u20137. The documents have been edited for the purpose of this exercise. In your response you should do the following:
+- Respond to the prompt with a historically defensible thesis or claim that establishes a line of reasoning.
+- Describe a broader historical context relevant to the prompt.
+- Support an argument in response to the prompt using at least six documents.
+- Use at least one additional piece of the specific historical evidence beyond that found in the documents.
+- For at least two documents, explain how or why the document's point of view, purpose, historical situation, and/or audience is relevant to an argument.
+- Demonstrate a complex understanding of a historical development that is the focus of the prompt, using evidence to corroborate, qualify, or modify an argument.
+
+### Historical Prompt
+Evaluate the extent to which European transoceanic maritime connections disrupted existing indigenous economic and commercial networks in South and Southeast Asia in the period 1450\u20131750.
+
+---
+
+### Document 1
+*Source: Official diplomatic letter from Sultan Alauddin Mansur Syah of Aceh (Sumatra) to the Ottoman Sultan Murad III, 1568.*
+"The Portuguese infidels have fortified the port of Malacca and continuously assault the merchant fleets of our faithful Muslim traders navigating between India, Calicut, and our archipelago. They seek to monopolize the royal pepper routes and divert revenue from Islamic ports. We earnestly entreat Your Imperial Majesty to dispatch Ottoman cannons, siege engineers, and armaments so our combined fleets may break their naval blockade and restore unrestricted transit for the merchants of Islam across the Indian Ocean."
+
+---
+
+### Document 2
+*Source: Official instruction register of Jan Pieterszoon Coen, Governor-General of the Dutch East India Company (VOC), Batavia (Java), 1622.*
+"We cannot maintain commerce without war, nor war without commerce. To guarantee our exclusive monopoly over nutmeg and cloves in the Banda Islands and the Moluccas, all indigenous vessels sailing without a VOC pass (pas-cedul) shall be treated as contraband pirates, their cargoes confiscated, and their commanders punished. No Asian junk or Portuguese merchant may trade in these seas without our express license."
+
+---
+
+### Document 3
+*Source: Jean-Baptiste Tavernier, French Huguenot gem merchant and traveler, travel journal published as Six Voyages in Turkey, Persia, and India, 1676, describing commerce in Surat, Mughal Empire.*
+"The port of Surat is the chief emporium of all the Indies. Although the English and Dutch companies have substantial warehouses here, they are entirely dependent upon the wealthy Hindu and Jain banyas (financiers). These indigenous bankers control the mints, exchange European silver reals into Mughal rupees at advantageous margins, and issue bills of exchange (hundis) that finance both local weaving villages and European ship cargoes. If an indigenous merchant feels mistreated by the Europeans, the Mughal governor shuts the gates and suspends all outbound exports until satisfaction is made."
+
+---
+
+### Document 4
+*Source: Letter from King Narai of Ayutthaya (Siam) to King Louis XIV of France, 1686.*
+"Wishing to preserve our royal ports against the overbearing demands of the Dutch company, who continually seek exclusive monopoly over our tin and deerskin exports, we welcome French merchants and diplomatic envoys to reside in our capital. By inviting multiple European nations to compete alongside our Chinese, Persian, and Siamese merchants, our Kingdom maintains sovereignty and prevents any single foreign crown from dominating our coastal commerce."
+
+---
+
+### Document 5
+*Source: Memorial to the Kangxi Emperor of the Qing Dynasty from Shi Lang, Admiral of the Imperial Navy, 1684, regarding maritime trade bans.*
+"Although the court enacted coastal evacuation bans to sever pirate ties, hundreds of merchant junks from Fujian and Guangdong sail annually to Manila, Batavia, and Nagasaki laden with silk, tea, and porcelain. Asian ports desperately depend on our manufactured goods, and return vast quantities of foreign silver bullion to our southern provinces. Lifting the sea ban and licensing our native merchants will fill the imperial treasury and ensure that European companies must purchase our products on Chinese terms."
+
+---
+
+### Document 6
+*Source: Records of the British East India Company (EIC) Council at Fort St. George (Madras), India, 1704.*
+"Our investments in printed calicoes and fine muslins have suffered severe delays this season due to the immense credit provided to weavers by Gujarati and Armenian merchant syndicates. These local traders offer higher advance payments in silver than our charter allows, thereby securing the highest-grade textiles for the Red Sea and Persian Gulf markets before our supercargoes can intervene. We must negotiate amicable rate terms with local broker Virji Vora to secure our seasonal consignments."
+
+---
+
+### Document 7
+*Source: Japanese Red Seal (Shuinsen) trading permit and navigational maritime route chart preserved in the Nagasaki archives, circa 1630.*
+*(Visual artifact: Map illustrating seasonal monsoon shipping corridors connecting Kyoto and Nagasaki with the ports of Faifo (Vietnam), Ayutthaya (Siam), Manila (Philippines), and Patani (Malay Peninsula), annotated with cargo lists containing copper, silver, silk, deer hides, and ceramics exchanged between Japanese, Chinese, and Southeast Asian merchant guilds without European intermediaries.)*`,
+      totalPoints: 7,
+      unitNumber: 4,
+      unitTitle: "Unit 4: Transoceanic Interconnections (c. 1450 to c. 1750)",
+      skill: "Document-Based Question (DBQ - 7 Points)",
+      modelAnswer: `Between 1450 and 1750, European maritime expansion into South and Southeast Asia\u2014spearheaded initially by Portuguese armed trading posts and later by Dutch and British joint-stock chartered companies\u2014partially disrupted traditional coastal chokepoints and localized spice monopolies. However, this disruption was largely confined to insular maritime corridors, as powerful land-based states like the Mughal Empire and resilient indigenous mercantile syndicates continued to dominate trans-regional finance, manufacturing, and inland trade networks, compelling Europeans to adapt to preexisting Asian commercial structures.
+
+### Contextualization
+Prior to 1450, the Indian Ocean basin flourished as a peaceful, polycentric commercial crossroads connecting Swahili city-states, the Islamic Middle East, India, and Ming China, governed by seasonal monsoon winds rather than naval militarism. The fall of Constantinople to the Ottoman Empire in 1453 and European mercantilist desires to bypass Islamic trade intermediaries motivated Iberian exploratory voyages around the Cape of Good Hope. Concurrently, the global demand for American silver\u2014extracted from Potos\xED and Zacatecas\u2014fueled transoceanic liquidity, as European merchants utilized silver to purchase Asian luxury commodities like spices, silk, and porcelain.
+
+### Evidence from Documents & Analysis
+European maritime powers undoubtedly disrupted local commercial autonomy through naval violence and coercive monopolies in specific maritime zones. In Document 1, the Sultan of Aceh laments that Portuguese naval blockades at Malacca actively assaulted peaceful Muslim merchant fleets, prompting an appeal for Ottoman armaments to counter Iberian aggression. In Document 2, VOC Governor-General Jan Pieterszoon Coen explicitly codifies this violent disruption, articulating a ruthless militarized policy where indigenous vessels lacking a Dutch pass were confiscated and treated as contraband to establish a monopoly over the Banda spice trade.
+
+Yet, European disruption was severely constrained by the power of land-based Asian empires and domestic financiers. In the Mughal Empire, as Jean-Baptiste Tavernier observes in Document 3, European companies at Surat were completely subservient to indigenous Hindu and Jain banya bankers, who controlled the mints, converted European silver bullion, and issued hundis (bills of exchange). Indigenous rulers actively checked European aggression; as Tavernier notes, the Mughal governor could instantly shut down European trade if merchants were mistreated. Similarly, British East India Company records at Madras (Document 6) acknowledge that Gujarati and Armenian merchant syndicates consistently outbid the British by providing higher silver credit advances to local weavers, forcing European supercargoes to rely on prominent Indian brokers like Virji Vora.
+
+Furthermore, Southeast Asian and East Asian states actively counterbalanced European encroachments through strategic diplomacy and independent trade networks. King Narai of Ayutthaya (Document 4) deliberately welcomed French merchants to create diplomatic leverage against the aggressive Dutch VOC, ensuring that Siamese, Chinese, and Persian merchants maintained competitive autonomy. In China, Admiral Shi Lang (Document 5) successfully advocated for lifting maritime bans because Chinese junks sailing to Manila and Batavia commanded favorable terms of trade, drawing massive influxes of foreign silver into the Qing economy. This indigenous commercial vitality is corroborated by Document 7, which illustrates active 17th-century Japanese Red Seal maritime corridors across Vietnam, Siam, and the Philippines, proving that robust intra-Asian commerce flourished independently of European shipping.
+
+### Outside Evidence
+Beyond the provided documents, the Manila Galleon trade (established in 1571) demonstrates how Asian economic networks subordinated European commercial goals. Spanish galleons transported hundreds of tons of silver from Acapulco across the Pacific to Manila, where nearly all of it was eagerly absorbed by Chinese merchants in exchange for silks and porcelain to meet the domestic tax demands of the Ming Single Whip Law. Rather than dismantling the Chinese economy, European maritime connections acted as a supply pipeline that reinforced the global primacy of Chinese manufacturing.
+
+### Sourcing (HIPP)
+The historical situation and purpose of Document 2 are vital to understanding its extreme rhetoric: Coen was writing an internal administrative instruction to VOC directors during the consolidation of the Dutch commercial empire, intentionally justifying brutal military subjugation in the Banda Islands to secure shareholder profits back in Amsterdam. In contrast, the point of view of Jean-Baptiste Tavernier in Document 3 reflects that of an independent European merchant and gem connoisseur; lacking allegiance to any single national trading company, Tavernier offers an objective, unvarnished assessment of European vulnerability and the immense financial sophistication of indigenous Indian banking houses.
+
+### Complex Understanding (Nuance & Synthesis)
+Ultimately, the historical impact of European transoceanic connections was characterized by a profound dichotomy rather than uniform disruption. In fragile, insular environments such as the Moluccas, European naval violence eradicated indigenous autonomy and coerced labor systems. However, across the vast continental empires of Mughal India, Ayutthayan Siam, and Qing China, European companies were compelled to operate merely as "country traders" and financial intermediaries within preexisting Asian economic frameworks, demonstrating the enduring resilience of Asian trade networks until the advent of the Industrial Revolution in the late 18th century.`,
+      scoringRubric: [
+        "Thesis/Claim (0-1 pt) [1 pt]: Historically defensible thesis establishing a line of reasoning evaluating the extent of economic disruption (e.g. coastal/insular disruption vs inland and financial resilience).",
+        "Contextualization (0-1 pt) [1 pt]: Accurately describes broader historical context (e.g. pre-existing Indian Ocean monsoon trade, Ottoman trade chokepoints, Fall of Constantinople, or American silver influx).",
+        "Evidence from the Documents (0-2 pts) [2 pts]: 1 pt for using content from at least 3 documents to address prompt; 2 pts for supporting an argument in response to prompt using at least 6 documents.",
+        "Evidence Beyond the Documents (0-1 pt) [1 pt]: Provides at least one additional specific historical example outside documents (e.g. Manila galleons, Ming Single Whip Law, Potos\xED silver, or British East India Company royal charter).",
+        "Sourcing / HIPP (0-1 pt) [1 pt]: Explains how or why the document's Historical situation, Intended audience, Purpose, or Point of view is relevant to an argument for at least 2 documents (e.g. Coen's administrative purpose in Doc 2, Tavernier's merchant POV in Doc 3).",
+        "Complex Understanding (0-1 pt) [1 pt]: Demonstrates complex historical understanding through nuance, corroboration, or qualification (e.g. contrasting violent Dutch monopolization in the Moluccas with complete European financial subservience to Mughal bankers and Qing export dominance)."
+      ]
+    },
+    {
+      title: "SECTION II PART B: LONG ESSAY QUESTION (LEQ)  [6 POINTS]",
+      prompt: `**Suggested writing time: 40 minutes**
+
+Directions: In your response you should do the following:
+- Respond to the prompt with a historically defensible thesis or claim that establishes a line of reasoning.
+- Describe a broader historical context relevant to the prompt.
+- Support an argument in response to the prompt using at least two pieces of specific and relevant evidence.
+- Use historical reasoning (e.g., comparison, causation, or continuity and change) to structure an argument.
+- Demonstrate a complex understanding of a historical development that is the focus of the prompt, using evidence to corroborate, qualify, or modify an argument.
+
+### Historical Prompt
+In the period 1200 to 1450, evaluate the extent to which the expansion of trans-regional empires (such as the Mongol Empire or the Mali Empire) fostered cultural and economic exchange across Afro-Eurasia.`,
+      totalPoints: 6,
+      unitNumber: 2,
+      unitTitle: "Unit 2: Networks of Exchange (c. 1200 to c. 1450)",
+      skill: "Long Essay Question (LEQ - 6 Points)",
+      modelAnswer: `In the period from 1200 to 1450, the unprecedented expansion of trans-regional empires\u2014most notably the Mongol Empire across Eurasia and the Mali Empire in West Africa\u2014profoundly accelerated cross-cultural synthesis, commercial integration, and the transcontinental diffusion of technological innovations by establishing secure communication networks; however, this imperial consolidation also produced devastating unintended consequences, most notably facilitating the catastrophic spread of pandemic diseases that destabilized the very civilizations it connected.
+
+### Contextualization
+Following the fragmentation of classical empires, Afro-Eurasia in the post-classical era was characterized by regionalized kingdoms and decentralized feudal structures. Although long-distance commerce persisted along the Silk Roads, the Indian Ocean, and Trans-Saharan routes, merchants faced recurrent extortion from regional warlords, hazardous terrain, and divergent legal systems. The dramatic rise of pastoral nomadic confederations in Central Asia under Genghis Khan and centralized West African state-building in the Sahel transformed these fractured corridors into unified geopolitical zones, creating the institutional stability necessary for trans-regional interaction.
+
+### Thesis & Historical Reasoning (Causation & Continuity/Change)
+The expansion of the Mongol Empire catalyzed global economic integration by establishing the Pax Mongolica across Eurasia. By conquering diverse polities from China's Song Dynasty to the Abbasid Caliphate in Baghdad and the Russian principalities, the Mongols imposed uniform legal codes (the Yassa) and guarded trans-continental caravans. To accelerate administrative and commercial logistics, the Mongols expanded the Yam system\u2014a postal courier network of relay stations equipped with fresh horses and supply depots\u2014and issued the paiza, an official passport guaranteeing safe conduct to foreign merchants and diplomatic envoys. This unprecedented geopolitical security dramatically reduced transaction costs and risk along the Silk Roads, enabling Italian merchants like Marco Polo to travel from Venice to the court of Kublai Khan in Khanbaliq (Dadu) and return with detailed geographical records.
+
+Beyond overland commercial wealth, imperial expansion fostered profound technological, scientific, and cultural transfers across civilizational boundaries. Under Mongol auspices, Chinese technologies such as papermaking, movable type printing, the magnetic compass, and gunpowder diffused westward to the Islamic world and Western Europe, where they subsequently revolutionized European military architecture and maritime navigation. Similarly, Mongol rulers in the Ilkhanate (Persia) and Yuan Dynasty established observatories and medical academies where Persian astronomers and Chinese physicians collaborated, synthesizing Islamic astronomical tables with Chinese botanical knowledge.
+
+In West Africa, the Mali Empire under Sundiata Keita and later Mansa Musa achieved comparable trans-regional synthesis along the Trans-Saharan trade routes. By controlling the prolific gold fields of Bure and Bambuk and regulating the vital salt trade through Taghaza, Mali became an indispensable node in the wider Mediterranean and Islamic economic system. Mansa Musa\u2019s legendary 1324 pilgrimage (hajj) to Mecca distributed so much gold in Cairo that it devalued the metal for over a decade, advertising Mali\u2019s immense wealth to European cartographers (as depicted in the 1375 Catalan Atlas). Upon his return, Mansa Musa recruited Andalusian architects, such as Abu Ishaq al-Sahili, to construct the monumental mud-brick Djinguereber Mosque in Timbuktu, transforming the city into a renowned Islamic intellectual center with extensive madrasas that attracted scholarly manuscripts across North Africa.
+
+### Complex Understanding (Nuance & Qualification)
+However, a comprehensive historical evaluation reveals that imperial integration was accompanied by monumental structural destruction and demographic collapse. The very logistical infrastructure that facilitated the safe transit of silk, gold, and ideas also served as an open conduit for biological contagion. In the 1340s, the Black Death (bubonic plague caused by Yersinia pestis) spread rapidly along Mongol trade arteries and naval routes from Central Asia into Western Europe, the Middle East, and North Africa, killing an estimated one-third to one-half of the populations in affected areas. This demographic catastrophe severed agricultural supply chains, triggered urban economic collapse, and ultimately precipitated the political disintegration of the Mongol khanates themselves. Thus, while trans-regional empires successfully forged the foundational economic and intellectual bridges of the pre-modern world, their hyper-connected arteries simultaneously unleashed catastrophic biological vulnerabilities that permanently reshaped human history.`,
+      scoringRubric: [
+        "Thesis/Claim (0-1 pt) [1 pt]: Historically defensible thesis establishing a clear line of reasoning (e.g. accelerated cultural/economic transfer via Pax Mongolica and Trans-Saharan routes qualified by biological devastation of the Black Death).",
+        "Contextualization (0-1 pt) [1 pt]: Accurately describes broader historical context (e.g. fractured post-classical Afro-Eurasian trade routes, rise of pastoral nomadic confederations, or Trans-Saharan trade).",
+        "Evidence (0-2 pts) [2 pts]: 1 pt for providing at least 2 specific historical examples; 2 pts for supporting an argument in response to the prompt using multiple specific examples (e.g. Yam system, paiza passport, Pax Mongolica, Marco Polo, diffusion of gunpowder/papermaking, Mansa Musa's hajj, Timbuktu, Catalan Atlas).",
+        "Historical Reasoning (0-1 pt) [1 pt]: Uses historical reasoning (causation, comparison, or CCOT) to structure a sustained argument on how empires facilitated exchange.",
+        "Complex Understanding (0-1 pt) [1 pt]: Demonstrates a complex understanding of the historical development by qualifying or modifying the argument (e.g. weighing the positive commercial/cultural transfers against the devastating demographic and economic collapse caused by the plague/Black Death)."
+      ]
+    }
   ]
 };
 PRISTINE_GOLDEN_QUESTIONS["chemistry"] = PRISTINE_GOLDEN_QUESTIONS["ap-chemistry"];
@@ -20514,6 +20644,9 @@ PRISTINE_GOLDEN_QUESTIONS["psych"] = PRISTINE_GOLDEN_QUESTIONS["ap-psychology"];
 PRISTINE_GOLDEN_QUESTIONS["csa"] = PRISTINE_GOLDEN_QUESTIONS["ap-computer-science"];
 PRISTINE_GOLDEN_QUESTIONS["ap-csa"] = PRISTINE_GOLDEN_QUESTIONS["ap-computer-science"];
 PRISTINE_GOLDEN_QUESTIONS["computer-science-a"] = PRISTINE_GOLDEN_QUESTIONS["ap-computer-science"];
+PRISTINE_GOLDEN_QUESTIONS["ap-whap"] = PRISTINE_GOLDEN_QUESTIONS["ap-world-history"];
+PRISTINE_GOLDEN_QUESTIONS["whap"] = PRISTINE_GOLDEN_QUESTIONS["ap-world-history"];
+PRISTINE_GOLDEN_QUESTIONS["world-history"] = PRISTINE_GOLDEN_QUESTIONS["ap-world-history"];
 function runMultiStageVerificationPipeline(rawQuestions, subjectId, targetTopic) {
   const verifiedQuestions = [];
   let passedDirect = 0;
@@ -20529,8 +20662,9 @@ function runMultiStageVerificationPipeline(rawQuestions, subjectId, targetTopic)
   const isLang = s.includes("english") || s.includes("lang");
   const isPsych = s.includes("psych");
   const isCsa = s.includes("computer science a") || s.includes("csa") || s.includes("computer") && !s.includes("principles") && !s.includes("csp");
-  const goldenKey = isCsa ? "ap-computer-science" : isPsych ? "ap-psychology" : isLang ? "ap-english-lang" : isAphg ? "aphg" : isApes ? "apes" : isCalculusBc ? "ap-calculus-bc" : isChem ? "ap-chemistry" : isBio ? "ap-biology" : isPhys1 ? "ap-physics-1" : s.includes("calculus") ? "ap-calculus-ab" : s;
-  const goldenBank = PRISTINE_GOLDEN_QUESTIONS[goldenKey] || PRISTINE_GOLDEN_QUESTIONS[s] || (isCsa ? PRISTINE_GOLDEN_QUESTIONS["ap-computer-science"] : isPsych ? PRISTINE_GOLDEN_QUESTIONS["ap-psychology"] : isLang ? PRISTINE_GOLDEN_QUESTIONS["ap-english-lang"] : isCalculusBc ? PRISTINE_GOLDEN_QUESTIONS["ap-calculus-bc"] : isChem ? PRISTINE_GOLDEN_QUESTIONS["ap-chemistry"] : isBio ? PRISTINE_GOLDEN_QUESTIONS["ap-biology"] : isPhys1 ? PRISTINE_GOLDEN_QUESTIONS["ap-physics-1"] : isAphg ? PRISTINE_GOLDEN_QUESTIONS["aphg"] : isApes ? PRISTINE_GOLDEN_QUESTIONS["apes"] : PRISTINE_GOLDEN_QUESTIONS["ap-calculus-ab"]) || [];
+  const isWhap = s.includes("world history") || s.includes("whap") || s.includes("world") && s.includes("history") || s.includes("history") && !s.includes("u.s.") && !s.includes("us") && !s.includes("euro");
+  const goldenKey = isWhap ? "ap-world-history" : isCsa ? "ap-computer-science" : isPsych ? "ap-psychology" : isLang ? "ap-english-lang" : isAphg ? "aphg" : isApes ? "apes" : isCalculusBc ? "ap-calculus-bc" : isChem ? "ap-chemistry" : isBio ? "ap-biology" : isPhys1 ? "ap-physics-1" : s.includes("calculus") ? "ap-calculus-ab" : s;
+  const goldenBank = PRISTINE_GOLDEN_QUESTIONS[goldenKey] || PRISTINE_GOLDEN_QUESTIONS[s] || (isWhap ? PRISTINE_GOLDEN_QUESTIONS["ap-world-history"] : isCsa ? PRISTINE_GOLDEN_QUESTIONS["ap-computer-science"] : isPsych ? PRISTINE_GOLDEN_QUESTIONS["ap-psychology"] : isLang ? PRISTINE_GOLDEN_QUESTIONS["ap-english-lang"] : isCalculusBc ? PRISTINE_GOLDEN_QUESTIONS["ap-calculus-bc"] : isChem ? PRISTINE_GOLDEN_QUESTIONS["ap-chemistry"] : isBio ? PRISTINE_GOLDEN_QUESTIONS["ap-biology"] : isPhys1 ? PRISTINE_GOLDEN_QUESTIONS["ap-physics-1"] : isAphg ? PRISTINE_GOLDEN_QUESTIONS["aphg"] : isApes ? PRISTINE_GOLDEN_QUESTIONS["apes"] : PRISTINE_GOLDEN_QUESTIONS["ap-calculus-ab"]) || [];
   for (let idx = 0; idx < rawQuestions.length; idx++) {
     const rawQ = rawQuestions[idx];
     let processedQ = rawQ;
@@ -20583,7 +20717,7 @@ function runMultiStageVerificationPipeline(rawQuestions, subjectId, targetTopic)
         }
       }
     }
-    const realPoints = isAphg ? 7 : isApes ? 10 : isPsych ? 7 : calculateRealTotalPoints(processedQ, subjectId);
+    const realPoints = isWhap ? rawQuestions.length === 2 ? idx === 0 ? 7 : 6 : processedQ.totalPoints === 7 || processedQ.totalPoints === 6 || processedQ.totalPoints === 3 ? processedQ.totalPoints : idx % 5 === 0 ? 7 : idx % 5 === 1 ? 6 : 3 : isAphg ? 7 : isApes ? 10 : isPsych ? 7 : calculateRealTotalPoints(processedQ, subjectId);
     const healedQuestion = {
       ...processedQ,
       id: idx + 1,
@@ -21068,9 +21202,9 @@ ${text}`.trim() },
   }
   let lastError = null;
   let anyQuotaExceeded = false;
-  for (const model2 of modelsToTry) {
+  for (const model of modelsToTry) {
     const currentParams = {
-      model: model2,
+      model,
       contents: clonedParams.contents
     };
     if (clonedParams.config) {
@@ -21091,7 +21225,7 @@ ${text}`.trim() },
         const generatePromise = aiClient.models.generateContent(currentParams);
         const timeoutMs = params.timeoutMs && typeof params.timeoutMs === "number" ? params.timeoutMs : 25e3;
         const timeoutPromise = new Promise(
-          (_, reject) => setTimeout(() => reject(new Error(`Timeout: Model ${model2} took longer than ${timeoutMs}ms`)), timeoutMs)
+          (_, reject) => setTimeout(() => reject(new Error(`Timeout: Model ${model} took longer than ${timeoutMs}ms`)), timeoutMs)
         );
         const response = await Promise.race([generatePromise, timeoutPromise]);
         return response;
@@ -21100,17 +21234,17 @@ ${text}`.trim() },
         const errorStr = String(error.message || error).toLowerCase();
         const isRateLimitOrOverloaded = errorStr.includes("429") || errorStr.includes("503") || errorStr.includes("quota") || errorStr.includes("limit") || errorStr.includes("resource_exhausted") || errorStr.includes("unavailable") || errorStr.includes("overloaded") || errorStr.includes("demand") || errorStr.includes("timeout") || errorStr.includes("not_found") || errorStr.includes("404");
         if (isRateLimitOrOverloaded) {
-          console.warn(`[ai-client] Model ${model2} (attempt ${attempt}/${retries}) hit rate-limit or quota constraint:`, errorStr);
+          console.warn(`[ai-client] Model ${model} (attempt ${attempt}/${retries}) hit rate-limit or quota constraint:`, errorStr);
         } else {
-          console.error(`[ai-client] Model ${model2} (attempt ${attempt}/${retries}) failed:`, errorStr);
+          console.error(`[ai-client] Model ${model} (attempt ${attempt}/${retries}) failed:`, errorStr);
         }
         if (isRateLimitOrOverloaded) {
           anyQuotaExceeded = true;
           lastQuotaExceededTime2 = Date.now();
-          rateLimitedModels2[model2] = Date.now();
+          rateLimitedModels2[model] = Date.now();
           const hasSearch = currentParams?.config?.tools?.some((t) => t.googleSearch);
           if (hasSearch) {
-            console.warn(`[ai-client] Search grounding quota exhausted. Stripping googleSearch tool and retrying model ${model2} without search...`);
+            console.warn(`[ai-client] Search grounding quota exhausted. Stripping googleSearch tool and retrying model ${model} without search...`);
             if (currentParams?.config?.tools) {
               currentParams.config.tools = currentParams.config.tools.filter((t) => !t.googleSearch);
               if (currentParams.config.tools.length === 0) {
@@ -21123,28 +21257,28 @@ ${text}`.trim() },
           const isHardQuotaLimit = errorStr.includes("quota") || errorStr.includes("resource_exhausted") || errorStr.includes("503") || errorStr.includes("unavailable") || errorStr.includes("overloaded") || errorStr.includes("demand") || errorStr.includes("timeout") || errorStr.includes("not_found") || errorStr.includes("404") || errorStr.includes("429") && !errorStr.includes("overloaded");
           const isModelNotFound = errorStr.includes("not_found") || errorStr.includes("404");
           if (isModelNotFound) {
-            console.warn(`[ai-client] Model ${model2} is deprecated or not found (404). Skipping retries...`);
+            console.warn(`[ai-client] Model ${model} is deprecated or not found (404). Skipping retries...`);
             break;
           }
           const isHardDailyQuota = errorStr.includes("quota exceeded for metric") || errorStr.includes("limit: 20") || errorStr.includes("generaterequestsperday") || errorStr.includes("free_tier_requests");
           if (isHardDailyQuota) {
-            rateLimitedModelsCooldown2[model2] = 36e5;
-            console.warn(`[ai-client] Model ${model2} reached daily quota. Skipping retries immediately to fail over without delay...`);
+            rateLimitedModelsCooldown2[model] = 36e5;
+            console.warn(`[ai-client] Model ${model} reached daily quota. Skipping retries immediately to fail over without delay...`);
             break;
           }
           const isOverloadedOrDemandSpike = errorStr.includes("503") || errorStr.includes("unavailable") || errorStr.includes("overloaded") || errorStr.includes("demand");
           if (isOverloadedOrDemandSpike) {
-            rateLimitedModelsCooldown2[model2] = 12e4;
-            console.warn(`[ai-client] Model ${model2} is experiencing high demand / 503 unavailable. Immediately failing over to next model without delay...`);
+            rateLimitedModelsCooldown2[model] = 12e4;
+            console.warn(`[ai-client] Model ${model} is experiencing high demand / 503 unavailable. Immediately failing over to next model without delay...`);
             break;
           }
           if (attempt < retries) {
             const waitTime = Math.max(delay * Math.pow(2, attempt - 1), 1200);
-            console.warn(`[ai-client] Model ${model2} hit transient constraint (${errorStr.slice(0, 60)}). Retrying attempt ${attempt + 1}/${retries} in ${waitTime}ms...`);
+            console.warn(`[ai-client] Model ${model} hit transient constraint (${errorStr.slice(0, 60)}). Retrying attempt ${attempt + 1}/${retries} in ${waitTime}ms...`);
             await new Promise((resolve) => setTimeout(resolve, waitTime));
             continue;
           } else {
-            console.warn(`[ai-client] Model ${model2} failed after all ${retries} attempts. Trying fallback model...`);
+            console.warn(`[ai-client] Model ${model} failed after all ${retries} attempts. Trying fallback model...`);
           }
         }
         break;
@@ -21459,11 +21593,11 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
       }
       let responseStream = null;
       let successModel = "";
-      for (const model2 of modelsToTry) {
+      for (const model of modelsToTry) {
         try {
           const aiClient2 = getAI();
           responseStream = await aiClient2.models.generateContentStream({
-            model: model2,
+            model,
             contents,
             config: {
               systemInstruction: { parts: [{ text: systemInstruction }] },
@@ -21473,16 +21607,16 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
               candidateCount: 1
             }
           });
-          successModel = model2;
+          successModel = model;
           break;
         } catch (err) {
           const errStr = String(err.message || err).toLowerCase();
           const isRateLimitOrQuota = errStr.includes("429") || errStr.includes("503") || errStr.includes("502") || errStr.includes("quota") || errStr.includes("resource_exhausted") || errStr.includes("limit") || errStr.includes("unavailable") || errStr.includes("overloaded") || errStr.includes("demand") || errStr.includes("temporary");
           if (isRateLimitOrQuota) {
-            console.warn(`[chat stream] Model ${model2} hit rate-limit, 503, or quota constraint:`, errStr);
-            rateLimitedModels2[model2] = Date.now();
+            console.warn(`[chat stream] Model ${model} hit rate-limit, 503, or quota constraint:`, errStr);
+            rateLimitedModels2[model] = Date.now();
           } else {
-            console.error(`Stream start failed for model ${model2}:`, err);
+            console.error(`Stream start failed for model ${model}:`, err);
           }
         }
       }

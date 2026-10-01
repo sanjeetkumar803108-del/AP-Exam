@@ -365,20 +365,20 @@ export function verifyMathAndFeasibility(q: any, subjectId: string): { isValid: 
 
     // Class Design (Q2) checks
     if (prompt.includes('Class Design') || prompt.includes('class') || combined.includes('Write the complete') || combined.includes('public class')) {
-      if (model.includes('class ') && !model.includes('private ')) {
+      if (modelAnswer.includes('class ') && !modelAnswer.includes('private ')) {
         issues.push("AP CSA Encapsulation Violation: Instance variables in Class Design questions MUST be declared private.");
       }
     }
 
     // String comparison with == violation check
-    const badStringEq = /"(?:[^"\\]|\\.)*"\s*==|==\s*"(?:[^"\\]|\\.)*"/i.test(model);
+    const badStringEq = /"(?:[^"\\]|\\.)*"\s*==|==\s*"(?:[^"\\]|\\.)*"/i.test(modelAnswer);
     if (badStringEq) {
       issues.push("AP CSA String Equality Violation: Strings in Java must be compared using .equals(), NOT ==.");
     }
 
     // 2D Array self-pairing guard check
     if (prompt.includes('2D') || prompt.includes('two-dimensional') || combined.includes('[][]')) {
-      if (model.includes('r != row && c != col')) {
+      if (modelAnswer.includes('r != row && c != col')) {
         issues.push("AP CSA 2D Array Fatal Bug: Self-pairing guard 'r != row && c != col' incorrectly excludes the entire row and column instead of just the single coordinate. Use '!(r == row && c == col)' or 'r != row || c != col'.");
       }
     }
