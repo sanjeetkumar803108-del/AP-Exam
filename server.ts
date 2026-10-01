@@ -2648,18 +2648,16 @@ app.post("/api/generate-ap-questions", async (req, res) => {
     const isWhapSubject = s.includes('world history') || s.includes('whap') || (s.includes('world') && s.includes('history')) || (s.includes('history') && !s.includes('u.s.') && !s.includes('us') && !s.includes('euro'));
     const isApushSubject = !isWhapSubject && (s.includes('history') || s.includes('apush'));
     let requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 20);
-    // Real College Board Section II: Exactly 7 Questions for AP Chemistry, 6 Questions for AP Calculus BC and AP Biology, Exactly 5 Questions for AP World History (SAQs 1-3, DBQ, LEQ), 4 Questions for AP Physics 1 and AP Computer Science A, Exactly 3 Questions for AP Macroeconomics and AP English Language, Exactly 2 Questions for AP Psychology (AAQ + EBQ)
+    // Real College Board Section II: Exactly 7 Questions for AP Chemistry, 6 Questions for AP Calculus BC and AP Biology, 4 Questions for AP Physics 1 and AP Computer Science A, Exactly 3 Questions for AP Macroeconomics and AP English Language, Exactly 2 Questions for AP World History (DBQ + LEQ) and AP Psychology (AAQ + EBQ)
     if (isChemSubject && (examMode === 'mock_exam' || examMode === 'exam_simulation') && type === 'subjective') {
       requestedCount = 7;
     } else if ((isBcSubject || isBioSubject) && (examMode === 'mock_exam' || examMode === 'exam_simulation') && type === 'subjective') {
       requestedCount = 6;
-    } else if (isWhapSubject && (examMode === 'mock_exam' || examMode === 'exam_simulation') && type === 'subjective') {
-      requestedCount = 5;
     } else if ((isPhys1Subject || isCsaSubject) && (examMode === 'mock_exam' || examMode === 'exam_simulation') && type === 'subjective') {
       requestedCount = 4;
     } else if ((isMacroSubject || isLangSubject) && (examMode === 'mock_exam' || examMode === 'exam_simulation') && type === 'subjective') {
       requestedCount = 3;
-    } else if (isPsychSubject && (examMode === 'mock_exam' || examMode === 'exam_simulation') && type === 'subjective') {
+    } else if ((isWhapSubject || isPsychSubject) && (examMode === 'mock_exam' || examMode === 'exam_simulation') && type === 'subjective') {
       requestedCount = 2;
     }
     const targetTopic = [topic, unit, subject].filter(Boolean).join(" - ");
