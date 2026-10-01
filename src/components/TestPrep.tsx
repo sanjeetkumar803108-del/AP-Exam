@@ -139,6 +139,22 @@ export const isComputerSubject = (subj?: APSubject | { name?: string; shortCode?
          (name.includes('principles') && name.includes('computer'));
 };
 
+export const isCalculusSubject = (subj?: APSubject | { name?: string; shortCode?: string; id?: string } | null): boolean => {
+  if (!subj) return false;
+  const id = (subj.id || '').toLowerCase();
+  const code = (subj.shortCode || '').toUpperCase();
+  const name = (subj.name || '').toLowerCase();
+  return id.includes('calculus') || code === 'AB' || code === 'BC' || name.includes('calculus');
+};
+
+export const isCalculusAbSubject = (subj?: APSubject | { name?: string; shortCode?: string; id?: string } | null): boolean => {
+  if (!subj) return false;
+  const id = (subj.id || '').toLowerCase();
+  const code = (subj.shortCode || '').toUpperCase();
+  const name = (subj.name || '').toLowerCase();
+  return (id === 'ap-calculus-ab' || code === 'AB' || (name.includes('calculus') && !name.includes('bc'))) && !isCalculusBcSubject(subj);
+};
+
 export const isCalculusBcSubject = (subj?: APSubject | { name?: string; shortCode?: string; id?: string } | null): boolean => {
   if (!subj) return false;
   const id = (subj.id || '').toLowerCase();
@@ -439,6 +455,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
   // AP English Language: Exactly 3 Essays (Q1 Synthesis + Q2 Rhetorical Analysis + Q3 Argument)
   // AP Psychology: Exactly 2 Questions (Q1 Article Analysis AAQ + Q2 Evidence-Based Question EBQ)
   // AP Human Geography / APES: Exactly 3 FRQs
+  const isCalcSubject = useMemo(() => isCalculusSubject(selectedSubject), [selectedSubject]);
+  const isAbSubject = useMemo(() => isCalculusAbSubject(selectedSubject), [selectedSubject]);
   const isBcSubject = useMemo(() => isCalculusBcSubject(selectedSubject), [selectedSubject]);
   const isChemSubject = useMemo(() => isChemistrySubject(selectedSubject), [selectedSubject]);
   const isBioSubject = useMemo(() => isBiologySubject(selectedSubject), [selectedSubject]);
@@ -450,12 +468,12 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
 
   useEffect(() => {
     if (examMode === 'mock_exam' && questionType === 'subjective') {
-      const targetCount = isWhapSubject ? 2 : (isChemSubject ? 7 : ((isBcSubject || isBioSubject) ? 6 : ((isPhys1Subject || isCsaSubject) ? 4 : (isLangSubject ? 3 : (isPsychSubject ? 2 : 3)))));
+      const targetCount = isWhapSubject ? 2 : (isChemSubject ? 7 : ((isCalcSubject || isBcSubject || isBioSubject) ? 6 : ((isPhys1Subject || isCsaSubject) ? 4 : (isLangSubject ? 3 : (isPsychSubject ? 2 : 3)))));
       if (questionCount !== targetCount) {
         setQuestionCount(targetCount);
       }
     }
-  }, [isBcSubject, isChemSubject, isBioSubject, isPhys1Subject, isLangSubject, isPsychSubject, isWhapSubject, isCsaSubject, examMode, questionType, questionCount]);
+  }, [isCalcSubject, isAbSubject, isBcSubject, isChemSubject, isBioSubject, isPhys1Subject, isLangSubject, isPsychSubject, isWhapSubject, isCsaSubject, examMode, questionType, questionCount]);
 
   // Practice & Results States
   const [loading, setLoading] = useState<boolean>(false);
@@ -1192,7 +1210,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
             count: questionCount,
             gradeLevel: userGrade || 'Advanced Placement (AP High School)',
             avoidPrompts: recentPromptsToAvoid,
-            randomSeed: `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+            randomSeed: `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
+            examMode: examMode
           })
         });
       } catch (networkErr: any) {
@@ -2343,8 +2362,8 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                       triggerVibration(15);
                       setExamMode('mock_exam');
                       setQuestionType('subjective');
-                      // Real College Board Section II: Exactly 7 FRQs for AP Chemistry, 6 FRQs for AP Calculus BC and AP Biology, Exactly 4 FRQs for AP Physics 1 and AP Computer Science A, Exactly 3 for AP Lang and AP Macro, Exactly 2 Questions for AP World History (DBQ + LEQ) and AP Psychology
-                      setQuestionCount(isWhapSubject ? 2 : (isChemSubject ? 7 : ((isBcSubject || isBioSubject) ? 6 : ((isPhys1Subject || isCsaSubject) ? 4 : (isLangSubject ? 3 : (isPsychSubject ? 2 : 3))))));
+                      // Real College Board Section II: Exactly 7 FRQs for AP Chemistry, 6 FRQs for AP Calculus AB/BC and AP Biology, Exactly 4 FRQs for AP Physics 1 and AP Computer Science A, Exactly 3 for AP Lang and AP Macro, Exactly 2 Questions for AP World History (DBQ + LEQ) and AP Psychology
+                      setQuestionCount(isWhapSubject ? 2 : (isChemSubject ? 7 : ((isCalcSubject || isBcSubject || isBioSubject) ? 6 : ((isPhys1Subject || isCsaSubject) ? 4 : (isLangSubject ? 3 : (isPsychSubject ? 2 : 3))))));
                     }}
                     className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                       examMode === 'mock_exam'
@@ -2359,7 +2378,7 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                       }`}>Real Exam Replica</span>
                     </div>
                     <p className={`text-[11px] mt-1 ${examMode === 'mock_exam' ? 'text-purple-100' : 'text-zinc-500'}`}>
-                      {isWhapSubject ? 'Auto-Locked 2 FRQ Exam Set (DBQ + LEQ • 100 Min)' : isChemSubject ? 'Auto-Locked 7 FRQ Exam Set (105 Min)' : (isBcSubject || isBioSubject) ? 'Auto-Locked 6 FRQ Exam Set (90 Min)' : isPhys1Subject ? 'Auto-Locked 4 FRQ Exam Set (100 Min)' : isCsaSubject ? 'Auto-Locked 4 FRQ Exam Set (90 Min)' : isLangSubject ? 'Auto-Locked 3 Essay Exam Set (135 Min)' : isPsychSubject ? 'Auto-Locked 2 Question Exam Set (70 Min)' : 'Auto-Locked 3 FRQ Exam Set'}
+                      {isWhapSubject ? 'Auto-Locked 2 FRQ Exam Set (DBQ + LEQ • 100 Min)' : isChemSubject ? 'Auto-Locked 7 FRQ Exam Set (105 Min)' : (isCalcSubject || isBcSubject || isBioSubject) ? 'Auto-Locked 6 FRQ Exam Set (90 Min)' : isPhys1Subject ? 'Auto-Locked 4 FRQ Exam Set (100 Min)' : isCsaSubject ? 'Auto-Locked 4 FRQ Exam Set (90 Min)' : isLangSubject ? 'Auto-Locked 3 Essay Exam Set (135 Min)' : isPsychSubject ? 'Auto-Locked 2 Question Exam Set (70 Min)' : 'Auto-Locked 3 FRQ Exam Set'}
                     </p>
                   </button>
                 </div>
@@ -2428,11 +2447,11 @@ export default function TestPrep({ onBack, isVip = false, onOpenVip, onNavigateT
                         6 FRQs Locked (90 Min)
                       </span>
                     </div>
-                  ) : isBcSubject ? (
+                  ) : (isBcSubject || isAbSubject) ? (
                     <div className="p-3.5 rounded-2xl bg-purple-50/90 border border-purple-200 flex items-center justify-between">
                       <div className="text-xs">
-                        <span className="font-black text-purple-950 block text-[13px]">Official AP Calculus BC Section II: 6 Questions</span>
-                        <span className="text-[11px] text-purple-700 font-medium">Part A: Q1–Q2 (Calc Active) • Part B: Q3–Q6 (No Calculator)</span>
+                        <span className="font-black text-purple-950 block text-[13px]">Official {isBcSubject ? 'AP Calculus BC' : 'AP Calculus AB'} Section II: 6 Questions (54 Points Total)</span>
+                        <span className="text-[11px] text-purple-700 font-medium">Part A: Q1–Q2 (Calc Active, 30 min) • Part B: Q3–Q6 (No Calculator, 60 min)</span>
                       </div>
                       <span className="px-3 py-1.5 rounded-full bg-purple-700 text-white text-[11px] font-black tracking-wide shadow-sm">
                         6 FRQs Locked (90 Min)

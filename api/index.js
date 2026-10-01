@@ -5587,6 +5587,55 @@ function getGranularSubjectArchetypes(subject, unitOrTopic, count) {
     }
     return pool;
   }
+  if (s.includes("calculus") && !s.includes("bc") && !detectedUnit) {
+    const abCanonicalSix = [
+      "[Part A - Calculator Active | Q1 Canonical Archetype] Rate In/Rate Out Accumulation & Tabular Rate Modeling: Real-world rate function R(t) or discrete non-uniform data table (fluid flow, temperature changes, ecological populations, vehicle arrivals). Subparts: (a) Average rate of change using difference quotient over [a,b] with explicit units of measure (e.g. gal/s^2, words/min^2, birds/day^2). (b) Definite integral approximation using Riemann sums (Right, Left, Midpoint, or Trapezoidal) with table data, and contextual interpretation of int_a^b R(t) dt with units ('total amount accumulated from t=a to t=b'). (c) Second mathematical model g(t) introduced; finding average rate of flow (1/(b-a))*int_a^b g(t) dt or time where instantaneous rate equals average rate. (d) Instantaneous rate of change interpretation g'(t_0) with units, or absolute extrema on closed interval, or MVT/IVT justification ('because f is differentiable, f is continuous').",
+      "[Part A - Calculator Active | Q2 Canonical Archetype] Rectilinear Particle Motion OR Bounded Area & Known Cross-Sections: Particle moves along a straight path/axis with velocity v(t). Subparts: (a) Times when particle changes direction (where v(t) = 0 AND v(t) changes sign). (b) Acceleration a(t) = v'(t) and determining if particle is speeding up or slowing down at time t_0 (evaluating signs of BOTH velocity and acceleration; same sign -> speeding up, opposite signs -> slowing down). (c) Position x(t) = x(t_0) + int_{t_0}^t v(u) du or distance between positions. (d) Total distance traveled int_{t_1}^{t_2} |v(t)| dt. OR Bounded planar region R area int (g - f) dx, known cross sections perpendicular to x-axis (rectangles, squares, semicircles), and volume of revolution about horizontal line y = k using washer method.",
+      "[Part B - No Calculator | Q3 Canonical Archetype] Contextual Differential Equations & Slope Fields: First-order differential equation dy/dt = k(A - y) or dy/dx = f(x, y) with initial condition y(t_0) = y_0. Subparts: (a) Slope field sketch passing through initial point (x_0, y_0) respecting horizontal asymptotes and curvature, or explaining why a given slope field cannot represent the differential equation. (b) Tangent line equation y = y_0 + m(x - x_0) to approximate value at x_1. (c) Second derivative d^2y/dt^2 in terms of y via chain rule, determining concavity and whether tangent approximation is an overestimate (concave down, d^2y/dt^2 < 0) or underestimate (concave up, d^2y/dt^2 > 0). (d) Separation of variables to find the particular solution y = f(t) (4 points: separation, antiderivatives, constant C with initial condition, explicit solution for y).",
+      "[Part B - No Calculator | Q4 Canonical Archetype] Graphical Analysis of f' & Accumulation Function: Continuous function f (or derivative f') defined on closed interval [a, b] consisting of semicircles and straight line segments, and accumulation function g(x) = int_c^x f(t) dt. Subparts: (a) Fundamental Theorem of Calculus Part 1: g'(x) = f(x) evaluated from graph with reasoning. (b) Points of inflection of g on open interval: values where g'' = f' changes sign (f changes increasing/decreasing or attains relative extrema). (c) Evaluating g(x) geometrically using triangle, rectangle, and semicircle (pi*r^2/2) areas, correctly handling sign and reversed limits of integration. (d) Absolute minimum/maximum on closed interval using the CANDIDATES TEST (evaluating g(x) at all critical points where g'(x) = f(x) = 0 AND at both endpoints in a justification table).",
+      "[Part B - No Calculator | Q5 Canonical Archetype] Analytical Differentiation Rules & Tabular Functions OR 1D Particle Motion: Discrete table of twice-differentiable functions f, g and their first derivatives f', g' at selected x-values. Subparts: (a) Chain rule h'(x) = f'(g(x)) * g'(x) evaluated at table point. (b) Product rule or quotient rule with second derivative concavity: evaluating k''(x) and justifying concavity. (c) Fundamental Theorem of Calculus accumulation: m(x) = P(x) + int_0^x f'(t) dt evaluated at table value. (d) Increasing/decreasing function behavior justified by the sign of the derivative m'(x) > 0. OR Two rectilinear particles H and J: velocity derivatives, opposite directions via velocity signs, speeding up/slowing down, and position via u-substitution.",
+      "[Part B - No Calculator | Q6 Canonical Archetype] Implicit Differentiation & Related Rates: Curve defined implicitly by F(x, y) = c. Subparts: (a) Show that dy/dx = N(x, y) / D(x, y) using implicit differentiation (product rule on xy, chain rule on powers of y). (b) Coordinates of point on curve where tangent line is horizontal (dy/dx = 0 -> N(x, y) = 0 and verifying point is on curve, or showing no solution exists). (c) Coordinates of point on curve where tangent line is vertical (denominator D(x, y) = 0 and N(x, y) != 0, solving for (x, y) on curve). (d) Related rates: Particle moves along curve with given dx/dt, differentiating implicitly with respect to t to find dy/dt at a given point."
+    ];
+    if (count === 6) {
+      return [...abCanonicalSix];
+    }
+    if (count === 5) {
+      return [abCanonicalSix[0], abCanonicalSix[1], abCanonicalSix[2], abCanonicalSix[3], abCanonicalSix[5]];
+    }
+    if (count === 10) {
+      return [
+        abCanonicalSix[0],
+        abCanonicalSix[1],
+        abCanonicalSix[2],
+        abCanonicalSix[3],
+        abCanonicalSix[4],
+        abCanonicalSix[5],
+        "[Part A - Calculator Active | Q1/Q2 Mixed Variation] Contextual Rate Accumulation & Non-Uniform Table Modeling with Average Value & Riemann Sums",
+        "[Part A - Calculator Active | Q2 Mixed Variation] Rectilinear Motion Position, Velocity, Acceleration & Total Distance OR Known Cross-Sections Volume",
+        "[Part B - No Calculator | Q3/Q4 Mixed Variation] Differential Equations Separation of Variables with Particular Solution & Tangent Line Over/Underestimate",
+        "[Part B - No Calculator | Q5/Q6 Mixed Variation] Implicit Differentiation Curve dy/dx, Horizontal/Vertical Tangents & Chain Rule Related Rates"
+      ];
+    }
+    if (count === 15) {
+      return [
+        ...abCanonicalSix,
+        "[Part A - Calculator Active | Q1 Cycle 2 Variation] Contextual Rate In/Rate Out Accumulation & Difference Quotient with Physical Units",
+        "[Part A - Calculator Active | Q2 Cycle 2 Variation] 1D Particle Motion Speeding Up / Slowing Down Justification & Direction Changes",
+        "[Part B - No Calculator | Q3 Cycle 2 Variation] Differential Equations Particular Solution via Separation of Variables & Slope Field Behavior",
+        "[Part B - No Calculator | Q4 Cycle 2 Variation] Accumulation Function g(x) = int_c^x f(t)dt from Semicircles/Line Segments Graph with Candidates Test",
+        "[Part B - No Calculator | Q5 Cycle 2 Variation] Twice-Differentiable Functions from a Table: Chain Rule, Product Rule Concavity & FTC Accumulation",
+        "[Part B - No Calculator | Q6 Cycle 2 Variation] Implicit Differentiation Curve Verification, Tangent Lines & Related Rates with Respect to Time",
+        "[Part A - Calculator Active | Q1 Synthesis] Non-Uniform Data Table Modeling with Average Value Integral Setup & 3-Decimal Precision",
+        "[Part B - No Calculator | Q4 Graphical Synthesis] Derivative Graph Analysis, Semicircle Geometry Areas & Inflection Points Justification",
+        "[Part B - No Calculator | Q6 Implicit Mastery] Implicit Curve Tangent Slopes, Vertical Tangents & Coordinate Verification on Curve"
+      ];
+    }
+    const pool = [];
+    while (pool.length < count) {
+      pool.push(abCanonicalSix[pool.length % abCanonicalSix.length]);
+    }
+    return pool;
+  }
   if ((s.includes("chemistry") || s.includes("chem")) && !detectedUnit) {
     const chemCanonicalSeven = [
       "[Section II - Long FRQ 10 Points | Q1 Canonical Archetype] Solution Stoichiometry, Titration Curves & Buffer Equilibria: Weak acid/base titration curve, half-equivalence point where pH = pKa, Henderson-Hasselbalch buffer calculations, balanced net ionic equations, particulate drawings of spectator and conjugate pairs, and molarity calculations.",
@@ -18584,6 +18633,7 @@ function calculateRealTotalPoints(q, subjectId) {
     if (raw2 === 9 || raw2 === 4) return raw2;
     return 9;
   }
+  if (s.includes("calculus")) return 9;
   if (s.includes("phys")) {
     const raw2 = Number(q.totalPoints);
     if (raw2 === 12 || raw2 === 10 || raw2 === 8) return raw2;
@@ -19735,6 +19785,51 @@ var PRISTINE_GOLDEN_QUESTIONS = {
         "Part (b) [2 points]: 1 point for tangent line slope and equation y = 3x + 5, 1 point for evaluation 5.6.",
         "Part (c) [2 points]: 1 point for implicit second derivative computation, 1 point for stating concave up with conclusion of underestimate.",
         "Part (d) [4 points]: 1 point for separation of variables, 1 point for antiderivatives ln|y-2| and x^2/2 + x, 1 point for constant of integration C = ln(3), 1 point for explicit solution y = 3e^(x^2/2 + x) + 2."
+      ]
+    },
+    {
+      title: "FREE RESPONSE QUESTION 4  [9 POINTS]",
+      prompt: "The continuous function $f$ is defined on the closed interval $[-6, 10]$. The graph of $f$, consisting of two semicircles and one line segment, is given: from $x = -6$ to $x = 0$, the graph is a semicircle of radius $3$ lying below the $x$-axis; from $x = 0$ to $x = 6$, the graph is a semicircle of radius $3$ lying above the $x$-axis; from $x = 6$ to $x = 10$, the graph is a line segment connecting $(6, 0)$ to $(10, 4)$. Let $g$ be the function defined by $g(x) = \\int_0^x f(t) \\, dt$.\n\n(a) Find $g'(8)$. Give a reason for your answer. [2 points]\n\n(b) Find all values of $x$ in the open interval $-6 < x < 10$ at which the graph of $g$ has a point of inflection. Give a reason for your answer. [2 points]\n\n(c) Find the values of $g(10)$ and $g(-6)$. Show the work that leads to your answers. [2 points]\n\n(d) Find the value of $x$ at which $g$ attains an absolute minimum on the closed interval $-6 \\le x \\le 10$. Justify your answer. [3 points]",
+      totalPoints: 9,
+      unitNumber: 6,
+      unitTitle: "Integration and Accumulation of Change",
+      skill: "Unit 6: Graphical Analysis of Accumulation Function",
+      modelAnswer: "Part (a):\nBy the Fundamental Theorem of Calculus (Part 1), $g'(x) = f(x)$.\nFor $6 \\le x \\le 10$, the graph of $f$ is a line segment connecting $(6, 0)$ to $(10, 4)$. The slope is $m = \\frac{4 - 0}{10 - 6} = 1$, and its equation is $f(x) = x - 6$.\nTherefore, $g'(8) = f(8) = 8 - 6 = 2$.\n\nPart (b):\nThe graph of $g$ has a point of inflection where $g''(x) = f'(x)$ changes sign, which occurs where the graph of $f$ changes from increasing to decreasing or from decreasing to increasing (or attains a relative extremum).\nFrom the graph of $f$:\n- At $x = -3$, $f$ changes from decreasing to increasing.\n- At $x = 3$, $f$ changes from increasing to decreasing.\n- At $x = 6$, $f$ changes from decreasing to increasing.\nTherefore, the graph of $g$ has points of inflection at $x = -3$, $x = 3$, and $x = 6$.\n\nPart (c):\n$g(10) = \\int_0^{10} f(t) \\, dt = \\int_0^6 f(t) \\, dt + \\int_6^{10} f(t) \\, dt$.\nThe region from $x = 0$ to $x = 6$ is a semicircle of radius $3$ above the $x$-axis with area $\\frac{1}{2}\\pi (3)^2 = \\frac{9\\pi}{2}$.\nThe region from $x = 6$ to $x = 10$ is a right triangle with base $4$ and height $4$, so its area is $\\frac{1}{2}(4)(4) = 8$.\nThus, $g(10) = \\frac{9\\pi}{2} + 8$.\n$g(-6) = \\int_0^{-6} f(t) \\, dt = -\\int_{-6}^0 f(t) \\, dt$.\nThe region from $x = -6$ to $x = 0$ is a semicircle of radius $3$ below the $x$-axis, so $\\int_{-6}^0 f(t) \\, dt = -\\frac{9\\pi}{2}$.\nThus, $g(-6) = -\\left(-\\frac{9\\pi}{2}\\right) = \\frac{9\\pi}{2}$.\n\nPart (d):\nBecause $g$ is differentiable, $g$ is continuous on $[-6, 10]$, so the Extreme Value Theorem applies.\nThe candidates for the absolute minimum are the critical points where $g'(x) = f(x) = 0$ and the interval endpoints.\nCritical points on $[-6, 10]$ where $f(x) = 0$ are $x = 0$ and $x = 6$.\nEndpoints are $x = -6$ and $x = 10$.\nEvaluating $g(x)$ at each candidate:\n- At $x = -6$: $g(-6) = \\frac{9\\pi}{2} \\approx 14.137$\n- At $x = 0$: $g(0) = \\int_0^0 f(t) \\, dt = 0$\n- At $x = 6$: $g(6) = \\int_0^6 f(t) \\, dt = \\frac{9\\pi}{2} \\approx 14.137$\n- At $x = 10$: $g(10) = \\frac{9\\pi}{2} + 8 \\approx 22.137$\n(Alternatively: $g'(x) = f(x) \\le 0$ for $-6 \\le x < 0$ and $g'(x) = f(x) \\ge 0$ for $0 < x \\le 10$, meaning $g$ is decreasing on $[-6, 0]$ and increasing on $[0, 10]$.)\nTherefore, the absolute minimum of $g$ on the closed interval $[-6, 10]$ occurs at $x = 0$ with minimum value $g(0) = 0$.",
+      scoringRubric: [
+        "Part (a) [2 points]: P1 [1 pt] for considering g'(x) = f(x) by FTC; P2 [1 pt] for g'(8) = f(8) = 2.",
+        "Part (b) [2 points]: P3 [1 pt] for identifying all three inflection points x = -3, x = 3, and x = 6; P4 [1 pt] for valid reason tied to the graph of f (f changes between increasing and decreasing or attains relative extrema).",
+        "Part (c) [2 points]: P5 [1 pt] for g(10) = 9pi/2 + 8 with supporting geometric work; P6 [1 pt] for g(-6) = 9pi/2 with correct handling of the negative direction of integration.",
+        "Part (d) [3 points]: P7 [1 pt] for considering g'(x) = f(x) = 0 (identifying critical points x = 0 and x = 6); P8 [1 pt] for Candidates Test justification evaluating g at all critical points and both endpoints; P9 [1 pt] for answer x = 0 with minimum value 0."
+      ]
+    },
+    {
+      title: "FREE RESPONSE QUESTION 5  [9 POINTS]",
+      prompt: "The functions $f$ and $g$ are twice differentiable for all real numbers. The table shown gives values of the functions and their first derivatives at selected values of $x$.\n\n$$\\begin{array}{|c|c|c|c|c|}\\hline x & 0 & 1 & 3 & 5 \\\\\\hline f(x) & 6 & 3 & -2 & 4 \\\\\\hline f'(x) & -4 & 5 & 2 & -1 \\\\\\hline g(x) & 1 & 5 & 0 & 3 \\\\\\hline g'(x) & 2 & -3 & 4 & 6 \\\\\\hline\\end{array}$$\n\n(a) Let $h$ be the function defined by $h(x) = f(g(x))$. Find $h'(5)$. Show the work that leads to your answer. [2 points]\n\n(b) Let $k$ be a differentiable function such that $k'(x) = (f(x))^2 \\cdot g(x)$. Is the graph of $k$ concave up or concave down at the point where $x = 1$? Give a reason for your answer. [3 points]\n\n(c) Let $m$ be the function defined by $m(x) = 4x^2 + \\int_0^x f'(t) \\, dt$. Find $m(3)$. Show the work that leads to your answer. [2 points]\n\n(d) Is the function $m$ defined in part (c) increasing, decreasing, or neither at $x = 3$? Justify your answer. [2 points]",
+      totalPoints: 9,
+      unitNumber: 2,
+      unitTitle: "Differentiation Rules and Composite Functions",
+      skill: "Unit 2 & 3: Analytical Differentiation from Tables",
+      modelAnswer: "Part (a):\nBy the Chain Rule, $h'(x) = f'(g(x)) \\cdot g'(x)$.\nAt $x = 5$:\n$h'(5) = f'(g(5)) \\cdot g'(5)$.\nFrom the table, $g(5) = 3$ and $g'(5) = 6$.\nSo $h'(5) = f'(3) \\cdot 6 = 2 \\cdot 6 = 12$.\n\nPart (b):\nUsing the Product Rule and Chain Rule:\n$k''(x) = \\frac{d}{dx}\\left[(f(x))^2 \\cdot g(x)\\right] = 2f(x)f'(x) \\cdot g(x) + (f(x))^2 \\cdot g'(x)$.\nAt $x = 1$:\n$k''(1) = 2f(1)f'(1)g(1) + (f(1))^2 g'(1)$.\nFrom the table, $f(1) = 3$, $f'(1) = 5$, $g(1) = 5$, and $g'(1) = -3$.\n$k''(1) = 2(3)(5)(5) + (3)^2(-3) = 150 - 27 = 123$.\nBecause $k''(1) = 123 > 0$ and $k''$ is continuous, the graph of $k$ is concave up at $x = 1$.\n\nPart (c):\nBy the Fundamental Theorem of Calculus (Part 2), $\\int_0^3 f'(t) \\, dt = f(3) - f(0)$.\nFrom the table, $f(3) = -2$ and $f(0) = 6$.\nTherefore:\n$m(3) = 4(3)^2 + \\int_0^3 f'(t) \\, dt = 4(9) + (f(3) - f(0)) = 36 + (-2 - 6) = 36 - 8 = 28$.\n\nPart (d):\nBy the Fundamental Theorem of Calculus (Part 1), the derivative of $m$ is:\n$m'(x) = \\frac{d}{dx}\\left[4x^2 + \\int_0^x f'(t) \\, dt\\right] = 8x + f'(x)$.\nAt $x = 3$:\n$m'(3) = 8(3) + f'(3) = 24 + f'(3)$.\nFrom the table, $f'(3) = 2$.\n$m'(3) = 24 + 2 = 26$.\nBecause $m'(3) = 26 > 0$, the function $m$ is increasing at $x = 3$.",
+      scoringRubric: [
+        "Part (a) [2 points]: P1 [1 pt] for applying the Chain Rule h'(x) = f'(g(x))*g'(x) or h'(5) = f'(g(5))*g'(5); P2 [1 pt] for correct answer 12.",
+        "Part (b) [3 points]: P3 [1 pt] for correct product and chain rule setup k''(x) = 2f(x)f'(x)g(x) + (f(x))^2*g'(x); P4 [1 pt] for evaluating k''(1) = 123; P5 [1 pt] for conclusion 'concave up' with valid reason tied to k''(1) > 0.",
+        "Part (c) [2 points]: P6 [1 pt] for applying Fundamental Theorem of Calculus int_0^3 f'(t)dt = f(3) - f(0); P7 [1 pt] for correct answer 28 with supporting work.",
+        "Part (d) [2 points]: P8 [1 pt] for considering m'(x) = 8x + f'(x) and evaluating m'(3) = 26; P9 [1 pt] for conclusion 'increasing' with justification m'(3) > 0."
+      ]
+    },
+    {
+      title: "FREE RESPONSE QUESTION 6  [9 POINTS]",
+      prompt: "Consider the curve given by the equation $3xy = 2 + y^3$.\n\n(a) Show that $\\frac{dy}{dx} = \\frac{y}{y^2 - x}$. [2 points]\n\n(b) Find the coordinates of a point on the curve at which the line tangent to the curve is horizontal, or explain why no such point exists. [2 points]\n\n(c) Find the coordinates of a point on the curve at which the line tangent to the curve is vertical, or explain why no such point exists. [3 points]\n\n(d) A particle is moving along the curve. At the instant when the particle is at the point $\\left(\\frac{5}{3}, 2\\right)$, its horizontal position is increasing at a rate of $\\frac{dx}{dt} = 4$ units per second. What is the value of $\\frac{dy}{dt}$, the rate of change of the particle's vertical position, at that instant? [2 points]",
+      totalPoints: 9,
+      unitNumber: 3,
+      unitTitle: "Composite, Implicit, and Inverse Functions",
+      skill: "Unit 3 & 4: Implicit Differentiation & Related Rates",
+      modelAnswer: "Part (a):\nDifferentiating both sides of the equation $3xy = 2 + y^3$ with respect to $x$:\n$\\frac{d}{dx}(3xy) = \\frac{d}{dx}(2 + y^3)$\n$3\\left(1 \\cdot y + x \\frac{dy}{dx}\\right) = 0 + 3y^2 \\frac{dy}{dx}$\n$3y + 3x \\frac{dy}{dx} = 3y^2 \\frac{dy}{dx}$\nDividing both sides by $3$:\n$y + x \\frac{dy}{dx} = y^2 \\frac{dy}{dx}$\n$y = y^2 \\frac{dy}{dx} - x \\frac{dy}{dx} = (y^2 - x)\\frac{dy}{dx}$\n$\\frac{dy}{dx} = \\frac{y}{y^2 - x}$.\n\nPart (b):\nFor the line tangent to the curve to be horizontal, it is necessary that $\\frac{dy}{dx} = 0$, which requires the numerator to be zero:\n$y = 0$, with denominator $y^2 - x \\ne 0$.\nSubstituting $y = 0$ into the original curve equation $3xy = 2 + y^3$:\n$3x(0) = 2 + 0^3 \\implies 0 = 2$, which is a contradiction and has no solution.\nTherefore, there is no point on the curve at which the tangent line is horizontal.\n\nPart (c):\nFor the line tangent to the curve to be vertical, it is necessary that the denominator of $\\frac{dy}{dx}$ is zero and the numerator is non-zero:\n$y^2 - x = 0 \\implies x = y^2$, and $y \\ne 0$.\nSubstituting $x = y^2$ into the original curve equation $3xy = 2 + y^3$:\n$3(y^2)y = 2 + y^3$\n$3y^3 = 2 + y^3$\n$2y^3 = 2 \\implies y^3 = 1 \\implies y = 1$.\nSince $y = 1$, $x = y^2 = 1^2 = 1$.\nChecking the numerator: at $(1, 1)$, $y = 1 \\ne 0$, so $\\frac{dy}{dx}$ is indeed undefined.\nTherefore, the line tangent to the curve is vertical at the point $(1, 1)$.\n\nPart (d):\nDifferentiating the equation $3xy = 2 + y^3$ implicitly with respect to $t$:\n$3\\frac{dx}{dt} y + 3x \\frac{dy}{dt} = 3y^2 \\frac{dy}{dt}$\nDividing by $3$:\n$\\frac{dx}{dt} y + x \\frac{dy}{dt} = y^2 \\frac{dy}{dt}$.\nAt the point $(x, y) = \\left(\\frac{5}{3}, 2\\right)$ with $\\frac{dx}{dt} = 4$:\n$(4)(2) + \\left(\\frac{5}{3}\\right)\\frac{dy}{dt} = (2)^2 \\frac{dy}{dt}$\n$8 + \\frac{5}{3}\\frac{dy}{dt} = 4\\frac{dy}{dt}$\n$8 = \\left(4 - \\frac{5}{3}\\right)\\frac{dy}{dt} = \\frac{7}{3}\\frac{dy}{dt}$\n$\\frac{dy}{dt} = 8 \\cdot \\frac{3}{7} = \\frac{24}{7}$ units per second.\n\n(Alternatively: Using the chain rule, $\\frac{dy}{dt} = \\frac{dy}{dx}\\Big|_{(\\frac{5}{3}, 2)} \\cdot \\frac{dx}{dt} = \\frac{2}{2^2 - 5/3} \\cdot 4 = \\frac{2}{7/3} \\cdot 4 = \\frac{6}{7} \\cdot 4 = \\frac{24}{7}$ units per second.)",
+      scoringRubric: [
+        "Part (a) [2 points]: P1 [1 pt] for correct implicit differentiation using product rule on 3xy and chain rule on y^3; P2 [1 pt] for verification and isolating dy/dx = y/(y^2 - x).",
+        "Part (b) [2 points]: P3 [1 pt] for setting numerator y = 0; P4 [1 pt] for substituting y = 0 into curve equation and showing 0 = 2 has no solution with correct conclusion.",
+        "Part (c) [3 points]: P5 [1 pt] for setting denominator y^2 - x = 0 (or x = y^2); P6 [1 pt] for substituting x = y^2 into curve equation to solve for y = 1; P7 [1 pt] for identifying point (1, 1) and verifying numerator != 0.",
+        "Part (d) [2 points]: P8 [1 pt] for implicit differentiation with respect to t (dx/dt*y + x*dy/dt = y^2*dy/dt) or using chain rule dy/dt = (dy/dx)*(dx/dt); P9 [1 pt] for correct answer dy/dt = 24/7."
       ]
     }
   ],
@@ -23702,7 +23797,9 @@ app.post("/api/generate-ap-questions", async (req, res) => {
     const s = (subject || "").toLowerCase();
     const g = (gradeLevel || "").toLowerCase();
     const type = questionType === "subjective" || rawType === "subjective" ? "subjective" : "objective";
-    const isBcSubject = s.includes("calculus bc") || s.includes("calculus") && s.includes("bc");
+    const isCalcSubject = s.includes("calculus");
+    const isBcSubject = s.includes("calculus bc") || isCalcSubject && s.includes("bc");
+    const isAbSubject = isCalcSubject && !isBcSubject;
     const isChemSubject = s.includes("chemistry") || s.includes("chem");
     const isBioSubject = s.includes("biology") || s.includes("bio");
     const isPhys1Subject = s.includes("physics 1") || s.includes("phys");
@@ -23715,7 +23812,7 @@ app.post("/api/generate-ap-questions", async (req, res) => {
     let requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 20);
     if (isChemSubject && (examMode === "mock_exam" || examMode === "exam_simulation") && type === "subjective") {
       requestedCount = 7;
-    } else if ((isBcSubject || isBioSubject) && (examMode === "mock_exam" || examMode === "exam_simulation") && type === "subjective") {
+    } else if ((isCalcSubject || isBcSubject || isBioSubject) && (examMode === "mock_exam" || examMode === "exam_simulation") && type === "subjective") {
       requestedCount = 6;
     } else if ((isPhys1Subject || isCsaSubject) && (examMode === "mock_exam" || examMode === "exam_simulation") && type === "subjective") {
       requestedCount = 4;
@@ -24288,6 +24385,30 @@ CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
 
 2. AUTHENTIC MULTI-PART STRUCTURE & POINT VALUES:
    - For AP Calculus (AB and BC): Every Section II Free Response Question MUST consist of subparts labeled (a), (b), (c), and (d) and MUST have "totalPoints": 9. Exactly 9 points per FRQ.
+   ${isCalcSubj && !isBcSubj ? `- FOR AP CALCULUS AB (MANDATORY 100% REAL-EXAM REPLICA - COLLEGE BOARD SECTION II):
+     * PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL EXAM SETS (2023, 2024, 2025, 2026) & CHIEF READER REPORTS (JULIE CLARK & SHARON TAYLOR - 286,722 STUDENTS):
+     * Exactly 6 Free Response Questions (90 Minutes Total = 1 Hour 30 Minutes, 54 Points Total). Every single question MUST have "totalPoints": 9.
+     * THE 6 CANONICAL COLLEGE BOARD AB ARCHETYPES:
+       - Q1 (Calc Active, 9 pts): Rate In / Rate Out Accumulation or Tabular Rate Data (average rate of change with physical units, Riemann sum approximation [left, right, midpoint, trapezoidal], average value (1/(b-a))*int_a^b R(t) dt, derivative interpretation g'(t_0) with units, or MVT/IVT with 'differentiable implies continuous').
+       - Q2 (Calc Active, 9 pts): Rectilinear Particle Motion (velocity v(t), acceleration a(t) = v'(t), speeding up / slowing down by checking signs of BOTH v(t) and a(t), times changing direction where v(t) = 0 AND changes sign, total distance int |v(t)| dt) OR Bounded Area & Known Cross-Sections / Solids of Revolution.
+       - Q3 (No Calc, 9 pts): Contextual Differential Equations & Slope Fields (solution curve sketch passing through initial point respecting asymptotes, tangent line approximation y = y_0 + m(x - x_0), concavity d^2y/dt^2 for overestimate/underestimate, separation of variables particular solution).
+       - Q4 (No Calc, 9 pts): Graphical Analysis of f' & Accumulation Function (graph of f' consisting of semicircles and straight lines, FTC g'(x) = f(x), points of inflection where f' changes increasing/decreasing, geometric areas of semicircles and triangles, Candidates Test table for absolute extrema on closed interval).
+       - Q5 (No Calc, 9 pts): Functions from a Table & Analytical Differentiation Rules (table of f, f', g, g', chain rule h'(x) = f'(g(x))*g'(x), product rule with second derivative concavity k''(x), FTC accumulation m(x) = poly + int_0^x f'(t) dt, increasing/decreasing justification) OR 1D Two-Particle Motion without calculator.
+       - Q6 (No Calc, 9 pts): Implicit Differentiation & Related Rates (curve F(x, y) = c, show dy/dx, horizontal tangent dy/dx = 0 verified on curve, vertical tangent denominator = 0 verified on curve, related rates dy/dt given dx/dt).
+     * STRICT CHIEF READER SCORING MANDATES & AVOIDANCE OF FATAL TRAPS:
+       1. THE CANDIDATES TEST MANDATE: To justify absolute extrema on a closed interval [a, b], students MUST evaluate the function at ALL critical points AND both endpoints in a table. Local derivative tests (First/Second derivative test) earn 0 justification points for global extrema!
+       2. 'DIFFERENTIABLE IMPLIES CONTINUOUS': When applying IVT or MVT, students must explicitly state 'Because f is differentiable, f is continuous'. Stating only 'f is continuous' without establishing that differentiability implies continuity loses points!
+       3. SPEEDING UP VS SLOWING DOWN: Students must evaluate and compare the signs of BOTH velocity v(t) AND acceleration a(t). If v(t) and a(t) have the same sign -> speeding up. If opposite signs -> slowing down. Citing acceleration alone earns 0 points!
+       4. 3-DECIMAL PRECISION: In Part A (Calculator Active), all decimal answers must be accurate to at least 3 decimal places (rounded or truncated).
+       5. NO ARITHMETIC WITH INFINITY: Expressions like '38/(25 + inf^2) = 0' are penalized. Students must write proper limit expressions lim_{t->inf}.
+       6. SEPARATION OF VARIABLES 4-POINT PARITY: 1 pt for separation of variables, 1 pt for correct antiderivatives, 1 pt for constant of integration C with initial condition, 1 pt for explicit solution for y.
+     * CRITICAL ANTI-PLAGIARISM & ORIGINALITY DIRECTIVE:
+       - NEVER copy verbatim functions, characters, or numbers from released exam PDFs (do NOT reuse Stephen swimming, milk warming, coffee cooling, or bird arrival table verbatim).
+       - Invent 100% fresh, mathematically elegant, solvable scenarios.
+     * MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+       - PASS 1 (Analytical Pre-Solving): Before outputting, internally solve every subpart. Verify that all integrals yield clean real values, critical points lie strictly within the designated domain, and separation of variables produces an algebraically valid solution.
+       - PASS 2 (Rubric Consistency): Verify that total points = exactly 9 points (P1 to P9 labeled), all subparts (a)-(d) have corresponding model answers and scoring breakdown.
+       - SELF-HEALING: If ANY calculation error, sign mistake, asymptote within interval, or unsolvable equation is detected, immediately discard and regenerate or heal the question before outputting.` : ""}
    ${isBcSubj ? `- FOR AP CALCULUS BC (MANDATORY 100% REAL-EXAM REPLICA - COLLEGE BOARD SECTION II):
      * PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL EXAM SETS (2023, 2024, 2025, 2026) & CHIEF READER REPORTS (SHARON TAYLOR):
      * Exactly 6 Free Response Questions (90 Minutes, 54 Points Total). Every single question MUST have "totalPoints": 9.
@@ -24624,7 +24745,7 @@ Return ONLY a valid JSON object with key "questions" containing an array of obje
         "Part E [1 point]: 1 pt for explaining mechanism E (Acceptable: \u2022 E1 ... \u2022 E2 ...)",
         "Part F [1 point]: 1 pt for explaining process F (Acceptable: \u2022 F1 ... \u2022 F2 ...)",
         "Part G [1 point]: 1 pt for indicating degree [low, moderate, high] AND providing valid explanation (Acceptable: \u2022 G1 ... \u2022 G2 ...)"
-      ]` : isBcSubj ? `[
+      ]` : isCalcSubj || isBcSubj ? `[
         "Part (a) [2 points]: P1 [1 pt] for correct formula/integral/ratio setup; P2 [1 pt] for correct numerical value/units.",
         "Part (b) [2 points]: P3 [1 pt] for correct integrand/rule; P4 [1 pt] for answer with supporting work.",
         "Part (c) [2 points]: P5 [1 pt] for setup/derivative condition; P6 [1 pt] for answer/evaluation.",

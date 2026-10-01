@@ -172,6 +172,7 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
       const subjId = (subject.id || '').toLowerCase();
       const subjName = (subject.name || '').toLowerCase();
       const isChem = subjId.includes('chem') || subjName.includes('chem');
+      const isCalc = subjId.includes('calculus') || subjName.includes('calculus');
       const isBc = subjId.includes('bc') || subjName.includes('bc');
       const isBio = subjId.includes('bio') || subjName.includes('bio');
       const isCsa = subjId.includes('computer-science') || subjId.includes('csa') || (subjName.includes('computer science') && !subjName.includes('principles'));
@@ -181,7 +182,7 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
       const subtitle = isMock
         ? (isChem
             ? `Structure: 7 Real Exam FRQs (105 Minutes • Timed Simulation)   |   ${dateStr}`
-            : (isBc || isBio)
+            : (isCalc || isBc || isBio)
             ? `Structure: 6 Real Exam FRQs (90 Minutes • Timed Simulation)   |   ${dateStr}`
             : isCsa
             ? `Structure: 4 Real Exam FRQs (90 Minutes • Timed Simulation)   |   ${dateStr}`

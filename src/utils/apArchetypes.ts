@@ -1051,6 +1051,66 @@ export function getGranularSubjectArchetypes(subject: string, unitOrTopic: strin
     return pool;
   }
 
+  // SPECIAL COLLEGE BOARD SECTION II REPLICA FOR AP CALCULUS AB (5, 6, 10, 15 FRQS)
+  // Derived directly from 2023, 2024, 2025, 2026 Free-Response Exams & Chief Reader Reports (Julie Clark & Sharon Taylor)
+  if (s.includes('calculus') && !s.includes('bc') && !detectedUnit) {
+    const abCanonicalSix = [
+      "[Part A - Calculator Active | Q1 Canonical Archetype] Rate In/Rate Out Accumulation & Tabular Rate Modeling: Real-world rate function R(t) or discrete non-uniform data table (fluid flow, temperature changes, ecological populations, vehicle arrivals). Subparts: (a) Average rate of change using difference quotient over [a,b] with explicit units of measure (e.g. gal/s^2, words/min^2, birds/day^2). (b) Definite integral approximation using Riemann sums (Right, Left, Midpoint, or Trapezoidal) with table data, and contextual interpretation of int_a^b R(t) dt with units ('total amount accumulated from t=a to t=b'). (c) Second mathematical model g(t) introduced; finding average rate of flow (1/(b-a))*int_a^b g(t) dt or time where instantaneous rate equals average rate. (d) Instantaneous rate of change interpretation g'(t_0) with units, or absolute extrema on closed interval, or MVT/IVT justification ('because f is differentiable, f is continuous').",
+      "[Part A - Calculator Active | Q2 Canonical Archetype] Rectilinear Particle Motion OR Bounded Area & Known Cross-Sections: Particle moves along a straight path/axis with velocity v(t). Subparts: (a) Times when particle changes direction (where v(t) = 0 AND v(t) changes sign). (b) Acceleration a(t) = v'(t) and determining if particle is speeding up or slowing down at time t_0 (evaluating signs of BOTH velocity and acceleration; same sign -> speeding up, opposite signs -> slowing down). (c) Position x(t) = x(t_0) + int_{t_0}^t v(u) du or distance between positions. (d) Total distance traveled int_{t_1}^{t_2} |v(t)| dt. OR Bounded planar region R area int (g - f) dx, known cross sections perpendicular to x-axis (rectangles, squares, semicircles), and volume of revolution about horizontal line y = k using washer method.",
+      "[Part B - No Calculator | Q3 Canonical Archetype] Contextual Differential Equations & Slope Fields: First-order differential equation dy/dt = k(A - y) or dy/dx = f(x, y) with initial condition y(t_0) = y_0. Subparts: (a) Slope field sketch passing through initial point (x_0, y_0) respecting horizontal asymptotes and curvature, or explaining why a given slope field cannot represent the differential equation. (b) Tangent line equation y = y_0 + m(x - x_0) to approximate value at x_1. (c) Second derivative d^2y/dt^2 in terms of y via chain rule, determining concavity and whether tangent approximation is an overestimate (concave down, d^2y/dt^2 < 0) or underestimate (concave up, d^2y/dt^2 > 0). (d) Separation of variables to find the particular solution y = f(t) (4 points: separation, antiderivatives, constant C with initial condition, explicit solution for y).",
+      "[Part B - No Calculator | Q4 Canonical Archetype] Graphical Analysis of f' & Accumulation Function: Continuous function f (or derivative f') defined on closed interval [a, b] consisting of semicircles and straight line segments, and accumulation function g(x) = int_c^x f(t) dt. Subparts: (a) Fundamental Theorem of Calculus Part 1: g'(x) = f(x) evaluated from graph with reasoning. (b) Points of inflection of g on open interval: values where g'' = f' changes sign (f changes increasing/decreasing or attains relative extrema). (c) Evaluating g(x) geometrically using triangle, rectangle, and semicircle (pi*r^2/2) areas, correctly handling sign and reversed limits of integration. (d) Absolute minimum/maximum on closed interval using the CANDIDATES TEST (evaluating g(x) at all critical points where g'(x) = f(x) = 0 AND at both endpoints in a justification table).",
+      "[Part B - No Calculator | Q5 Canonical Archetype] Analytical Differentiation Rules & Tabular Functions OR 1D Particle Motion: Discrete table of twice-differentiable functions f, g and their first derivatives f', g' at selected x-values. Subparts: (a) Chain rule h'(x) = f'(g(x)) * g'(x) evaluated at table point. (b) Product rule or quotient rule with second derivative concavity: evaluating k''(x) and justifying concavity. (c) Fundamental Theorem of Calculus accumulation: m(x) = P(x) + int_0^x f'(t) dt evaluated at table value. (d) Increasing/decreasing function behavior justified by the sign of the derivative m'(x) > 0. OR Two rectilinear particles H and J: velocity derivatives, opposite directions via velocity signs, speeding up/slowing down, and position via u-substitution.",
+      "[Part B - No Calculator | Q6 Canonical Archetype] Implicit Differentiation & Related Rates: Curve defined implicitly by F(x, y) = c. Subparts: (a) Show that dy/dx = N(x, y) / D(x, y) using implicit differentiation (product rule on xy, chain rule on powers of y). (b) Coordinates of point on curve where tangent line is horizontal (dy/dx = 0 -> N(x, y) = 0 and verifying point is on curve, or showing no solution exists). (c) Coordinates of point on curve where tangent line is vertical (denominator D(x, y) = 0 and N(x, y) != 0, solving for (x, y) on curve). (d) Related rates: Particle moves along curve with given dx/dt, differentiating implicitly with respect to t to find dy/dt at a given point."
+    ];
+
+    if (count === 6) {
+      return [...abCanonicalSix];
+    }
+
+    if (count === 5) {
+      // 2 Calculator Active (Q1, Q2) + 3 No Calculator (Q3, Q4, Q6)
+      return [abCanonicalSix[0], abCanonicalSix[1], abCanonicalSix[2], abCanonicalSix[3], abCanonicalSix[5]];
+    }
+
+    if (count === 10) {
+      // Full 6-question Section II exam + 4 mixed variations
+      return [
+        abCanonicalSix[0],
+        abCanonicalSix[1],
+        abCanonicalSix[2],
+        abCanonicalSix[3],
+        abCanonicalSix[4],
+        abCanonicalSix[5],
+        "[Part A - Calculator Active | Q1/Q2 Mixed Variation] Contextual Rate Accumulation & Non-Uniform Table Modeling with Average Value & Riemann Sums",
+        "[Part A - Calculator Active | Q2 Mixed Variation] Rectilinear Motion Position, Velocity, Acceleration & Total Distance OR Known Cross-Sections Volume",
+        "[Part B - No Calculator | Q3/Q4 Mixed Variation] Differential Equations Separation of Variables with Particular Solution & Tangent Line Over/Underestimate",
+        "[Part B - No Calculator | Q5/Q6 Mixed Variation] Implicit Differentiation Curve dy/dx, Horizontal/Vertical Tangents & Chain Rule Related Rates"
+      ];
+    }
+
+    if (count === 15) {
+      // 2 Full 6-question cycles + 3 mixed questions
+      return [
+        ...abCanonicalSix,
+        "[Part A - Calculator Active | Q1 Cycle 2 Variation] Contextual Rate In/Rate Out Accumulation & Difference Quotient with Physical Units",
+        "[Part A - Calculator Active | Q2 Cycle 2 Variation] 1D Particle Motion Speeding Up / Slowing Down Justification & Direction Changes",
+        "[Part B - No Calculator | Q3 Cycle 2 Variation] Differential Equations Particular Solution via Separation of Variables & Slope Field Behavior",
+        "[Part B - No Calculator | Q4 Cycle 2 Variation] Accumulation Function g(x) = int_c^x f(t)dt from Semicircles/Line Segments Graph with Candidates Test",
+        "[Part B - No Calculator | Q5 Cycle 2 Variation] Twice-Differentiable Functions from a Table: Chain Rule, Product Rule Concavity & FTC Accumulation",
+        "[Part B - No Calculator | Q6 Cycle 2 Variation] Implicit Differentiation Curve Verification, Tangent Lines & Related Rates with Respect to Time",
+        "[Part A - Calculator Active | Q1 Synthesis] Non-Uniform Data Table Modeling with Average Value Integral Setup & 3-Decimal Precision",
+        "[Part B - No Calculator | Q4 Graphical Synthesis] Derivative Graph Analysis, Semicircle Geometry Areas & Inflection Points Justification",
+        "[Part B - No Calculator | Q6 Implicit Mastery] Implicit Curve Tangent Slopes, Vertical Tangents & Coordinate Verification on Curve"
+      ];
+    }
+
+    const pool: string[] = [];
+    while (pool.length < count) {
+      pool.push(abCanonicalSix[pool.length % abCanonicalSix.length]);
+    }
+    return pool;
+  }
+
   // SPECIAL COLLEGE BOARD SECTION II REPLICA FOR AP CHEMISTRY (5, 7, 10, 15 FRQS)
   if ((s.includes('chemistry') || s.includes('chem')) && !detectedUnit) {
     const chemCanonicalSeven = [

@@ -124,6 +124,7 @@ export function calculateRealTotalPoints(q: any, subjectId?: string): number {
     if (raw === 9 || raw === 4) return raw;
     return 9;
   }
+  if (s.includes('calculus')) return 9;
   if (s.includes('phys')) {
     const raw = Number(q.totalPoints);
     if (raw === 12 || raw === 10 || raw === 8) return raw;

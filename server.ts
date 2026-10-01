@@ -2637,7 +2637,9 @@ app.post("/api/generate-ap-questions", async (req, res) => {
     const s = (subject || '').toLowerCase();
     const g = (gradeLevel || '').toLowerCase();
     const type = (questionType === 'subjective' || rawType === 'subjective') ? 'subjective' : 'objective';
-    const isBcSubject = s.includes('calculus bc') || (s.includes('calculus') && s.includes('bc'));
+    const isCalcSubject = s.includes('calculus');
+    const isBcSubject = s.includes('calculus bc') || (isCalcSubject && s.includes('bc'));
+    const isAbSubject = isCalcSubject && !isBcSubject;
     const isChemSubject = s.includes('chemistry') || s.includes('chem');
     const isBioSubject = s.includes('biology') || s.includes('bio');
     const isPhys1Subject = s.includes('physics 1') || s.includes('phys');
@@ -2648,10 +2650,10 @@ app.post("/api/generate-ap-questions", async (req, res) => {
     const isWhapSubject = s.includes('world history') || s.includes('whap') || (s.includes('world') && s.includes('history')) || (s.includes('history') && !s.includes('u.s.') && !s.includes('us') && !s.includes('euro'));
     const isApushSubject = !isWhapSubject && (s.includes('history') || s.includes('apush'));
     let requestedCount = Math.min(Math.max(parseInt(count) || 5, 1), 20);
-    // Real College Board Section II: Exactly 7 Questions for AP Chemistry, 6 Questions for AP Calculus BC and AP Biology, 4 Questions for AP Physics 1 and AP Computer Science A, Exactly 3 Questions for AP Macroeconomics and AP English Language, Exactly 2 Questions for AP World History (DBQ + LEQ) and AP Psychology (AAQ + EBQ)
+    // Real College Board Section II: Exactly 7 Questions for AP Chemistry, 6 Questions for AP Calculus AB/BC and AP Biology, 4 Questions for AP Physics 1 and AP Computer Science A, Exactly 3 Questions for AP Macroeconomics and AP English Language, Exactly 2 Questions for AP World History (DBQ + LEQ) and AP Psychology (AAQ + EBQ)
     if (isChemSubject && (examMode === 'mock_exam' || examMode === 'exam_simulation') && type === 'subjective') {
       requestedCount = 7;
-    } else if ((isBcSubject || isBioSubject) && (examMode === 'mock_exam' || examMode === 'exam_simulation') && type === 'subjective') {
+    } else if ((isCalcSubject || isBcSubject || isBioSubject) && (examMode === 'mock_exam' || examMode === 'exam_simulation') && type === 'subjective') {
       requestedCount = 6;
     } else if ((isPhys1Subject || isCsaSubject) && (examMode === 'mock_exam' || examMode === 'exam_simulation') && type === 'subjective') {
       requestedCount = 4;
@@ -3294,6 +3296,30 @@ CRITICAL COLLEGE BOARD AP EXAM STANDARDS:
 
 2. AUTHENTIC MULTI-PART STRUCTURE & POINT VALUES:
    - For AP Calculus (AB and BC): Every Section II Free Response Question MUST consist of subparts labeled (a), (b), (c), and (d) and MUST have "totalPoints": 9. Exactly 9 points per FRQ.
+   ${isCalcSubj && !isBcSubj ? `- FOR AP CALCULUS AB (MANDATORY 100% REAL-EXAM REPLICA - COLLEGE BOARD SECTION II):
+     * PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL EXAM SETS (2023, 2024, 2025, 2026) & CHIEF READER REPORTS (JULIE CLARK & SHARON TAYLOR - 286,722 STUDENTS):
+     * Exactly 6 Free Response Questions (90 Minutes Total = 1 Hour 30 Minutes, 54 Points Total). Every single question MUST have "totalPoints": 9.
+     * THE 6 CANONICAL COLLEGE BOARD AB ARCHETYPES:
+       - Q1 (Calc Active, 9 pts): Rate In / Rate Out Accumulation or Tabular Rate Data (average rate of change with physical units, Riemann sum approximation [left, right, midpoint, trapezoidal], average value (1/(b-a))*int_a^b R(t) dt, derivative interpretation g'(t_0) with units, or MVT/IVT with 'differentiable implies continuous').
+       - Q2 (Calc Active, 9 pts): Rectilinear Particle Motion (velocity v(t), acceleration a(t) = v'(t), speeding up / slowing down by checking signs of BOTH v(t) and a(t), times changing direction where v(t) = 0 AND changes sign, total distance int |v(t)| dt) OR Bounded Area & Known Cross-Sections / Solids of Revolution.
+       - Q3 (No Calc, 9 pts): Contextual Differential Equations & Slope Fields (solution curve sketch passing through initial point respecting asymptotes, tangent line approximation y = y_0 + m(x - x_0), concavity d^2y/dt^2 for overestimate/underestimate, separation of variables particular solution).
+       - Q4 (No Calc, 9 pts): Graphical Analysis of f' & Accumulation Function (graph of f' consisting of semicircles and straight lines, FTC g'(x) = f(x), points of inflection where f' changes increasing/decreasing, geometric areas of semicircles and triangles, Candidates Test table for absolute extrema on closed interval).
+       - Q5 (No Calc, 9 pts): Functions from a Table & Analytical Differentiation Rules (table of f, f', g, g', chain rule h'(x) = f'(g(x))*g'(x), product rule with second derivative concavity k''(x), FTC accumulation m(x) = poly + int_0^x f'(t) dt, increasing/decreasing justification) OR 1D Two-Particle Motion without calculator.
+       - Q6 (No Calc, 9 pts): Implicit Differentiation & Related Rates (curve F(x, y) = c, show dy/dx, horizontal tangent dy/dx = 0 verified on curve, vertical tangent denominator = 0 verified on curve, related rates dy/dt given dx/dt).
+     * STRICT CHIEF READER SCORING MANDATES & AVOIDANCE OF FATAL TRAPS:
+       1. THE CANDIDATES TEST MANDATE: To justify absolute extrema on a closed interval [a, b], students MUST evaluate the function at ALL critical points AND both endpoints in a table. Local derivative tests (First/Second derivative test) earn 0 justification points for global extrema!
+       2. 'DIFFERENTIABLE IMPLIES CONTINUOUS': When applying IVT or MVT, students must explicitly state 'Because f is differentiable, f is continuous'. Stating only 'f is continuous' without establishing that differentiability implies continuity loses points!
+       3. SPEEDING UP VS SLOWING DOWN: Students must evaluate and compare the signs of BOTH velocity v(t) AND acceleration a(t). If v(t) and a(t) have the same sign -> speeding up. If opposite signs -> slowing down. Citing acceleration alone earns 0 points!
+       4. 3-DECIMAL PRECISION: In Part A (Calculator Active), all decimal answers must be accurate to at least 3 decimal places (rounded or truncated).
+       5. NO ARITHMETIC WITH INFINITY: Expressions like '38/(25 + inf^2) = 0' are penalized. Students must write proper limit expressions lim_{t->inf}.
+       6. SEPARATION OF VARIABLES 4-POINT PARITY: 1 pt for separation of variables, 1 pt for correct antiderivatives, 1 pt for constant of integration C with initial condition, 1 pt for explicit solution for y.
+     * CRITICAL ANTI-PLAGIARISM & ORIGINALITY DIRECTIVE:
+       - NEVER copy verbatim functions, characters, or numbers from released exam PDFs (do NOT reuse Stephen swimming, milk warming, coffee cooling, or bird arrival table verbatim).
+       - Invent 100% fresh, mathematically elegant, solvable scenarios.
+     * MANDATORY TWO-PASS DOUBLE-VERIFICATION & SELF-HEALING PROTOCOL:
+       - PASS 1 (Analytical Pre-Solving): Before outputting, internally solve every subpart. Verify that all integrals yield clean real values, critical points lie strictly within the designated domain, and separation of variables produces an algebraically valid solution.
+       - PASS 2 (Rubric Consistency): Verify that total points = exactly 9 points (P1 to P9 labeled), all subparts (a)-(d) have corresponding model answers and scoring breakdown.
+       - SELF-HEALING: If ANY calculation error, sign mistake, asymptote within interval, or unsolvable equation is detected, immediately discard and regenerate or heal the question before outputting.` : ''}
    ${isBcSubj ? `- FOR AP CALCULUS BC (MANDATORY 100% REAL-EXAM REPLICA - COLLEGE BOARD SECTION II):
      * PEDAGOGICAL INTELLIGENCE DERIVED DIRECTLY FROM OFFICIAL EXAM SETS (2023, 2024, 2025, 2026) & CHIEF READER REPORTS (SHARON TAYLOR):
      * Exactly 6 Free Response Questions (90 Minutes, 54 Points Total). Every single question MUST have "totalPoints": 9.
@@ -3630,7 +3656,7 @@ Return ONLY a valid JSON object with key "questions" containing an array of obje
         "Part E [1 point]: 1 pt for explaining mechanism E (Acceptable: • E1 ... • E2 ...)",
         "Part F [1 point]: 1 pt for explaining process F (Acceptable: • F1 ... • F2 ...)",
         "Part G [1 point]: 1 pt for indicating degree [low, moderate, high] AND providing valid explanation (Acceptable: • G1 ... • G2 ...)"
-      ]` : (isBcSubj ? `[
+      ]` : ((isCalcSubj || isBcSubj) ? `[
         "Part (a) [2 points]: P1 [1 pt] for correct formula/integral/ratio setup; P2 [1 pt] for correct numerical value/units.",
         "Part (b) [2 points]: P3 [1 pt] for correct integrand/rule; P4 [1 pt] for answer with supporting work.",
         "Part (c) [2 points]: P5 [1 pt] for setup/derivative condition; P6 [1 pt] for answer/evaluation.",
