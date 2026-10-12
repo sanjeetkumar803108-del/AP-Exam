@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AP Calculus AB — Unit 8: Applications of Integration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&family=STIX+Two+Text:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0B1F3A;--navy2:#17375F;--ivory:#FAF8F3;--gold:#C6A15B;--gold2:#E2C98F;
+  --slate:#1F2937;--blue:#EAF0F6;--line:#DCE3EC;--teal:#0F766E;--tealbg:#E7F5F3;
+  --red:#B42318;--muted:#6B7280;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,Arial,sans-serif;background:#D2CEC4;color:var(--slate);font-size:10pt;line-height:1.55}
+.page{width:210mm;min-height:297mm;margin:8mm auto;padding:16mm 15mm 24mm;background:var(--ivory);position:relative;box-shadow:0 6px 24px #0003;page-break-after:always;break-after:page}
+.page:before{content:"";position:absolute;inset:6mm;border:.3mm solid #C6A15B66;pointer-events:none}
+.cover{background:var(--navy);color:var(--ivory);display:flex;flex-direction:column;justify-content:space-between;padding:30mm 22mm 26mm}
+.cover:before{border-color:#C6A15BCC}
+.kicker{font-size:10pt;letter-spacing:.3em;color:var(--gold);font-weight:700;text-transform:uppercase}
+.cover h1{font:400 37pt/1.12 "DM Serif Display",Georgia,serif;color:#fff;margin:8mm 0 4mm}
+.gold-line{width:72mm;height:.8mm;background:var(--gold);margin:6mm 0}
+.cover .sub{font:italic 17pt "DM Serif Display",Georgia,serif;color:var(--gold2)}
+.cover .meta{margin-top:6mm;font-size:10pt;color:#D1D9E4;line-height:1.8}
+.cover-foot{font-size:8pt;letter-spacing:.14em;color:var(--gold);border-top:.3mm solid #C6A15B99;padding-top:4mm}
+.phead{display:flex;justify-content:space-between;align-items:center;font-size:8pt;letter-spacing:.14em;text-transform:uppercase;color:var(--navy);font-weight:700;border-bottom:.35mm solid var(--gold);padding-bottom:2mm;margin-bottom:5mm}
+.title{font:22pt "DM Serif Display",Georgia,serif;color:var(--navy);margin-bottom:3mm}
+.lead{color:var(--muted);font-size:9.5pt;margin-bottom:4mm}
+.sec{font:13pt "DM Serif Display",Georgia,serif;color:var(--navy);margin:5mm 0 2mm}
+.bullets{margin-left:5mm}.bullets li{margin:1.5mm 0;font-size:9.3pt}
+.note{background:var(--blue);border-left:1mm solid var(--navy);padding:2.8mm 3.8mm;border-radius:1.5mm;margin-top:4mm;font-size:9pt}
+.topics{display:grid;grid-template-columns:1fr 1fr;gap:1.5mm 5mm;font-size:9pt;color:#374151}
+.star-legend{background:linear-gradient(135deg,#FFFDF8,#F5F0E6);border:.4mm solid var(--gold);border-radius:3mm;padding:4mm 5mm;margin:4mm 0}
+.star-legend h3{text-align:center;font:14pt "DM Serif Display",Georgia,serif;color:var(--navy);margin-bottom:2mm}
+.star-row{display:flex;align-items:center;gap:3mm;padding:1.6mm 0;border-bottom:.2mm dotted #D4C5A9}
+.star-row:last-child{border:0}
+.stars{font-size:11pt;min-width:22mm}.label{font-weight:700;min-width:38mm;font-size:9pt}.desc{font-size:8.3pt;color:var(--muted)}
+.s5{color:#B8860B}.s3{color:#3949AB}.s2{color:#00897B}
+.star-badge{display:inline-flex;align-items:center;gap:1mm;padding:.8mm 2mm;border-radius:10mm;font-size:7pt;font-weight:700;white-space:nowrap}
+.star-badge .st{font-size:8pt}
+.sb5{background:#FFF0B3;color:#805D00;border:.25mm solid #D7AA27}
+.sb3{background:#E8EAF6;color:#283593;border:.25mm solid #7986CB}
+.sb2{background:#E0F2F1;color:#00695C;border:.25mm solid #80CBC4}
+.qc{display:grid;grid-template-columns:14mm 1fr;background:#fff;border:.25mm solid var(--line);border-radius:2.5mm;overflow:hidden;margin-bottom:4mm;break-inside:avoid;page-break-inside:avoid}
+.qs{background:linear-gradient(180deg,var(--navy),var(--navy2));display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.qs .ql{font-size:5.8pt;letter-spacing:.14em;color:#AFC0D6;text-transform:uppercase}
+.qs .qn{font:18pt "DM Serif Display",Georgia,serif;color:var(--gold2)}
+.qs .qd{margin-top:1mm;width:5mm;height:.35mm;background:var(--gold)}
+.qb{padding:3.2mm 4mm}
+.qmeta{display:flex;justify-content:space-between;align-items:center;gap:2mm;font-size:7pt;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:2mm}
+.stem{font:10.3pt/1.6 "STIX Two Text",Cambria,Georgia,serif;color:#111827;margin-bottom:2.5mm}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:1.6mm 2.5mm}
+.opt{display:flex;align-items:flex-start;gap:2mm;border:.25mm solid var(--line);border-radius:1.5mm;padding:1.6mm 2.4mm;background:#FCFDFE;font:9.6pt/1.4 "STIX Two Text",Cambria,serif}
+.lt{flex:0 0 5mm;height:5mm;border-radius:50%;background:var(--navy);color:var(--gold2);display:flex;align-items:center;justify-content:center;font:8pt "DM Serif Display",Georgia,serif;box-shadow:0 0 0 .3mm var(--gold)}
+table.dt{border-collapse:collapse;margin:2mm auto;font:8.5pt Inter,Arial,sans-serif}
+table.dt th,table.dt td{border:.25mm solid #C9D3E0;padding:1.2mm 2.5mm;text-align:center}
+table.dt th{background:var(--navy);color:#fff}table.dt td{background:#fff}
+.graph-wrap{text-align:center;margin:2mm auto}
+.graph-wrap svg{width:100%;max-width:125mm;background:#fff;border:.25mm solid var(--line);border-radius:2mm}
+.graph-cap{font-size:8pt;color:var(--muted);font-style:italic}
+.gridline{stroke:#E8EEF5;stroke-width:1}.axis{stroke:#0B1F3A;stroke-width:1.7}
+.plot{fill:none;stroke:#0B1F3A;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.tick{font:10px Inter,Arial;fill:#4B5563;text-anchor:middle}
+.akey{display:grid;grid-template-columns:repeat(10,1fr);gap:1.4mm}
+.keyitem{background:#fff;border:.25mm solid var(--line);border-radius:1.2mm;display:flex;flex-direction:column;align-items:center;padding:1mm 0;font-size:8pt}
+.keyitem small{font-size:6.5pt;color:var(--muted)}.keyitem b{color:var(--teal);font-size:10pt}
+.sol{background:#fff;border:.25mm solid var(--line);border-radius:2.5mm;padding:3.5mm 4.5mm;margin-bottom:3mm;break-inside:avoid;page-break-inside:avoid}
+.sol-title{display:flex;justify-content:space-between;align-items:center;gap:2mm;font:12pt "DM Serif Display",Georgia,serif;color:var(--navy);border-bottom:.25mm solid var(--gold);padding-bottom:1.2mm;margin-bottom:2mm}
+.ans{background:var(--tealbg);color:var(--teal);border-radius:1.5mm;padding:1.5mm 3mm;font-weight:700;margin-bottom:2mm;font-size:9pt}
+.steps{background:var(--blue);border-radius:1.5mm;padding:2mm 3mm;margin-bottom:2mm;font-size:8.9pt;line-height:1.55}
+.steps h4,.wrong h4,.rubric h4{font-size:7.3pt;text-transform:uppercase;letter-spacing:.1em;color:var(--navy);margin-bottom:1mm}
+.wrong ul{list-style:none}.wrong li{font-size:8.2pt;margin:.8mm 0;padding-left:4mm;position:relative}
+.wrong li:before{content:"✗";color:var(--red);position:absolute;left:0;font-weight:700}.wrong li b{color:var(--navy)}
+.frq-card{background:#fff;border:.3mm solid var(--navy);border-radius:2.5mm;padding:4mm 5mm;break-inside:avoid;page-break-inside:avoid}
+.frq-head{display:flex;justify-content:space-between;align-items:center;gap:2mm;border-bottom:.35mm solid var(--gold);padding-bottom:2mm;margin-bottom:3mm;flex-wrap:wrap}
+.frq-title{font:13pt "DM Serif Display",Georgia,serif;color:var(--navy)}
+.frq-badge{background:var(--navy);color:var(--gold2);padding:.8mm 3mm;border-radius:10mm;font-size:7.5pt;font-weight:700}
+.frq-prompt{font:10pt/1.6 "STIX Two Text",Cambria,serif;margin-bottom:2.5mm}
+.frq-part{background:#FBF9F2;border-left:.8mm solid var(--gold);padding:2mm 3mm;border-radius:1mm;margin:1.5mm 0;font-size:9.1pt}
+.frq-part b{color:var(--navy)}
+.rubric{background:#F4F8FA;border:.25mm solid #C2D5E4;border-radius:2mm;padding:3mm 4mm;margin-top:2.5mm}
+.rubric table{width:100%;border-collapse:collapse;font-size:8.2pt}
+.rubric th,.rubric td{border-bottom:.2mm solid #D4E2ED;padding:1.2mm 2mm;text-align:left}
+.rubric th{background:var(--navy);color:#fff}.rubric td:last-child{text-align:right;color:var(--teal);font-weight:700}
+.footer{position:absolute;left:15mm;right:15mm;bottom:9mm;display:flex;justify-content:space-between;font-size:7.5pt;color:var(--muted);border-top:.3mm solid var(--gold);padding-top:1.5mm}
+.noprint{position:fixed;top:12px;right:12px;background:var(--navy);color:#fff;border:1px solid var(--gold);padding:10px 16px;border-radius:6px;font-weight:700;cursor:pointer;z-index:99}
+@page{size:A4;margin:0}
+@media print{
+  body{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;background:#fff}
+  .noprint{display:none}
+  .page{width:210mm;min-height:297mm;margin:0;box-shadow:none;page-break-after:always;break-after:page}
+  .page:last-child{page-break-after:avoid !important;break-after:avoid !important}
+}
+</style>
+</head>
+<body>
+<button class="noprint" onclick="window.print()">🖨 Save Unit 8 PDF</button>
+<main id="app">
+<section class="page cover"><div><div class="kicker">AP CALCULUS AB · EXAMINATION REPOSITORY</div>
+<h1>Unit 8<br>Applications of Integration</h1><div class="gold-line"></div>
+<div class="sub">100-Question Master Practice Set</div>
+<div class="meta">• Questions 1–90: Multiple Choice<br>• Questions 91–100: Free Response<br>• Average value, motion, area between curves, cross sections, disks &amp; washers<br>• Priority stars, diagnostic answer key, detailed step-by-step solutions, and AP rubrics</div></div>
+<div class="cover-foot">Original AP-aligned practice · Moderate focus · Not an official College Board paper</div></section>
+<section class="page "><div class="phead"><span>Blueprint</span><span>Instructions</span></div>
+<div class="title">Exam Structure &amp; Priority Guide</div>
+<p class="lead">The question paper is continuously numbered Q1–Q100. The answer section begins only after all questions.</p>
+<div class="star-legend"><h3>Priority Ratings</h3>
+<div class="star-row"><span class="stars s5">★★★★★</span><span class="label s5">Very Important</span><span class="desc">Average value, accumulation, net change, area, cross sections, and disk/washer setups.</span></div>
+<div class="star-row"><span class="stars s3">★★★</span><span class="label s3">Mandatory</span><span class="desc">Cross sections, rectilinear motion, FTC, and standard revolution calculations.</span></div>
+<div class="star-row"><span class="stars s2">★★</span><span class="label s2">Important</span><span class="desc">Foundational definite-integral and geometric-area practice.</span></div></div>
+<ul class="bullets">
+<li><b>Q1–Q90:</b> Four-option MCQs with one intended correct answer.</li>
+<li><b>Q91–Q100:</b> Multi-part FRQs with graphs/tables where appropriate; 9 points each.</li>
+<li><b>Unit 8 topics:</b> 8.1 Average Value; 8.2 Position, Velocity &amp; Acceleration; 8.3 Linear Accumulation; 8.4 Area Between Curves (dx); 8.5 Area Between Curves (dy); 8.6 Known Cross Sections; 8.7 Disk Method; 8.8 Washer Method.</li>
+<li><b>Scope:</b> Original AP-style practice—not reproduced College Board exam questions.</li>
+</ul>
+<h3 class="sec">AP Calculus AB Unit 8 Topic Coverage</h3>
+<div class="topics"><div>8.1 Average Value of a Function</div><div>8.2 Position, Velocity, and Acceleration</div><div>8.3 Accumulation Functions</div><div>8.4 Area Between Curves (Vertical Slices)</div><div>8.5 Area Between Curves (Horizontal Slices)</div><div>8.6 Volumes: Known Cross Sections</div><div>8.7 Volumes: Disk Method</div><div>8.8 Volumes: Washer Method</div></div>
+<div class="note"><b>Directions:</b> Attempt the full paper before reading solutions. For volume questions, identify the cross-sectional shape or the outer and inner radii before integrating.</div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 2</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q01–Q03 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">01</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The average value of f(x)=x² on [0,3] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>9</span></div><div class="opt"><span class="lt">B</span><span>3</span></div><div class="opt"><span class="lt">C</span><span>6</span></div><div class="opt"><span class="lt">D</span><span>2</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">02</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The average value of f(x)=2x+1 on [1,4] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>4</span></div><div class="opt"><span class="lt">B</span><span>5</span></div><div class="opt"><span class="lt">C</span><span>7</span></div><div class="opt"><span class="lt">D</span><span>6</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">03</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Easy · Multiple Choice</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="stem">The average value of f(x)=4−x on [0,4] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>3</span></div><div class="opt"><span class="lt">B</span><span>2</span></div><div class="opt"><span class="lt">C</span><span>1</span></div><div class="opt"><span class="lt">D</span><span>4</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 3</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q04–Q06 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">04</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The average value of sin x on [0,π] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>1/π</span></div><div class="opt"><span class="lt">B</span><span>2</span></div><div class="opt"><span class="lt">C</span><span>2/π</span></div><div class="opt"><span class="lt">D</span><span>1</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">05</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The average value of 1/x on [1,e] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>1/(e−1)</span></div><div class="opt"><span class="lt">B</span><span>e−1</span></div><div class="opt"><span class="lt">C</span><span>1/e</span></div><div class="opt"><span class="lt">D</span><span>1</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">06</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Easy · Multiple Choice</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="stem">The average value of the constant function f(x)=7 on any nonzero-length interval is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>0</span></div><div class="opt"><span class="lt">B</span><span>1</span></div><div class="opt"><span class="lt">C</span><span>7</span></div><div class="opt"><span class="lt">D</span><span>the interval length</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 4</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q07–Q09 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">07</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The average value of x² on [−1,2] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>0</span></div><div class="opt"><span class="lt">B</span><span>3</span></div><div class="opt"><span class="lt">C</span><span>1</span></div><div class="opt"><span class="lt">D</span><span>2</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">08</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The average value of eˣ on [0,ln 3] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>1</span></div><div class="opt"><span class="lt">B</span><span>2/(ln 3)</span></div><div class="opt"><span class="lt">C</span><span>2ln 3</span></div><div class="opt"><span class="lt">D</span><span>1/(ln 3)</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">09</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The average value of x³ on [−2,2] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>0</span></div><div class="opt"><span class="lt">B</span><span>2</span></div><div class="opt"><span class="lt">C</span><span>8</span></div><div class="opt"><span class="lt">D</span><span>4</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 5</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q10–Q12 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">10</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">For f(x)=x² on [0,4], the value c satisfying f(c)=the average value of f is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>16/3</span></div><div class="opt"><span class="lt">B</span><span>1/√3</span></div><div class="opt"><span class="lt">C</span><span>4/√3</span></div><div class="opt"><span class="lt">D</span><span>2√3</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">11</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">A particle has v(t)=t−2 on [0,4]. Its displacement is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>4</span></div><div class="opt"><span class="lt">B</span><span>0</span></div><div class="opt"><span class="lt">C</span><span>2</span></div><div class="opt"><span class="lt">D</span><span>8</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">12</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">For v(t)=t−2 on [0,4], the total distance traveled is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>8</span></div><div class="opt"><span class="lt">B</span><span>4</span></div><div class="opt"><span class="lt">C</span><span>2</span></div><div class="opt"><span class="lt">D</span><span>6</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 6</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q13–Q15 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">13</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">A particle has v(t)=t²−4 on [0,3]. Its displacement is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>3</span></div><div class="opt"><span class="lt">B</span><span>0</span></div><div class="opt"><span class="lt">C</span><span>−3</span></div><div class="opt"><span class="lt">D</span><span>23/3</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">14</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Hard · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">For v(t)=t²−4 on [0,3], the total distance traveled is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>−3</span></div><div class="opt"><span class="lt">B</span><span>16/3</span></div><div class="opt"><span class="lt">C</span><span>7/3</span></div><div class="opt"><span class="lt">D</span><span>23/3</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">15</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">A particle has s(t)=t³−3t². It is at rest at</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>t=0 only</span></div><div class="opt"><span class="lt">B</span><span>t=2 only</span></div><div class="opt"><span class="lt">C</span><span>t=0 and t=2</span></div><div class="opt"><span class="lt">D</span><span>t=1 and t=3</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 7</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q16–Q18 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">16</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">A particle has a(t)=6t−4 and v(0)=3. Then v(2) is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>3</span></div><div class="opt"><span class="lt">B</span><span>7</span></div><div class="opt"><span class="lt">C</span><span>11</span></div><div class="opt"><span class="lt">D</span><span>5</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">17</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">Velocity values at t=0,1,2,3 are 2,0,−2,0. If v is linear between listed points, displacement on [0,3] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>3</span></div><div class="opt"><span class="lt">B</span><span>0</span></div><div class="opt"><span class="lt">C</span><span>−1</span></div><div class="opt"><span class="lt">D</span><span>1</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">18</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">For s(t)=t²−4t, the average velocity on [0,3] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>1</span></div><div class="opt"><span class="lt">B</span><span>−1</span></div><div class="opt"><span class="lt">C</span><span>3</span></div><div class="opt"><span class="lt">D</span><span>−3</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 8</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q19–Q21 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">19</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">A particle has v(t)=3t²−12t+9. It moves in the negative direction when</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>all t>0</span></div><div class="opt"><span class="lt">B</span><span>1<t<3</span></div><div class="opt"><span class="lt">C</span><span>0<t<1</span></div><div class="opt"><span class="lt">D</span><span>t>3</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">20</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">If v<0 and a>0 at an instant, the particle is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>at rest</span></div><div class="opt"><span class="lt">B</span><span>moving left and speeding up</span></div><div class="opt"><span class="lt">C</span><span>moving left and slowing down</span></div><div class="opt"><span class="lt">D</span><span>moving right and speeding up</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">21</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">If F(x)=∫₀ˣ(t²+1)dt, then F′(x)=</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>x³/3+x</span></div><div class="opt"><span class="lt">B</span><span>2x+1</span></div><div class="opt"><span class="lt">C</span><span>x²+1</span></div><div class="opt"><span class="lt">D</span><span>2x</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 9</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q22–Q24 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">22</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">If G(x)=∫₀^(x²) cos(t)dt, then G′(x)=</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>cos(x²)</span></div><div class="opt"><span class="lt">B</span><span>2x sin(x²)</span></div><div class="opt"><span class="lt">C</span><span>−2x sin(x²)</span></div><div class="opt"><span class="lt">D</span><span>2x cos(x²)</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">23</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">If H(x)=∫ₓ⁴(t²+1)dt, then H′(x)=</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>x²+1</span></div><div class="opt"><span class="lt">B</span><span>−(x²+1)</span></div><div class="opt"><span class="lt">C</span><span>4²+1</span></div><div class="opt"><span class="lt">D</span><span>2x</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">24</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Hard · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">If J(x)=∫ₓ^(x²) sin(t)dt, then J′(x)=</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>2x sin(x²)−sin(x)</span></div><div class="opt"><span class="lt">B</span><span>sin(x²)−sin(x)</span></div><div class="opt"><span class="lt">C</span><span>2x sin(x²)+sin(x)</span></div><div class="opt"><span class="lt">D</span><span>2x cos(x²)−cos(x)</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 10</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q25–Q27 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">25</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">If F(x)=∫₀ˣ(t−1)dt, then F(x)=</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>x²/2−1</span></div><div class="opt"><span class="lt">B</span><span>x²/2−x</span></div><div class="opt"><span class="lt">C</span><span>x²−1</span></div><div class="opt"><span class="lt">D</span><span>x−1</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">26</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">If F(x)=∫₀ˣ(t²−4)dt, the critical numbers of F are</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>x=0 only</span></div><div class="opt"><span class="lt">B</span><span>none</span></div><div class="opt"><span class="lt">C</span><span>x=−4 and x=4</span></div><div class="opt"><span class="lt">D</span><span>x=−2 and x=2</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">27</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">If F(x)=∫₀ˣ(t²−4)dt, F is increasing when</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>−2<x<2</span></div><div class="opt"><span class="lt">B</span><span>x>0</span></div><div class="opt"><span class="lt">C</span><span>all real x</span></div><div class="opt"><span class="lt">D</span><span>x<−2 or x>2</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 11</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q28–Q30 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">28</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Easy · Multiple Choice</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="stem">∫₁³ 2x dx =</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>10</span></div><div class="opt"><span class="lt">B</span><span>4</span></div><div class="opt"><span class="lt">C</span><span>6</span></div><div class="opt"><span class="lt">D</span><span>8</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">29</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Easy · Multiple Choice</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="stem">∫₀^(π/2) cos x dx =</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>π/2</span></div><div class="opt"><span class="lt">B</span><span>0</span></div><div class="opt"><span class="lt">C</span><span>1</span></div><div class="opt"><span class="lt">D</span><span>2</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">30</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">∫₀² t⁴ dt =</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>8</span></div><div class="opt"><span class="lt">B</span><span>16/5</span></div><div class="opt"><span class="lt">C</span><span>16</span></div><div class="opt"><span class="lt">D</span><span>32/5</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 12</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q31–Q33 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">31</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The area between y=x and y=x² on [0,1] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>1/2</span></div><div class="opt"><span class="lt">B</span><span>1/3</span></div><div class="opt"><span class="lt">C</span><span>2/3</span></div><div class="opt"><span class="lt">D</span><span>1/6</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">32</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The area between y=2x and y=x² on [0,2] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>8/3</span></div><div class="opt"><span class="lt">B</span><span>2/3</span></div><div class="opt"><span class="lt">C</span><span>4</span></div><div class="opt"><span class="lt">D</span><span>4/3</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">33</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The area between y=4 and y=x² on [−2,2] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>32/3</span></div><div class="opt"><span class="lt">B</span><span>8</span></div><div class="opt"><span class="lt">C</span><span>16</span></div><div class="opt"><span class="lt">D</span><span>16/3</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 13</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q34–Q36 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">34</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Hard · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The area enclosed by y=x+2 and y=x² from x=−1 to x=2 is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>6</span></div><div class="opt"><span class="lt">B</span><span>9</span></div><div class="opt"><span class="lt">C</span><span>3</span></div><div class="opt"><span class="lt">D</span><span>9/2</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">35</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The area between y=√x and y=x/2 on [0,4] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>4/3</span></div><div class="opt"><span class="lt">B</span><span>8/3</span></div><div class="opt"><span class="lt">C</span><span>2</span></div><div class="opt"><span class="lt">D</span><span>2/3</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">36</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The area between y=x and y=x³ on [0,1] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>1/2</span></div><div class="opt"><span class="lt">B</span><span>1/12</span></div><div class="opt"><span class="lt">C</span><span>1/4</span></div><div class="opt"><span class="lt">D</span><span>1/3</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 14</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q37–Q39 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">37</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The area between y=1 and y=x² on [−1,1] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>1/3</span></div><div class="opt"><span class="lt">B</span><span>4/3</span></div><div class="opt"><span class="lt">C</span><span>2/3</span></div><div class="opt"><span class="lt">D</span><span>2</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">38</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Hard · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The area enclosed by y=2−x and y=x² from x=−2 to x=1 is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>9/2</span></div><div class="opt"><span class="lt">B</span><span>15/2</span></div><div class="opt"><span class="lt">C</span><span>6</span></div><div class="opt"><span class="lt">D</span><span>3</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">39</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The area between y=3x and y=x² on [0,3] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>9</span></div><div class="opt"><span class="lt">B</span><span>9/2</span></div><div class="opt"><span class="lt">C</span><span>6</span></div><div class="opt"><span class="lt">D</span><span>3</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 15</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q40–Q42 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">40</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The area between y=1 and y=|x| on [−1,1] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>1</span></div><div class="opt"><span class="lt">B</span><span>3/2</span></div><div class="opt"><span class="lt">C</span><span>1/2</span></div><div class="opt"><span class="lt">D</span><span>2</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">41</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Easy · Multiple Choice</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="stem">The area between y=cos x and the x-axis on [0,π/2] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>0</span></div><div class="opt"><span class="lt">B</span><span>1</span></div><div class="opt"><span class="lt">C</span><span>π/2</span></div><div class="opt"><span class="lt">D</span><span>2</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">42</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Easy · Multiple Choice</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="stem">The area between y=2 and y=x on [0,2] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>3</span></div><div class="opt"><span class="lt">B</span><span>2</span></div><div class="opt"><span class="lt">C</span><span>4</span></div><div class="opt"><span class="lt">D</span><span>1</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 16</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q43–Q45 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">43</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Easy · Multiple Choice</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="stem">The area between y=4 and y=x on [0,4] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>16</span></div><div class="opt"><span class="lt">B</span><span>6</span></div><div class="opt"><span class="lt">C</span><span>8</span></div><div class="opt"><span class="lt">D</span><span>4</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">44</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The area between y=6−x and y=x on [0,3] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>9</span></div><div class="opt"><span class="lt">B</span><span>6</span></div><div class="opt"><span class="lt">C</span><span>12</span></div><div class="opt"><span class="lt">D</span><span>18</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">45</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The area between y=3 and y=x² on [0,√3] is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>√3</span></div><div class="opt"><span class="lt">B</span><span>2√3</span></div><div class="opt"><span class="lt">C</span><span>3√3</span></div><div class="opt"><span class="lt">D</span><span>4√3</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 17</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q46–Q48 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">46</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The area between x=2y and x=y² for 0≤y≤2 is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>2/3</span></div><div class="opt"><span class="lt">B</span><span>4/3</span></div><div class="opt"><span class="lt">C</span><span>8/3</span></div><div class="opt"><span class="lt">D</span><span>2</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">47</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The area between x=y and x=y² for 0≤y≤1 is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>1/2</span></div><div class="opt"><span class="lt">B</span><span>1/6</span></div><div class="opt"><span class="lt">C</span><span>2/3</span></div><div class="opt"><span class="lt">D</span><span>1/3</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">48</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The area bounded by x=0 and x=4−y² for −2≤y≤2 is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>16/3</span></div><div class="opt"><span class="lt">B</span><span>32/3</span></div><div class="opt"><span class="lt">C</span><span>8</span></div><div class="opt"><span class="lt">D</span><span>16</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 18</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q49–Q51 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">49</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The area between x=y² and x=3 for 0≤y≤√3 is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>4√3</span></div><div class="opt"><span class="lt">B</span><span>3√3</span></div><div class="opt"><span class="lt">C</span><span>√3</span></div><div class="opt"><span class="lt">D</span><span>2√3</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">50</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Easy · Multiple Choice</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="stem">The area between x=y and x=2 for 0≤y≤2 is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>2</span></div><div class="opt"><span class="lt">B</span><span>3</span></div><div class="opt"><span class="lt">C</span><span>4</span></div><div class="opt"><span class="lt">D</span><span>1</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">51</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Easy · Multiple Choice</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="stem">The area bounded by x=0 and x=4−y for 0≤y≤4 is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>8</span></div><div class="opt"><span class="lt">B</span><span>4</span></div><div class="opt"><span class="lt">C</span><span>6</span></div><div class="opt"><span class="lt">D</span><span>16</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 19</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q52–Q54 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">52</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The area between x=0 and x=√y for 0≤y≤4 is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>16/3</span></div><div class="opt"><span class="lt">B</span><span>16</span></div><div class="opt"><span class="lt">C</span><span>8</span></div><div class="opt"><span class="lt">D</span><span>4</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">53</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Easy · Multiple Choice</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="stem">The area between x=0 and x=1+y for 0≤y≤2 is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>3</span></div><div class="opt"><span class="lt">B</span><span>4</span></div><div class="opt"><span class="lt">C</span><span>6</span></div><div class="opt"><span class="lt">D</span><span>2</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">54</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The area between x=0 and x=3 for −√3≤y≤√3 is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>2√3</span></div><div class="opt"><span class="lt">B</span><span>4√3</span></div><div class="opt"><span class="lt">C</span><span>8√3</span></div><div class="opt"><span class="lt">D</span><span>6√3</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 20</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q55–Q57 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">55</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Hard · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The area between x=y+2 and x=y² for −1≤y≤2 is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>9/2</span></div><div class="opt"><span class="lt">B</span><span>6</span></div><div class="opt"><span class="lt">C</span><span>15/2</span></div><div class="opt"><span class="lt">D</span><span>3</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">56</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">A solid has square cross sections perpendicular to the x-axis. Each square's side is √x for 0≤x≤4. Its volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>16</span></div><div class="opt"><span class="lt">B</span><span>8</span></div><div class="opt"><span class="lt">C</span><span>4</span></div><div class="opt"><span class="lt">D</span><span>6</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">57</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">Square cross sections perpendicular to the x-axis have side 2−x on 0≤x≤2. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>4/3</span></div><div class="opt"><span class="lt">B</span><span>8</span></div><div class="opt"><span class="lt">C</span><span>4</span></div><div class="opt"><span class="lt">D</span><span>8/3</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 21</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q58–Q60 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">58</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Hard · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">Square cross sections have side 1−x² for −1≤x≤1. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>8/15</span></div><div class="opt"><span class="lt">B</span><span>2</span></div><div class="opt"><span class="lt">C</span><span>4/3</span></div><div class="opt"><span class="lt">D</span><span>16/15</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">59</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">Rectangular cross sections have base x and height twice the base, for 0≤x≤1. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>2</span></div><div class="opt"><span class="lt">B</span><span>1/3</span></div><div class="opt"><span class="lt">C</span><span>2/3</span></div><div class="opt"><span class="lt">D</span><span>1</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">60</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">Equilateral-triangle cross sections have side 1−x for 0≤x≤1. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>√3/3</span></div><div class="opt"><span class="lt">B</span><span>√3/24</span></div><div class="opt"><span class="lt">C</span><span>√3/12</span></div><div class="opt"><span class="lt">D</span><span>√3/6</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 22</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q61–Q63 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">61</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">Semicircular cross sections have diameter 2−x for 0≤x≤2. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>π/6</span></div><div class="opt"><span class="lt">B</span><span>2π/3</span></div><div class="opt"><span class="lt">C</span><span>π/3</span></div><div class="opt"><span class="lt">D</span><span>π</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">62</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Hard · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">Semicircular cross sections have diameter √(1−x²) for −1≤x≤1. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>π/6</span></div><div class="opt"><span class="lt">B</span><span>π/3</span></div><div class="opt"><span class="lt">C</span><span>π/12</span></div><div class="opt"><span class="lt">D</span><span>2π/3</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">63</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">Right-isosceles-triangle cross sections have a leg of length 2−x for 0≤x≤2. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>2/3</span></div><div class="opt"><span class="lt">B</span><span>8/3</span></div><div class="opt"><span class="lt">C</span><span>4/3</span></div><div class="opt"><span class="lt">D</span><span>4</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 23</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q64–Q66 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">64</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">Equilateral-triangle cross sections have side 2x for 0≤x≤1. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>√3</span></div><div class="opt"><span class="lt">B</span><span>2√3/3</span></div><div class="opt"><span class="lt">C</span><span>√3/3</span></div><div class="opt"><span class="lt">D</span><span>√3/6</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">65</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">Rectangular cross sections have base 1−x and height 3 times the base for 0≤x≤1. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>1</span></div><div class="opt"><span class="lt">B</span><span>1/2</span></div><div class="opt"><span class="lt">C</span><span>3</span></div><div class="opt"><span class="lt">D</span><span>3/2</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">66</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">Square cross sections have side 2x for 0≤x≤1. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>4</span></div><div class="opt"><span class="lt">B</span><span>4/3</span></div><div class="opt"><span class="lt">C</span><span>2/3</span></div><div class="opt"><span class="lt">D</span><span>1/3</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 24</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q67–Q69 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">67</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">Semicircular cross sections have diameter 2√x for 0≤x≤1. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>π/8</span></div><div class="opt"><span class="lt">B</span><span>π/2</span></div><div class="opt"><span class="lt">C</span><span>π/4</span></div><div class="opt"><span class="lt">D</span><span>π</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">68</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">Square cross sections have side √(4−x²) for −2≤x≤2. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>16</span></div><div class="opt"><span class="lt">B</span><span>8/3</span></div><div class="opt"><span class="lt">C</span><span>16/3</span></div><div class="opt"><span class="lt">D</span><span>32/3</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">69</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The region under y=x on 0≤x≤2 is revolved about the x-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>8π/3</span></div><div class="opt"><span class="lt">B</span><span>π</span></div><div class="opt"><span class="lt">C</span><span>8π</span></div><div class="opt"><span class="lt">D</span><span>4π</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 25</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q70–Q72 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">70</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The region under y=√x on 0≤x≤4 is revolved about the x-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>16π/3</span></div><div class="opt"><span class="lt">B</span><span>8π</span></div><div class="opt"><span class="lt">C</span><span>16π</span></div><div class="opt"><span class="lt">D</span><span>4π</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">71</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The region under y=3 on 0≤x≤2 is revolved about the x-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>9π</span></div><div class="opt"><span class="lt">B</span><span>6π</span></div><div class="opt"><span class="lt">C</span><span>18π</span></div><div class="opt"><span class="lt">D</span><span>36π</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">72</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Hard · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The region under y=1−x² on −1≤x≤1 is revolved about the x-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>8π/15</span></div><div class="opt"><span class="lt">B</span><span>4π/3</span></div><div class="opt"><span class="lt">C</span><span>2π</span></div><div class="opt"><span class="lt">D</span><span>16π/15</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 26</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q73–Q75 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">73</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The region between x=0 and x=√y for 0≤y≤4 is revolved about the y-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>16π/3</span></div><div class="opt"><span class="lt">B</span><span>4π</span></div><div class="opt"><span class="lt">C</span><span>8π/3</span></div><div class="opt"><span class="lt">D</span><span>8π</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">74</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The region between x=0 and x=y² for 0≤y≤2 is revolved about the y-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>32π/5</span></div><div class="opt"><span class="lt">B</span><span>8π</span></div><div class="opt"><span class="lt">C</span><span>16π/5</span></div><div class="opt"><span class="lt">D</span><span>32π</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">75</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Easy · Multiple Choice</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="stem">The region under y=x on 0≤x≤1 is revolved about the x-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>π/6</span></div><div class="opt"><span class="lt">B</span><span>π</span></div><div class="opt"><span class="lt">C</span><span>π/2</span></div><div class="opt"><span class="lt">D</span><span>π/3</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 27</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q76–Q78 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">76</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The region under y=2x on 0≤x≤1 is revolved about the x-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>2π/3</span></div><div class="opt"><span class="lt">B</span><span>π/3</span></div><div class="opt"><span class="lt">C</span><span>4π/3</span></div><div class="opt"><span class="lt">D</span><span>4π</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">77</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Easy · Multiple Choice</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="stem">The region under y=4 on 0≤x≤3 is revolved about the x-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>24π</span></div><div class="opt"><span class="lt">B</span><span>48π</span></div><div class="opt"><span class="lt">C</span><span>12π</span></div><div class="opt"><span class="lt">D</span><span>64π</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">78</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Hard · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The region between x=0 and x=1+y/2 for 0≤y≤2 is revolved about the y-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>6π</span></div><div class="opt"><span class="lt">B</span><span>16π/3</span></div><div class="opt"><span class="lt">C</span><span>14π/3</span></div><div class="opt"><span class="lt">D</span><span>10π/3</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 28</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q79–Q81 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">79</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Hard · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The region under y=2−x² on 0≤x≤√2 is revolved about the x-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>32√2π/15</span></div><div class="opt"><span class="lt">B</span><span>4√2π</span></div><div class="opt"><span class="lt">C</span><span>8√2π</span></div><div class="opt"><span class="lt">D</span><span>16√2π/15</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">80</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The region between y=2 and y=x on 0≤x≤2 is revolved about the x-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>8π</span></div><div class="opt"><span class="lt">B</span><span>8π/3</span></div><div class="opt"><span class="lt">C</span><span>16π</span></div><div class="opt"><span class="lt">D</span><span>16π/3</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">81</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The region between y=√x and y=x on 0≤x≤1 is revolved about the x-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>π/2</span></div><div class="opt"><span class="lt">B</span><span>π/3</span></div><div class="opt"><span class="lt">C</span><span>π/6</span></div><div class="opt"><span class="lt">D</span><span>π/12</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 29</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q82–Q84 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">82</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The region between y=3 and y=1 on 0≤x≤2 is revolved about the x-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>18π</span></div><div class="opt"><span class="lt">B</span><span>20π</span></div><div class="opt"><span class="lt">C</span><span>8π</span></div><div class="opt"><span class="lt">D</span><span>16π</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">83</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Hard · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The region between y=2x and y=x² on 0≤x≤2 is revolved about the x-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>32π/15</span></div><div class="opt"><span class="lt">B</span><span>8π/3</span></div><div class="opt"><span class="lt">C</span><span>16π/3</span></div><div class="opt"><span class="lt">D</span><span>64π/15</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">84</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The region between y=4 and y=√x on 0≤x≤4 is revolved about the x-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>72π</span></div><div class="opt"><span class="lt">B</span><span>56π</span></div><div class="opt"><span class="lt">C</span><span>48π</span></div><div class="opt"><span class="lt">D</span><span>64π</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 30</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q85–Q87 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">85</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Hard · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The region between y=0 and y=x on 0≤x≤1 is revolved about y=−1. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>4π</span></div><div class="opt"><span class="lt">B</span><span>π</span></div><div class="opt"><span class="lt">C</span><span>4π/3</span></div><div class="opt"><span class="lt">D</span><span>2π/3</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">86</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Hard · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The region under y=x on 0≤x≤2 is revolved about y=3. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>28π/3</span></div><div class="opt"><span class="lt">B</span><span>18π</span></div><div class="opt"><span class="lt">C</span><span>32π/3</span></div><div class="opt"><span class="lt">D</span><span>20π/3</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">87</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The region between x=y and x=2 on 0≤y≤2 is revolved about the y-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>8π</span></div><div class="opt"><span class="lt">B</span><span>16π/3</span></div><div class="opt"><span class="lt">C</span><span>16π</span></div><div class="opt"><span class="lt">D</span><span>8π/3</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 31</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · MCQ</span><span>Q88–Q90 of 100</span></div><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">88</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Hard · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The region between x=1+y and x=2 on 0≤y≤1 is revolved about the y-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>5π/3</span></div><div class="opt"><span class="lt">B</span><span>16π/3</span></div><div class="opt"><span class="lt">C</span><span>10π/3</span></div><div class="opt"><span class="lt">D</span><span>8π/3</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">89</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="stem">The region between y=1 and y=x² on −1≤x≤1 is revolved about the x-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>2π</span></div><div class="opt"><span class="lt">B</span><span>4π/5</span></div><div class="opt"><span class="lt">C</span><span>π</span></div><div class="opt"><span class="lt">D</span><span>8π/5</span></div></div></div></article><article class="qc"><div class="qs"><span class="ql">Question</span><span class="qn">90</span><span class="qd"></span></div>
+    <div class="qb"><div class="qmeta"><span>Moderate · Multiple Choice</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="stem">The region between y=2 and y=1 on 0≤x≤3 is revolved about the x-axis. The volume is</div>
+    <div class="opts"><div class="opt"><span class="lt">A</span><span>6π</span></div><div class="opt"><span class="lt">B</span><span>12π</span></div><div class="opt"><span class="lt">C</span><span>9π</span></div><div class="opt"><span class="lt">D</span><span>3π</span></div></div></div></article><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 32</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · Free Response</span><span>Q91 of 100</span></div>
+  <div class="frq-card"><div class="frq-head"><div class="frq-title">Question 91: Area and Net Area from a Graph</div>
+  <div style="display:flex;gap:2mm;align-items:center"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span><span class="frq-badge">9 points</span></div></div>
+  <div class="frq-prompt">The graph of f is made of straight segments through the plotted vertices on 0≤x≤8.<div class="graph-wrap"><svg viewBox="0 0 440 240" role="img" aria-label="Graph of a piecewise linear function">
+  <line class="gridline" x1="40" y1="42" x2="420" y2="42"/><line class="gridline" x1="40" y1="87" x2="420" y2="87"/>
+  <line class="gridline" x1="40" y1="177" x2="420" y2="177"/>
+  <line class="gridline" x1="129" y1="20" x2="129" y2="210"/><line class="gridline" x1="218" y1="20" x2="218" y2="210"/>
+  <line class="gridline" x1="307" y1="20" x2="307" y2="210"/>
+  <line class="axis" x1="40" y1="132" x2="420" y2="132"/><line class="axis" x1="40" y1="210" x2="40" y2="20"/>
+  <path class="plot" d="M40 132 L129 42 L263 177 L397 132"/>
+  <text class="tick" x="40" y="228">0</text><text class="tick" x="129" y="228">2</text><text class="tick" x="218" y="228">4</text><text class="tick" x="307" y="228">6</text><text class="tick" x="397" y="228">8</text>
+  <text class="tick" x="29" y="46">4</text><text class="tick" x="29" y="136">0</text><text class="tick" x="28" y="181">−2</text>
+  <text class="tick" x="428" y="136">x</text><text class="tick" x="36" y="17">f(x)</text>
+  </svg><div class="graph-cap">The graph is formed by straight segments through the plotted vertices (0,0), (2,4), (5,−2), and (8,0).</div></div></div>
+  <div class="frq-part"><b>(a) [3 points]</b> Evaluate ∫₀⁸ f(x) dx using signed areas.</div><div class="frq-part"><b>(b) [2 points]</b> Find the total area between the graph and the x-axis.</div><div class="frq-part"><b>(c) [2 points]</b> Find the average value of f on [0,8].</div><div class="frq-part"><b>(d) [2 points]</b> Explain why the values in (a) and (b) differ.</div></div>
+  <div class="note"><b>Show your setup.</b> Include limits of integration, cross-sectional area or washer radii, and units when relevant.</div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 33</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · Free Response</span><span>Q92 of 100</span></div>
+  <div class="frq-card"><div class="frq-head"><div class="frq-title">Question 92: Average Value and the Integral Mean Value Theorem</div>
+  <div style="display:flex;gap:2mm;align-items:center"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span><span class="frq-badge">9 points</span></div></div>
+  <div class="frq-prompt">Let f(x)=x² on [0,3].</div>
+  <div class="frq-part"><b>(a) [3 points]</b> Find the average value of f on [0,3].</div><div class="frq-part"><b>(b) [3 points]</b> Find c in [0,3] such that f(c) equals the average value.</div><div class="frq-part"><b>(c) [3 points]</b> State why the Integral Mean Value Theorem guarantees that at least one such c exists.</div></div>
+  <div class="note"><b>Show your setup.</b> Include limits of integration, cross-sectional area or washer radii, and units when relevant.</div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 34</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · Free Response</span><span>Q93 of 100</span></div>
+  <div class="frq-card"><div class="frq-head"><div class="frq-title">Question 93: Motion: Displacement and Total Distance</div>
+  <div style="display:flex;gap:2mm;align-items:center"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span><span class="frq-badge">9 points</span></div></div>
+  <div class="frq-prompt">A particle moves along a line with velocity v(t)=t²−4t+3 meters per second for 0≤t≤5.</div>
+  <div class="frq-part"><b>(a) [3 points]</b> Find the displacement of the particle on [0,5].</div><div class="frq-part"><b>(b) [4 points]</b> Find the total distance traveled on [0,5].</div><div class="frq-part"><b>(c) [2 points]</b> State the intervals on which the particle moves in the positive direction.</div></div>
+  <div class="note"><b>Show your setup.</b> Include limits of integration, cross-sectional area or washer radii, and units when relevant.</div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 35</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · Free Response</span><span>Q94 of 100</span></div>
+  <div class="frq-card"><div class="frq-head"><div class="frq-title">Question 94: Area Between Curves</div>
+  <div style="display:flex;gap:2mm;align-items:center"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span><span class="frq-badge">9 points</span></div></div>
+  <div class="frq-prompt">Consider the region bounded by y=2x and y=x² for 0≤x≤2.</div>
+  <div class="frq-part"><b>(a) [2 points]</b> Which curve is above the other on the interior of the interval? Justify briefly.</div><div class="frq-part"><b>(b) [4 points]</b> Set up and evaluate the area of the region.</div><div class="frq-part"><b>(c) [3 points]</b> Find the average vertical distance between the curves on [0,2].</div></div>
+  <div class="note"><b>Show your setup.</b> Include limits of integration, cross-sectional area or washer radii, and units when relevant.</div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 36</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · Free Response</span><span>Q95 of 100</span></div>
+  <div class="frq-card"><div class="frq-head"><div class="frq-title">Question 95: Volume with Square Cross Sections</div>
+  <div style="display:flex;gap:2mm;align-items:center"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span><span class="frq-badge">9 points</span></div></div>
+  <div class="frq-prompt">The base of a solid is the region under y=√x and above the x-axis for 0≤x≤4. Cross sections perpendicular to the x-axis are squares.</div>
+  <div class="frq-part"><b>(a) [2 points]</b> Write the side length of a cross section at x.</div><div class="frq-part"><b>(b) [2 points]</b> Write the cross-sectional area A(x).</div><div class="frq-part"><b>(c) [5 points]</b> Set up and calculate the volume.</div></div>
+  <div class="note"><b>Show your setup.</b> Include limits of integration, cross-sectional area or washer radii, and units when relevant.</div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 37</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · Free Response</span><span>Q96 of 100</span></div>
+  <div class="frq-card"><div class="frq-head"><div class="frq-title">Question 96: Volume with Semicircular Cross Sections</div>
+  <div style="display:flex;gap:2mm;align-items:center"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span><span class="frq-badge">9 points</span></div></div>
+  <div class="frq-prompt">The base is the region under y=√(1−x²) and above the x-axis for −1≤x≤1. Cross sections perpendicular to the x-axis are semicircles whose diameters are the vertical segments in the base.</div>
+  <div class="frq-part"><b>(a) [2 points]</b> State the diameter and radius of a cross section at x.</div><div class="frq-part"><b>(b) [3 points]</b> Find the area A(x) of a semicircular cross section.</div><div class="frq-part"><b>(c) [4 points]</b> Set up and evaluate the volume.</div></div>
+  <div class="note"><b>Show your setup.</b> Include limits of integration, cross-sectional area or washer radii, and units when relevant.</div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 38</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · Free Response</span><span>Q97 of 100</span></div>
+  <div class="frq-card"><div class="frq-head"><div class="frq-title">Question 97: Disk Method About the x-Axis</div>
+  <div style="display:flex;gap:2mm;align-items:center"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span><span class="frq-badge">9 points</span></div></div>
+  <div class="frq-prompt">The region bounded by y=√x, the x-axis, x=0, and x=4 is revolved about the x-axis.</div>
+  <div class="frq-part"><b>(a) [2 points]</b> State the radius of a disk at x.</div><div class="frq-part"><b>(b) [3 points]</b> Set up the disk-method integral for the volume.</div><div class="frq-part"><b>(c) [4 points]</b> Evaluate the volume exactly.</div></div>
+  <div class="note"><b>Show your setup.</b> Include limits of integration, cross-sectional area or washer radii, and units when relevant.</div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 39</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · Free Response</span><span>Q98 of 100</span></div>
+  <div class="frq-card"><div class="frq-head"><div class="frq-title">Question 98: Washer Method About the x-Axis</div>
+  <div style="display:flex;gap:2mm;align-items:center"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span><span class="frq-badge">9 points</span></div></div>
+  <div class="frq-prompt">The region between y=2 and y=x on 0≤x≤2 is revolved about the x-axis.</div>
+  <div class="frq-part"><b>(a) [2 points]</b> Identify the outer and inner radii of a washer.</div><div class="frq-part"><b>(b) [3 points]</b> Set up the washer-method integral.</div><div class="frq-part"><b>(c) [4 points]</b> Evaluate the volume exactly.</div></div>
+  <div class="note"><b>Show your setup.</b> Include limits of integration, cross-sectional area or washer radii, and units when relevant.</div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 40</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · Free Response</span><span>Q99 of 100</span></div>
+  <div class="frq-card"><div class="frq-head"><div class="frq-title">Question 99: Volume with Cross Sections from a Table</div>
+  <div style="display:flex;gap:2mm;align-items:center"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span><span class="frq-badge">9 points</span></div></div>
+  <div class="frq-prompt">A base region has cross sections perpendicular to the x-axis. The table gives the base-segment length s(x). Each cross section is a square.<table class="dt"><tr><th>x</th><th>0</th><th>1</th><th>2</th><th>3</th></tr><tr><th>s(x)</th><td>1</td><td>2</td><td>1</td><td>0</td></tr></table></div>
+  <div class="frq-part"><b>(a) [3 points]</b> Use a left Riemann sum with n=3 to estimate the volume.</div><div class="frq-part"><b>(b) [3 points]</b> Use a right Riemann sum with n=3 to estimate the volume.</div><div class="frq-part"><b>(c) [3 points]</b> Explain why the cross-sectional area is s(x)², not s(x).</div></div>
+  <div class="note"><b>Show your setup.</b> Include limits of integration, cross-sectional area or washer radii, and units when relevant.</div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 41</span></div></section>
+<section class="page "><div class="phead"><span>Question Paper · Free Response</span><span>Q100 of 100</span></div>
+  <div class="frq-card"><div class="frq-head"><div class="frq-title">Question 100: Washer Method About a Shifted Axis</div>
+  <div style="display:flex;gap:2mm;align-items:center"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span><span class="frq-badge">9 points</span></div></div>
+  <div class="frq-prompt">The region under y=x on 0≤x≤2 is revolved about the horizontal line y=3.</div>
+  <div class="frq-part"><b>(a) [2 points]</b> At a given x, identify the outer and inner radii.</div><div class="frq-part"><b>(b) [3 points]</b> Write the washer-method integral.</div><div class="frq-part"><b>(c) [4 points]</b> Evaluate the exact volume.</div></div>
+  <div class="note"><b>Show your setup.</b> Include limits of integration, cross-sectional area or washer radii, and units when relevant.</div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 42</span></div></section>
+<section class="page "><div class="phead"><span>End of Question Paper</span><span>Answers Follow</span></div>
+<div class="title">Questions 1–100 Complete</div>
+<p class="lead">The next pages contain the MCQ answer key, explanations for every MCQ distractor, and FRQ model solutions with scoring rubrics.</p>
+<div class="note"><b>Practice scoring:</b> 90 MCQs at 1 point each plus 10 FRQs at 9 points each gives 180 raw points. This is only a practice scheme, not an official AP score conversion.</div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 43</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section</span><span>MCQ Key · Q1–Q90</span></div>
+<div class="title">Multiple-Choice Answer Key</div>
+<p class="lead">Letters reflect the deterministic shuffled choices shown in the question paper.</p>
+<div class="akey"><div class="keyitem"><small>Q01</small><b>B</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q02</small><b>D</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q03</small><b>B</b><small style="color:#00897B">★★</small></div><div class="keyitem"><small>Q04</small><b>C</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q05</small><b>A</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q06</small><b>C</b><small style="color:#00897B">★★</small></div><div class="keyitem"><small>Q07</small><b>C</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q08</small><b>B</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q09</small><b>A</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q10</small><b>C</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q11</small><b>B</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q12</small><b>B</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q13</small><b>C</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q14</small><b>D</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q15</small><b>C</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q16</small><b>B</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q17</small><b>C</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q18</small><b>B</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q19</small><b>B</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q20</small><b>C</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q21</small><b>C</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q22</small><b>D</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q23</small><b>B</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q24</small><b>A</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q25</small><b>B</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q26</small><b>D</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q27</small><b>D</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q28</small><b>D</b><small style="color:#00897B">★★</small></div><div class="keyitem"><small>Q29</small><b>C</b><small style="color:#00897B">★★</small></div><div class="keyitem"><small>Q30</small><b>D</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q31</small><b>D</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q32</small><b>D</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q33</small><b>A</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q34</small><b>D</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q35</small><b>A</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q36</small><b>C</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q37</small><b>B</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q38</small><b>A</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q39</small><b>B</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q40</small><b>A</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q41</small><b>B</b><small style="color:#00897B">★★</small></div><div class="keyitem"><small>Q42</small><b>B</b><small style="color:#00897B">★★</small></div><div class="keyitem"><small>Q43</small><b>C</b><small style="color:#00897B">★★</small></div><div class="keyitem"><small>Q44</small><b>A</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q45</small><b>B</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q46</small><b>B</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q47</small><b>B</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q48</small><b>B</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q49</small><b>D</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q50</small><b>A</b><small style="color:#00897B">★★</small></div><div class="keyitem"><small>Q51</small><b>A</b><small style="color:#00897B">★★</small></div><div class="keyitem"><small>Q52</small><b>A</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q53</small><b>B</b><small style="color:#00897B">★★</small></div><div class="keyitem"><small>Q54</small><b>D</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q55</small><b>A</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q56</small><b>B</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q57</small><b>D</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q58</small><b>D</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q59</small><b>C</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q60</small><b>C</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q61</small><b>C</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q62</small><b>A</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q63</small><b>C</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q64</small><b>C</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q65</small><b>A</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q66</small><b>B</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q67</small><b>C</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q68</small><b>D</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q69</small><b>A</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q70</small><b>B</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q71</small><b>C</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q72</small><b>D</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q73</small><b>D</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q74</small><b>A</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q75</small><b>D</b><small style="color:#00897B">★★</small></div><div class="keyitem"><small>Q76</small><b>C</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q77</small><b>B</b><small style="color:#00897B">★★</small></div><div class="keyitem"><small>Q78</small><b>C</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q79</small><b>A</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q80</small><b>D</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q81</small><b>C</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q82</small><b>D</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q83</small><b>D</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q84</small><b>B</b><small style="color:#3949AB">★★★</small></div><div class="keyitem"><small>Q85</small><b>C</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q86</small><b>A</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q87</small><b>B</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q88</small><b>A</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q89</small><b>D</b><small style="color:#B8860B">★★★★★</small></div><div class="keyitem"><small>Q90</small><b>C</b><small style="color:#3949AB">★★★</small></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 44</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q01–Q03</span></div><div class="sol"><div class="sol-title"><span>Question 01</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (B) 3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Average value = (1/3)∫₀³x²dx = (1/3)(9) = 3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses f(3) as the average.</li><li><b>(C)</b> Forgets to divide by interval length 3.</li><li><b>(D)</b> Uses an incorrect antiderivative.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 02</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (D) 6</div>
+    <div class="steps"><h4>Step-by-step solution</h4>(1/3)∫₁⁴(2x+1)dx=(1/3)[x²+x]₁⁴=(1/3)(20−2)=6.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Underestimates the integral average.</li><li><b>(B)</b> Uses an incorrect interval length.</li><li><b>(C)</b> Uses the value at x=3 only.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 03</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="ans">Correct answer: (B) 2</div>
+    <div class="steps"><h4>Step-by-step solution</h4>The graph is linear, so its average on [0,4] is the mean of endpoint values: (4+0)/2=2. Integrating gives the same result.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> The average is not 3.</li><li><b>(C)</b> Underestimates the average.</li><li><b>(D)</b> Uses the left endpoint value.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 45</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q04–Q06</span></div><div class="sol"><div class="sol-title"><span>Question 04</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (C) 2/π</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Average = (1/π)∫₀^π sin x dx = (1/π)[−cos x]₀^π = 2/π.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Forgets the factor 2 from evaluating the antiderivative.</li><li><b>(B)</b> This is the integral, not the average.</li><li><b>(D)</b> Does not divide by π.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 05</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (A) 1/(e−1)</div>
+    <div class="steps"><h4>Step-by-step solution</h4>∫₁ᵉ dx/x=1. Divide by the interval length e−1: average = 1/(e−1).</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> This is the interval length.</li><li><b>(C)</b> Uses the upper endpoint reciprocally.</li><li><b>(D)</b> Forgets to divide by e−1.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 06</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="ans">Correct answer: (C) 7</div>
+    <div class="steps"><h4>Step-by-step solution</h4>The average value of a constant function equals that constant.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Confuses the average with a zero change.</li><li><b>(B)</b> This is not the constant function value.</li><li><b>(D)</b> The interval length is not the average value.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 46</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q07–Q09</span></div><div class="sol"><div class="sol-title"><span>Question 07</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (C) 1</div>
+    <div class="steps"><h4>Step-by-step solution</h4>∫₋₁²x²dx=[x³/3]₋₁²=8/3+1/3=3. Divide by length 3: average=1.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> The integrand is nonnegative and its average is not zero.</li><li><b>(B)</b> Uses the integral without dividing by interval length.</li><li><b>(D)</b> Uses the upper endpoint value.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 08</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (B) 2/(ln 3)</div>
+    <div class="steps"><h4>Step-by-step solution</h4>The integral is e^(ln3)−e⁰=3−1=2. The interval length is ln3, so the average is 2/ln3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses the initial value only.</li><li><b>(C)</b> Multiplies by the interval length instead of dividing.</li><li><b>(D)</b> Forgets the factor 2 in the integral.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 09</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (A) 0</div>
+    <div class="steps"><h4>Step-by-step solution</h4>x³ is odd and the interval is symmetric, so its integral and average are 0.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> An odd function's symmetric average is zero.</li><li><b>(C)</b> Uses the interval endpoint cubed.</li><li><b>(D)</b> Uses an endpoint value.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 47</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q10–Q12</span></div><div class="sol"><div class="sol-title"><span>Question 10</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (C) 4/√3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Average value = (1/4)∫₀⁴x²dx = 16/3. Solve c²=16/3; in [0,4], c=4/√3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> This is the average value, not c.</li><li><b>(B)</b> Does not solve c²=16/3.</li><li><b>(D)</b> This is not the positive square root of 16/3.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 11</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (B) 0</div>
+    <div class="steps"><h4>Step-by-step solution</h4>∫₀⁴(t−2)dt=[t²/2−2t]₀⁴=8−8=0.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Confuses displacement with total distance.</li><li><b>(C)</b> Does not integrate over the full interval.</li><li><b>(D)</b> Uses only the positive portion.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 12</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (B) 4</div>
+    <div class="steps"><h4>Step-by-step solution</h4>The velocity changes sign at t=2. The two triangular areas each have base 2 and height 2, so total distance=2+2=4.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Counts a rectangle instead of the two triangles.</li><li><b>(C)</b> Counts only one triangle.</li><li><b>(D)</b> Adds an extra area.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 48</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q13–Q15</span></div><div class="sol"><div class="sol-title"><span>Question 13</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (C) −3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>∫₀³(t²−4)dt=[t³/3−4t]₀³=9−12=−3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Sign error.</li><li><b>(B)</b> The positive and negative areas do not cancel.</li><li><b>(D)</b> This is not the signed integral.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 14</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (D) 23/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>v=0 at t=2. Distance on [0,2] is ∫₀²(4−t²)dt=16/3. On [2,3] it is ∫₂³(t²−4)dt=7/3. Total=23/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> This is signed displacement, not total distance.</li><li><b>(B)</b> Counts only the negative part.</li><li><b>(C)</b> Counts only the positive part.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 15</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (C) t=0 and t=2</div>
+    <div class="steps"><h4>Step-by-step solution</h4>v=s′=3t²−6t=3t(t−2). Set v=0: t=0 or t=2.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Misses t=2.</li><li><b>(B)</b> Misses t=0.</li><li><b>(D)</b> These are not the zeros of velocity.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 49</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q16–Q18</span></div><div class="sol"><div class="sol-title"><span>Question 16</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (B) 7</div>
+    <div class="steps"><h4>Step-by-step solution</h4>v(2)=v(0)+∫₀²(6t−4)dt=3+[3t²−4t]₀²=3+(12−8)=7.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses only the initial velocity.</li><li><b>(C)</b> Adds the full expression without integrating correctly.</li><li><b>(D)</b> Arithmetic error in the accumulated change.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 17</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (C) −1</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Use signed trapezoid areas: [0,1] gives 1, [1,2] gives −1, and [2,3] gives −1. Total displacement=−1.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Adds the three time values.</li><li><b>(B)</b> Adds signed areas incorrectly.</li><li><b>(D)</b> Treats every area as positive.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 18</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (B) −1</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Average velocity=[s(3)−s(0)]/3=[−3−0]/3=−1.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Sign error.</li><li><b>(C)</b> Uses s(3) as the average velocity.</li><li><b>(D)</b> Uses displacement without dividing by time.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 50</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q19–Q21</span></div><div class="sol"><div class="sol-title"><span>Question 19</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (B) 1<t<3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Factor v=3(t−1)(t−3). It is negative between its roots 1 and 3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Velocity is not negative for all positive t.</li><li><b>(C)</b> The velocity is positive on this interval.</li><li><b>(D)</b> Velocity is positive after t=3.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 20</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (C) moving left and slowing down</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Negative velocity means motion to the left. Opposite signs of velocity and acceleration mean speed is decreasing.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> v is nonzero.</li><li><b>(B)</b> Opposite signs mean slowing down.</li><li><b>(D)</b> v<0 means not moving right.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 21</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (C) x²+1</div>
+    <div class="steps"><h4>Step-by-step solution</h4>By the Fundamental Theorem of Calculus, the derivative is the integrand evaluated at x: F′(x)=x²+1.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> This is F(x), not F′(x).</li><li><b>(B)</b> Not the derivative of the integrand or accumulation function.</li><li><b>(D)</b> Differentiates an incorrect expression.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 51</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q22–Q24</span></div><div class="sol"><div class="sol-title"><span>Question 22</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (D) 2x cos(x²)</div>
+    <div class="steps"><h4>Step-by-step solution</h4>FTC with chain rule: G′(x)=cos(x²)·2x.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Forgets the chain-rule factor.</li><li><b>(B)</b> Wrong sign and wrong function.</li><li><b>(C)</b> Uses the derivative of cosine instead of FTC evaluation.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 23</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (B) −(x²+1)</div>
+    <div class="steps"><h4>Step-by-step solution</h4>The variable is the lower limit, so differentiate with a negative sign: H′(x)=−(x²+1).</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Misses the negative sign.</li><li><b>(C)</b> Uses the fixed upper limit.</li><li><b>(D)</b> Differentiates the integrand.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 24</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (A) 2x sin(x²)−sin(x)</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Leibniz rule: sin(x²)·(2x) − sin(x)·(1).</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Omits the derivative of x².</li><li><b>(C)</b> The lower-limit term must be subtracted.</li><li><b>(D)</b> Differentiates the integrand rather than evaluating it at the limits.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 52</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q25–Q27</span></div><div class="sol"><div class="sol-title"><span>Question 25</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (B) x²/2−x</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Integrate: [t²/2−t]₀ˣ=x²/2−x.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Incorrect constant term.</li><li><b>(C)</b> Uses an incorrect antiderivative.</li><li><b>(D)</b> This is not the accumulated integral.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 26</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (D) x=−2 and x=2</div>
+    <div class="steps"><h4>Step-by-step solution</h4>F′(x)=x²−4. Set equal to zero: x=±2.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Misses both zeros of F′ except x=0, which is not a zero.</li><li><b>(B)</b> F′ has two zeros.</li><li><b>(C)</b> Solves x²=16 instead of 4.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 27</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (D) x<−2 or x>2</div>
+    <div class="steps"><h4>Step-by-step solution</h4>F′(x)=x²−4 is positive when |x|>2.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> This is where F′ is negative.</li><li><b>(B)</b> F′ is negative on (0,2).</li><li><b>(C)</b> F′ is not positive everywhere.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 53</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q28–Q30</span></div><div class="sol"><div class="sol-title"><span>Question 28</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="ans">Correct answer: (D) 8</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Antiderivative x²; evaluate 9−1=8.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Adds rather than subtracts endpoint values.</li><li><b>(B)</b> Uses only the lower limit.</li><li><b>(C)</b> Uses 3·2.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 29</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="ans">Correct answer: (C) 1</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Antiderivative sin x; sin(π/2)−sin0=1.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Confuses interval length with integral.</li><li><b>(B)</b> Uses cos at endpoints instead of its antiderivative.</li><li><b>(D)</b> Doubles the result.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 30</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (D) 32/5</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Antiderivative t⁵/5; evaluate 32/5.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses 2³.</li><li><b>(B)</b> Uses 2⁴/5.</li><li><b>(C)</b> Forgets the denominator 5.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 54</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q31–Q33</span></div><div class="sol"><div class="sol-title"><span>Question 31</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (D) 1/6</div>
+    <div class="steps"><h4>Step-by-step solution</h4>On [0,1], x is above x². Area=∫₀¹(x−x²)dx=1/2−1/3=1/6.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses only ∫x.</li><li><b>(B)</b> Forgets part of the subtraction.</li><li><b>(C)</b> Uses only ∫x² incorrectly.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 32</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (D) 4/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>2x is above x² on [0,2]. Area=∫₀²(2x−x²)dx=4−8/3=4/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses only the first integral.</li><li><b>(B)</b> Subtracts the terms incorrectly.</li><li><b>(C)</b> Uses endpoint heights as area.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 33</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (A) 32/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Area=∫₋₂²(4−x²)dx=16−16/3=32/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Uses only half the interval.</li><li><b>(C)</b> Uses rectangle area 4×4 without subtracting the parabola.</li><li><b>(D)</b> Forgets the constant area contribution.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 55</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q34–Q36</span></div><div class="sol"><div class="sol-title"><span>Question 34</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (D) 9/2</div>
+    <div class="steps"><h4>Step-by-step solution</h4>The line is above the parabola. Area=∫₋₁²(−x²+x+2)dx=[−x³/3+x²/2+2x]₋₁²=9/2.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Arithmetic error.</li><li><b>(B)</b> Uses a bounding rectangle instead.</li><li><b>(C)</b> Underestimates the integral.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 35</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (A) 4/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>√x≥x/2 on [0,4]. Area=∫₀⁴(√x−x/2)dx=16/3−4=4/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Doubles an incorrect result.</li><li><b>(C)</b> Uses only ∫√x.</li><li><b>(D)</b> Misses the x/2 contribution.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 36</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (C) 1/4</div>
+    <div class="steps"><h4>Step-by-step solution</h4>x≥x³ on [0,1]. Area=∫₀¹(x−x³)dx=1/2−1/4=1/4.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses only ∫x.</li><li><b>(B)</b> Incorrect subtraction.</li><li><b>(D)</b> Uses only ∫x³.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 56</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q37–Q39</span></div><div class="sol"><div class="sol-title"><span>Question 37</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (B) 4/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Area=∫₋₁¹(1−x²)dx=2−2/3=4/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Forgets the interval is symmetric and misses the correct constant integral.</li><li><b>(C)</b> Underestimates the result.</li><li><b>(D)</b> Uses the rectangle area only.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 38</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (A) 9/2</div>
+    <div class="steps"><h4>Step-by-step solution</h4>The line is above the parabola on [−2,1]. Area=∫₋₂¹(2−x−x²)dx=9/2.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Adds areas with an incorrect sign.</li><li><b>(C)</b> Overestimates the result.</li><li><b>(D)</b> Arithmetic error in the antiderivative.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 39</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (B) 9/2</div>
+    <div class="steps"><h4>Step-by-step solution</h4>3x≥x² on [0,3]. Area=∫₀³(3x−x²)dx=27/2−9=9/2.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses only the linear triangle area.</li><li><b>(C)</b> Subtracts incorrectly.</li><li><b>(D)</b> Misses half of one term.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 57</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q40–Q42</span></div><div class="sol"><div class="sol-title"><span>Question 40</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (A) 1</div>
+    <div class="steps"><h4>Step-by-step solution</h4>The region is two right triangles, each area 1/2; total area=1.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Adds an extra half-unit.</li><li><b>(C)</b> Counts only one of the two triangles.</li><li><b>(D)</b> Uses the rectangle area.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 41</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="ans">Correct answer: (B) 1</div>
+    <div class="steps"><h4>Step-by-step solution</h4>∫₀^(π/2)cos x dx=sin(π/2)−sin0=1.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> The function is positive on the interval.</li><li><b>(C)</b> Confuses area with interval length.</li><li><b>(D)</b> Doubles the integral.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 42</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="ans">Correct answer: (B) 2</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Area=∫₀²(2−x)dx=4−2=2.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses the rectangle area without subtracting.</li><li><b>(C)</b> Uses only the rectangle area.</li><li><b>(D)</b> Underestimates the triangle.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 58</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q43–Q45</span></div><div class="sol"><div class="sol-title"><span>Question 43</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="ans">Correct answer: (C) 8</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Area=∫₀⁴(4−x)dx=16−8=8.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses the full rectangle and ignores the triangular gap.</li><li><b>(B)</b> Underestimates the exact area.</li><li><b>(D)</b> Underestimates the triangular region.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 44</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (A) 9</div>
+    <div class="steps"><h4>Step-by-step solution</h4>The curves meet at x=3. Area=∫₀³[(6−x)−x]dx=∫₀³(6−2x)dx=18−9=9.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Misses half of the area.</li><li><b>(C)</b> Uses a rectangle with an incorrect height.</li><li><b>(D)</b> Uses the integral of 6−x only.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 45</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (B) 2√3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Area=∫₀^√3(3−x²)dx=3√3−(3√3)/3=2√3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Misses the subtraction term.</li><li><b>(C)</b> Uses only the rectangle area.</li><li><b>(D)</b> Doubles the correct result.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 59</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q46–Q48</span></div><div class="sol"><div class="sol-title"><span>Question 46</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (B) 4/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Right minus left is 2y−y². Area=∫₀²(2y−y²)dy=4−8/3=4/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Arithmetic error.</li><li><b>(C)</b> Uses only the second integral.</li><li><b>(D)</b> Uses only the first integral.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 47</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (B) 1/6</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Right minus left is y−y². Integral=1/2−1/3=1/6.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses only ∫y.</li><li><b>(C)</b> Uses only ∫y².</li><li><b>(D)</b> Forgets one term.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 48</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (B) 32/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Area=∫₋₂²(4−y²)dy=16−16/3=32/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Misses part of the interval.</li><li><b>(C)</b> Uses half the interval.</li><li><b>(D)</b> Uses rectangle area only.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 60</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q49–Q51</span></div><div class="sol"><div class="sol-title"><span>Question 49</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (D) 2√3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Right minus left is 3−y². Area=3√3−(√3)^3/3=3√3−√3=2√3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Doubles the correct result.</li><li><b>(B)</b> Uses only the rectangle area.</li><li><b>(C)</b> Misses one contribution.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 50</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="ans">Correct answer: (A) 2</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Area=∫₀²(2−y)dy=4−2=2.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Uses an incorrect antiderivative.</li><li><b>(C)</b> Uses the rectangle area.</li><li><b>(D)</b> Underestimates the triangle.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 51</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="ans">Correct answer: (A) 8</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Area=∫₀⁴(4−y)dy=16−8=8.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Underestimates the region.</li><li><b>(C)</b> Underestimates the result.</li><li><b>(D)</b> Uses the full 4-by-4 rectangle.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 61</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q52–Q54</span></div><div class="sol"><div class="sol-title"><span>Question 52</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (A) 16/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Area=∫₀⁴√y dy=(2/3)·4^(3/2)=16/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Uses rectangle area.</li><li><b>(C)</b> Uses y instead of √y.</li><li><b>(D)</b> Incorrect antiderivative.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 53</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="ans">Correct answer: (B) 4</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Area=∫₀²(1+y)dy=2+2=4.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Underestimates the area.</li><li><b>(C)</b> Adds endpoints instead of integrating.</li><li><b>(D)</b> Misses the y contribution.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 54</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (D) 6√3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>The horizontal width is 3 and the vertical interval height is 2√3, so area=3·2√3=6√3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Underestimates the area.</li><li><b>(B)</b> This is not the full width times height.</li><li><b>(C)</b> Overestimates the area.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 62</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q55–Q57</span></div><div class="sol"><div class="sol-title"><span>Question 55</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (A) 9/2</div>
+    <div class="steps"><h4>Step-by-step solution</h4>On this interval y+2≥y². Area=∫₋₁²(y+2−y²)dy = [y²/2+2y−y³/3]₋₁² = 9/2.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Overestimates the integral.</li><li><b>(C)</b> Uses an incorrect order of subtraction.</li><li><b>(D)</b> Arithmetic error.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 56</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (B) 8</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Cross-sectional area A(x)=(√x)²=x. Volume=∫₀⁴x dx=8.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses side length squared incorrectly as x².</li><li><b>(C)</b> Uses the interval length only.</li><li><b>(D)</b> Arithmetic error.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 57</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (D) 8/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>A(x)=(2−x)². Volume=∫₀²(2−x)²dx=8/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses half the correct integral.</li><li><b>(B)</b> Uses a rectangular prism bound.</li><li><b>(C)</b> Uses an incorrect square-area expression.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 63</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q58–Q60</span></div><div class="sol"><div class="sol-title"><span>Question 58</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (D) 16/15</div>
+    <div class="steps"><h4>Step-by-step solution</h4>V=∫₋₁¹(1−x²)²dx=2∫₀¹(1−2x²+x⁴)dx=2(1−2/3+1/5)=16/15.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Misses a factor of 2.</li><li><b>(B)</b> Uses an upper bound instead of integrating.</li><li><b>(C)</b> Uses the wrong cross-sectional area.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 59</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (C) 2/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Cross-sectional area = x(2x)=2x². V=∫₀¹2x²dx=2/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses the endpoint area as volume.</li><li><b>(B)</b> Forgets the factor 2 in the height.</li><li><b>(D)</b> Uses ∫3x².</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 60</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (C) √3/12</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Area of an equilateral triangle is (√3/4)s². V=(√3/4)∫₀¹(1−x)²dx=(√3/4)(1/3)=√3/12.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses only the triangle area coefficient.</li><li><b>(B)</b> Misses a factor of 2.</li><li><b>(D)</b> Doubles the exact volume.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 64</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q61–Q63</span></div><div class="sol"><div class="sol-title"><span>Question 61</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (C) π/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>A semicircle with diameter d has area πd²/8. V=(π/8)∫₀²(2−x)²dx=(π/8)(8/3)=π/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Misses a factor of 2.</li><li><b>(B)</b> Uses a full-circle area.</li><li><b>(D)</b> Uses the incorrect radius/diameter conversion.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 62</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (A) π/6</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Area=(π/8)d²=(π/8)(1−x²). Integrate: (π/8)(2−2/3)=π/6.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Doubles the correct volume.</li><li><b>(C)</b> Misses the factor from the integral.</li><li><b>(D)</b> Uses full-circle cross sections.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 63</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (C) 4/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>For a right-isosceles triangle with leg b, area=b²/2. V=(1/2)∫₀²(2−x)²dx=(1/2)(8/3)=4/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Misses a factor of 2.</li><li><b>(B)</b> Uses square cross sections.</li><li><b>(D)</b> Uses only the base integral.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 65</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q64–Q66</span></div><div class="sol"><div class="sol-title"><span>Question 64</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (C) √3/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>A(x)=(√3/4)(2x)²=√3x². Integrating gives √3/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses area at x=1 as the volume.</li><li><b>(B)</b> Doubles the integral.</li><li><b>(D)</b> Uses side x instead of 2x.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 65</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (A) 1</div>
+    <div class="steps"><h4>Step-by-step solution</h4>A(x)=3(1−x)². V=3∫₀¹(1−x)²dx=3(1/3)=1.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Misses a factor of 2.</li><li><b>(C)</b> Uses endpoint height instead of integrating.</li><li><b>(D)</b> Uses 3∫(1−x).</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 66</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (B) 4/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>A(x)=(2x)²=4x². V=∫₀¹4x²dx=4/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses endpoint area only.</li><li><b>(C)</b> Uses 2x².</li><li><b>(D)</b> Uses x² instead of 4x².</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 66</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q67–Q69</span></div><div class="sol"><div class="sol-title"><span>Question 67</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (C) π/4</div>
+    <div class="steps"><h4>Step-by-step solution</h4>A=(π/8)d²=(π/8)(4x)=πx/2. Integrating 0 to1 gives π/4.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Misses a factor of 2.</li><li><b>(B)</b> Doubles the result.</li><li><b>(D)</b> Uses full-circle cross sections.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 68</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (D) 32/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Area=(√(4−x²))²=4−x². Volume=∫₋₂²(4−x²)dx=[4x−x³/3]₋₂²=16−16/3=32/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses bounding rectangle 4×4 without subtracting.</li><li><b>(B)</b> Counts only one half of the region.</li><li><b>(C)</b> Integrates over [0,2] only.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 69</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (A) 8π/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Disk method: V=π∫₀²x²dx=π(8/3)=8π/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Uses an incorrect radius integral.</li><li><b>(C)</b> Doubles the exact result.</li><li><b>(D)</b> Uses endpoint radius squared times interval length.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 67</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q70–Q72</span></div><div class="sol"><div class="sol-title"><span>Question 70</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (B) 8π</div>
+    <div class="steps"><h4>Step-by-step solution</h4>V=π∫₀⁴(√x)²dx=π∫₀⁴x dx=8π.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses ∫√x rather than ∫x.</li><li><b>(C)</b> Uses a rectangular prism bound.</li><li><b>(D)</b> Uses half the integral.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 71</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (C) 18π</div>
+    <div class="steps"><h4>Step-by-step solution</h4>V=πr²L=π(3²)(2)=18π.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses area coefficient incorrectly.</li><li><b>(B)</b> Uses radius 3 times length.</li><li><b>(D)</b> Doubles the volume.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 72</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (D) 16π/15</div>
+    <div class="steps"><h4>Step-by-step solution</h4>V=π∫₋₁¹(1−x²)²dx=π(16/15)=16π/15.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Misses a factor of 2.</li><li><b>(B)</b> Uses a different power expansion.</li><li><b>(C)</b> Uses an incorrect rectangular approximation.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 68</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q73–Q75</span></div><div class="sol"><div class="sol-title"><span>Question 73</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (D) 8π</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Horizontal disks have radius √y. V=π∫₀⁴y dy=8π.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses ∫√y.</li><li><b>(B)</b> Uses radius squared incorrectly.</li><li><b>(C)</b> Uses half the correct integral.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 74</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (A) 32π/5</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Disk radius is y². V=π∫₀²(y²)²dy=π∫₀²y⁴dy=32π/5.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Uses an incorrect antiderivative.</li><li><b>(C)</b> Uses ∫y².</li><li><b>(D)</b> Forgets to square the radius correctly.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 75</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="ans">Correct answer: (D) π/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>V=π∫₀¹x²dx=π/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses half of ∫x².</li><li><b>(B)</b> Uses endpoint area only.</li><li><b>(C)</b> Uses ∫x.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 69</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q76–Q78</span></div><div class="sol"><div class="sol-title"><span>Question 76</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (C) 4π/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>V=π∫₀¹(2x)²dx=4π∫₀¹x²dx=4π/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses an incorrect factor.</li><li><b>(B)</b> Uses radius x rather than 2x.</li><li><b>(D)</b> Uses endpoint radius alone.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 77</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+    <div class="ans">Correct answer: (B) 48π</div>
+    <div class="steps"><h4>Step-by-step solution</h4>V=π(4²)(3)=48π.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses half the length.</li><li><b>(C)</b> Uses radius instead of radius squared.</li><li><b>(D)</b> Uses radius 4 and length 4.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 78</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (C) 14π/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Disk radius=1+y/2. V=π∫₀²(1+y/2)²dy=π[ y+y²/2+y³/12 ]₀²=14π/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses an incorrect antiderivative.</li><li><b>(B)</b> Overestimates the integral.</li><li><b>(D)</b> Arithmetic error in the cubic term.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 70</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q79–Q81</span></div><div class="sol"><div class="sol-title"><span>Question 79</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (A) 32√2π/15</div>
+    <div class="steps"><h4>Step-by-step solution</h4>V=π∫₀^√2(2−x²)²dx=π[4x−4x³/3+x⁵/5]₀^√2=32√2π/15.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Uses a rough rectangle approximation.</li><li><b>(C)</b> Uses the endpoint radius only.</li><li><b>(D)</b> Misses a factor of 2.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 80</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (D) 16π/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Washer radii R=2 and r=x. V=π∫₀²(4−x²)dx=π(8−8/3)=16π/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Forgets to subtract the inner disk.</li><li><b>(B)</b> Uses only the inner-radius contribution incorrectly.</li><li><b>(C)</b> Uses only outer radius times interval length.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 81</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (C) π/6</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Outer radius √x, inner radius x. V=π∫₀¹(x−x²)dx=π(1/2−1/3)=π/6.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses ∫√x rather than the washer formula.</li><li><b>(B)</b> Uses ∫x only.</li><li><b>(D)</b> Misses the difference of radii squared.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 71</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q82–Q84</span></div><div class="sol"><div class="sol-title"><span>Question 82</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (D) 16π</div>
+    <div class="steps"><h4>Step-by-step solution</h4>V=π∫₀²(3²−1²)dx=π(8)(2)=16π.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses only the outer disk.</li><li><b>(B)</b> Adds the squared radii.</li><li><b>(C)</b> Uses radius difference rather than difference of squares.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 83</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (D) 64π/15</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Outer radius 2x, inner radius x². V=π∫₀²(4x²−x⁴)dx=π(32/3−32/5)=64π/15.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Misses a factor of 2.</li><li><b>(B)</b> Forgets the inner-radius fourth-power term.</li><li><b>(C)</b> Uses disk method without subtracting the inner radius.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 84</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (B) 56π</div>
+    <div class="steps"><h4>Step-by-step solution</h4>V=π∫₀⁴(16−x)dx=π(64−8)=56π.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Adds the inner contribution.</li><li><b>(C)</b> Uses a wrong inner-radius integral.</li><li><b>(D)</b> Does not subtract the inner volume.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 72</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q85–Q87</span></div><div class="sol"><div class="sol-title"><span>Question 85</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (C) 4π/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Outer radius is x+1 and inner radius is 1. V=π∫₀¹[(x+1)²−1]dx=π∫₀¹(x²+2x)dx=4π/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses outer disks but forgets the hole.</li><li><b>(B)</b> Uses only part of the washer area.</li><li><b>(D)</b> Misses a factor of 2.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 86</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (A) 28π/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Outer radius=3, inner radius=3−x. V=π∫₀²[9−(3−x)²]dx=π∫₀²(6x−x²)dx=28π/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Uses only the full outer cylinders.</li><li><b>(C)</b> Arithmetic error.</li><li><b>(D)</b> Underestimates the integral.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 87</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (B) 16π/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Washer radii R=2 and r=y. V=π∫₀²(4−y²)dy=16π/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses disk method with radius 2 and ignores the hole.</li><li><b>(C)</b> Doubles an incorrect result.</li><li><b>(D)</b> Uses only the inner radius.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 73</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · MCQ Solutions</span><span>Q88–Q90</span></div><div class="sol"><div class="sol-title"><span>Question 88</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (A) 5π/3</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Outer radius 2, inner radius 1+y. V=π∫₀¹[4−(1+y)²]dy=π∫₀¹(3−2y−y²)dy=5π/3.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(B)</b> Uses outer disks only.</li><li><b>(C)</b> Doubles the correct result.</li><li><b>(D)</b> Arithmetic error in integrating y².</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 89</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+    <div class="ans">Correct answer: (D) 8π/5</div>
+    <div class="steps"><h4>Step-by-step solution</h4>Washer radii R=1 and r=x². V=π∫₋₁¹(1−x⁴)dx=π(2−2/5)=8π/5.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Forgets the inner hole.</li><li><b>(B)</b> Misses a factor of 2.</li><li><b>(C)</b> Uses only the unit-radius disk volume over length 1.</li></ul></div></div><div class="sol"><div class="sol-title"><span>Question 90</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+    <div class="ans">Correct answer: (C) 9π</div>
+    <div class="steps"><h4>Step-by-step solution</h4>V=π∫₀³(2²−1²)dx=π(3)(3)=9π.</div>
+    <div class="wrong"><h4>Why the other options are incorrect</h4><ul><li><b>(A)</b> Uses only part of the interval.</li><li><b>(B)</b> Adds the squared radii instead of subtracting.</li><li><b>(D)</b> Uses radius difference rather than difference of squares.</li></ul></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 74</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · FRQ Solution</span><span>Question 91</span></div>
+  <div class="sol"><div class="sol-title"><span>Question 91: Area and Net Area from a Graph</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+  <div class="steps"><h4>Model solution</h4><b>(a)</b> Vertices are (0,0), (2,4), (5,−2), (8,0). From 0 to 2 the triangle area is +4. The line from (2,4) to (5,−2) crosses at x=4: area from 2 to 4 is +4 and from 4 to 5 is −1. From 5 to 8 the triangle is below the axis, area −3. Integral =4+4−1−3=<b>4</b>.<br><b>(b)</b> Total area=4+4+1+3=<b>12</b>.<br><b>(c)</b> Average value=4/8=<b>1/2</b>.<br><b>(d)</b> The definite integral is signed; below-axis areas subtract. Total geometric area counts all regions positively.</div>
+  <div class="rubric"><h4>Scoring rubric</h4><table><tr><th>Criterion</th><th>Points</th></tr>
+  <tr><td>Correct signed areas for graph regions</td><td>2</td></tr><tr><td>Net integral equals 4</td><td>1</td></tr><tr><td>Total area equals 12</td><td>2</td></tr><tr><td>Average value equals 1/2</td><td>2</td></tr><tr><td>Explains signed vs. total area</td><td>2</td></tr>
+  <tr><td><b>Total</b></td><td><b>9</b></td></tr></table></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 75</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · FRQ Solution</span><span>Question 92</span></div>
+  <div class="sol"><div class="sol-title"><span>Question 92: Average Value and the Integral Mean Value Theorem</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+  <div class="steps"><h4>Model solution</h4><b>(a)</b> Average value=(1/3)∫₀³x²dx=(1/3)(9)=<b>3</b>.<br><b>(b)</b> Solve c²=3. Since c∈[0,3], <b>c=√3</b>.<br><b>(c)</b> f is continuous on the closed interval [0,3]. The Integral Mean Value Theorem guarantees a c in [0,3] where f(c) equals the average value.</div>
+  <div class="rubric"><h4>Scoring rubric</h4><table><tr><th>Criterion</th><th>Points</th></tr>
+  <tr><td>Correct average-value formula and integral</td><td>2</td></tr><tr><td>Average value 3</td><td>1</td></tr><tr><td>Solves c²=3</td><td>2</td></tr><tr><td>Selects c=√3 in interval</td><td>1</td></tr><tr><td>States continuity and theorem conclusion</td><td>3</td></tr>
+  <tr><td><b>Total</b></td><td><b>9</b></td></tr></table></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 76</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · FRQ Solution</span><span>Question 93</span></div>
+  <div class="sol"><div class="sol-title"><span>Question 93: Motion: Displacement and Total Distance</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+  <div class="steps"><h4>Model solution</h4><b>(a)</b> ∫₀⁵(t²−4t+3)dt=[t³/3−2t²+3t]₀⁵=125/3−50+15=<b>20/3 m</b>.<br><b>(b)</b> v=(t−1)(t−3), so the sign changes at 1 and 3. Signed pieces: ∫₀¹v=4/3, ∫₁³v=−4/3, ∫₃⁵v=20/3. Total distance=4/3+4/3+20/3=<b>28/3 m</b>.<br><b>(c)</b> v&gt;0 on <b>[0,1) and (3,5]</b>.</div>
+  <div class="rubric"><h4>Scoring rubric</h4><table><tr><th>Criterion</th><th>Points</th></tr>
+  <tr><td>Correct antiderivative and displacement</td><td>2</td></tr><tr><td>Displacement 20/3 m</td><td>1</td></tr><tr><td>Finds velocity zeros 1 and 3</td><td>1</td></tr><tr><td>Splits the total-distance integral correctly</td><td>2</td></tr><tr><td>Distance 28/3 m</td><td>1</td></tr><tr><td>Positive-direction intervals</td><td>1</td></tr>
+  <tr><td><b>Total</b></td><td><b>9</b></td></tr></table></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 77</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · FRQ Solution</span><span>Question 94</span></div>
+  <div class="sol"><div class="sol-title"><span>Question 94: Area Between Curves</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+  <div class="steps"><h4>Model solution</h4><b>(a)</b> 2x−x²=x(2−x)&gt;0 for 0&lt;x&lt;2, so y=2x is above y=x².<br><b>(b)</b> Area=∫₀²(2x−x²)dx=[x²−x³/3]₀²=4−8/3=<b>4/3</b> square units.<br><b>(c)</b> Average vertical distance=area/(2−0)=(4/3)/2=<b>2/3</b>.</div>
+  <div class="rubric"><h4>Scoring rubric</h4><table><tr><th>Criterion</th><th>Points</th></tr>
+  <tr><td>Correct comparison with justification</td><td>2</td></tr><tr><td>Correct area integral setup</td><td>2</td></tr><tr><td>Correct area 4/3</td><td>2</td></tr><tr><td>Average vertical distance setup</td><td>1</td></tr><tr><td>Correct average 2/3</td><td>2</td></tr>
+  <tr><td><b>Total</b></td><td><b>9</b></td></tr></table></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 78</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · FRQ Solution</span><span>Question 95</span></div>
+  <div class="sol"><div class="sol-title"><span>Question 95: Volume with Square Cross Sections</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+  <div class="steps"><h4>Model solution</h4><b>(a)</b> The vertical base segment runs from y=0 to y=√x, so its length is <b>√x</b>.<br><b>(b)</b> A square with side √x has area A(x)=(√x)²=<b>x</b>.<br><b>(c)</b> V=∫₀⁴A(x)dx=∫₀⁴x dx=[x²/2]₀⁴=<b>8 cubic units</b>.</div>
+  <div class="rubric"><h4>Scoring rubric</h4><table><tr><th>Criterion</th><th>Points</th></tr>
+  <tr><td>Correct side length √x</td><td>2</td></tr><tr><td>Correct area A(x)=x</td><td>2</td></tr><tr><td>Correct definite-integral setup</td><td>2</td></tr><tr><td>Correct antiderivative/evaluation</td><td>2</td></tr><tr><td>Correct volume 8</td><td>1</td></tr>
+  <tr><td><b>Total</b></td><td><b>9</b></td></tr></table></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 79</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · FRQ Solution</span><span>Question 96</span></div>
+  <div class="sol"><div class="sol-title"><span>Question 96: Volume with Semicircular Cross Sections</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+  <div class="steps"><h4>Model solution</h4><b>(a)</b> Diameter d=√(1−x²); radius r=√(1−x²)/2.<br><b>(b)</b> Semicircle area=(1/2)πr²=π(1−x²)/8.<br><b>(c)</b> V=∫₋₁¹π(1−x²)/8 dx=(π/8)(2−2/3)=<b>π/6 cubic units</b>.</div>
+  <div class="rubric"><h4>Scoring rubric</h4><table><tr><th>Criterion</th><th>Points</th></tr>
+  <tr><td>Correct diameter and radius</td><td>2</td></tr><tr><td>Correct semicircle-area formula</td><td>2</td></tr><tr><td>Correct A(x)=π(1−x²)/8</td><td>1</td></tr><tr><td>Correct volume integral</td><td>2</td></tr><tr><td>Correct result π/6</td><td>2</td></tr>
+  <tr><td><b>Total</b></td><td><b>9</b></td></tr></table></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 80</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · FRQ Solution</span><span>Question 97</span></div>
+  <div class="sol"><div class="sol-title"><span>Question 97: Disk Method About the x-Axis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+  <div class="steps"><h4>Model solution</h4><b>(a)</b> The disk radius is R(x)=√x.<br><b>(b)</b> V=π∫₀⁴R(x)²dx=π∫₀⁴x dx.<br><b>(c)</b> V=π[x²/2]₀⁴=<b>8π cubic units</b>.</div>
+  <div class="rubric"><h4>Scoring rubric</h4><table><tr><th>Criterion</th><th>Points</th></tr>
+  <tr><td>Correct radius √x</td><td>2</td></tr><tr><td>Correct disk-method setup</td><td>3</td></tr><tr><td>Correct antiderivative</td><td>2</td></tr><tr><td>Correct result 8π</td><td>2</td></tr>
+  <tr><td><b>Total</b></td><td><b>9</b></td></tr></table></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 81</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · FRQ Solution</span><span>Question 98</span></div>
+  <div class="sol"><div class="sol-title"><span>Question 98: Washer Method About the x-Axis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+  <div class="steps"><h4>Model solution</h4><b>(a)</b> Outer radius R=2; inner radius r=x.<br><b>(b)</b> V=π∫₀²(R²−r²)dx=π∫₀²(4−x²)dx.<br><b>(c)</b> V=π[4x−x³/3]₀²=π(8−8/3)=<b>16π/3 cubic units</b>.</div>
+  <div class="rubric"><h4>Scoring rubric</h4><table><tr><th>Criterion</th><th>Points</th></tr>
+  <tr><td>Correct outer radius 2 and inner radius x</td><td>2</td></tr><tr><td>Correct washer formula/setup</td><td>3</td></tr><tr><td>Correct antiderivative and limits</td><td>2</td></tr><tr><td>Correct result 16π/3</td><td>2</td></tr>
+  <tr><td><b>Total</b></td><td><b>9</b></td></tr></table></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 82</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · FRQ Solution</span><span>Question 99</span></div>
+  <div class="sol"><div class="sol-title"><span>Question 99: Volume with Cross Sections from a Table</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+  <div class="steps"><h4>Model solution</h4><b>(a)</b> Δx=1. Square area is s². Left estimate=1[(1)²+(2)²+(1)²]=<b>6 cubic units</b>.<br><b>(b)</b> Right estimate=1[(2)²+(1)²+(0)²]=<b>5 cubic units</b>.<br><b>(c)</b> The volume integrand is the area of each square cross section. A square of side s has area s·s=s²; s alone is only a length.</div>
+  <div class="rubric"><h4>Scoring rubric</h4><table><tr><th>Criterion</th><th>Points</th></tr>
+  <tr><td>Uses square cross-sectional area s²</td><td>1</td></tr><tr><td>Correct left-sum setup and value 6</td><td>2</td></tr><tr><td>Correct right-sum setup and value 5</td><td>3</td></tr><tr><td>Explains length versus area</td><td>3</td></tr>
+  <tr><td><b>Total</b></td><td><b>9</b></td></tr></table></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 83</span></div></section>
+<section class="page "><div class="phead"><span>Answer Section · FRQ Solution</span><span>Question 100</span></div>
+  <div class="sol"><div class="sol-title"><span>Question 100: Washer Method About a Shifted Axis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+  <div class="steps"><h4>Model solution</h4><b>(a)</b> The axis y=3 is above the region. Outer radius is from y=3 to y=0: R=3. Inner radius is from y=3 to y=x: r=3−x.<br><b>(b)</b> V=π∫₀²[R²−r²]dx=π∫₀²[9−(3−x)²]dx.<br><b>(c)</b> The integrand simplifies to 6x−x². V=π[3x²−x³/3]₀²=π(12−8/3)=<b>28π/3 cubic units</b>.</div>
+  <div class="rubric"><h4>Scoring rubric</h4><table><tr><th>Criterion</th><th>Points</th></tr>
+  <tr><td>Correct outer and inner radii</td><td>2</td></tr><tr><td>Correct washer setup</td><td>3</td></tr><tr><td>Correct simplification and antiderivative</td><td>2</td></tr><tr><td>Correct result 28π/3</td><td>2</td></tr>
+  <tr><td><b>Total</b></td><td><b>9</b></td></tr></table></div></div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 84</span></div></section>
+<section class="page "><div class="phead"><span>Appendix</span><span>Unit 8 Reference</span></div>
+<div class="title">Essential Formulas &amp; Integration Theorems</div>
+<ul class="bullets">
+<li><b>Average value:</b> f_avg = (1/(b−a))∫ₐᵇ f(x)dx.</li>
+<li><b>Net change theorem:</b> accumulated change = ∫ₐᵇ rate(t)dt.</li>
+<li><b>Motion:</b> displacement = ∫ v(t)dt; total distance = ∫ |v(t)|dt; speed = |v(t)|.</li>
+<li><b>Area between curves:</b> ∫ (top − bottom)dx, or ∫ (right − left)dy.</li>
+<li><b>Known cross sections:</b> V = ∫ A(x)dx. Squares: s²; Rectangles: b·h; Semicircles: (π/8)d²; Equilateral triangles: (√3/4)s²; Isosceles right triangles: (1/2)leg².</li>
+<li><b>Disk method:</b> V = π∫ R(x)² dx (about horizontal axis) or π∫ R(y)² dy (about vertical axis).</li>
+<li><b>Washer method:</b> V = π∫ [R² − r²] dx or π∫ [R² − r²] dy, where R = outer radius and r = inner radius.</li>
+<li><b>Shifted axis of revolution:</b> radius is always distance from axis to boundary curve: |y_axis − y_curve| or |x_axis − x_curve|.</li>
+</ul>
+<div class="note"><b>Disclaimer:</b> Original AP Calculus AB–aligned practice material. Not affiliated with, endorsed by, or approved by the College Board.</div><div class="footer"><span>AP Calculus AB · Unit 8: Applications of Integration</span><span>Page 85</span></div></section>
+</main>
+</body>
+</html>

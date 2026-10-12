@@ -1,0 +1,2284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AP Calculus AB – Unit 2: Differentiation | 100-Question Master Set with Priority Stars</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0B1F3A; --navy-grad:linear-gradient(180deg,#0B1F3A 0%,#17375F 100%);
+  --ivory:#FAF8F3; --gold:#C6A15B; --gold-light:#E2C98F;
+  --slate:#1F2937; --blue:#EAF0F6; --line:#DCE3EC;
+  --teal:#0F766E; --tealbg:#E7F5F3; --red:#B42318; --redbg:#FDECEC;
+  --muted:#6B7280;
+  --star5-bg:linear-gradient(135deg,#FFF8E1,#FFE082);
+  --star5-tx:#B8860B; --star5-bd:#FFD700;
+  --star3-bg:#E8EAF6; --star3-tx:#283593; --star3-bd:#7986CB;
+  --star2-bg:#E0F2F1; --star2-tx:#00695C; --star2-bd:#80CBC4;
+}
+*{box-sizing:border-box;margin:0;padding:0; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+body{font-family:'Inter',Arial,sans-serif;background:#D2CEC4;color:var(--slate);font-size:10pt;line-height:1.55; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+
+/* ---------- PAGE ---------- */
+.page{width:210mm;min-height:297mm;margin:8mm auto;padding:16mm 15mm 24mm;background:var(--ivory);position:relative;box-shadow:0 6px 24px rgba(0,0,0,.22);page-break-after:always;overflow:hidden; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+.page::before{content:"";position:absolute;inset:6mm;border:0.3mm solid rgba(198,161,91,.4);pointer-events:none}
+
+/* ---------- COVER ---------- */
+.cover{background:var(--navy) !important;color:var(--ivory);display:flex;flex-direction:column;justify-content:space-between;padding:30mm 22mm 26mm; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+.cover::before{border-color:rgba(198,161,91,.75)}
+.kicker{font-size:10.5pt;letter-spacing:.38em;color:var(--gold);font-weight:700;text-transform:uppercase}
+.cover h1{font-family:'DM Serif Display',Georgia,serif;font-weight:400;font-size:42pt;line-height:1.08;margin:8mm 0 4mm;color:#FFF}
+.gold-line{width:75mm;height:0.8mm;background:var(--gold);margin:6mm 0}
+.cover .sub{font-family:'DM Serif Display',Georgia,serif;font-style:italic;font-size:18pt;color:var(--gold-light)}
+.cover .meta{margin-top:6mm;font-size:10pt;color:#D1D9E4;line-height:1.8}
+.cover-foot{font-size:8.5pt;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;border-top:0.3mm solid rgba(198,161,91,.6);padding-top:4mm}
+
+/* ---------- TYPOGRAPHY ---------- */
+.phead{display:flex;justify-content:space-between;align-items:center;font-size:8pt;letter-spacing:.18em;text-transform:uppercase;color:var(--navy);font-weight:700;border-bottom:0.35mm solid var(--gold);padding-bottom:2mm;margin-bottom:5mm}
+.title{font-family:'DM Serif Display',Georgia,serif;font-size:22pt;color:var(--navy);margin-bottom:3mm;line-height:1.15}
+.lead{color:var(--muted);font-size:9.5pt;margin-bottom:5mm}
+h3.sec{font-family:'DM Serif Display',Georgia,serif;font-weight:400;font-size:13pt;color:var(--navy);margin:5mm 0 2mm}
+.bullets li{margin-left:5mm;margin-bottom:1.8mm;list-style:none;position:relative;font-size:9.5pt}
+.bullets li::before{content:"";position:absolute;left:-4.5mm;top:2mm;width:1.5mm;height:1.5mm;background:var(--gold);border-radius:50%}
+.topics{display:grid;grid-template-columns:1fr 1fr;gap:1.5mm 5mm;font-size:9pt;color:#374151}
+.note{background:var(--blue);border-left:1mm solid var(--navy);padding:2.8mm 3.8mm;border-radius:1.5mm;margin-top:5mm;font-size:9pt}
+
+/* ---------- PREMIUM STAR LEGEND BOX ---------- */
+.star-legend{background:linear-gradient(135deg,#FFFDF8 0%,#F5F0E6 100%);border:0.4mm solid var(--gold);border-radius:3mm;padding:5mm 6mm;margin:5mm 0;box-shadow:0 1mm 3mm rgba(198,161,91,.15); -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+.star-legend h3{font-family:'DM Serif Display',Georgia,serif;font-size:14pt;color:var(--navy);margin-bottom:3mm;text-align:center}
+.star-row{display:flex;align-items:center;gap:3mm;padding:2mm 0;border-bottom:0.2mm dotted #D4C5A9}
+.star-row:last-child{border-bottom:none}
+.star-row .stars{font-size:12pt;letter-spacing:0.5mm;min-width:22mm}
+.star-row .label{font-weight:700;font-size:9.5pt;min-width:35mm}
+.star-row .desc{font-size:8.5pt;color:var(--muted);flex:1}
+.s5{color:#B8860B;text-shadow:0 0 1px rgba(255,215,0,.3)}
+.s3{color:#3949AB}
+.s2{color:#00897B}
+
+/* ---------- STAR BADGES ---------- */
+.star-badge{display:inline-flex;align-items:center;gap:1.2mm;font-size:7.5pt;font-weight:700;letter-spacing:.06em;padding:1mm 2.5mm;border-radius:10mm;text-transform:uppercase;white-space:nowrap; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+.star-badge .st{font-size:9pt;letter-spacing:.2mm}
+.sb5{background:var(--star5-bg) !important;color:var(--star5-tx) !important;border:0.3mm solid var(--star5-bd) !important;box-shadow:0 0.5mm 1.5mm rgba(255,215,0,.25)}
+.sb3{background:var(--star3-bg) !important;color:var(--star3-tx) !important;border:0.3mm solid var(--star3-bd) !important}
+.sb2{background:var(--star2-bg) !important;color:var(--star2-tx) !important;border:0.3mm solid var(--star2-bd) !important}
+
+/* ---------- QUESTION CARD ---------- */
+.qc{display:grid;grid-template-columns:15mm 1fr;background:#FFF;border:0.25mm solid var(--line);border-radius:2.5mm;overflow:hidden;margin-bottom:4mm;page-break-inside:avoid;box-shadow:0 0.5mm 1.8mm rgba(11,31,58,.06)}
+.qs{background:var(--navy-grad) !important;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5mm 0;text-align:center; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+.qs .ql{font-size:6pt;letter-spacing:.25em;color:#AFC0D6;font-weight:700;text-transform:uppercase}
+.qs .qn{font-family:'DM Serif Display',Georgia,serif;font-size:18pt;line-height:1;margin-top:1mm;color:var(--gold-light)}
+.qs .qd{margin-top:2mm;width:5mm;height:0.35mm;background:var(--gold)}
+.qb{padding:3.5mm 4.5mm}
+.qmeta{display:flex;justify-content:space-between;align-items:center;font-size:7pt;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:2mm;gap:2mm}
+.qmeta-right{display:flex;align-items:center;gap:2mm}
+
+/* Math Typography */
+.stem{font-family:'STIX Two Text',Cambria,Georgia,serif;font-size:10.8pt;line-height:1.65;color:#111827;margin-bottom:3mm}
+.lim{font-style:italic;font-weight:600;color:var(--navy)}
+.kw{font-family:'Inter',sans-serif;font-size:7.2pt;font-style:normal;font-weight:700;letter-spacing:.06em;color:#9E7528;text-transform:uppercase;margin:0 0.5mm}
+
+/* Piecewise */
+.pw{display:inline-flex;align-items:center;vertical-align:middle;margin:1mm 0}
+.pw .brace{font-family:Georgia,serif;font-size:28pt;line-height:1;color:var(--navy);margin-right:1.5mm;font-weight:300}
+.pw .rows{display:flex;flex-direction:column;gap:1mm;background:#FBF9F2;border-left:0.4mm solid var(--gold);border-radius:1.2mm;padding:1.4mm 3mm}
+.pw .row{font-size:10pt;white-space:nowrap;color:#111827}
+
+/* Tables */
+.stem table{border-collapse:separate;border-spacing:0;margin:2mm auto 2.5mm;font-family:'Inter',sans-serif;font-size:8.8pt;border:0.25mm solid #C9D3E0;border-radius:1.5mm;overflow:hidden}
+.stem th,.stem td{padding:1.2mm 3mm;text-align:center;border-bottom:0.2mm solid #E5EAF1;border-right:0.2mm solid #E5EAF1}
+.stem th{background:var(--navy) !important;color:#FFF;font-weight:600; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+.stem td{background:#FFF;color:#1F2937;font-family:'STIX Two Text',serif;font-size:9.5pt}
+.stem tr:last-child td,.stem tr:last-child th{border-bottom:none}
+.stem th:last-child,.stem td:last-child{border-right:none}
+
+/* Options */
+.opts2{display:grid;grid-template-columns:1fr 1fr;gap:1.8mm 2.8mm}
+.op{display:flex;align-items:center;gap:2.2mm;border:0.25mm solid var(--line);border-radius:1.8mm;padding:1.8mm 2.8mm;background:#FCFDFE;font-family:'STIX Two Text',serif;font-size:10.2pt;color:#111827}
+.lt{flex:0 0 auto;width:5.5mm;height:5.5mm;border-radius:50%;background:var(--navy) !important;color:var(--gold-light);font-family:'DM Serif Display',serif;font-size:8.5pt;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 0.35mm var(--gold); -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+
+/* ---------- ANSWER KEY ---------- */
+.akey-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:1.6mm;margin-top:2mm}
+.akey-item{background:#FFF;border:0.25mm solid var(--line);border-radius:1.5mm;display:flex;flex-direction:column;align-items:center;padding:1.2mm 0;font-size:8pt;position:relative}
+.akey-item span{color:var(--muted);font-weight:600;font-size:7pt}
+.akey-item b{color:var(--teal);font-size:10pt;margin-top:0.2mm}
+.akey-item .mini-stars{font-size:6pt;margin-top:0.3mm;letter-spacing:.1mm}
+
+/* ---------- SOLUTIONS ---------- */
+.sol{background:#FFF;border:0.25mm solid var(--line);border-radius:2.5mm;padding:3.5mm 4.5mm;margin-bottom:3.5mm;page-break-inside:avoid}
+.sol-title{font-family:'DM Serif Display',Georgia,serif;font-size:12pt;color:var(--navy);border-bottom:0.25mm solid var(--gold);padding-bottom:1.2mm;margin-bottom:2.2mm;display:flex;justify-content:space-between;align-items:center}
+.ans{background:var(--tealbg) !important;color:var(--teal);border-radius:1.5mm;padding:1.5mm 3mm;font-weight:700;margin-bottom:2mm;font-size:9.5pt; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+.steps{background:var(--blue) !important;border-radius:1.5mm;padding:2mm 3mm;margin-bottom:2mm;font-size:9.2pt;line-height:1.55; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+.steps h4,.wrong h4,.rubric h4{font-size:7.5pt;text-transform:uppercase;letter-spacing:.12em;color:var(--navy);margin-bottom:1.2mm;font-weight:700}
+.wrong{padding:0 1mm}
+.wrong ul{list-style:none}
+.wrong li{font-size:8.8pt;margin-bottom:1mm;padding-left:4.5mm;position:relative;line-height:1.45}
+.wrong li::before{content:"✗";color:var(--red);position:absolute;left:0;font-weight:700;font-size:8pt}
+.wrong li b{color:var(--navy)}
+
+/* ---------- FRQ ---------- */
+.frq-card{background:#FFF;border:0.3mm solid var(--navy);border-radius:2.5mm;padding:4.5mm 5.5mm;margin-bottom:5mm;page-break-inside:avoid;box-shadow:0 0.8mm 2.5mm rgba(11,31,58,.08)}
+.frq-header{display:flex;justify-content:space-between;align-items:center;border-bottom:0.35mm solid var(--gold);padding-bottom:1.8mm;margin-bottom:3mm;flex-wrap:wrap;gap:2mm}
+.frq-title{font-family:'DM Serif Display',serif;font-size:14pt;color:var(--navy)}
+.frq-badge{background:var(--navy) !important;color:var(--gold-light);padding:0.8mm 3mm;border-radius:10mm;font-size:7.5pt;font-weight:700;letter-spacing:.1em; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+.frq-prompt{font-family:'STIX Two Text',serif;font-size:11pt;line-height:1.65;color:#111827;margin-bottom:3.5mm}
+.frq-part{background:#FBF9F2;border-left:0.8mm solid var(--gold);padding:2mm 3.5mm;border-radius:1.2mm;margin-bottom:2.2mm;font-size:9.8pt;line-height:1.55}
+.frq-part b{color:var(--navy)}
+
+.rubric{background:#F4F8FA;border:0.25mm solid #C2D5E4;border-radius:2mm;padding:3mm 4mm;margin-top:2.5mm}
+.rubric-table{width:100%;border-collapse:collapse;margin-top:1.5mm;font-size:8.8pt}
+.rubric-table th,.rubric-table td{padding:1.4mm 2.5mm;text-align:left;border-bottom:0.2mm solid #D4E2ED}
+.rubric-table th{background:var(--navy) !important;color:#FFF;font-weight:600; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+.rubric-table td:last-child{font-weight:700;color:var(--teal);text-align:right}
+
+/* ---------- FOOTER ---------- */
+.disc{font-size:8.8pt;color:#374151;background:var(--blue);padding:3.5mm 4.5mm;border-radius:1.8mm;margin-top:5mm}
+.footer{position:absolute;left:15mm;right:15mm;bottom:10mm;display:flex;justify-content:space-between;font-size:7.8pt;color:var(--muted);border-top:0.3mm solid var(--gold);padding-top:1.8mm;letter-spacing:.04em}
+.noprint{position:fixed;top:12px;right:12px;background:var(--navy);color:var(--ivory);border:0.3mm solid var(--gold);padding:10px 18px;border-radius:6px;font-family:'Inter',sans-serif;font-weight:700;font-size:10pt;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35);z-index:999}
+.noprint:hover{background:#17375F}
+
+@page{size:A4;margin:0}
+@media print{
+  body{background:none !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+  .noprint{display:none !important;}
+  .page{margin:0 !important;box-shadow:none !important;width:210mm !important;min-height:297mm !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+  .cover{background:var(--navy) !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+}
+</style>
+</head>
+<body>
+
+<button class="noprint" onclick="window.print()">🖨️ Save Unit 2 Master PDF</button>
+<main id="app">
+<section class="page cover">
+  <div>
+    <div class="kicker">AP CALCULUS AB · EXAMINATION REPOSITORY</div>
+    <h1>Unit 2<br>Differentiation</h1>
+    <div class="gold-line"></div>
+    <div class="sub">100-Question Priority-Starred Master Set</div>
+    <div class="meta">
+      • 90 Multiple Choice Questions (Definition, Rules, Chain, Implicit)<br>
+      • 10 Multi-Part FRQs (All ★★★★★ Very Important)<br>
+      • Mixed Level (Moderate Focus) · Official CED Aligned &amp; Priority Rated
+    </div>
+  </div>
+  <div class="cover-foot">Official AP CED Aligned · Rigorously Verified · 84 Pages</div>
+</section>
+<section class="page ">
+  <div class="phead"><span>Curriculum Blueprint</span><span>Priority System Guide</span></div>
+  <div class="title">Exam Blueprint &amp; Star Guide</div>
+  <p class="lead">Unit 2 covers the formal definition of the derivative, fundamental rules, chain rule, and implicit differentiation.</p>
+
+  <div class="star-legend">
+    <h3>⭐ Priority Rating System</h3>
+    <div class="star-row">
+      <span class="stars s5">★★★★★</span>
+      <span class="label s5">Very Important</span>
+      <span class="desc">Core AP exam concepts: Limit definition of derivative, Chain Rule, Implicit Differentiation, Related Rates setup, and f' vs f'' graphical behavior.</span>
+    </div>
+    <div class="star-row">
+      <span class="stars s3">★★★</span>
+      <span class="label s3">Mandatory</span>
+      <span class="desc">Essential skills: Product &amp; Quotient Rules, trig/exponential derivatives, tangent and normal line equations, and average rate of change.</span>
+    </div>
+    <div class="star-row">
+      <span class="stars s2">★★</span>
+      <span class="label s2">Important</span>
+      <span class="desc">Foundational skills: Power rule, constant functions, simple polynomials, and basic graphical rates of change.</span>
+    </div>
+  </div>
+
+  <ul class="bullets">
+    <li><b>Section A:</b> 90 AP-style MCQs with priority star ratings (4 options, single best choice).</li>
+    <li><b>Section B &amp; C:</b> Complete 90-item diagnostic answer key matrix and analytical step-by-step solutions with wrong-option explanations.</li>
+    <li><b>Section D &amp; E:</b> 10 multi-part FRQs (all ★★★★★) with official College Board scoring rubrics.</li>
+    <li><b>Calculator Policy:</b> No calculator permitted (analytical reasoning focus).</li>
+  </ul>
+  <h3 class="sec">Topic Coverage (Unit 2.1 – 2.10)</h3>
+  <div class="topics">
+    <div>2.1 Defining Average &amp; Instantaneous Rate</div><div>2.2 Defining the Derivative</div>
+    <div>2.3 Estimating Derivatives</div><div>2.4 Differentiability &amp; Continuity</div>
+    <div>2.5 Power Rule</div><div>2.6 Constant, Sum, Difference &amp; Constant Multiple</div>
+    <div>2.7 Derivatives of cos, sin, eˣ, ln x</div><div>2.8 Product Rule</div>
+    <div>2.9 Quotient Rule</div><div>2.10 Chain Rule</div>
+    <div>2.11 Implicit Differentiation</div><div>2.12 Higher Order Derivatives</div>
+  </div>
+  <div class="note"><b>Study Tip:</b> Master the Chain Rule and Implicit Differentiation (★★★★★) before moving forward into applications!</div>
+<div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 2</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q01 – Q03 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">01</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+        </div>
+        <div class="stem">The average rate of change of f(x) = x² + 3x on the interval [1, 4] is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>8</span></div><div class="op"><span class="lt">B</span><span>5</span></div><div class="op"><span class="lt">C</span><span>7</span></div><div class="op"><span class="lt">D</span><span>3</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">02</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+        </div>
+        <div class="stem">If f(x) = 5, what is the average rate of change of f on any interval [a, b]?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>Undefined</span></div><div class="op"><span class="lt">B</span><span>5</span></div><div class="op"><span class="lt">C</span><span>b − a</span></div><div class="op"><span class="lt">D</span><span>0</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">03</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">The difference quotient [f(x+h) − f(x)]/h for f(x) = x² simplifies to</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>h</span></div><div class="op"><span class="lt">B</span><span>2x − h</span></div><div class="op"><span class="lt">C</span><span>2x</span></div><div class="op"><span class="lt">D</span><span>2x + h</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 3</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q04 – Q06 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">04</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">Let f(x) = √x. What is the average rate of change on [4, 9]?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>5</span></div><div class="op"><span class="lt">B</span><span>1</span></div><div class="op"><span class="lt">C</span><span>1/3</span></div><div class="op"><span class="lt">D</span><span>1/5</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">05</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">Which expression represents the instantaneous rate of change of f at x = a?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>[f(a+h) − f(a)]/h</span></div><div class="op"><span class="lt">B</span><span><span class="lim">lim</span> (x→a) f(x)</span></div><div class="op"><span class="lt">C</span><span>f(a+h) − f(a)</span></div><div class="op"><span class="lt">D</span><span><span class="lim">lim</span> (h→0) [f(a+h) − f(a)]/h</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">06</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+        </div>
+        <div class="stem">If f(x) = 3x − 7, then f'(2) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>−7</span></div><div class="op"><span class="lt">B</span><span>0</span></div><div class="op"><span class="lt">C</span><span>3</span></div><div class="op"><span class="lt">D</span><span>2</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 4</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q07 – Q09 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">07</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">The graph of f passes through (2, 5) and (4, 11). Estimate f'(3).</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>5</span></div><div class="op"><span class="lt">B</span><span>2</span></div><div class="op"><span class="lt">C</span><span>6</span></div><div class="op"><span class="lt">D</span><span>3</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">08</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If f(x) = x³, what is <span class="lim">lim</span> (h→0) [f(2+h) − f(2)]/h?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>12</span></div><div class="op"><span class="lt">B</span><span>8</span></div><div class="op"><span class="lt">C</span><span>0</span></div><div class="op"><span class="lt">D</span><span>4</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">09</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">A particle moves such that s(t) = t² + 2t. Its average velocity on [1, 3] is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>10 m/s</span></div><div class="op"><span class="lt">B</span><span>8 m/s</span></div><div class="op"><span class="lt">C</span><span>4 m/s</span></div><div class="op"><span class="lt">D</span><span>6 m/s</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 5</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q10 – Q12 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">10</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If f is differentiable at x = c, then f must be</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>Linear near x = c</span></div><div class="op"><span class="lt">B</span><span>Defined at x = c only</span></div><div class="op"><span class="lt">C</span><span>Constant near x = c</span></div><div class="op"><span class="lt">D</span><span>Continuous at x = c</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">11</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+        </div>
+        <div class="stem">If f(x) = x⁵, then f'(x) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>x⁴</span></div><div class="op"><span class="lt">B</span><span>5x</span></div><div class="op"><span class="lt">C</span><span>5x⁵</span></div><div class="op"><span class="lt">D</span><span>5x⁴</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">12</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">The derivative of g(t) = 4t³ − 2t + 7 is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>12t³ − 2</span></div><div class="op"><span class="lt">B</span><span>12t² − 2t</span></div><div class="op"><span class="lt">C</span><span>4t² − 2</span></div><div class="op"><span class="lt">D</span><span>12t² − 2</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 6</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q13 – Q15 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">13</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If y = √x, then dy/dx =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>1/(2√x)</span></div><div class="op"><span class="lt">B</span><span>2√x</span></div><div class="op"><span class="lt">C</span><span>1/√x</span></div><div class="op"><span class="lt">D</span><span>−1/(2√x)</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">14</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">The slope of the tangent line to y = x² at x = −1 is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>2</span></div><div class="op"><span class="lt">B</span><span>−1</span></div><div class="op"><span class="lt">C</span><span>−2</span></div><div class="op"><span class="lt">D</span><span>1</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">15</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">If f(x) = 1/x, then f'(2) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>−1/4</span></div><div class="op"><span class="lt">B</span><span>−1/2</span></div><div class="op"><span class="lt">C</span><span>1/4</span></div><div class="op"><span class="lt">D</span><span>1/2</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 7</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q16 – Q18 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">16</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+        </div>
+        <div class="stem">Which function has a derivative equal to 0 for all x?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>f(x) = x</span></div><div class="op"><span class="lt">B</span><span>f(x) = sin x</span></div><div class="op"><span class="lt">C</span><span>f(x) = x²</span></div><div class="op"><span class="lt">D</span><span>f(x) = 5</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">17</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">If f(x) = xⁿ, and f'(1) = 10, what is n?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>1</span></div><div class="op"><span class="lt">B</span><span>10</span></div><div class="op"><span class="lt">C</span><span>5</span></div><div class="op"><span class="lt">D</span><span>0</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">18</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">The derivative of h(x) = π³ is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>3π²</span></div><div class="op"><span class="lt">B</span><span>π²</span></div><div class="op"><span class="lt">C</span><span>Undefined</span></div><div class="op"><span class="lt">D</span><span>0</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 8</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q19 – Q21 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">19</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">If f(x) = 2x⁴ − 3x², then f'(−1) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>−2</span></div><div class="op"><span class="lt">B</span><span>−14</span></div><div class="op"><span class="lt">C</span><span>2</span></div><div class="op"><span class="lt">D</span><span>14</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">20</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">The equation of the tangent line to y = x³ at x = 1 is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>y = x − 2</span></div><div class="op"><span class="lt">B</span><span>y = 3x − 2</span></div><div class="op"><span class="lt">C</span><span>y = 3x</span></div><div class="op"><span class="lt">D</span><span>y = 3x + 2</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">21</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If f(x) = ax² + bx, and f'(1) = 4, f'(2) = 7, find a.</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>3/2</span></div><div class="op"><span class="lt">B</span><span>1</span></div><div class="op"><span class="lt">C</span><span>2</span></div><div class="op"><span class="lt">D</span><span>1/2</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 9</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q22 – Q24 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">22</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If f(x) = x² sin x, then f'(x) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>2x sin x + x² cos x</span></div><div class="op"><span class="lt">B</span><span>2x sin x − x² cos x</span></div><div class="op"><span class="lt">C</span><span>2x cos x</span></div><div class="op"><span class="lt">D</span><span>x² cos x</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">23</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">The derivative of g(x) = eˣ / x is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>eˣ(x+1)/x²</span></div><div class="op"><span class="lt">B</span><span>(xeˣ − eˣ)/x²</span></div><div class="op"><span class="lt">C</span><span>eˣ/x</span></div><div class="op"><span class="lt">D</span><span>(eˣ − xeˣ)/x²</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">24</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">If h(x) = (x² + 1)(x), then h'(2) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>12</span></div><div class="op"><span class="lt">B</span><span>15</span></div><div class="op"><span class="lt">C</span><span>10</span></div><div class="op"><span class="lt">D</span><span>13</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 10</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q25 – Q27 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">25</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">The derivative of f(x) = tan x is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>−cot x</span></div><div class="op"><span class="lt">B</span><span>sec²x</span></div><div class="op"><span class="lt">C</span><span>−csc²x</span></div><div class="op"><span class="lt">D</span><span>cot x</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">26</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">If f(x) = cos x, then f'(π/2) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>−1</span></div><div class="op"><span class="lt">B</span><span>π/2</span></div><div class="op"><span class="lt">C</span><span>0</span></div><div class="op"><span class="lt">D</span><span>1</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">27</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">The derivative of y = x sin x + cos x is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>sin x + x cos x − sin x</span></div><div class="op"><span class="lt">B</span><span>x cos x</span></div><div class="op"><span class="lt">C</span><span>cos x</span></div><div class="op"><span class="lt">D</span><span>x cos x − sin x</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 11</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q28 – Q30 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">28</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If f(x) = eˣ cos x, then f'(0) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>2</span></div><div class="op"><span class="lt">B</span><span>1</span></div><div class="op"><span class="lt">C</span><span>−1</span></div><div class="op"><span class="lt">D</span><span>0</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">29</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">The slope of the normal line to y = x² at x = 1 is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>2</span></div><div class="op"><span class="lt">B</span><span>−2</span></div><div class="op"><span class="lt">C</span><span>−1/2</span></div><div class="op"><span class="lt">D</span><span>1/2</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">30</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">If f(x) = (x² − 1)/(x + 1), then f'(2) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>2</span></div><div class="op"><span class="lt">B</span><span>1</span></div><div class="op"><span class="lt">C</span><span>4</span></div><div class="op"><span class="lt">D</span><span>3</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 12</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q31 – Q33 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">31</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">Which is the derivative of f(x) = x⁵ eˣ?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>x⁴ eˣ (5 + x)</span></div><div class="op"><span class="lt">B</span><span>x⁵ eˣ</span></div><div class="op"><span class="lt">C</span><span>5x⁴ + eˣ</span></div><div class="op"><span class="lt">D</span><span>5x⁴ eˣ</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">32</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If f(x) = sin x / x, then f'(π) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>−1/π</span></div><div class="op"><span class="lt">B</span><span>−1/π²</span></div><div class="op"><span class="lt">C</span><span>0</span></div><div class="op"><span class="lt">D</span><span>1/π</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">33</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">The derivative of f(x) = 3ˣ is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>3ˣ</span></div><div class="op"><span class="lt">B</span><span>3ˣ ln 3</span></div><div class="op"><span class="lt">C</span><span>x 3ˣ⁻¹</span></div><div class="op"><span class="lt">D</span><span>ln 3</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 13</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q34 – Q36 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">34</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">If f(x) = ln x, then f'(e) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>0</span></div><div class="op"><span class="lt">B</span><span>1</span></div><div class="op"><span class="lt">C</span><span>e</span></div><div class="op"><span class="lt">D</span><span>1/e</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">35</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">The tangent line to y = eˣ at x = 0 passes through</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>(1, 0)</span></div><div class="op"><span class="lt">B</span><span>(1, 1)</span></div><div class="op"><span class="lt">C</span><span>(0, 0)</span></div><div class="op"><span class="lt">D</span><span>(0, 1)</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">36</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">If f(x) = x² + 2x, where is the tangent horizontal?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>x = 1</span></div><div class="op"><span class="lt">B</span><span>x = −2</span></div><div class="op"><span class="lt">C</span><span>x = −1</span></div><div class="op"><span class="lt">D</span><span>x = 0</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 14</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q37 – Q39 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">37</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">The derivative of f(x) = cot x is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>sec²x</span></div><div class="op"><span class="lt">B</span><span>−sec²x</span></div><div class="op"><span class="lt">C</span><span>−csc²x</span></div><div class="op"><span class="lt">D</span><span>csc²x</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">38</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">If f(x) = √x · x, then f'(4) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>3/4</span></div><div class="op"><span class="lt">B</span><span>6</span></div><div class="op"><span class="lt">C</span><span>3</span></div><div class="op"><span class="lt">D</span><span>3/2</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">39</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">The normal line to y = sin x at x = π/2 is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>y = x</span></div><div class="op"><span class="lt">B</span><span>x = π/2</span></div><div class="op"><span class="lt">C</span><span>y = 0</span></div><div class="op"><span class="lt">D</span><span>y = 1</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 15</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q40 – Q42 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">40</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If f(x) = e^(2x), then f'(0) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>1</span></div><div class="op"><span class="lt">B</span><span>2</span></div><div class="op"><span class="lt">C</span><span>e</span></div><div class="op"><span class="lt">D</span><span>2e</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">41</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">The derivative of y = ln(2x) is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>1/(2x)</span></div><div class="op"><span class="lt">B</span><span>1/x</span></div><div class="op"><span class="lt">C</span><span>ln 2</span></div><div class="op"><span class="lt">D</span><span>2/x</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">42</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If f(x) = (x² + 1)⁵, then f'(x) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>10x(x² + 1)⁴</span></div><div class="op"><span class="lt">B</span><span>5(x² + 1)⁴ · 2x</span></div><div class="op"><span class="lt">C</span><span>5(x² + 1)⁴</span></div><div class="op"><span class="lt">D</span><span>10x(x² + 1)⁵</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 16</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q43 – Q45 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">43</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">The derivative of g(x) = sin(x²) is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>−cos(x²)</span></div><div class="op"><span class="lt">B</span><span>cos(x²)</span></div><div class="op"><span class="lt">C</span><span>2x cos(x²)</span></div><div class="op"><span class="lt">D</span><span>2x sin(x²)</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">44</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If h(x) = e^(x²), then h'(1) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>e²</span></div><div class="op"><span class="lt">B</span><span>2e</span></div><div class="op"><span class="lt">C</span><span>e</span></div><div class="op"><span class="lt">D</span><span>2e²</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">45</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">The derivative of f(x) = √(3x + 1) is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>1/√(3x+1)</span></div><div class="op"><span class="lt">B</span><span>3/(2√(3x+1))</span></div><div class="op"><span class="lt">C</span><span>1/(2√(3x+1))</span></div><div class="op"><span class="lt">D</span><span>3/√(3x+1)</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 17</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q46 – Q48 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">46</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If f(x) = (sin x)³, then f'(π/2) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>−3</span></div><div class="op"><span class="lt">B</span><span>1</span></div><div class="op"><span class="lt">C</span><span>3</span></div><div class="op"><span class="lt">D</span><span>0</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">47</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">The derivative of y = ln(cos x) is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>sec x</span></div><div class="op"><span class="lt">B</span><span>−sec x</span></div><div class="op"><span class="lt">C</span><span>tan x</span></div><div class="op"><span class="lt">D</span><span>−tan x</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">48</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If f(x) = e^(sin x), then f'(0) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>0</span></div><div class="op"><span class="lt">B</span><span>sin 1</span></div><div class="op"><span class="lt">C</span><span>1</span></div><div class="op"><span class="lt">D</span><span>e</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 18</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q49 – Q51 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">49</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">The derivative of f(x) = (x + √x)² is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>2(x + √x)(1 + 1/(2√x))</span></div><div class="op"><span class="lt">B</span><span>2x + 2√x</span></div><div class="op"><span class="lt">C</span><span>(1 + 1/(2√x))²</span></div><div class="op"><span class="lt">D</span><span>2(x + √x)</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">50</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">If f(x) = cos(x³), then f'(x) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>−3x² sin(x³)</span></div><div class="op"><span class="lt">B</span><span>sin(3x²)</span></div><div class="op"><span class="lt">C</span><span>3x² sin(x³)</span></div><div class="op"><span class="lt">D</span><span>−sin(x³)</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">51</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">The slope of the tangent line to y = (2x − 1)⁴ at x = 1 is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>32</span></div><div class="op"><span class="lt">B</span><span>16</span></div><div class="op"><span class="lt">C</span><span>8</span></div><div class="op"><span class="lt">D</span><span>4</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 19</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q52 – Q54 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">52</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If f(x) = ln(ln x), then f'(e) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>1/e</span></div><div class="op"><span class="lt">B</span><span>1</span></div><div class="op"><span class="lt">C</span><span>1/(e ln e)</span></div><div class="op"><span class="lt">D</span><span>e</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">53</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">The derivative of y = e^(e^x) is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>e^x · e^(e^x) · e^x</span></div><div class="op"><span class="lt">B</span><span>e^(e^x) · e^x</span></div><div class="op"><span class="lt">C</span><span>e^(e^x)</span></div><div class="op"><span class="lt">D</span><span>e^(e^x + x)</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">54</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">If f(x) = √(x² + 1), then f'(0) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>1</span></div><div class="op"><span class="lt">B</span><span>0</span></div><div class="op"><span class="lt">C</span><span>Undefined</span></div><div class="op"><span class="lt">D</span><span>1/2</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 20</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q55 – Q57 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">55</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">The derivative of f(x) = sin²x + cos²x is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>−2 sin x cos x</span></div><div class="op"><span class="lt">B</span><span>2 sin x cos x</span></div><div class="op"><span class="lt">C</span><span>1</span></div><div class="op"><span class="lt">D</span><span>0</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">56</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">If f(x) = (x² − 1)¹⁰⁰, then f'(1) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>200</span></div><div class="op"><span class="lt">B</span><span>100</span></div><div class="op"><span class="lt">C</span><span>1</span></div><div class="op"><span class="lt">D</span><span>0</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">57</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">The derivative of y = tan(√x) is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>sec²(√x)</span></div><div class="op"><span class="lt">B</span><span>sec(√x) tan(√x)/(2√x)</span></div><div class="op"><span class="lt">C</span><span>1/(2√x)</span></div><div class="op"><span class="lt">D</span><span>sec²(√x)/(2√x)</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 21</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q58 – Q60 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">58</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If f(x) = e^(−x²), where is f'(x) = 0?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>x = −1</span></div><div class="op"><span class="lt">B</span><span>Nowhere</span></div><div class="op"><span class="lt">C</span><span>x = 0</span></div><div class="op"><span class="lt">D</span><span>x = 1</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">59</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">The derivative of f(x) = ln(x²) for x > 0 is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>2/x</span></div><div class="op"><span class="lt">B</span><span>2x</span></div><div class="op"><span class="lt">C</span><span>1/x²</span></div><div class="op"><span class="lt">D</span><span>1/(2x)</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">60</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If x² + y² = 25, then dy/dx =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>−x/y</span></div><div class="op"><span class="lt">B</span><span>x/y</span></div><div class="op"><span class="lt">C</span><span>−y/x</span></div><div class="op"><span class="lt">D</span><span>y/x</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 22</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q61 – Q63 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">61</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">For the curve xy = 1, dy/dx =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>−y/x</span></div><div class="op"><span class="lt">B</span><span>y/x</span></div><div class="op"><span class="lt">C</span><span>−x/y</span></div><div class="op"><span class="lt">D</span><span>x/y</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">62</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">If x² + y² = 100, the slope of the curve at (6, 8) is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>4/3</span></div><div class="op"><span class="lt">B</span><span>−4/3</span></div><div class="op"><span class="lt">C</span><span>−3/4</span></div><div class="op"><span class="lt">D</span><span>3/4</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">63</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">Implicit differentiation of sin(xy) = x gives</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>cos(xy)(xy') = 1</span></div><div class="op"><span class="lt">B</span><span>y cos(xy) + xy' = 1</span></div><div class="op"><span class="lt">C</span><span>cos(xy) = 1</span></div><div class="op"><span class="lt">D</span><span>cos(xy)(y + xy') = 1</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 23</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q64 – Q66 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">64</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If x³ + y³ = 6xy, then dy/dx at (3, 3) is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>1</span></div><div class="op"><span class="lt">B</span><span>Undefined</span></div><div class="op"><span class="lt">C</span><span>0</span></div><div class="op"><span class="lt">D</span><span>−1</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">65</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">A 10-foot ladder slides down a wall. If x is the distance from the wall and y is the height on the wall, the relation is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>x² + y² = 100</span></div><div class="op"><span class="lt">B</span><span>xy = 10</span></div><div class="op"><span class="lt">C</span><span>x + y = 10</span></div><div class="op"><span class="lt">D</span><span>x² − y² = 100</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">66</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If the radius of a circle increases at 2 cm/s, how fast does its area increase when r = 3 cm?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>3π cm²/s</span></div><div class="op"><span class="lt">B</span><span>4π cm²/s</span></div><div class="op"><span class="lt">C</span><span>6π cm²/s</span></div><div class="op"><span class="lt">D</span><span>12π cm²/s</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 24</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q67 – Q69 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">67</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">For the hyperbola x² − y² = 1, dy/dx =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>−x/y</span></div><div class="op"><span class="lt">B</span><span>x/y</span></div><div class="op"><span class="lt">C</span><span>−y/x</span></div><div class="op"><span class="lt">D</span><span>y/x</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">68</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If y = f(u) and u = g(t), then dy/dt =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>f'(g(t)) g'(t)</span></div><div class="op"><span class="lt">B</span><span>f(g'(t))</span></div><div class="op"><span class="lt">C</span><span>f'(u) g'(t)</span></div><div class="op"><span class="lt">D</span><span>g'(f(u))</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">69</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">The tangent line to the circle x² + y² = 25 is vertical when</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>x = 0</span></div><div class="op"><span class="lt">B</span><span>x = 5</span></div><div class="op"><span class="lt">C</span><span>y = 0</span></div><div class="op"><span class="lt">D</span><span>y = 5</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 25</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q70 – Q72 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">70</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+        </div>
+        <div class="stem">If 2x + 3y = 6, then dy/dx =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>−2/3</span></div><div class="op"><span class="lt">B</span><span>2/3</span></div><div class="op"><span class="lt">C</span><span>3/2</span></div><div class="op"><span class="lt">D</span><span>−3/2</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">71</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">Implicit differentiation of e^(xy) = x + y gives</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>x e^(xy) = 1</span></div><div class="op"><span class="lt">B</span><span>e^(xy)(xy') = 1 + y'</span></div><div class="op"><span class="lt">C</span><span>y e^(xy) = 1</span></div><div class="op"><span class="lt">D</span><span>e^(xy)(y + xy') = 1 + y'</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">72</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If x = cos t and y = sin t, then dy/dx =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>−tan t</span></div><div class="op"><span class="lt">B</span><span>−cot t</span></div><div class="op"><span class="lt">C</span><span>tan t</span></div><div class="op"><span class="lt">D</span><span>cot t</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 26</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q73 – Q75 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">73</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">The volume of a sphere is V = (4/3)πr³. If dr/dt = k, then dV/dt =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>(4/3)πr² k</span></div><div class="op"><span class="lt">B</span><span>πr² k</span></div><div class="op"><span class="lt">C</span><span>4πr² k</span></div><div class="op"><span class="lt">D</span><span>4πr k</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">74</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If y² = x, then d²y/dx² =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>−1/(2y³)</span></div><div class="op"><span class="lt">B</span><span>−1/(4y³)</span></div><div class="op"><span class="lt">C</span><span>1/(4y³)</span></div><div class="op"><span class="lt">D</span><span>1/(2y)</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">75</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">The normal line to xy = 4 at the point (2, 2) has slope</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>2</span></div><div class="op"><span class="lt">B</span><span>−1</span></div><div class="op"><span class="lt">C</span><span>−2</span></div><div class="op"><span class="lt">D</span><span>1</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 27</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q76 – Q78 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">76</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+        </div>
+        <div class="stem">If f'(x) > 0 on (a, b), then f is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>Increasing</span></div><div class="op"><span class="lt">B</span><span>Concave Down</span></div><div class="op"><span class="lt">C</span><span>Concave Up</span></div><div class="op"><span class="lt">D</span><span>Decreasing</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">77</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+        </div>
+        <div class="stem">If f''(x) < 0 on (a, b), then the graph of f is</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>Decreasing</span></div><div class="op"><span class="lt">B</span><span>Increasing</span></div><div class="op"><span class="lt">C</span><span>Concave Down</span></div><div class="op"><span class="lt">D</span><span>Concave Up</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">78</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">A point of inflection on a continuous curve occurs where</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>f'(x) is maximized</span></div><div class="op"><span class="lt">B</span><span>f'(x) = 0</span></div><div class="op"><span class="lt">C</span><span>f(x) = 0</span></div><div class="op"><span class="lt">D</span><span>f''(x) = 0 or undefined, and concavity changes sign</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 28</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q79 – Q81 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">79</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If f'(c) = 0 and f''(c) > 0, then f has a</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>Point of Inflection at c</span></div><div class="op"><span class="lt">B</span><span>None of the above</span></div><div class="op"><span class="lt">C</span><span>Local Maximum at c</span></div><div class="op"><span class="lt">D</span><span>Local Minimum at c</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">80</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">Given the graph of f', a local maximum of f occurs where</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>f' has a maximum</span></div><div class="op"><span class="lt">B</span><span>f' has a minimum</span></div><div class="op"><span class="lt">C</span><span>f' crosses the x-axis from positive to negative</span></div><div class="op"><span class="lt">D</span><span>f' crosses the x-axis from negative to positive</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">81</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">If f(x) = x⁴, then f''(0) =</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>12</span></div><div class="op"><span class="lt">B</span><span>4</span></div><div class="op"><span class="lt">C</span><span>24</span></div><div class="op"><span class="lt">D</span><span>0</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 29</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q82 – Q84 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">82</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+        </div>
+        <div class="stem">Velocity v(t) is defined as the first derivative of</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>Acceleration a(t)</span></div><div class="op"><span class="lt">B</span><span>Time t</span></div><div class="op"><span class="lt">C</span><span>Position s(t)</span></div><div class="op"><span class="lt">D</span><span>Speed |v(t)|</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">83</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+        </div>
+        <div class="stem">Acceleration a(t) is defined as the first derivative of</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>Position s(t)</span></div><div class="op"><span class="lt">B</span><span>Displacement</span></div><div class="op"><span class="lt">C</span><span>Speed |v(t)|</span></div><div class="op"><span class="lt">D</span><span>Velocity v(t)</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">84</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">If f'(x) = x(x − 2)(x + 1), what are the critical numbers of f?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>0, −2, 1</span></div><div class="op"><span class="lt">B</span><span>0, 2, −1</span></div><div class="op"><span class="lt">C</span><span>0, 1, 2</span></div><div class="op"><span class="lt">D</span><span>1, −1, 2</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 30</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q85 – Q87 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">85</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+        </div>
+        <div class="stem">If f''(x) = 6x − 6, where does the graph of f have a point of inflection?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>x = −1</span></div><div class="op"><span class="lt">B</span><span>x = 0</span></div><div class="op"><span class="lt">C</span><span>x = 6</span></div><div class="op"><span class="lt">D</span><span>x = 1</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">86</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">Values of differentiable functions f and g are given: f(2) = 3, f'(2) = 5, g(2) = −1, g'(2) = 4. What is (f · g)'(2)?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>20</span></div><div class="op"><span class="lt">B</span><span>−5</span></div><div class="op"><span class="lt">C</span><span>17</span></div><div class="op"><span class="lt">D</span><span>7</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">87</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">Where is the function f(x) = |x − 3| not differentiable?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>x = −3</span></div><div class="op"><span class="lt">B</span><span>f is differentiable everywhere</span></div><div class="op"><span class="lt">C</span><span>x = 0</span></div><div class="op"><span class="lt">D</span><span>x = 3</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 31</span></div></section>
+<section class="page "><div class="phead"><span>Section A · Multiple Choice</span><span>Q88 – Q90 of 90</span></div><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">88</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">For f(x) = x / (x² + 1), at what values of x does the graph have a horizontal tangent line?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>x = 1 and x = −1</span></div><div class="op"><span class="lt">B</span><span>There are no horizontal tangents</span></div><div class="op"><span class="lt">C</span><span>x = 1 only</span></div><div class="op"><span class="lt">D</span><span>x = 0 only</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">89</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If f(x) = sec x, what is f''(0)?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>0</span></div><div class="op"><span class="lt">B</span><span>1</span></div><div class="op"><span class="lt">C</span><span>2</span></div><div class="op"><span class="lt">D</span><span>−1</span></div></div>
+      </div>
+    </article><article class="qc">
+      <div class="qs">
+        <span class="ql">Item</span>
+        <span class="qn">90</span>
+        <span class="qd"></span>
+      </div>
+      <div class="qb">
+        <div class="qmeta">
+          <span>Single Best Choice</span>
+          <div class="qmeta-right"><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+        </div>
+        <div class="stem">If f(x) = x² − 2x, on the interval [0, 4], at what value of c does the instantaneous rate of change equal the average rate of change?</div>
+        <div class="opts2"><div class="op"><span class="lt">A</span><span>2</span></div><div class="op"><span class="lt">B</span><span>1</span></div><div class="op"><span class="lt">C</span><span>3</span></div><div class="op"><span class="lt">D</span><span>4</span></div></div>
+      </div>
+    </article><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 32</span></div></section>
+<section class="page ">
+  <div class="phead"><span>Section B · Quick Key</span><span>Complete 90-Item Matrix with Stars</span></div>
+  <div class="title">MCQ Answer Key Matrix</div>
+  <p class="lead">Quick diagnostic key with priority star ratings for all 90 Unit 2 MCQs.</p>
+  <div class="akey-grid"><div class="akey-item"><span>Q01</span><b>A</b><span class="mini-stars" style="color:#00897B">★★</span></div><div class="akey-item"><span>Q02</span><b>D</b><span class="mini-stars" style="color:#00897B">★★</span></div><div class="akey-item"><span>Q03</span><b>D</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q04</span><b>D</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q05</span><b>D</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q06</span><b>C</b><span class="mini-stars" style="color:#00897B">★★</span></div><div class="akey-item"><span>Q07</span><b>D</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q08</span><b>A</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q09</span><b>D</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q10</span><b>D</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q11</span><b>D</b><span class="mini-stars" style="color:#00897B">★★</span></div><div class="akey-item"><span>Q12</span><b>D</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q13</span><b>A</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q14</span><b>C</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q15</span><b>A</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q16</span><b>D</b><span class="mini-stars" style="color:#00897B">★★</span></div><div class="akey-item"><span>Q17</span><b>B</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q18</span><b>D</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q19</span><b>A</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q20</span><b>B</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q21</span><b>A</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q22</span><b>A</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q23</span><b>B</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q24</span><b>D</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q25</span><b>B</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q26</span><b>A</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q27</span><b>B</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q28</span><b>B</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q29</span><b>C</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q30</span><b>B</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q31</span><b>A</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q32</span><b>A</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q33</span><b>B</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q34</span><b>D</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q35</span><b>D</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q36</span><b>C</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q37</span><b>C</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q38</span><b>C</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q39</span><b>B</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q40</span><b>B</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q41</span><b>B</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q42</span><b>A</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q43</span><b>C</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q44</span><b>B</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q45</span><b>B</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q46</span><b>D</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q47</span><b>D</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q48</span><b>C</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q49</span><b>A</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q50</span><b>A</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q51</span><b>C</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q52</span><b>A</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q53</span><b>B</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q54</span><b>B</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q55</span><b>D</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q56</span><b>D</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q57</span><b>D</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q58</span><b>C</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q59</span><b>A</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q60</span><b>A</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q61</span><b>A</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q62</span><b>C</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q63</span><b>D</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q64</span><b>D</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q65</span><b>A</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q66</span><b>D</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q67</span><b>B</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q68</span><b>A</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q69</span><b>C</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q70</span><b>A</b><span class="mini-stars" style="color:#00897B">★★</span></div><div class="akey-item"><span>Q71</span><b>D</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q72</span><b>B</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q73</span><b>C</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q74</span><b>B</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q75</span><b>D</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q76</span><b>A</b><span class="mini-stars" style="color:#00897B">★★</span></div><div class="akey-item"><span>Q77</span><b>C</b><span class="mini-stars" style="color:#00897B">★★</span></div><div class="akey-item"><span>Q78</span><b>D</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q79</span><b>D</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q80</span><b>C</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q81</span><b>D</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q82</span><b>C</b><span class="mini-stars" style="color:#00897B">★★</span></div><div class="akey-item"><span>Q83</span><b>D</b><span class="mini-stars" style="color:#00897B">★★</span></div><div class="akey-item"><span>Q84</span><b>B</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q85</span><b>D</b><span class="mini-stars" style="color:#3949AB">★★★</span></div><div class="akey-item"><span>Q86</span><b>D</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q87</span><b>D</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q88</span><b>A</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q89</span><b>B</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div><div class="akey-item"><span>Q90</span><b>A</b><span class="mini-stars" style="color:#B8860B">★★★★★</span></div></div>
+<div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 33</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q01 – Q03</span></div><div class="sol">
+      <div class="sol-title"><span>Question 01 Analysis</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+      <div class="ans">Correct Answer: (A) 8</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Average Rate = [f(4) − f(1)] / (4 − 1). f(4) = 16 + 12 = 28. f(1) = 1 + 3 = 4. (28 − 4)/3 = 24/3 = 8.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Calculates slope between (1,1) and (4,4) incorrectly.</li><li><b>(C)</b> Arithmetic error in subtraction (28 − 4 = 21).</li><li><b>(D)</b> Uses f(4) − f(1) without dividing by 3.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 02 Analysis</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+      <div class="ans">Correct Answer: (D) 0</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f is a constant function. The change in y is always 0. Thus, average rate = 0/(b − a) = 0.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Division by zero only happens if a = b, but intervals imply a ≠ b.</li><li><b>(B)</b> Confuses the function value with the rate of change.</li><li><b>(C)</b> Confuses the denominator with the rate.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 03 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (D) 2x + h</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>[(x+h)² − x²]/h = [x² + 2xh + h² − x²]/h = (2xh + h²)/h = h(2x+h)/h = 2x + h.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Only keeps the h² term.</li><li><b>(B)</b> Sign error in expansion.</li><li><b>(C)</b> Takes the limit as h→0 immediately.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 34</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q04 – Q06</span></div><div class="sol">
+      <div class="sol-title"><span>Question 04 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (D) 1/5</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>[f(9) − f(4)] / (9 − 4) = (3 − 2) / 5 = 1/5.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Adds instead of subtracts.</li><li><b>(B)</b> Uses (9 − 4)/(3 − 2) = 5.</li><li><b>(C)</b> Uses 1/(√9 − √4) = 1/1 = 1.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 05 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (D) <span class="lim">lim</span> (h→0) [f(a+h) − f(a)]/h</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Definition of derivative: f'(a) = <span class="lim">lim</span> (h→0) [f(a+h) − f(a)]/h.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> This is the difference quotient, not the limit.</li><li><b>(B)</b> This is the limit of the function, not the rate.</li><li><b>(C)</b> This is just the change in y.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 06 Analysis</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+      <div class="ans">Correct Answer: (C) 3</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f is linear with slope 3. The derivative of a linear function is its constant slope, so f'(2) = 3.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Confuses y-intercept with slope.</li><li><b>(B)</b> Evaluates f(2) = −1 and guesses 0.</li><li><b>(D)</b> Confuses input x = 2 with output.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 35</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q07 – Q09</span></div><div class="sol">
+      <div class="sol-title"><span>Question 07 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (D) 3</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Approximate derivative using the secant slope: (11 − 5) / (4 − 2) = 6 / 2 = 3.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Uses average of y-values.</li><li><b>(B)</b> Uses only y-values difference.</li><li><b>(C)</b> Uses product of differences.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 08 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (A) 12</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>This limit is the definition of f'(2). f'(x) = 3x². f'(2) = 3(2)² = 12.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Calculates 2³ = 8.</li><li><b>(C)</b> Thinks derivative of cubic is 0 at some point.</li><li><b>(D)</b> Calculates 2² = 4.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 09 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (D) 6 m/s</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>[s(3) − s(1)] / (3 − 1). s(3) = 9 + 6 = 15. s(1) = 1 + 2 = 3. (15 − 3)/2 = 12/2 = 6 m/s.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Adds s(3) + s(1).</li><li><b>(B)</b> Forgets to divide by time interval (15 − 3 = 12).</li><li><b>(C)</b> Calculates s(3) only.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 36</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q10 – Q12</span></div><div class="sol">
+      <div class="sol-title"><span>Question 10 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (D) Continuous at x = c</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Differentiability implies continuity. If a function has a derivative at a point, it must be continuous there.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Not necessarily linear (e.g. x²).</li><li><b>(B)</b> It must be defined, but continuity is the stronger necessary condition.</li><li><b>(C)</b> Not necessarily constant.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 11 Analysis</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+      <div class="ans">Correct Answer: (D) 5x⁴</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Power Rule: d/dx (xⁿ) = nxⁿ⁻¹. So 5x⁴.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Forgets the coefficient n.</li><li><b>(B)</b> Subtracts 1 from coefficient.</li><li><b>(C)</b> Forgets to subtract 1 from exponent.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 12 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (D) 12t² − 2</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>d/dt(4t³) = 12t². d/dt(−2t) = −2. d/dt(7) = 0. Result: 12t² − 2.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Doesn't reduce power on first term.</li><li><b>(B)</b> Keeps the t in the second term.</li><li><b>(C)</b> Differentiates 4t³ as 4t².</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 37</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q13 – Q15</span></div><div class="sol">
+      <div class="sol-title"><span>Question 13 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (A) 1/(2√x)</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>√x = x^(1/2). Derivative is (1/2)x^(−1/2) = 1/(2√x).</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Multiplies by 2 instead of 1/2.</li><li><b>(C)</b> Forgets the 1/2 factor.</li><li><b>(D)</b> Sign error.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 14 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (C) −2</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>y' = 2x. At x = −1, slope = 2(−1) = −2.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Squares the x-value again.</li><li><b>(B)</b> Evaluates y instead of y'.</li><li><b>(D)</b> Sign error (thinks slope is positive).</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 15 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (A) −1/4</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f(x) = x⁻¹. f'(x) = −x⁻² = −1/x². f'(2) = −1/4.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Forgets the negative sign.</li><li><b>(C)</b> Sign error and square error.</li><li><b>(D)</b> Positive reciprocal.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 38</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q16 – Q18</span></div><div class="sol">
+      <div class="sol-title"><span>Question 16 Analysis</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+      <div class="ans">Correct Answer: (D) f(x) = 5</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>The derivative of any constant function is 0.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Derivative is 1.</li><li><b>(B)</b> Derivative is cos x.</li><li><b>(C)</b> Derivative is 2x.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 17 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (B) 10</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f'(x) = nxⁿ⁻¹. f'(1) = n(1)ⁿ⁻¹ = n. Given f'(1) = 10, so n = 10.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Thinks n must be 1.</li><li><b>(C)</b> Thinks n must be half.</li><li><b>(D)</b> Thinks n must be 0.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 18 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (D) 0</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>π is a constant, so π³ is also a constant. The derivative of any constant is 0.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Treats π as a variable x.</li><li><b>(B)</b> Treats π as variable without power rule.</li><li><b>(C)</b> Constants are differentiable.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 39</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q19 – Q21</span></div><div class="sol">
+      <div class="sol-title"><span>Question 19 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (A) −2</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f'(x) = 8x³ − 6x. f'(−1) = 8(−1) − 6(−1) = −8 + 6 = −2.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Calculates 8(−1) − 6 = −14 (sign error on second term).</li><li><b>(C)</b> Sign error on first term.</li><li><b>(D)</b> Adds magnitudes.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 20 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (B) y = 3x − 2</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Point: (1, 1). Slope: y' = 3x² → 3(1)² = 3. Eq: y − 1 = 3(x − 1) → y = 3x − 2.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Wrong slope (1).</li><li><b>(C)</b> Passes through origin, wrong intercept.</li><li><b>(D)</b> Wrong intercept (+2).</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 21 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (A) 3/2</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f'(x) = 2ax + b. 1) 2a + b = 4. 2) 4a + b = 7. Subtract (1) from (2): 2a = 3 → a = 3/2.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Assumes a = 1.</li><li><b>(C)</b> Arithmetic error 2a = 4.</li><li><b>(D)</b> Solves for b instead.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 40</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q22 – Q24</span></div><div class="sol">
+      <div class="sol-title"><span>Question 22 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (A) 2x sin x + x² cos x</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Product Rule: u'v + uv'. u = x², v = sin x. u' = 2x, v' = cos x. Result: 2x sin x + x² cos x.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Sign error (quotient rule confusion).</li><li><b>(C)</b> Derivative of product is NOT product of derivatives.</li><li><b>(D)</b> Misses the first term (u'v).</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 23 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (B) (xeˣ − eˣ)/x²</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Quotient Rule: (u'v − uv')/v². u = eˣ, v = x. (eˣ·x − eˣ·1)/x² = (xeˣ − eˣ)/x².</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Sign error in numerator addition.</li><li><b>(C)</b> Forgot quotient rule entirely.</li><li><b>(D)</b> Numerator terms swapped (sign error).</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 24 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (D) 13</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>h'(x) = (2x)(x) + (x²+1)(1) = 2x² + x² + 1 = 3x² + 1. h'(2) = 3(4) + 1 = 13.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Calculates 3x² only.</li><li><b>(B)</b> Arithmetic error.</li><li><b>(C)</b> Calculates 2x² only.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 41</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q25 – Q27</span></div><div class="sol">
+      <div class="sol-title"><span>Question 25 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (B) sec²x</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Standard derivative: d/dx (tan x) = sec²x.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Negative reciprocal.</li><li><b>(C)</b> Derivative of cot x.</li><li><b>(D)</b> Reciprocal function.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 26 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (A) −1</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f'(x) = −sin x. f'(π/2) = −sin(π/2) = −1.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Confuses input with output.</li><li><b>(C)</b> Evaluates cos instead of sin.</li><li><b>(D)</b> Sign error.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 27 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (B) x cos x</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>d/dx (x sin x) = 1·sin x + x·cos x. d/dx (cos x) = −sin x. Sum: sin x + x cos x − sin x = x cos x.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Forgot to cancel sin x terms.</li><li><b>(C)</b> Only took derivative of second term.</li><li><b>(D)</b> Sign error on cos derivative.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 42</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q28 – Q30</span></div><div class="sol">
+      <div class="sol-title"><span>Question 28 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (B) 1</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f'(x) = eˣ cos x + eˣ (−sin x) = eˣ(cos x − sin x). f'(0) = e⁰(1 − 0) = 1.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Added sin term.</li><li><b>(C)</b> Sign error (1 − (−1)?).</li><li><b>(D)</b> Product rule error.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 29 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (C) −1/2</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Tangent slope m = 2x = 2. Normal slope = −1/m = −1/2.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Tangent slope.</li><li><b>(B)</b> Negative tangent slope.</li><li><b>(D)</b> Reciprocal but positive.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 30 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (B) 1</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Simplify first: f(x) = x − 1 (for x ≠ −1). f'(x) = 1. So f'(2) = 1.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Evaluated f(2) instead of f'.</li><li><b>(C)</b> Squared the result.</li><li><b>(D)</b> Quotient rule arithmetic error.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 43</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q31 – Q33</span></div><div class="sol">
+      <div class="sol-title"><span>Question 31 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (A) x⁴ eˣ (5 + x)</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Product Rule: f' = 5x⁴eˣ + x⁵eˣ = x⁴eˣ(5 + x).</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Original function.</li><li><b>(C)</b> Sum rule error.</li><li><b>(D)</b> Incomplete product rule.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 32 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (A) −1/π</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f'(x) = (cos x · x − sin x)/x². At π: (−1 · π − 0)/π² = −π/π² = −1/π.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Squared denominator error (forgot π in numerator).</li><li><b>(C)</b> sin π is 0, but cos π is −1.</li><li><b>(D)</b> Sign error.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 33 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (B) 3ˣ ln 3</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Exponential rule: d/dx (aˣ) = aˣ ln a. So 3ˣ ln 3.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Missing ln 3.</li><li><b>(C)</b> Power rule misapplied.</li><li><b>(D)</b> Just the constant.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 44</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q34 – Q36</span></div><div class="sol">
+      <div class="sol-title"><span>Question 34 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (D) 1/e</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f'(x) = 1/x. f'(e) = 1/e.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Derivative of constant?</li><li><b>(B)</b> f(e) value.</li><li><b>(C)</b> x value.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 35 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (D) (0, 1)</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Point is (0, e⁰) = (0, 1). Slope is e⁰ = 1. Equation: y − 1 = 1(x − 0) ⇒ y = x + 1. The point of tangency is (0, 1).</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> (1,0) gives y = 2 ≠ 0.</li><li><b>(B)</b> (1,1) does not satisfy y = x + 1.</li><li><b>(C)</b> Does not pass through origin.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 36 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (C) x = −1</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f'(x) = 2x + 2. Horizontal tangent requires f'(x) = 0: 2x = −2 → x = −1.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Positive root of f'.</li><li><b>(B)</b> Double the root.</li><li><b>(D)</b> Root of f.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 45</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q37 – Q39</span></div><div class="sol">
+      <div class="sol-title"><span>Question 37 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (C) −csc²x</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Standard trig derivative: d/dx (cot x) = −csc²x.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> tan derivative.</li><li><b>(B)</b> Negative secant.</li><li><b>(D)</b> Forgot negative sign.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 38 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (C) 3</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f(x) = x^(3/2). f'(x) = (3/2)x^(1/2) = (3/2)√x. f'(4) = (3/2)(2) = 3.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Forgot 3/2 factor.</li><li><b>(B)</b> Forgot 1/2 factor.</li><li><b>(D)</b> Forgot square root evaluation.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 39 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (B) x = π/2</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Tangent slope m = cos(π/2) = 0 (horizontal tangent y = 1). The normal line is perpendicular, so it is the vertical line x = π/2.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Diagonal line.</li><li><b>(C)</b> x-axis.</li><li><b>(D)</b> This is the tangent line equation.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 46</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q40 – Q42</span></div><div class="sol">
+      <div class="sol-title"><span>Question 40 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (B) 2</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Chain Rule: f'(x) = 2e^(2x). At x = 0: 2e⁰ = 2.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Forgot chain factor 2.</li><li><b>(C)</b> e^0 is 1, not e.</li><li><b>(D)</b> e^2 error.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 41 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (B) 1/x</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Chain Rule: (1/2x) · 2 = 1/x. Or use ln(2x) = ln 2 + ln x, whose derivative is 0 + 1/x = 1/x.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Forgot chain rule factor 2.</li><li><b>(C)</b> Derivative of constant ln 2 is 0.</li><li><b>(D)</b> Multiplied instead of divided.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 42 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (A) 10x(x² + 1)⁴</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Chain Rule: 5(x²+1)⁴ · (2x) = 10x(x²+1)⁴.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Unmultiplied form.</li><li><b>(C)</b> Outer derivative only.</li><li><b>(D)</b> Power subtraction error.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 47</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q43 – Q45</span></div><div class="sol">
+      <div class="sol-title"><span>Question 43 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (C) 2x cos(x²)</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Chain Rule: cos(x²) · d/dx(x²) = 2x cos(x²).</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Sign error.</li><li><b>(B)</b> Outer derivative only.</li><li><b>(D)</b> Wrong outer derivative.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 44 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (B) 2e</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>h'(x) = e^(x²) · 2x. At x = 1: e¹ · 2(1) = 2e.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> e² error.</li><li><b>(C)</b> Forgot 2x inner derivative.</li><li><b>(D)</b> 2e² error.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 45 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (B) 3/(2√(3x+1))</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f(x) = (3x+1)^(1/2). f'(x) = (1/2)(3x+1)^(−1/2) · 3 = 3/(2√(3x+1)).</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Forgot 1/2 factor.</li><li><b>(C)</b> Forgot inner derivative 3.</li><li><b>(D)</b> Forgot both 1/2 and inner.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 48</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q46 – Q48</span></div><div class="sol">
+      <div class="sol-title"><span>Question 46 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (D) 0</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f'(x) = 3(sin x)² · cos x. At π/2: 3(1)² · cos(π/2) = 3(1)(0) = 0.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Sign error.</li><li><b>(B)</b> Forgot cos term.</li><li><b>(C)</b> Evaluated 3(1)² without cos.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 47 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (D) −tan x</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Chain Rule: (1/cos x) · (−sin x) = −sin x / cos x = −tan x.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> sec x error.</li><li><b>(B)</b> Negative secant error.</li><li><b>(C)</b> Sign error.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 48 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (C) 1</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f'(x) = e^(sin x) · cos x. At x = 0: e⁰ · cos 0 = 1 · 1 = 1.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Thinks derivative is 0.</li><li><b>(B)</b> sin 1 error.</li><li><b>(D)</b> e¹ error.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 49</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q49 – Q51</span></div><div class="sol">
+      <div class="sol-title"><span>Question 49 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (A) 2(x + √x)(1 + 1/(2√x))</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Chain Rule: 2(x + √x) · d/dx(x + √x) = 2(x + √x)(1 + 1/(2√x)).</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Expanded incorrectly.</li><li><b>(C)</b> Squared inner derivative.</li><li><b>(D)</b> Missing inner derivative.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 50 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (A) −3x² sin(x³)</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Chain Rule: −sin(x³) · 3x² = −3x² sin(x³).</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Wrong argument.</li><li><b>(C)</b> Sign error.</li><li><b>(D)</b> Missing inner derivative.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 51 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (C) 8</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>y' = 4(2x − 1)³ · 2 = 8(2x − 1)³. At x = 1: 8(1)³ = 8.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Arithmetic error.</li><li><b>(B)</b> Multiplied by 2⁴.</li><li><b>(D)</b> Forgot chain factor 2.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 50</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q52 – Q54</span></div><div class="sol">
+      <div class="sol-title"><span>Question 52 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (A) 1/e</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f'(x) = (1/ln x) · (1/x). At x = e: (1/1) · (1/e) = 1/e.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Forgot 1/x inner factor.</li><li><b>(C)</b> Same as A but unsimplified.</li><li><b>(D)</b> Forgot 1/ln x outer factor.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 53 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (B) e^(e^x) · e^x</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Chain Rule: e^(e^x) · d/dx(e^x) = e^(e^x) · e^x.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Extra factor of e^x.</li><li><b>(C)</b> Outer derivative only.</li><li><b>(D)</b> Exponent addition rule misapplied.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 54 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (B) 0</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f'(x) = (1/2)(x²+1)^(−1/2) · 2x = x/√(x²+1). At x = 0: 0/1 = 0.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Forgot x in numerator.</li><li><b>(C)</b> Denominator is √1 = 1 ≠ 0.</li><li><b>(D)</b> Forgot 2x chain.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 51</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q55 – Q57</span></div><div class="sol">
+      <div class="sol-title"><span>Question 55 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (D) 0</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Pythagorean identity: sin²x + cos²x = 1. The derivative of constant 1 is 0.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Derivative of cos²x only.</li><li><b>(B)</b> Derivative of sin²x only.</li><li><b>(C)</b> Function value, not derivative.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 56 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (D) 0</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f'(x) = 100(x² − 1)⁹⁹ · 2x. At x = 1: the factor (1² − 1) = 0, so the whole product is 0.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Calculated 100 · 2.</li><li><b>(B)</b> Forgot (x² − 1) becomes 0.</li><li><b>(C)</b> 1¹⁰⁰ error.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 57 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (D) sec²(√x)/(2√x)</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Chain Rule: sec²(√x) · (1/(2√x)) = sec²(√x)/(2√x).</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Outer derivative only.</li><li><b>(B)</b> Derivative of secant.</li><li><b>(C)</b> Inner derivative only.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 52</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q58 – Q60</span></div><div class="sol">
+      <div class="sol-title"><span>Question 58 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (C) x = 0</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f'(x) = e^(−x²) · (−2x). Since e^(−x²) > 0 for all real x, f'(x) = 0 requires −2x = 0 → x = 0.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Same error.</li><li><b>(B)</b> f'(0) = 0 exists.</li><li><b>(D)</b> e^(−1) ≠ 0.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 59 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (A) 2/x</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>(1/x²) · 2x = 2/x. Or ln(x²) = 2 ln x, whose derivative is 2/x.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Inner derivative only.</li><li><b>(C)</b> Forgot chain rule.</li><li><b>(D)</b> Forgot 2x numerator.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 60 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (A) −x/y</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Differentiate implicitly: 2x + 2y y' = 0 → 2y y' = −2x → y' = −x/y.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Sign error.</li><li><b>(C)</b> Inverted quotient sign error.</li><li><b>(D)</b> Inverted quotient.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 53</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q61 – Q63</span></div><div class="sol">
+      <div class="sol-title"><span>Question 61 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (A) −y/x</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Product Rule: 1·y + x·y' = 0 → x y' = −y → y' = −y/x.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Sign error.</li><li><b>(C)</b> Inverted quotient sign error.</li><li><b>(D)</b> Inverted quotient.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 62 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (C) −3/4</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>y' = −x/y = −6/8 = −3/4.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Inverted positive error.</li><li><b>(B)</b> Inverted quotient.</li><li><b>(D)</b> Positive slope error.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 63 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (D) cos(xy)(y + xy') = 1</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Chain Rule: cos(xy) · d/dx(xy) = 1 → cos(xy)(y + xy') = 1.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Forgot product rule inside.</li><li><b>(B)</b> Forgot cos on second term.</li><li><b>(C)</b> Forgot chain rule.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 54</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q64 – Q66</span></div><div class="sol">
+      <div class="sol-title"><span>Question 64 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (D) −1</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>3x² + 3y² y' = 6(y + xy'). Divide by 3: x² + y² y' = 2y + 2xy'. At (3, 3): 9 + 9y' = 6 + 6y' → 3y' = −3 → y' = −1.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Sign error.</li><li><b>(B)</b> Denominator is 9 − 6 = 3 ≠ 0.</li><li><b>(C)</b> Algebraic slip.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 65 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (A) x² + y² = 100</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>By the Pythagorean theorem for the right triangle formed by the ladder: x² + y² = 10² = 100.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Area relation.</li><li><b>(C)</b> Perimeter relation.</li><li><b>(D)</b> Hyperbola equation.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 66 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (D) 12π cm²/s</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>A = πr². Differentiate with respect to t: dA/dt = 2πr (dr/dt). When r = 3 and dr/dt = 2: 2π(3)(2) = 12π cm²/s.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Forgot 2 in power rule.</li><li><b>(B)</b> Forgot radius factor.</li><li><b>(C)</b> Forgot dr/dt factor.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 55</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q67 – Q69</span></div><div class="sol">
+      <div class="sol-title"><span>Question 67 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (B) x/y</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>2x − 2y y' = 0 → 2y y' = 2x → y' = x/y.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Sign error (circle case).</li><li><b>(C)</b> Inverted sign error.</li><li><b>(D)</b> Inverted quotient.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 68 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (A) f'(g(t)) g'(t)</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Chain Rule: dy/dt = (dy/du) · (du/dt) = f'(u) · g'(t) = f'(g(t)) g'(t).</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Composition error.</li><li><b>(C)</b> Equivalent raw form but B is explicit composite notation.</li><li><b>(D)</b> Inverted composition.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 69 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (C) y = 0</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>dy/dx = −x/y. A vertical tangent occurs where the denominator is 0 (and numerator ≠ 0), so y = 0 (at points (±5, 0)).</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Horizontal tangent condition.</li><li><b>(B)</b> x = 5 only gives one point.</li><li><b>(D)</b> y = 5 gives horizontal tangent.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 56</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q70 – Q72</span></div><div class="sol">
+      <div class="sol-title"><span>Question 70 Analysis</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+      <div class="ans">Correct Answer: (A) −2/3</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Differentiate with respect to x: 2 + 3y' = 0 → y' = −2/3.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Positive slope.</li><li><b>(C)</b> Inverted positive slope.</li><li><b>(D)</b> Inverted slope.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 71 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (D) e^(xy)(y + xy') = 1 + y'</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Chain Rule: e^(xy) · d/dx(xy) = d/dx(x + y) → e^(xy)(y + xy') = 1 + y'.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Forgot x term.</li><li><b>(B)</b> Forgot product rule inside exponent.</li><li><b>(C)</b> Forgot y term.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 72 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (B) −cot t</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Parametric derivative: dy/dx = (dy/dt)/(dx/dt) = (cos t)/(−sin t) = −cot t.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Inverted tangent sign error.</li><li><b>(C)</b> Inverted tangent.</li><li><b>(D)</b> Sign error.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 57</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q73 – Q75</span></div><div class="sol">
+      <div class="sol-title"><span>Question 73 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (C) 4πr² k</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>dV/dt = 4πr² (dr/dt) = 4πr² k.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Volume derivative missing 3 cancellation.</li><li><b>(B)</b> Area formula missing 4.</li><li><b>(D)</b> Missing r.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 74 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (B) −1/(4y³)</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>2y y' = 1 → y' = 1/(2y). y'' = −2y' / (2y)² = −2(1/2y) / 4y² = −1/(4y³).</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Missing factor of 4.</li><li><b>(C)</b> Sign error.</li><li><b>(D)</b> First derivative only.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 75 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (D) 1</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>y' = −y/x = −2/2 = −1. The normal slope is perpendicular: m_norm = −1/(−1) = 1.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Double slope.</li><li><b>(B)</b> Tangent slope.</li><li><b>(C)</b> Negative double.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 58</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q76 – Q78</span></div><div class="sol">
+      <div class="sol-title"><span>Question 76 Analysis</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+      <div class="ans">Correct Answer: (A) Increasing</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>A strictly positive first derivative implies the function f is increasing on that interval.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Requires f'' < 0.</li><li><b>(C)</b> Requires f'' > 0.</li><li><b>(D)</b> Requires f' < 0.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 77 Analysis</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+      <div class="ans">Correct Answer: (C) Concave Down</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>A negative second derivative implies the graph of f is concave down on that interval.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> f' < 0.</li><li><b>(B)</b> f' > 0.</li><li><b>(D)</b> f'' > 0.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 78 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (D) f''(x) = 0 or undefined, and concavity changes sign</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>An inflection point requires a change in concavity, which occurs where f'' changes sign.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Extrema of slope.</li><li><b>(B)</b> Critical point condition.</li><li><b>(C)</b> x-intercept condition.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 59</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q79 – Q81</span></div><div class="sol">
+      <div class="sol-title"><span>Question 79 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (D) Local Minimum at c</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Second Derivative Test: f'(c) = 0 and f''(c) > 0 (concave up) guarantees a local minimum at x = c.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Requires f'' to change sign.</li><li><b>(B)</b> Test is conclusive.</li><li><b>(C)</b> Requires f''(c) < 0.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 80 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (C) f' crosses the x-axis from positive to negative</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>By the First Derivative Test, f has a local maximum where f' changes sign from positive to negative.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Point of inflection condition.</li><li><b>(B)</b> Point of inflection condition.</li><li><b>(D)</b> Local minimum condition.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 81 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (D) 0</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f'(x) = 4x³, f''(x) = 12x². At x = 0: 12(0)² = 0.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Second derivative coefficient without substitution.</li><li><b>(B)</b> First derivative coefficient.</li><li><b>(C)</b> Third derivative.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 60</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q82 – Q84</span></div><div class="sol">
+      <div class="sol-title"><span>Question 82 Analysis</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+      <div class="ans">Correct Answer: (C) Position s(t)</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Instantaneous velocity is the derivative of position: v(t) = s'(t).</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Acceleration is v'(t).</li><li><b>(B)</b> Time is the independent variable.</li><li><b>(D)</b> Speed is the magnitude of velocity.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 83 Analysis</span><span class="star-badge sb2"><span class="st">★★</span> Important</span></div>
+      <div class="ans">Correct Answer: (D) Velocity v(t)</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Instantaneous acceleration is the rate of change of velocity: a(t) = v'(t) = s''(t).</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> First derivative of position is velocity.</li><li><b>(B)</b> Displacement is net position change.</li><li><b>(C)</b> Speed is a scalar magnitude.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 84 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (B) 0, 2, −1</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Critical numbers occur where f'(x) = 0: x = 0, x = 2, x = −1.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Sign errors on roots.</li><li><b>(C)</b> Missing −1.</li><li><b>(D)</b> Missing 0.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 61</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q85 – Q87</span></div><div class="sol">
+      <div class="sol-title"><span>Question 85 Analysis</span><span class="star-badge sb3"><span class="st">★★★</span> Mandatory</span></div>
+      <div class="ans">Correct Answer: (D) x = 1</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Set f''(x) = 0: 6x − 6 = 0 → x = 1. Since f'' is linear, it changes sign across x = 1, giving an inflection point.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> f''(−1) = −12 ≠ 0.</li><li><b>(B)</b> f''(0) = −6 ≠ 0.</li><li><b>(C)</b> f''(6) = 30 ≠ 0.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 86 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (D) 7</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Product Rule: (f · g)'(2) = f'(2)g(2) + f(2)g'(2) = (5)(−1) + (3)(4) = −5 + 12 = 7.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Multiplied derivatives.</li><li><b>(B)</b> Multiplied derivatives only: (5)(4) = 20.</li><li><b>(C)</b> Arithmetic error: 5 + 12 = 17.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 87 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (D) x = 3</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f has a sharp corner (cusp) at x = 3. The left-hand derivative is −1 while the right-hand derivative is +1. Since −1 ≠ 1, f is not differentiable at x = 3.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> Sign error.</li><li><b>(B)</b> Absolute value has sharp corners where the inside vanishes.</li><li><b>(C)</b> Corner is at x = 3, not 0.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 62</span></div></section>
+<section class="page "><div class="phead"><span>Section C · Explanations</span><span>Q88 – Q90</span></div><div class="sol">
+      <div class="sol-title"><span>Question 88 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (A) x = 1 and x = −1</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Quotient Rule: f'(x) = [1·(x² + 1) − x·(2x)] / (x² + 1)² = (1 − x²) / (x² + 1)². Horizontal tangent requires f'(x) = 0: 1 − x² = 0 → x = ±1.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> f'(x) has real zeros at ±1.</li><li><b>(C)</b> Misses negative root x = −1.</li><li><b>(D)</b> At x = 0, f'(0) = 1 ≠ 0.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 89 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (B) 1</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>f'(x) = sec x tan x. Product Rule: f''(x) = (sec x tan x) tan x + sec x (sec²x) = sec x tan²x + sec³x. At x = 0: sec 0 = 1, tan 0 = 0. f''(0) = (1)(0) + (1)³ = 1.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(A)</b> tan 0 is 0, but sec³0 is 1.</li><li><b>(C)</b> Double addition error.</li><li><b>(D)</b> Sign error.</li></ul></div>
+    </div><div class="sol">
+      <div class="sol-title"><span>Question 90 Analysis</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="ans">Correct Answer: (A) 2</div>
+      <div class="steps"><h4>Analytical Step-by-Step Solution</h4>Average rate = [f(4) − f(0)] / (4 − 0) = [8 − 0] / 4 = 2. Instantaneous rate f'(c) = 2c − 2. Set 2c − 2 = 2 → 2c = 4 → c = 2.</div>
+      <div class="wrong"><h4>Why Other Options Are Incorrect</h4><ul><li><b>(B)</b> Midpoint error.</li><li><b>(C)</b> Arithmetic error in average rate.</li><li><b>(D)</b> Endpoint.</li></ul></div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 63</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section D · Free Response</span><span>FRQ 01 of 10</span></div>
+    <div class="frq-card">
+      <div class="frq-header">
+        <div class="frq-title">FRQ 1: Difference Quotient & Tangent Line</div>
+        <div style="display:flex;gap:2mm;align-items:center">
+          <span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span>
+          <div class="frq-badge">9 Points</div>
+        </div>
+      </div>
+      <div class="frq-prompt">Let f be a function defined by f(x) = x² − 4x + 5.</div>
+      <div class="frq-part"><b>(a) [2 Points]</b> Find the average rate of change of f on the interval [1, 3].</div><div class="frq-part"><b>(b) [4 Points]</b> Using the limit definition of the derivative, find f'(x). Show all steps.</div><div class="frq-part"><b>(c) [3 Points]</b> Write an equation for the line tangent to the graph of f at x = 2.</div>
+    </div>
+    <div class="note"><b>Directions:</b> Show all mathematical reasoning. Unsupported answers receive 0 credit.</div>
+  <div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 64</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section D · Free Response</span><span>FRQ 02 of 10</span></div>
+    <div class="frq-card">
+      <div class="frq-header">
+        <div class="frq-title">FRQ 2: Product and Quotient Rules Application</div>
+        <div style="display:flex;gap:2mm;align-items:center">
+          <span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span>
+          <div class="frq-badge">9 Points</div>
+        </div>
+      </div>
+      <div class="frq-prompt">Let f(x) = x² eˣ and g(x) = (x + 1)/(x − 1).</div>
+      <div class="frq-part"><b>(a) [3 Points]</b> Find f'(x) using the Product Rule.</div><div class="frq-part"><b>(b) [3 Points]</b> Find g'(x) using the Quotient Rule.</div><div class="frq-part"><b>(c) [3 Points]</b> Evaluate f'(0) and g'(2).</div>
+    </div>
+    <div class="note"><b>Directions:</b> Show all mathematical reasoning. Unsupported answers receive 0 credit.</div>
+  <div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 65</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section D · Free Response</span><span>FRQ 03 of 10</span></div>
+    <div class="frq-card">
+      <div class="frq-header">
+        <div class="frq-title">FRQ 3: Chain Rule with Trig and Exponentials</div>
+        <div style="display:flex;gap:2mm;align-items:center">
+          <span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span>
+          <div class="frq-badge">9 Points</div>
+        </div>
+      </div>
+      <div class="frq-prompt">Let h(x) = sin(e^(2x)) and k(x) = ln(cos x).</div>
+      <div class="frq-part"><b>(a) [3 Points]</b> Find h'(x).</div><div class="frq-part"><b>(b) [3 Points]</b> Find k'(x).</div><div class="frq-part"><b>(c) [3 Points]</b> Evaluate h'(0) and k'(π/4).</div>
+    </div>
+    <div class="note"><b>Directions:</b> Show all mathematical reasoning. Unsupported answers receive 0 credit.</div>
+  <div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 66</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section D · Free Response</span><span>FRQ 04 of 10</span></div>
+    <div class="frq-card">
+      <div class="frq-header">
+        <div class="frq-title">FRQ 4: Implicit Differentiation & Tangent Line</div>
+        <div style="display:flex;gap:2mm;align-items:center">
+          <span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span>
+          <div class="frq-badge">9 Points</div>
+        </div>
+      </div>
+      <div class="frq-prompt">Consider the curve defined by x² + xy + y² = 3.</div>
+      <div class="frq-part"><b>(a) [3 Points]</b> Show that dy/dx = −(2x + y)/(x + 2y).</div><div class="frq-part"><b>(b) [2 Points]</b> Find the coordinates of all points on the curve where x = 1.</div><div class="frq-part"><b>(c) [4 Points]</b> Write an equation for the line tangent to the curve at the point (1, 1).</div>
+    </div>
+    <div class="note"><b>Directions:</b> Show all mathematical reasoning. Unsupported answers receive 0 credit.</div>
+  <div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 67</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section D · Free Response</span><span>FRQ 05 of 10</span></div>
+    <div class="frq-card">
+      <div class="frq-header">
+        <div class="frq-title">FRQ 5: Related Rates: Ladder Problem</div>
+        <div style="display:flex;gap:2mm;align-items:center">
+          <span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span>
+          <div class="frq-badge">9 Points</div>
+        </div>
+      </div>
+      <div class="frq-prompt">A 10-foot ladder leans against a vertical wall. The bottom of the ladder slides away from the wall at a rate of 2 ft/sec.</div>
+      <div class="frq-part"><b>(a) [2 Points]</b> Write an equation relating the distance x from the wall to the height y on the wall.</div><div class="frq-part"><b>(b) [4 Points]</b> Find dy/dt when x = 6 feet.</div><div class="frq-part"><b>(c) [3 Points]</b> Is the top of the ladder moving up or down at this instant? Justify.</div>
+    </div>
+    <div class="note"><b>Directions:</b> Show all mathematical reasoning. Unsupported answers receive 0 credit.</div>
+  <div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 68</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section D · Free Response</span><span>FRQ 06 of 10</span></div>
+    <div class="frq-card">
+      <div class="frq-header">
+        <div class="frq-title">FRQ 6: Higher Order Derivatives & Concavity</div>
+        <div style="display:flex;gap:2mm;align-items:center">
+          <span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span>
+          <div class="frq-badge">9 Points</div>
+        </div>
+      </div>
+      <div class="frq-prompt">Let f(x) = x⁴ − 4x³.</div>
+      <div class="frq-part"><b>(a) [2 Points]</b> Find f'(x) and f''(x).</div><div class="frq-part"><b>(b) [3 Points]</b> Find the x-coordinates of all points of inflection.</div><div class="frq-part"><b>(c) [4 Points]</b> Determine the intervals where the graph of f is concave up.</div>
+    </div>
+    <div class="note"><b>Directions:</b> Show all mathematical reasoning. Unsupported answers receive 0 credit.</div>
+  <div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 69</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section D · Free Response</span><span>FRQ 07 of 10</span></div>
+    <div class="frq-card">
+      <div class="frq-header">
+        <div class="frq-title">FRQ 7: Graphical Analysis of Derivative f'</div>
+        <div style="display:flex;gap:2mm;align-items:center">
+          <span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span>
+          <div class="frq-badge">9 Points</div>
+        </div>
+      </div>
+      <div class="frq-prompt">The continuous derivative f' is positive on (−2, 1) and (4, ∞), and negative on (−∞, −2) and (1, 4).</div>
+      <div class="frq-part"><b>(a) [2 Points]</b> On what intervals is f increasing?</div><div class="frq-part"><b>(b) [3 Points]</b> At what x-values does f have a local maximum?</div><div class="frq-part"><b>(c) [4 Points]</b> If f(0) = 5, estimate f(2) given that the net change ∫₀² f'(x) dx is −3.</div>
+    </div>
+    <div class="note"><b>Directions:</b> Show all mathematical reasoning. Unsupported answers receive 0 credit.</div>
+  <div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 70</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section D · Free Response</span><span>FRQ 08 of 10</span></div>
+    <div class="frq-card">
+      <div class="frq-header">
+        <div class="frq-title">FRQ 8: Parametric Derivatives & Motion</div>
+        <div style="display:flex;gap:2mm;align-items:center">
+          <span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span>
+          <div class="frq-badge">9 Points</div>
+        </div>
+      </div>
+      <div class="frq-prompt">A particle moves in the xy-plane with position (x(t), y(t)) given by x(t) = t² − 1 and y(t) = t³ − 3t.</div>
+      <div class="frq-part"><b>(a) [3 Points]</b> Find dy/dx in terms of t.</div><div class="frq-part"><b>(b) [2 Points]</b> Find the slope of the path at t = 2.</div><div class="frq-part"><b>(c) [4 Points]</b> For what values of t is the tangent line horizontal?</div>
+    </div>
+    <div class="note"><b>Directions:</b> Show all mathematical reasoning. Unsupported answers receive 0 credit.</div>
+  <div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 71</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section D · Free Response</span><span>FRQ 09 of 10</span></div>
+    <div class="frq-card">
+      <div class="frq-header">
+        <div class="frq-title">FRQ 9: Tangent Line & Local Linear Approximation</div>
+        <div style="display:flex;gap:2mm;align-items:center">
+          <span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span>
+          <div class="frq-badge">9 Points</div>
+        </div>
+      </div>
+      <div class="frq-prompt">Let f be a differentiable function such that f(4) = 2 and f'(4) = −3.</div>
+      <div class="frq-part"><b>(a) [2 Points]</b> Write an equation for the line tangent to the graph of f at x = 4.</div><div class="frq-part"><b>(b) [3 Points]</b> Use the tangent line to approximate f(4.1).</div><div class="frq-part"><b>(c) [4 Points]</b> If f''(x) < 0 for all x, is the approximation in part (b) an overestimate or underestimate? Justify.</div>
+    </div>
+    <div class="note"><b>Directions:</b> Show all mathematical reasoning. Unsupported answers receive 0 credit.</div>
+  <div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 72</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section D · Free Response</span><span>FRQ 10 of 10</span></div>
+    <div class="frq-card">
+      <div class="frq-header">
+        <div class="frq-title">FRQ 10: Second Derivative Test & Critical Values</div>
+        <div style="display:flex;gap:2mm;align-items:center">
+          <span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span>
+          <div class="frq-badge">9 Points</div>
+        </div>
+      </div>
+      <div class="frq-prompt">Let f(x) = x + 2 sin x on the closed interval [0, 2π].</div>
+      <div class="frq-part"><b>(a) [2 Points]</b> Find f'(x) and f''(x).</div><div class="frq-part"><b>(b) [3 Points]</b> Find the critical numbers of f in the interval.</div><div class="frq-part"><b>(c) [4 Points]</b> Use the Second Derivative Test to classify each critical number as a local maximum or local minimum.</div>
+    </div>
+    <div class="note"><b>Directions:</b> Show all mathematical reasoning. Unsupported answers receive 0 credit.</div>
+  <div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 73</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section E · Scoring Rubrics</span><span>FRQ 01 Model Solution</span></div>
+    <div class="sol">
+      <div class="sol-title"><span>FRQ 1 Official Model Solution</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="steps"><h4>Comprehensive Analytical Solution</h4><b>(a)</b> [f(3) − f(1)]/(3 − 1). f(3) = 9 − 12 + 5 = 2. f(1) = 1 − 4 + 5 = 2. (2 − 2)/2 = <b>0</b>.<br><b>(b)</b> f'(x) = lim (h→0) [((x+h)² − 4(x+h) + 5) − (x² − 4x + 5)]/h<br>= lim [x² + 2xh + h² − 4x − 4h + 5 − x² + 4x − 5]/h<br>= lim [2xh + h² − 4h]/h = lim (2x + h − 4) = <b>2x − 4</b>.<br><b>(c)</b> f(2) = 4 − 8 + 5 = 1. Point (2, 1). f'(2) = 2(2) − 4 = 0. Tangent: <b>y − 1 = 0(x − 2) ⇒ y = 1</b>.</div>
+      <div class="rubric">
+        <h4>AP Scoring Criteria &amp; Point Allocation</h4>
+        <table class="rubric-table">
+          <tr><th>Evaluation Criterion</th><th>Points</th></tr>
+          <tr><td>Part (a): Correct setup and evaluation of average rate = 0</td><td>2 pts</td></tr><tr><td>Part (b): Correct expansion and simplification of difference quotient</td><td>2 pts</td></tr><tr><td>Part (b): Correct limit evaluation yielding f'(x) = 2x − 4</td><td>2 pts</td></tr><tr><td>Part (c): Correct point (2, 1), slope m = 0, and equation y = 1</td><td>3 pts</td></tr>
+        </table>
+      </div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 74</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section E · Scoring Rubrics</span><span>FRQ 02 Model Solution</span></div>
+    <div class="sol">
+      <div class="sol-title"><span>FRQ 2 Official Model Solution</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="steps"><h4>Comprehensive Analytical Solution</h4><b>(a)</b> f'(x) = (2x)(eˣ) + (x²)(eˣ) = <b>eˣ(2x + x²)</b>.<br><b>(b)</b> g'(x) = [(1)(x − 1) − (x + 1)(1)] / (x − 1)² = (x − 1 − x − 1)/(x − 1)² = <b>−2/(x − 1)²</b>.<br><b>(c)</b> f'(0) = e⁰(0) = <b>0</b>. g'(2) = −2/(1)² = <b>−2</b>.</div>
+      <div class="rubric">
+        <h4>AP Scoring Criteria &amp; Point Allocation</h4>
+        <table class="rubric-table">
+          <tr><th>Evaluation Criterion</th><th>Points</th></tr>
+          <tr><td>Part (a): Correct application of Product Rule yielding eˣ(2x + x²)</td><td>3 pts</td></tr><tr><td>Part (b): Correct application of Quotient Rule yielding −2/(x − 1)²</td><td>3 pts</td></tr><tr><td>Part (c): Correct evaluations f'(0) = 0 and g'(2) = −2</td><td>3 pts</td></tr>
+        </table>
+      </div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 75</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section E · Scoring Rubrics</span><span>FRQ 03 Model Solution</span></div>
+    <div class="sol">
+      <div class="sol-title"><span>FRQ 3 Official Model Solution</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="steps"><h4>Comprehensive Analytical Solution</h4><b>(a)</b> h'(x) = cos(e^(2x)) · d/dx(e^(2x)) = cos(e^(2x)) · e^(2x) · 2 = <b>2e^(2x) cos(e^(2x))</b>.<br><b>(b)</b> k'(x) = (1/cos x) · (−sin x) = <b>−tan x</b>.<br><b>(c)</b> h'(0) = 2e⁰ cos(e⁰) = <b>2 cos 1</b>. k'(π/4) = −tan(π/4) = <b>−1</b>.</div>
+      <div class="rubric">
+        <h4>AP Scoring Criteria &amp; Point Allocation</h4>
+        <table class="rubric-table">
+          <tr><th>Evaluation Criterion</th><th>Points</th></tr>
+          <tr><td>Part (a): Correct double chain rule application yielding 2e^(2x)cos(e^(2x))</td><td>3 pts</td></tr><tr><td>Part (b): Correct chain rule yielding −tan x</td><td>3 pts</td></tr><tr><td>Part (c): Correct evaluations h'(0) = 2 cos 1 and k'(π/4) = −1</td><td>3 pts</td></tr>
+        </table>
+      </div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 76</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section E · Scoring Rubrics</span><span>FRQ 04 Model Solution</span></div>
+    <div class="sol">
+      <div class="sol-title"><span>FRQ 4 Official Model Solution</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="steps"><h4>Comprehensive Analytical Solution</h4><b>(a)</b> Diff wrt x: 2x + (1·y + x·y') + 2y·y' = 0.<br>2x + y + y'(x + 2y) = 0 ⇒ y'(x + 2y) = −(2x + y) ⇒ <b>dy/dx = −(2x + y)/(x + 2y)</b>.<br><b>(b)</b> Set x = 1: 1 + y + y² = 3 ⇒ y² + y − 2 = 0 ⇒ (y + 2)(y − 1) = 0. Points: <b>(1, 1) and (1, −2)</b>.<br><b>(c)</b> At (1, 1): dy/dx = −(2 + 1)/(1 + 2) = −1. Eq: <b>y − 1 = −1(x − 1) ⇒ y = −x + 2</b>.</div>
+      <div class="rubric">
+        <h4>AP Scoring Criteria &amp; Point Allocation</h4>
+        <table class="rubric-table">
+          <tr><th>Evaluation Criterion</th><th>Points</th></tr>
+          <tr><td>Part (a): Correct implicit differentiation and solving for dy/dx</td><td>3 pts</td></tr><tr><td>Part (b): Solving quadratic for y, finding (1, 1) and (1, −2)</td><td>2 pts</td></tr><tr><td>Part (c): Correct slope m = −1 and tangent equation y = −x + 2</td><td>4 pts</td></tr>
+        </table>
+      </div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 77</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section E · Scoring Rubrics</span><span>FRQ 05 Model Solution</span></div>
+    <div class="sol">
+      <div class="sol-title"><span>FRQ 5 Official Model Solution</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="steps"><h4>Comprehensive Analytical Solution</h4><b>(a)</b> Pythagorean: <b>x² + y² = 100</b>.<br><b>(b)</b> Diff wrt t: 2x(dx/dt) + 2y(dy/dt) = 0 ⇒ x(dx/dt) + y(dy/dt) = 0.<br>When x = 6, y = √(100 − 36) = 8. dx/dt = 2.<br>6(2) + 8(dy/dt) = 0 ⇒ 12 + 8(dy/dt) = 0 ⇒ dy/dt = −12/8 = <b>−1.5 ft/sec</b>.<br><b>(c)</b> Since dy/dt < 0, the top of the ladder is <b>moving down</b> at 1.5 ft/sec.</div>
+      <div class="rubric">
+        <h4>AP Scoring Criteria &amp; Point Allocation</h4>
+        <table class="rubric-table">
+          <tr><th>Evaluation Criterion</th><th>Points</th></tr>
+          <tr><td>Part (a): Correct geometric relation x² + y² = 100</td><td>2 pts</td></tr><tr><td>Part (b): Correct differentiation and substitution</td><td>2 pts</td></tr><tr><td>Part (b): Correct solution dy/dt = −1.5 ft/sec</td><td>2 pts</td></tr><tr><td>Part (c): Correct negative sign interpretation (moving down)</td><td>3 pts</td></tr>
+        </table>
+      </div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 78</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section E · Scoring Rubrics</span><span>FRQ 06 Model Solution</span></div>
+    <div class="sol">
+      <div class="sol-title"><span>FRQ 6 Official Model Solution</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="steps"><h4>Comprehensive Analytical Solution</h4><b>(a)</b> f'(x) = 4x³ − 12x². f''(x) = 12x² − 24x.<br><b>(b)</b> Set f''(x) = 0: 12x(x − 2) = 0 ⇒ x = 0, x = 2. Check signs: f'' changes sign at both. Points of inflection at <b>x = 0, 2</b>.<br><b>(c)</b> f''(x) > 0 when x < 0 or x > 2. Concave up on <b>(−∞, 0) ∪ (2, ∞)</b>.</div>
+      <div class="rubric">
+        <h4>AP Scoring Criteria &amp; Point Allocation</h4>
+        <table class="rubric-table">
+          <tr><th>Evaluation Criterion</th><th>Points</th></tr>
+          <tr><td>Part (a): Correct first and second derivatives</td><td>2 pts</td></tr><tr><td>Part (b): Finding zeros of f'' and verifying sign changes at x = 0, 2</td><td>3 pts</td></tr><tr><td>Part (c): Correct open intervals for concave up (−∞, 0) ∪ (2, ∞)</td><td>4 pts</td></tr>
+        </table>
+      </div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 79</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section E · Scoring Rubrics</span><span>FRQ 07 Model Solution</span></div>
+    <div class="sol">
+      <div class="sol-title"><span>FRQ 7 Official Model Solution</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="steps"><h4>Comprehensive Analytical Solution</h4><b>(a)</b> f increases where f' > 0: <b>(−2, 1) and (4, ∞)</b>.<br><b>(b)</b> Local max where f' changes from + to −: <b>x = 1</b>.<br><b>(c)</b> By the Fundamental Theorem: f(2) = f(0) + ∫₀² f'(x) dx = 5 + (−3) = <b>2</b>.</div>
+      <div class="rubric">
+        <h4>AP Scoring Criteria &amp; Point Allocation</h4>
+        <table class="rubric-table">
+          <tr><th>Evaluation Criterion</th><th>Points</th></tr>
+          <tr><td>Part (a): Identifying intervals where f' > 0</td><td>2 pts</td></tr><tr><td>Part (b): Identifying sign change + to − for local maximum at x = 1</td><td>3 pts</td></tr><tr><td>Part (c): Using Net Change Theorem correctly: f(2) = 5 − 3 = 2</td><td>4 pts</td></tr>
+        </table>
+      </div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 80</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section E · Scoring Rubrics</span><span>FRQ 08 Model Solution</span></div>
+    <div class="sol">
+      <div class="sol-title"><span>FRQ 8 Official Model Solution</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="steps"><h4>Comprehensive Analytical Solution</h4><b>(a)</b> dx/dt = 2t, dy/dt = 3t² − 3. dy/dx = (dy/dt)/(dx/dt) = <b>(3t² − 3)/(2t)</b>.<br><b>(b)</b> At t = 2: (3(4) − 3)/(4) = 9/4 = <b>2.25</b>.<br><b>(c)</b> Horizontal tangent when dy/dt = 0 (and dx/dt ≠ 0). 3t² − 3 = 0 ⇒ t = ±1. At t = ±1, dx/dt = ±2 ≠ 0. Values: <b>t = 1, −1</b>.</div>
+      <div class="rubric">
+        <h4>AP Scoring Criteria &amp; Point Allocation</h4>
+        <table class="rubric-table">
+          <tr><th>Evaluation Criterion</th><th>Points</th></tr>
+          <tr><td>Part (a): Correct parametric derivative formula dy/dx = (3t² − 3)/(2t)</td><td>3 pts</td></tr><tr><td>Part (b): Correct evaluation at t = 2 yielding 9/4</td><td>2 pts</td></tr><tr><td>Part (c): Solving dy/dt = 0, verifying dx/dt ≠ 0, finding t = ±1</td><td>4 pts</td></tr>
+        </table>
+      </div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 81</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section E · Scoring Rubrics</span><span>FRQ 09 Model Solution</span></div>
+    <div class="sol">
+      <div class="sol-title"><span>FRQ 9 Official Model Solution</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="steps"><h4>Comprehensive Analytical Solution</h4><b>(a)</b> y − 2 = −3(x − 4) ⇒ <b>y = −3x + 14</b>.<br><b>(b)</b> f(4.1) ≈ −3(4.1) + 14 = −12.3 + 14 = <b>1.7</b>.<br><b>(c)</b> Since f''(x) < 0, the graph is <b>concave down</b>. The tangent line lies above the curve, so the linear approximation is an <b>overestimate</b>.</div>
+      <div class="rubric">
+        <h4>AP Scoring Criteria &amp; Point Allocation</h4>
+        <table class="rubric-table">
+          <tr><th>Evaluation Criterion</th><th>Points</th></tr>
+          <tr><td>Part (a): Correct tangent line equation y − 2 = −3(x − 4)</td><td>2 pts</td></tr><tr><td>Part (b): Correct substitution and approximation f(4.1) ≈ 1.7</td><td>3 pts</td></tr><tr><td>Part (c): Correctly linking concavity (f'' < 0) to overestimate</td><td>4 pts</td></tr>
+        </table>
+      </div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 82</span></div></section>
+<section class="page ">
+    <div class="phead"><span>Section E · Scoring Rubrics</span><span>FRQ 10 Model Solution</span></div>
+    <div class="sol">
+      <div class="sol-title"><span>FRQ 10 Official Model Solution</span><span class="star-badge sb5"><span class="st">★★★★★</span> Very Important</span></div>
+      <div class="steps"><h4>Comprehensive Analytical Solution</h4><b>(a)</b> f'(x) = 1 + 2 cos x. f''(x) = −2 sin x.<br><b>(b)</b> f'(x) = 0 ⇒ cos x = −1/2. In [0, 2π]: <b>x = 2π/3, 4π/3</b>.<br><b>(c)</b> f''(2π/3) = −2 sin(2π/3) = −2(√3/2) = −√3 < 0 ⇒ <b>Local Maximum</b>.<br>f''(4π/3) = −2 sin(4π/3) = −2(−√3/2) = +√3 > 0 ⇒ <b>Local Minimum</b>.</div>
+      <div class="rubric">
+        <h4>AP Scoring Criteria &amp; Point Allocation</h4>
+        <table class="rubric-table">
+          <tr><th>Evaluation Criterion</th><th>Points</th></tr>
+          <tr><td>Part (a): Correct first and second derivatives</td><td>2 pts</td></tr><tr><td>Part (b): Solving 1 + 2 cos x = 0 for x = 2π/3, 4π/3</td><td>3 pts</td></tr><tr><td>Part (c): Correct application of 2nd derivative test and classification</td><td>4 pts</td></tr>
+        </table>
+      </div>
+    </div><div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 83</span></div></section>
+<section class="page ">
+  <div class="phead"><span>Appendix</span><span>Reference &amp; Disclaimer</span></div>
+  <div class="title">Essential Unit 2 Derivative Rules &amp; Formulas</div>
+  <ul class="bullets">
+    <li><b>Definition of Derivative:</b> f'(x) = lim (h→0) [f(x+h) − f(x)]/h = lim (x→c) [f(x) − f(c)]/(x − c).</li>
+    <li><b>Power Rule:</b> d/dx (xⁿ) = n xⁿ⁻¹.</li>
+    <li><b>Product Rule:</b> (u · v)' = u'v + uv'.</li>
+    <li><b>Quotient Rule:</b> (u / v)' = (u'v − uv') / v².</li>
+    <li><b>Chain Rule:</b> d/dx [f(g(x))] = f'(g(x)) · g'(x).</li>
+    <li><b>Trig Derivatives:</b> (sin x)' = cos x | (cos x)' = −sin x | (tan x)' = sec²x | (sec x)' = sec x tan x | (cot x)' = −csc²x | (csc x)' = −csc x cot x.</li>
+    <li><b>Exponential &amp; Logarithms:</b> (eˣ)' = eˣ | (aˣ)' = aˣ ln a | (ln x)' = 1/x | (log_a x)' = 1/(x ln a).</li>
+    <li><b>Implicit Differentiation:</b> Differentiate both sides wrt x, apply chain rule (dy/dx) on y terms, and isolate dy/dx.</li>
+  </ul>
+  <div class="disc"><b>Disclaimer:</b> Original practice materials aligned with AP Calculus AB CED. Not affiliated with or endorsed by the College Board.</div>
+<div class="footer"><span>AP Calculus AB · Unit 2: Differentiation (Master Set with Priority Stars)</span><span>Page 84</span></div></section>
+</main>
+
+</body>
+</html>

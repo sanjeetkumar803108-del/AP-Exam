@@ -22,7 +22,7 @@ interface ToolsDashboardProps {
 }
 
 const FEATURE_COSTS: Record<string, number> = {
-  'testprep': 2,
+  'testprep': 0,
   'apnotes': 0,
   'apsamplepapers': 0,
   'trapradar': 0,
@@ -633,11 +633,16 @@ function ToolsDashboard({
               🎯
             </div>
             <div>
-              <h2 className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
-                Test Prep
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+                  Test Prep
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border border-indigo-500/20">
+                  Coming Soon
+                </span>
+              </div>
               <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-300 mt-0.5">
-                AI Exam Drills
+                Revamping for 2026
               </p>
             </div>
           </div>

@@ -122,9 +122,9 @@ export async function fetchSamplePapers(): Promise<APSamplePaper[]> {
     console.warn('[SamplePaperService] Firestore fetch notice:', firestoreErr);
   }
 
-  const mergedPapers = Array.from(papersMap.values()).sort(
-    (a, b) => (b.uploadedAt || 0) - (a.uploadedAt || 0)
-  );
+  const mergedPapers = Array.from(papersMap.values())
+    .filter(p => p && p.id && p.title !== 'CALC AB Unit 1 Notes' && !p.title.toLowerCase().includes('unit 1 notes'))
+    .sort((a, b) => (b.uploadedAt || 0) - (a.uploadedAt || 0));
 
   // 6. PERMANENT SAVE: Persist to IndexedDB so papers are permanently available offline for all users
   if (mergedPapers.length > 0) {
