@@ -415,6 +415,38 @@ export const UPLOADED_UNIT_PDFS: Record<string, UploadedUnitPdf> = {
     uploadedDate: 'October 2026',
     description: 'Complete 86-Page Priority-Starred Master Examination Set (90 MCQs + 10 Multi-Part FRQs) for Unit 3: Cultural Hearths, Relocation & Expansion Diffusion, Cultural Landscapes, Language Families, Universalizing vs. Ethnic Religions, and Acculturation/Assimilation with complete rubrics.',
   },
+  'ap-human-geography-4': {
+    pdfUrl: '/sample-papers/AP_Human_Geography_Unit4_Master_Set.pdf',
+    htmlUrl: '/sample-papers/AP_Human_Geography_Unit4_Master.html',
+    title: 'AP Human Geography – Unit 4: Political Patterns and Processes (Priority-Starred Master Set)',
+    pageCount: 86,
+    totalQuestions: 100,
+    mcqCount: 90,
+    frqCount: 10,
+    priorityStars: {
+      star5: 48,
+      star3: 34,
+      star2: 18,
+    },
+    uploadedDate: 'October 2026',
+    description: 'Complete 86-Page Priority-Starred Master Examination Set (90 MCQs + 10 Multi-Part FRQs) for Unit 4: Political Boundaries, UNCLOS, Devolution, Gerrymandering, and Supranationalism with complete rubrics.',
+  },
+  'ap-computer-science-principles-1': {
+    pdfUrl: '/sample-papers/AP_CSP_Unit1_Master_Set.pdf',
+    htmlUrl: '/sample-papers/AP_CSP_Unit1_Master.html',
+    title: 'AP Computer Science Principles – Unit 1: Creative Development & Collaboration (Priority-Starred Master Set)',
+    pageCount: 86,
+    totalQuestions: 100,
+    mcqCount: 90,
+    frqCount: 10,
+    priorityStars: {
+      star5: 49,
+      star3: 33,
+      star2: 18,
+    },
+    uploadedDate: 'October 2026',
+    description: 'Complete 86-Page Priority-Starred Master Examination Set (90 MCQs + 10 Create Performance Task Style FRQs) for Unit 1: Creative Development & Collaboration, Pair Programming, Event-Driven Design, Error Typologies, and IP Licensing with 9-point rubrics.',
+  },
 };
 
 export function getUnitPdfKey(subjectId: string, unitNumber: number): string {
