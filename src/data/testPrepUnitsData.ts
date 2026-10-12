@@ -447,6 +447,22 @@ export const UPLOADED_UNIT_PDFS: Record<string, UploadedUnitPdf> = {
     uploadedDate: 'October 2026',
     description: 'Complete 86-Page Priority-Starred Master Examination Set (90 MCQs + 10 Create Performance Task Style FRQs) for Unit 1: Creative Development & Collaboration, Pair Programming, Event-Driven Design, Error Typologies, and IP Licensing with 9-point rubrics.',
   },
+  'ap-computer-science-principles-2': {
+    pdfUrl: '/sample-papers/AP_CSP_Unit2_Master_Set.pdf',
+    htmlUrl: '/sample-papers/AP_CSP_Unit2_Master.html',
+    title: 'AP Computer Science Principles – Unit 2: Data Representation & Compression (Priority-Starred Master Set)',
+    pageCount: 86,
+    totalQuestions: 100,
+    mcqCount: 90,
+    frqCount: 10,
+    priorityStars: {
+      star5: 53,
+      star4: 34,
+      star3: 13,
+    },
+    uploadedDate: 'October 2026',
+    description: 'Complete 86-Page Priority-Starred Master Examination Set (90 MCQs + 10 Create Performance Task Style FRQs) for Unit 2: Positional Binary, Hexadecimal, Integer Overflow, Floating-Point Round-Off, Analog/Digital Sampling, Lossless RLE/LZW, Lossy Perceptual Codecs, and Metadata Privacy with 9-point rubrics.',
+  },
 };
 
 export function getUnitPdfKey(subjectId: string, unitNumber: number): string {
