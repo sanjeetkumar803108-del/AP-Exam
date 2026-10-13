@@ -1364,9 +1364,12 @@ Please evaluate this answer strictly according to your system rubric.`;
     }];
     setMessages(updatedMessages);
 
-    // Instantiate a new AbortController for streaming cancellation
+    // Instantiate a new AbortController for streaming cancellation with safety timeout
     const controller = new AbortController();
     abortControllerRef.current = controller;
+    const streamTimeoutId = setTimeout(() => {
+      try { controller.abort(); } catch (e) {}
+    }, 45000);
 
     setLoading(true);
 
@@ -1771,6 +1774,7 @@ Please evaluate this answer strictly according to your system rubric.`;
       }
       setMessages(prev => [...prev, { role: 'model', text: errorMessage, isError: true }]);
     } finally {
+      clearTimeout(streamTimeoutId);
       setLoading(false);
       abortControllerRef.current = null;
     }
