@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, ArrowRight, Swords, BookOpen, Layers, Youtube, FileText, FileImage, Wand2, ChevronDown, ChevronUp, Calculator, UserCircle, Search, Lock, Brain, Crown, Share2, Archive, Trash2, Calendar, HelpCircle, Check, Undo, Zap } from 'lucide-react';
+import { Sparkles, Swords, BookOpen, Layers, Youtube, FileText, FileImage, Wand2, ChevronDown, ChevronUp, Calculator, UserCircle, Search, Lock, Brain, Crown, Share2, Archive, Trash2, Calendar, HelpCircle, Check, Undo, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Capacitor } from '@capacitor/core';
 import appLogo from '../assets/logo.png';
@@ -529,9 +529,7 @@ function ToolsDashboard({
                 </div>
               </div>
 
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-zinc-900 border border-white/20 group-hover:border-white/60 group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-rose-600 flex items-center justify-center text-white shrink-0 transition-all duration-300 shadow-lg z-10 ml-3">
-                <ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
-              </div>
+
             </div>
           </div>
         </motion.div>
@@ -559,9 +557,7 @@ function ToolsDashboard({
               </p>
             </div>
           </div>
-          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 group-hover:bg-emerald-500 group-hover:text-white flex items-center justify-center text-zinc-700 dark:text-zinc-200 shrink-0 transition-colors shadow-sm">
-            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
-          </div>
+
         </motion.div>
 
         {/* 3. AP Trap Radar™ */}
@@ -587,9 +583,7 @@ function ToolsDashboard({
               </p>
             </div>
           </div>
-          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 group-hover:bg-amber-500 group-hover:text-white flex items-center justify-center text-zinc-700 dark:text-zinc-200 shrink-0 transition-colors shadow-sm">
-            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
-          </div>
+
         </motion.div>
 
         {/* 4. Learning Island™ */}
@@ -615,9 +609,7 @@ function ToolsDashboard({
               </p>
             </div>
           </div>
-          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 group-hover:bg-amber-500 group-hover:text-white flex items-center justify-center text-zinc-700 dark:text-zinc-200 shrink-0 transition-colors shadow-sm">
-            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
-          </div>
+
         </motion.div>
 
         {/* 5. Test Prep */}
@@ -648,9 +640,7 @@ function ToolsDashboard({
               </p>
             </div>
           </div>
-          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center text-zinc-700 dark:text-zinc-200 shrink-0 transition-colors shadow-sm">
-            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
-          </div>
+
         </motion.div>
 
         {/* 6. AP Notes */}
@@ -676,9 +666,7 @@ function ToolsDashboard({
               </p>
             </div>
           </div>
-          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 group-hover:bg-purple-600 group-hover:text-white flex items-center justify-center text-zinc-700 dark:text-zinc-200 shrink-0 transition-colors shadow-sm">
-            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
-          </div>
+
         </motion.div>
 
         {/* 7. AP Sample Papers Set */}
@@ -704,9 +692,7 @@ function ToolsDashboard({
               </p>
             </div>
           </div>
-          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center text-zinc-700 dark:text-zinc-200 shrink-0 transition-colors shadow-sm">
-            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
-          </div>
+
         </motion.div>
 
         {/* 8. Short Notes */}
@@ -734,9 +720,7 @@ function ToolsDashboard({
               </p>
             </div>
           </div>
-          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 group-hover:bg-teal-500 group-hover:text-white flex items-center justify-center text-zinc-700 dark:text-zinc-200 shrink-0 transition-colors shadow-sm">
-            <ArrowRight className="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" />
-          </div>
+
         </motion.div>
 
       </div>
