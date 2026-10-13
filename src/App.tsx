@@ -1113,8 +1113,8 @@ export default function App() {
               )}
               {activeTool === 'testprep' && (
                 <ErrorBoundary 
-                  featureName="Test Prep"
-                  fallbackMessage="Unable to load Test Prep. Tap below to auto-repair or return to dashboard."
+                  featureName="AP Sample Paper Sets"
+                  fallbackMessage="Unable to load AP Sample Paper Sets. Tap below to auto-repair or return to dashboard."
                   onClose={() => setActiveTool(null)}
                   onRetry={() => resetAllLazyChunks()}
                   cacheKeysToPurgeOnCrash={['ap_test_prep_history']}

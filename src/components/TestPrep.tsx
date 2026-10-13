@@ -124,10 +124,10 @@ export default function TestPrep({ onBack }: TestPrepProps) {
           
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-black uppercase tracking-wider bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md">
-              AP® REVISION
+              AP® EXAMS
             </span>
             <h1 className="font-extrabold text-zinc-900 text-base tracking-tight">
-              Course Short Notes
+              AP Sample Paper Sets
             </h1>
           </div>
         </div>
@@ -148,7 +148,7 @@ export default function TestPrep({ onBack }: TestPrepProps) {
         <div className="relative overflow-hidden rounded-3xl p-5 sm:py-5 sm:px-6 bg-gradient-to-r from-[#170e3b] via-[#24125e] to-[#3a1b82] text-white shadow-md shadow-indigo-950/15 border border-purple-900/40">
           <div className="relative z-10 flex items-center justify-between gap-4">
             <h2 className="text-base sm:text-lg md:text-xl font-black tracking-tight leading-snug">
-              AP® Unit-Wise Practice Questions &amp; Exam Revision Sets
+              AP® Sample Paper Sets (Unit-Wise Master Practice &amp; Revision)
             </h2>
             
             {/* Soft decorative document icon on right */}

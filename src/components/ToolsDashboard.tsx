@@ -612,7 +612,7 @@ function ToolsDashboard({
 
         </motion.div>
 
-        {/* 5. Test Prep */}
+        {/* 5. AP Sample Paper Sets */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -627,16 +627,11 @@ function ToolsDashboard({
               🎯
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
-                  Test Prep
-                </h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border border-indigo-500/20">
-                  Coming Soon
-                </span>
-              </div>
+              <h2 className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+                AP Sample Paper Sets
+              </h2>
               <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-300 mt-0.5">
-                Revamping for 2026
+                Unit-Wise Master Practice Sets
               </p>
             </div>
           </div>
@@ -669,7 +664,7 @@ function ToolsDashboard({
 
         </motion.div>
 
-        {/* 7. AP Sample Papers Set */}
+        {/* 7. Full Mock Exams */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -685,10 +680,10 @@ function ToolsDashboard({
             </div>
             <div>
               <h2 className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
-                AP Sample Papers Set
+                Full Mock Exams
               </h2>
               <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">
-                Official Mock Tests
+                Official Full-Length Practice Papers
               </p>
             </div>
           </div>
