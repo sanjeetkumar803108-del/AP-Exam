@@ -21272,11 +21272,12 @@ ${text}`.trim() },
     requestedModel = "gemini-flash-lite-latest";
   }
   let modelsToTry = isAudioModel ? [requestedModel, "gemini-2.5-flash-preview-tts"].filter(Boolean) : isSpecialtyModel ? [requestedModel] : [
+    "gemini-3.1-flash-lite",
+    "gemini-3.1-flash-lite-preview",
     requestedModel,
-    "gemini-flash-lite-latest",
-    "gemini-3.5-flash-lite",
     "gemini-3.5-flash",
-    "gemini-flash-latest"
+    "gemini-3.5-flash-lite",
+    "gemini-flash-lite-latest"
   ].filter(Boolean).filter((value, index, self) => self.indexOf(value) === index);
   if (!isSpecialtyModel) {
     const now = Date.now();
@@ -21312,6 +21313,12 @@ ${text}`.trim() },
         if (currentParams.config.systemInstruction.parts) {
           currentParams.config.systemInstruction.parts = currentParams.config.systemInstruction.parts.map((p) => ({ ...p }));
         }
+      }
+      if (!currentParams.config.thinkingConfig && !model.includes("lite") && (model.includes("3.") || model.includes("2.5"))) {
+        currentParams.config.thinkingConfig = { thinkingBudget: 0 };
+      }
+      if (model.includes("lite") && currentParams.config.thinkingConfig) {
+        delete currentParams.config.thinkingConfig;
       }
     }
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -21673,9 +21680,10 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
     const shouldStream = stream === "true" || stream === true;
     if (shouldStream) {
       let modelsToTry = [
-        "gemini-3.6-flash",
-        "gemini-flash-latest",
+        "gemini-3.1-flash-lite",
+        "gemini-3.1-flash-lite-preview",
         "gemini-3.5-flash",
+        "gemini-3.5-flash-lite",
         "gemini-flash-lite-latest"
       ];
       const now = Date.now();
@@ -21697,16 +21705,21 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
       for (const model of modelsToTry) {
         try {
           const aiClient2 = getAI();
+          const supportsThinkingBudget = !model.includes("lite") && (model.includes("3.") || model.includes("2.5"));
+          const streamConfig = {
+            systemInstruction: { parts: [{ text: systemInstruction }] },
+            responseMimeType: isEvaluation === "true" || isEvaluation === true ? "text/plain" : "application/json",
+            maxOutputTokens: 2500,
+            temperature: 0.2,
+            candidateCount: 1
+          };
+          if (supportsThinkingBudget) {
+            streamConfig.thinkingConfig = { thinkingBudget: 0 };
+          }
           responseStream = await aiClient2.models.generateContentStream({
             model,
             contents,
-            config: {
-              systemInstruction: { parts: [{ text: systemInstruction }] },
-              responseMimeType: isEvaluation === "true" || isEvaluation === true ? "text/plain" : "application/json",
-              maxOutputTokens: 4096,
-              temperature: 0.2,
-              candidateCount: 1
-            }
+            config: streamConfig
           });
           successModel = model;
           break;
@@ -21741,7 +21754,7 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
           try {
             text = chunk.text || "";
           } catch (e) {
-            text = chunk.candidates?.[0]?.content?.parts?.map((p) => p.text || "").join("") || "";
+            text = chunk.candidates?.[0]?.content?.parts?.filter((p) => !p.thought)?.map((p) => p.text || "").join("") || "";
           }
           if (text) {
             res.write(`data: ${JSON.stringify({ text })}
@@ -21764,17 +21777,14 @@ The user is asking for real-time, live, or current up-to-date data (e.g., curren
       }
     } else {
       const response = await safeGenerateContent({
-        model: "gemini-flash-lite-latest",
+        model: "gemini-3.1-flash-lite",
         contents,
         config: {
           systemInstruction: { parts: [{ text: systemInstruction }] },
           responseMimeType: isEvaluation === "true" || isEvaluation === true ? "text/plain" : "application/json",
           temperature: 0.7,
-          // ⚡ Balanced temp for conversational AI
-          maxOutputTokens: 3e3,
-          // ⚡ Calibrated token ceiling for snappy output
+          maxOutputTokens: 2500,
           candidateCount: 1
-          // ⚡ Single candidate only
         }
       });
       res.json({ text: response.text });
