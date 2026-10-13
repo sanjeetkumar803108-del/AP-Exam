@@ -16,7 +16,8 @@ import { ReportAiButton } from './ReportAiModal';
 function MathView({ math, block = false, className = '' }: { math: string; block?: boolean; className?: string }) {
   const html = useMemo(() => {
     try {
-      return katex.renderToString(math, {
+      const cleanMath = (math || '').trim().replace(/^(\$\$|\$)|(\$\$|\$)$/g, '').trim();
+      return katex.renderToString(cleanMath, {
         displayMode: block,
         throwOnError: false,
         trust: true,

@@ -27,8 +27,8 @@ export const SUPERSCRIPTS_MAP: Record<string, string> = {
 export function healUnitSuperscripts(content: string): string {
   if (!content) return '';
   let str = String(content);
-  // Match common physics/chemistry units with caret exponents:
-  str = str.replace(/(\b(?:m|cm|km|mm|s|sec|min|hr|h|kg|g|mg|N|J|W|Pa|mol|cd|rad|deg|V|A|Hz|T|L)(?:\/(?:m|cm|s|sec|min|hr|h|kg|g|L|mol))?)\^([0-9+\-n]+)\b/gi, (_match, unit, exp) => {
+  // Match common physics, chemistry, biology, calculus units with caret exponents:
+  str = str.replace(/(\b(?:m|cm|km|mm|nm|µm|um|pm|dm|s|sec|ms|µs|us|ns|min|hr|h|kg|g|mg|µg|ug|N|kN|MN|J|kJ|MJ|GJ|W|kW|MW|GW|Pa|kPa|MPa|GPa|atm|bar|mol|mmol|µmol|cd|rad|deg|V|mV|kV|A|mA|Hz|kHz|MHz|GHz|T|L|mL|µL|uL|cal|kcal|eV|keV|MeV)(?:\/(?:m|cm|mm|s|sec|min|hr|h|kg|g|mg|L|mL|mol|mmol|K|V|A|Hz))?)\^([0-9+\-n]+)\b/gi, (_match, unit, exp) => {
     const superExp = exp.split('').map((ch: string) => SUPERSCRIPTS_MAP[ch] || ch).join('');
     return `${unit}${superExp}`;
   });
@@ -511,8 +511,11 @@ function healSingleQuizLine(line: string): string {
     if (body.startsWith('$') && body.endsWith('$')) {
       return line;
     }
-    if (/[\^_=+\-*/\\√≤≥≠]/.test(body) || /\b(?:sin|cos|tan|log|ln|sqrt|frac)\b/.test(body)) {
+    if (/[\^_=+\-*/\\√≤≥≠]/.test(body) || /\b(?:sin|cos|tan|log|ln|sqrt|frac|d\/dx|dy\/dx|d\/dt)\b/.test(body)) {
       let mathBody = body.replace(/^\$|\$$/g, '').trim();
+      mathBody = mathBody.replace(/\bd\/dx\b/g, '\\frac{d}{dx}');
+      mathBody = mathBody.replace(/\bdy\/dx\b/g, '\\frac{dy}{dx}');
+      mathBody = mathBody.replace(/\bd\/dt\b/g, '\\frac{d}{dt}');
       mathBody = mathBody.replace(/(?<=[a-zA-Z0-9)\]^_])\s*\*\s*(?=[a-zA-Z0-9(\[^\\])/g, ' \\cdot ');
       mathBody = mathBody.replace(/(?<![a-zA-Z\\])(cos|sin|tan|sec|csc|cot|log|ln)\b/g, (_, fn) => '\\' + fn);
       return `${prefix}$${mathBody}$`;
@@ -596,8 +599,9 @@ export function formatSuggestionMath(content: string): string {
 
   text = replaceOutsideMath(text, /(\\frac\{[^{}]*\}\{[^{}]*\}|\\sqrt(?:\[[^\]]*\])?\{[^{}]*\}|\\boxed\{[^{}]*\})/g, '$$$1$$');
   text = replaceOutsideMath(text, /(\\(?:alpha|beta|gamma|delta|theta|lambda|mu|pi|rho|sigma|tau|phi|omega|Delta|Omega|pm|times|div|leq|geq|neq|approx|infty|cdot|to|rightarrow|partial|int|sum|prod|lim|sin|cos|tan|log|ln)\b)/g, '$$$1$$');
-  text = replaceOutsideMath(text, /([a-zA-Z0-9)\]]+)\^(\{[^{}]+\}|-?[0-9]+|[a-zA-Z](?![a-zA-Z]))/g, '$$$1^$2$$');
-  text = replaceOutsideMath(text, /([a-zA-Z0-9)\]]+)_(\{[^{}]+\}|[0-9]+|[a-zA-Z](?![a-zA-Z]))/g, '$$$1_$2$$');
+  text = replaceOutsideMath(text, /(?<![$a-zA-Z\\])(?:-?[0-9a-zA-Z]+\s*)?(\([a-zA-Z0-9\s+\-*/^_.]+\))\^([0-9a-zA-Z]+|\{[^{}]+\})/g, '$$$1^$2$$');
+  text = replaceOutsideMath(text, /([a-zA-Z0-9]+)\^(\{[^{}]+\}|-?[0-9]+|[a-zA-Z](?![a-zA-Z]))/g, '$$$1^$2$$');
+  text = replaceOutsideMath(text, /([a-zA-Z0-9]+)_(\{[^{}]+\}|[0-9]+|[a-zA-Z](?![a-zA-Z]))/g, '$$$1_$2$$');
 
   text = text.replace(/\$\$/g, '$');
   text = text.replace(/\$\s*\$/g, ' ');

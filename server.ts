@@ -1414,7 +1414,8 @@ DO NOT GUESS. DO NOT ASSUME. DO NOT SILENTLY AUTO-CORRECT STUDENT ERRORS.
 STEP 4: DETAILED STEP-BY-STEP AP RUBRIC EVALUATION
 =======================================================
 - Grade strictly according to official College Board AP Scoring Guidelines with the "NO WORK, NO CREDIT" rule.
-- All mathematical expressions, formulas, variables ($x$, $y$, $t$), derivatives, integrals, limits, equations, and units MUST be wrapped in KaTeX math delimiters ($...$ for inline or $$...$$ for display).
+- All mathematical expressions, formulas, variables ($x$, $y$, $t$), derivatives (\\frac{d}{dx}), integrals, limits, equations, powers, and units MUST be wrapped in KaTeX math delimiters ($...$ for inline or $$...$$ for display).
+- MANDATORY ZERO-BARE-LATEX RULE: NEVER output plain-text ASCII math, bare derivatives (d/dx), carets outside delimiters, or raw asterisks (*) without LaTeX delimiters! Always use \\cdot for multiplication.
 - Break down grading into official rubric parts/steps: Part (a), Part (b), etc.
 - In each step:
   * "criteria": State the exact College Board benchmark requirement with KaTeX math.

@@ -39,9 +39,17 @@ export function formatBattleOptionMath(rawText: string, idx: number): string {
   // Convert double dollar $$ to single dollar $ to prevent block KaTeX (<div class="katex-display">)
   text = text.replace(/\$\$/g, '$');
 
+  // Convert derivatives
+  text = text.replace(/\bd\/dx\b/g, '\\frac{d}{dx}');
+  text = text.replace(/\bdy\/dx\b/g, '\\frac{dy}{dx}');
+  text = text.replace(/\bd\/dt\b/g, '\\frac{d}{dt}');
+
   // If already properly wrapped in $...$, heal inside math
   if (text.startsWith('$') && text.endsWith('$') && (text.match(/\$/g) || []).length === 2) {
     let inner = text.slice(1, -1).trim();
+    inner = inner.replace(/\bd\/dx\b/g, '\\frac{d}{dx}');
+    inner = inner.replace(/\bdy\/dx\b/g, '\\frac{dy}{dx}');
+    inner = inner.replace(/\bd\/dt\b/g, '\\frac{d}{dt}');
     inner = inner.replace(/(?<=[a-zA-Z0-9)\]^_])\s*\*\s*(?=[a-zA-Z0-9(\[^\\])/g, ' \\cdot ');
     inner = inner.replace(/(?<![a-zA-Z\\])(cos|sin|tan|sec|csc|cot|log|ln)\b/g, (_, fn) => '\\' + fn);
     return `$${inner}$`;
@@ -56,7 +64,10 @@ export function formatBattleOptionMath(rawText: string, idx: number): string {
       const narrativeWords = ((text.replace(/\\[a-zA-Z]+(?:\{[^{}]*\}|\[[^\]]*\])*/g, '').match(/[a-zA-Z]{3,}/g) || []) as string[])
         .filter((w: string) => !['sin','cos','tan','sec','csc','cot','log','ln','lim','exp','dx','dy','dt','frac','sqrt','text'].includes(w.toLowerCase()));
       if (narrativeWords.length <= 2) {
-        let mathBody = text.replace(/(?<=[a-zA-Z0-9)\]^_])\s*\*\s*(?=[a-zA-Z0-9(\[^\\])/g, ' \\cdot ');
+        let mathBody = text.replace(/\bd\/dx\b/g, '\\frac{d}{dx}');
+        mathBody = mathBody.replace(/\bdy\/dx\b/g, '\\frac{dy}{dx}');
+        mathBody = mathBody.replace(/\bd\/dt\b/g, '\\frac{d}{dt}');
+        mathBody = mathBody.replace(/(?<=[a-zA-Z0-9)\]^_])\s*\*\s*(?=[a-zA-Z0-9(\[^\\])/g, ' \\cdot ');
         mathBody = mathBody.replace(/(?<![a-zA-Z\\])(cos|sin|tan|sec|csc|cot|log|ln)\b/g, (_, fn) => '\\' + fn);
         return `$${mathBody}$`;
       }
