@@ -144,23 +144,18 @@ export default function TestPrep({ onBack }: TestPrepProps) {
       {/* ========================================================================= */}
       <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 max-w-4xl mx-auto w-full bg-white">
         {/* Hero Welcome Banner */}
-        <div className="relative overflow-hidden rounded-3xl p-6 bg-gradient-to-r from-[#170e3b] via-[#24125e] to-[#3a1b82] text-white shadow-md shadow-indigo-950/15 border border-purple-900/40">
-          <div className="relative z-10 flex items-center justify-between">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-tight">
-                AP® Short Notes Revision
-              </h2>
-              <p className="text-purple-200/80 text-xs sm:text-sm mt-1 font-medium max-w-md">
-                Official College Board CED-aligned master question sets &amp; unit practice booklets with priority-star ratings.
-              </p>
-            </div>
+        <div className="relative overflow-hidden rounded-3xl p-5 sm:py-5 sm:px-6 bg-gradient-to-r from-[#170e3b] via-[#24125e] to-[#3a1b82] text-white shadow-md shadow-indigo-950/15 border border-purple-900/40">
+          <div className="relative z-10 flex items-center justify-between gap-4">
+            <h2 className="text-base sm:text-lg md:text-xl font-black tracking-tight leading-snug">
+              AP® Unit-Wise Practice Questions &amp; Exam Revision Sets
+            </h2>
             
             {/* Soft decorative document icon on right */}
-            <div className="w-12 h-14 rounded-lg bg-white/10 border border-white/20 p-2.5 flex flex-col justify-between shrink-0 shadow-inner hidden sm:flex">
-              <div className="w-full h-1 bg-white/40 rounded-full" />
-              <div className="w-3/4 h-1 bg-white/30 rounded-full" />
-              <div className="w-full h-1 bg-white/40 rounded-full" />
-              <div className="w-1/2 h-1 bg-white/30 rounded-full" />
+            <div className="w-10 h-11 rounded-lg bg-white/10 border border-white/20 p-2 flex flex-col justify-between shrink-0 shadow-inner hidden sm:flex">
+              <div className="w-full h-0.5 bg-white/40 rounded-full" />
+              <div className="w-3/4 h-0.5 bg-white/30 rounded-full" />
+              <div className="w-full h-0.5 bg-white/40 rounded-full" />
+              <div className="w-1/2 h-0.5 bg-white/30 rounded-full" />
             </div>
           </div>
         </div>
