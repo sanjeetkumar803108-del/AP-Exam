@@ -1263,7 +1263,7 @@ export default function App() {
             />
             <NavItem 
               icon={<Camera className="w-5 h-5" />} 
-              label="FRQ Grader" 
+              label="Scan" 
               isActive={activeTab === 'frqgrader'} 
               onClick={() => {
                 setActiveTab('frqgrader');
