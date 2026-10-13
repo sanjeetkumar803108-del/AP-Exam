@@ -390,5 +390,19 @@
     "description": "85-Page Complete AP CSP Master Examination Set (100 Questions: 90 MCQs + 10 Create Performance Task Style FRQs) with Priority Badges, 3-Pass Verified Step-by-Step Solutions, Distractor Analysis, and 9-Point Official Rubrics for Unit 5: Impact of Computing.",
     "totalMarks": 180,
     "durationMinutes": 195
+  },
+  {
+    "id": "paper_apes_unit_7_master_starred",
+    "subjectId": "ap-environmental-science",
+    "subjectName": "AP Environmental Science",
+    "title": "Unit 7: Atmospheric Pollution (Priority-Starred 100-Question Master Set)",
+    "year": "2026",
+    "pdfUrl": "/sample-papers/AP_Environmental_Science_Unit_7_Mastery_100Q.pdf",
+    "fileName": "AP_Environmental_Science_Unit_7_Mastery_100Q.pdf",
+    "fileSize": "5.99 MB",
+    "uploadedAt": 1791830000000,
+    "description": "86-Page Complete AP Environmental Science Master Examination Set (100 Questions: 90 MCQs + 10 Free Response Questions) with Priority Star Badges, 3-Pass Verified Step-by-Step Solutions, Distractor Analysis, and 10-Point Official Rubrics for Unit 7: Atmospheric Pollution.",
+    "totalMarks": 190,
+    "durationMinutes": 195
   }
 ]

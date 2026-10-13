@@ -511,6 +511,22 @@ export const UPLOADED_UNIT_PDFS: Record<string, UploadedUnitPdf> = {
     uploadedDate: 'October 2026',
     description: 'Complete 85-Page Priority-Starred Master Examination Set (90 MCQs + 10 Create Performance Task Style FRQs) for Unit 5: Beneficial & Harmful Effects, The Digital Divide, Algorithmic Bias & Training Data Proxies, Crowdsourcing & Citizen Science, Intellectual Property (Copyright, Creative Commons, Open Source), Personally Identifiable Information (PII) & Re-Identification, Cybersecurity (Phishing, Malware, Ransomware), and Multi-Factor Authentication (MFA) with 9-point rubrics.',
   },
+  'ap-environmental-science-7': {
+    pdfUrl: '/sample-papers/AP_Environmental_Science_Unit_7_Mastery_100Q.pdf',
+    htmlUrl: '/sample-papers/AP_Environmental_Science_Unit_7_Mastery_100Q.html',
+    title: 'AP Environmental Science – Unit 7: Atmospheric Pollution (Priority-Starred Master Set)',
+    pageCount: 86,
+    totalQuestions: 100,
+    mcqCount: 90,
+    frqCount: 10,
+    priorityStars: {
+      star5: 50,
+      star4: 35,
+      star3: 15,
+    },
+    uploadedDate: 'October 2026',
+    description: 'Complete 86-Page Priority-Starred Master Examination Set (90 MCQs + 10 Multi-Part FRQs) for Unit 7: Criteria Pollutants (SPLONC), Photochemical Smog Diurnal Cycles, Thermal Inversions, Particulate Dynamics (PM2.5/PM10), Indoor Air Hazards (Radon-222, Asbestos, Mold), Flue Gas Scrubbers & ESPs, Acid Deposition & Watershed Buffering, and Noise Pollution with 10-point rubrics.',
+  },
 };
 
 export function getUnitPdfKey(subjectId: string, unitNumber: number): string {
