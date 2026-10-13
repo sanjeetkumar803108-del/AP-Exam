@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Check, Zap, Rocket, X, Crown, ShieldAlert, Loader2 } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
@@ -74,6 +74,29 @@ export const pricingMap: Record<string, string> = {
   'Others / International': '$14.99',
 };
 
+const PRO_FLAGSHIP_FEATURES = [
+  { 
+    icon: "🪤", 
+    title: "AP Trap Radar™ (Chief Reader Tech)", 
+    desc: "Bust hidden traps" 
+  },
+  { 
+    icon: "📝", 
+    title: "Handwritten FRQ & Essay Grader", 
+    desc: "Instant rubric grading" 
+  },
+  { 
+    icon: "⚔️", 
+    title: "1v1 Live Multiplayer AP Battles", 
+    desc: "Live peer battles" 
+  },
+  { 
+    icon: "📝", 
+    title: "Learning Island™ & Short Notes Revision", 
+    desc: "High-yield unit summaries" 
+  }
+] as const;
+
 interface PaywallModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -86,21 +109,29 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
   const [selectedCycle, setSelectedCycle] = useState<'monthly' | 'yearly'>('yearly');
   const [isPurchasing, setIsPurchasing] = useState<boolean>(false);
   const [isRestoring, setIsRestoring] = useState<boolean>(false);
-  
-  if (!isOpen) return null;
 
-  const userUid = auth.currentUser?.uid;
-  const selectedCountry = propSelectedCountry 
-    || safeGetItem('academic_country') 
-    || (userUid ? safeGetItem(`academic_country_${userUid}`) : null) 
-    || 'United States';
+  const { 
+    pricing, 
+    convertedMonthlyPrice, 
+    convertedYearlyPrice, 
+    convertedOriginalMonthlyPrice, 
+    convertedOriginalYearlyPrice 
+  } = useMemo(() => {
+    const userUid = auth.currentUser?.uid;
+    const selectedCountry = propSelectedCountry 
+      || safeGetItem('academic_country') 
+      || (userUid ? safeGetItem(`academic_country_${userUid}`) : null) 
+      || 'United States';
 
-  const pricing = localizedPricingMap[selectedCountry] || localizedPricingMap['Others / International'];
-  
-  const convertedMonthlyPrice = `${pricing.monthlyDiscounted}/mo`;
-  const convertedYearlyPrice = `${pricing.yearlyDiscounted}/yr`;
-  const convertedOriginalMonthlyPrice = pricing.monthlyOriginal;
-  const convertedOriginalYearlyPrice = pricing.yearlyOriginal;
+    const p = localizedPricingMap[selectedCountry] || localizedPricingMap['Others / International'];
+    return {
+      pricing: p,
+      convertedMonthlyPrice: `${p.monthlyDiscounted}/mo`,
+      convertedYearlyPrice: `${p.yearlyDiscounted}/yr`,
+      convertedOriginalMonthlyPrice: p.monthlyOriginal,
+      convertedOriginalYearlyPrice: p.yearlyOriginal,
+    };
+  }, [propSelectedCountry, isOpen]);
 
   // Placeholder function to update user's Pro status in global state or Firebase backend
   const updateUserProStatus = (isPro: boolean, plan: 'monthly' | 'yearly') => {
@@ -226,240 +257,235 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center p-4"
-        onClick={onClose}
-      >
+      {isOpen && (
         <motion.div
-          initial={{ y: "100%" }}
-          animate={{ y: 0 }}
-          exit={{ y: "100%" }}
-          transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="bg-[#FAF9F6] w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden relative shadow-2xl border border-zinc-200 max-h-[95vh] flex flex-col"
-          onClick={(e) => e.stopPropagation()}
+          key="paywall-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
+          style={{ willChange: 'opacity' }}
+          className="fixed inset-0 bg-black/75 z-[100] flex items-end sm:items-center justify-center p-4"
+          onClick={onClose}
         >
-          {/* Header/Banner */}
-          <div className="bg-gradient-to-br from-amber-400 via-orange-500 to-red-600 p-5 sm:p-6 text-white relative overflow-hidden shrink-0">
-            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-              <div className="absolute top-4 left-4 w-24 h-24 bg-white rounded-full blur-3xl animate-pulse" />
-              <div className="absolute bottom-4 right-4 w-32 h-32 bg-yellow-200 rounded-full blur-3xl animate-pulse" />
-            </div>
-            
-            <button 
-              onClick={onClose}
-              className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex justify-center mb-2.5">
-              <div className="p-2.5 bg-white/20 rounded-2xl backdrop-blur-md">
-                <Crown className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+          <motion.div
+            key="paywall-sheet"
+            initial={{ y: "100%", opacity: 0.8 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "100%", opacity: 0 }}
+            transition={{
+              type: "tween",
+              ease: [0.16, 1, 0.3, 1],
+              duration: 0.28
+            }}
+            style={{
+              willChange: 'transform, opacity',
+              transform: 'translateZ(0)',
+              WebkitBackfaceVisibility: 'hidden'
+            }}
+            className="bg-[#FAF9F6] w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden relative shadow-2xl border border-zinc-200 max-h-[95vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header/Banner */}
+            <div className="bg-gradient-to-br from-amber-400 via-orange-500 to-red-600 p-5 sm:p-6 text-white relative overflow-hidden shrink-0">
+              <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-25">
+                <div className="absolute -top-12 -left-12 w-36 h-36 bg-white/40 rounded-full blur-2xl" />
+                <div className="absolute -bottom-12 -right-12 w-44 h-44 bg-yellow-300/30 rounded-full blur-2xl" />
               </div>
-            </div>
-
-            <h2 className="text-xl sm:text-2xl font-black text-center leading-tight mb-1">
-              Unlock AP Exam Pro
-            </h2>
-            <p className="text-center text-white/90 font-bold text-xs max-w-[300px] mx-auto">
-              {featureName?.includes('Flash') 
-                ? "Unlock Unlimited AI Study Power & Score 5 on Test Day!" 
-                : (featureName ? `Upgrade to unlock ${featureName} & all PRO tools!` : "Unlock Unlimited AI Study Power & Score 5 on Test Day!")}
-            </p>
-          </div>
-
-          {/* Unique Flagship Features List */}
-          <div className="p-4 sm:p-5 space-y-4 overflow-y-auto">
-            <div className="space-y-2">
-              <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block text-center">
-                ✨ Exclusive AP Superpowers Unlocked
-              </span>
               
-              <div className="grid grid-cols-1 gap-2">
-                {[
-                  { 
-                    icon: "🪤", 
-                    title: "AP Trap Radar™ (Chief Reader Tech)", 
-                    desc: "Bust hidden traps" 
-                  },
-                  { 
-                    icon: "📝", 
-                    title: "Handwritten FRQ & Essay Grader", 
-                    desc: "Instant rubric grading" 
-                  },
-                  { 
-                    icon: "⚔️", 
-                    title: "1v1 Live Multiplayer AP Battles", 
-                    desc: "Live peer battles" 
-                  },
-                  { 
-                    icon: "📝", 
-                    title: "Learning Island™ & Short Notes Revision", 
-                    desc: "High-yield unit summaries" 
-                  }
-                ].map((f, i) => (
-                  <div key={i} className="flex items-center gap-3 p-2.5 bg-white border border-zinc-200/80 rounded-2xl shadow-xs">
-                    <div className="w-8 h-8 rounded-xl bg-zinc-50 border border-zinc-150 flex items-center justify-center text-lg shrink-0 shadow-2xs">
-                      {f.icon}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="font-black text-zinc-900 text-[11px] leading-tight truncate">{f.title}</h4>
-                      <p className="text-[9.5px] text-zinc-500 font-semibold mt-0.5 leading-tight">{f.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Pricing Tiers Selection (Monthly vs Yearly) */}
-            <div className="space-y-2.5">
-              <p className="text-[10px] text-zinc-400 font-black uppercase tracking-wider text-center">
-                Select Subscription Plan
-              </p>
-              
-              <div className="grid grid-cols-2 gap-3">
-                {/* Monthly Tier */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerVibration(10);
-                    setSelectedCycle('monthly');
-                  }}
-                  className={`p-4 rounded-2xl border text-left flex flex-col justify-between transition-all relative overflow-hidden ${
-                    selectedCycle === 'monthly'
-                      ? 'bg-white border-zinc-900 ring-1 ring-zinc-900'
-                      : 'bg-white/60 border-zinc-200 hover:bg-white hover:border-zinc-300'
-                  }`}
-                >
-                  {/* Monthly Discount Badge */}
-                  <div className="absolute top-0 right-0 bg-red-500 text-white font-black text-[8px] px-2 py-0.5 rounded-bl-lg select-none uppercase tracking-wide">
-                    {pricing.monthlySavings}
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wide">Monthly</span>
-                    <h3 className="text-base font-black text-zinc-900 leading-tight mt-1 flex flex-col">
-                      <span className="line-through text-zinc-400 text-xs font-semibold leading-none mb-0.5">
-                        {convertedOriginalMonthlyPrice}
-                      </span>
-                      <span>
-                        {convertedMonthlyPrice}
-                      </span>
-                    </h3>
-                    <p className="text-[9px] text-zinc-500 font-semibold mt-0.5">Billed monthly</p>
-                  </div>
-
-                  {/* Catchy Value Hook for Monthly */}
-                  <div className="mt-2.5 pt-2 border-t border-zinc-100 flex items-center gap-1 text-[8.5px] font-black text-amber-800 bg-amber-50/80 px-2 py-1 rounded-lg">
-                    <span>☕ Price of 3 coffees • &lt;50¢/day</span>
-                  </div>
-                </button>
-
-                {/* Yearly Tier */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerVibration(10);
-                    setSelectedCycle('yearly');
-                  }}
-                  className={`p-4 rounded-2xl border text-left flex flex-col justify-between transition-all relative overflow-hidden ${
-                    selectedCycle === 'yearly'
-                      ? 'bg-white border-zinc-900 ring-1 ring-zinc-900'
-                      : 'bg-white/60 border-zinc-200 hover:bg-white hover:border-zinc-300'
-                  }`}
-                >
-                  {/* Yearly Savings Badge */}
-                  <div className="absolute top-0 right-0 bg-gradient-to-r from-amber-500 to-red-500 text-white font-black text-[8px] px-2 py-0.5 rounded-bl-lg select-none uppercase tracking-wide">
-                    {pricing.yearlySavings}
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wide">Yearly</span>
-                      <span className="text-[8px] font-extrabold text-amber-600 bg-amber-50 border border-amber-100 px-1.5 py-0.2 rounded-full">BEST VALUE</span>
-                    </div>
-                    
-                    <h3 className="text-base font-black text-zinc-900 leading-tight mt-1 flex flex-col">
-                      <span className="line-through text-zinc-400 text-xs font-semibold leading-none mb-0.5">
-                        {convertedOriginalYearlyPrice}
-                      </span>
-                      <span>
-                        {convertedYearlyPrice}
-                      </span>
-                    </h3>
-                    <p className="text-[9px] text-zinc-500 font-semibold mt-0.5">
-                      Billed annually (~{pricing.symbol}{(parseFloat(pricing.yearlyDiscounted.replace(/[^0-9.]/g, '')) / 12).toFixed(2)}/mo)
-                    </p>
-                  </div>
-
-                  {/* Catchy Value Hook for Yearly */}
-                  <div className="mt-2.5 pt-2 border-t border-zinc-100 flex items-center gap-1 text-[8.5px] font-black text-emerald-800 bg-emerald-50 px-2 py-1 rounded-lg">
-                    <span>🎓 Cost of 2 hrs with a real tutor</span>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            {/* CTA Button and Policies Footer */}
-            <div className="pt-2">
-              <button
+              <button 
                 type="button"
-                onClick={() => handleRealPurchase(selectedCycle)}
-                disabled={isPurchasing}
-                className="w-full py-4 bg-zinc-950 text-white rounded-2xl font-black text-sm shadow-lg hover:bg-zinc-900 active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+                onClick={onClose}
+                className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors cursor-pointer touch-manipulation"
               >
-                {isPurchasing ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin text-white" />
-                    <span>Connecting to Google Play...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Start 3-Day Free Trial</span>
-                    <Rocket className="w-4 h-4" />
-                  </>
-                )}
+                <X className="w-4 h-4" />
               </button>
-              
-              <p className="text-center text-[9px] text-zinc-400 font-bold uppercase tracking-wider mt-3.5 flex items-center justify-center gap-1">
-                🛡️ 3 Days Free, then auto-renews. Cancel anytime.
+
+              <div className="flex justify-center mb-2.5">
+                <div className="p-2.5 bg-white/25 rounded-2xl shadow-inner">
+                  <Crown className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+                </div>
+              </div>
+
+              <h2 className="text-xl sm:text-2xl font-black text-center leading-tight mb-1">
+                Unlock AP Exam Pro
+              </h2>
+              <p className="text-center text-white/90 font-bold text-xs max-w-[300px] mx-auto">
+                {featureName?.includes('Flash') 
+                  ? "Unlock Unlimited AI Study Power & Score 5 on Test Day!" 
+                  : (featureName ? `Upgrade to unlock ${featureName} & all PRO tools!` : "Unlock Unlimited AI Study Power & Score 5 on Test Day!")}
               </p>
-              
-              <div className="mt-3 flex items-center justify-center gap-3 text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
-                <button 
+            </div>
+
+            {/* Unique Flagship Features List */}
+            <div className="p-4 sm:p-5 space-y-4 overflow-y-auto">
+              <div className="space-y-2">
+                <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block text-center">
+                  ✨ Exclusive AP Superpowers Unlocked
+                </span>
+                
+                <div className="grid grid-cols-1 gap-2">
+                  {PRO_FLAGSHIP_FEATURES.map((f, i) => (
+                    <div key={i} className="flex items-center gap-3 p-2.5 bg-white border border-zinc-200/80 rounded-2xl shadow-xs">
+                      <div className="w-8 h-8 rounded-xl bg-zinc-50 border border-zinc-150 flex items-center justify-center text-lg shrink-0 shadow-2xs">
+                        {f.icon}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-black text-zinc-900 text-[11px] leading-tight truncate">{f.title}</h4>
+                        <p className="text-[9.5px] text-zinc-500 font-semibold mt-0.5 leading-tight">{f.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pricing Tiers Selection (Monthly vs Yearly) */}
+              <div className="space-y-2.5">
+                <p className="text-[10px] text-zinc-400 font-black uppercase tracking-wider text-center">
+                  Select Subscription Plan
+                </p>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Monthly Tier */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      triggerVibration(10);
+                      setSelectedCycle('monthly');
+                    }}
+                    className={`p-4 rounded-2xl border text-left flex flex-col justify-between transition-all relative overflow-hidden touch-manipulation ${
+                      selectedCycle === 'monthly'
+                        ? 'bg-white border-zinc-900 ring-1 ring-zinc-900'
+                        : 'bg-white/60 border-zinc-200 hover:bg-white hover:border-zinc-300'
+                    }`}
+                  >
+                    {/* Monthly Discount Badge */}
+                    <div className="absolute top-0 right-0 bg-red-500 text-white font-black text-[8px] px-2 py-0.5 rounded-bl-lg select-none uppercase tracking-wide">
+                      {pricing.monthlySavings}
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wide">Monthly</span>
+                      <h3 className="text-base font-black text-zinc-900 leading-tight mt-1 flex flex-col">
+                        <span className="line-through text-zinc-400 text-xs font-semibold leading-none mb-0.5">
+                          {convertedOriginalMonthlyPrice}
+                        </span>
+                        <span>
+                          {convertedMonthlyPrice}
+                        </span>
+                      </h3>
+                      <p className="text-[9px] text-zinc-500 font-semibold mt-0.5">Billed monthly</p>
+                    </div>
+
+                    {/* Catchy Value Hook for Monthly */}
+                    <div className="mt-2.5 pt-2 border-t border-zinc-100 flex items-center gap-1 text-[8.5px] font-black text-amber-800 bg-amber-50/80 px-2 py-1 rounded-lg">
+                      <span>☕ Price of 3 coffees • &lt;50¢/day</span>
+                    </div>
+                  </button>
+
+                  {/* Yearly Tier */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      triggerVibration(10);
+                      setSelectedCycle('yearly');
+                    }}
+                    className={`p-4 rounded-2xl border text-left flex flex-col justify-between transition-all relative overflow-hidden touch-manipulation ${
+                      selectedCycle === 'yearly'
+                        ? 'bg-white border-zinc-900 ring-1 ring-zinc-900'
+                        : 'bg-white/60 border-zinc-200 hover:bg-white hover:border-zinc-300'
+                    }`}
+                  >
+                    {/* Yearly Savings Badge */}
+                    <div className="absolute top-0 right-0 bg-gradient-to-r from-amber-500 to-red-500 text-white font-black text-[8px] px-2 py-0.5 rounded-bl-lg select-none uppercase tracking-wide">
+                      {pricing.yearlySavings}
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wide">Yearly</span>
+                        <span className="text-[8px] font-extrabold text-amber-600 bg-amber-50 border border-amber-100 px-1.5 py-0.2 rounded-full">BEST VALUE</span>
+                      </div>
+                      
+                      <h3 className="text-base font-black text-zinc-900 leading-tight mt-1 flex flex-col">
+                        <span className="line-through text-zinc-400 text-xs font-semibold leading-none mb-0.5">
+                          {convertedOriginalYearlyPrice}
+                        </span>
+                        <span>
+                          {convertedYearlyPrice}
+                        </span>
+                      </h3>
+                      <p className="text-[9px] text-zinc-500 font-semibold mt-0.5">
+                        Billed annually (~{pricing.symbol}{(parseFloat(pricing.yearlyDiscounted.replace(/[^0-9.]/g, '')) / 12).toFixed(2)}/mo)
+                      </p>
+                    </div>
+
+                    {/* Catchy Value Hook for Yearly */}
+                    <div className="mt-2.5 pt-2 border-t border-zinc-100 flex items-center gap-1 text-[8.5px] font-black text-emerald-800 bg-emerald-50 px-2 py-1 rounded-lg">
+                      <span>🎓 Cost of 2 hrs with a real tutor</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* CTA Button and Policies Footer */}
+              <div className="pt-2">
+                <button
                   type="button"
-                  onClick={handleRestorePurchases}
-                  disabled={isRestoring || isPurchasing}
-                  className="hover:text-zinc-600 transition-colors cursor-pointer border-none bg-transparent underline"
+                  onClick={() => handleRealPurchase(selectedCycle)}
+                  disabled={isPurchasing}
+                  className="w-full py-4 bg-zinc-950 text-white rounded-2xl font-black text-sm shadow-lg hover:bg-zinc-900 active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed touch-manipulation"
                 >
-                  {isRestoring ? "Restoring..." : "Restore Purchases"}
+                  {isPurchasing ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin text-white" />
+                      <span>Connecting to Google Play...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Start 3-Day Free Trial</span>
+                      <Rocket className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
-                <span>•</span>
-                <a 
-                  href="/terms.html" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-zinc-600 transition-colors underline"
-                >
-                  Terms of Use
-                </a>
-                <span>•</span>
-                <a 
-                  href="/privacy.html" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-zinc-600 transition-colors underline"
-                >
-                  Privacy Policy
-                </a>
+                
+                <p className="text-center text-[9px] text-zinc-400 font-bold uppercase tracking-wider mt-3.5 flex items-center justify-center gap-1">
+                  🛡️ 3 Days Free, then auto-renews. Cancel anytime.
+                </p>
+                
+                <div className="mt-3 flex items-center justify-center gap-3 text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
+                  <button 
+                    type="button"
+                    onClick={handleRestorePurchases}
+                    disabled={isRestoring || isPurchasing}
+                    className="hover:text-zinc-600 transition-colors cursor-pointer border-none bg-transparent underline touch-manipulation"
+                  >
+                    {isRestoring ? "Restoring..." : "Restore Purchases"}
+                  </button>
+                  <span>•</span>
+                  <a 
+                    href="/terms.html" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-zinc-600 transition-colors underline touch-manipulation"
+                  >
+                    Terms of Use
+                  </a>
+                  <span>•</span>
+                  <a 
+                    href="/privacy.html" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-zinc-600 transition-colors underline touch-manipulation"
+                  >
+                    Privacy Policy
+                  </a>
+                </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      )}
     </AnimatePresence>
   );
 }

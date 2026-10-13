@@ -369,6 +369,14 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    // Warm up PaywallModal chunk during idle so Flash Sale and Pro modals open instantly with zero lag
+    const timer = setTimeout(() => {
+      import('./components/PaywallModal').catch(() => {});
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     if (mobileToast) {
       const timer = setTimeout(() => {
         setMobileToast(null);

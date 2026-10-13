@@ -21493,6 +21493,12 @@ eq cos^2 x. You MUST use Integration by Parts (u = x, dv = \frac{sin x}{1+cos^2 
   * LINE BREAK AFTER EVERY SENTENCE: Never write long, crammed multi-sentence paragraphs. Every single sentence, explanation, or calculation must be on its OWN line, separated by a blank line (\\n\\n).
   * NO BULLET SYMBOLS: Do NOT use bullet signs (no "\u2022", no "-", no "*", no "1.", no "2."). Arrange points cleanly and spacious using blank lines (\\n\\n) between sentences.
   * STANDALONE BLOCK MATH EQUATIONS: Always put mathematical formulas, algebraic derivations, and intermediate numerical results on their OWN dedicated centered block lines using $$ ... $$. Never compress complex equations inline within long sentences.
+  * MANDATORY LATEX RULES (ZERO UNRENDERED / BARE LATEX):
+    - NEVER output plain-text ASCII math, bare derivatives, carets, or raw asterisks without LaTeX delimiters! (e.g. NEVER write "d/dx [f(g(x))]", "y = (3x^2 - 5)^4", "Outer function: y = u^4", or "Inside function: 3x^2 - 5" as plain unformatted text!)
+    - Standalone formulas and equations on their own lines MUST be enclosed in $$ ... $$ block delimiters (e.g. "$$\\frac{d}{dx}[f(g(x))] = f'(g(x)) \\cdot g'(x)$$").
+    - All inline variables, small equations, powers, derivatives, and functions MUST be enclosed in single $ ... $ delimiters (e.g. "$y = (3x^2 - 5)^4$", "$y = u^4$", "$u = 3x^2 - 5$", "$f'(x)$", "$\\frac{d}{dx}$").
+    - ALWAYS use \\cdot for multiplication (NEVER raw *).
+    - ALWAYS use \\frac{d}{dx} or \\frac{dy}{dx} for derivative operators (NEVER raw d/dx or dy/dx).
   * MAXIMUM CLARITY & BREATHING ROOM: Ensure generous vertical spacing so mobile students can effortlessly read and absorb every single line without confusion.
 - Set "format_type" to "steps".
 - Populate the "solution_steps" array with each logical phase of the sequential solution.
@@ -21506,7 +21512,7 @@ eq cos^2 x. You MUST use Integration by Parts (u = x, dv = \frac{sin x}{1+cos^2 
     {
       "step_id": 1,
       "title": "Clear concise step title",
-      "content": "A detailed, encouraging explanation with formulas and step-by-step calculations. Whenever generating mathematical numbers, formulas, symbols, or equations/chemical reactions, you must strictly wrap them in LaTeX delimiters. Use single '$' for inline math and double '$$' for block math equations (e.g. $$2H_2O \\rightarrow 2H_2 + O_2$$). NEVER output bare LaTeX commands without $ or $$ delimiters! Always double-escape backslashes in JSON (e.g. \\\\rightarrow, \\\\frac, \\\\sqrt, \\\\text, \\\\pi, \\\\theta, \\\\int, \\\\cdot, \\\\quad) so that equations render beautifully for students.",
+      "content": "A detailed, encouraging explanation with formulas and step-by-step calculations. Whenever generating mathematical numbers, formulas, symbols, or equations/chemical reactions, you must strictly wrap them in LaTeX delimiters. Use single '$' for inline math and double '$$' for block math equations (e.g. $$2H_2O \\rightarrow 2H_2 + O_2$$). NEVER output bare ASCII math or raw carets without $ or $$ delimiters! ALWAYS use \\\\cdot for multiplication (never raw *). ALWAYS use \\\\frac{d}{dx} for derivatives. Always double-escape backslashes in JSON (e.g. \\\\rightarrow, \\\\frac, \\\\sqrt, \\\\text, \\\\pi, \\\\theta, \\\\int, \\\\cdot, \\\\quad) so that equations render beautifully for students.",
       "is_final_answer": false
     }
   ],
@@ -22018,7 +22024,8 @@ DO NOT GUESS. DO NOT ASSUME. DO NOT SILENTLY AUTO-CORRECT STUDENT ERRORS.
 STEP 4: DETAILED STEP-BY-STEP AP RUBRIC EVALUATION
 =======================================================
 - Grade strictly according to official College Board AP Scoring Guidelines with the "NO WORK, NO CREDIT" rule.
-- All mathematical expressions, formulas, variables ($x$, $y$, $t$), derivatives, integrals, limits, equations, and units MUST be wrapped in KaTeX math delimiters ($...$ for inline or $$...$$ for display).
+- All mathematical expressions, formulas, variables ($x$, $y$, $t$), derivatives (\\frac{d}{dx}), integrals, limits, equations, powers, and units MUST be wrapped in KaTeX math delimiters ($...$ for inline or $$...$$ for display).
+- MANDATORY ZERO-BARE-LATEX RULE: NEVER output plain-text ASCII math, bare derivatives (d/dx), carets outside delimiters, or raw asterisks (*) without LaTeX delimiters! Always use \\cdot for multiplication.
 - Break down grading into official rubric parts/steps: Part (a), Part (b), etc.
 - In each step:
   * "criteria": State the exact College Board benchmark requirement with KaTeX math.

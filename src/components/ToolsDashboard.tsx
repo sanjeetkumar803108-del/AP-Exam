@@ -445,7 +445,9 @@ function ToolsDashboard({
                 triggerVibration(15);
                 window.dispatchEvent(new CustomEvent('open-paywall-modal', { detail: { featureName: "Flash Sale 60% OFF" } }));
               }}
-              className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 active:scale-95 text-white font-black text-xs h-[38px] px-4 rounded-full transition-all shadow-md shadow-amber-500/20 cursor-pointer flex items-center gap-1.5"
+              onMouseEnter={() => import('./PaywallModal').catch(() => {})}
+              onTouchStart={() => import('./PaywallModal').catch(() => {})}
+              className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 active:scale-95 text-white font-black text-xs h-[38px] px-4 rounded-full transition-all shadow-md shadow-amber-500/20 cursor-pointer flex items-center gap-1.5 touch-manipulation"
             >
               <Zap className="w-3.5 h-3.5 fill-white text-white" />
               Flash Sale
