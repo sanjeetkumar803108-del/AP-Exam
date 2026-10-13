@@ -633,6 +633,14 @@ export function getUnitPdf(subjectId: string, unitNumber: number): UploadedUnitP
   return UPLOADED_UNIT_PDFS[getUnitPdfKey(subjectId, unitNumber)];
 }
 
+export function registerUnitPdf(key: string, pdfData: UploadedUnitPdf): void {
+  UPLOADED_UNIT_PDFS[key] = pdfData;
+}
+
+export function unregisterUnitPdf(key: string): void {
+  delete UPLOADED_UNIT_PDFS[key];
+}
+
 /**
  * All Official AP Subjects and their CED Units
  */

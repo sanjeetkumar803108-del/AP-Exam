@@ -15,11 +15,24 @@ import {
   X,
   ChevronDown,
   AlertCircle,
-  ArrowLeft
+  ArrowLeft,
+  BookOpen,
+  Hash
 } from 'lucide-react';
-import { TOP_10_AP_SUBJECTS } from '../../utils/apCurriculum';
-import { APSamplePaper } from '../../types/samplePapers';
-import { fetchSamplePapers, uploadSamplePaper, deleteSamplePaper } from '../../services/samplePaperService';
+import { 
+  ALL_TEST_PREP_SUBJECTS, 
+  TestPrepSubject, 
+  TestPrepUnit, 
+  UploadedUnitPdf, 
+  getTestPrepSubjectVisual 
+} from '../../data/testPrepUnitsData';
+import { 
+  uploadUnitPdfToApp, 
+  deleteUnitPdfFromApp, 
+  getPublishedUnitPdfsList, 
+  StoredUnitPdfRecord,
+  initUnitPdfsSync 
+} from '../../services/unitPdfService';
 import { showToast } from '../../utils/toast';
 import { triggerVibration } from '../../utils/vibrate';
 import { Capacitor } from '@capacitor/core';
@@ -31,24 +44,31 @@ interface DeveloperDashboardProps {
 }
 
 export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps) {
-  const [papers, setPapers] = useState<APSamplePaper[]>([]);
+  const [papers, setPapers] = useState<StoredUnitPdfRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [showUploadSheet, setShowUploadSheet] = useState(false);
 
   // Form State
-  const [selectedSubjectId, setSelectedSubjectId] = useState(TOP_10_AP_SUBJECTS[0].id);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>(ALL_TEST_PREP_SUBJECTS[0].id);
+  const [selectedUnitNumber, setSelectedUnitNumber] = useState<number>(1);
   const [title, setTitle] = useState('');
-  const [year, setYear] = useState('2025');
+  const [pageCount, setPageCount] = useState<string>('85');
+  const [totalQuestions, setTotalQuestions] = useState<string>('100');
+  const [mcqCount, setMcqCount] = useState<string>('90');
+  const [frqCount, setFrqCount] = useState<string>('10');
   const [description, setDescription] = useState('');
   const [pdfBase64, setPdfBase64] = useState<string | null>(null);
   const [fileName, setFileName] = useState('');
   const [fileSize, setFileSize] = useState('');
 
   // Preview State
-  const [previewPaper, setPreviewPaper] = useState<APSamplePaper | null>(null);
+  const [previewPaper, setPreviewPaper] = useState<StoredUnitPdfRecord | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Active Subject Object
+  const currentSubject = ALL_TEST_PREP_SUBJECTS.find(s => s.id === selectedSubjectId) || ALL_TEST_PREP_SUBJECTS[0];
 
   useEffect(() => {
     loadPapers();
@@ -56,9 +76,15 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
 
   const loadPapers = async () => {
     setLoading(true);
-    const data = await fetchSamplePapers();
-    setPapers(data);
-    setLoading(false);
+    try {
+      await initUnitPdfsSync();
+      const data = await getPublishedUnitPdfsList();
+      setPapers(data);
+    } catch (e) {
+      console.warn('Failed to load published papers:', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetForm = () => {
@@ -67,31 +93,79 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
     setPdfBase64(null);
     setFileName('');
     setFileSize('');
-    setYear('2025');
-    setSelectedSubjectId(TOP_10_AP_SUBJECTS[0].id);
+    setPageCount('85');
+    setTotalQuestions('100');
+    setMcqCount('90');
+    setFrqCount('10');
+    setSelectedSubjectId(ALL_TEST_PREP_SUBJECTS[0].id);
+    setSelectedUnitNumber(1);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleSubjectChange = (newSubjectId: string) => {
+    setSelectedSubjectId(newSubjectId);
+    const subj = ALL_TEST_PREP_SUBJECTS.find(s => s.id === newSubjectId);
+    if (subj && subj.units.length > 0) {
+      // Default to unit 1 if present, else first unit
+      const u1 = subj.units.find(u => u.unitNumber === 1);
+      setSelectedUnitNumber(u1 ? 1 : subj.units[0].unitNumber);
+    } else {
+      setSelectedUnitNumber(0);
+    }
   };
 
   const autoFillFromFileName = (rawName: string) => {
     const clean = rawName.replace(/\.pdf$/i, '').replace(/[_-]+/g, ' ').trim();
-    if (!title.trim() || title === clean) setTitle(clean);
-    const yearMatch = clean.match(/20\d{2}/);
-    if (yearMatch) setYear(yearMatch[0]);
     const lower = clean.toLowerCase();
-    const matchedSubject = TOP_10_AP_SUBJECTS.find(s => {
-      const code = s.shortCode.toLowerCase();
+
+    // 1. Detect AP Subject
+    let matchedSubject = ALL_TEST_PREP_SUBJECTS.find(s => {
+      const code = s.code.toLowerCase();
       const sName = s.name.toLowerCase();
-      return lower.includes(code) || lower.includes(sName) ||
-        (s.id.includes('calc') && lower.includes('calc')) ||
-        (s.id.includes('bio') && lower.includes('bio')) ||
-        (s.id.includes('chem') && lower.includes('chem')) ||
-        (s.id.includes('phys') && lower.includes('phys')) ||
-        (s.id.includes('csa') && (lower.includes('csa') || lower.includes('computer'))) ||
-        (s.id.includes('csp') && lower.includes('principles')) ||
-        (s.id.includes('psych') && lower.includes('psych')) ||
-        (s.id.includes('stats') && (lower.includes('stat') || lower.includes('statistics')));
+      return lower.includes(code) || lower.includes(sName);
     });
-    if (matchedSubject) setSelectedSubjectId(matchedSubject.id);
+
+    if (!matchedSubject) {
+      matchedSubject = ALL_TEST_PREP_SUBJECTS.find(s => {
+        if (s.id.includes('calc-ab') && (lower.includes('calc ab') || lower.includes('calculus ab'))) return true;
+        if (s.id.includes('calc-bc') && (lower.includes('calc bc') || lower.includes('calculus bc'))) return true;
+        if (s.id.includes('stat') && (lower.includes('stat') || lower.includes('statistics'))) return true;
+        if (s.id.includes('phys') && lower.includes('phys')) return true;
+        if (s.id.includes('chem') && lower.includes('chem')) return true;
+        if (s.id.includes('bio') && lower.includes('bio')) return true;
+        if (s.id.includes('enviro') && (lower.includes('enviro') || lower.includes('apes') || lower.includes('environmental'))) return true;
+        if (s.id.includes('human') && (lower.includes('human') || lower.includes('geog') || lower.includes('aphg'))) return true;
+        if (s.id.includes('psych') && lower.includes('psych')) return true;
+        if (s.id.includes('us-history') && (lower.includes('ush') || lower.includes('us history') || lower.includes('apush'))) return true;
+        if (s.id.includes('world') && (lower.includes('world') || lower.includes('whap'))) return true;
+        if (s.id.includes('econ') && (lower.includes('econ') || lower.includes('macro') || lower.includes('micro'))) return true;
+        if (s.id.includes('computer-science-principles') && (lower.includes('csp') || lower.includes('principles'))) return true;
+        if (s.id.includes('computer-science') && (lower.includes('csa') || lower.includes('java') || lower.includes('comp sci'))) return true;
+        if (s.id.includes('english-lang') && (lower.includes('lang') || lower.includes('english'))) return true;
+        return false;
+      });
+    }
+
+    const targetSubject = matchedSubject || currentSubject;
+    if (matchedSubject) {
+      setSelectedSubjectId(matchedSubject.id);
+    }
+
+    // 2. Detect Unit Number
+    let detectedUnit = 1;
+    const unitMatch = lower.match(/(?:unit|u)[\s_-]*([0-9]+)/i);
+    if (unitMatch && unitMatch[1]) {
+      detectedUnit = parseInt(unitMatch[1], 10);
+    } else if (lower.includes('full') || lower.includes('mock') || lower.includes('final') || lower.includes('exam')) {
+      detectedUnit = 0;
+    }
+    setSelectedUnitNumber(detectedUnit);
+
+    // 3. Auto-populate Clean Descriptive Title
+    const unitObj = targetSubject.units.find(u => u.unitNumber === detectedUnit);
+    const unitTitle = unitObj ? unitObj.title : (detectedUnit === 0 ? 'Full Course Comprehensive Exam' : `Unit ${detectedUnit}`);
+    const generatedTitle = `${targetSubject.name} – Unit ${detectedUnit}: ${unitTitle} (Priority-Starred Master Set)`;
+    setTitle(generatedTitle);
   };
 
   const handlePickPdfClick = async () => {
@@ -143,23 +217,41 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
     e.preventDefault();
     triggerVibration(15);
     if (!title.trim()) { showToast('Please enter a paper title.', 'warning'); return; }
-    if (!pdfBase64) { showToast('Please attach a sample paper PDF first.', 'warning'); return; }
-    const subjectObj = TOP_10_AP_SUBJECTS.find(s => s.id === selectedSubjectId) || TOP_10_AP_SUBJECTS[0];
+    if (!pdfBase64) { showToast('Please attach an AP PDF file first.', 'warning'); return; }
+
+    const subjectObj = ALL_TEST_PREP_SUBJECTS.find(s => s.id === selectedSubjectId) || ALL_TEST_PREP_SUBJECTS[0];
+    const unitObj = subjectObj.units.find(u => u.unitNumber === selectedUnitNumber);
+    
     setUploading(true);
     try {
-      const newPaper = await uploadSamplePaper({
-        subjectId: subjectObj.id,
-        subjectName: subjectObj.name,
-        title: title.trim(),
-        year: year.trim() || '2025',
-        pdfUrl: pdfBase64,
-        fileName: fileName || 'AP_Sample_Paper.pdf',
-        fileSize: fileSize || '1.2 MB',
-        description: description.trim() || `Official College Board ${subjectObj.name} Mock Paper`,
-      });
-      setPapers(prev => [newPaper, ...prev]);
-      window.dispatchEvent(new CustomEvent('sample-papers-updated'));
-      showToast('AP Sample Paper published live to user app!', 'success');
+      const qCount = Number(totalQuestions) || 100;
+      const pCount = Number(pageCount) || 85;
+      const mCount = Number(mcqCount) || 90;
+      const fCount = Number(frqCount) || 10;
+
+      const newRecord = await uploadUnitPdfToApp(
+        subjectObj.id,
+        selectedUnitNumber,
+        subjectObj.name,
+        {
+          pdfUrl: pdfBase64,
+          title: title.trim(),
+          pageCount: pCount,
+          totalQuestions: qCount,
+          mcqCount: mCount,
+          frqCount: fCount,
+          priorityStars: {
+            star5: Math.round(qCount * 0.45),
+            star3: Math.round(qCount * 0.35),
+            star2: Math.round(qCount * 0.20),
+          },
+          uploadedDate: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+          description: description.trim() || `${subjectObj.name} · Unit ${selectedUnitNumber}: ${unitObj?.title || 'Practice Examination'} – Official College Board Format.`,
+        }
+      );
+
+      setPapers(prev => [newRecord, ...prev.filter(p => p.key !== newRecord.key)]);
+      showToast(`Published to AP Sample Paper Sets: ${subjectObj.name} Unit ${selectedUnitNumber}!`, 'success');
       resetForm();
       setShowUploadSheet(false);
     } catch (err: any) {
@@ -169,12 +261,13 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
     }
   };
 
-  const handleDeletePaper = async (id: string, paperTitle: string) => {
+  const handleDeletePaper = async (subjectId: string, unitNumber: number, paperTitle: string) => {
     triggerVibration(15);
     try {
-      await deleteSamplePaper(id);
-      setPapers(prev => prev.filter(p => p.id !== id));
-      showToast(`Deleted "${paperTitle}" from app`, 'info');
+      await deleteUnitPdfFromApp(subjectId, unitNumber);
+      const key = `${subjectId}-${unitNumber}`;
+      setPapers(prev => prev.filter(p => p.key !== key));
+      showToast(`Removed "${paperTitle}" from AP Sample Paper Sets`, 'info');
     } catch (err: any) {
       showToast('Failed to delete paper: ' + (err.message || err), 'error');
     }
@@ -226,16 +319,21 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
         <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-950 via-zinc-900 to-zinc-900 border border-indigo-800/40 shadow-xl">
           <div className="flex items-center gap-1.5 text-indigo-400 text-[10px] font-black uppercase tracking-wider mb-1">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>AP Sample Paper Engine</span>
+            <span>AP Sample Paper Sets Engine</span>
           </div>
           <h2 className="text-lg font-black text-white leading-tight">
-            Manage & Publish AP Sample Papers
+            Manage & Publish AP Sample Paper Sets
           </h2>
           <p className="text-[11px] text-zinc-400 font-medium mt-1 leading-relaxed">
-            Upload PDFs here → they instantly appear in the student app's <strong className="text-zinc-200">AP Sample Papers Set</strong> feature.
+            Upload PDFs here → they instantly appear inside the student app's <strong className="text-zinc-200">AP Sample Paper Sets</strong> feature mapped directly to the chosen AP Subject and Unit.
           </p>
-          <div className="mt-3 inline-flex px-3 py-1 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px] font-bold">
-            Total Published: <strong className="ml-1 text-white">{papers.length}</strong>
+          <div className="mt-3 flex items-center gap-2 flex-wrap">
+            <div className="inline-flex px-3 py-1 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px] font-bold">
+              Custom Uploaded Sets: <strong className="ml-1 text-white">{papers.length}</strong>
+            </div>
+            <div className="inline-flex px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[11px] font-bold">
+              Supported AP Courses: <strong className="ml-1 text-white">{ALL_TEST_PREP_SUBJECTS.length}</strong>
+            </div>
           </div>
         </div>
 
@@ -252,11 +350,11 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 mb-0.5">
               <FileUp className="w-3.5 h-3.5 text-indigo-200" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-indigo-200">Upload New</span>
+              <span className="text-[10px] font-black uppercase tracking-wider text-indigo-200">Upload to AP Sample Paper Sets</span>
             </div>
-            <h3 className="text-base font-black text-white">Upload AP Sample Paper</h3>
+            <h3 className="text-base font-black text-white">Upload Unit / Mock PDF</h3>
             <p className="text-[11px] text-indigo-200 font-medium mt-0.5">
-              Tap to upload PDF → goes live instantly
+              Tap to attach PDF → Goes live in student app instantly
             </p>
           </div>
           <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
@@ -269,7 +367,7 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-indigo-400" />
-              <h3 className="text-sm font-black text-white">Live Published Papers</h3>
+              <h3 className="text-sm font-black text-white">Live Published Unit Sets</h3>
             </div>
             <button
               onClick={loadPapers}
@@ -282,55 +380,67 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
           {loading ? (
             <div className="py-10 text-center text-xs text-zinc-500 font-bold flex flex-col items-center gap-2">
               <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-              Loading papers...
+              Loading published sets...
             </div>
           ) : papers.length === 0 ? (
             <div className="py-10 text-center flex flex-col items-center gap-2 px-4">
               <div className="w-12 h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-2xl">
                 📄
               </div>
-              <h4 className="text-sm font-bold text-zinc-400">No Papers Yet</h4>
+              <h4 className="text-sm font-bold text-zinc-400">No Custom Unit Sets Uploaded Yet</h4>
               <p className="text-[11px] text-zinc-600 max-w-xs">
-                Tap the upload card above to publish your first AP Sample Paper.
+                Tap the upload card above to upload a PDF directly into any AP Subject and Unit!
               </p>
             </div>
           ) : (
             <div className="divide-y divide-zinc-800">
-              {papers.map((paper) => (
-                <div key={paper.id} className="p-4 flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 text-lg">
-                    📄
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap mb-1">
-                      <span className="text-[9px] font-black uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.5 rounded">
-                        {paper.subjectName}
-                      </span>
-                      <span className="text-[9px] font-bold text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded">
-                        {paper.year}
-                      </span>
-                      <span className="text-[9px] text-zinc-600">{paper.fileSize}</span>
+              {papers.map((paper) => {
+                const visual = getTestPrepSubjectVisual(paper.subjectId);
+                return (
+                  <div key={paper.key} className="p-4 flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 text-xl">
+                      {visual.icon || '📄'}
                     </div>
-                    <h4 className="text-xs font-bold text-white leading-snug line-clamp-2">{paper.title}</h4>
-                    <div className="flex items-center gap-2 mt-2">
-                      <button
-                        onClick={() => setPreviewPaper(paper)}
-                        className="px-2.5 py-1 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white font-bold text-[10px] flex items-center gap-1 transition-colors cursor-pointer"
-                      >
-                        <Eye className="w-3 h-3" />
-                        Preview
-                      </button>
-                      <button
-                        onClick={() => handleDeletePaper(paper.id, paper.title)}
-                        className="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 font-bold text-[10px] flex items-center gap-1 transition-colors cursor-pointer"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        Delete
-                      </button>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                        <span className="text-[9px] font-black uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.5 rounded">
+                          {paper.subjectName || paper.subjectId}
+                        </span>
+                        <span className="text-[9px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded">
+                          {paper.unitNumber === 0 ? 'Full Course Exam' : `Unit ${paper.unitNumber}`}
+                        </span>
+                        <span className="text-[9px] text-zinc-400 font-medium">
+                          {paper.pdfData.pageCount} Pages • {paper.pdfData.totalQuestions} Qs
+                        </span>
+                      </div>
+                      <h4 className="text-xs font-bold text-white leading-snug line-clamp-2">
+                        {paper.pdfData.title}
+                      </h4>
+                      {paper.pdfData.description && (
+                        <p className="text-[10px] text-zinc-400 line-clamp-1 mt-0.5">
+                          {paper.pdfData.description}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-2 mt-2">
+                        <button
+                          onClick={() => setPreviewPaper(paper)}
+                          className="px-2.5 py-1 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white font-bold text-[10px] flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <Eye className="w-3 h-3" />
+                          Preview
+                        </button>
+                        <button
+                          onClick={() => handleDeletePaper(paper.subjectId, paper.unitNumber, paper.pdfData.title)}
+                          className="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 font-bold text-[10px] flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -378,8 +488,8 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
                     <Upload className="w-4 h-4 text-indigo-400" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-black text-white">Upload Sample Paper</h3>
-                    <p className="text-[10px] text-zinc-500">PDF goes live instantly in student app</p>
+                    <h3 className="text-sm font-black text-white">Upload to AP Sample Paper Sets</h3>
+                    <p className="text-[10px] text-zinc-500">Goes live immediately in the student app</p>
                   </div>
                 </div>
                 {!uploading && (
@@ -426,61 +536,128 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
                             <Plus className="w-6 h-6 text-zinc-400" />
                           </div>
                           <div className="text-xs font-bold text-zinc-300 text-center">Tap to Select PDF File</div>
-                          <div className="text-[10px] text-zinc-500">Standard .pdf files up to 50MB</div>
+                          <div className="text-[10px] text-zinc-500">Standard .pdf file up to 50MB</div>
                         </>
                       )}
                     </div>
                   </div>
 
-                  {/* Subject */}
+                  {/* Subject Dropdown */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">📚 AP Subject</label>
                     <select
                       value={selectedSubjectId}
-                      onChange={(e) => setSelectedSubjectId(e.target.value)}
+                      onChange={(e) => handleSubjectChange(e.target.value)}
                       className="bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-xs font-semibold text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
                     >
-                      {TOP_10_AP_SUBJECTS.map(s => (
-                        <option key={s.id} value={s.id} className="bg-zinc-900 text-white">
-                          {s.name} ({s.shortCode})
+                      {ALL_TEST_PREP_SUBJECTS.map(s => {
+                        const visual = getTestPrepSubjectVisual(s.id);
+                        return (
+                          <option key={s.id} value={s.id} className="bg-zinc-900 text-white">
+                            {visual.icon} {s.name} ({s.code})
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+
+                  {/* Unit Selector */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">🎯 Select Unit / Scope</label>
+                    <select
+                      value={selectedUnitNumber}
+                      onChange={(e) => setSelectedUnitNumber(Number(e.target.value))}
+                      className="bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-xs font-semibold text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
+                    >
+                      {/* Check if subject has unit 0, else provide default Unit 0 */}
+                      {!currentSubject.units.some(u => u.unitNumber === 0) && (
+                        <option value={0} className="bg-zinc-900 text-white">
+                          Unit 0: Full Course Mixed Exam (Comprehensive)
+                        </option>
+                      )}
+                      {currentSubject.units.map(u => (
+                        <option key={u.unitNumber} value={u.unitNumber} className="bg-zinc-900 text-white">
+                          {u.unitNumber === 0 ? 'Full Course Exam' : `Unit ${u.unitNumber}`}: {u.title}
                         </option>
                       ))}
                     </select>
                   </div>
 
-                  {/* Year + Title */}
+                  {/* Title */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">
+                      📝 Set Title <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="e.g. AP Calculus AB – Unit 1: Limits & Continuity"
+                      className="bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-xs font-semibold text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  {/* Page Count + Total Questions */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">📅 Year</label>
+                      <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">📄 Pages</label>
                       <input
-                        type="text"
-                        value={year}
-                        onChange={(e) => setYear(e.target.value)}
-                        placeholder="2025"
+                        type="number"
+                        min="1"
+                        value={pageCount}
+                        onChange={(e) => setPageCount(e.target.value)}
+                        placeholder="85"
                         className="bg-zinc-800 border border-zinc-700 rounded-2xl px-3 py-3 text-xs font-semibold text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">📝 Title <span className="text-red-400">*</span></label>
+                      <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">❓ Total Questions</label>
                       <input
-                        type="text"
-                        required
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="e.g. 2025 Mock Set 1"
+                        type="number"
+                        min="1"
+                        value={totalQuestions}
+                        onChange={(e) => setTotalQuestions(e.target.value)}
+                        placeholder="100"
                         className="bg-zinc-800 border border-zinc-700 rounded-2xl px-3 py-3 text-xs font-semibold text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                   </div>
 
-                  {/* Description */}
+                  {/* MCQ + FRQ Count */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">🔘 MCQs Count</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={mcqCount}
+                        onChange={(e) => setMcqCount(e.target.value)}
+                        placeholder="90"
+                        className="bg-zinc-800 border border-zinc-700 rounded-2xl px-3 py-3 text-xs font-semibold text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">✍️ FRQs Count</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={frqCount}
+                        onChange={(e) => setFrqCount(e.target.value)}
+                        placeholder="10"
+                        className="bg-zinc-800 border border-zinc-700 rounded-2xl px-3 py-3 text-xs font-semibold text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Description / Notes */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">💬 Notes (Optional)</label>
+                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">💬 Description / Notes</label>
                     <input
                       type="text"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="e.g. Includes MCQs, FRQs & Scoring Rubrics"
+                      placeholder="e.g. 100-Question Priority-Starred Examination Repository with scoring rubrics."
                       className="bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-xs font-semibold text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500"
                     />
                   </div>
@@ -501,7 +678,7 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4" />
-                        <span>Publish to Student App</span>
+                        <span>Publish to AP Sample Paper Sets</span>
                       </>
                     )}
                   </motion.button>
@@ -540,7 +717,7 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
                 </button>
                 <div className="flex items-center gap-2 truncate">
                   <FileText className="w-4 h-4 text-indigo-400 shrink-0" />
-                  <span className="text-sm font-black text-white truncate">{previewPaper.title}</span>
+                  <span className="text-sm font-black text-white truncate">{previewPaper.pdfData.title}</span>
                 </div>
               </div>
               <button
@@ -552,7 +729,7 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
               </button>
             </div>
             <div className="flex-1 overflow-hidden bg-zinc-100/90 relative">
-              <SafePdfViewer pdfUrlOrBase64={previewPaper.pdfUrl} />
+              <SafePdfViewer pdfUrlOrBase64={previewPaper.pdfData.pdfUrl} />
             </div>
           </motion.div>
         )}

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   ArrowLeft, Search, X, ChevronDown, ChevronRight, FileText, 
   Download, ExternalLink, Printer, Sparkles, Clock, CheckCircle2,
@@ -15,6 +15,7 @@ import {
   getUnitPdf,
   getTestPrepSubjectVisual
 } from '../data/testPrepUnitsData';
+import SafePdfViewer from './SafePdfViewer';
 
 interface TestPrepProps {
   onBack: () => void;
@@ -45,6 +46,21 @@ export default function TestPrep({ onBack }: TestPrepProps) {
     subject: TestPrepSubject;
     unit: TestPrepUnit;
   } | null>(null);
+
+  // Trigger state to re-render when new PDFs are uploaded or deleted from Developer Portal
+  const [, setRefreshCount] = useState(0);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setRefreshCount(c => c + 1);
+    };
+    window.addEventListener('unit-pdfs-updated', handleUpdate);
+    window.addEventListener('sample-papers-updated', handleUpdate);
+    return () => {
+      window.removeEventListener('unit-pdfs-updated', handleUpdate);
+      window.removeEventListener('sample-papers-updated', handleUpdate);
+    };
+  }, []);
 
   const categories = [
     'All', 
@@ -77,7 +93,7 @@ export default function TestPrep({ onBack }: TestPrepProps) {
         subject,
         unit,
         pdfData,
-        viewMode: 'html'
+        viewMode: pdfData.htmlUrl ? 'html' : 'pdf'
       });
     } else {
       setComingSoonModal({
@@ -345,35 +361,42 @@ export default function TestPrep({ onBack }: TestPrepProps) {
 
               {/* Action Toolbar */}
               <div className="px-5 py-2.5 border-b border-zinc-200 bg-white flex items-center justify-between gap-2 flex-wrap">
-                {/* View Switcher: HTML Master View vs Raw PDF */}
-                <div className="flex items-center gap-1 bg-zinc-100 p-1 rounded-xl">
-                  <button
-                    onClick={() => setActivePdfModal(prev => prev ? { ...prev, viewMode: 'html' } : null)}
-                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      activePdfModal.viewMode === 'html'
-                        ? 'bg-white text-indigo-600 shadow-xs'
-                        : 'text-zinc-600 hover:text-zinc-900'
-                    }`}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <Eye className="w-3 h-3" />
-                      <span>Interactive Master View</span>
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => setActivePdfModal(prev => prev ? { ...prev, viewMode: 'pdf' } : null)}
-                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      activePdfModal.viewMode === 'pdf'
-                        ? 'bg-white text-indigo-600 shadow-xs'
-                        : 'text-zinc-600 hover:text-zinc-900'
-                    }`}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <FileText className="w-3 h-3" />
-                      <span>PDF Document</span>
-                    </span>
-                  </button>
-                </div>
+                {/* View Switcher: HTML Master View vs PDF (only shown when interactive HTML is available) */}
+                {activePdfModal.pdfData.htmlUrl ? (
+                  <div className="flex items-center gap-1 bg-zinc-100 p-1 rounded-xl">
+                    <button
+                      onClick={() => setActivePdfModal(prev => prev ? { ...prev, viewMode: 'html' } : null)}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        activePdfModal.viewMode === 'html'
+                          ? 'bg-white text-indigo-600 shadow-xs'
+                          : 'text-zinc-600 hover:text-zinc-900'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Eye className="w-3 h-3" />
+                        <span>Interactive Master View</span>
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => setActivePdfModal(prev => prev ? { ...prev, viewMode: 'pdf' } : null)}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        activePdfModal.viewMode === 'pdf'
+                          ? 'bg-white text-indigo-600 shadow-xs'
+                          : 'text-zinc-600 hover:text-zinc-900'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <FileText className="w-3 h-3" />
+                        <span>PDF Document</span>
+                      </span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Official AP PDF Set</span>
+                  </div>
+                )}
 
                 {/* Direct Action Links */}
                 <div className="flex items-center gap-2">
@@ -418,17 +441,17 @@ export default function TestPrep({ onBack }: TestPrepProps) {
                 </div>
               )}
 
-              {/* Iframe Preview Container */}
+              {/* PDF / HTML Preview Container */}
               <div className="flex-1 bg-zinc-100 relative overflow-hidden">
-                <iframe
-                  src={
-                    activePdfModal.viewMode === 'html' && activePdfModal.pdfData.htmlUrl
-                      ? activePdfModal.pdfData.htmlUrl
-                      : activePdfModal.pdfData.pdfUrl
-                  }
-                  title="Unit Master Practice Set"
-                  className="w-full h-full border-0"
-                />
+                {activePdfModal.viewMode === 'html' && activePdfModal.pdfData.htmlUrl ? (
+                  <iframe
+                    src={activePdfModal.pdfData.htmlUrl}
+                    title="Unit Master Practice Set"
+                    className="w-full h-full border-0"
+                  />
+                ) : (
+                  <SafePdfViewer pdfUrlOrBase64={activePdfModal.pdfData.pdfUrl} />
+                )}
               </div>
             </motion.div>
           </div>
