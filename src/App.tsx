@@ -49,7 +49,6 @@ const TestPrep = lazyWithRetry(() => import('./components/TestPrep'));
 const CoinPage = lazyWithRetry(() => import('./components/CoinPage'));
 const PaywallModal = lazyWithRetry(() => import('./components/PaywallModal'));
 const APNotes = lazyWithRetry(() => import('./components/APNotes'));
-const APSamplePapers = lazyWithRetry(() => import('./components/APSamplePapers'));
 const APTrapRadar = lazyWithRetry(() => import('./components/APTrapRadar'));
 const APMindMap = lazyWithRetry(() => import('./components/APMindMap'));
 const FRQGrader = lazyWithRetry(() => import('./components/FRQGrader'));
@@ -1127,14 +1126,6 @@ export default function App() {
                       setActiveTool(null);
                       setActiveTab(tab);
                     }}
-                  />
-                </ErrorBoundary>
-              )}
-              {activeTool === 'apsamplepapers' && (
-                <ErrorBoundary featureName="AP Sample Papers" onClose={() => setActiveTool(null)} onRetry={() => resetAllLazyChunks()}>
-                  <APSamplePapers 
-                    onBack={() => setActiveTool(null)} 
-                    isVip={isVip}
                   />
                 </ErrorBoundary>
               )}

@@ -24,7 +24,6 @@ interface ToolsDashboardProps {
 const FEATURE_COSTS: Record<string, number> = {
   'testprep': 0,
   'apnotes': 0,
-  'apsamplepapers': 0,
   'trapradar': 0,
   'mindmap': 0,
   'frqgrader': 0,
@@ -664,31 +663,6 @@ function ToolsDashboard({
 
         </motion.div>
 
-        {/* 7. Full Mock Exams */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.3, ease: "easeOut" }}
-          whileHover={{ scale: 1.02, y: -2, boxShadow: "0 14px 30px -5px rgba(0, 0, 0, 0.08)" }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => handleSelectTool('apsamplepapers')}
-          className="relative overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 shadow-md rounded-[2.5rem] p-7 cursor-pointer flex items-center justify-between transition-all select-none group hover:border-emerald-300 dark:hover:border-emerald-500/50 hover:shadow-lg"
-        >
-          <div className="flex items-center gap-4 sm:gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 flex items-center justify-center text-3xl shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
-              📑
-            </div>
-            <div>
-              <h2 className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
-                Full Mock Exams
-              </h2>
-              <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">
-                Official Full-Length Practice Papers
-              </p>
-            </div>
-          </div>
-
-        </motion.div>
 
         {/* 8. Short Notes */}
         <motion.div
