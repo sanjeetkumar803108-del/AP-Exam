@@ -8,6 +8,7 @@ import {
   ZapOff, 
   CheckCircle2, 
   AlertCircle, 
+  AlertTriangle,
   XCircle, 
   Loader2, 
   RefreshCw, 
@@ -26,7 +27,13 @@ import {
   X,
   ZoomIn,
   History,
-  Clock
+  Clock,
+  Radar,
+  ShieldAlert,
+  Target,
+  BookOpen,
+  BookmarkCheck,
+  Bookmark
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
@@ -38,12 +45,20 @@ import { compressImageToFile } from '../utils/imageCompressor';
 import { getApiUrl } from '../utils/api';
 import { showToast } from '../utils/toast';
 import { pickNativeFiles, takeNativePhoto, isMobilePickedFile } from '../utils/mobilePicker';
-import GlobalMarkdown from './GlobalMarkdown';
+import GlobalMarkdown, { prepareQuizMath } from './GlobalMarkdown';
 import { ReportAiButton } from './ReportAiModal';
-import { appendProfileToFormData } from '../utils/profile';
+import { appendProfileToFormData, getUserProfileData } from '../utils/profile';
 import { auth, db } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { getUserHistory, saveUserHistory } from '../utils/userHistory';
+
+function cleanOptionText(text: string | undefined, optionLetter: string): string {
+  if (!text) return '';
+  let cleaned = text.trim();
+  const letter = optionLetter.toUpperCase();
+  cleaned = cleaned.replace(new RegExp(`^(?:Option\\s+)?\\[?${letter}\\]?[\\.\\:\\)\\-\\s]+`, 'i'), '');
+  return cleaned.trim();
+}
 
 export interface FRQStepScore {
   stepTitle?: string;
@@ -126,6 +141,11 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
   const [gradingStepText, setGradingStepText] = useState('');
   const [result, setResult] = useState<FRQGradingResult | null>(null);
   const [copiedTranscription, setCopiedTranscription] = useState(false);
+
+  // Mode Selection: FRQ Grader vs Scan Trapped
+  const [scannerMode, setScannerMode] = useState<'frq' | 'traps'>('frq');
+  const [trapScanResult, setTrapScanResult] = useState<any | null>(null);
+  const [isScanningTraps, setIsScanningTraps] = useState<boolean>(false);
 
   // FRQ User Evaluation History
   const [frqHistory, setFrqHistory] = useState<FRQHistoryItem[]>(() => {
@@ -757,13 +777,99 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
     }
   };
 
+  // Process and Scan AP Question for Traps
+  const processAndScanTraps = async () => {
+    if (uploadedPages.length === 0) {
+      showToast("Please capture or upload at least 1 image.", "warning");
+      return;
+    }
+
+    triggerVibration(25);
+    hapticImpact('MEDIUM');
+    setIsScanningTraps(true);
+    setTrapScanResult(null);
+
+    try {
+      // Step 1: Compress all pages
+      const compressedFiles = await Promise.all(
+        uploadedPages.map(p => compressImageToFile(p.file, 1920, 0.88))
+      );
+
+      // Step 2: Convert to base64 Data URLs
+      const base64Images = await Promise.all(
+        compressedFiles.map(file => {
+          return new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        })
+      );
+
+      const profile = getUserProfileData();
+      const apiUrl = getApiUrl('/api/ap-trap-radar');
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'analyze_custom',
+          customQuestion: '',
+          images: base64Images,
+          gradeLevel: profile.gradeLevel
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.analysis) {
+        if (data.analysis.isInvalidQuestion) {
+          triggerVibration(50);
+          showToast(data.analysis.errorMessage || 'Invalid Question: Please provide an AP question prompt or options.', 'warning');
+        } else {
+          setTrapScanResult(data.analysis);
+          triggerVibration(40);
+          hapticNotification('SUCCESS');
+          showToast('Trap Radar Autopsy Complete!', 'success');
+
+          // Auto-save to Trap History
+          const historyItem = {
+            id: `scan_${Date.now()}`,
+            timestamp: Date.now(),
+            type: 'scan' as const,
+            title: data.analysis.detectedSubject ? `Scan: ${data.analysis.detectedSubject}` : 'Scanned AP Question',
+            subtitle: 'Photo / Diagram Scan',
+            subjectName: data.analysis.detectedSubject || 'AP Question',
+            scannedAnalysis: data.analysis,
+            customQuestionPrompt: ''
+          };
+          const existingHistory = getUserHistory<any[]>('trap_radar_history', []);
+          saveUserHistory('trap_radar_history', [historyItem, ...existingHistory].slice(0, 35));
+        }
+      } else {
+        throw new Error('Invalid analysis format received from server');
+      }
+    } catch (err: any) {
+      console.error('[FRQGrader] Trap scan error:', err);
+      showToast(err.message || 'Failed to scan question for traps. Please try again.', 'error');
+    } finally {
+      setIsScanningTraps(false);
+    }
+  };
+
   // Reset and Grade Another Question
   const resetGrader = () => {
     triggerVibration(15);
     setUploadedPages([]);
     setActivePageIndex(0);
     setResult(null);
+    setTrapScanResult(null);
     setIsGrading(false);
+    setIsScanningTraps(false);
     setGradingProgress(0);
 
     // Scroll smoothly back to top inside the scroll container
@@ -930,50 +1036,96 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
           )}
 
           {/* Floating Bottom Controls: Gallery, Shutter, Torch */}
-          <div className="relative z-20 w-full pb-safe pb-8 pt-10 px-8 flex items-center justify-around bg-gradient-to-t from-black/85 via-black/45 to-transparent">
-            {/* Gallery Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleGalleryClick();
-              }}
-              className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white flex items-center justify-center active:scale-90 transition-all shadow-lg hover:bg-white/20 cursor-pointer"
-              title="Upload from Gallery"
-              aria-label="Upload from Gallery"
-            >
-              <ImageIcon className="w-6 h-6" />
-            </button>
-
-            {/* Shutter Capture Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCapturePhoto();
-              }}
-              className="w-20 h-20 rounded-full border-[3.5px] border-emerald-400 p-1 flex items-center justify-center active:scale-95 transition-all shadow-[0_0_30px_rgba(52,211,153,0.6)] cursor-pointer group"
-              aria-label="Capture Page 1"
-            >
-              <div className="w-full h-full rounded-full bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 flex items-center justify-center text-white shadow-inner group-hover:from-emerald-400 group-hover:to-teal-500 transition-colors">
-                <Camera className="w-8 h-8" />
+          <div className="relative z-20 w-full pb-safe pb-8 pt-10 px-8 flex flex-col items-center bg-gradient-to-t from-black/85 via-black/45 to-transparent">
+            {/* Horizontal Line Mode Switcher directly above camera shutter button */}
+            <div className="flex items-center justify-center mb-4">
+              <div className="flex items-center bg-black/60 backdrop-blur-md p-1 rounded-full border border-white/20 shadow-xl">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    triggerVibration(10);
+                    setScannerMode('frq');
+                  }}
+                  className={`px-4 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer ${
+                    scannerMode === 'frq'
+                      ? 'bg-emerald-500 text-white shadow-md'
+                      : 'text-zinc-300 hover:text-white'
+                  }`}
+                >
+                  FRQ Grader
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    triggerVibration(10);
+                    setScannerMode('traps');
+                  }}
+                  className={`px-4 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer ${
+                    scannerMode === 'traps'
+                      ? 'bg-amber-500 text-white shadow-md'
+                      : 'text-zinc-300 hover:text-white'
+                  }`}
+                >
+                  Scan Trapped
+                </button>
               </div>
-            </button>
+            </div>
 
-            {/* Torch Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleTorch();
-              }}
-              className={`w-14 h-14 rounded-full backdrop-blur-md border flex items-center justify-center active:scale-90 transition-all shadow-lg cursor-pointer ${
-                torchOn 
-                  ? 'bg-amber-400 text-zinc-950 border-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.7)]' 
-                  : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
-              }`}
-              title="Toggle Torch"
-              aria-label="Toggle Torch"
-            >
-              {torchOn ? <Zap className="w-6 h-6 fill-current text-zinc-950" /> : <ZapOff className="w-6 h-6 text-white" />}
-            </button>
+            <div className="w-full flex items-center justify-around">
+              {/* Gallery Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleGalleryClick();
+                }}
+                className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white flex items-center justify-center active:scale-90 transition-all shadow-lg hover:bg-white/20 cursor-pointer"
+                title="Upload from Gallery"
+                aria-label="Upload from Gallery"
+              >
+                <ImageIcon className="w-6 h-6" />
+              </button>
+
+              {/* Shutter Capture Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCapturePhoto();
+                }}
+                className={`w-20 h-20 rounded-full border-[3.5px] p-1 flex items-center justify-center active:scale-95 transition-all cursor-pointer group ${
+                  scannerMode === 'frq'
+                    ? 'border-emerald-400 shadow-[0_0_30px_rgba(52,211,153,0.6)]'
+                    : 'border-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.6)]'
+                }`}
+                aria-label={scannerMode === 'frq' ? 'Capture Page for FRQ Grading' : 'Capture Page for Trap Radar'}
+              >
+                <div className={`w-full h-full rounded-full flex items-center justify-center text-white shadow-inner transition-colors ${
+                  scannerMode === 'frq'
+                    ? 'bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 group-hover:from-emerald-400 group-hover:to-teal-500'
+                    : 'bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 group-hover:from-amber-400 group-hover:to-orange-500'
+                }`}>
+                  {scannerMode === 'frq' ? <Camera className="w-8 h-8" /> : <Radar className="w-8 h-8" />}
+                </div>
+              </button>
+
+              {/* Torch Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleTorch();
+                }}
+                className={`w-14 h-14 rounded-full backdrop-blur-md border flex items-center justify-center active:scale-90 transition-all shadow-lg cursor-pointer ${
+                  torchOn 
+                    ? 'bg-amber-400 text-zinc-950 border-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.7)]' 
+                    : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+                }`}
+                title="Toggle Torch"
+                aria-label="Toggle Torch"
+              >
+                {torchOn ? <Zap className="w-6 h-6 fill-current text-zinc-950" /> : <ZapOff className="w-6 h-6 text-white" />}
+              </button>
+            </div>
           </div>
         </div>
       ) : (
@@ -1028,10 +1180,42 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
             <div className="max-w-xl w-full mx-auto space-y-4">
 
               {/* ------------------------------------------------------------------ */}
-              {/* STAGE A: MULTI-PAGE STAGING & REVIEW (Before Grading) */}
+              {/* STAGE A: MULTI-PAGE STAGING & REVIEW (Before Grading / Scanning) */}
               {/* ------------------------------------------------------------------ */}
-              {!result && !isGrading && (
+              {!result && !trapScanResult && !isGrading && !isScanningTraps && (
                 <div className="space-y-4">
+                  {/* Mode Selector Pill in Staging */}
+                  <div className="flex items-center justify-center bg-zinc-100 p-1 rounded-2xl border border-zinc-200/80 max-w-xs mx-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        triggerVibration(10);
+                        setScannerMode('frq');
+                      }}
+                      className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                        scannerMode === 'frq'
+                          ? 'bg-white text-emerald-800 shadow-xs border border-zinc-200'
+                          : 'text-zinc-500 hover:text-zinc-900'
+                      }`}
+                    >
+                      FRQ Grader
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        triggerVibration(10);
+                        setScannerMode('traps');
+                      }}
+                      className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                        scannerMode === 'traps'
+                          ? 'bg-white text-amber-800 shadow-xs border border-zinc-200'
+                          : 'text-zinc-500 hover:text-zinc-900'
+                      }`}
+                    >
+                      Scan Trapped
+                    </button>
+                  </div>
+
                   {/* Large Active Page Preview Card */}
                   {activePage && (
                     <div className="bg-white border-2 border-zinc-200 rounded-3xl p-3.5 shadow-sm space-y-3">
@@ -1137,29 +1321,56 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
                   </div>
 
                   {/* Educational Tip */}
-                  <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-3.5 flex items-start gap-2.5 text-xs text-emerald-900">
-                    <Sparkles className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-black">Multi-Page FRQ Tip:</p>
-                      <p className="text-[11px] text-emerald-800 mt-0.5 leading-relaxed">
-                        Upload question and handwritten solutions.
-                      </p>
+                  {scannerMode === 'frq' ? (
+                    <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-3.5 flex items-start gap-2.5 text-xs text-emerald-900">
+                      <Sparkles className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-black">Multi-Page FRQ Tip:</p>
+                        <p className="text-[11px] text-emerald-800 mt-0.5 leading-relaxed">
+                          Upload question and handwritten solutions for instant College Board scoring.
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-3.5 flex items-start gap-2.5 text-xs text-amber-900">
+                      <Radar className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-black">AP Trap Radar Tip:</p>
+                        <p className="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
+                          Upload question stem, stimulus or worksheets to run an instant distractor autopsy.
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
-                  {/* PRIMARY GRADING CTA BUTTON */}
-                  <button
-                    onClick={processAndGradeFRQ}
-                    className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 active:scale-98 text-white font-black text-sm py-4 px-6 rounded-2xl shadow-lg shadow-emerald-600/30 transition-all flex flex-col items-center justify-center cursor-pointer border-none"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-amber-300 fill-amber-300" />
-                      <span>Grade FRQ ({uploadedPages.length})</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-emerald-100 mt-0.5">
-                      Official Rubric
-                    </span>
-                  </button>
+                  {/* PRIMARY ACTION BUTTON */}
+                  {scannerMode === 'frq' ? (
+                    <button
+                      onClick={processAndGradeFRQ}
+                      className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 active:scale-98 text-white font-black text-sm py-4 px-6 rounded-2xl shadow-lg shadow-emerald-600/30 transition-all flex flex-col items-center justify-center cursor-pointer border-none"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-amber-300 fill-amber-300" />
+                        <span>Grade FRQ ({uploadedPages.length})</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-emerald-100 mt-0.5">
+                        Official College Board Rubric
+                      </span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={processAndScanTraps}
+                      className="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-500 active:scale-98 text-white font-black text-sm py-4 px-6 rounded-2xl shadow-lg shadow-amber-500/30 transition-all flex flex-col items-center justify-center cursor-pointer border-none"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Radar className="w-5 h-5 text-white" />
+                        <span>Scan Question for Traps ({uploadedPages.length})</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-amber-100 mt-0.5">
+                        Instant Distractor & Pitfall Autopsy
+                      </span>
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -1217,6 +1428,58 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
                     <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-emerald-700">
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       <span>AP Chief Reader Engine Processing ({uploadedPages.length} Pages)</span>
+                    </div>
+
+                    {/* Page thumbnails being evaluated */}
+                    <div className="flex items-center justify-center gap-2 pt-1">
+                      {uploadedPages.map((p, idx) => (
+                        <div key={p.id} className="w-10 h-12 rounded-lg overflow-hidden border border-zinc-200 opacity-70">
+                          <img src={p.previewUrl} alt={`P${idx+1}`} className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+
+              {/* ------------------------------------------------------------------ */}
+              {/* STAGE B-2: AP TRAP RADAR SCANNING IN PROGRESS */}
+              {/* ------------------------------------------------------------------ */}
+              {isScanningTraps && (
+                <div ref={resultsContainerRef} className="space-y-4 pt-2">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white border-2 border-amber-300/80 rounded-3xl p-7 text-center shadow-lg space-y-5 relative overflow-hidden"
+                  >
+                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-40 h-40 bg-amber-400/15 rounded-full blur-3xl pointer-events-none" />
+
+                    <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
+                      <motion.div
+                        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.8, 0.3] }}
+                        transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute inset-0 rounded-full bg-amber-500/20 blur-md"
+                      />
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white shadow-md relative z-10">
+                        <Radar className="w-8 h-8 animate-spin text-white" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <motion.h3 
+                        animate={{ opacity: [0.7, 1, 0.7] }}
+                        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                        className="text-base sm:text-lg font-black tracking-widest uppercase bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent"
+                      >
+                        SCANNING FOR AP TRAPS...
+                      </motion.h3>
+                      <p className="text-xs font-bold text-zinc-600">
+                        Running Psychometric Distractor & Rubric Autopsy...
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-2xl text-[11px] font-semibold text-amber-900">
+                      Analyzing question stem, stimulus, mathematical variables, and distractor traps...
                     </div>
 
                     {/* Page thumbnails being evaluated */}
@@ -1662,6 +1925,222 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
                       </p>
                     </div>
 
+                  </motion.div>
+                </div>
+              )}
+
+              {/* ------------------------------------------------------------------ */}
+              {/* STAGE D: AP TRAP RADAR SCAN RESULT */}
+              {/* ------------------------------------------------------------------ */}
+              {trapScanResult && !isScanningTraps && (
+                <div ref={resultsContainerRef} className="space-y-4 pt-1">
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white border border-zinc-200 rounded-3xl p-5 sm:p-7 shadow-sm space-y-5"
+                  >
+                    {/* Header with Subject, CED Skill, Difficulty and Vault Status */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200 pb-4 gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded">
+                            {trapScanResult.detectedSubject || 'AP Exam Standard'}
+                          </span>
+                          {trapScanResult.skill && (
+                            <span className="text-[10px] font-bold bg-zinc-100 text-zinc-700 border border-zinc-300 px-2 py-0.5 rounded">
+                              {trapScanResult.skill}
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="text-sm sm:text-base font-black text-zinc-900 flex items-center gap-2">
+                          <span>Trap Radar Autopsy Report</span>
+                          <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                            <BookmarkCheck className="w-3 h-3" />
+                            Saved in Vault
+                          </span>
+                        </h3>
+                      </div>
+                      {trapScanResult.overallTrapDifficulty && (
+                        <span className="self-start sm:self-center text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-300">
+                          {trapScanResult.overallTrapDifficulty}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Clean Question Stem Box */}
+                    {trapScanResult.question && (
+                      <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-1">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400 block">
+                          AP Question Stem:
+                        </span>
+                        <div className="text-xs sm:text-sm font-semibold text-zinc-900 leading-relaxed">
+                          <GlobalMarkdown>{trapScanResult.question}</GlobalMarkdown>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Stimulus Context Box if returned */}
+                    {trapScanResult.stimulus && trapScanResult.stimulus.trim().length > 0 && (
+                      <div className="p-4 rounded-2xl bg-zinc-50/80 border border-zinc-200 font-mono text-xs text-zinc-800 leading-relaxed overflow-x-auto">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400 block mb-1 font-sans">
+                          Stimulus / Context:
+                        </span>
+                        <GlobalMarkdown>{trapScanResult.stimulus}</GlobalMarkdown>
+                      </div>
+                    )}
+
+                    {/* Question & AP Concept Master Breakdown */}
+                    {trapScanResult.conceptExplanation && (
+                      <div className="p-4 sm:p-5 rounded-2xl bg-sky-50/80 border border-sky-200 text-xs space-y-2">
+                        <div className="flex items-center gap-2 font-black text-sky-900">
+                          <BookOpen className="w-4 h-4 text-sky-600 shrink-0" />
+                          <span className="text-xs sm:text-sm">Question Breakdown & Core AP Concept:</span>
+                        </div>
+                        <div className="text-zinc-800 leading-relaxed font-medium text-xs sm:text-[13px]">
+                          <GlobalMarkdown>{trapScanResult.conceptExplanation}</GlobalMarkdown>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Disarm Secret */}
+                    {trapScanResult.disarmStrategy && (
+                      <div className="text-xs text-zinc-700 leading-relaxed">
+                        <p className="font-bold text-zinc-900 mb-1 flex items-center gap-1">
+                          <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                          <span>Examiner's Disarm Secret:</span>
+                        </p>
+                        <div className="text-zinc-700 font-medium text-xs sm:text-[13px]">
+                          <GlobalMarkdown>{trapScanResult.disarmStrategy}</GlobalMarkdown>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Dissected Options & Trap Analysis */}
+                    <div className="space-y-3 pt-1">
+                      <h4 className="text-xs font-black uppercase text-zinc-700 tracking-wider flex items-center gap-2">
+                        <ShieldAlert className="w-4 h-4 text-amber-500" />
+                        <span>{trapScanResult.traps?.some((t: any) => /part/i.test(t.option)) ? 'Subpart-By-Subpart Rubric & Trap Analysis:' : 'Option-By-Option Trap Analysis:'}</span>
+                      </h4>
+                      {trapScanResult.traps?.map((trap: any, i: number) => {
+                        const isPart = /^part\s+/i.test(trap.option || '');
+                        const optionLabel = isPart ? trap.option : String(trap.option || String.fromCharCode(65 + i)).trim().toUpperCase();
+                        const cleanText = cleanOptionText(trap.text || `Option ${optionLabel}`, optionLabel);
+
+                        return (
+                          <div
+                            key={i}
+                            className={`p-4 sm:p-5 rounded-2xl border text-xs space-y-3.5 transition-all shadow-xs ${
+                              trap.isCorrect
+                                ? 'bg-emerald-50/70 border-emerald-300 text-emerald-950 ring-1 ring-emerald-400/20'
+                                : 'bg-white border-zinc-200 text-zinc-900'
+                            }`}
+                          >
+                            {/* Header: Option Badge + Trap Classification + Vulnerability */}
+                            <div className="flex items-center justify-between gap-2 flex-wrap pb-2.5 border-b border-zinc-200/70">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className={`h-7 rounded-xl flex items-center justify-center font-black text-xs shrink-0 shadow-xs ${
+                                  isPart ? 'px-2.5 min-w-7' : 'w-7'
+                                } ${
+                                  trap.isCorrect ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-white'
+                                }`}>
+                                  {optionLabel}
+                                </span>
+                                <span className={`text-[10px] sm:text-xs font-black uppercase px-2.5 py-1 rounded-lg border shadow-2xs ${
+                                  trap.isCorrect
+                                    ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                                    : 'bg-amber-100 text-amber-900 border-amber-300'
+                                }`}>
+                                  {trap.trapType}
+                                </span>
+                              </div>
+                              {trap.vulnerabilityRate && trap.vulnerabilityRate !== 'N/A' && (
+                                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border shadow-2xs ${
+                                  trap.isCorrect
+                                    ? 'text-emerald-900 bg-emerald-50 border-emerald-300'
+                                    : 'text-amber-900 bg-amber-50 border-amber-300'
+                                }`}>
+                                  {trap.isCorrect ? '🎯 ' : '⚠️ '}
+                                  {trap.vulnerabilityRate.replace(/^(?:⚠️|🎯)\s*/, '')}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Option Choice Text */}
+                            <div className="w-full text-xs sm:text-sm font-semibold text-zinc-900 leading-relaxed bg-zinc-50/80 p-3 rounded-xl border border-zinc-200/80">
+                              <GlobalMarkdown
+                                className="inline-block w-full [&_.katex]:text-inherit [&_p]:m-0 [&_p]:inline text-xs sm:text-sm font-semibold"
+                                components={{
+                                  p: ({ node, ...props }: any) => <span className="inline break-words" {...props} />
+                                }}
+                              >
+                                {prepareQuizMath(cleanText)}
+                              </GlobalMarkdown>
+                            </div>
+
+                            {/* Diagnostic Breakdown Card */}
+                            <div className={`p-3 sm:p-3.5 rounded-xl border space-y-1.5 ${
+                              trap.isCorrect 
+                                ? 'bg-emerald-100/60 border-emerald-300/80 text-emerald-950' 
+                                : 'bg-amber-50/70 border-amber-200/80 text-zinc-800'
+                            }`}>
+                              <div className="flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wide">
+                                {trap.isCorrect ? (
+                                  <>
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                    <span className="text-emerald-800 font-black">Official College Board Target Justification:</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                    <span className="text-amber-900 font-black">Trap Autopsy & Misconception Breakdown:</span>
+                                  </>
+                                )}
+                              </div>
+                              <div className="text-xs leading-relaxed text-zinc-800">
+                                <GlobalMarkdown>{trap.trapDescription}</GlobalMarkdown>
+                              </div>
+                            </div>
+
+                            {/* Psychological Mindset */}
+                            {trap.collegeBoardMindset && (
+                              <div className="text-[11px] text-zinc-600 bg-zinc-50 p-2.5 rounded-xl border border-zinc-200 space-y-1">
+                                <span className="font-bold text-zinc-700 block text-[10px] uppercase tracking-wider">
+                                  🧠 Test-Maker's Psychological Intent:
+                                </span>
+                                <div className="italic leading-relaxed">
+                                  <GlobalMarkdown>{trap.collegeBoardMindset}</GlobalMarkdown>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Reset Button */}
+                    <div className="pt-2">
+                      <button
+                        onClick={resetGrader}
+                        className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-black text-sm py-4 px-6 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                      >
+                        <Camera className="w-4 h-4" />
+                        <span>Scan Another Question</span>
+                      </button>
+                    </div>
+
+                    {/* AI Safety Disclaimer & Report */}
+                    <div className="flex flex-col items-center justify-center pt-3 pb-1 px-4 gap-2">
+                      <ReportAiButton
+                        aiOutput={`Scanned Question:\n${trapScanResult.question}\n\nConcept Explanation:\n${trapScanResult.conceptExplanation}\n\nDisarm Strategy:\n${trapScanResult.disarmStrategy}`}
+                        context="Scanned AP Trap Analysis"
+                        questionText={trapScanResult.question}
+                        variant="pill"
+                        label="Report AI Scan Result"
+                      />
+                      <p className="text-[10px] text-zinc-400 font-medium select-none tracking-tight">
+                        AP Exam AI can make mistakes. Please double check important information.
+                      </p>
+                    </div>
                   </motion.div>
                 </div>
               )}
