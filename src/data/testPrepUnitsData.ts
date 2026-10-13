@@ -495,6 +495,22 @@ export const UPLOADED_UNIT_PDFS: Record<string, UploadedUnitPdf> = {
     uploadedDate: 'October 2026',
     description: 'Complete 85-Page Priority-Starred Master Examination Set (90 MCQs + 10 Create Performance Task Style FRQs) for Unit 4: Internet Architecture, Open Standards (IETF), IPv4/IPv6 Hierarchies, TCP vs UDP, DNS Resolution & Spoofing, Fault Tolerance & Network Topologies, Parallel Speedup & Amdahl’s Law, Distributed Systems & DDoS, and Public-Key Cryptography (RSA) with 9-point rubrics.',
   },
+  'ap-computer-science-principles-5': {
+    pdfUrl: '/sample-papers/AP_CSP_Unit5_Master_Set.pdf',
+    htmlUrl: '/sample-papers/AP_CSP_Unit5_Master.html',
+    title: 'AP Computer Science Principles – Unit 5: Impact of Computing (Priority-Starred Master Set)',
+    pageCount: 85,
+    totalQuestions: 100,
+    mcqCount: 90,
+    frqCount: 10,
+    priorityStars: {
+      star5: 64,
+      star4: 36,
+      star3: 0,
+    },
+    uploadedDate: 'October 2026',
+    description: 'Complete 85-Page Priority-Starred Master Examination Set (90 MCQs + 10 Create Performance Task Style FRQs) for Unit 5: Beneficial & Harmful Effects, The Digital Divide, Algorithmic Bias & Training Data Proxies, Crowdsourcing & Citizen Science, Intellectual Property (Copyright, Creative Commons, Open Source), Personally Identifiable Information (PII) & Re-Identification, Cybersecurity (Phishing, Malware, Ransomware), and Multi-Factor Authentication (MFA) with 9-point rubrics.',
+  },
 };
 
 export function getUnitPdfKey(subjectId: string, unitNumber: number): string {

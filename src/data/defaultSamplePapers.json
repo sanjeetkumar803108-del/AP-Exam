@@ -376,5 +376,19 @@
     "description": "85-Page Complete AP CSP Master Examination Set (100 Questions: 90 MCQs + 10 Create Performance Task Style FRQs) with Priority Badges, 3-Pass Verified Step-by-Step Solutions, Distractor Analysis, and 9-Point Official Rubrics for Unit 4: Computer Systems and Networks.",
     "totalMarks": 180,
     "durationMinutes": 195
+  },
+  {
+    "id": "paper_csp_unit_5_master_starred",
+    "subjectId": "ap-computer-science-principles",
+    "subjectName": "AP Computer Science Principles",
+    "title": "Unit 5: Impact of Computing (Priority-Starred 100-Question Master Set)",
+    "year": "2026",
+    "pdfUrl": "/sample-papers/AP_CSP_Unit5_Master_Set.pdf",
+    "fileName": "AP_CSP_Unit5_Master_Set.pdf",
+    "fileSize": "4.76 MB",
+    "uploadedAt": 1791826000000,
+    "description": "85-Page Complete AP CSP Master Examination Set (100 Questions: 90 MCQs + 10 Create Performance Task Style FRQs) with Priority Badges, 3-Pass Verified Step-by-Step Solutions, Distractor Analysis, and 9-Point Official Rubrics for Unit 5: Impact of Computing.",
+    "totalMarks": 180,
+    "durationMinutes": 195
   }
 ]
