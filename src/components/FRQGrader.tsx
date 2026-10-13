@@ -992,11 +992,7 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-2">
-              <span className="text-base font-black text-white tracking-wide">
-                FRQ Grader
-              </span>
-            </div>
+            <div />
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -1037,40 +1033,38 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
 
           {/* Floating Bottom Controls: Gallery, Shutter, Torch */}
           <div className="relative z-20 w-full pb-safe pb-8 pt-10 px-8 flex flex-col items-center bg-gradient-to-t from-black/85 via-black/45 to-transparent">
-            {/* Horizontal Line Mode Switcher directly above camera shutter button */}
-            <div className="flex items-center justify-center mb-4">
-              <div className="flex items-center bg-black/60 backdrop-blur-md p-1 rounded-full border border-white/20 shadow-xl">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    triggerVibration(10);
-                    setScannerMode('frq');
-                  }}
-                  className={`px-4 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer ${
-                    scannerMode === 'frq'
-                      ? 'bg-emerald-500 text-white shadow-md'
-                      : 'text-zinc-300 hover:text-white'
-                  }`}
-                >
-                  FRQ Grader
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    triggerVibration(10);
-                    setScannerMode('traps');
-                  }}
-                  className={`px-4 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer ${
-                    scannerMode === 'traps'
-                      ? 'bg-amber-500 text-white shadow-md'
-                      : 'text-zinc-300 hover:text-white'
-                  }`}
-                >
-                  Scan Trapped
-                </button>
-              </div>
+            {/* Horizontal Mode Buttons directly above camera shutter button (without outer box) */}
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  triggerVibration(10);
+                  setScannerMode('frq');
+                }}
+                className={`px-4 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer ${
+                  scannerMode === 'frq'
+                    ? 'bg-emerald-500 text-white shadow-md'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                FRQ Grader
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  triggerVibration(10);
+                  setScannerMode('traps');
+                }}
+                className={`px-4 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer ${
+                  scannerMode === 'traps'
+                    ? 'bg-amber-500 text-white shadow-md'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                Scan Trapped
+              </button>
             </div>
 
             <div className="w-full flex items-center justify-around">
