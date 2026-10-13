@@ -267,48 +267,22 @@ export default function TestPrep({ onBack }: TestPrepProps) {
                           <div
                             key={unit.unitNumber}
                             onClick={() => handleUnitClick(subject, unit)}
-                            className={`w-full bg-white border ${
-                              isFullCourse
-                                ? 'border-amber-300 hover:border-amber-500 bg-gradient-to-r from-amber-50/40 via-white to-indigo-50/30 shadow-xs'
-                                : pdfUploaded 
-                                  ? 'border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50/30 shadow-xs' 
-                                  : 'border-zinc-200/80 hover:border-zinc-300 hover:bg-zinc-50/60'
-                            } py-3 px-3.5 sm:px-4 rounded-2xl flex items-center justify-between transition-all cursor-pointer group`}
+                            className="w-full bg-white border border-zinc-200/80 hover:border-indigo-400 hover:bg-indigo-50/20 py-3.5 px-4 rounded-2xl flex items-center justify-between transition-all cursor-pointer group shadow-2xs"
                           >
                             <div className="flex items-center gap-3.5 min-w-0 pr-2">
                               {/* Unit Badge (FULL / U1, U2, ...) */}
                               <div className={`w-8 h-8 rounded-xl ${
                                 isFullCourse
-                                  ? 'bg-gradient-to-br from-amber-500 to-indigo-600 text-white font-black text-[10px] tracking-tight shadow-xs'
-                                  : pdfUploaded 
-                                    ? 'bg-indigo-600 text-white font-black text-xs shadow-xs' 
-                                    : 'bg-indigo-50 border border-indigo-200/70 text-indigo-700 font-black text-xs'
+                                  ? 'bg-indigo-600 text-white font-black text-[10px] tracking-tight shadow-xs'
+                                  : 'bg-indigo-50 border border-indigo-200/70 text-indigo-700 font-black text-xs'
                               } flex items-center justify-center shrink-0`}>
                                 {isFullCourse ? 'FULL' : `U${unit.unitNumber}`}
                               </div>
 
                               <div className="min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className={`font-bold text-xs sm:text-sm ${
-                                    isFullCourse ? 'text-indigo-950 group-hover:text-amber-700' : 'text-zinc-900 group-hover:text-indigo-600'
-                                  } transition-colors truncate`}>
-                                    {isFullCourse ? unit.title : `Unit ${unit.unitNumber}: ${unit.title}`}
-                                  </span>
-                                  {pdfUploaded && (
-                                    <span className={`inline-flex items-center gap-1 text-[10px] font-black ${
-                                      isFullCourse 
-                                        ? 'text-amber-800 bg-amber-100/80 border border-amber-300' 
-                                        : 'text-amber-700 bg-amber-50 border border-amber-200/80'
-                                    } px-2 py-0.5 rounded-full shrink-0`}>
-                                      <Star className="w-2.5 h-2.5 fill-current text-amber-500" />
-                                      <span>
-                                        {isFullCourse 
-                                          ? `Master Mock Ready (${unitPdf?.totalQuestions || 250} Qs · ${unitPdf?.pageCount || 242} Pages)` 
-                                          : `PDF Ready (${unitPdf?.pageCount || 85} Pages)`}
-                                      </span>
-                                    </span>
-                                  )}
-                                </div>
+                                <span className="font-bold text-xs sm:text-sm text-zinc-900 group-hover:text-indigo-600 transition-colors truncate block">
+                                  {isFullCourse ? unit.title : `Unit ${unit.unitNumber}: ${unit.title}`}
+                                </span>
                                 <p className="text-[11px] text-zinc-500 font-medium truncate mt-0.5">
                                   {unit.weight} {unit.concepts ? `• ${unit.concepts}` : ''}
                                 </p>
@@ -317,18 +291,7 @@ export default function TestPrep({ onBack }: TestPrepProps) {
 
                             {/* Right Action */}
                             <div className="flex items-center gap-2 shrink-0">
-                              {pdfUploaded ? (
-                                <span className={`text-xs font-bold ${
-                                  isFullCourse 
-                                    ? 'text-amber-700 bg-amber-50 border border-amber-200/90 group-hover:bg-amber-600 group-hover:text-white' 
-                                    : 'text-indigo-600 bg-indigo-50 border border-indigo-200/70 group-hover:bg-indigo-600 group-hover:text-white'
-                                } flex items-center gap-1 px-2.5 py-1 rounded-xl transition-all`}>
-                                  <span>{isFullCourse ? 'View Full Set' : 'View PDF'}</span>
-                                  <ChevronRight className="w-3.5 h-3.5" />
-                                </span>
-                              ) : (
-                                <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:text-zinc-500 transition-colors" />
-                              )}
+                              <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
                             </div>
                           </div>
                         );
