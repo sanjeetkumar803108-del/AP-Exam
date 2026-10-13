@@ -12,7 +12,8 @@ import {
   TestPrepUnit, 
   UploadedUnitPdf, 
   hasUnitPdf, 
-  getUnitPdf 
+  getUnitPdf,
+  getTestPrepSubjectVisual
 } from '../data/testPrepUnitsData';
 
 interface TestPrepProps {
@@ -213,40 +214,41 @@ export default function TestPrep({ onBack }: TestPrepProps) {
           ) : (
             filteredSubjects.map(subject => {
               const isExpanded = expandedSubjectIds.has(subject.id) || Boolean(searchQuery);
+              const visual = getTestPrepSubjectVisual(subject.id);
 
               return (
                 <div
                   key={subject.id}
                   className="bg-white rounded-3xl border border-zinc-200/90 shadow-xs overflow-hidden transition-all duration-200 hover:border-zinc-300"
                 >
-                  {/* Subject Accordion Header Card */}
+                  {/* Subject Accordion Header Card (Exact AP Notes Image 1 Design) */}
                   <button
                     onClick={() => toggleSubject(subject.id)}
                     className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-zinc-50/50 transition-colors cursor-pointer"
                   >
-                    <div className="flex items-center gap-4 min-w-0 pr-2">
-                      {/* Subject Square Badge (CAL, PHY, CHE, etc.) */}
-                      <div className={`w-12 h-12 rounded-2xl ${subject.badgeColor || 'bg-[#6366f1]'} text-white font-black text-sm flex items-center justify-center shrink-0 shadow-sm`}>
-                        {subject.code}
+                    <div className="flex items-center gap-3.5 sm:gap-4 min-w-0 pr-2">
+                      {/* Subject 3D Gradient Icon Badge (Matches AP Notes Image 1) */}
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 bg-gradient-to-br ${visual.gradient} text-white shadow-md shadow-zinc-950/10`}>
+                        {visual.icon}
                       </div>
                       
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-md">
-                            {subject.category}
-                          </span>
-                          <span className="text-xs text-zinc-400 font-medium">
-                            {subject.units.length} Units
-                          </span>
-                        </div>
                         <h3 className="text-base sm:text-lg font-black text-zinc-900 truncate">
                           {subject.name}
                         </h3>
+                        {visual.description && (
+                          <p className="text-[11px] sm:text-xs text-zinc-400 mt-0.5 truncate hidden sm:block">
+                            {visual.description}
+                          </p>
+                        )}
                       </div>
                     </div>
 
-                    <div className="w-9 h-9 rounded-full bg-zinc-50 border border-zinc-200/60 flex items-center justify-center text-zinc-400 shrink-0">
-                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-zinc-700' : ''}`} />
+                    <div className="flex items-center gap-1.5 shrink-0 text-zinc-400">
+                      <span className="text-xs sm:text-sm font-bold text-zinc-500">
+                        {subject.units.length} Units
+                      </span>
+                      <ChevronDown className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-zinc-700' : ''}`} />
                     </div>
                   </button>
 
@@ -316,8 +318,9 @@ export default function TestPrep({ onBack }: TestPrepProps) {
               <div className="px-5 py-4 border-b border-zinc-200 flex items-center justify-between bg-zinc-50/80">
                 <div className="min-w-0 pr-3">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md">
-                      {activePdfModal.subject.name}
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <span>{getTestPrepSubjectVisual(activePdfModal.subject.id).icon}</span>
+                      <span>{activePdfModal.subject.name}</span>
                     </span>
                     <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full flex items-center gap-1">
                       <Star className="w-2.5 h-2.5 fill-current text-amber-500" />

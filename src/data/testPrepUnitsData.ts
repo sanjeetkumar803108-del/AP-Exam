@@ -14,6 +14,98 @@ export interface TestPrepUnit {
   concepts?: string;
 }
 
+export interface SubjectVisual {
+  icon: string;
+  gradient: string;
+  description: string;
+}
+
+export const TEST_PREP_SUBJECT_VISUALS: Record<string, SubjectVisual> = {
+  'ap-calculus-ab': {
+    icon: '📐',
+    gradient: 'from-blue-600 via-indigo-700 to-blue-900',
+    description: 'Limits, Derivatives, Analytical Applications, Definite Integrals & Differential Equations (Units 1–8)',
+  },
+  'ap-calculus-bc': {
+    icon: '📈',
+    gradient: 'from-purple-600 via-violet-700 to-indigo-900',
+    description: 'All Calculus AB Core Curriculum PLUS 2 Advanced BC-Exclusive Units: Parametric/Polar/Vectors & Infinite Sequences and Series (Units 1–10)',
+  },
+  'ap-statistics': {
+    icon: '📊',
+    gradient: 'from-blue-600 via-indigo-700 to-cyan-900',
+    description: 'Exploring One-Variable & Two-Variable Data, Probability, Sampling Distributions & Inference (Units 1–9)',
+  },
+  'ap-physics': {
+    icon: '⚡',
+    gradient: 'from-amber-600 via-orange-600 to-amber-900',
+    description: 'Kinematics, Dynamics, Work-Energy, Momentum, Torque, Rotational Dynamics, Oscillations & Fluids (Units 1–8)',
+  },
+  'ap-chemistry': {
+    icon: '⚗️',
+    gradient: 'from-fuchsia-600 via-purple-700 to-violet-900',
+    description: 'Atomic Models, Chemical Bonding, IMFs, Kinetics, Thermodynamics, Equilibrium, Acids & Bases & Electrochemistry (Units 1–9)',
+  },
+  'ap-biology': {
+    icon: '🧬',
+    gradient: 'from-emerald-600 via-teal-700 to-emerald-900',
+    description: 'Chemistry of Life, Cell Structure, Energetics, Cell Cycle, Heredity, Gene Expression, Natural Selection & Ecology (Units 1–8)',
+  },
+  'ap-environmental-science': {
+    icon: '🌿',
+    gradient: 'from-green-700 via-emerald-800 to-teal-950',
+    description: 'Ecosystems, Biodiversity, Populations, Earth Systems, Land/Water Use, Energy, Atmospheric/Aquatic Pollution & Global Change (Units 1–9)',
+  },
+  'ap-human-geography': {
+    icon: '🗺️',
+    gradient: 'from-orange-700 via-amber-800 to-stone-900',
+    description: 'Thinking Geographically, DTM, Cultural Diffusion, Political Borders, Von Thünen Agriculture, Urban Models & Economic Development (Units 1–7)',
+  },
+  'ap-psychology': {
+    icon: '🧠',
+    gradient: 'from-pink-700 via-rose-800 to-purple-950',
+    description: 'Biological Bases of Behavior, Cognition & Memory, Development & Learning, Social Psychology & Mental Health (Units 1–5)',
+  },
+  'ap-us-history': {
+    icon: '🏛️',
+    gradient: 'from-red-700 via-rose-800 to-stone-900',
+    description: 'Periods 1–9: From Pre-Columbian Societies and the American Revolution to the Cold War and Modern Era (Periods 1–9)',
+  },
+  'ap-world-history': {
+    icon: '🌍',
+    gradient: 'from-amber-700 via-orange-800 to-stone-900',
+    description: '1200 CE to Present: The Global Tapestry, Networks of Exchange, Land-Based Empires, Revolutions, Industrialization & Globalization (Units 1–9)',
+  },
+  'ap-economics': {
+    icon: '📈',
+    gradient: 'from-teal-700 via-emerald-800 to-slate-950',
+    description: 'PPC & Trade, Supply & Demand, Production Costs, Imperfect Competition, Factor Markets, Externalities, GDP & Inflation, AD-AS Fiscal Policy (Units 1–11)',
+  },
+  'ap-computer-science': {
+    icon: '💻',
+    gradient: 'from-indigo-700 via-blue-800 to-slate-950',
+    description: 'Java Programming: Primitive Types, Using Objects, Booleans, Loops, Writing Classes, 1D/2D Arrays, ArrayList, Inheritance & Recursion (Units 1–10)',
+  },
+  'ap-computer-science-principles': {
+    icon: '🌐',
+    gradient: 'from-cyan-600 via-teal-600 to-sky-900',
+    description: 'Creative Development, Data Representation, Algorithms, Pseudocode, Internet Protocols & Cybersecurity (Units 1–5)',
+  },
+  'ap-english-lang': {
+    icon: '✍️',
+    gradient: 'from-sky-700 via-teal-800 to-slate-900',
+    description: 'Rhetorical Situation, Claims, Evidence, Synthesis of Sources, Argumentative Structure, Diction & Syntax (Units 1–6)',
+  },
+};
+
+export function getTestPrepSubjectVisual(subjectId: string): SubjectVisual {
+  return TEST_PREP_SUBJECT_VISUALS[subjectId] || {
+    icon: '📚',
+    gradient: 'from-indigo-600 via-purple-700 to-indigo-950',
+    description: '',
+  };
+}
+
 export interface TestPrepSubject {
   id: string;
   code: string;
