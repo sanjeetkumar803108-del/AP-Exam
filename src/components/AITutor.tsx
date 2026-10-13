@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { parsePartialJSON } from '../utils/partialJson';
-import GlobalMarkdown from './GlobalMarkdown';
+import GlobalMarkdown, { formatSuggestionMath } from './GlobalMarkdown';
 import 'katex/dist/katex.min.css';
 import { collection, addDoc, updateDoc, doc, serverTimestamp, query, where, orderBy, getDocs, deleteDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -555,7 +555,7 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
                     Topic
                   </span>
                   <h3 className="text-base font-bold text-zinc-950 m-0 leading-tight min-w-0 break-words whitespace-normal text-wrap">
-                    {parsedSolution.topic_title}
+                    <GlobalMarkdown inline className="inline font-bold text-inherit">{parsedSolution.topic_title}</GlobalMarkdown>
                   </h3>
                 </div>
               )}
@@ -606,7 +606,7 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
                           </span>
                           {step.title && (
                             <span className="text-xs font-bold text-zinc-800 text-right min-w-0 break-words whitespace-normal text-wrap">
-                              {step.title}
+                              <GlobalMarkdown inline className="inline font-bold text-inherit">{step.title}</GlobalMarkdown>
                             </span>
                           )}
                         </div>
@@ -702,7 +702,14 @@ const AITutorMessageItem = React.memo(function AITutorMessageItem({
                   title="Tap to ask this question next"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-purple-500 group-hover:text-purple-700 shrink-0 transition-colors" />
-                  <span className="leading-snug">{sug}</span>
+                  <span className="leading-snug inline-block max-w-full">
+                    <GlobalMarkdown
+                      inline
+                      className="inline font-inherit text-inherit [&_.katex]:text-[1.05em]"
+                    >
+                      {formatSuggestionMath(sug)}
+                    </GlobalMarkdown>
+                  </span>
                 </button>
               ))}
             </div>

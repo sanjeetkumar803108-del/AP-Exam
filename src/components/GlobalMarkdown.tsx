@@ -11,6 +11,7 @@ interface GlobalMarkdownProps {
   content?: any;
   className?: string;
   components?: any;
+  inline?: boolean;
 }
 
 export const SUPERSCRIPTS_MAP: Record<string, string> = {
@@ -422,6 +423,24 @@ export function healGlobalMarkdown(content: string): string {
     return token;
   });
 
+  // 10b. Hybridization orbitals outside math: e.g. sp2, sp3, sp3d, sp3d2, dsp2, d2sp3
+  text = text.replace(/\b(d2sp3|dsp2|dsp3|sp3d2|sp3d|sp3|sp2)\b(?!\^)/gi, (match) => {
+    if (match.startsWith('___MATH_') || match.startsWith('___CODE_')) return match;
+    const lower = match.toLowerCase();
+    let formatted = '';
+    if (lower === 'sp2') formatted = 'sp^2';
+    else if (lower === 'sp3') formatted = 'sp^3';
+    else if (lower === 'sp3d') formatted = 'sp^3d';
+    else if (lower === 'sp3d2') formatted = 'sp^3d^2';
+    else if (lower === 'dsp2') formatted = 'dsp^2';
+    else if (lower === 'dsp3') formatted = 'dsp^3';
+    else if (lower === 'd2sp3') formatted = 'd^2sp^3';
+    else return match;
+    const token = `___MATH_BLOCK_${mathPlaceholders.length}___`;
+    mathPlaceholders.push(`$${formatted}$`);
+    return token;
+  });
+
   // 11. Chemical formulas outside math: e.g. H2O, CO2, H2SO4, Ca(OH)2, O2, N2
   text = text.replace(/\b([A-Z][a-z]?(?:\d+|[A-Z][a-z]*\d*)*(?:\([A-Z][a-z]*\)\d*)?)\b/g, (match) => {
     if (match.startsWith('___MATH_') || match.startsWith('___CODE_')) return match;
@@ -597,21 +616,53 @@ export function formatSuggestionMath(content: string): string {
   let text = cleanMarkdownMath(String(content)).trim();
   text = text.replace(/\$\$/g, '$');
 
+  // Convert parenthesized Greek/LaTeX letters without dollar signs: e.g. (\pi) -> ($\pi$)
+  text = replaceOutsideMath(text, /\((\\(?:pi|sigma|alpha|beta|theta|lambda|mu|rho|tau|phi|omega|Delta|Omega))\)/g, '($$$1$)');
+
+  // Wrap standalone Greek and math operators outside math
   text = replaceOutsideMath(text, /(\\frac\{[^{}]*\}\{[^{}]*\}|\\sqrt(?:\[[^\]]*\])?\{[^{}]*\}|\\boxed\{[^{}]*\})/g, '$$$1$$');
   text = replaceOutsideMath(text, /(\\(?:alpha|beta|gamma|delta|theta|lambda|mu|pi|rho|sigma|tau|phi|omega|Delta|Omega|pm|times|div|leq|geq|neq|approx|infty|cdot|to|rightarrow|partial|int|sum|prod|lim|sin|cos|tan|log|ln)\b)/g, '$$$1$$');
+  
+  // Orbitals / hybridization outside math: e.g. sp2 -> $sp^2$, sp3 -> $sp^3$, sp3d -> $sp^3d$
+  text = replaceOutsideMath(text, /\b(d2sp3|dsp2|dsp3|sp3d2|sp3d|sp3|sp2)\b(?!\^)/gi, (match) => {
+    const lower = match.toLowerCase();
+    if (lower === 'sp2') return '$sp^2$';
+    if (lower === 'sp3') return '$sp^3$';
+    if (lower === 'sp3d') return '$sp^3d$';
+    if (lower === 'sp3d2') return '$sp^3d^2$';
+    if (lower === 'dsp2') return '$dsp^2$';
+    if (lower === 'dsp3') return '$dsp^3$';
+    if (lower === 'd2sp3') return '$d^2sp^3$';
+    return match;
+  });
+
+  // Degree angles outside math: e.g. 109.5° or 180°
+  text = replaceOutsideMath(text, /(\d+(?:\.\d+)?)\s*°/g, '$$$1^{\\circ}$$');
+  text = replaceOutsideMath(text, /(\d+(?:\.\d+)?)\s*\^\\?circ\b/g, '$$$1^{\\circ}$$');
+
+  // Superscripts & Subscripts outside math
   text = replaceOutsideMath(text, /(?<![$a-zA-Z\\])(?:-?[0-9a-zA-Z]+\s*)?(\([a-zA-Z0-9\s+\-*/^_.]+\))\^([0-9a-zA-Z]+|\{[^{}]+\})/g, '$$$1^$2$$');
-  text = replaceOutsideMath(text, /([a-zA-Z0-9]+)\^(\{[^{}]+\}|-?[0-9]+|[a-zA-Z](?![a-zA-Z]))/g, '$$$1^$2$$');
+  text = replaceOutsideMath(text, /([a-zA-Z0-9]+)\^(\{[^{}]+\}|-?[0-9]+|\\[a-zA-Z]+|[a-zA-Z](?![a-zA-Z]))/g, '$$$1^$2$$');
   text = replaceOutsideMath(text, /([a-zA-Z0-9]+)_(\{[^{}]+\}|[0-9]+|[a-zA-Z](?![a-zA-Z]))/g, '$$$1_$2$$');
 
+  // Chemical formulas outside math: e.g. CO2, H2O, CH4
+  text = replaceOutsideMath(text, /\b([A-Z][a-z]?(?:\d+|[A-Z][a-z]*\d*)*(?:\([A-Z][a-z]*\)\d*)?)\b/g, (match) => {
+    if (!/\d/.test(match)) return match;
+    const formatted = match.replace(/([A-Z][a-z]?)(\d+)/g, '$1_$2').replace(/\)(\d+)/g, ')_$1');
+    return `$\\mathrm{${formatted}}$`;
+  });
+
+  // Clean empty or double dollar signs
   text = text.replace(/\$\$/g, '$');
   text = text.replace(/\$\s*\$/g, ' ');
   text = text.replace(/\$\$/g, '');
   text = text.replace(/\$\s+\$/g, ' ');
 
-  text = text.replace(/\$([^\$\n]+)'s\$/g, "$1's");
-  text = text.replace(/\$([^\$\n]+)'([a-zA-Z]+)\$/g, "$1'$2");
-  text = text.replace(/\$([a-zA-Z\u00C0-\u024F\s]{3,})\$/g, "$1");
-  text = text.replace(/\$([a-zA-Z\u00C0-\u024F\s]{3,})'s\$/g, "$1's");
+  // Strip accidental dollars around plain English narrative words
+  text = text.replace(/\$([a-zA-Z\u00C0-\u024F\s]{4,})\$/g, (m, word) => {
+    if (/^(sin|cos|tan|log|ln|lim)$/i.test(word.trim())) return m;
+    return word;
+  });
 
   return text;
 }
@@ -702,7 +753,7 @@ const defaultComponents = {
   ),
 };
 
-function GlobalMarkdown({ children, content, className = '', components = {} }: GlobalMarkdownProps) {
+function GlobalMarkdown({ children, content, className = '', components = {}, inline = false }: GlobalMarkdownProps) {
   const rawText = content !== undefined ? content : children;
   if (!rawText) return null;
 
@@ -716,6 +767,24 @@ function GlobalMarkdown({ children, content, className = '', components = {} }: 
     }
     return { ...defaultComponents, ...components };
   }, [components]);
+
+  if (inline) {
+    return (
+      <span className={`inline font-inherit text-inherit ${className}`}>
+        <Markdown
+          remarkPlugins={remarkPluginsList}
+          rehypePlugins={rehypePluginsList}
+          components={{
+            ...mergedComponents,
+            p: ({ node, ...props }: any) => <span className="inline font-inherit text-inherit leading-snug" {...props} />,
+            div: ({ node, ...props }: any) => <span className="inline font-inherit text-inherit" {...props} />,
+          }}
+        >
+          {processedContent}
+        </Markdown>
+      </span>
+    );
+  }
 
   return (
     <div className={`markdown-body w-full max-w-full min-w-0 overflow-x-auto ${className}`}>
