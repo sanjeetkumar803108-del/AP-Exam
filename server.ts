@@ -841,6 +841,12 @@ DO NOT use any markdown bolding syntax like "**" or emojis inside latex delimite
   * LINE BREAK AFTER EVERY SENTENCE: Never write long, crammed multi-sentence paragraphs. Every single sentence, explanation, or calculation must be on its OWN line, separated by a blank line (\\n\\n).
   * NO BULLET SYMBOLS: Do NOT use bullet signs (no "•", no "-", no "*", no "1.", no "2."). Arrange points cleanly and spacious using blank lines (\\n\\n) between sentences.
   * STANDALONE BLOCK MATH EQUATIONS: Always put mathematical formulas, algebraic derivations, and intermediate numerical results on their OWN dedicated centered block lines using $$ ... $$. Never compress complex equations inline within long sentences.
+  * MANDATORY LATEX RULES (ZERO UNRENDERED / BARE LATEX):
+    - NEVER output plain-text ASCII math, bare derivatives, carets, or raw asterisks without LaTeX delimiters! (e.g. NEVER write "d/dx [f(g(x))]", "y = (3x^2 - 5)^4", "Outer function: y = u^4", or "Inside function: 3x^2 - 5" as plain unformatted text!)
+    - Standalone formulas and equations on their own lines MUST be enclosed in $$ ... $$ block delimiters (e.g. "$$\\frac{d}{dx}[f(g(x))] = f'(g(x)) \\cdot g'(x)$$").
+    - All inline variables, small equations, powers, derivatives, and functions MUST be enclosed in single $ ... $ delimiters (e.g. "$y = (3x^2 - 5)^4$", "$y = u^4$", "$u = 3x^2 - 5$", "$f'(x)$", "$\\frac{d}{dx}$").
+    - ALWAYS use \\cdot for multiplication (NEVER raw *).
+    - ALWAYS use \\frac{d}{dx} or \\frac{dy}{dx} for derivative operators (NEVER raw d/dx or dy/dx).
   * MAXIMUM CLARITY & BREATHING ROOM: Ensure generous vertical spacing so mobile students can effortlessly read and absorb every single line without confusion.
 - Set "format_type" to "steps".
 - Populate the "solution_steps" array with each logical phase of the sequential solution.
@@ -854,7 +860,7 @@ DO NOT use any markdown bolding syntax like "**" or emojis inside latex delimite
     {
       "step_id": 1,
       "title": "Clear concise step title",
-      "content": "A detailed, encouraging explanation with formulas and step-by-step calculations. Whenever generating mathematical numbers, formulas, symbols, or equations/chemical reactions, you must strictly wrap them in LaTeX delimiters. Use single '$' for inline math and double '$$' for block math equations (e.g. $$2H_2O \\rightarrow 2H_2 + O_2$$). NEVER output bare LaTeX commands without $ or $$ delimiters! Always double-escape backslashes in JSON (e.g. \\\\rightarrow, \\\\frac, \\\\sqrt, \\\\text, \\\\pi, \\\\theta, \\\\int, \\\\cdot, \\\\quad) so that equations render beautifully for students.",
+      "content": "A detailed, encouraging explanation with formulas and step-by-step calculations. Whenever generating mathematical numbers, formulas, symbols, or equations/chemical reactions, you must strictly wrap them in LaTeX delimiters. Use single '$' for inline math and double '$$' for block math equations (e.g. $$2H_2O \\rightarrow 2H_2 + O_2$$). NEVER output bare ASCII math or raw carets without $ or $$ delimiters! ALWAYS use \\\\cdot for multiplication (never raw *). ALWAYS use \\\\frac{d}{dx} for derivatives. Always double-escape backslashes in JSON (e.g. \\\\rightarrow, \\\\frac, \\\\sqrt, \\\\text, \\\\pi, \\\\theta, \\\\int, \\\\cdot, \\\\quad) so that equations render beautifully for students.",
       "is_final_answer": false
     }
   ],
