@@ -268,6 +268,18 @@ export function healGlobalMarkdown(content: string): string {
     return token;
   });
 
+  // 2.4. Unwrapped derivative equations (e.g. "d/dx [f(g(x))] = f'(g(x)) * g'(x)" or "dy/dx = 4(3x^2 - 5)^3 * 6x")
+  text = text.replace(/(?:^|\n)\s*((?:d\/dx|dy\/dx|d\/dt)\s*\[[^\]\n]+\]\s*=\s*[^\n]+)(?:\n|$)/gi, (_match, eq) => {
+    let cleanEq = eq.trim();
+    cleanEq = cleanEq.replace(/\bd\/dx\b/g, '\\frac{d}{dx}');
+    cleanEq = cleanEq.replace(/\bdy\/dx\b/g, '\\frac{dy}{dx}');
+    cleanEq = cleanEq.replace(/\bd\/dt\b/g, '\\frac{d}{dt}');
+    cleanEq = cleanEq.replace(/(?<=[a-zA-Z0-9)\]])\s*\*\s*(?=[a-zA-Z0-9(\[])/g, ' \\cdot ');
+    const token = `___MATH_BLOCK_${mathPlaceholders.length}___`;
+    mathPlaceholders.push(`$$${cleanEq}$$`);
+    return `\n\n${token}\n\n`;
+  });
+
   // 2.5. Explicit formula prefixes with greedy capture until pipe, semicolon, or newline:
   // e.g. "Formula/Concept: v = u + at, \quad a = -g \approx -9.8 \text{ m/s}^2 |"
   text = text.replace(/((?:Formula(?:\/Concept)?|Equation|Identity|Reaction):\s*)([^|\n]+)(\s*\||\s*$)/gi, (match, prefix, formula, suffix) => {
@@ -278,6 +290,35 @@ export function healGlobalMarkdown(content: string): string {
       return `${prefix}${token}${suffix}`;
     }
     return match;
+  });
+
+  // 2.6. Function definition labels with raw math: e.g. "Outer function: y = u^4" or "Inside function: 3x^2 - 5"
+  text = text.replace(/((?:Outer|Inner|Inside|Outside)\s+function\s*:\s*)([^\n]+)/gi, (match, prefix, expr) => {
+    const trimmed = expr.trim();
+    if (/[=+\-*/^_]|\b[a-zA-Z]\b/.test(trimmed) && trimmed.length <= 50 && !trimmed.startsWith('___MATH_')) {
+      let cleanExpr = trimmed.replace(/(?<=[a-zA-Z0-9)\]])\s*\*\s*(?=[a-zA-Z0-9(\[])/g, ' \\cdot ');
+      const token = `___MATH_BLOCK_${mathPlaceholders.length}___`;
+      mathPlaceholders.push(`$${cleanExpr}$`);
+      return `${prefix}${token}`;
+    }
+    return match;
+  });
+
+  // 2.7. Parenthesized algebraic powers: e.g. "(3x^2 - 5)^4", "(2x + 1)^3", "(u)^4"
+  text = text.replace(/(?<![\w$\\])(\([a-zA-Z0-9\s+\-*/^_.]+\))\^([0-9a-zA-Z]+|\{[^{}]+\})/g, (match) => {
+    let cleanMath = match.trim();
+    cleanMath = cleanMath.replace(/(?<=[a-zA-Z0-9)\]])\s*\*\s*(?=[a-zA-Z0-9(\[])/g, ' \\cdot ');
+    const token = `___MATH_BLOCK_${mathPlaceholders.length}___`;
+    mathPlaceholders.push(`$${cleanMath}$`);
+    return token;
+  });
+
+  // 2.8. Inline equations with powers: e.g. "y = (3x^2 - 5)^4" or "y = u^4" or "u = 3x^2 - 5"
+  text = text.replace(/(?<=^|[\s,;])([a-zA-Z]\s*=\s*(?:[a-zA-Z0-9_.]+|\([a-zA-Z0-9\s+\-*/^_.]+\))\^[0-9a-zA-Z]+(?:\s*[+\-*\/]\s*[a-zA-Z0-9_.]+)*)(?=$|[\s,;.])/g, (match) => {
+    if (match.includes('___MATH_') || match.includes('___CODE_')) return match;
+    const token = `___MATH_BLOCK_${mathPlaceholders.length}___`;
+    mathPlaceholders.push(`$${match.trim()}$`);
+    return token;
   });
 
   // 3. Line-level check: Is the entire line an unwrapped mathematical formula or equation?

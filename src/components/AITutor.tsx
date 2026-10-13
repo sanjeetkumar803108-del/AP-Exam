@@ -135,10 +135,12 @@ FORMAT:
 
 RULES:
 - Always populate "suggestions" with 3 context-aware study follow-up ideas.
-- MANDATORY LATEX RULES (ZERO UNRENDERED LATEX):
-  * Standalone formulas, equations, and identities MUST be wrapped in $$ ... $$ block delimiters (e.g. key_formula: "$$V = 2\\\\pi \\\\int_a^b x f(x)\\\\,dx$$").
-  * All inline variables, math expressions, functions, and symbols MUST be wrapped in single $ ... $ delimiters (e.g. "$2\\\\pi x h(x)$", "$x = \\\\frac{1}{\\\\sqrt{2}}$", "$f'(x) = 0$").
-  * NEVER output bare LaTeX commands without $ or $$ delimiters!
+- MANDATORY LATEX RULES (ZERO UNRENDERED / BARE LATEX):
+  * NEVER output plain-text ASCII math, bare derivatives, carets, or raw asterisks without LaTeX delimiters! (e.g. NEVER write "d/dx [f(g(x))]", "y = (3x^2 - 5)^4", "Outer function: y = u^4", or "Inside function: 3x^2 - 5" as plain unformatted text!)
+  * Standalone formulas, equations, and identities MUST be wrapped in $$ ... $$ block delimiters (e.g. key_formula: "$$V = 2\\\\pi \\\\int_a^b x f(x)\\\\,dx$$", "$$\\frac{d}{dx}[f(g(x))] = f'(g(x)) \\cdot g'(x)$$").
+  * All inline variables, math expressions, functions, derivatives, and symbols MUST be wrapped in single $ ... $ delimiters (e.g. "$2\\\\pi x h(x)$", "$x = \\\\frac{1}{\\\\sqrt{2}}$", "$f'(x) = 0$", "$y = u^4$").
+  * ALWAYS use \\cdot for multiplication (NEVER raw *).
+  * ALWAYS use \\frac{d}{dx} or \\frac{dy}{dx} for derivative operators (NEVER raw d/dx or dy/dx).
   * Always double-escape backslashes in JSON output: \\\\frac, \\\\sqrt, \\\\int, \\\\pi, \\\\theta, \\\\text, \\\\boxed, \\\\cdot, \\\\quad.`;
 
 // Used when the student types a question/message WITHOUT an image
@@ -237,10 +239,13 @@ Use this for greetings, pop quizzes, conceptual questions, bullet-point lists, c
 RULES:
 - The JSON object must be valid raw JSON.
 - Never invent separate keys like 'question', 'options', 'intro', or 'quiz'; put all conversational text and questions directly inside 'markdown_content'.
-- MANDATORY LATEX RULES (ZERO UNRENDERED LATEX):
-  * Standalone formulas, equations, and identities MUST be wrapped in $$ ... $$ block delimiters (e.g. key_formula: "$$V = 2\\\\pi \\\\int_a^b x f(x)\\\\,dx$$").
-  * All inline variables, math expressions, functions, and symbols MUST be wrapped in single $ ... $ delimiters (e.g. "$2\\\\pi x h(x)$", "$x = \\\\frac{1}{\\\\sqrt{2}}$", "$f'(x) = 0$").
-  * NEVER output bare LaTeX commands without $ or $$ delimiters!
+- MANDATORY LATEX RULES (ZERO UNRENDERED / BARE LATEX):
+  * NEVER output plain-text ASCII math, bare derivatives, carets, or raw asterisks without LaTeX delimiters! (e.g. NEVER write "d/dx [f(g(x))]", "y = (3x^2 - 5)^4", "Outer function: y = u^4", or "Inside function: 3x^2 - 5" as plain unformatted text!)
+  * EVERY mathematical equation, formula, derivative, or identity MUST be wrapped in LaTeX delimiters:
+    - Standalone formulas and equations on their own lines MUST be enclosed in $$ ... $$ block delimiters (e.g. "$$\\frac{d}{dx}[f(g(x))] = f'(g(x)) \\cdot g'(x)$$", "$$y = (3x^2 - 5)^4$$").
+    - All inline variables, small equations, powers, derivatives, and functions MUST be enclosed in single $ ... $ delimiters (e.g. "$y = (3x^2 - 5)^4$", "$y = u^4$", "$u = 3x^2 - 5$", "$f'(x)$", "$\\frac{d}{dx}$").
+  * ALWAYS use \\cdot for multiplication (NEVER raw *).
+  * ALWAYS use \\frac{d}{dx} or \\frac{dy}{dx} for derivative operators (NEVER raw d/dx or dy/dx).
   * Always double-escape backslashes in JSON output: \\\\frac, \\\\sqrt, \\\\sin, \\\\boxed, \\\\pi, \\\\theta, \\\\int, \\\\cdot, \\\\quad.
 - Always include 3 high-value suggestions in the "suggestions" array.`;
 
