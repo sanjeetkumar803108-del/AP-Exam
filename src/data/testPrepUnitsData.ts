@@ -479,6 +479,22 @@ export const UPLOADED_UNIT_PDFS: Record<string, UploadedUnitPdf> = {
     uploadedDate: 'October 2026',
     description: 'Complete 85-Page Priority-Starred Master Examination Set (90 MCQs + 10 Create Performance Task Style FRQs) for Unit 3: Variables, Modulo, Boolean Logic, Nested Conditionals, Iteration, Robot Grid Navigation, 1-Indexed Lists, Procedures & Parameters, Linear/Binary Search, Simulations, Algorithmic Efficiency, and Undecidable Problems with 9-point rubrics.',
   },
+  'ap-computer-science-principles-4': {
+    pdfUrl: '/sample-papers/AP_CSP_Unit4_Master_Set.pdf',
+    htmlUrl: '/sample-papers/AP_CSP_Unit4_Master.html',
+    title: 'AP Computer Science Principles – Unit 4: Computer Systems and Networks (Priority-Starred Master Set)',
+    pageCount: 85,
+    totalQuestions: 100,
+    mcqCount: 90,
+    frqCount: 10,
+    priorityStars: {
+      star5: 64,
+      star4: 36,
+      star3: 0,
+    },
+    uploadedDate: 'October 2026',
+    description: 'Complete 85-Page Priority-Starred Master Examination Set (90 MCQs + 10 Create Performance Task Style FRQs) for Unit 4: Internet Architecture, Open Standards (IETF), IPv4/IPv6 Hierarchies, TCP vs UDP, DNS Resolution & Spoofing, Fault Tolerance & Network Topologies, Parallel Speedup & Amdahl’s Law, Distributed Systems & DDoS, and Public-Key Cryptography (RSA) with 9-point rubrics.',
+  },
 };
 
 export function getUnitPdfKey(subjectId: string, unitNumber: number): string {
