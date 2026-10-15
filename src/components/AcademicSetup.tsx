@@ -169,11 +169,28 @@ export default function AcademicSetup({ userId, onComplete }: AcademicSetupProps
       } catch (dbErr) {
         console.error('[AcademicSetup] Error saving onboarding state to Firestore:', dbErr);
       }
-      // Mark pending welcome celebration video for this new user so homepage displays it
-      safeSetItem(`pending_welcome_celebration_${activeUid}`, 'true');
+
+      // Also persist to allocated_emails so this email is permanently recorded
+      const userEmail = auth.currentUser?.email;
+      if (userEmail) {
+        const cleanEmail = userEmail.toLowerCase().trim();
+        safeSetItem(`onboarding_completed_email_${cleanEmail}`, 'true');
+        try {
+          await setDoc(doc(db, 'allocated_emails', cleanEmail), {
+            hasCompletedOnboarding: true,
+            hasCompletedAcademicSetup: true,
+            updatedAt: new Date().toISOString()
+          }, { merge: true });
+        } catch (_) {}
+      }
+
+      // Mark pending welcome celebration video ONLY if not previously seen
+      const alreadySeen = safeGetItem(`welcome_penguin_seen_${activeUid}`) === 'true';
+      if (!alreadySeen) {
+        safeSetItem(`pending_welcome_celebration_${activeUid}`, 'true');
+        window.dispatchEvent(new CustomEvent('trigger-welcome-celebration'));
+      }
     }
-    safeSetItem('pending_welcome_celebration', 'true');
-    window.dispatchEvent(new CustomEvent('trigger-welcome-celebration'));
 
     onComplete();
   };

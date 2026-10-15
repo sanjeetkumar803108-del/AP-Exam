@@ -1,8 +1,10 @@
 import React, { useRef, useEffect, useState, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, X } from 'lucide-react';
-import { safeSetItem } from '../utils/storage';
+import { safeSetItem, safeRemoveItem } from '../utils/storage';
 import { triggerVibration } from '../utils/vibrate';
+import { auth, db } from '../lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 
 interface WelcomeCelebrationModalProps {
   isOpen: boolean;
@@ -105,25 +107,47 @@ export default function WelcomeCelebrationModal({
     }
   }, [isOpen]);
 
-  // Mark celebration as seen immediately
+  const markSeenEverywhere = () => {
+    const activeUid = userId || auth.currentUser?.uid;
+    if (activeUid) {
+      safeSetItem(`welcome_penguin_seen_${activeUid}`, 'true');
+      safeRemoveItem(`pending_welcome_celebration_${activeUid}`);
+      
+      // Update Firestore user profile
+      setDoc(doc(db, 'users', activeUid), {
+        welcome_penguin_seen: true,
+        isOnboardingComplete: true,
+        isOnboardingCompleted: true,
+        academic_setup_completed: true,
+        updatedAt: new Date().toISOString()
+      }, { merge: true }).catch(console.warn);
+    }
+
+    const email = auth.currentUser?.email;
+    if (email) {
+      const cleanEmail = email.toLowerCase().trim();
+      safeSetItem(`onboarding_completed_email_${cleanEmail}`, 'true');
+      setDoc(doc(db, 'allocated_emails', cleanEmail), {
+        hasSeenWelcome: true,
+        hasCompletedOnboarding: true,
+        hasCompletedAcademicSetup: true,
+        updatedAt: new Date().toISOString()
+      }, { merge: true }).catch(console.warn);
+    }
+
+    safeSetItem('welcome_penguin_seen_global', 'true');
+    safeRemoveItem('pending_welcome_celebration');
+  };
+
+  // Mark celebration as seen immediately upon opening
   useEffect(() => {
     if (isOpen) {
-      if (userId) {
-        safeSetItem(`welcome_penguin_seen_${userId}`, 'true');
-        safeSetItem(`pending_welcome_celebration_${userId}`, 'false');
-      }
-      safeSetItem('welcome_penguin_seen_global', 'true');
-      safeSetItem('pending_welcome_celebration', 'false');
+      markSeenEverywhere();
     }
   }, [isOpen, userId]);
 
   const handleDismiss = () => {
-    if (userId) {
-      safeSetItem(`welcome_penguin_seen_${userId}`, 'true');
-      safeSetItem(`pending_welcome_celebration_${userId}`, 'false');
-    }
-    safeSetItem('welcome_penguin_seen_global', 'true');
-    safeSetItem('pending_welcome_celebration', 'false');
+    markSeenEverywhere();
     onClose();
   };
 

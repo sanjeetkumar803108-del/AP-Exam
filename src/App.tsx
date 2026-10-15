@@ -32,6 +32,7 @@ import { showToast } from './utils/toast';
 import { setupDailyLocalNotifications } from './utils/notifications';
 import { recordActiveUser, getUserHistory, saveUserHistory } from './utils/userHistory';
 import { scrubTransientData } from './utils/dataRetention';
+import { determineUserOnboardingRoute } from './utils/userOnboarding';
 import confetti from 'canvas-confetti';
 
 import { resilientLazy, resetAllLazyChunks } from './utils/resilientLazy';
@@ -285,7 +286,9 @@ export default function App() {
     const handleTrigger = () => {
       const activeUid = user?.uid;
       const alreadySeen = activeUid ? safeGetItem(`welcome_penguin_seen_${activeUid}`) === 'true' : false;
-      if (!alreadySeen) {
+      const email = user?.email?.toLowerCase().trim();
+      const emailSeen = email ? safeGetItem(`onboarding_completed_email_${email}`) === 'true' : false;
+      if (!alreadySeen && !emailSeen) {
         setShowWelcomeCelebration(true);
       }
     };
@@ -298,11 +301,16 @@ export default function App() {
     if (user && !authLoading && !showSplash && !showOnboarding && !showAcademicSetup) {
       const activeUid = user.uid;
       const alreadySeen = safeGetItem(`welcome_penguin_seen_${activeUid}`) === 'true';
+      const email = user?.email?.toLowerCase().trim();
+      const emailSeen = email ? safeGetItem(`onboarding_completed_email_${email}`) === 'true' : false;
       const pending = safeGetItem(`pending_welcome_celebration_${activeUid}`) === 'true';
-      if (pending && !alreadySeen) {
-        safeSetItem(`pending_welcome_celebration_${activeUid}`, 'false');
-        safeSetItem('pending_welcome_celebration', 'false');
+      if (pending && !alreadySeen && !emailSeen) {
+        safeRemoveItem(`pending_welcome_celebration_${activeUid}`);
+        safeRemoveItem('pending_welcome_celebration');
         setShowWelcomeCelebration(true);
+      } else if (pending) {
+        safeRemoveItem(`pending_welcome_celebration_${activeUid}`);
+        safeRemoveItem('pending_welcome_celebration');
       }
     }
   }, [user, authLoading, showSplash, showOnboarding, showAcademicSetup]);
@@ -511,27 +519,24 @@ export default function App() {
         // 2. Fresh Fetch on Login: Try Firestore first to ensure high consistency with user profile
         const fetchPromise = (async () => {
           try {
+            // Determine onboarding routing using unified single-source-of-truth
+            const routeResult = await determineUserOnboardingRoute(currentUser);
+            console.log(`[Auth Check] Route decision for ${currentUser.email}: ${routeResult.targetScreen} (${routeResult.reason})`);
+            if (routeResult.targetScreen === 'onboarding') {
+              setShowOnboarding(true);
+              setShowAcademicSetup(false);
+            } else if (routeResult.targetScreen === 'setup') {
+              setShowOnboarding(false);
+              setShowAcademicSetup(true);
+            } else {
+              setShowOnboarding(false);
+              setShowAcademicSetup(false);
+              setShowWelcomeCelebration(false);
+            }
+
             const userDocSnap = await getDoc(doc(db, 'users', currentUser.uid));
             if (userDocSnap.exists()) {
               const userData = userDocSnap.data();
-              const hasCompletedSetup = 
-                userData?.isOnboardingComplete === true ||
-                userData?.isOnboardingCompleted === true ||
-                Boolean(userData?.grade || userData?.stream || userData?.country) ||
-                Boolean(userData?.academic_grade || userData?.academic_stream || userData?.academic_country) ||
-                safeGetItem(`academic_setup_completed_${currentUser.uid}`) === 'true' ||
-                safeGetItem(`isOnboardingComplete_${currentUser.uid}`) === 'true';
-
-              if (hasCompletedSetup) {
-                safeSetItem(`onboarding_completed_${currentUser.uid}`, 'true');
-                safeSetItem(`academic_setup_completed_${currentUser.uid}`, 'true');
-                safeSetItem(`isOnboardingComplete_${currentUser.uid}`, 'true');
-                setShowAcademicSetup(false);
-                setShowOnboarding(false); // Returning user — never show onboarding again
-              } else {
-                setShowOnboarding(true);  // New user — show onboarding once
-                setShowAcademicSetup(false);
-              }
 
               if (userData) {
                 if (typeof userData.isPro === 'boolean') {
@@ -571,10 +576,6 @@ export default function App() {
                 return;
               }
             } else {
-              // Completely new user! Show onboarding first.
-              setShowOnboarding(true);
-              setShowAcademicSetup(false);
-
               // User document does not exist yet! Check lifetime allocated_emails first
               const emailKey = (currentUser.email || '').toLowerCase();
               let initialCoins = 20;
@@ -608,14 +609,7 @@ export default function App() {
             }
           } catch (fsErr) {
             console.warn('[Auth Check] Firestore fetch failed, falling back to REST/Cache:', fsErr);
-            // Fallback onboarding checks
-            const userOnboardingCompleted = safeGetItem(`onboarding_completed_${currentUser.uid}`) === 'true';
-            const academicSetupCompleted = safeGetItem(`academic_setup_completed_${currentUser.uid}`) === 'true';
-            if (!userOnboardingCompleted) {
-              setShowOnboarding(true);
-            } else if (!academicSetupCompleted) {
-              setShowAcademicSetup(true);
-            }
+            // On network failure, maintain default safe states without popping up onboarding for returning users
           }
 
           // Fallback to REST API
@@ -1357,33 +1351,13 @@ export default function App() {
                     setIsDeveloperMode(true);
                     return;
                   }
-                  if (auth.currentUser) {
-                    const setupCompleted = safeGetItem(`academic_setup_completed_${auth.currentUser.uid}`) === 'true';
-                    if (!setupCompleted) {
-                      setShowAcademicSetup(true);
-                    }
+                  if (target === 'setup') {
+                    setShowAcademicSetup(true);
+                  } else if (target === 'onboarding') {
+                    setShowOnboarding(true);
                   }
                 }} 
               />
-            </Suspense>
-          </motion.div>
-        )}
-
-        {showAcademicSetup && user && (
-          <motion.div key="academic-setup" 
-            initial={{ opacity: 0, y: '100%' }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="absolute inset-0 z-[70] bg-white"
-          >
-            <Suspense fallback={<FullPageSkeleton />}>
-              <ErrorBoundary featureName="Academic Setup" onClose={() => setShowAcademicSetup(false)}>
-                <AcademicSetup 
-                  userId={user.uid}
-                  onComplete={() => setShowAcademicSetup(false)} 
-                />
-              </ErrorBoundary>
             </Suspense>
           </motion.div>
         )}
@@ -1431,12 +1405,6 @@ export default function App() {
       <WelcomeCelebrationModal 
         isOpen={showWelcomeCelebration} 
         onClose={() => {
-          if (user?.uid) {
-            safeSetItem(`welcome_penguin_seen_${user.uid}`, 'true');
-            safeSetItem(`pending_welcome_celebration_${user.uid}`, 'false');
-          }
-          safeSetItem('welcome_penguin_seen_global', 'true');
-          safeSetItem('pending_welcome_celebration', 'false');
           setShowWelcomeCelebration(false);
         }} 
         userId={user?.uid}

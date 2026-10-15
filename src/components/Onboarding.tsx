@@ -8,7 +8,8 @@ import {
 } from 'lucide-react';
 import { triggerVibration } from '../utils/vibrate';
 import { safeSetItem } from '../utils/storage';
-import { auth } from '../lib/firebase';
+import { auth, db } from '../lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import appLogo from '../assets/logo.png';
 
 interface OnboardingProps {
@@ -64,6 +65,15 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       safeSetItem(`academic_country_${uid}`, 'United States');
       safeSetItem(`academic_grade_${uid}`, '11th Grade (Junior)');
       safeSetItem(`academic_stream_${uid}`, 'STEM / Engineering');
+
+      if (auth.currentUser.email) {
+        safeSetItem(`onboarding_completed_email_${auth.currentUser.email.toLowerCase().trim()}`, 'true');
+      }
+
+      setDoc(doc(db, 'users', uid), {
+        onboarding_slides_completed: true,
+        updatedAt: new Date().toISOString()
+      }, { merge: true }).catch(console.warn);
     }
     onComplete();
   };

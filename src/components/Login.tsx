@@ -4,6 +4,7 @@ import { X, UserPlus, LogIn, Chrome, LogOut, Loader2, Eye, EyeOff, Check, Shield
 import { auth, googleProvider, db } from '../lib/firebase';
 import { safeClearAll, safeSetItem, safeGetItem, safeRemoveItem } from '../utils/storage';
 import { claimUserSession, releaseUserSession } from '../utils/sessionManager';
+import { determineUserOnboardingRoute } from '../utils/userOnboarding';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { 
   createUserWithEmailAndPassword, 
@@ -119,51 +120,17 @@ export default function Login({
       // Claim single active session for this device
       await claimUserSession(currentUser.uid);
 
-      const userDocRef = doc(db, 'users', currentUser.uid);
-      const userDocSnap = await getDoc(userDocRef);
-      if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
-        const isComplete = userData?.isOnboardingComplete === true || 
-                           userData?.isOnboardingCompleted === true ||
-                           Boolean(userData?.grade && userData?.stream && userData?.country) ||
-                           Boolean(userData?.academic_grade && userData?.academic_stream && userData?.academic_country) ||
-                           safeGetItem(`academic_setup_completed_${currentUser.uid}`) === 'true' ||
-                           safeGetItem(`isOnboardingComplete_${currentUser.uid}`) === 'true';
-
-        if (isComplete) {
-          // Returning user: Skip onboarding and route directly to MainApp / HomeTabs
-          safeSetItem(`onboarding_completed_${currentUser.uid}`, 'true');
-          safeSetItem(`academic_setup_completed_${currentUser.uid}`, 'true');
-          safeSetItem(`isOnboardingComplete_${currentUser.uid}`, 'true');
-          onLoginSuccess('main');
-          onClose();
-          return;
-        } else {
-          const userOnboardingCompleted = safeGetItem(`onboarding_completed_${currentUser.uid}`) === 'true';
-          if (userOnboardingCompleted) {
-            onLoginSuccess('setup');
-          } else {
-            onLoginSuccess('onboarding');
-          }
-          onClose();
-          return;
-        }
-      }
+      // Determine whether user is a brand new user with a new email, or existing user
+      const routeResult = await determineUserOnboardingRoute(currentUser);
+      console.log(`[Login] Routing result for ${currentUser.email}: ${routeResult.targetScreen} (${routeResult.reason})`);
+      onLoginSuccess(routeResult.targetScreen);
+      onClose();
+      return;
     } catch (err) {
-      console.warn('[Login Route Check] Error checking user onboarding doc:', err);
-    }
-
-    // Fallback: Check local storage
-    const userOnboardingCompleted = safeGetItem(`onboarding_completed_${currentUser.uid}`) === 'true';
-    const userSetupCompleted = safeGetItem(`academic_setup_completed_${currentUser.uid}`) === 'true';
-    if (userSetupCompleted) {
+      console.warn('[Login Route Check] Error determining user route:', err);
       onLoginSuccess('main');
-    } else if (userOnboardingCompleted) {
-      onLoginSuccess('setup');
-    } else {
-      onLoginSuccess('onboarding');
+      onClose();
     }
-    onClose();
   };
 
   const isPasswordValid = (pw: string) => {
@@ -320,10 +287,10 @@ export default function Login({
           safeSetItem('last_logged_in_user_email', loggedUser.email.toLowerCase().trim());
         }
       }
-      if (auth.currentUser) {
-        await routeUserAfterAuth(auth.currentUser);
+      if (auth.currentUser || loggedUser) {
+        await routeUserAfterAuth(auth.currentUser || loggedUser);
       } else {
-        onLoginSuccess('onboarding');
+        onLoginSuccess('main');
         onClose();
       }
     } catch (err: any) {
