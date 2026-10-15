@@ -25,30 +25,13 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     if (currentStep !== 1) return;
     setFrqStage(0);
 
-    const t1 = setTimeout(() => setFrqStage(1), 1600);
-    const t2 = setTimeout(() => setFrqStage(2), 3400);
-
-    const interval = setInterval(() => {
-      setFrqStage(0);
-      setTimeout(() => setFrqStage(1), 1600);
-      setTimeout(() => setFrqStage(2), 3400);
-    }, 7000);
+    const t1 = setTimeout(() => setFrqStage(1), 1400);
+    const t2 = setTimeout(() => setFrqStage(2), 3000);
 
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
-      clearInterval(interval);
     };
-  }, [currentStep]);
-
-  // Pulse animation state for Slide 2 (Learning Island active quest)
-  const [islandActiveGlow, setIslandActiveGlow] = useState(false);
-  useEffect(() => {
-    if (currentStep !== 2) return;
-    const interval = setInterval(() => {
-      setIslandActiveGlow(prev => !prev);
-    }, 1200);
-    return () => clearInterval(interval);
   }, [currentStep]);
 
   const handleNext = () => {
@@ -88,11 +71,11 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   return (
     <div className="absolute inset-0 z-[100] bg-[#FAF9F6] text-zinc-900 flex flex-col h-[100dvh] overflow-hidden select-none font-sans">
       
-      {/* Background Ambience Orbs */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute -top-16 -left-16 w-64 h-64 bg-amber-200/30 rounded-full blur-[90px]" />
-        <div className="absolute top-1/3 -right-20 w-72 h-72 bg-indigo-200/25 rounded-full blur-[100px]" />
-        <div className="absolute -bottom-16 left-10 w-60 h-60 bg-emerald-100/30 rounded-full blur-[80px]" />
+      {/* Background Ambience Orbs - GPU accelerated radial gradients without CPU Gaussian blur */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0" style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
+        <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(251, 191, 36, 0.22) 0%, transparent 70%)' }} />
+        <div className="absolute top-1/3 -right-20 w-72 h-72 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(129, 140, 248, 0.18) 0%, transparent 70%)' }} />
+        <div className="absolute -bottom-16 left-10 w-60 h-60 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(52, 211, 153, 0.20) 0%, transparent 70%)' }} />
       </div>
 
       {/* Main Container */}
@@ -154,10 +137,11 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             {currentStep === 0 && (
               <motion.div
                 key="step-score-5"
-                initial={{ opacity: 0, scale: 0.94, y: 15 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.94, y: -15 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
                 className="w-full flex flex-col items-center text-center gap-4"
               >
                 {/* Visual Animated Card */}
@@ -239,10 +223,11 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             {currentStep === 1 && (
               <motion.div
                 key="step-scanner"
-                initial={{ opacity: 0, scale: 0.94, y: 15 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.94, y: -15 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
                 className="w-full flex flex-col items-center text-center gap-4"
               >
                 {/* Visual Viewfinder Mockup with Laser & Reveals */}
@@ -392,10 +377,11 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             {currentStep === 2 && (
               <motion.div
                 key="step-learning-island"
-                initial={{ opacity: 0, scale: 0.94, y: 15 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.94, y: -15 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
                 className="w-full flex flex-col items-center text-center gap-3.5"
               >
                 {/* Visual Island Map Mockup with Interactive Quest Path */}
@@ -518,10 +504,11 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             {currentStep === 3 && (
               <motion.div
                 key="step-complete-units"
-                initial={{ opacity: 0, scale: 0.94, y: 15 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.94, y: -15 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
                 className="w-full flex flex-col items-center text-center gap-4"
               >
                 {/* Visual Cascading Subject Cards */}
