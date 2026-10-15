@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -55,12 +55,9 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
   const [copiedBody, setCopiedBody] = useState<boolean>(false);
   const [isOpeningEmail, setIsOpeningEmail] = useState<boolean>(false);
 
-  // Prevent background scrolling on body when modal is open and handle Android hardware back button
+  // Handle Android hardware back button
   useEffect(() => {
     if (!isOpen) return;
-
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
 
     const handleBackButton = (e: Event) => {
       e.preventDefault();
@@ -69,30 +66,26 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
     window.addEventListener('appBackButton', handleBackButton);
 
     return () => {
-      document.body.style.overflow = originalOverflow;
       window.removeEventListener('appBackButton', handleBackButton);
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   const reasonObj = REPORT_REASONS.find(r => r.id === selectedReason) || REPORT_REASONS[0];
   const reasonLabel = reasonObj.label;
 
-  // Build the rich pre-filled email subject and body
-  const getEmailData = (reasonId = selectedReason, userNotes = details) => {
-    const reason = REPORT_REASONS.find(r => r.id === reasonId) || REPORT_REASONS[0];
+  // Memoized pre-filled email subject and body to eliminate main-thread freeze
+  const { emailSubject, emailBody } = useMemo(() => {
+    const reason = REPORT_REASONS.find(r => r.id === selectedReason) || REPORT_REASONS[0];
     const userMail = studentEmail || currentUser?.email || 'student@ap-exam.app';
-    const emailSubject = `[AP Exam AI Report] ${reason.label} (${context})`;
+    const subject = `[AP Exam AI Report] ${reason.label} (${context})`;
 
-    // Prevent OS mailto length limitation overflows by capping snippet if extremely long,
-    // while full untruncated content is always sent to backend vault
+    // Prevent OS mailto length limitation overflows by capping snippet if extremely long
     const maxMailtoLen = 1400;
     const reportedSnippet = aiOutput.length > maxMailtoLen
       ? `${aiOutput.slice(0, maxMailtoLen)}\n\n... [Full response safely archived in developer database vault]`
       : aiOutput;
 
-    const emailBody = [
+    const body = [
       `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
       `🚨 AP EXAM APP - AI CONTENT REPORT`,
       `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
@@ -112,7 +105,7 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
       `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
       `💬 STUDENT NOTES / EXPLANATION:`,
       `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-      userNotes.trim() || 'Please review the reported AI output above for factual, abusive, or rubric inaccuracies.',
+      details.trim() || 'Please review the reported AI output above for factual, abusive, or rubric inaccuracies.',
       ``,
       `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
       `📱 SYSTEM DETAILS:`,
@@ -122,17 +115,21 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
       `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
     ].join('\n');
 
-    return {
-      reason,
-      userMail,
-      emailSubject,
-      emailBody,
-      mailtoUrl: `mailto:${DEVELOPER_EMAIL}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`,
-      gmailUrl: `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(DEVELOPER_EMAIL)}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`
-    };
+    return { emailSubject: subject, emailBody: body };
+  }, [selectedReason, studentEmail, currentUser, context, aiOutput, questionText, details]);
+
+  // Compute encoded mailto and gmail URLs strictly on-demand
+  const getMailtoUrl = (reasonId = selectedReason) => {
+    const reason = REPORT_REASONS.find(r => r.id === reasonId) || REPORT_REASONS[0];
+    const subject = `[AP Exam AI Report] ${reason.label} (${context})`;
+    return `mailto:${DEVELOPER_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
   };
 
-  const { emailSubject, emailBody } = getEmailData();
+  const getGmailUrl = (reasonId = selectedReason) => {
+    const reason = REPORT_REASONS.find(r => r.id === reasonId) || REPORT_REASONS[0];
+    const subject = `[AP Exam AI Report] ${reason.label} (${context})`;
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(DEVELOPER_EMAIL)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+  };
 
   // Background logging so developer never loses a report even if user closes email app
   const logReportSilently = async (reasonId = selectedReason) => {
@@ -172,7 +169,7 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
     setIsOpeningEmail(true);
     logReportSilently(reasonId);
 
-    const { mailtoUrl } = getEmailData(reasonId);
+    const mailtoUrl = getMailtoUrl(reasonId);
 
     // Bulletproof native/web mailto launcher
     try {
@@ -198,7 +195,7 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
   // Open Directly in Gmail Web (great for browser students who use Gmail)
   const handleOpenGmailWeb = (reasonId = selectedReason) => {
     logReportSilently(reasonId);
-    const { gmailUrl } = getEmailData(reasonId);
+    const gmailUrl = getGmailUrl(reasonId);
     window.open(gmailUrl, '_blank', 'noopener,noreferrer');
     showToast('🚀 Opening Gmail with pre-filled report. Tap Send!');
     setTimeout(() => {
@@ -217,21 +214,30 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
   };
 
   const modalContent = (
-    <div
-      className="fixed inset-0 z-[99999] flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm animate-fade-in pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]"
-      onClick={onClose}
-      style={{ zIndex: 99999 }}
-    >
-      <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 30, scale: 0.98 }}
-        transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-        onClick={(e) => e.stopPropagation()}
-        className="bg-white text-zinc-900 border border-zinc-200 rounded-t-3xl sm:rounded-3xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl overflow-hidden relative font-sans"
-      >
-        {/* Top Accent Gradient Bar */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-red-500 via-amber-500 to-rose-600 shrink-0" />
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          key="report-ai-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: 'easeOut' }}
+          className="fixed inset-0 z-[99999] flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 bg-black/60 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]"
+          onClick={onClose}
+          style={{ willChange: 'opacity', transform: 'translateZ(0)' }}
+        >
+          <motion.div
+            key="report-ai-sheet"
+            initial={{ opacity: 0, y: 36, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 28, scale: 0.98 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 350 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white text-zinc-900 border border-zinc-200 rounded-t-3xl sm:rounded-3xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl overflow-hidden relative font-sans"
+            style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
+          >
+            {/* Top Accent Gradient Bar */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-red-500 via-amber-500 to-rose-600 shrink-0" />
 
         {/* Modal Header */}
         <div className="p-4 sm:p-5 border-b border-zinc-200 flex items-center justify-between bg-white shrink-0">
@@ -426,7 +432,9 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
           </div>
         </div>
       </motion.div>
-    </div>
+    </motion.div>
+      )}
+    </AnimatePresence>
   );
 
   if (typeof document !== 'undefined') {
@@ -496,6 +504,7 @@ export const ReportAiButton: React.FC<{
       <button
         type="button"
         onClick={(e) => {
+          e.preventDefault();
           e.stopPropagation();
           setIsOpen(true);
         }}
