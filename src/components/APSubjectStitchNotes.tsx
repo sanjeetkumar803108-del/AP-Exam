@@ -57,6 +57,22 @@ const SUBJECT_UNIT_GRADIENTS: Record<string, string[]> = {
     'from-[#4338ca] via-[#7c3aed] to-[#3b0764]', // U10: Infinite Sequences & Series
   ],
 
+  // 2.5 AP Statistics: Cyber Deep Sky Blue & Ocean Cyan spectrum (5 Units - Fall 2026 Redesign)
+  'ap-statistics': [
+    'from-[#0369a1] via-[#0284c7] to-[#075985]', // U1: Exploring One-Variable Data and Collecting Data
+    'from-[#0284c7] via-[#0ea5e9] to-[#0369a1]', // U2: Probability, Random Variables & Distributions
+    'from-[#0e7490] via-[#06b6d4] to-[#083344]', // U3: Inference for Categorical Data: Proportions
+    'from-[#155e75] via-[#0284c7] to-[#0c4a6e]', // U4: Inference for Quantitative Data: Means
+    'from-[#0369a1] via-[#38bdf8] to-[#075985]', // U5: Regression Analysis
+  ],
+  'ap-stats': [
+    'from-[#0369a1] via-[#0284c7] to-[#075985]',
+    'from-[#0284c7] via-[#0ea5e9] to-[#0369a1]',
+    'from-[#0e7490] via-[#06b6d4] to-[#083344]',
+    'from-[#155e75] via-[#0284c7] to-[#0c4a6e]',
+    'from-[#0369a1] via-[#38bdf8] to-[#075985]',
+  ],
+
   // 3. AP Physics 1: Solar Fire Ember / Radiant Amber spectrum
   'ap-physics': [
     'from-[#9a3412] via-[#ea580c] to-[#7c2d12]', // U1: Kinematics
@@ -191,14 +207,22 @@ const SUBJECT_UNIT_GRADIENTS: Record<string, string[]> = {
     'from-[#312e81] via-[#3b82f6] to-[#0f172a]', // U10: Recursion
   ],
 
-  // 13. AP Micro & Macroeconomics: Atlantic Teal & High-Yield Mint spectrum
-  'ap-economics': [
-    'from-[#0f766e] via-[#0d9488] to-[#042f2e]', // U1: Supply & Demand
-    'from-[#115e59] via-[#14b8a6] to-[#042f2e]', // U2: Production Costs
-    'from-[#047857] via-[#0d9488] to-[#064e3b]', // U3: Imperfect Competition
-    'from-[#0f766e] via-[#10b981] to-[#042f2e]', // U4: GDP & Inflation
-    'from-[#115e59] via-[#0d9488] to-[#022c22]', // U5: AD-AS & Fiscal Policy
-    'from-[#047857] via-[#14b8a6] to-[#042f2e]', // U6: Financial Sector & Monetary Policy
+  // 13. AP Microeconomics & Macroeconomics
+  'ap-microeconomics': [
+    'from-[#0f766e] via-[#0d9488] to-[#042f2e]', // U1: Scarcity & Comparative Advantage
+    'from-[#115e59] via-[#14b8a6] to-[#042f2e]', // U2: Supply & Demand
+    'from-[#047857] via-[#0d9488] to-[#064e3b]', // U3: Production & Costs
+    'from-[#0f766e] via-[#10b981] to-[#042f2e]', // U4: Imperfect Competition
+    'from-[#115e59] via-[#0d9488] to-[#022c22]', // U5: Factor Markets
+    'from-[#047857] via-[#14b8a6] to-[#042f2e]', // U6: Market Failures
+  ],
+  'ap-macroeconomics': [
+    'from-[#0f766e] via-[#0284c7] to-[#082f49]', // U1: Basic Economic Concepts
+    'from-[#0369a1] via-[#0ea5e9] to-[#0c4a6e]', // U2: Economic Indicators
+    'from-[#0f766e] via-[#0ea5e9] to-[#082f49]', // U3: AD-AS & Fiscal Policy
+    'from-[#0284c7] via-[#38bdf8] to-[#075985]', // U4: Financial Sector & Monetary
+    'from-[#0369a1] via-[#0284c7] to-[#082f49]', // U5: Long-Run Consequences & Phillips Curve
+    'from-[#0e7490] via-[#0ea5e9] to-[#164e63]', // U6: Open Economy & FOREX
   ],
 
   // 14. AP World History: Modern: Ancient Bronze Terracotta & Sahara Amber spectrum
@@ -233,6 +257,24 @@ const BASE_THEMES: Record<string, SubjectTheme> = {
     accentAmberText: '#581c87',
     heroGradient: 'from-[#581c87] via-[#7c3aed] to-[#3b0764]',
     btnGradient: 'from-[#7c3aed] to-[#9333ea]',
+  },
+  'ap-statistics': {
+    primary: '#0284c7',
+    primaryBg: '#e0f2fe',
+    primaryText: '#075985',
+    accentAmber: '#fef08a',
+    accentAmberText: '#713f12',
+    heroGradient: 'from-[#0369a1] via-[#0284c7] to-[#075985]',
+    btnGradient: 'from-[#0284c7] to-[#0ea5e9]',
+  },
+  'ap-stats': {
+    primary: '#0284c7',
+    primaryBg: '#e0f2fe',
+    primaryText: '#075985',
+    accentAmber: '#fef08a',
+    accentAmberText: '#713f12',
+    heroGradient: 'from-[#0369a1] via-[#0284c7] to-[#075985]',
+    btnGradient: 'from-[#0284c7] to-[#0ea5e9]',
   },
   'ap-physics': {
     primary: '#ea580c',
@@ -342,7 +384,7 @@ const BASE_THEMES: Record<string, SubjectTheme> = {
     heroGradient: 'from-[#3730a3] via-[#4f46e5] to-[#1e1b4b]',
     btnGradient: 'from-[#4f46e5] to-[#6366f1]',
   },
-  'ap-economics': {
+  'ap-microeconomics': {
     primary: '#0d9488',
     primaryBg: '#ccfbf1',
     primaryText: '#115e59',
@@ -350,6 +392,15 @@ const BASE_THEMES: Record<string, SubjectTheme> = {
     accentAmberText: '#065f46',
     heroGradient: 'from-[#0f766e] via-[#0d9488] to-[#042f2e]',
     btnGradient: 'from-[#0d9488] to-[#14b8a6]',
+  },
+  'ap-macroeconomics': {
+    primary: '#0284c7',
+    primaryBg: '#e0f2fe',
+    primaryText: '#0369a1',
+    accentAmber: '#ccfbf1',
+    accentAmberText: '#0f766e',
+    heroGradient: 'from-[#0369a1] via-[#0284c7] to-[#082f49]',
+    btnGradient: 'from-[#0284c7] to-[#0ea5e9]',
   },
   'ap-world-history': {
     primary: '#d97706',
@@ -387,6 +438,7 @@ export default function APSubjectStitchNotes({
   const [speedDrillComplete, setSpeedDrillComplete] = useState<boolean>(false);
   const [theoremsDrillAnswer, setTheoremsDrillAnswer] = useState<boolean | null>(null);
   const [methodsQuizAnswer, setMethodsQuizAnswer] = useState<boolean | null>(null);
+  const [showTaskVerbs, setShowTaskVerbs] = useState<boolean>(false);
 
   const theme = getSubjectUnitTheme(subject.subjectId, unit.unitNumber);
 
@@ -476,6 +528,105 @@ export default function APSubjectStitchNotes({
 
       {/* Main Content Area */}
       <div className="max-w-4xl mx-auto w-full p-4 sm:p-6 space-y-6">
+        {/* AP Calculus BC Scope Callout Banner */}
+        {subject.subjectId === 'ap-calculus-bc' && (
+          <div className="rounded-2xl p-4 border shadow-2xs space-y-2 bg-gradient-to-r from-purple-50 via-indigo-50 to-violet-50 border-purple-200">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-purple-700 text-white font-mono shadow-xs">
+                {unit.unitNumber <= 8 ? 'AB Core + BC Advanced Methods' : 'BC-Exclusive Heavyweight (Units 9 & 10)'}
+              </span>
+              <span className="text-[11px] font-bold text-purple-900 font-mono">
+                {unit.unitNumber <= 8 ? 'Tested on BC with Advanced Ext.' : '28%–30% of Total BC Exam'}
+              </span>
+            </div>
+            <p className="text-xs text-purple-950 leading-relaxed font-sans">
+              {unit.unitNumber <= 8
+                ? 'Units 1–8 cover all Calculus AB foundational concepts plus BC-advanced integration (Integration by Parts, Improper Integrals, Euler\'s Method, Logistic Differential Equations & Arc Length).'
+                : 'Units 9 & 10 are exclusively tested on AP Calculus BC (Parametric Motion, Polar Coordinates & Area, Vector-Valued Derivatives/Integrals, and Taylor/Maclaurin Infinite Series).'}
+            </p>
+          </div>
+        )}
+
+        {/* Official College Board FRQ Task Verb Decrypter */}
+        <div className="rounded-2xl border border-zinc-200/90 bg-white shadow-xs overflow-hidden transition-all">
+          <button
+            onClick={() => {
+              triggerVibration(8);
+              setShowTaskVerbs(!showTaskVerbs);
+            }}
+            className="w-full p-3.5 sm:p-4 flex items-center justify-between gap-3 text-left hover:bg-zinc-50/80 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-xs sm:text-sm font-bold text-zinc-900 tracking-tight flex items-center gap-1.5">
+                  <span>Official AP® Exam Task Verb Decrypter</span>
+                  <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-amber-200/60 text-amber-900 font-mono">FRQ Point Saver</span>
+                </h4>
+                <p className="text-[11px] text-zinc-500 truncate">
+                  Master the 4 College Board FRQ action verbs: Identify • Calculate • Explain • Justify
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-100 text-zinc-700">
+                {showTaskVerbs ? 'Hide' : 'View Rubric'}
+              </span>
+              {showTaskVerbs ? <ChevronUp className="w-4 h-4 text-zinc-400" /> : <ChevronDown className="w-4 h-4 text-zinc-400" />}
+            </div>
+          </button>
+
+          {showTaskVerbs && (
+            <div className="p-4 pt-1 border-t border-zinc-100 grid grid-cols-1 sm:grid-cols-2 gap-3 bg-zinc-50/50">
+              {/* 1. Identify */}
+              <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-200/70 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase text-blue-800 tracking-wider">1. Identify</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-blue-200/60 text-blue-900 font-mono">1 Sentence Max</span>
+                </div>
+                <p className="text-xs text-blue-950 leading-relaxed font-sans">
+                  <strong>Rubric Rule:</strong> Indicate or name the specific term, value, or fact. <strong>Do NOT explain why!</strong> Stating the correct term captures the point; writing long paragraphs wastes exam time.
+                </p>
+              </div>
+
+              {/* 2. Calculate */}
+              <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200/70 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase text-emerald-800 tracking-wider">2. Calculate</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-200/60 text-emerald-900 font-mono">Show Work</span>
+                </div>
+                <p className="text-xs text-emerald-950 leading-relaxed font-sans">
+                  <strong>Rubric Rule:</strong> Always write: (1) <strong>Formula / Setup</strong>, (2) <strong>Substitution with numbers</strong>, and (3) <strong>Correct Units</strong>. Naked numbers without mathematical setup earn 0 points!
+                </p>
+              </div>
+
+              {/* 3. Explain */}
+              <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/70 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase text-amber-800 tracking-wider">3. Explain</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-200/60 text-amber-900 font-mono">Cause & Effect</span>
+                </div>
+                <p className="text-xs text-amber-950 leading-relaxed font-sans">
+                  <strong>Rubric Rule:</strong> Must bridge the causal mechanism using: <em>"Because [Event X occurs], [Mechanism Y changes], which leads to [Outcome Z]."</em> Assertions without reasons receive zero credit.
+                </p>
+              </div>
+
+              {/* 4. Justify */}
+              <div className="p-3 rounded-xl bg-purple-50/70 border border-purple-200/70 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase text-purple-800 tracking-wider">4. Justify</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-purple-200/60 text-purple-900 font-mono">Evidence Proof</span>
+                </div>
+                <p className="text-xs text-purple-950 leading-relaxed font-sans">
+                  <strong>Rubric Rule:</strong> Defend or substantiate your claim by directly citing quantitative data, mathematical conditions, formal theorem hypotheses (IVT, MVT), or graph curve intersections.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* ========================================================================= */}
         {/* TAB 1: THEOREMS & FORMAL CONDITIONS                                       */}
         {/* ========================================================================= */}
@@ -724,9 +875,15 @@ export default function APSubjectStitchNotes({
                       </div>
 
                       {/* Vector SVG Graphic — Full width, vertically stacked, completely visible */}
-                      <div className="w-full rounded-2xl bg-white border border-[#c3c6d5]/40 p-4 sm:p-6 flex items-center justify-center overflow-hidden shadow-xs [&>svg]:!w-full [&>svg]:!h-auto [&>svg]:!max-h-[380px] sm:[&>svg]:!max-h-[440px] [&>svg]:!border-none [&>svg]:!shadow-none [&>svg]:!rounded-none">
-                        {renderCalculusDiagramSvg(diag.type) || renderCalculusDiagramSvg(diag.id)}
-                      </div>
+                      {(() => {
+                        const svgNode = renderCalculusDiagramSvg(diag.type) || renderCalculusDiagramSvg(diag.id);
+                        if (!svgNode) return null;
+                        return (
+                          <div className="w-full rounded-2xl bg-white border border-[#c3c6d5]/40 p-4 sm:p-6 flex items-center justify-center overflow-hidden shadow-xs [&>svg]:!w-full [&>svg]:!h-auto [&>svg]:!max-h-[380px] sm:[&>svg]:!max-h-[440px] [&>svg]:!border-none [&>svg]:!shadow-none [&>svg]:!rounded-none">
+                            {svgNode}
+                          </div>
+                        );
+                      })()}
 
                       {/* Description */}
                       <div className="text-xs sm:text-sm text-[#434653] leading-relaxed font-normal bg-white/70 p-3.5 rounded-xl border border-[#c3c6d5]/30">

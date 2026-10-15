@@ -171,6 +171,30 @@ export function createMindMapFromUnitNote(unit: APUnitNote, subjectId: string, s
     });
   }
 
+  // -------------------------------------------------------------
+  // Branch 5: Visual Graphs & Pedagogical Models (Indigo Theme)
+  // -------------------------------------------------------------
+  if (unit.diagrams && unit.diagrams.length > 0) {
+    const diagChildren: MindMapLeafNode[] = unit.diagrams.map((d, idx) => ({
+      id: `${unit.unitId}-diag-${idx}`,
+      title: d.title,
+      detail: d.subtitle ? `${d.subtitle}: ${safeMarkdownExcerpt(d.description, 160)}` : safeMarkdownExcerpt(d.description, 160),
+      fullContent: `### 📊 ${d.title}\n*${d.subtitle}*\n\n${d.description}\n\n---\n\n💡 **AP Exam Key Takeaway:** ${d.takeaway}`,
+      badge: 'high-yield',
+      badgeLabel: 'Core Visual Model',
+      trapAlert: d.takeaway ? `Visual Model Rule: ${d.takeaway}` : undefined
+    }));
+
+    branches.push({
+      id: `${unit.unitId}-b5`,
+      title: 'Visual Graphs & Pedagogical Models',
+      subtitle: 'Official College Board curves, graphical geometry & diagrams',
+      cedTopicRef: 'Visual Model Mastery',
+      colorTheme: 'indigo',
+      children: diagChildren
+    });
+  }
+
   return {
     unitId: unit.unitId,
     unitNumber: unit.unitNumber,

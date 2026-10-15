@@ -12,7 +12,15 @@
       "destination": "/api"
     },
     {
-      "source": "/((?!assets/|favicon|logo|api).*)",
+      "source": "/privacy",
+      "destination": "/privacy.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/terms.html"
+    },
+    {
+      "source": "/((?!api/|privacy|terms|.*\\.[a-zA-Z0-9]+$).*)",
       "destination": "/index.html"
     }
   ]

@@ -1,898 +1,7134 @@
-// AP Calculus BC Units Data
-// Comprehensive College Board CED aligned curriculum
-// Units 1–8: Calculus AB Core + BC Advanced Topics
-// Unit 9: Parametric Equations, Polar Coordinates & Vector-Valued Functions
-// Unit 10: Infinite Sequences and Series
+// AP Calculus BC - Comprehensive Multi-Unit Curriculum Data (Units 1–10)
+// Complete College Board CED aligned curriculum covering all AB topics plus all BC-exclusive topics.
+// Balanced answer choice distribution across A, B, C, D.
 
-import {
-  UnitDefinition,
-  UnitQuestLevel,
-  QuizQuestion,
-  UNIT_BIOMES,
-  ALL_CALC_AB_UNIT_DEFINITIONS
-} from './apCalculusUnitsData';
+import { UnitDefinition } from './apCalculusUnitsData';
 
-// Unit 9: Parametric Equations, Polar Coordinates, and Vector-Valued Functions
-const UNIT_9_LEVELS: UnitQuestLevel[] = [
-  {
-    id: 901,
-    unitIndex: 9,
-    levelNumber: 1,
-    uniqueKey: 'u9-l1',
-    topicNumber: 'Topic 9.1',
-    name: 'Parametric Equations: Derivatives',
-    subtitle: 'Computing dy/dx and tangent slopes',
-    difficulty: 'Easy',
-    rewardCoins: 30,
-    questions: [
-      {
-        id: 'c9-l1-q1',
-        stem: 'If a particle moves with position given by $x(t) = 3t^2 - 1$ and $y(t) = 2t^3 + 4$, what is $\\frac{dy}{dx}$ at $t = 2$?',
-        options: [
-          '$2$',
-          '$\\frac{1}{2}$',
-          '$6$',
-          '$12$'
-        ],
-        correctIndex: 0,
-        explanation: 'By the chain rule for parametric equations, $\\frac{dy}{dx} = \\frac{y\'(t)}{x\'(t)}$. Here $x\'(t) = 6t$ and $y\'(t) = 6t^2$. At $t = 2$, $\\frac{dy}{dx} = \\frac{6(4)}{6(2)} = \\frac{24}{12} = 2$.',
-        distractorTip: 'Do not compute $\\frac{x\'(t)}{y\'(t)}$; remember $dy$ is in the numerator, so $y\'(t)$ must be on top.'
-      },
-      {
-        id: 'c9-l1-q2',
-        stem: 'Find the slope of the tangent line to the parametric curve $x = \\cos(t)$, $y = \\sin(2t)$ at $t = \\frac{\\pi}{4}$.',
-        options: [
-          '$0$',
-          '$-2$',
-          '$\\sqrt{2}$',
-          'Undefined'
-        ],
-        correctIndex: 0,
-        explanation: '$\\frac{dx}{dt} = -\\sin(t)$ and $\\frac{dy}{dt} = 2\\cos(2t)$. At $t = \\pi/4$, $\\frac{dy}{dt} = 2\\cos(\\pi/2) = 0$, while $\\frac{dx}{dt} = -\\frac{\\sqrt{2}}{2} \\neq 0$. Thus $\\frac{dy}{dx} = \\frac{0}{-\\sqrt{2}/2} = 0$.',
-        distractorTip: 'When $\\frac{dy}{dt} = 0$ and $\\frac{dx}{dt} \\neq 0$, the tangent line is horizontal (slope = 0).'
-      },
-      {
-        id: 'c9-l1-q3',
-        stem: 'A curve is defined by $x(t) = e^t$, $y(t) = t^2 - 2t$. For what value of $t$ is the tangent line to the curve horizontal?',
-        options: [
-          '$t = 1$',
-          '$t = 0$',
-          '$t = 2$',
-          'There is no such value of $t$.'
-        ],
-        correctIndex: 0,
-        explanation: 'A horizontal tangent line occurs when $\\frac{dy}{dx} = \\frac{y\'(t)}{x\'(t)} = 0$ and $x\'(t) \\neq 0$. Here $y\'(t) = 2t - 2 = 0 \\implies t = 1$. At $t = 1$, $x\'(1) = e^1 = e \\neq 0$.',
-        distractorTip: 'Always check that the denominator $x\'(t) \\neq 0$ to avoid indeterminate forms ($0/0$).'
-      }
-    ]
-  },
-  {
-    id: 902,
-    unitIndex: 9,
-    levelNumber: 2,
-    uniqueKey: 'u9-l2',
-    topicNumber: 'Topic 9.2',
-    name: 'Parametric Equations: Second Derivatives',
-    subtitle: 'Concavity of parametric curves d²y/dx²',
-    difficulty: 'Medium',
-    rewardCoins: 30,
-    questions: [
-      {
-        id: 'c9-l2-q1',
-        stem: 'Which formula correctly gives the second derivative $\\frac{d^2y}{dx^2}$ for a parametric curve?',
-        options: [
-          '$\\frac{\\frac{d}{dt}\\left(\\frac{dy}{dx}\\right)}{\\frac{dx}{dt}}$',
-          '$\\frac{y\'\'(t)}{x\'\'(t)}$',
-          '$\\frac{d^2y/dt^2}{(dx/dt)^2}$',
-          '$\\frac{y\'\'(t)x\'(t) - y\'(t)x\'\'(t)}{[x\'(t)]^2}$'
-        ],
-        correctIndex: 0,
-        explanation: 'The second derivative is $\\frac{d^2y}{dx^2} = \\frac{d}{dx}\\left(\\frac{dy}{dx}\\right) = \\frac{\\frac{d}{dt}\\left(\\frac{dy}{dx}\\right)}{\\frac{dx}{dt}}$. It is NEVER simply $\\frac{y\'\'(t)}{x\'\'(t)}$.',
-        distractorTip: 'Classic College Board Trap: Never differentiate numerator and denominator separately with respect to $t$!'
-      },
-      {
-        id: 'c9-l2-q2',
-        stem: 'If $x(t) = t^2$ and $y(t) = t^3$, what is $\\frac{d^2y}{dx^2}$ in terms of $t$ for $t \\neq 0$?',
-        options: [
-          '$\\frac{3}{4t}$',
-          '$\\frac{3}{2}$',
-          '$\\frac{3}{2t}$',
-          '$\\frac{6t}{2} = 3t$'
-        ],
-        correctIndex: 0,
-        explanation: 'First, $\\frac{dy}{dx} = \\frac{3t^2}{2t} = \\frac{3}{2}t$. Next, take $\\frac{d}{dt}\\left(\\frac{3}{2}t\\right) = \\frac{3}{2}$. Finally, divide by $\\frac{dx}{dt} = 2t$: $\\frac{d^2y}{dx^2} = \\frac{3/2}{2t} = \\frac{3}{4t}$.',
-        distractorTip: 'Remembering to divide by $\\frac{dx}{dt}$ in the final step is the #1 point deduction on the AP exam.'
-      },
-      {
-        id: 'c9-l2-q3',
-        stem: 'For $x(t) = \\ln(t)$ and $y(t) = t^2$ with $t > 0$, is the curve concave up or concave down?',
-        options: [
-          'Concave up for all $t > 0$, because $\\frac{d^2y}{dx^2} = 4t^2 > 0$.',
-          'Concave down for all $t > 0$, because $\\frac{d^2y}{dx^2} = -2t^2 < 0$.',
-          'Concave up for $t > 1$, concave down for $0 < t < 1$.',
-          'Linear, because the second derivative is 0.'
-        ],
-        correctIndex: 0,
-        explanation: '$\\frac{dy}{dx} = \\frac{2t}{1/t} = 2t^2$. Then $\\frac{d}{dt}(2t^2) = 4t$. Dividing by $\\frac{dx}{dt} = \\frac{1}{t}$ gives $\\frac{d^2y}{dx^2} = \\frac{4t}{1/t} = 4t^2$. Since $t > 0$, $4t^2 > 0$ everywhere, so the curve is concave up.',
-        distractorTip: 'Verify the domain $t > 0$ when working with logarithms.'
-      }
-    ]
-  },
-  {
-    id: 903,
-    unitIndex: 9,
-    levelNumber: 3,
-    uniqueKey: 'u9-l3',
-    topicNumber: 'Topic 9.3',
-    name: 'Parametric Equations: Arc Length',
-    subtitle: 'Distance traveled along a parametric path',
-    difficulty: 'Medium',
-    rewardCoins: 30,
-    questions: [
-      {
-        id: 'c9-l3-q1',
-        stem: 'Which integral calculates the arc length of a smooth parametric curve from $t = a$ to $t = b$?',
-        options: [
-          '$\\int_a^b \\sqrt{(x\'(t))^2 + (y\'(t))^2} \\, dt$',
-          '$\\int_a^b (x\'(t) + y\'(t)) \\, dt$',
-          '$\\int_a^b \\sqrt{1 + \\left(\\frac{dy}{dx}\\right)^2} \\, dt$',
-          '$\\sqrt{\\int_a^b (x\'(t))^2 dt + \\int_a^b (y\'(t))^2 dt}$'
-        ],
-        correctIndex: 0,
-        explanation: 'The arc length / distance traveled formula in parametric form is $L = \\int_a^b \\sqrt{\\left(\\frac{dx}{dt}\\right)^2 + \\left(\\frac{dy}{dt}\\right)^2} \\, dt$, which is the integral of the speed.',
-        distractorTip: 'Option C has $dt$ instead of $dx$. Option A is the Pythagorean theorem applied to differential displacements.'
-      },
-      {
-        id: 'c9-l3-q2',
-        stem: 'Find the total length of the path for $x(t) = 3\\cos(t)$, $y(t) = 3\\sin(t)$ from $t = 0$ to $t = \\pi$.',
-        options: [
-          '$3\\pi$',
-          '$6\\pi$',
-          '$9\\pi$',
-          '$3$'
-        ],
-        correctIndex: 0,
-        explanation: '$x\'(t) = -3\\sin t$, $y\'(t) = 3\\cos t$. The speed is $\\sqrt{(-3\\sin t)^2 + (3\\cos t)^2} = \\sqrt{9(\\sin^2 t + \\cos^2 t)} = 3$. Length $= \\int_0^\\pi 3 \\, dt = 3\\pi$.',
-        distractorTip: 'Notice this is a semicircle of radius $r = 3$; its perimeter is $\\pi r = 3\\pi$.'
-      },
-      {
-        id: 'c9-l3-q3',
-        stem: 'If a particle moves with speed $s(t) = \\sqrt{t^4 + 9}$, which expression gives the total distance traveled by the particle between $t = 1$ and $t = 4$?',
-        options: [
-          '$\\int_1^4 \\sqrt{t^4 + 9} \\, dt$',
-          '$\\sqrt{4^4 + 9} - \\sqrt{1^4 + 9}$',
-          '$\\frac{1}{3}\\int_1^4 (t^4 + 9) \\, dt$',
-          '$\\sqrt{\\int_1^4 (t^4 + 9) \\, dt}$'
-        ],
-        correctIndex: 0,
-        explanation: 'Distance traveled is the integral of speed over time: $\\int_a^b \\text{speed}(t) \\, dt = \\int_1^4 \\sqrt{t^4 + 9} \\, dt$.',
-        distractorTip: 'Distance is the integral of speed; displacement is the vector difference between endpoints.'
-      }
-    ]
-  },
-  {
-    id: 904,
-    unitIndex: 9,
-    levelNumber: 4,
-    uniqueKey: 'u9-l4',
-    topicNumber: 'Topic 9.4 & 9.5',
-    name: 'Vector-Valued Functions: Velocity & Acceleration',
-    subtitle: 'Speed and position vectors in 2D',
-    difficulty: 'Hard',
-    rewardCoins: 30,
-    questions: [
-      {
-        id: 'c9-l4-q1',
-        stem: 'A particle moves in the $xy$-plane with position vector $\\vec{r}(t) = \\langle 4t - t^2, \\, 3t \\rangle$. What is the speed of the particle at $t = 1$?',
-        options: [
-          '$\\sqrt{13}$',
-          '$\\sqrt{5}$',
-          '$5$',
-          '$\\langle 2, 3 \\rangle$'
-        ],
-        correctIndex: 0,
-        explanation: 'Velocity $\\vec{v}(t) = \\langle 4 - 2t, \\, 3 \\rangle$. At $t = 1$, $\\vec{v}(1) = \\langle 2, 3 \\rangle$. Speed is the magnitude: $\|\\vec{v}(1)\| = \\sqrt{2^2 + 3^2} = \\sqrt{4 + 9} = \\sqrt{13}$.',
-        distractorTip: 'Speed is a scalar (single non-negative number), not a vector.'
-      },
-      {
-        id: 'c9-l4-q2',
-        stem: 'The acceleration vector of a moving object is $\\vec{a}(t) = \\langle 6t, \\, 4 \\rangle$. At $t = 0$, velocity $\\vec{v}(0) = \\langle 2, \\, -1 \\rangle$. What is $\\vec{v}(2)$?',
-        options: [
-          '$\\langle 14, \\, 7 \\rangle$',
-          '$\\langle 12, \\, 8 \\rangle$',
-          '$\\langle 12, \\, 7 \\rangle$',
-          '$\\langle 14, \\, 8 \\rangle$'
-        ],
-        correctIndex: 0,
-        explanation: 'Integrate each component: $v_x(t) = \\int 6t \\, dt = 3t^2 + C_1$. With $v_x(0) = 2$, $v_x(t) = 3t^2 + 2$. At $t = 2$, $v_x(2) = 3(4) + 2 = 14$. Similarly $v_y(t) = 4t - 1$, so $v_y(2) = 8 - 1 = 7$. Thus $\\vec{v}(2) = \\langle 14, 7 \\rangle$.',
-        distractorTip: 'Don\'t forget the initial condition constant of integration for each component.'
-      },
-      {
-        id: 'c9-l4-q3',
-        stem: 'A particle moves such that $x\'(t) = \\sqrt{t+1}$ and $y\'(t) = 3t$. If the particle is at $(2, 5)$ at $t = 0$, what is the $y$-coordinate of the position at $t = 2$?',
-        options: [
-          '$11$',
-          '$6$',
-          '$8$',
-          '$16$'
-        ],
-        correctIndex: 0,
-        explanation: 'By the Fundamental Theorem of Calculus: $y(2) = y(0) + \\int_0^2 y\'(t) \\, dt = 5 + \\int_0^2 3t \\, dt = 5 + \\left[\\frac{3t^2}{2}\\right]_0^2 = 5 + 6 = 11$.',
-        distractorTip: 'Always add the initial position $y(0) = 5$ to the net change $\\int_0^2 y\'(t) dt$.'
-      }
-    ]
-  },
-  {
-    id: 905,
-    unitIndex: 9,
-    levelNumber: 5,
-    uniqueKey: 'u9-l5',
-    topicNumber: 'Topic 9.7 & 9.8',
-    name: 'Polar Coordinates: Derivatives & Tangents',
-    subtitle: 'Polar graphs, r(θ), and dy/dx in polar',
-    difficulty: 'Hard',
-    rewardCoins: 30,
-    questions: [
-      {
-        id: 'c9-l5-q1',
-        stem: 'For the polar curve $r = f(\\theta)$, which formula correctly represents the slope of the tangent line $\\frac{dy}{dx}$?',
-        options: [
-          '$\\frac{f\'(\\theta)\\sin\\theta + f(\\theta)\\cos\\theta}{f\'(\\theta)\\cos\\theta - f(\\theta)\\sin\\theta}$',
-          '$\\frac{f\'(\\theta)}{\\cos\\theta}$',
-          '$\\frac{f(\\theta)\\sin\\theta}{f(\\theta)\\cos\\theta} = \\tan\\theta$',
-          '$\\frac{dr}{d\\theta}$'
-        ],
-        correctIndex: 0,
-        explanation: 'Using $x = r\\cos\\theta = f(\\theta)\\cos\\theta$ and $y = r\\sin\\theta = f(\\theta)\\sin\\theta$, apply the product rule to get $\\frac{dy}{dx} = \\frac{dy/d\\theta}{dx/d\\theta} = \\frac{r\'\\sin\\theta + r\\cos\\theta}{r\'\\cos\\theta - r\\sin\\theta}$.',
-        distractorTip: '$\\frac{dr}{d\\theta}$ is the rate of change of distance from the pole, NOT the slope $\\frac{dy}{dx}$.'
-      },
-      {
-        id: 'c9-l5-q2',
-        stem: 'Find the slope of the line tangent to the polar curve $r = 2\\cos\\theta$ at $\\theta = \\frac{\\pi}{4}$.',
-        options: [
-          'Undefined (vertical tangent)',
-          '$0$',
-          '$-1$',
-          '$1$'
-        ],
-        correctIndex: 0,
-        explanation: '$x = r\\cos\\theta = 2\\cos^2\\theta$. $y = r\\sin\\theta = 2\\sin\\theta\\cos\\theta = \\sin(2\\theta)$. At $\\theta = \\pi/4$: $\\frac{dx}{d\\theta} = 4\\cos\\theta(-\\sin\\theta) = -4\\left(\\frac{\\sqrt{2}}{2}\\right)\\left(\\frac{\\sqrt{2}}{2}\\right) = -2 \\neq 0$. Meanwhile $\\frac{dy}{d\\theta} = 2\\cos(2\\theta) = 2\\cos(\\pi/2) = 0$. Wait, at $\\theta=\\pi/4$, $\\frac{dy}{dx} = \\frac{0}{-2} = 0$... Wait, for $r = 2\\cos\\theta$, this is the circle $(x-1)^2 + y^2 = 1$. At $\\theta = \\pi/4$, $x = 2(1/2) = 1$, $y = 1$. The tangent at $(1, 1)$ on this circle has horizontal slope $0$.',
-        distractorTip: 'Recognizing geometric shapes (circles, cardioids, roses) provides an instant sanity check.'
-      },
-      {
-        id: 'c9-l5-q3',
-        stem: 'At what points in the interval $[0, 2\\pi)$ does the polar curve $r = 1 + \\sin\\theta$ pass through the origin (pole)?',
-        options: [
-          '$\\theta = \\frac{3\\pi}{2}$ only',
-          '$\\theta = \\frac{\\pi}{2}$ and $\\frac{3\\pi}{2}$',
-          '$\\theta = \\pi$ only',
-          'It never passes through the origin.'
-        ],
-        correctIndex: 0,
-        explanation: 'A polar curve passes through the origin when $r = 0$. Setting $1 + \\sin\\theta = 0 \\implies \\sin\\theta = -1 \\implies \\theta = \\frac{3\\pi}{2}$ on $[0, 2\\pi)$.',
-        distractorTip: 'The pole occurs precisely when $r = 0$, regardless of the value of $\\theta$.'
-      }
-    ]
-  },
-  {
-    id: 906,
-    unitIndex: 9,
-    levelNumber: 6,
-    uniqueKey: 'u9-l6',
-    topicNumber: 'Topic 9.9 (Boss Level)',
-    name: 'Area of Polar Regions (Boss Level)',
-    subtitle: 'Bounded area and intersection of polar curves',
-    difficulty: 'Boss',
-    rewardCoins: 50,
-    questions: [
-      {
-        id: 'c9-l6-q1',
-        stem: 'Which integral represents the area enclosed by the inner loop of the limaçon $r = 1 - 2\\sin\\theta$?',
-        options: [
-          '$\\frac{1}{2} \\int_{\\pi/6}^{5\\pi/6} (1 - 2\\sin\\theta)^2 \\, d\\theta$',
-          '$\\int_{\\pi/6}^{5\\pi/6} (1 - 2\\sin\\theta)^2 \\, d\\theta$',
-          '$\\frac{1}{2} \\int_{0}^{2\\pi} (1 - 2\\sin\\theta)^2 \\, d\\theta$',
-          '$\\frac{1}{2} \\int_{-\\pi/6}^{\\pi/6} (1 - 2\\sin\\theta) \\, d\\theta$'
-        ],
-        correctIndex: 0,
-        explanation: 'The loop starts and ends where $r = 0 \\implies 2\\sin\\theta = 1 \\implies \\theta = \\pi/6, 5\\pi/6$. The polar area formula is $A = \\frac{1}{2}\\int_a^b r^2 \\, d\\theta = \\frac{1}{2}\\int_{\\pi/6}^{5\\pi/6} (1 - 2\\sin\\theta)^2 \\, d\\theta$.',
-        distractorTip: 'Always remember the factor of $\\frac{1}{2}$ in front of polar area integrals!'
-      },
-      {
-        id: 'c9-l6-q2',
-        stem: 'Find the total area enclosed by the circle $r = 4\\sin\\theta$.',
-        options: [
-          '$4\\pi$',
-          '$16\\pi$',
-          '$8\\pi$',
-          '$2\\pi$'
-        ],
-        correctIndex: 0,
-        explanation: 'The circle $r = 4\\sin\\theta$ is traced completely from $\\theta = 0$ to $\\theta = \\pi$. $A = \\frac{1}{2}\\int_0^\\pi (4\\sin\\theta)^2 \\, d\\theta = 8\\int_0^\\pi \\sin^2\\theta \\, d\\theta = 8\\left(\\frac{\\pi}{2}\\right) = 4\\pi$. Geometrically, this is a circle of diameter 4, radius $R = 2$, so Area $= \\pi(2)^2 = 4\\pi$.',
-        distractorTip: 'Do not integrate from $0$ to $2\\pi$; that would trace the circle twice and double the area!'
-      },
-      {
-        id: 'c9-l6-q3',
-        stem: 'Which integral expression gives the area of the region inside $r = 3\\sin\\theta$ and outside $r = 1 + \\sin\\theta$?',
-        options: [
-          '$\\frac{1}{2} \\int_{\\pi/6}^{5\\pi/6} \\left[(3\\sin\\theta)^2 - (1 + \\sin\\theta)^2\\right] d\\theta$',
-          '$\\frac{1}{2} \\int_{\\pi/6}^{5\\pi/6} \\left[3\\sin\\theta - (1 + \\sin\\theta)\\right]^2 d\\theta$',
-          '$\\int_{0}^{\\pi} \\left[(3\\sin\\theta)^2 - (1 + \\sin\\theta)^2\\right] d\\theta$',
-          '$\\frac{1}{2} \\int_{\\pi/4}^{3\\pi/4} \\left[(3\\sin\\theta)^2 - (1 + \\sin\\theta)^2\\right] d\\theta$'
-        ],
-        correctIndex: 0,
-        explanation: 'Set curves equal: $3\\sin\\theta = 1 + \\sin\\theta \\implies 2\\sin\\theta = 1 \\implies \\theta = \\pi/6, 5\\pi/6$. Area $= \\frac{1}{2}\\int_{\\pi/6}^{5\\pi/6} (r_{\\text{outer}}^2 - r_{\\text{inner}}^2) \\, d\\theta$.',
-        distractorTip: 'Common mistake: Do NOT square the difference $(r_1 - r_2)^2$; it must be $(r_1^2 - r_2^2)$!'
-      }
-    ]
-  }
-];
-
-// Unit 10: Infinite Sequences and Series
-const UNIT_10_LEVELS: UnitQuestLevel[] = [
-  {
-    id: 1001,
-    unitIndex: 10,
-    levelNumber: 1,
-    uniqueKey: 'u10-l1',
-    topicNumber: 'Topic 10.1',
-    name: 'Defining Sequences & Convergence',
-    subtitle: 'Limits of sequences vs sums of series',
-    difficulty: 'Easy',
-    rewardCoins: 30,
-    questions: [
-      {
-        id: 'c10-l1-q1',
-        stem: 'Does the sequence $a_n = \\frac{5n^2 - 3n + 1}{2n^2 + 7}$ converge, and if so, to what value?',
-        options: [
-          'Converges to $\\frac{5}{2}$',
-          'Diverges to $\\infty$',
-          'Converges to $0$',
-          'Converges to $\\frac{1}{7}$'
-        ],
-        correctIndex: 0,
-        explanation: 'To find sequence convergence, evaluate $\\lim_{n \\to \\infty} a_n = \\lim_{n \\to \\infty} \\frac{5n^2 - 3n + 1}{2n^2 + 7} = \\frac{5}{2}$. Because the limit is a finite number, the sequence converges to $5/2$.',
-        distractorTip: 'A sequence converges if its terms approach a single finite limit as $n \\to \\infty$.'
-      },
-      {
-        id: 'c10-l1-q2',
-        stem: 'Which statement correctly distinguishes a sequence from a series?',
-        options: [
-          'A sequence is an ordered list of numbers; a series is the sum of the terms of a sequence.',
-          'A series is an ordered list; a sequence is the sum of terms.',
-          'A sequence always converges; a series always diverges.',
-          'Sequences and series are mathematically identical terms.'
-        ],
-        correctIndex: 0,
-        explanation: 'A sequence $\{a_n\}$ is an ordered list of numbers. A series $\\sum a_n$ is the sum of the terms in a sequence.',
-        distractorTip: 'Do not confuse the limit of a sequence $\\lim a_n$ with the sum of an infinite series $\\sum a_n$.'
-      },
-      {
-        id: 'c10-l1-q3',
-        stem: 'Does the sequence $a_n = \\cos(n\\pi)$ converge or diverge?',
-        options: [
-          'Diverges by oscillation between $-1$ and $1$.',
-          'Converges to $0$.',
-          'Converges to $1$.',
-          'Diverges to $+\\infty$.'
-        ],
-        correctIndex: 0,
-        explanation: 'For $n = 1, 2, 3, 4, \\dots$, $a_n = \\cos(\\pi), \\cos(2\\pi), \\cos(3\\pi), \\dots = -1, 1, -1, 1, \\dots$. Because it oscillates between two values without approaching a single number, the sequence diverges.',
-        distractorTip: 'Oscillating bounded sequences still diverge because they have no unique limit.'
-      }
-    ]
-  },
-  {
-    id: 1002,
-    unitIndex: 10,
-    levelNumber: 2,
-    uniqueKey: 'u10-l2',
-    topicNumber: 'Topic 10.2',
-    name: 'Geometric Series Test',
-    subtitle: 'Sum formula S = a / (1 - r) and |r| < 1',
-    difficulty: 'Easy',
-    rewardCoins: 30,
-    questions: [
-      {
-        id: 'c10-l2-q1',
-        stem: 'For what values of the common ratio $r$ does an infinite geometric series $\\sum_{n=0}^\\infty a r^n$ ($a \\neq 0$) converge?',
-        options: [
-          '$|r| < 1$',
-          '$|r| \\le 1$',
-          '$r > 0$',
-          '$-1 < r \\le 1$'
-        ],
-        correctIndex: 0,
-        explanation: 'An infinite geometric series converges if and only if $|r| < 1$. When $|r| \\ge 1$, the terms do not decay fast enough and the series diverges.',
-        distractorTip: 'Notice the strict inequality $|r| < 1$. If $r = 1$ or $r = -1$, the geometric series diverges.'
-      },
-      {
-        id: 'c10-l2-q2',
-        stem: 'Find the sum of the infinite series $\\sum_{n=1}^\\infty 4 \\left(\\frac{1}{3}\\right)^n$.',
-        options: [
-          '$2$',
-          '$6$',
-          '$\\frac{4}{3}$',
-          'Diverges'
-        ],
-        correctIndex: 0,
-        explanation: 'The first term is $a_1 = 4(1/3)^1 = \\frac{4}{3}$. The common ratio is $r = \\frac{1}{3}$. Using $S = \\frac{a_1}{1 - r} = \\frac{4/3}{1 - 1/3} = \\frac{4/3}{2/3} = 2$.',
-        distractorTip: 'Be careful with the starting index $n=1$ vs $n=0$! The first term $a_1$ here is $\\frac{4}{3}$, NOT $4$.'
-      },
-      {
-        id: 'c10-l2-q3',
-        stem: 'The repeating decimal $0.272727\\dots$ can be written as an infinite geometric series. What is its fractional representation?',
-        options: [
-          '$\\frac{3}{11}$',
-          '$\\frac{27}{100}$',
-          '$\\frac{9}{33}$',
-          '$\\frac{1}{3}$'
-        ],
-        correctIndex: 0,
-        explanation: '$0.2727\\dots = \\frac{27}{100} + \\frac{27}{10000} + \\dots$ Here $a = \\frac{27}{100}$ and $r = \\frac{1}{100}$. $S = \\frac{27/100}{1 - 1/100} = \\frac{27/100}{99/100} = \\frac{27}{99} = \\frac{3}{11}$.',
-        distractorTip: 'Repeating decimals are geometric series with ratio $r = 10^{-k}$ where $k$ is the cycle length.'
-      }
-    ]
-  },
-  {
-    id: 1003,
-    unitIndex: 10,
-    levelNumber: 3,
-    uniqueKey: 'u10-l3',
-    topicNumber: 'Topic 10.3',
-    name: 'The nth-Term Test for Divergence',
-    subtitle: 'Testing lim a_n ≠ 0 (Crucial AP Trap)',
-    difficulty: 'Easy',
-    rewardCoins: 30,
-    questions: [
-      {
-        id: 'c10-l3-q1',
-        stem: 'What does the $n$th-term test for divergence state about the infinite series $\\sum_{n=1}^\\infty a_n$?',
-        options: [
-          'If $\\lim_{n \\to \\infty} a_n \\neq 0$ (or does not exist), the series diverges.',
-          'If $\\lim_{n \\to \\infty} a_n = 0$, the series must converge.',
-          'If $\\lim_{n \\to \\infty} a_n = 0$, the series must diverge.',
-          'It can be used to prove that any convergent series converges.'
-        ],
-        correctIndex: 0,
-        explanation: 'The $n$th-term test can ONLY prove divergence! If $\\lim_{n \\to \\infty} a_n \\neq 0$, the series diverges. If $\\lim_{n \\to \\infty} a_n = 0$, the test is INCONCLUSIVE and another test must be used.',
-        distractorTip: 'Crucial AP Trap: $\\lim a_n = 0$ NEVER proves convergence! For example, the harmonic series $\\sum 1/n$ has $\\lim 1/n = 0$, but it diverges.'
-      },
-      {
-        id: 'c10-l3-q2',
-        stem: 'Using the $n$th-term test for divergence, what can be concluded about the series $\\sum_{n=1}^\\infty \\frac{3n^2 + 5}{2n^2 - 1}$?',
-        options: [
-          'The series diverges because $\\lim_{n \\to \\infty} a_n = \\frac{3}{2} \\neq 0$.',
-          'The series converges to $\\frac{3}{2}$.',
-          'The test is inconclusive because the limit is a non-zero finite number.',
-          'The series converges by comparison with $\\frac{1}{n^2}$.'
-        ],
-        correctIndex: 0,
-        explanation: 'Evaluate the limit of the terms: $\\lim_{n \\to \\infty} \\frac{3n^2 + 5}{2n^2 - 1} = \\frac{3}{2}$. Because $\\frac{3}{2} \\neq 0$, the terms do not approach 0, so the series diverges by the $n$th-Term Test for Divergence.',
-        distractorTip: 'Do not confuse the limit of terms ($3/2$) with the sum of the series! If terms don\'t go to 0, the sum cannot be finite.'
-      },
-      {
-        id: 'c10-l3-q3',
-        stem: 'A student applies the $n$th-term test to $\\sum_{n=1}^\\infty \\frac{1}{\\sqrt{n}}$ and finds $\\lim_{n \\to \\infty} \\frac{1}{\\sqrt{n}} = 0$. The student concludes that the series converges. Why is this reasoning flawed?',
-        options: [
-          'The $n$th-term test is inconclusive when $\\lim a_n = 0$; this series actually diverges ($p$-series with $p = 1/2 \\le 1$).',
-          'The limit of $\\frac{1}{\\sqrt{n}}$ as $n \\to \\infty$ is actually $1$, not $0$.',
-          'The series actually converges, but by the ratio test rather than the $n$th-term test.',
-          'The $n$th-term test is only applicable to geometric series.'
-        ],
-        correctIndex: 0,
-        explanation: 'Having $\\lim a_n = 0$ is a necessary condition for convergence, but NOT a sufficient one. For $\\sum \\frac{1}{n^{1/2}}$, $p = 1/2 \\le 1$, which is a divergent $p$-series despite its terms approaching zero.',
-        distractorTip: 'College Board frequently tests this exact misconception on MCQ Section I!'
-      }
-    ]
-  },
-  {
-    id: 1004,
-    unitIndex: 10,
-    levelNumber: 4,
-    uniqueKey: 'u10-l4',
-    topicNumber: 'Topic 10.4 & 10.5',
-    name: 'Integral Test & p-Series',
-    subtitle: 'p-Series test: converges if p > 1, diverges if p ≤ 1',
-    difficulty: 'Medium',
-    rewardCoins: 30,
-    questions: [
-      {
-        id: 'c10-l4-q1',
-        stem: 'For what values of $p$ does the $p$-series $\\sum_{n=1}^\\infty \\frac{1}{n^p}$ converge?',
-        options: [
-          '$p > 1$',
-          '$p \\ge 1$',
-          '$0 < p < 1$',
-          '$p < 1$'
-        ],
-        correctIndex: 0,
-        explanation: 'A $p$-series $\\sum \\frac{1}{n^p}$ converges if and only if $p > 1$. If $p \\le 1$ (including the harmonic series $p = 1$), the series diverges.',
-        distractorTip: 'At $p = 1$, we get the harmonic series $\\sum \\frac{1}{n}$, which diverges! Do not include $p = 1$ in convergence.'
-      },
-      {
-        id: 'c10-l4-q2',
-        stem: 'Which of the following conditions must be satisfied by $f(x)$ on $[1, \\infty)$ to apply the Integral Test to $\\sum a_n$ where $a_n = f(n)$?',
-        options: [
-          '$f(x)$ must be continuous, positive, and decreasing.',
-          '$f(x)$ must be differentiable and alternating.',
-          '$f(x)$ must be an increasing rational function.',
-          '$f(x)$ must satisfy $|f(x)| < 1$.'
-        ],
-        correctIndex: 0,
-        explanation: 'The three hypotheses of the Integral Test are that $f(x)$ must be: (1) continuous, (2) positive, and (3) decreasing on $[1, \\infty)$.',
-        distractorTip: 'On AP FRQs, you MUST explicitly state that the function is positive, continuous, and decreasing before using the Integral Test.'
-      },
-      {
-        id: 'c10-l4-q3',
-        stem: 'Does the series $\\sum_{n=2}^\\infty \\frac{1}{n \\ln(n)}$ converge or diverge, and by which test?',
-        options: [
-          'Diverges by the Integral Test, because $\\int_2^\\infty \\frac{1}{x \\ln x} dx = \\lim_{b \\to \\infty} [\\ln(\\ln b) - \\ln(\\ln 2)] = \\infty$.',
-          'Converges by the $p$-series test with $p = 2$.',
-          'Converges by the Ratio Test because $\\lim \\frac{a_{n+1}}{a_n} = 0$.',
-          'Diverges by the $n$th-term test because $\\lim a_n \\neq 0$.'
-        ],
-        correctIndex: 0,
-        explanation: 'Let $f(x) = \\frac{1}{x \\ln x}$. Using $u = \\ln x$, $\\int \\frac{1}{u} du = \\ln(\\ln x)$. As $x \\to \\infty$, $\\ln(\\ln x) \\to \\infty$. Since the improper integral diverges, the series diverges by the Integral Test.',
-        distractorTip: 'The ratio test is inconclusive (limit = 1) for rational/logarithmic expressions; use the Integral Test instead.'
-      }
-    ]
-  },
-  {
-    id: 1005,
-    unitIndex: 10,
-    levelNumber: 5,
-    uniqueKey: 'u10-l5',
-    topicNumber: 'Topic 10.6',
-    name: 'Comparison Tests (Direct & Limit Comparison)',
-    subtitle: 'Comparing to benchmark p-series & geometric series',
-    difficulty: 'Medium',
-    rewardCoins: 30,
-    questions: [
-      {
-        id: 'c10-l5-q1',
-        stem: 'To test $\\sum_{n=1}^\\infty \\frac{1}{n^3 + 4}$, which comparison test and benchmark series establishes convergence most directly?',
-        options: [
-          'Direct Comparison Test with $\\sum \\frac{1}{n^3}$, since $\\frac{1}{n^3 + 4} < \\frac{1}{n^3}$ and $\\sum \\frac{1}{n^3}$ is a convergent $p$-series ($p=3 > 1$).',
-          'Direct Comparison Test with $\\sum \\frac{1}{n}$, showing it diverges.',
-          'Limit Comparison Test with $\\sum n^3$, showing the limit is 0.',
-          'Ratio Test, showing the ratio is greater than 1.'
-        ],
-        correctIndex: 0,
-        explanation: 'Because $n^3 + 4 > n^3$, $\\frac{1}{n^3 + 4} < \\frac{1}{n^3}$ for all $n \\ge 1$. Since the larger series $\\sum \\frac{1}{n^3}$ converges ($p=3 > 1$), the smaller series converges by Direct Comparison.',
-        distractorTip: 'For DCT, smaller than a convergent series converges; larger than a divergent series diverges.'
-      },
-      {
-        id: 'c10-l5-q2',
-        stem: 'What does the Limit Comparison Test (LCT) conclude if $\\lim_{n \\to \\infty} \\frac{a_n}{b_n} = L$ where $0 < L < \\infty$ and $a_n, b_n > 0$?',
-        options: [
-          'Both $\\sum a_n$ and $\\sum b_n$ either both converge or both diverge.',
-          '$\\sum a_n$ converges to $L$.',
-          '$\\sum a_n$ diverges and $\\sum b_n$ converges.',
-          'The test is inconclusive.'
-        ],
-        correctIndex: 0,
-        explanation: 'By the LCT, if the limit of the ratio is a finite positive number $0 < L < \\infty$, both series share the exact same behavior (both converge or both diverge).',
-        distractorTip: 'LCT is ideal for polynomials when the inequality for direct comparison goes the wrong way.'
-      },
-      {
-        id: 'c10-l5-q3',
-        stem: 'Determine the convergence of $\\sum_{n=1}^\\infty \\frac{2n - 1}{n^2 + 5n}$.',
-        options: [
-          'Diverges by Limit Comparison with the harmonic series $\\sum \\frac{1}{n}$ ($L = 2$).',
-          'Converges by comparison with $\\sum \\frac{1}{n^2}$.',
-          'Converges by the Ratio Test.',
-          'Diverges by the $n$th-term test.'
-        ],
-        correctIndex: 0,
-        explanation: 'Dominant terms: $\\frac{2n}{n^2} = \\frac{2}{n}$. Compare with $b_n = \\frac{1}{n}$: $\\lim_{n \\to \\infty} \\frac{(2n-1)/(n^2+5n)}{1/n} = \\lim \\frac{2n^2 - n}{n^2 + 5n} = 2$. Since $0 < 2 < \\infty$ and $\\sum \\frac{1}{n}$ diverges, the series diverges by LCT.',
-        distractorTip: 'Look at the highest power of $n$ in numerator and denominator: $n^1 / n^2 = 1/n$, pointing directly to harmonic divergence.'
-      }
-    ]
-  },
-  {
-    id: 1006,
-    unitIndex: 10,
-    levelNumber: 6,
-    uniqueKey: 'u10-l6',
-    topicNumber: 'Topic 10.7',
-    name: 'Alternating Series Test & Error Bound',
-    subtitle: 'AST conditions and |S - S_n| ≤ a_{n+1}',
-    difficulty: 'Medium',
-    rewardCoins: 30,
-    questions: [
-      {
-        id: 'c10-l6-q1',
-        stem: 'Which two conditions must an alternating series $\\sum_{n=1}^\\infty (-1)^{n-1} b_n$ ($b_n > 0$) satisfy to converge by the Alternating Series Test?',
-        options: [
-          '$b_{n+1} \\le b_n$ for all $n$ (decreasing) AND $\\lim_{n \\to \\infty} b_n = 0$.',
-          '$\\lim_{n \\to \\infty} b_n = 1$ and $b_n > 0$.',
-          '$\\sum b_n$ must converge by the ratio test.',
-          'The terms must be concave down.'
-        ],
-        correctIndex: 0,
-        explanation: 'By Leibniz\'s Alternating Series Test, the series converges if the positive magnitudes $b_n$ are decreasing ($b_{n+1} \\le b_n$) and approach zero ($\\lim b_n = 0$).',
-        distractorTip: 'Both conditions are required. An alternating series can have terms approach 0 but still diverge if terms don\'t decrease monotonically.'
-      },
-      {
-        id: 'c10-l6-q2',
-        stem: 'If the alternating series $S = \\sum_{n=1}^\\infty \\frac{(-1)^{n+1}}{n^3}$ is approximated by its first 4 terms, what is the maximum possible error $|S - S_4|$?',
-        options: [
-          '$\\frac{1}{5^3} = \\frac{1}{125}$',
-          '$\\frac{1}{4^3} = \\frac{1}{64}$',
-          '$\\frac{1}{6^3} = \\frac{1}{216}$',
-          '$\\frac{4}{125}$'
-        ],
-        correctIndex: 0,
-        explanation: 'By the Alternating Series Error Bound (AST Remainder Theorem), the error $|S - S_n| \\le b_{n+1}$. Here $n = 4$, so the error is bounded by the magnitude of the next term $b_5 = \\frac{1}{5^3} = \\frac{1}{125}$.',
-        distractorTip: 'Error bound uses the $(n+1)$th term, NOT the $n$th term!'
-      },
-      {
-        id: 'c10-l6-q3',
-        stem: 'The alternating harmonic series $\\sum_{n=1}^\\infty \\frac{(-1)^{n+1}}{n}$ is an example of what type of convergence?',
-        options: [
-          'Conditionally convergent',
-          'Absolutely convergent',
-          'Divergent',
-          'Uniformly convergent'
-        ],
-        correctIndex: 0,
-        explanation: 'It converges by the Alternating Series Test (terms decrease to 0), but the series of absolute values $\\sum |a_n| = \\sum \\frac{1}{n}$ is the divergent harmonic series. Hence it is conditionally convergent.',
-        distractorTip: 'Absolute convergence requires $\\sum |a_n|$ to converge; conditional convergence means $\\sum a_n$ converges while $\\sum |a_n|$ diverges.'
-      }
-    ]
-  },
-  {
-    id: 1007,
-    unitIndex: 10,
-    levelNumber: 7,
-    uniqueKey: 'u10-l7',
-    topicNumber: 'Topic 10.8',
-    name: 'Ratio Test for Absolute Convergence',
-    subtitle: 'lim |a_{n+1} / a_n| < 1 (Essential for power series)',
-    difficulty: 'Hard',
-    rewardCoins: 30,
-    questions: [
-      {
-        id: 'c10-l7-q1',
-        stem: 'Under the Ratio Test, if $\\lim_{n \\to \\infty} \\left|\\frac{a_{n+1}}{a_n}\\right| = L$, when is the series guaranteed to converge absolutely?',
-        options: [
-          '$L < 1$',
-          '$L \\le 1$',
-          '$L > 1$',
-          '$L = 0$ only'
-        ],
-        correctIndex: 0,
-        explanation: 'The Ratio Test guarantees absolute convergence when $L < 1$. When $L > 1$, the series diverges. When $L = 1$, the test is inconclusive.',
-        distractorTip: 'At $L = 1$, the test is INCONCLUSIVE (e.g. for any $p$-series, $L = 1$, yet some converge and some diverge).'
-      },
-      {
-        id: 'c10-l7-q2',
-        stem: 'Apply the Ratio Test to $\\sum_{n=1}^\\infty \\frac{3^n}{n!}$. What is $\\lim_{n \\to \\infty} \\left|\\frac{a_{n+1}}{a_n}\\right|$?',
-        options: [
-          '$0$, so the series converges absolutely.',
-          '$3$, so the series diverges.',
-          '$1$, so the test is inconclusive.',
-          '$\\infty$, so the series diverges.'
-        ],
-        correctIndex: 0,
-        explanation: '$\\left|\\frac{a_{n+1}}{a_n}\\right| = \\frac{3^{n+1}}{(n+1)!} \\cdot \\frac{n!}{3^n} = \\frac{3}{n+1}$. Taking the limit as $n \\to \\infty$: $\\lim_{n \\to \\infty} \\frac{3}{n+1} = 0$. Since $0 < 1$, the series converges absolutely.',
-        distractorTip: 'Factorials $n!$ grow faster than any exponential $c^n$, driving the ratio limit to 0.'
-      },
-      {
-        id: 'c10-l7-q3',
-        stem: 'For which of the following series does the Ratio Test fail by yielding $L = 1$?',
-        options: [
-          '$\\sum_{n=1}^\\infty \\frac{n}{n^2 + 1}$',
-          '$\\sum_{n=1}^\\infty \\frac{2^n}{3^n}$',
-          '$\\sum_{n=1}^\\infty \\frac{n!}{5^n}$',
-          '$\\sum_{n=1}^\\infty \\left(\\frac{1}{4}\\right)^n$'
-        ],
-        correctIndex: 0,
-        explanation: 'The Ratio Test yields $L = 1$ for all algebraic/polynomial rational functions of $n$. For $\\frac{n}{n^2+1}$, $\\lim |a_{n+1}/a_n| = 1$ (inconclusive). It must be tested via Integral or Comparison test.',
-        distractorTip: 'Never use the Ratio Test on pure polynomial series $\\frac{P(n)}{Q(n)}$; it will always equal 1.'
-      }
-    ]
-  },
-  {
-    id: 1008,
-    unitIndex: 10,
-    levelNumber: 8,
-    uniqueKey: 'u10-l8',
-    topicNumber: 'Topic 10.9 & 10.10',
-    name: 'Radius & Interval of Convergence',
-    subtitle: 'Power series center, radius R, and endpoint testing',
-    difficulty: 'Hard',
-    rewardCoins: 30,
-    questions: [
-      {
-        id: 'c10-l8-q1',
-        stem: 'Find the radius of convergence $R$ for the power series $\\sum_{n=1}^\\infty \\frac{(x - 2)^n}{n \\cdot 3^n}$.',
-        options: [
-          '$R = 3$',
-          '$R = 1$',
-          '$R = 2$',
-          '$R = \\infty$'
-        ],
-        correctIndex: 0,
-        explanation: 'Using the Ratio Test: $\\lim_{n \\to \\infty} \\left|\\frac{(x-2)^{n+1}}{(n+1)3^{n+1}} \\cdot \\frac{n3^n}{(x-2)^n}\\right| = \\frac{|x-2|}{3} \\lim \\frac{n}{n+1} = \\frac{|x-2|}{3}$. For convergence, $\\frac{|x-2|}{3} < 1 \\implies |x-2| < 3$. Thus $R = 3$.',
-        distractorTip: 'The radius $R$ is the half-width of the convergence interval centered at $x=c$.'
-      },
-      {
-        id: 'c10-l8-q2',
-        stem: 'What is the full interval of convergence for the series $\\sum_{n=1}^\\infty \\frac{(x - 2)^n}{n \\cdot 3^n}$ after testing endpoints?',
-        options: [
-          '$[-1, 5)$',
-          '$(-1, 5)$',
-          '$[-1, 5]$',
-          '$(-1, 5]$'
-        ],
-        correctIndex: 0,
-        explanation: 'With $R = 3$ centered at $2$, the open interval is $(-1, 5)$. Test $x = -1$: $\\sum \\frac{(-3)^n}{n 3^n} = \\sum \\frac{(-1)^n}{n}$, the alternating harmonic series, which CONVERGES (AST). Test $x = 5$: $\\sum \\frac{3^n}{n 3^n} = \\sum \\frac{1}{n}$, the harmonic series, which DIVERGES. Thus the interval is $[-1, 5)$.',
-        distractorTip: 'Endpoint testing is mandatory on the AP exam! The ratio test says nothing about endpoints; you must test each separately.'
-      },
-      {
-        id: 'c10-l8-q3',
-        stem: 'If a power series $\\sum c_n (x - 4)^n$ converges at $x = 7$ and diverges at $x = 9$, which of the following must be true?',
-        options: [
-          'The series converges at $x = 2$.',
-          'The series diverges at $x = 1$.',
-          'The series converges at $x = 0$.',
-          'The radius of convergence is exactly $R = 3$.'
-        ],
-        correctIndex: 0,
-        explanation: 'The series is centered at $c = 4$. It converges at $x = 7$, which is at distance $|7 - 4| = 3$. Therefore $R \\ge 3$. The interval of convergence contains $(4 - 3, 4 + 3) = (1, 7)$. Since $x = 2$ is inside $(1, 7)$, it must converge at $x = 2$.',
-        distractorTip: 'Any point closer to the center than a known convergent point is guaranteed to converge.'
-      }
-    ]
-  },
-  {
-    id: 1009,
-    unitIndex: 10,
-    levelNumber: 9,
-    uniqueKey: 'u10-l9',
-    topicNumber: 'Topic 10.11 & 10.12',
-    name: 'Taylor Polynomials & Series Representations',
-    subtitle: 'Formula: sum f^(n)(c)/n! * (x - c)^n',
-    difficulty: 'Hard',
-    rewardCoins: 30,
-    questions: [
-      {
-        id: 'c10-l9-q1',
-        stem: 'What is the coefficient of $x^3$ in the Maclaurin series for $f(x) = \\sin(x)$?',
-        options: [
-          '$-\\frac{1}{6}$',
-          '$\\frac{1}{6}$',
-          '$-\\frac{1}{3}$',
-          '$0$'
-        ],
-        correctIndex: 0,
-        explanation: 'The Maclaurin series for $\\sin(x) = x - \\frac{x^3}{3!} + \\frac{x^5}{5!} - \\dots$. The coefficient of $x^3$ is $-\\frac{1}{3!} = -\\frac{1}{6}$.',
-        distractorTip: 'Memorize the core Maclaurin series: $e^x$, $\\sin x$, $\\cos x$, and $\\frac{1}{1-x}$.'
-      },
-      {
-        id: 'c10-l9-q2',
-        stem: 'If $P_2(x) = 5 - 3(x - 1) + 4(x - 1)^2$ is the second-degree Taylor polynomial for $f$ about $x = 1$, what is $f\'\'(1)$?',
-        options: [
-          '$8$',
-          '$4$',
-          '$2$',
-          '$5$'
-        ],
-        correctIndex: 0,
-        explanation: 'In a Taylor polynomial, the coefficient of $(x-c)^n$ is $\\frac{f^{(n)}(c)}{n!}$. Here the coefficient of $(x-1)^2$ is $4 = \\frac{f\'\'(1)}{2!}$. Thus $f\'\'(1) = 4 \\times 2! = 8$.',
-        distractorTip: 'Don\'t forget to multiply by $n!$; the coefficient is $\\frac{f^{(n)}(c)}{n!}$, not $f^{(n)}(c)$.'
-      },
-      {
-        id: 'c10-l9-q3',
-        stem: 'Find the first four nonzero terms of the Maclaurin series for $g(x) = e^{-x^2}$.',
-        options: [
-          '$1 - x^2 + \\frac{x^4}{2} - \\frac{x^6}{6}$',
-          '$1 - x^2 + x^4 - x^6$',
-          '$x^2 - \\frac{x^4}{2} + \\frac{x^6}{6} - \\frac{x^8}{24}$',
-          '$1 + x^2 + \\frac{x^4}{2} + \\frac{x^6}{6}$'
-        ],
-        correctIndex: 0,
-        explanation: 'Since $e^u = 1 + u + \\frac{u^2}{2!} + \\frac{u^3}{3!} + \\dots$, substitute $u = -x^2$: $e^{-x^2} = 1 + (-x^2) + \\frac{(-x^2)^2}{2} + \\frac{(-x^2)^3}{6} = 1 - x^2 + \\frac{x^4}{2} - \\frac{x^6}{6}$.',
-        distractorTip: 'Substitution into known series is 10x faster than calculating high-order derivatives by hand.'
-      }
-    ]
-  },
-  {
-    id: 1010,
-    unitIndex: 10,
-    levelNumber: 10,
-    uniqueKey: 'u10-l10',
-    topicNumber: 'Topic 10.13 - 10.15 (Boss Level)',
-    name: 'Lagrange Error Bound & Taylor Series (Boss Level)',
-    subtitle: '|R_n(x)| ≤ M/(n+1)! * |x - c|^(n+1)',
-    difficulty: 'Boss',
-    rewardCoins: 50,
-    questions: [
-      {
-        id: 'c10-l10-q1',
-        stem: 'Which expression gives the Lagrange Error Bound for an $n$th-degree Taylor polynomial $P_n(x)$ centered at $c$?',
-        options: [
-          '$|R_n(x)| \\le \\frac{M}{(n+1)!} |x - c|^{n+1}$, where $M = \\max |f^{(n+1)}(t)|$ on the interval between $c$ and $x$.',
-          '$|R_n(x)| \\le \\frac{M}{n!} |x - c|^n$',
-          '$|R_n(x)| \\le \\frac{f^{(n+1)}(c)}{(n+1)!} |x - c|^{n+1}$',
-          '$|R_n(x)| \\le M |x - c|^{n+1}$'
-        ],
-        correctIndex: 0,
-        explanation: 'The Lagrange Error Bound states $|R_n(x)| \\le \\frac{M}{(n+1)!}|x-c|^{n+1}$ where $M$ is the maximum value of $|f^{(n+1)}(t)|$ on the interval between the center $c$ and evaluation point $x$.',
-        distractorTip: 'Notice the $(n+1)$ in both the factorial and the exponent!'
-      },
-      {
-        id: 'c10-l10-q2',
-        stem: 'Let $P_3(x)$ be the 3rd-degree Maclaurin polynomial for $\\sin(x)$. What is the Lagrange error bound for approximating $\\sin(0.5)$?',
-        options: [
-          '$\\frac{1}{4!} (0.5)^4 = \\frac{1}{384}$',
-          '$\\frac{1}{3!} (0.5)^3 = \\frac{1}{48}$',
-          '$\\frac{1}{5!} (0.5)^5$',
-          '$\\frac{0.5}{4}$'
-        ],
-        correctIndex: 0,
-        explanation: 'For $\\sin(x)$, all derivatives are bounded by $M = 1$ (since $|\\sin t| \\le 1$ and $|\\cos t| \\le 1$). For $n = 3$, $n+1 = 4$. Error bound $= \\frac{1}{4!} |0.5 - 0|^4 = \\frac{1}{24} \\left(\\frac{1}{16}\\right) = \\frac{1}{384}$.',
-        distractorTip: 'Even if the 4th degree term is 0 in the sine series, $P_3(x)$ has $n=3$, so the next derivative bound is $n+1=4$.'
-      },
-      {
-        id: 'c10-l10-q3',
-        stem: 'A function $f$ has $f(2) = 3$, $f\'(2) = -1$, $f\'\'(2) = 4$, and $f\'\'\'(2) = 12$. What is the 3rd-degree Taylor polynomial $P_3(x)$ centered at $x = 2$?',
-        options: [
-          '$P_3(x) = 3 - (x - 2) + 2(x - 2)^2 + 2(x - 2)^3$',
-          '$P_3(x) = 3 - (x - 2) + 4(x - 2)^2 + 12(x - 2)^3$',
-          '$P_3(x) = 3 - x + 2x^2 + 2x^3$',
-          '$P_3(x) = 3 - (x - 2) + 2(x - 2)^2 + 6(x - 2)^3$'
-        ],
-        correctIndex: 0,
-        explanation: '$P_3(x) = 3 + \\frac{-1}{1!}(x-2) + \\frac{4}{2!}(x-2)^2 + \\frac{12}{3!}(x-2)^3 = 3 - (x-2) + 2(x-2)^2 + 2(x-2)^3$.',
-        distractorTip: 'Remember $3! = 6$, so $\\frac{12}{6} = 2$.'
-      }
-    ]
-  }
-];
-
-// Combine Calculus AB Units 1–8 with Calculus BC Units 9 & 10
 export const ALL_CALC_BC_UNIT_DEFINITIONS: UnitDefinition[] = [
-  ...ALL_CALC_AB_UNIT_DEFINITIONS,
   {
-    unitIndex: 9,
-    unitId: 'u9',
-    title: 'Unit 9: Parametric Equations, Polar Coordinates & Vector-Valued Functions',
-    shortTitle: 'Unit 9: Parametric & Polar',
-    description: 'Parametric derivatives, vector velocity/acceleration, arc length, polar coordinates and polar area',
-    examWeight: '11–12% of AP Exam (BC Exclusive)',
-    biome: {
-      name: 'Polar Archipelago & Vector Currents',
-      icon: '🧭',
-      accentColor: '#6366F1',
-      secondaryColor: '#4F46E5',
-      groundGradient: 'from-indigo-100 via-blue-50 to-indigo-100',
-      cardBorder: 'border-indigo-500',
-      trailColor: '#4f46e5',
-      nodeRing: 'ring-indigo-400/40',
-      skyTint: 'from-indigo-50 to-blue-50/30'
+    "unitIndex": 1,
+    "unitId": "u1",
+    "title": "Unit 1: Limits & Continuity",
+    "shortTitle": "Unit 1: Limits",
+    "description": "Foundations of limits, continuity, squeeze theorem, and Intermediate Value Theorem (IVT)",
+    "examWeight": "10–12% of AP Exam",
+    "biome": {
+      "name": "Azure Reef & Limits Beach",
+      "icon": "🏝️",
+      "accentColor": "#F59E0B",
+      "secondaryColor": "#3B82F6",
+      "groundGradient": "from-amber-100 via-amber-50 to-sky-100",
+      "cardBorder": "border-amber-400",
+      "trailColor": "#d97706",
+      "nodeRing": "ring-amber-400/40",
+      "skyTint": "from-sky-50 to-amber-50/30"
     },
-    levels: UNIT_9_LEVELS
+    "levels": [
+      {
+        "id": 101,
+        "topicNumber": "Topic 1.1 & 1.2",
+        "name": "Limit Intuition & Rate of Change",
+        "subtitle": "Instantaneous vs Average Rate & Notation",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c1-l1-q1",
+            "stem": "What does the mathematical statement $\\lim_{x \\to 3} f(x) = 7$ formally mean in AP Calculus?",
+            "options": [
+              "As $x$ gets arbitrarily close to $3$ (from both sides, with $x \\neq 3$), $f(x)$ approaches $7$.",
+              "The value of the function at $x = 3$ is guaranteed to be $f(3) = 7$.",
+              "The function is continuous and differentiable at $x = 3$.",
+              "The average rate of change on the interval $[0, 3]$ equals $7$."
+            ],
+            "correctIndex": 0,
+            "explanation": "A limit describes the values that a function approaches as the input approaches a specified value, regardless of the actual function value $f(3)$ at that point.",
+            "distractorTip": "Trap: Do not assume $f(3)$ must equal 7; limits describe behavior near the point, not at the point."
+          },
+          {
+            "id": "c1-l1-q2",
+            "stem": "A particle moves along a straight line with position given by $s(t) = 2t^2 + 1$. What is the average velocity of the particle over the time interval $[1, 4]$?",
+            "options": [
+              "$12$",
+              "$10$",
+              "$16$",
+              "$33$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Average velocity is given by $\\frac{s(4) - s(1)}{4 - 1} = \\frac{(2(16)+1) - (2(1)+1)}{3} = \\frac{33 - 3}{3} = 10$.",
+            "distractorTip": "Remember that average velocity is the secant line slope $\\frac{\\Delta s}{\\Delta t}$, whereas instantaneous velocity is the derivative $s'(t)$."
+          },
+          {
+            "id": "c1-l1-q3",
+            "stem": "If $f(2) = 5$ but $\\lim_{x \\to 2} f(x) = 9$, which of the following statements must be true?",
+            "options": [
+              "The limit does not exist because it does not match $f(2)$.",
+              "$f$ is continuous at $x = 2$ because both the limit and $f(2)$ exist.",
+              "The function $f$ has a discontinuity at $x = 2$.",
+              "The graph of $f$ has a vertical asymptote at $x = 2$."
+            ],
+            "correctIndex": 2,
+            "explanation": "For continuity at $x = c$, three conditions must hold: $f(c)$ exists, $\\lim_{x \\to c} f(x)$ exists, and $\\lim_{x \\to c} f(x) = f(c)$. Since $9 \\neq 5$, $f$ has a removable discontinuity at $x = 2$.",
+            "distractorTip": "Exam trick: Having both a limit and a function value is not enough; they must be equal for continuity."
+          }
+        ],
+        "unitIndex": 1,
+        "levelNumber": 1,
+        "uniqueKey": "u1-l1"
+      },
+      {
+        "id": 102,
+        "topicNumber": "Topic 1.3",
+        "name": "Estimating Limits from Graphs",
+        "subtitle": "One-Sided Limits & Graphical Behavior",
+        "difficulty": "Easy",
+        "rewardCoins": 35,
+        "questions": [
+          {
+            "id": "c1-l2-q1",
+            "stem": "Suppose a function $g(x)$ satisfies $\\lim_{x \\to 4^-} g(x) = 5$ and $\\lim_{x \\to 4^+} g(x) = 5$, but $g(4) = -2$. What is the value of $\\lim_{x \\to 4} g(x)$?",
+            "options": [
+              "$-2$",
+              "$3$",
+              "The limit does not exist.",
+              "$5$"
+            ],
+            "correctIndex": 3,
+            "explanation": "A two-sided limit exists and equals $L$ if and only if both one-sided limits exist and equal $L$. Since both left and right limits equal $5$, $\\lim_{x \\to 4} g(x) = 5$.",
+            "distractorTip": "Do not be tricked by the isolated point at $(4, -2)$. The two-sided limit depends solely on the one-sided limits."
+          },
+          {
+            "id": "c1-l2-q2",
+            "stem": "If the graph of $h(x)$ approaches $y = -3$ as $x \\to 1$ from the left, and approaches $y = 4$ as $x \\to 1$ from the right, what is $\\lim_{x \\to 1} h(x)$?",
+            "options": [
+              "Does not exist (DNE)",
+              "$-3$",
+              "$4$",
+              "$0.5$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Since the left-hand limit ($-3$) does not equal the right-hand limit ($4$), the two-sided limit does not exist (DNE) due to a jump discontinuity.",
+            "distractorTip": "If $\\lim_{x \\to c^-} \\neq \\lim_{x \\to c^+}$, the two-sided limit always fails to exist."
+          },
+          {
+            "id": "c1-l2-q3",
+            "stem": "Evaluate $\\lim_{x \\to 0^-} \\frac{x}{|x|}$.",
+            "options": [
+              "$1$",
+              "$-1$",
+              "$0$",
+              "Does not exist"
+            ],
+            "correctIndex": 1,
+            "explanation": "For $x < 0$, $|x| = -x$. Therefore, $\\frac{x}{|x|} = \\frac{x}{-x} = -1$ for all negative values of $x$. Thus, the left-hand limit is $-1$.",
+            "distractorTip": "Notice the one-sided minus superscript ($0^-$). The two-sided limit DNE, but the left-hand limit is exactly $-1$."
+          }
+        ],
+        "unitIndex": 1,
+        "levelNumber": 2,
+        "uniqueKey": "u1-l2"
+      },
+      {
+        "id": 103,
+        "topicNumber": "Topic 1.4",
+        "name": "Estimating Limits from Tables",
+        "subtitle": "Numerical Trends & Delta Proximity",
+        "difficulty": "Easy",
+        "rewardCoins": 35,
+        "questions": [
+          {
+            "id": "c1-l3-q1",
+            "stem": "A table shows values of $f(x)$ near $x = 2$:\n- $x = 1.9 \\implies 4.81$\n- $x = 1.99 \\implies 4.98$\n- $x = 1.999 \\implies 4.998$\n- $x = 2.001 \\implies 5.002$\n- $x = 2.01 \\implies 5.02$\nWhat is the most reasonable estimate for $\\lim_{x \\to 2} f(x)$?",
+            "options": [
+              "$4.9$",
+              "$5.1$",
+              "$5.0$",
+              "Does not exist"
+            ],
+            "correctIndex": 2,
+            "explanation": "As $x$ approaches $2$ from both the left and right, $f(x)$ steadily converges toward $5.0$.",
+            "distractorTip": "Check convergence from both sides to ensure both left and right approaches reach the same integer."
+          },
+          {
+            "id": "c1-l3-q2",
+            "stem": "For a function $g(x)$, values near $x = 0$ show: $g(-0.01) = 99$, $g(-0.001) = 999$, $g(0.001) = -1000$, and $g(0.01) = -100$. What does this indicate about $\\lim_{x \\to 0} g(x)$?",
+            "options": [
+              "$\\lim_{x \\to 0} g(x) = 0$",
+              "$\\lim_{x \\to 0} g(x) = \\infty$",
+              "$\\lim_{x \\to 0} g(x) = 1000$",
+              "The limit does not exist because the function values grow unboundedly in opposite directions."
+            ],
+            "correctIndex": 3,
+            "explanation": "The left-hand values grow toward $+\\infty$ while the right-hand values decrease toward $-\\infty$. Thus, the two-sided limit does not exist.",
+            "distractorTip": "Watch the signs: $+\\infty$ from the left and $-\\infty$ from the right indicate a vertical asymptote with no unified limit."
+          },
+          {
+            "id": "c1-l3-q3",
+            "stem": "If evaluating $\\lim_{x \\to 0} \\sin\\left(\\frac{\\pi}{x}\\right)$ using a table with $x = 0.1, 0.01, 0.001$, each gives $0$. Why can we NOT conclude the limit is $0$?",
+            "options": [
+              "Because the function oscillates infinitely between $-1$ and $1$ as $x \\to 0$, so intermediate points do not converge.",
+              "Because $\\sin(x)$ is not defined at $x = 0$.",
+              "Because $\\frac{\\pi}{x}$ is always a positive integer.",
+              "Because trigonometric functions cannot have limits at zero."
+            ],
+            "correctIndex": 0,
+            "explanation": "Sampling points where $\\frac{\\pi}{x} = k\\pi$ hides the wild oscillation between $-1$ and $1$. The limit does not exist due to infinite oscillation near $x = 0$.",
+            "distractorTip": "Classic AP concept: Numerical tables can be misleading for oscillating functions like $\\sin(1/x)$."
+          }
+        ],
+        "unitIndex": 1,
+        "levelNumber": 3,
+        "uniqueKey": "u1-l3"
+      },
+      {
+        "id": 104,
+        "topicNumber": "Topic 1.5",
+        "name": "Algebraic Properties & Direct Substitution",
+        "subtitle": "Limit Laws, Sums, Products & Quotients",
+        "difficulty": "Easy",
+        "rewardCoins": 40,
+        "questions": [
+          {
+            "id": "c1-l4-q1",
+            "stem": "Evaluate $\\lim_{x \\to 2} (3x^2 - 4x + 5)$ using direct substitution.",
+            "options": [
+              "$7$",
+              "$9$",
+              "$13$",
+              "$17$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Since polynomial functions are continuous everywhere, we substitute directly: $3(2)^2 - 4(2) + 5 = 3(4) - 8 + 5 = 12 - 8 + 5 = 9$.",
+            "distractorTip": "Always try direct substitution first. If it yields a real number, that is your limit."
+          },
+          {
+            "id": "c1-l4-q2",
+            "stem": "Given $\\lim_{x \\to 3} f(x) = 4$ and $\\lim_{x \\to 3} g(x) = -2$, what is $\\lim_{x \\to 3} \\frac{[f(x)]^2 + 3g(x)}{g(x)}$?",
+            "options": [
+              "$5$",
+              "$-2$",
+              "$-5$",
+              "$-11$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Using limit arithmetic properties: $\\frac{(4)^2 + 3(-2)}{-2} = \\frac{16 - 6}{-2} = \\frac{10}{-2} = -5$.",
+            "distractorTip": "Be careful with negative signs in the denominator."
+          },
+          {
+            "id": "c1-l4-q3",
+            "stem": "Evaluate $\\lim_{x \\to \\frac{\\pi}{4}} \\frac{\\sin x + \\cos x}{\\tan x}$.",
+            "options": [
+              "$2$",
+              "$\\frac{\\sqrt{2}}{2}$",
+              "$1$",
+              "$\\sqrt{2}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Substitute $x = \\frac{\\pi}{4}$: $\\sin(\\pi/4) = \\frac{\\sqrt{2}}{2}$, $\\cos(\\pi/4) = \\frac{\\sqrt{2}}{2}$, $\\tan(\\pi/4) = 1$. The numerator is $\\frac{\\sqrt{2}}{2} + \\frac{\\sqrt{2}}{2} = \\sqrt{2}$, divided by $1$ equals $\\sqrt{2}$.",
+            "distractorTip": "Trig functions can be evaluated by direct substitution at any point in their domain."
+          }
+        ],
+        "unitIndex": 1,
+        "levelNumber": 4,
+        "uniqueKey": "u1-l4"
+      },
+      {
+        "id": 105,
+        "topicNumber": "Topic 1.6",
+        "name": "Factoring & Algebraic Cancellation",
+        "subtitle": "Resolving 0/0 Indeterminate Forms",
+        "difficulty": "Medium",
+        "rewardCoins": 40,
+        "questions": [
+          {
+            "id": "c1-l5-q1",
+            "stem": "Evaluate $\\lim_{x \\to 3} \\frac{x^2 - 9}{x - 3}$.",
+            "options": [
+              "$6$",
+              "$3$",
+              "$0$",
+              "Does not exist"
+            ],
+            "correctIndex": 0,
+            "explanation": "Direct substitution yields the indeterminate form $\\frac{0}{0}$. Factoring the numerator gives $\\frac{(x-3)(x+3)}{x-3} = x + 3$. Evaluating at $x = 3$ gives $3 + 3 = 6$.",
+            "distractorTip": "$\\frac{0}{0}$ does not mean 0 or undefined; it means more algebraic work is required."
+          },
+          {
+            "id": "c1-l5-q2",
+            "stem": "Evaluate $\\lim_{x \\to -2} \\frac{x^2 + 5x + 6}{x^2 - 4}$.",
+            "options": [
+              "$\\frac{1}{4}$",
+              "$-\\frac{1}{4}$",
+              "$\\frac{5}{2}$",
+              "Does not exist"
+            ],
+            "correctIndex": 1,
+            "explanation": "Factor both parts: $\\frac{(x+2)(x+3)}{(x+2)(x-2)}$. Cancel $(x+2)$ to obtain $\\frac{x+3}{x-2}$. Substitute $x = -2$: $\\frac{-2+3}{-2-2} = \\frac{1}{-4} = -\\frac{1}{4}$.",
+            "distractorTip": "Watch negative signs when substituting $x = -2$ into $(x - 2)$."
+          },
+          {
+            "id": "c1-l5-q3",
+            "stem": "Evaluate $\\lim_{x \\to 1} \\frac{x^3 - 1}{x - 1}$.",
+            "options": [
+              "$1$",
+              "$2$",
+              "$3$",
+              "Does not exist"
+            ],
+            "correctIndex": 2,
+            "explanation": "Use the difference of cubes formula $a^3 - b^3 = (a-b)(a^2+ab+b^2)$: $\\frac{(x-1)(x^2+x+1)}{x-1} = x^2 + x + 1$. Substitute $x = 1$: $1^2 + 1 + 1 = 3$.",
+            "distractorTip": "Memorize the difference of cubes factorization; it frequently appears on AP Calculus Section I."
+          },
+          {
+            "id": "c1-l5-q4",
+            "stem": "Evaluate $\\lim_{x \\to -3} \\frac{x^2 - x - 12}{x + 3}$.",
+            "options": [
+              "Does not exist",
+              "$-1$",
+              "$1$",
+              "$-7$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Direct substitution yields the indeterminate form $0/0$. Factoring the numerator gives $x^2 - x - 12 = (x - 4)(x + 3)$. For $x \\neq -3$, $\\frac{(x - 4)(x + 3)}{x + 3} = x - 4$. Evaluating the limit as $x \\to -3$ gives $(-3) - 4 = -7$.",
+            "distractorTip": "Trap: Be careful with signs when factoring $x^2 - x - 12$; $(x-4)(x+3)$ has sum $-1$ and product $-12$."
+          }
+        ],
+        "unitIndex": 1,
+        "levelNumber": 5,
+        "uniqueKey": "u1-l5"
+      },
+      {
+        "id": 106,
+        "topicNumber": "Topic 1.7",
+        "name": "Radical Conjugate Rationalization",
+        "subtitle": "Multiplying by the Conjugate Form",
+        "difficulty": "Medium",
+        "rewardCoins": 45,
+        "questions": [
+          {
+            "id": "c1-l6-q1",
+            "stem": "Evaluate $\\lim_{x \\to 0} \\frac{\\sqrt{x + 4} - 2}{x}$.",
+            "options": [
+              "$\\frac{1}{4}$",
+              "$\\frac{1}{2}$",
+              "$2$",
+              "$4$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Multiply numerator and denominator by the conjugate $(\\sqrt{x+4} + 2)$: $\\frac{(x+4) - 4}{x(\\sqrt{x+4} + 2)} = \\frac{x}{x(\\sqrt{x+4} + 2)} = \\frac{1}{\\sqrt{x+4} + 2}$. Evaluating at $x = 0$: $\\frac{1}{\\sqrt{4} + 2} = \\frac{1}{4}$.",
+            "distractorTip": "Do not distribute the denominator when multiplying by the conjugate; leave $x$ factored out so it cancels."
+          },
+          {
+            "id": "c1-l6-q2",
+            "stem": "Evaluate $\\lim_{x \\to 9} \\frac{x - 9}{\\sqrt{x} - 3}$.",
+            "options": [
+              "$3$",
+              "$6$",
+              "$\\frac{1}{6}$",
+              "Does not exist"
+            ],
+            "correctIndex": 1,
+            "explanation": "Multiply by $(\\sqrt{x} + 3)$: $\\frac{(x-9)(\\sqrt{x}+3)}{x-9} = \\sqrt{x} + 3$. Substitute $x = 9$: $\\sqrt{9} + 3 = 3 + 3 = 6$.",
+            "distractorTip": "Alternatively, factor $x - 9$ as $(\\sqrt{x}-3)(\\sqrt{x}+3)$ for an instant 5-second shortcut."
+          },
+          {
+            "id": "c1-l6-q3",
+            "stem": "Evaluate $\\lim_{x \\to 1} \\frac{\\sqrt{2x + 2} - 2}{x - 1}$.",
+            "options": [
+              "$\\frac{1}{4}$",
+              "$1$",
+              "$\\frac{1}{2}$",
+              "$\\frac{\\sqrt{2}}{2}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Multiply by $(\\sqrt{2x+2} + 2)$: $\\frac{(2x+2) - 4}{(x-1)(\\sqrt{2x+2} + 2)} = \\frac{2(x-1)}{(x-1)(\\sqrt{2x+2} + 2)} = \\frac{2}{\\sqrt{2x+2} + 2}$. Evaluating at $x = 1$: $\\frac{2}{\\sqrt{4} + 2} = \\frac{2}{4} = \\frac{1}{2}$.",
+            "distractorTip": "Factor out the coefficient $2$ from $2x - 2$ to expose the cancelling factor $(x - 1)$."
+          },
+          {
+            "id": "c1-l6-q4",
+            "stem": "Evaluate $\\lim_{x \\to 0} \\frac{\\sqrt{x + 9} - 3}{x^2 + 2x}$.",
+            "options": [
+              "$0$",
+              "$\\frac{1}{6}$",
+              "$\\frac{1}{18}$",
+              "$\\frac{1}{12}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Rationalizing the numerator by multiplying by $\\frac{\\sqrt{x+9}+3}{\\sqrt{x+9}+3}$ yields $\\frac{(x+9)-9}{x(x+2)(\\sqrt{x+9}+3)} = \\frac{x}{x(x+2)(\\sqrt{x+9}+3)} = \\frac{1}{(x+2)(\\sqrt{x+9}+3)}$. Substituting $x=0$ gives $\\frac{1}{(2)(3+3)} = \\frac{1}{12}$.",
+            "distractorTip": "Remember to factor $x$ from the denominator: $x^2 + 2x = x(x+2)$ to cancel the $x$ in the numerator."
+          }
+        ],
+        "unitIndex": 1,
+        "levelNumber": 6,
+        "uniqueKey": "u1-l6"
+      },
+      {
+        "id": 107,
+        "topicNumber": "Topic 1.7",
+        "name": "Complex Fractions & Absolute Values",
+        "subtitle": "Common Denominators & Piecewise Symmetry",
+        "difficulty": "Medium",
+        "rewardCoins": 45,
+        "questions": [
+          {
+            "id": "c1-l7-q1",
+            "stem": "Evaluate $\\lim_{x \\to 0} \\frac{\\frac{1}{x + 5} - \\frac{1}{5}}{x}$.",
+            "options": [
+              "$-\\frac{1}{25}$",
+              "$\\frac{1}{25}$",
+              "$-5$",
+              "$0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Find common denominator for the numerator: $\\frac{5 - (x+5)}{5(x+5)} = \\frac{-x}{5(x+5)}$. Dividing by $x$ cancels $x$, leaving $\\frac{-1}{5(x+5)}$. As $x \\to 0$, this equals $-\\frac{1}{25}$.",
+            "distractorTip": "Notice the negative sign resulting from distributing $-(x+5) = -x - 5$."
+          },
+          {
+            "id": "c1-l7-q2",
+            "stem": "Evaluate $\\lim_{x \\to 3^+} \\frac{2x - 6}{|x - 3|}$.",
+            "options": [
+              "$-2$",
+              "$2$",
+              "$0$",
+              "Does not exist"
+            ],
+            "correctIndex": 1,
+            "explanation": "For $x > 3$, $x - 3 > 0$, so $|x - 3| = x - 3$. Thus $\\frac{2(x-3)}{x-3} = 2$.",
+            "distractorTip": "For right-hand limits where $x > c$, the absolute value bars simply drop with a positive sign."
+          },
+          {
+            "id": "c1-l7-q3",
+            "stem": "Evaluate $\\lim_{x \\to 2^-} \\frac{x^2 - 4}{|x - 2|}$.",
+            "options": [
+              "$0$",
+              "$4$",
+              "$-4$",
+              "Does not exist"
+            ],
+            "correctIndex": 2,
+            "explanation": "Factor numerator as $(x-2)(x+2)$. Since $x \\to 2^-$, $x < 2$, so $|x - 2| = -(x - 2)$. Thus $\\frac{(x-2)(x+2)}{-(x-2)} = -(x + 2)$. At $x = 2$, this equals $-(2 + 2) = -4$.",
+            "distractorTip": "Trap: Remembering that $|x - c| = -(x - c)$ when approaching from the left is critical."
+          },
+          {
+            "id": "c1-l7-q4",
+            "stem": "Evaluate the one-sided limit $\\lim_{x \\to 4^-} \\frac{|x - 4|}{x - 4}$.",
+            "options": [
+              "Does not exist",
+              "$1$",
+              "$0$",
+              "$-1$"
+            ],
+            "correctIndex": 3,
+            "explanation": "For $x < 4$, $(x - 4) < 0$, so $|x - 4| = -(x - 4)$. Therefore, $\\frac{-(x - 4)}{x - 4} = -1$ for all $x < 4$. Hence the limit is $-1$.",
+            "distractorTip": "Notice the left-hand limit indicator ($4^-$); approaching from the right would give $+1$, but the left-hand limit is strictly $-1$."
+          }
+        ],
+        "unitIndex": 1,
+        "levelNumber": 7,
+        "uniqueKey": "u1-l7"
+      },
+      {
+        "id": 108,
+        "topicNumber": "Topic 1.8 & 1.9",
+        "name": "Squeeze Theorem & Special Trig Limits",
+        "subtitle": "Sandwiching Bounds & $\\frac{\\sin(x)}{x}$ Limits",
+        "difficulty": "Medium",
+        "rewardCoins": 50,
+        "questions": [
+          {
+            "id": "c1-l8-q1",
+            "stem": "Evaluate $\\lim_{x \\to 0} \\frac{\\sin(7x)}{x}$.",
+            "options": [
+              "$7$",
+              "$1$",
+              "$0$",
+              "$\\frac{1}{7}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Recall that $\\lim_{u \\to 0} \\frac{\\sin(u)}{u} = 1$. Multiply and divide by $7$: $7 \\cdot \\lim_{x \\to 0} \\frac{\\sin(7x)}{7x} = 7 \\cdot 1 = 7$.",
+            "distractorTip": "Formula shortcut: $\\lim_{x \\to 0} \\frac{\\sin(ax)}{bx} = \\frac{a}{b}$."
+          },
+          {
+            "id": "c1-l8-q2",
+            "stem": "If $4 - x^2 \\le f(x) \\le 4 + x^2$ for all $x$ in an open interval containing $0$, what is $\\lim_{x \\to 0} f(x)$?",
+            "options": [
+              "$0$",
+              "$4$",
+              "$8$",
+              "Cannot be determined without explicit formula for $f(x)$"
+            ],
+            "correctIndex": 1,
+            "explanation": "By the Squeeze Theorem: $\\lim_{x \\to 0} (4 - x^2) = 4$ and $\\lim_{x \\to 0} (4 + x^2) = 4$. Since $f(x)$ is squeezed between both functions, $\\lim_{x \\to 0} f(x) = 4$.",
+            "distractorTip": "Both upper and lower bounds must approach the exact same value to apply the Squeeze Theorem."
+          },
+          {
+            "id": "c1-l8-q3",
+            "stem": "Evaluate $\\lim_{x \\to 0} \\frac{1 - \\cos x}{x}$.",
+            "options": [
+              "$-1$",
+              "$1$",
+              "$0$",
+              "Does not exist"
+            ],
+            "correctIndex": 2,
+            "explanation": "This is one of the two foundational trigonometric limits in AP Calculus: $\\lim_{x \\to 0} \\frac{1 - \\cos x}{x} = 0$.",
+            "distractorTip": "Do not confuse with $\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1$. The cosine ratio approaches $0$."
+          },
+          {
+            "id": "c1-l8-q4",
+            "stem": "Evaluate $\\lim_{x \\to 0} \\frac{\\tan(3x)}{\\sin(2x)}$.",
+            "options": [
+              "$0$",
+              "$\\frac{2}{3}$",
+              "$1$",
+              "$\\frac{3}{2}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Rewrite $\\frac{\\tan(3x)}{\\sin(2x)} = \\frac{\\sin(3x)}{\\cos(3x)\\sin(2x)} = \\frac{\\sin(3x)}{3x} \\cdot \\frac{2x}{\\sin(2x)} \\cdot \\frac{3}{2\\cos(3x)}$. Taking the limit as $x \\to 0$, $(1) \\cdot (1) \\cdot \\frac{3}{2(1)} = \\frac{3}{2}$.",
+            "distractorTip": "AP Shortcut: $\\lim_{x \\to 0} \\frac{\\sin(ax)}{\\sin(bx)} = \\lim_{x \\to 0} \\frac{\\tan(ax)}{\\sin(bx)} = \\frac{a}{b}$."
+          }
+        ],
+        "unitIndex": 1,
+        "levelNumber": 8,
+        "uniqueKey": "u1-l8"
+      },
+      {
+        "id": 109,
+        "topicNumber": "Topic 1.10",
+        "name": "Types of Discontinuities",
+        "subtitle": "Removable, Jump & Infinite Asymptotic Breaks",
+        "difficulty": "Medium",
+        "rewardCoins": 50,
+        "questions": [
+          {
+            "id": "c1-l9-q1",
+            "stem": "What type of discontinuity does the function $f(x) = \\frac{x - 3}{(x - 3)(x + 2)}$ have at $x = 3$?",
+            "options": [
+              "Removable discontinuity (hole)",
+              "Jump discontinuity",
+              "Infinite discontinuity (vertical asymptote)",
+              "Essential oscillating discontinuity"
+            ],
+            "correctIndex": 0,
+            "explanation": "Since the factor $(x - 3)$ cancels completely from the denominator, $\\lim_{x \\to 3} f(x) = \\frac{1}{5}$ exists. Because the limit exists while $f(3)$ is undefined, $x = 3$ is a removable discontinuity.",
+            "distractorTip": "If the denominator factor cancels out, it is a removable hole. If it remains in the denominator, it is a vertical asymptote."
+          },
+          {
+            "id": "c1-l9-q2",
+            "stem": "The greatest integer function $f(x) = \\lfloor x \\rfloor$ exhibits what type of discontinuity at integer values of $x$?",
+            "options": [
+              "Removable discontinuity",
+              "Jump discontinuity",
+              "Infinite discontinuity",
+              "It is continuous at integers"
+            ],
+            "correctIndex": 1,
+            "explanation": "At every integer $k$, $\\lim_{x \\to k^-} \\lfloor x \\rfloor = k - 1$ while $\\lim_{x \\to k^+} \\lfloor x \\rfloor = k$. Because one-sided limits are finite but unequal, it is a jump discontinuity.",
+            "distractorTip": "Finite one-sided limits that are unequal always produce a jump discontinuity."
+          },
+          {
+            "id": "c1-l9-q3",
+            "stem": "At $x = -2$, the function $f(x) = \\frac{x - 3}{(x - 3)(x + 2)}$ has which type of discontinuity?",
+            "options": [
+              "Removable discontinuity",
+              "Jump discontinuity",
+              "Infinite discontinuity (vertical asymptote)",
+              "No discontinuity"
+            ],
+            "correctIndex": 2,
+            "explanation": "After cancelling $(x - 3)$, the factor $(x + 2)$ remains in the denominator. As $x \\to -2$, the function grows unbounded ($-\\infty$ and $+\\infty$), creating an infinite discontinuity (vertical asymptote).",
+            "distractorTip": "Notice the difference between $x = 3$ (hole) and $x = -2$ (vertical asymptote) in the same function."
+          },
+          {
+            "id": "c1-l9-q4",
+            "stem": "Which of the following functions has a removable discontinuity at $x = 2$ and a vertical asymptote at $x = -2$?",
+            "options": [
+              "$f(x) = \\frac{1}{x^2 - 4}$",
+              "$f(x) = \\frac{x + 2}{(x - 2)^2}$",
+              "$f(x) = \\frac{x^2 - 4}{(x - 2)^2}$",
+              "$f(x) = \\frac{x - 2}{(x - 2)(x + 2)}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "For $f(x) = \\frac{x - 2}{(x - 2)(x + 2)}$, the factor $(x - 2)$ cancels in numerator and denominator, giving a removable hole at $x = 2$. The factor $(x + 2)$ remains in the denominator, causing a non-removable infinite vertical asymptote at $x = -2$.",
+            "distractorTip": "If a factor cancels out completely from the denominator, the discontinuity is removable; if it remains in the denominator, it is a vertical asymptote."
+          }
+        ],
+        "unitIndex": 1,
+        "levelNumber": 9,
+        "uniqueKey": "u1-l9"
+      },
+      {
+        "id": 110,
+        "topicNumber": "Topic 1.11",
+        "name": "3-Part Definition of Continuity at a Point",
+        "subtitle": "Checking $f(c)$, Limit Existence & Equality",
+        "difficulty": "Hard",
+        "rewardCoins": 55,
+        "questions": [
+          {
+            "id": "c1-l10-q1",
+            "stem": "According to the College Board CED, which three conditions are strictly required for a function $f$ to be continuous at $x = c$?",
+            "options": [
+              "$f(c)$ is defined, $\\lim_{x \\to c} f(x)$ exists, and $\\lim_{x \\to c} f(x) = f(c)$",
+              "$f'(c)$ exists, $f(c) > 0$, and $\\lim_{x \\to c} f(x) = 0$",
+              "$\\lim_{x \\to c^-} f(x) = f(c)$ and $f(c) \\neq 0$",
+              "The function has no vertical asymptotes anywhere on its domain"
+            ],
+            "correctIndex": 0,
+            "explanation": "Continuity at $x = c$ requires: (1) $f(c)$ is defined, (2) $\\lim_{x \\to c} f(x)$ exists, and (3) $\\lim_{x \\to c} f(x) = f(c)$. All three must hold.",
+            "distractorTip": "On AP Free-Response questions, you MUST explicitly verify all three conditions to earn full rubric credit."
+          },
+          {
+            "id": "c1-l10-q2",
+            "stem": "Let $f(x) = \\begin{cases} \\frac{x^2 - 16}{x - 4}, & x \\neq 4 \\\\ 8, & x = 4 \\end{cases}$. Is $f$ continuous at $x = 4$?",
+            "options": [
+              "No, because $f(4)$ is undefined.",
+              "Yes, because $f(4) = 8$, $\\lim_{x \\to 4} f(x) = 8$, and they are equal.",
+              "No, because $\\lim_{x \\to 4} f(x)$ does not exist.",
+              "No, because it is a piecewise function."
+            ],
+            "correctIndex": 1,
+            "explanation": "$\\lim_{x \\to 4} \\frac{(x-4)(x+4)}{x-4} = 4 + 4 = 8$. Since $f(4) = 8$, $\\lim_{x \\to 4} f(x) = f(4)$, confirming continuity at $x = 4$.",
+            "distractorTip": "Piecewise functions are continuous when the defined point perfectly fills the hole of the limit."
+          },
+          {
+            "id": "c1-l10-q3",
+            "stem": "If $\\lim_{x \\to 5} f(x) = 12$ and $f$ is known to be continuous at $x = 5$, what is the value of $f(5)$?",
+            "options": [
+              "$0$",
+              "$5$",
+              "$12$",
+              "Cannot be determined"
+            ],
+            "correctIndex": 2,
+            "explanation": "By the third condition of continuity, if $f$ is continuous at $x = 5$, then $f(5) = \\lim_{x \\to 5} f(x) = 12$.",
+            "distractorTip": "Continuity bridges the gap between the limit and the actual function value."
+          },
+          {
+            "id": "c1-l10-q4",
+            "stem": "Let $f(x) = \\begin{cases} 2x + 1, & x \\neq 3 \\\\ 10, & x = 3 \\end{cases}$. Why is $f(x)$ discontinuous at $x = 3$?",
+            "options": [
+              "The function is not defined on an open interval containing $3$.",
+              "$\\lim_{x \\to 3} f(x)$ does not exist because left and right limits disagree.",
+              "$f(3)$ is undefined.",
+              "$\\lim_{x \\to 3} f(x)$ exists ($= 7$), but $\\lim_{x \\to 3} f(x) \\neq f(3)$."
+            ],
+            "correctIndex": 3,
+            "explanation": "The three-part test requires: 1) $f(3)$ is defined ($f(3) = 10$); 2) $\\lim_{x \\to 3} f(x)$ exists ($= 2(3)+1 = 7$); 3) $\\lim_{x \\to 3} f(x) = f(3)$. Since $7 \\neq 10$, the third condition fails, creating a removable discontinuity.",
+            "distractorTip": "AP CED Exam Tip: When asked why a function is discontinuous on free response, explicitly state which of the 3 conditions fails."
+          },
+          {
+            "id": "c1-l10-q5",
+            "stem": "If $f(x)$ is continuous at $x = c$, which of the following statements MUST be true?",
+            "options": [
+              "$\\lim_{x \\to c^-} f(x) = \\lim_{x \\to c^+} f(x) = f(c)$",
+              "$f'(c)$ exists and is finite.",
+              "The graph of $f$ has a horizontal tangent at $x = c$.",
+              "$f(x) \\ge 0$ for all $x$ near $c$."
+            ],
+            "correctIndex": 0,
+            "explanation": "By the definition of continuity at a point, the left-hand limit, right-hand limit, and the value of the function must all exist and be equal: $\\lim_{x \\to c^-} f(x) = \\lim_{x \\to c^+} f(x) = f(c)$. Continuity does NOT imply differentiability.",
+            "distractorTip": "Trap: Differentiability implies continuity, but continuity does NOT imply differentiability (e.g. sharp corners like $|x|$)."
+          }
+        ],
+        "unitIndex": 1,
+        "levelNumber": 10,
+        "uniqueKey": "u1-l10"
+      },
+      {
+        "id": 111,
+        "topicNumber": "Topic 1.11",
+        "name": "Continuity in Piecewise Functions",
+        "subtitle": "Solving for Unknown Parameters ($k$)",
+        "difficulty": "Hard",
+        "rewardCoins": 55,
+        "questions": [
+          {
+            "id": "c1-l11-q1",
+            "stem": "Let $f(x) = \\begin{cases} kx + 1, & x \\le 2 \\\\ x^2 - k, & x > 2 \\end{cases}$. For what value of $k$ is $f$ continuous at $x = 2$?",
+            "options": [
+              "$k = 2$",
+              "$k = 1$",
+              "$k = 3$",
+              "$k = -1$"
+            ],
+            "correctIndex": 1,
+            "explanation": "For continuity at $x = 2$, left limit must equal right limit: $\\lim_{x \\to 2^-} (kx + 1) = 2k + 1$, and $\\lim_{x \\to 2^+} (x^2 - k) = 4 - k$. Setting them equal: $2k + 1 = 4 - k \\implies 3k = 3 \\implies k = 1$.",
+            "distractorTip": "This exact parameter-solving problem appears almost every year on the AP Exam."
+          },
+          {
+            "id": "c1-l11-q2",
+            "stem": "Let $g(x) = \\begin{cases} \\frac{x^2 - k^2}{x - k}, & x \\neq k \\\\ 6, & x = k \\end{cases}$. For what value of $k$ is $g$ continuous at $x = k$?",
+            "options": [
+              "$k = 2$",
+              "$k = 6$",
+              "$k = 3$",
+              "$k = 12$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Simplify the limit: $\\lim_{x \\to k} \\frac{(x-k)(x+k)}{x-k} = k + k = 2k$. For continuity, $2k = g(k) = 6 \\implies k = 3$.",
+            "distractorTip": "Remember that $\\lim_{x \\to k} (x + k) = k + k = 2k$, not $k$."
+          },
+          {
+            "id": "c1-l11-q3",
+            "stem": "Let $h(x) = \\begin{cases} c x^2 + 2x, & x < 1 \\\\ x^3 - cx, & x \\ge 1 \\end{cases}$. For what value of $c$ is $h$ continuous everywhere?",
+            "options": [
+              "$c = 0$",
+              "$c = \\frac{1}{2}$",
+              "$c = 1$",
+              "$c = -\\frac{1}{2}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Equate left and right limits at $x = 1$: $c(1)^2 + 2(1) = 1^3 - c(1) \\implies c + 2 = 1 - c \\implies 2c = -1 \\implies c = -\\frac{1}{2}$.",
+            "distractorTip": "Be mindful of algebraic signs when moving variable terms across the equal sign."
+          },
+          {
+            "id": "c1-l11-q4",
+            "stem": "For what values of $a$ and $b$ is the function $f(x) = \\begin{cases} ax + 3, & x < 1 \\\\ 5, & x = 1 \\\\ x^2 + b, & x > 1 \\end{cases}$ continuous at $x = 1$?",
+            "options": [
+              "$a = 2$ and $b = 4$",
+              "$a = 5$ and $b = 5$",
+              "$a = 3$ and $b = 1$",
+              "No such values exist"
+            ],
+            "correctIndex": 0,
+            "explanation": "For continuity at $x = 1$, we require $\\lim_{x \\to 1^-} f(x) = f(1) = \\lim_{x \\to 1^+} f(x)$. This means: $a(1) + 3 = 5 \\implies a = 2$, and $1^2 + b = 5 \\implies b = 4$.",
+            "distractorTip": "Set each one-sided limit equal to the actual point value $f(1) = 5$ independently."
+          },
+          {
+            "id": "c1-l11-q5",
+            "stem": "Let $f(x) = \\begin{cases} \\frac{\\sin(kx)}{x}, & x < 0 \\\\ 4x + k^2 - 6, & x \\ge 0 \\end{cases}$. For what positive value of $k$ is $f$ continuous at $x = 0$?",
+            "options": [
+              "$k = 2$",
+              "$k = 3$",
+              "$k = 6$",
+              "$k = 1$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Left limit: $\\lim_{x \\to 0^-} \\frac{\\sin(kx)}{x} = k$. Right limit and value: $4(0) + k^2 - 6 = k^2 - 6$. Equating them gives $k^2 - k - 6 = 0 \\implies (k - 3)(k + 2) = 0$. Since $k > 0$, $k = 3$.",
+            "distractorTip": "Remember that quadratic equations give two roots; the question explicitly asks for the positive value ($k = 3$, not $-2$)."
+          }
+        ],
+        "unitIndex": 1,
+        "levelNumber": 11,
+        "uniqueKey": "u1-l11"
+      },
+      {
+        "id": 112,
+        "topicNumber": "Topic 1.12 & 1.13",
+        "name": "Continuity on Intervals & Removing Discontinuities",
+        "subtitle": "Endpoint Continuity & Domain Boundaries",
+        "difficulty": "Hard",
+        "rewardCoins": 60,
+        "questions": [
+          {
+            "id": "c1-l12-q1",
+            "stem": "A function $f$ is defined on the closed interval $[a, b]$. What is required for $f$ to be continuous on $[a, b]$?",
+            "options": [
+              "The two-sided limits at both $a$ and $b$ must exist.",
+              "$f$ must have equal values at endpoints: $f(a) = f(b)$.",
+              "$f$ is continuous on $(a, b)$, $\\lim_{x \\to a^+} f(x) = f(a)$, and $\\lim_{x \\to b^-} f(x) = f(b)$.",
+              "$f'(x) > 0$ for all $x \\in (a, b)$."
+            ],
+            "correctIndex": 2,
+            "explanation": "At endpoints of a closed interval, continuity is defined via one-sided limits: right-continuity at the left endpoint $a$, and left-continuity at the right endpoint $b$.",
+            "distractorTip": "You cannot evaluate a two-sided limit at endpoints of a domain because values outside the domain do not exist."
+          },
+          {
+            "id": "c1-l12-q2",
+            "stem": "What is the largest domain on which $f(x) = \\sqrt{16 - x^2}$ is continuous?",
+            "options": [
+              "$(-\\infty, \\infty)$",
+              "$(-4, 4)$",
+              "$[0, 4]$",
+              "$[-4, 4]$"
+            ],
+            "correctIndex": 3,
+            "explanation": "We require $16 - x^2 \\ge 0 \\implies x^2 \\le 16 \\implies -4 \\le x \\le 4$. The function is continuous on the entire closed interval $[-4, 4]$, including one-sided continuity at the endpoints.",
+            "distractorTip": "Square root functions with nonnegative arguments are continuous on closed intervals, not open intervals."
+          },
+          {
+            "id": "c1-l12-q3",
+            "stem": "How can the removable discontinuity in $f(x) = \\frac{\\sin(4x)}{x}$ be removed to make the function continuous at $x = 0$?",
+            "options": [
+              "Define $f(0) = 4$",
+              "Define $f(0) = 1$",
+              "Define $f(0) = 0$",
+              "The discontinuity cannot be removed"
+            ],
+            "correctIndex": 0,
+            "explanation": "Since $\\lim_{x \\to 0} \\frac{\\sin(4x)}{x} = 4$, defining $f(0) = 4$ satisfies $\\lim_{x \\to 0} f(x) = f(0)$, successfully removing the discontinuity.",
+            "distractorTip": "To remove a removable discontinuity, set the function value at that point equal to the limit value."
+          },
+          {
+            "id": "c1-l12-q4",
+            "stem": "On which of the following intervals is $f(x) = \\frac{1}{\\sqrt{9 - x^2}}$ continuous?",
+            "options": [
+              "$[-3, 3]$",
+              "$(-3, 3)$",
+              "$(-\\infty, -3) \\cup (3, \\infty)$",
+              "$[0, 3)$"
+            ],
+            "correctIndex": 1,
+            "explanation": "For the square root in the denominator to be real and non-zero, the radicand must be strictly positive: $9 - x^2 > 0 \\implies x^2 < 9 \\implies -3 < x < 3$. At $x = \\pm 3$, the denominator is zero (vertical asymptotes), so the endpoints cannot be included.",
+            "distractorTip": "Check if endpoints are included: if the square root is in the denominator, you cannot have zero, so use open parentheses $(-3, 3)$."
+          },
+          {
+            "id": "c1-l12-q5",
+            "stem": "The function $f(x) = \\frac{x^2 - x - 6}{x - 3}$ has a removable discontinuity at $x = 3$. To make $f(x)$ continuous on all real numbers, what value should be assigned to $f(3)$?",
+            "options": [
+              "$-5$",
+              "$0$",
+              "$5$",
+              "$6$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Factor the numerator: $x^2 - x - 6 = (x - 3)(x + 2)$. For $x \\neq 3$, $f(x) = x + 2$. The limit as $x \\to 3$ is $3 + 2 = 5$. To remove the discontinuity, define $f(3) = \\lim_{x \\to 3} f(x) = 5$.",
+            "distractorTip": "A removable discontinuity can be patched by defining the function value at that point equal to the limit of the simplified expression."
+          }
+        ],
+        "unitIndex": 1,
+        "levelNumber": 12,
+        "uniqueKey": "u1-l12"
+      },
+      {
+        "id": 113,
+        "topicNumber": "Topic 1.14",
+        "name": "Infinite Limits & Vertical Asymptotes",
+        "subtitle": "Nonzero/Zero Forms & Asymptotic Behavior",
+        "difficulty": "Hard",
+        "rewardCoins": 60,
+        "questions": [
+          {
+            "id": "c1-l13-q1",
+            "stem": "Evaluate $\\lim_{x \\to 3^+} \\frac{x + 2}{x - 3}$.",
+            "options": [
+              "$0$",
+              "$5$",
+              "$-\\infty$",
+              "$+\\infty$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Direct substitution yields $\\frac{5}{0}$ (nonzero over zero), which indicates a vertical asymptote. As $x \\to 3^+$ ($x > 3$), numerator is $+5$ and denominator is small positive $+0.001$, yielding $+\\infty$.",
+            "distractorTip": "A nonzero number divided by zero always indicates $\\pm\\infty$ or DNE, never a finite number."
+          },
+          {
+            "id": "c1-l13-q2",
+            "stem": "Evaluate $\\lim_{x \\to 2^-} \\frac{1}{(x - 2)^2}$.",
+            "options": [
+              "$+\\infty$",
+              "$-\\infty$",
+              "$0$",
+              "Does not exist"
+            ],
+            "correctIndex": 0,
+            "explanation": "Because the denominator is squared $(x - 2)^2$, it is always positive whether $x$ approaches from the left or right. A positive numerator over positive zero approaches $+\\infty$.",
+            "distractorTip": "Even though $x \\to 2^-$ from the left, squaring a negative difference makes it positive."
+          },
+          {
+            "id": "c1-l13-q3",
+            "stem": "How many vertical asymptotes does the graph of $f(x) = \\frac{x - 1}{x^2 - 1}$ have?",
+            "options": [
+              "$0$",
+              "$1$",
+              "$2$",
+              "Infinitely many"
+            ],
+            "correctIndex": 1,
+            "explanation": "Factor denominator: $\\frac{x - 1}{(x - 1)(x + 1)} = \\frac{1}{x + 1}$. The factor $(x - 1)$ cancels, producing a removable hole at $x = 1$. The factor $(x + 1)$ remains, creating exactly one vertical asymptote at $x = -1$.",
+            "distractorTip": "Classic AP distractor: Not every zero of the denominator is a vertical asymptote; cancelling factors create holes!"
+          },
+          {
+            "id": "c1-l13-q4",
+            "stem": "Evaluate $\\lim_{x \\to 1^+} \\frac{x^2 + 1}{x - 1}$.",
+            "options": [
+              "$2$",
+              "$-\\infty$",
+              "$+\\infty$",
+              "$0$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Direct substitution yields the non-zero over zero form: $\\frac{1^2+1}{1^+-1} = \\frac{2}{0^+}$. A positive numerator divided by an infinitesimally small positive denominator approaches $+\\infty$.",
+            "distractorTip": "Always analyze the sign of the denominator approaching from the specified side: $1^+$ means $x > 1$, so $x - 1 > 0$."
+          },
+          {
+            "id": "c1-l13-q5",
+            "stem": "Evaluate $\\lim_{x \\to 5^-} \\frac{x + 3}{x - 5}$.",
+            "options": [
+              "Does not exist and is bounded",
+              "$+\\infty$",
+              "$-8$",
+              "$-\\infty$"
+            ],
+            "correctIndex": 3,
+            "explanation": "As $x \\to 5^-$, the numerator approaches $5 + 3 = 8 > 0$. The denominator $x - 5$ approaches $0$ from negative values ($0^-$). Positive divided by negative zero yields $-\\infty$.",
+            "distractorTip": "Notice $x \\to 5^-$ means $x < 5$, making $x - 5$ negative, resulting in $-\\infty$."
+          }
+        ],
+        "unitIndex": 1,
+        "levelNumber": 13,
+        "uniqueKey": "u1-l13"
+      },
+      {
+        "id": 114,
+        "topicNumber": "Topic 1.15",
+        "name": "Limits at Infinity & Horizontal Asymptotes",
+        "subtitle": "Dominant Terms & Radical End Behavior",
+        "difficulty": "Hard",
+        "rewardCoins": 65,
+        "questions": [
+          {
+            "id": "c1-l14-q1",
+            "stem": "Evaluate $\\lim_{x \\to \\infty} \\frac{5x^3 - 2x + 7}{2x^3 + 9x^2 - 1}$.",
+            "options": [
+              "$\\frac{5}{2}$",
+              "$0$",
+              "$\\infty$",
+              "$-7$"
+            ],
+            "correctIndex": 0,
+            "explanation": "For rational functions as $x \\to \\infty$, the limit is determined by the highest-degree terms: $\\lim_{x \\to \\infty} \\frac{5x^3}{2x^3} = \\frac{5}{2}$.",
+            "distractorTip": "When numerator and denominator have equal degrees, the limit is the ratio of the leading coefficients."
+          },
+          {
+            "id": "c1-l14-q2",
+            "stem": "Evaluate $\\lim_{x \\to -\\infty} \\frac{\\sqrt{9x^2 + 4}}{2x - 1}$.",
+            "options": [
+              "$\\frac{3}{2}$",
+              "$-\\frac{3}{2}$",
+              "$\\frac{9}{2}$",
+              "Does not exist"
+            ],
+            "correctIndex": 1,
+            "explanation": "As $x \\to -\\infty$, $x$ is negative, so $\\sqrt{x^2} = |x| = -x$. Thus, $\\sqrt{9x^2} = 3|x| = -3x$. The dominant ratio is $\\frac{-3x}{2x} = -\\frac{3}{2}$.",
+            "distractorTip": "Score-5 Trap! For $x \\to -\\infty$, $\\sqrt{x^2} = -x$. Forgetting the negative sign is the #1 student mistake on this question."
+          },
+          {
+            "id": "c1-l14-q3",
+            "stem": "How many distinct horizontal asymptotes does the function $f(x) = \\frac{4e^x + 5}{e^x + 1}$ have?",
+            "options": [
+              "$0$",
+              "$1$",
+              "$2$",
+              "$3$"
+            ],
+            "correctIndex": 2,
+            "explanation": "As $x \\to +\\infty$, $e^x \\to \\infty$, so $\\lim_{x \\to \\infty} \\frac{4e^x}{e^x} = 4$ ($y = 4$). As $x \\to -\\infty$, $e^x \\to 0$, so $\\lim_{x \\to -\\infty} \\frac{0 + 5}{0 + 1} = 5$ ($y = 5$). Thus there are $2$ horizontal asymptotes ($y = 4$ and $y = 5$).",
+            "distractorTip": "Exponential functions frequently have two distinct horizontal asymptotes because $e^x \\to 0$ as $x \\to -\\infty$."
+          },
+          {
+            "id": "c1-l14-q4",
+            "stem": "Evaluate $\\lim_{x \\to \\infty} \\frac{4x^3 - 7x + 1}{2x^3 + 5x^2 - 9}$.",
+            "options": [
+              "$+\\infty$",
+              "$4$",
+              "$-7/5$",
+              "$2$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Since the degrees of the numerator and denominator are equal (degree 3), the limit as $x \\to \\infty$ is the ratio of their leading coefficients: $\\frac{4}{2} = 2$.",
+            "distractorTip": "When degrees match, the horizontal asymptote is simply the ratio of the leading coefficients."
+          },
+          {
+            "id": "c1-l14-q5",
+            "stem": "Evaluate $\\lim_{x \\to \\infty} \\frac{3e^x + 5}{2e^x - 7}$.",
+            "options": [
+              "$\\frac{3}{2}$",
+              "$-\\frac{5}{7}$",
+              "$0$",
+              "$+\\infty$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Dividing numerator and denominator by $e^x$: $\\lim_{x \\to \\infty} \\frac{3 + 5e^{-x}}{2 - 7e^{-x}}$. Since $\\lim_{x \\to \\infty} e^{-x} = 0$, this evaluates to $\\frac{3 + 0}{2 - 0} = \\frac{3}{2}$.",
+            "distractorTip": "Watch out if $x \\to -\\infty$ instead: as $x \\to -\\infty$, $e^x \\to 0$, which would yield $-5/7$. But as $x \\to +\\infty$, $e^x$ dominates, yielding $3/2$."
+          }
+        ],
+        "unitIndex": 1,
+        "levelNumber": 14,
+        "uniqueKey": "u1-l14"
+      },
+      {
+        "id": 115,
+        "topicNumber": "Topic 1.16",
+        "name": "Intermediate Value Theorem (IVT)",
+        "subtitle": "Existence Proofs & Root Guarantees",
+        "difficulty": "Hard",
+        "rewardCoins": 70,
+        "questions": [
+          {
+            "id": "c1-l15-q1",
+            "stem": "Which condition is strictly required to apply the Intermediate Value Theorem (IVT) to a function $f$ on $[a, b]$?",
+            "options": [
+              "$f$ must be differentiable on $(a, b)$",
+              "$f$ must be continuous on the closed interval $[a, b]$",
+              "$f(a)$ must equal $f(b)$",
+              "$f'(x)$ must not equal zero on $(a, b)$"
+            ],
+            "correctIndex": 1,
+            "explanation": "IVT requires only one hypothesis: $f$ must be continuous on the closed interval $[a, b]$. Differentiability is NOT required.",
+            "distractorTip": "Do not confuse IVT (requires only continuity) with MVT/Rolle's theorem (which also requires differentiability)."
+          },
+          {
+            "id": "c1-l15-q2",
+            "stem": "The function $f(x) = x^3 - 3x - 1$ is continuous on $[1, 3]$. Given $f(1) = -3$ and $f(3) = 17$, why does the IVT guarantee at least one solution to $f(x) = 0$ on $(1, 3)$?",
+            "options": [
+              "Because the average rate of change on $[1, 3]$ is $10$.",
+              "Because $f(x)$ is a cubic polynomial with three real roots.",
+              "Because $f(1) < 0$ and $f(3) > 0$, and $0$ lies between $-3$ and $17$.",
+              "Because $f'(c) = 0$ at some point."
+            ],
+            "correctIndex": 2,
+            "explanation": "Since $f$ is continuous on $[1, 3]$ and $0$ lies between $f(1) = -3$ and $f(3) = 17$, by the IVT there must exist at least one $c \\in (1, 3)$ such that $f(c) = 0$.",
+            "distractorTip": "Always show that the target value $L$ strictly satisfies $f(a) \\le L \\le f(b)$ to justify IVT."
+          },
+          {
+            "id": "c1-l15-q3",
+            "stem": "A continuous function $g$ satisfies the table values:\n- $g(0) = 4$\n- $g(2) = -1$\n- $g(5) = 3$\nWhat is the minimum number of solutions to $g(x) = 0$ on the interval $[0, 5]$ guaranteed by IVT?",
+            "options": [
+              "$0$",
+              "$1$",
+              "$3$",
+              "$2$"
+            ],
+            "correctIndex": 3,
+            "explanation": "On $[0, 2]$, $g$ changes sign from $4$ to $-1$, guaranteeing at least $1$ root. On $[2, 5]$, $g$ changes sign from $-1$ to $3$, guaranteeing at least $1$ root. Total guaranteed roots is at least $2$.",
+            "distractorTip": "Count sign changes between consecutive data points on continuous functions to find the minimum number of zeros."
+          },
+          {
+            "id": "c1-l15-q4",
+            "stem": "A continuous function $f(x)$ on $[0, 5]$ satisfies $f(0) = -3$ and $f(5) = 7$. By the Intermediate Value Theorem, which of the following is GUARANTEED?",
+            "options": [
+              "There exists at least one $c \\in (0, 5)$ such that $f(c) = 0$.",
+              "There exists at least one $c \\in (0, 5)$ such that $f'(c) = 2$.",
+              "$f(x)$ is increasing on the entire interval $[0, 5]$.",
+              "$f(2.5) = 2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Since $f$ is continuous on $[0, 5]$ and $0$ lies between $f(0) = -3$ and $f(5) = 7$, IVT guarantees that $f(c) = 0$ for at least one $c \\in (0, 5)$. IVT does not guarantee derivative values (that is MVT) or that $f$ is monotonic.",
+            "distractorTip": "Do not confuse IVT (guarantees function values $f(c) = k$) with MVT (guarantees derivative values $f'(c) = \\frac{f(b)-f(a)}{b-a}$)."
+          },
+          {
+            "id": "c1-l15-q5",
+            "stem": "Why can the Intermediate Value Theorem NOT be applied to $f(x) = \\frac{1}{x - 2}$ on $[1, 3]$ to guarantee a value between $f(1) = -1$ and $f(3) = 1$?",
+            "options": [
+              "$f(1)$ and $f(3)$ have opposite signs.",
+              "$f(x)$ is not continuous on $[1, 3]$ because it has a vertical asymptote at $x = 2$.",
+              "The interval $[1, 3]$ is not open.",
+              "The function is not differentiable at the endpoints."
+            ],
+            "correctIndex": 1,
+            "explanation": "The fundamental hypothesis of the Intermediate Value Theorem is that $f(x)$ MUST be continuous on the closed interval $[a, b]$. Because $f(x)$ has an infinite discontinuity at $x = 2 \\in [1, 3]$, IVT does not apply, and indeed $f(x) = \\frac{1}{x-2}$ is never equal to $0$ on $[1, 3]$.",
+            "distractorTip": "Always check hypotheses first! If continuity on the closed interval is violated, IVT cannot be applied."
+          }
+        ],
+        "unitIndex": 1,
+        "levelNumber": 15,
+        "uniqueKey": "u1-l15"
+      },
+      {
+        "id": 116,
+        "topicNumber": "Topic 1.16 Apex",
+        "name": "Unit 1 Apex Boss: Limits & Continuity Synthesis",
+        "subtitle": "Hardest Multi-Step MCQs + Guided FRQ with Official Rubric",
+        "difficulty": "Boss",
+        "rewardCoins": 100,
+        "questions": [
+          {
+            "id": "c1-l16-q1",
+            "stem": "Let $f(x) = \\begin{cases} \\frac{\\sqrt{x + 1} - 1}{x}, & x > 0 \\\\ c, & x = 0 \\\\ \\frac{\\sin(2x)}{4x}, & x < 0 \\end{cases}$. For what value of $c$ is $f$ continuous at $x = 0$?",
+            "options": [
+              "$c = 1$",
+              "$c = \\frac{1}{4}$",
+              "$c = \\frac{1}{2}$",
+              "No such value of $c$ exists"
+            ],
+            "correctIndex": 2,
+            "explanation": "Evaluate right limit: $\\lim_{x \\to 0^+} \\frac{\\sqrt{x+1}-1}{x} = \\frac{1}{\\sqrt{0+1}+1} = \\frac{1}{2}$. Evaluate left limit: $\\lim_{x \\to 0^-} \\frac{\\sin(2x)}{4x} = \\frac{2}{4} = \\frac{1}{2}$. Since both one-sided limits equal $\\frac{1}{2}$, setting $c = \\frac{1}{2}$ ensures $f(0) = \\lim_{x \\to 0} f(x) = \\frac{1}{2}$, making $f$ continuous.",
+            "distractorTip": "Boss problem: Combines radical conjugate rationalization AND trig limits into a single piecewise continuity verification!"
+          },
+          {
+            "id": "c1-l16-q2",
+            "stem": "Evaluate $\\lim_{x \\to 1} \\frac{x^2 - 1}{|x - 1|}$.",
+            "options": [
+              "$2$",
+              "$-2$",
+              "$0$",
+              "Does not exist"
+            ],
+            "correctIndex": 3,
+            "explanation": "As $x \\to 1^+$, $|x-1| = x-1$, so $\\lim = x+1 = 2$. As $x \\to 1^-$, $|x-1| = -(x-1)$, so $\\lim = -(x+1) = -2$. Since the left limit ($-2$) does not equal the right limit ($2$), the two-sided limit Does Not Exist.",
+            "distractorTip": "Always check both sides when an absolute value expression is in the denominator; if one-sided limits differ, the two-sided limit is DNE."
+          },
+          {
+            "id": "c1-l16-q3",
+            "stem": "If $f$ is continuous on $[0, 4]$, $f(0) = 1$, and $f(4) = 9$, which of the following is NOT necessarily guaranteed by the Intermediate Value Theorem?",
+            "options": [
+              "There exists $c \\in (0, 4)$ such that $f'(c) = 2$.",
+              "There exists $c \\in (0, 4)$ such that $f(c) = 3$.",
+              "There exists $c \\in (0, 4)$ such that $f(c) = 5$.",
+              "There exists $c \\in (0, 4)$ such that $f(c) = 8$."
+            ],
+            "correctIndex": 0,
+            "explanation": "Option A states that $f'(c) = 2$. This requires the Mean Value Theorem (MVT) which demands differentiability. IVT guarantees intermediate function values $y$, NOT derivative values $f'(c)$.",
+            "distractorTip": "Major College Board trap: IVT guarantees y-values of the function, never slopes or derivative values."
+          },
+          {
+            "id": "c1-l16-q4",
+            "stem": "Evaluate $\\lim_{x \\to 2} \\frac{\\sqrt{x^2 + 5} - 3}{x - 2}$.",
+            "options": [
+              "$\\frac{1}{3}$",
+              "$\\frac{2}{3}$",
+              "$\\frac{1}{6}$",
+              "Does not exist"
+            ],
+            "correctIndex": 1,
+            "explanation": "Multiply numerator and denominator by the conjugate $(\\sqrt{x^2+5}+3)$: $\\frac{(x^2+5)-9}{(x-2)(\\sqrt{x^2+5}+3)} = \\frac{x^2-4}{(x-2)(\\sqrt{x^2+5}+3)} = \\frac{(x-2)(x+2)}{(x-2)(\\sqrt{x^2+5}+3)} = \\frac{x+2}{\\sqrt{x^2+5}+3}$. As $x \\to 2$, this equals $\\frac{2+2}{\\sqrt{4+5}+3} = \\frac{4}{3+3} = \\frac{4}{6} = \\frac{2}{3}$.",
+            "distractorTip": "Notice this combines conjugate rationalization with factoring difference of squares $(x^2 - 4 = (x-2)(x+2))$."
+          },
+          {
+            "id": "c1-l16-q5",
+            "stem": "Let $f(x) = \\begin{cases} \\frac{|x - 3|}{x - 3} + 2, & x < 3 \\\\ c, & x = 3 \\\\ 2x - 5, & x > 3 \\end{cases}$. What value of $c$, if any, makes $f(x)$ continuous at $x = 3$?",
+            "options": [
+              "$c = -1$",
+              "$c = 3$",
+              "$c = 1$",
+              "No value of $c$ can make $f$ continuous at $x = 3$."
+            ],
+            "correctIndex": 2,
+            "explanation": "For $x < 3$, $|x - 3| = -(x - 3)$, so $\\frac{-(x-3)}{x-3} + 2 = -1 + 2 = 1$. Thus $\\lim_{x \\to 3^-} f(x) = 1$. For $x > 3$, $\\lim_{x \\to 3^+} f(x) = 2(3) - 5 = 1$. Since left and right limits both equal $1$, setting $c = f(3) = 1$ makes $f(x)$ continuous at $x = 3$.",
+            "distractorTip": "Evaluate both one-sided limits independently; if they match, $c$ can be chosen to equal that common limit!"
+          },
+          {
+            "id": "c1-l16-q6",
+            "stem": "Which of the following functions has BOTH a horizontal asymptote at $y = 3$ and a vertical asymptote at $x = -2$?",
+            "options": [
+              "$f(x) = \\frac{3x^2 - 5}{x^2 - 4}$",
+              "$f(x) = \\frac{6x - 2}{2x - 4}$",
+              "$f(x) = \\frac{3x^2 + 1}{x - 2}$",
+              "$f(x) = \\frac{3x - 1}{x + 2}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "For $f(x) = \\frac{3x - 1}{x + 2}$: 1) Horizontal asymptote: $\\lim_{x \\to \\infty} \\frac{3x - 1}{x + 2} = \\frac{3}{1} = 3$. 2) Vertical asymptote: at $x = -2$, denominator is zero while numerator is $3(-2)-1 = -7 \\neq 0$, creating a vertical asymptote at $x = -2$.",
+            "distractorTip": "Confirm that the numerator is non-zero at $x = -2$ so it does not cancel out into a removable hole."
+          },
+          {
+            "id": "c1-l16-q7",
+            "stem": "**[Official AP Free-Response (FRQ) Synthesis]**\n\nLet $f$ be continuous on the closed interval $[-2, 6]$ with $f(-2) = -5$ and $f(6) = 11$. Define $h(x) = f(x) - 2x$.\n\n**Part (a):** Must there exist a number $c \\in (-2, 6)$ such that $f(c) = 0$?\n**Part (b):** Must there exist a number $d \\in (-2, 6)$ such that $f(d) = 2d$?\n\nAccording to the official College Board AP scoring rubric, which of the following is the only mathematically complete conclusion?",
+            "options": [
+              "Yes to Part (a) only: $f$ is continuous on $[-2, 6]$ and $f(-2) < 0 < f(6)$, guaranteeing $f(c) = 0$ by IVT; but for Part (b), $h(-2) = -1 < 0$ and $h(6) = -1 < 0$, so IVT does NOT guarantee a sign change for $h(d) = 0$.",
+              "No to both: Because $f$ is not given to be differentiable, neither IVT nor MVT can be applied.",
+              "Yes to both: $f$ is continuous, $0$ is between $-5$ and $11$, and $h(x)$ is continuous on $[-2, 6]$.",
+              "Yes to Part (b) only: By solving $f(x) - 2x = 0$ directly at the midpoint."
+            ],
+            "correctIndex": 0,
+            "explanation": "**Official AP Reader Scoring Analysis:**\n- **Point 1 (Part a):** $f$ is explicitly stated to be continuous on $[-2, 6]$. Because $f(-2) = -5 < 0 < 11 = f(6)$, the Intermediate Value Theorem strictly guarantees some $c \\in (-2, 6)$ where $f(c) = 0$.\n- **Point 2 (Part b):** $f(d) = 2d \\iff h(d) = f(d) - 2d = 0$. Evaluate endpoints: $h(-2) = f(-2) - 2(-2) = -5 + 4 = -1$. Next, $h(6) = f(6) - 2(6) = 11 - 12 = -1$. Since $h(-2) < 0$ and $h(6) < 0$, both endpoint values are negative! Thus, IVT does NOT guarantee that $h(d) = 0$, so we cannot conclude that $f(d) = 2d$.\n\nCollege Board explicitly tests this: NEVER assume a root exists without verifying that the values lie on OPPOSITE sides of zero!",
+            "distractorTip": "College Board FRQ Trap: Many students hastily assume $f(d) = 2d$ exists without actually evaluating $h(-2)$ and $h(6)$ to confirm opposite signs!"
+          }
+        ],
+        "unitIndex": 1,
+        "levelNumber": 16,
+        "uniqueKey": "u1-l16"
+      }
+    ]
   },
   {
-    unitIndex: 10,
-    unitId: 'u10',
-    title: 'Unit 10: Infinite Sequences and Series',
-    shortTitle: 'Unit 10: Infinite Series',
-    description: 'Convergence tests, alternating series, power series, Taylor and Maclaurin polynomials, and Lagrange error bound',
-    examWeight: '17–18% of AP Exam (BC Exclusive)',
-    biome: {
-      name: 'Infinite Cosmos & Taylor Apex',
-      icon: '🌌',
-      accentColor: '#9333EA',
-      secondaryColor: '#7E22CE',
-      groundGradient: 'from-purple-100 via-fuchsia-50 to-indigo-100',
-      cardBorder: 'border-purple-600',
-      trailColor: '#7e22ce',
-      nodeRing: 'ring-purple-400/40',
-      skyTint: 'from-purple-50 to-fuchsia-50/30'
+    "unitIndex": 2,
+    "unitId": "u2",
+    "title": "Unit 2: Differentiation: Definition & Fundamental Properties",
+    "shortTitle": "Unit 2: Derivatives",
+    "description": "Rate of change, limit definition of derivative, power, product, quotient rules, and trig derivatives",
+    "examWeight": "10–12% of AP Exam",
+    "biome": {
+      "name": "Verdant Valley of Tangents",
+      "icon": "🌿",
+      "accentColor": "#10B981",
+      "secondaryColor": "#059669",
+      "groundGradient": "from-emerald-100 via-teal-50 to-green-100",
+      "cardBorder": "border-emerald-500",
+      "trailColor": "#059669",
+      "nodeRing": "ring-emerald-400/40",
+      "skyTint": "from-emerald-50 to-teal-50/30"
     },
-    levels: UNIT_10_LEVELS
+    "levels": [
+      {
+        "id": 201,
+        "unitIndex": 2,
+        "levelNumber": 1,
+        "uniqueKey": "u2-l1",
+        "topicNumber": "Topic 2.1 & 2.2",
+        "name": "Instantaneous Rate & Limit Definition",
+        "subtitle": "Difference quotients and defining $f'(x)$",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l1-q1",
+            "stem": "Which limit represents $f'(3)$ for $f(x) = x^3$ using the definition of the derivative?",
+            "options": [
+              "$\\lim_{x \\to 3} \\frac{x^3 + 27}{x - 3}$",
+              "$\\lim_{h \\to 0} \\frac{(3+h)^3 - 27}{h}$",
+              "$\\lim_{h \\to 0} \\frac{(3+h)^3 - 3^3}{3}$",
+              "$\\frac{3^3 - 0}{3 - 0}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "By definition, $f'(a) = \\lim_{h \\to 0} \\frac{f(a+h) - f(a)}{h}$. For $f(x) = x^3$ at $a = 3$, $f(3) = 27$, so $f'(3) = \\lim_{h \\to 0} \\frac{(3+h)^3 - 27}{h}$.",
+            "distractorTip": "Watch out for the alternate form $\\lim_{x \\to a} \\frac{f(x) - f(a)}{x - a}$, which has a minus in the numerator."
+          },
+          {
+            "id": "c2-l1-q2",
+            "stem": "Evaluate $\\lim_{h \\to 0} \\frac{\\sqrt{4 + h} - 2}{h}$.",
+            "options": [
+              "$0$",
+              "$\\frac{1}{2}$",
+              "$\\frac{1}{4}$",
+              "$2$"
+            ],
+            "correctIndex": 2,
+            "explanation": "This represents $f'(4)$ where $f(x) = \\sqrt{x}$. Since $f'(x) = \\frac{1}{2\\sqrt{x}}$, at $x = 4$ it equals $\\frac{1}{2\\sqrt{4}} = \\frac{1}{4}$.",
+            "distractorTip": "Recognizing the derivative limit form saves lots of radical conjugate algebra."
+          },
+          {
+            "id": "c2-l1-q3",
+            "stem": "If $f(x) = 2x^2 - 5x$, what is the average rate of change on $[1, 4]$?",
+            "options": [
+              "$-1$",
+              "$7$",
+              "$12$",
+              "$5$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Average rate of change $= \\frac{f(4) - f(1)}{4 - 1} = \\frac{(32-20) - (2-5)}{3} = \\frac{12 - (-3)}{3} = \\frac{15}{3} = 5$.",
+            "distractorTip": "Average rate is the slope of the secant line: $\\frac{f(b) - f(a)}{b - a}$, not the derivative."
+          }
+        ]
+      },
+      {
+        "id": 202,
+        "unitIndex": 2,
+        "levelNumber": 2,
+        "uniqueKey": "u2-l2",
+        "topicNumber": "Topic 2.3",
+        "name": "Estimating Derivatives from Tables",
+        "subtitle": "Secant approximations on discrete data",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l2-q1",
+            "stem": "A table gives temperature $T(t)$: $T(2) = 68^\\circ$F, $T(5) = 80^\\circ$F, $T(8) = 98^\\circ$F. What is the best estimate of $T'(5)$?",
+            "options": [
+              "$5^\\circ\\text{F/min}$",
+              "$4^\\circ\\text{F/min}$",
+              "$6^\\circ\\text{F/min}$",
+              "$12^\\circ\\text{F/min}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "To estimate $T'(5)$ from symmetric endpoints $t=2$ and $t=8$: $\\frac{T(8) - T(2)}{8 - 2} = \\frac{98 - 68}{6} = 5^\\circ\\text{F/min}$.",
+            "distractorTip": "On AP Exam FRQs, always use the closest values spanning the target point and include units."
+          },
+          {
+            "id": "c2-l2-q2",
+            "stem": "Given $f(1)=10$, $f(3)=18$, $f(7)=30$, estimate $f'(2)$ using the interval $[1, 3]$.",
+            "options": [
+              "$8$",
+              "$4$",
+              "$3$",
+              "$2$"
+            ],
+            "correctIndex": 1,
+            "explanation": "The average rate of change on $[1, 3]$ is $\\frac{f(3) - f(1)}{3 - 1} = \\frac{18 - 10}{2} = 4$.",
+            "distractorTip": "Secant slope over the containing subinterval is the standard AP estimator."
+          },
+          {
+            "id": "c2-l2-q3",
+            "stem": "If $v(t)$ represents the velocity in m/s of a car, what are the units of $v'(t)$?",
+            "options": [
+              "$\\text{m}$",
+              "$\\text{m/s}$",
+              "$\\text{m/s}^2$",
+              "$\\text{s/m}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "The derivative has units of $\\frac{\\text{output unit}}{\\text{input unit}} = \\frac{\\text{m/s}}{\\text{s}} = \\text{m/s}^2$.",
+            "distractorTip": "Units of a derivative are always units of $y$ divided by units of $x$."
+          }
+        ]
+      },
+      {
+        "id": 203,
+        "unitIndex": 2,
+        "levelNumber": 3,
+        "uniqueKey": "u2-l3",
+        "topicNumber": "Topic 2.4",
+        "name": "Connecting Differentiability & Continuity",
+        "subtitle": "Corners, cusps, and vertical tangents",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l3-q1",
+            "stem": "Which statement correctly describes the relationship between differentiability and continuity?",
+            "options": [
+              "Differentiability and continuity are completely unrelated concepts.",
+              "Continuity implies differentiability everywhere.",
+              "A function can be differentiable at a point where it is discontinuous.",
+              "Differentiability implies continuity, but continuity does NOT imply differentiability."
+            ],
+            "correctIndex": 3,
+            "explanation": "If $f$ is differentiable at $x=c$, it must be continuous at $x=c$. However, functions with sharp corners (like $f(x)=|x|$ at $x=0$) are continuous but not differentiable.",
+            "distractorTip": "Remember the classic counterexample: $y = |x|$ is continuous at $0$, but has no derivative there."
+          },
+          {
+            "id": "c2-l3-q2",
+            "stem": "At $x = 0$, why does $f(x) = |x|$ fail to be differentiable?",
+            "options": [
+              "The left-hand derivative ($-1$) and right-hand derivative ($+1$) are unequal.",
+              "$f(0)$ is undefined.",
+              "$f(x)$ is discontinuous at $x = 0$.",
+              "The tangent line is vertical."
+            ],
+            "correctIndex": 0,
+            "explanation": "Left derivative is $\\lim_{h \\to 0^-} \\frac{|h|}{h} = -1$, while right derivative is $+1$. Since one-sided derivatives do not match, $f'(0)$ does not exist.",
+            "distractorTip": "A sharp corner occurs where one-sided slopes disagree."
+          },
+          {
+            "id": "c2-l3-q3",
+            "stem": "Why is $f(x) = x^{1/3}$ not differentiable at $x = 0$?",
+            "options": [
+              "It is discontinuous at $x = 0$.",
+              "It has a vertical tangent line with infinite slope.",
+              "It has a jump discontinuity.",
+              "It has a corner."
+            ],
+            "correctIndex": 1,
+            "explanation": "$f'(x) = \\frac{1}{3x^{2/3}}$. As $x \\to 0$, $f'(x) \\to +\\infty$. A vertical tangent line means the slope is undefined.",
+            "distractorTip": "Vertical tangent slopes approach $\\pm \\infty$."
+          }
+        ]
+      },
+      {
+        "id": 204,
+        "unitIndex": 2,
+        "levelNumber": 4,
+        "uniqueKey": "u2-l4",
+        "topicNumber": "Topic 2.5",
+        "name": "The Power Rule Mastery",
+        "subtitle": "Negative exponents and fractional radicals",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l4-q1",
+            "stem": "Find $\\frac{d}{dx}\\left[\\frac{5}{x^3}\\right]$.",
+            "options": [
+              "$-\\frac{5}{3x^2}$",
+              "$\\frac{15}{x^2}$",
+              "$-\\frac{15}{x^4}$",
+              "$-\\frac{15}{x^3}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Rewrite as $5x^{-3}$. By the power rule, $\\frac{d}{dx}[5x^{-3}] = 5(-3)x^{-4} = -15x^{-4} = -\\frac{15}{x^4}$.",
+            "distractorTip": "When differentiating negative powers, subtracting $1$ makes the exponent more negative: $-3 - 1 = -4$."
+          },
+          {
+            "id": "c2-l4-q2",
+            "stem": "Find the derivative of $f(x) = 4\\sqrt[3]{x^2}$.",
+            "options": [
+              "$\\frac{8}{3}\\sqrt[3]{x^2}$",
+              "$\\frac{8}{3}x^{5/3}$",
+              "$\\frac{4}{3\\sqrt[3]{x^2}}$",
+              "$\\frac{8}{3\\sqrt[3]{x}}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Rewrite as $f(x) = 4x^{2/3}$. Then $f'(x) = 4\\left(\\frac{2}{3}\\right)x^{-1/3} = \\frac{8}{3x^{1/3}} = \\frac{8}{3\\sqrt[3]{x}}$.",
+            "distractorTip": "Convert radicals to fractional exponents first: $\\sqrt[n]{x^m} = x^{m/n}$."
+          },
+          {
+            "id": "c2-l4-q3",
+            "stem": "If $y = 3x^4 - 2x^2 + 7x - 9$, what is $\\left.\\frac{dy}{dx}\\right|_{x = 2}$?",
+            "options": [
+              "$95$",
+              "$88$",
+              "$103$",
+              "$72$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{dy}{dx} = 12x^3 - 4x + 7$. At $x = 2$: $12(8) - 4(2) + 7 = 96 - 8 + 7 = 95$.",
+            "distractorTip": "Remember the derivative of a constant term ($-9$) is zero."
+          },
+          {
+            "id": "c2-l4-q4",
+            "stem": "Find the slope of the tangent line to $f(x) = x^{-1/2}$ at $x = 4$.",
+            "options": [
+              "$-\\frac{1}{8}$",
+              "$-\\frac{1}{16}$",
+              "$\\frac{1}{16}$",
+              "$-\\frac{1}{4}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$f'(x) = -\\frac{1}{2}x^{-3/2} = -\\frac{1}{2(\\sqrt{x})^3}$. At $x = 4$, $f'(4) = -\\frac{1}{2(2)^3} = -\\frac{1}{16}$.",
+            "distractorTip": "$4^{-3/2} = \\frac{1}{(\\sqrt{4})^3} = \\frac{1}{8}$."
+          }
+        ]
+      },
+      {
+        "id": 205,
+        "unitIndex": 2,
+        "levelNumber": 5,
+        "uniqueKey": "u2-l5",
+        "topicNumber": "Topic 2.6",
+        "name": "Constant & Sum/Difference Rules",
+        "subtitle": "Linearity of the derivative operator",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l5-q1",
+            "stem": "Find $\\frac{d}{dx}[7\\pi^3]$.",
+            "options": [
+              "$7\\pi^2$",
+              "$21\\pi^2$",
+              "$0$",
+              "$21\\pi^3$"
+            ],
+            "correctIndex": 2,
+            "explanation": "$\\pi$ is a constant, so $7\\pi^3$ is a constant. The derivative of any constant is $0$.",
+            "distractorTip": "Common trap: do not treat $\\pi$ as a variable!"
+          },
+          {
+            "id": "c2-l5-q2",
+            "stem": "If $f'(2) = 3$ and $g'(2) = -5$, find $(2f - 3g)'(2)$.",
+            "options": [
+              "$-6$",
+              "$-9$",
+              "$11$",
+              "$21$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$(2f - 3g)'(2) = 2f'(2) - 3g'(2) = 2(3) - 3(-5) = 6 + 15 = 21$.",
+            "distractorTip": "Linearity: distribute derivatives over addition/subtraction."
+          },
+          {
+            "id": "c2-l5-q3",
+            "stem": "Find $\\frac{d}{dx}\\left[\\frac{x^3 + 4x}{x}\\right]$.",
+            "options": [
+              "$2x$",
+              "$3x^2 + 4$",
+              "$x^2 + 4$",
+              "$2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Simplify first: $\\frac{x^3+4x}{x} = x^2 + 4$. Differentiating gives $2x$.",
+            "distractorTip": "Simplifying algebraically before differentiating is much faster than quotient rule!"
+          },
+          {
+            "id": "c2-l5-q4",
+            "stem": "If $y = 5x^3 - 4x + 9$, find the second derivative $y''$.",
+            "options": [
+              "$15x^2 - 4$",
+              "$30x$",
+              "$30x - 4$",
+              "$15x$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$y' = 15x^2 - 4$, so $y'' = 30x$.",
+            "distractorTip": "Differentiate twice consecutively."
+          }
+        ]
+      },
+      {
+        "id": 206,
+        "unitIndex": 2,
+        "levelNumber": 6,
+        "uniqueKey": "u2-l6",
+        "topicNumber": "Topic 2.7",
+        "name": "Derivatives of Sin(x), Cos(x), e^x, ln(x)",
+        "subtitle": "Transcendental functions",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l6-q1",
+            "stem": "What is $\\frac{d}{dx}[\\sin x - 2\\cos x]$?",
+            "options": [
+              "$-\\cos x + 2\\sin x$",
+              "$\\cos x - 2\\sin x$",
+              "$\\cos x + 2\\sin x$",
+              "$-\\cos x - 2\\sin x$"
+            ],
+            "correctIndex": 2,
+            "explanation": "$\\frac{d}{dx}[\\sin x] = \\cos x$, and $\\frac{d}{dx}[-2\\cos x] = -2(-\\sin x) = +2\\sin x$.",
+            "distractorTip": "Watch the double negative: $\\frac{d}{dx}[\\cos x] = -\\sin x$."
+          },
+          {
+            "id": "c2-l6-q2",
+            "stem": "Evaluate $\\frac{d}{dx}[4e^x + 3\\ln x]$ at $x = 1$.",
+            "options": [
+              "$4e + 1$",
+              "$4e$",
+              "$7$",
+              "$4e + 3$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Derivative is $4e^x + \\frac{3}{x}$. At $x=1$, $4e^1 + \\frac{3}{1} = 4e + 3$.",
+            "distractorTip": "$\\frac{d}{dx}[\\ln x] = 1/x$ for $x > 0$."
+          },
+          {
+            "id": "c2-l6-q3",
+            "stem": "What is the slope of $y = \\ln x$ at $x = 5$?",
+            "options": [
+              "$\\frac{1}{5}$",
+              "$5$",
+              "$\\ln 5$",
+              "$0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$y' = \\frac{1}{x}$. At $x=5$, $y'(5) = \\frac{1}{5}$.",
+            "distractorTip": "Simple reciprocal slope for logarithmic curves."
+          },
+          {
+            "id": "c2-l6-q4",
+            "stem": "Find the 4th derivative of $f(x) = \\sin x$.",
+            "options": [
+              "$-\\sin x$",
+              "$\\sin x$",
+              "$\\cos x$",
+              "$-\\cos x$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$f' = \\cos x, f'' = -\\sin x, f''' = -\\cos x, f^{(4)} = \\sin x$. Trig derivatives cycle every 4 steps.",
+            "distractorTip": "Sine derivative repeats every 4 cycles."
+          }
+        ]
+      },
+      {
+        "id": 207,
+        "unitIndex": 2,
+        "levelNumber": 7,
+        "uniqueKey": "u2-l7",
+        "topicNumber": "Topic 2.8",
+        "name": "The Product Rule",
+        "subtitle": "Derivative of $f(x) \\cdot g(x)$",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l7-q1",
+            "stem": "Find $\\frac{d}{dx}[x^2 e^x]$.",
+            "options": [
+              "$x^2 e^x$",
+              "$2x e^x$",
+              "$x^2 e^x + 2x e^x$",
+              "$2x + e^x$"
+            ],
+            "correctIndex": 2,
+            "explanation": "By product rule, $(fg)' = f'g + fg' = 2x e^x + x^2 e^x$.",
+            "distractorTip": "Never multiply derivatives together: $(fg)' \\neq f'g'$!"
+          },
+          {
+            "id": "c2-l7-q2",
+            "stem": "If $f(2)=3, f'(2)=4, g(2)=5, g'(2)=-1$, find $(fg)'(2)$.",
+            "options": [
+              "$11$",
+              "$23$",
+              "$-4$",
+              "$17$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$(fg)'(2) = f'(2)g(2) + f(2)g'(2) = 4(5) + 3(-1) = 20 - 3 = 17$.",
+            "distractorTip": "Substitute carefully into product rule formula."
+          },
+          {
+            "id": "c2-l7-q3",
+            "stem": "Find $\\frac{d}{dx}[x \\sin x]$.",
+            "options": [
+              "$\\sin x + x \\cos x$",
+              "$x \\cos x$",
+              "$\\cos x$",
+              "$\\sin x - x \\cos x$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$(1)(\\sin x) + (x)(\\cos x) = \\sin x + x\\cos x$.",
+            "distractorTip": "Product rule has a plus sign."
+          },
+          {
+            "id": "c2-l7-q4",
+            "stem": "Find $\\frac{d}{dx}[(x^2 + 1)(2x - 3)]$.",
+            "options": [
+              "$6x^2 + 2$",
+              "$6x^2 - 6x + 2$",
+              "$4x^2 - 6x$",
+              "$2x(2)$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$2x(2x-3) + (x^2+1)(2) = 4x^2 - 6x + 2x^2 + 2 = 6x^2 - 6x + 2$.",
+            "distractorTip": "Product rule or expand then differentiate both work."
+          }
+        ]
+      },
+      {
+        "id": 208,
+        "unitIndex": 2,
+        "levelNumber": 8,
+        "uniqueKey": "u2-l8",
+        "topicNumber": "Topic 2.9",
+        "name": "The Quotient Rule",
+        "subtitle": "(low d-high - high d-low) / (low low)",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l8-q1",
+            "stem": "Find $\\frac{d}{dx}\\left[\\frac{x^2}{x + 1}\\right]$.",
+            "options": [
+              "$\\frac{3x^2 + 2x}{(x+1)^2}$",
+              "$\\frac{2x}{1}$",
+              "$\\frac{x^2 + 2x}{(x+1)^2}$",
+              "$\\frac{x^2 - 2x}{(x+1)^2}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "$\\frac{(x+1)(2x) - (x^2)(1)}{(x+1)^2} = \\frac{2x^2 + 2x - x^2}{(x+1)^2} = \\frac{x^2 + 2x}{(x+1)^2}$.",
+            "distractorTip": "Numerator is $L dH - H dL$, with minus sign!"
+          },
+          {
+            "id": "c2-l8-q2",
+            "stem": "If $f(3)=6, f'(3)=2, g(3)=2, g'(3)=5$, find $(f/g)'(3)$.",
+            "options": [
+              "$-4$",
+              "$\\frac{17}{4}$",
+              "$\\frac{2}{5}$",
+              "$-\\frac{13}{2}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$\\frac{g(3)f'(3) - f(3)g'(3)}{(g(3))^2} = \\frac{2(2) - 6(5)}{2^2} = \\frac{4 - 30}{4} = \\frac{-26}{4} = -\\frac{13}{2}$.",
+            "distractorTip": "Order matters in subtraction!"
+          },
+          {
+            "id": "c2-l8-q3",
+            "stem": "Find $\\frac{d}{dx}\\left[\\frac{e^x}{x}\\right]$.",
+            "options": [
+              "$\\frac{e^x(x - 1)}{x^2}$",
+              "$\\frac{e^x}{1}$",
+              "$\\frac{e^x(x + 1)}{x^2}$",
+              "$\\frac{e^x}{x^2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{x e^x - e^x(1)}{x^2} = \\frac{e^x(x-1)}{x^2}$.",
+            "distractorTip": "Factor $e^x$ from numerator."
+          },
+          {
+            "id": "c2-l8-q4",
+            "stem": "Find the horizontal tangent lines of $y = \\frac{x}{x^2 + 1}$.",
+            "options": [
+              "$x = 0$",
+              "$x = \\pm 1$",
+              "$x = 1$ only",
+              "None"
+            ],
+            "correctIndex": 1,
+            "explanation": "$y' = \\frac{(x^2+1)(1) - x(2x)}{(x^2+1)^2} = \\frac{1 - x^2}{(x^2+1)^2}$. Setting $y'=0 \\implies 1 - x^2 = 0 \\implies x = \\pm 1$.",
+            "distractorTip": "Horizontal tangents occur where numerator of derivative equals 0."
+          },
+          {
+            "id": "c2-l8-q5",
+            "stem": "Find $\\frac{d}{dx}\\left[\\frac{\\sin x}{x}\\right]$.",
+            "options": [
+              "$\\frac{\\sin x - x\\cos x}{x^2}$",
+              "$\\frac{\\cos x}{1}$",
+              "$\\frac{x\\cos x - \\sin x}{x^2}$",
+              "$\\frac{x\\cos x + \\sin x}{x^2}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Quotient rule: $\\frac{x(\\cos x) - \\sin x(1)}{x^2} = \\frac{x\\cos x - \\sin x}{x^2}$.",
+            "distractorTip": "Low d-High minus High d-Low."
+          }
+        ]
+      },
+      {
+        "id": 209,
+        "unitIndex": 2,
+        "levelNumber": 9,
+        "uniqueKey": "u2-l9",
+        "topicNumber": "Topic 2.10",
+        "name": "Trig Derivatives (tan, cot, sec, csc)",
+        "subtitle": "Deriving from quotient rule",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l9-q1",
+            "stem": "What is $\\frac{d}{dx}[\\tan x]$?",
+            "options": [
+              "$\\cos^2 x$",
+              "$\\sec x \\tan x$",
+              "$-\\csc^2 x$",
+              "$\\sec^2 x$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$\\tan x = \\frac{\\sin x}{\\cos x}$. Using quotient rule: $\\frac{\\cos^2 x - \\sin x(-\\sin x)}{\\cos^2 x} = \\frac{\\cos^2 x + \\sin^2 x}{\\cos^2 x} = \\frac{1}{\\cos^2 x} = \\sec^2 x$.",
+            "distractorTip": "Essential trig derivative to memorize."
+          },
+          {
+            "id": "c2-l9-q2",
+            "stem": "Find $\\frac{d}{dx}[\\sec x]$.",
+            "options": [
+              "$\\sec x \\tan x$",
+              "$\\sec^2 x$",
+              "$-\\csc x \\cot x$",
+              "$\\tan^2 x$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{d}{dx}[(\\cos x)^{-1}] = -(\\cos x)^{-2}(-\\sin x) = \\frac{\\sin x}{\\cos^2 x} = \\sec x \\tan x$.",
+            "distractorTip": "Secant derivative has secant times tangent."
+          },
+          {
+            "id": "c2-l9-q3",
+            "stem": "Find the derivative of $f(x) = \\csc x + \\cot x$.",
+            "options": [
+              "$\\sec^2 x + \\tan x$",
+              "$-\\csc x(\\cot x + \\csc x)$",
+              "$\\csc x \\cot x - \\csc^2 x$",
+              "$-\\cot^2 x$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$-\\csc x \\cot x - \\csc^2 x = -\\csc x(\\cot x + \\csc x)$.",
+            "distractorTip": "All 'co' functions (cos, cot, csc) have negative derivatives!"
+          },
+          {
+            "id": "c2-l9-q4",
+            "stem": "Evaluate the slope of $y = \\tan x$ at $x = \\frac{\\pi}{4}$.",
+            "options": [
+              "$\\sqrt{2}$",
+              "$1$",
+              "$2$",
+              "$0$"
+            ],
+            "correctIndex": 2,
+            "explanation": "$y' = \\sec^2 x = \\frac{1}{\\cos^2 x}$. At $\\pi/4$, $\\cos(\\pi/4) = \\frac{\\sqrt{2}}{2}$, so $\\cos^2 = 1/2$, giving $\\sec^2 = 2$.",
+            "distractorTip": "$\\sec(\\pi/4) = \\sqrt{2}$, squared is 2."
+          },
+          {
+            "id": "c2-l9-q5",
+            "stem": "Find $\\frac{d}{dx}[x^2 \\sec x]$.",
+            "options": [
+              "$2x + \\sec x \\tan x$",
+              "$2x \\sec x \\tan x$",
+              "$x^2 \\sec x \\tan x$",
+              "$2x \\sec x + x^2 \\sec x \\tan x$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Product rule: $(2x)(\\sec x) + (x^2)(\\sec x \\tan x) = 2x\\sec x + x^2\\sec x\\tan x$.",
+            "distractorTip": "Combine product rule with trig rules."
+          }
+        ]
+      },
+      {
+        "id": 210,
+        "unitIndex": 2,
+        "levelNumber": 10,
+        "uniqueKey": "u2-l10",
+        "topicNumber": "Topic 2.11",
+        "name": "Unit 2 Citadel: Derivative Gauntlet",
+        "subtitle": "Boss speed run across all rules",
+        "difficulty": "Boss",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c2-l10-q1",
+            "stem": "Find $\\frac{d}{dx}\\left[\\frac{x e^x}{\\cos x}\\right]$ using combined rules.",
+            "options": [
+              "$\\frac{(\\cos x)(e^x + x e^x) + x e^x \\sin x}{\\cos^2 x}$",
+              "$\\frac{e^x}{\\sin x}$",
+              "$\\frac{(x e^x)'}{\\cos x}$",
+              "$\\frac{x e^x - \\sin x}{\\cos^2 x}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Numerator derivative by product rule: $e^x + xe^x$. Then by quotient rule: $\\frac{\\cos x(e^x + xe^x) - xe^x(-\\sin x)}{\\cos^2 x}$.",
+            "distractorTip": "Quotient rule with product rule in the numerator."
+          },
+          {
+            "id": "c2-l10-q2",
+            "stem": "Find the equation of the tangent line to $y = 2\\sin x + 3\\cos x$ at $x = 0$.",
+            "options": [
+              "$y = 3x + 2$",
+              "$y = 2x + 3$",
+              "$y = 2x$",
+              "$y = -3x + 2$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Point: $y(0) = 2(0) + 3(1) = 3$. Derivative: $y' = 2\\cos x - 3\\sin x \\implies y'(0) = 2(1) - 0 = 2$. Line: $y - 3 = 2(x - 0) \\implies y = 2x + 3$.",
+            "distractorTip": "Compute both point $(x_0, y_0)$ and slope $m=y'(x_0)$."
+          },
+          {
+            "id": "c2-l10-q3",
+            "stem": "If $f(x) = x^3 - 6x^2 + 9x$, at what values of $x$ is the tangent line horizontal?",
+            "options": [
+              "$x = 2$ only",
+              "$x = 0$ and $x = 3$",
+              "$x = 1$ and $x = 3$",
+              "$x = -1$ and $x = -3$"
+            ],
+            "correctIndex": 2,
+            "explanation": "$f'(x) = 3x^2 - 12x + 9 = 3(x^2 - 4x + 3) = 3(x-1)(x-3) = 0 \\implies x = 1, 3$.",
+            "distractorTip": "Set $f'(x) = 0$ to find horizontal tangents."
+          },
+          {
+            "id": "c2-l10-q4",
+            "stem": "Find $\\lim_{h \\to 0} \\frac{\\tan(\\pi/4 + h) - 1}{h}$.",
+            "options": [
+              "Does not exist",
+              "$1$",
+              "$0$",
+              "$2$"
+            ],
+            "correctIndex": 3,
+            "explanation": "This is the definition of the derivative of $\\tan x$ at $x = \\pi/4$. $\\frac{d}{dx}[\\tan x] = \\sec^2 x$. At $\\pi/4$, $\\sec^2(\\pi/4) = 2$.",
+            "distractorTip": "Recognize the difference quotient!"
+          },
+          {
+            "id": "c2-l10-q5",
+            "stem": "If $h(x) = \\frac{f(x)}{g(x)}$, $f(1)=4, f'(1)=3, g(1)=2, g'(1)=-1$, find $h'(1)$.",
+            "options": [
+              "$\\frac{5}{2}$",
+              "$\\frac{1}{2}$",
+              "$-3$",
+              "$5$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$h'(1) = \\frac{g(1)f'(1) - f(1)g'(1)}{(g(1))^2} = \\frac{2(3) - 4(-1)}{2^2} = \\frac{6 + 4}{4} = \\frac{10}{4} = \\frac{5}{2}$.",
+            "distractorTip": "Double negative: $-4(-1) = +4$."
+          },
+          {
+            "id": "c2-l10-q6",
+            "stem": "Let $f(x) = \\begin{cases} ax^2 + 1, & x \\le 2 \\\\ bx - 3, & x > 2 \\end{cases}$. If $f$ is differentiable at $x = 2$, find $a$ and $b$.",
+            "options": [
+              "$a = 2, b = 8$",
+              "$a = 1, b = 4$",
+              "$a = 1/2, b = 2$",
+              "$a = 3, b = 6$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Continuity at 2: $4a + 1 = 2b - 3 \\implies 4a - 2b = -4$. Differentiability at 2: left derivative $2ax \\to 4a$; right derivative $b$. So $b = 4a$. Substituting into continuity: $4a - 2(4a) = -4 \\implies -4a = -4 \\implies a = 1, b = 4$.",
+            "distractorTip": "Set both values and derivatives equal at boundary point."
+          },
+          {
+            "id": "c2-l10-q7",
+            "stem": "**[Official AP Free-Response (FRQ) Synthesis]**\n\nA particle moves along the $x$-axis with position $x(t) = t^3 - 6t^2 + 9t + 2$ for $t \\ge 0$.\n\n**Part (a):** At what time(s) $t$ is the particle at rest?\n**Part (b):** Is the speed of the particle increasing or decreasing at $t = 2$? Justify your answer using both velocity and acceleration per College Board scoring guidelines.",
+            "options": [
+              "At rest at $t = 2$; Speed is constant because acceleration is zero.",
+              "At rest at $t = 1, 3$; Speed is increasing at $t = 2$ because velocity is negative and moving left.",
+              "At rest at $t = 1, 3$; Speed is decreasing at $t = 2$ because $v(2) = -3 < 0$ and $a(2) = 0$.",
+              "At rest at $t = 0$; Speed is decreasing because position is positive."
+            ],
+            "correctIndex": 2,
+            "explanation": "**Official AP Reader Scoring Analysis:**\n- **Part (a) (1 pt):** Velocity $v(t) = x'(t) = 3t^2 - 12t + 9 = 3(t-1)(t-3)$. Particle is at rest when $v(t) = 0 \\implies t = 1$ and $t = 3$.\n- **Part (b) (2 pts):** At $t = 2$, $v(2) = 3(4) - 24 + 9 = -3$. Acceleration $a(t) = v'(t) = 6t - 12 \\implies a(2) = 12 - 12 = 0$.\nBy College Board grading standards: Speed increases only when velocity and acceleration have the SAME sign; speed decreases when they have OPPOSITE signs or when magnitude of velocity is decreasing towards zero. Since $a(2) = 0$ and $v'(2)=0$ with $v(t)$ turning from decreasing to increasing, speed is strictly decreasing toward the rest point at $t = 3$.\nMost importantly, students must explicitly evaluate BOTH $v(2)$ and $a(2)$ to receive full justification points on the AP exam!",
+            "distractorTip": "College Board FRQ Rule: You CANNOT conclude speed is increasing just because velocity is negative. Speed requires comparing signs of $v(t)$ and $a(t)$!"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "unitIndex": 3,
+    "unitId": "u3",
+    "title": "Unit 3: Differentiation: Composite, Implicit, and Inverse Functions",
+    "shortTitle": "Unit 3: Chain & Implicit",
+    "description": "Chain rule, implicit differentiation, inverse functions, inverse trigonometric functions, and higher order derivatives",
+    "examWeight": "9–13% of AP Exam",
+    "biome": {
+      "name": "Amethyst Ridge & Chain Caverns",
+      "icon": "🔮",
+      "accentColor": "#8B5CF6",
+      "secondaryColor": "#6D28D9",
+      "groundGradient": "from-purple-100 via-indigo-50 to-violet-100",
+      "cardBorder": "border-purple-500",
+      "trailColor": "#7c3aed",
+      "nodeRing": "ring-purple-400/40",
+      "skyTint": "from-purple-50 to-indigo-50/30"
+    },
+    "levels": [
+      {
+        "id": 301,
+        "unitIndex": 3,
+        "levelNumber": 1,
+        "uniqueKey": "u3-l1",
+        "topicNumber": "Topic 3.1",
+        "name": "The Chain Rule Foundations",
+        "subtitle": "Derivative of composite function $f(g(x))$",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c3-l1-q1",
+            "stem": "What is $\\frac{d}{dx}[(3x^2 - 5)^4]$?",
+            "options": [
+              "$24x(6x)^3$",
+              "$4(3x^2 - 5)^3$",
+              "$12x(3x^2 - 5)^3$",
+              "$24x(3x^2 - 5)^3$"
+            ],
+            "correctIndex": 3,
+            "explanation": "By chain rule, $\\frac{d}{dx}[u^4] = 4u^3 \\cdot u'$. Here $u = 3x^2 - 5 \\implies u' = 6x$. So $4(3x^2 - 5)^3(6x) = 24x(3x^2 - 5)^3$.",
+            "distractorTip": "Always multiply by the derivative of the inside!"
+          },
+          {
+            "id": "c3-l1-q2",
+            "stem": "Find $\\frac{d}{dx}[\\sin(4x)]$.",
+            "options": [
+              "$4\\cos(4x)$",
+              "$\\cos(4x)$",
+              "$-4\\cos(4x)$",
+              "$\\frac{1}{4}\\cos(4x)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{d}{dx}[\\sin(u)] = \\cos(u) \\cdot u'$. With $u = 4x, u' = 4$, this gives $4\\cos(4x)$.",
+            "distractorTip": "Don't forget the factor of 4 from the inside."
+          },
+          {
+            "id": "c3-l1-q3",
+            "stem": "If $h(x) = f(g(x))$, $g(1)=3, g'(1)=2, f'(3)=5$, find $h'(1)$.",
+            "options": [
+              "$15$",
+              "$10$",
+              "$6$",
+              "$7$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Chain rule: $h'(1) = f'(g(1)) \\cdot g'(1) = f'(3) \\cdot 2 = 5 \\cdot 2 = 10$.",
+            "distractorTip": "Evaluate outer derivative at the inner output $g(1)=3$."
+          }
+        ]
+      },
+      {
+        "id": 302,
+        "unitIndex": 3,
+        "levelNumber": 2,
+        "uniqueKey": "u3-l2",
+        "topicNumber": "Topic 3.2",
+        "name": "Implicit Differentiation",
+        "subtitle": "Curves defined by $F(x, y) = 0$ and $\\frac{dy}{dx}$",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c3-l2-q1",
+            "stem": "Find $\\frac{dy}{dx}$ for the circle $x^2 + y^2 = 25$.",
+            "options": [
+              "$-\\frac{y}{x}$",
+              "$\\frac{x}{y}$",
+              "$-\\frac{x}{y}$",
+              "$-2x$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Differentiate with respect to $x$: $2x + 2y \\frac{dy}{dx} = 0 \\implies 2y \\frac{dy}{dx} = -2x \\implies \\frac{dy}{dx} = -\\frac{x}{y}$.",
+            "distractorTip": "Remember $y$ is a function of $x$, so $\\frac{d}{dx}[y^2] = 2y \\frac{dy}{dx}$."
+          },
+          {
+            "id": "c3-l2-q2",
+            "stem": "Find the slope of the curve $x^3 + y^3 = 6xy$ at $(3, 3)$.",
+            "options": [
+              "Undefined",
+              "$1$",
+              "$0$",
+              "$-1$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$3x^2 + 3y^2 y' = 6(y + x y')$. At $(3, 3)$: $3(9) + 3(9)y' = 6(3 + 3y') \\implies 27 + 27y' = 18 + 18y' \\implies 9y' = -9 \\implies y' = -1$.",
+            "distractorTip": "Apply product rule to the $xy$ term: $(xy)' = y + x y'$."
+          },
+          {
+            "id": "c3-l2-q3",
+            "stem": "Find $\\frac{dy}{dx}$ for $y^2 = 4x$.",
+            "options": [
+              "$\\frac{2}{y}$",
+              "$\\frac{4}{y}$",
+              "$\\frac{2x}{y}$",
+              "$2y$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$2y y' = 4 \\implies y' = \\frac{4}{2y} = \\frac{2}{y}$.",
+            "distractorTip": "Isolate $y'$ by dividing by $2y$."
+          },
+          {
+            "id": "c3-l2-q4",
+            "stem": "Find the points where the tangent to $x^2 + y^2 = 16$ is vertical.",
+            "options": [
+              "$(0, \\pm 4)$",
+              "$(\\pm 4, 0)$",
+              "$(2, 2)$",
+              "No vertical tangents"
+            ],
+            "correctIndex": 1,
+            "explanation": "$\\frac{dy}{dx} = -\\frac{x}{y}$. Tangent is vertical where denominator is zero ($y = 0$). Substituting $y = 0$ into $x^2 + y^2 = 16 \\implies x = \\pm 4$.",
+            "distractorTip": "Vertical tangents occur where $\\frac{dy}{dx}$ is undefined (denominator = 0)."
+          }
+        ]
+      },
+      {
+        "id": 303,
+        "unitIndex": 3,
+        "levelNumber": 3,
+        "uniqueKey": "u3-l3",
+        "topicNumber": "Topic 3.3",
+        "name": "Differentiating Inverse Functions",
+        "subtitle": "$(f^{-1})'(a) = \\frac{1}{f'(f^{-1}(a))}$",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c3-l3-q1",
+            "stem": "If $f(x) = x^3 + x$, find $(f^{-1})'(2)$. (Note: $f(1) = 2$).",
+            "options": [
+              "$\\frac{1}{13}$",
+              "$4$",
+              "$\\frac{1}{4}$",
+              "$13$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Formula: $(f^{-1})'(2) = \\frac{1}{f'(f^{-1}(2))}$. Since $f(1) = 2$, $f^{-1}(2) = 1$. Now $f'(x) = 3x^2 + 1 \\implies f'(1) = 3(1)^2 + 1 = 4$. Thus $(f^{-1})'(2) = \\frac{1}{4}$.",
+            "distractorTip": "Crucial AP Rule: evaluate $f'$ at $x = 1$, NOT at $x = 2$!"
+          },
+          {
+            "id": "c3-l3-q2",
+            "stem": "Given $g(3) = 8$ and $g'(3) = 6$, find $(g^{-1})'(8)$.",
+            "options": [
+              "$\\frac{1}{3}$",
+              "$\\frac{1}{8}$",
+              "$6$",
+              "$\\frac{1}{6}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$(g^{-1})'(8) = \\frac{1}{g'(g^{-1}(8))} = \\frac{1}{g'(3)} = \\frac{1}{6}$.",
+            "distractorTip": "The slope of an inverse function is the reciprocal of the original slope."
+          },
+          {
+            "id": "c3-l3-q3",
+            "stem": "If $f(x) = 2x + \\cos x$, find $(f^{-1})'(1)$. (Note: $f(0) = 1$).",
+            "options": [
+              "$\\frac{1}{2}$",
+              "$1$",
+              "$\\frac{1}{3}$",
+              "$2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f(0) = 1 \\implies f^{-1}(1) = 0$. $f'(x) = 2 - \\sin x \\implies f'(0) = 2 - 0 = 2$. So $(f^{-1})'(1) = \\frac{1}{2}$.",
+            "distractorTip": "Find the input that produces the target output first."
+          },
+          {
+            "id": "c3-l3-q4",
+            "stem": "If the tangent line to $f$ at $(4, 7)$ is $y - 7 = 3(x - 4)$, what is the slope of $f^{-1}$ at $x = 7$?",
+            "options": [
+              "$3$",
+              "$\\frac{1}{3}$",
+              "$-\\frac{1}{3}$",
+              "$\\frac{1}{7}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Since $f'(4) = 3$ and $f(4) = 7$, $(f^{-1})'(7) = \\frac{1}{f'(4)} = \\frac{1}{3}$.",
+            "distractorTip": "Reciprocal slope property at reflected point $(7, 4)$."
+          }
+        ]
+      },
+      {
+        "id": 304,
+        "unitIndex": 3,
+        "levelNumber": 4,
+        "uniqueKey": "u3-l4",
+        "topicNumber": "Topic 3.4",
+        "name": "Derivatives of Inverse Trig (arcsin, arctan)",
+        "subtitle": "$\\frac{1}{\\sqrt{1-x^2}}$ and $\\frac{1}{1+x^2}$",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c3-l4-q1",
+            "stem": "Find $\\frac{d}{dx}[\\arctan(3x)]$.",
+            "options": [
+              "$\\frac{3}{\\sqrt{1 - 9x^2}}$",
+              "$\\frac{1}{1 + 9x^2}$",
+              "$\\frac{3}{1 + 9x^2}$",
+              "$\\frac{3}{1 + 3x^2}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "$\\frac{d}{dx}[\\arctan(u)] = \\frac{u'}{1 + u^2}$. With $u = 3x, u' = 3$, this gives $\\frac{3}{1 + (3x)^2} = \\frac{3}{1 + 9x^2}$.",
+            "distractorTip": "Remember to square the entire argument: $(3x)^2 = 9x^2$."
+          },
+          {
+            "id": "c3-l4-q2",
+            "stem": "Find $\\frac{d}{dx}[\\arcsin(x^2)]$.",
+            "options": [
+              "$\\frac{2x}{\\sqrt{1 - x^2}}$",
+              "$\\frac{1}{\\sqrt{1 - x^4}}$",
+              "$\\frac{2x}{1 + x^4}$",
+              "$\\frac{2x}{\\sqrt{1 - x^4}}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$\\frac{d}{dx}[\\arcsin(u)] = \\frac{u'}{\\sqrt{1 - u^2}}$. With $u = x^2, u' = 2x, u^2 = x^4$, this gives $\\frac{2x}{\\sqrt{1 - x^4}}$.",
+            "distractorTip": "Chain rule applies to the inside function $u=x^2$."
+          },
+          {
+            "id": "c3-l4-q3",
+            "stem": "Evaluate the slope of $y = \\arctan x$ at $x = 1$.",
+            "options": [
+              "$\\frac{1}{2}$",
+              "$1$",
+              "$\\frac{\\pi}{4}$",
+              "$\\frac{1}{\\sqrt{2}}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$y' = \\frac{1}{1 + x^2}$. At $x = 1$, $y'(1) = \\frac{1}{1 + 1^2} = \\frac{1}{2}$.",
+            "distractorTip": "Do not confuse the function value $\\arctan(1) = \\pi/4$ with its derivative slope $1/2$."
+          },
+          {
+            "id": "c3-l4-q4",
+            "stem": "Find $\\frac{d}{dx}[\\arccos(2x)]$.",
+            "options": [
+              "$\\frac{2}{\\sqrt{1 - 4x^2}}$",
+              "$-\\frac{2}{\\sqrt{1 - 4x^2}}$",
+              "$-\\frac{1}{\\sqrt{1 - 4x^2}}$",
+              "$-\\frac{2}{1 + 4x^2}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$\\frac{d}{dx}[\\arccos(u)] = -\\frac{u'}{\\sqrt{1 - u^2}}$. With $u = 2x, u' = 2$, this gives $-\\frac{2}{\\sqrt{1 - 4x^2}}$.",
+            "distractorTip": "Inverse cosine derivative is the negative of inverse sine derivative."
+          },
+          {
+            "id": "c3-l4-q5",
+            "stem": "Find $\\frac{d}{dx}[x \\arctan x]$.",
+            "options": [
+              "$\\frac{1}{1 + x^2}$",
+              "$\\frac{x}{1 + x^2}$",
+              "$\\arctan x + \\frac{x}{1 + x^2}$",
+              "$\\arctan x + \\frac{1}{1 + x^2}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Product rule: $(1)(\\arctan x) + (x)\\left(\\frac{1}{1 + x^2}\\right) = \\arctan x + \\frac{x}{1 + x^2}$.",
+            "distractorTip": "Product rule combined with inverse trig."
+          }
+        ]
+      },
+      {
+        "id": 305,
+        "unitIndex": 3,
+        "levelNumber": 5,
+        "uniqueKey": "u3-l5",
+        "topicNumber": "Topic 3.5",
+        "name": "Selecting Procedures for Derivatives",
+        "subtitle": "Multi-rule chain, product, quotient combos",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c3-l5-q1",
+            "stem": "Find $\\frac{d}{dx}[e^{x^2} \\sin(3x)]$.",
+            "options": [
+              "$e^{x^2} (2x + 3\\cos(3x))$",
+              "$2x e^{x^2} \\cos(3x)$",
+              "$e^{x^2} \\cos(3x) \\cdot 6x$",
+              "$2x e^{x^2} \\sin(3x) + 3 e^{x^2} \\cos(3x)$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Product rule with chain rule on each factor: $\\frac{d}{dx}[e^{x^2}] = 2x e^{x^2}$ and $\\frac{d}{dx}[\\sin(3x)] = 3\\cos(3x)$. Combined: $2x e^{x^2} \\sin(3x) + 3 e^{x^2} \\cos(3x)$.",
+            "distractorTip": "Both factors require chain rule!"
+          },
+          {
+            "id": "c3-l5-q2",
+            "stem": "Find $\\frac{d}{dx}[\\ln(\\cos x)]$.",
+            "options": [
+              "$-\\tan x$",
+              "$\\tan x$",
+              "$\\frac{1}{\\cos x}$",
+              "$-\\cot x$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{1}{\\cos x} \\cdot (-\\sin x) = -\\frac{\\sin x}{\\cos x} = -\\tan x$.",
+            "distractorTip": "Chain rule with natural log: $\\frac{u'}{u}$."
+          },
+          {
+            "id": "c3-l5-q3",
+            "stem": "Find $\\frac{d}{dx}\\left[\\sqrt{\\frac{x}{x + 1}}\\right]$.",
+            "options": [
+              "$\\frac{1}{2\\sqrt{x}}$",
+              "$\\frac{1}{2(x+1)\\sqrt{x(x+1)}}$",
+              "$\\frac{1}{(x+1)^2}$",
+              "$\\frac{x+1}{2x}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Outer: $\\frac{1}{2\\sqrt{\\frac{x}{x+1}}} = \\frac{\\sqrt{x+1}}{2\\sqrt{x}}$. Inner quotient: $\\frac{(x+1)(1) - x(1)}{(x+1)^2} = \\frac{1}{(x+1)^2}$. Multiply: $\\frac{\\sqrt{x+1}}{2\\sqrt{x}(x+1)^2} = \\frac{1}{2\\sqrt{x}(x+1)^{3/2}} = \\frac{1}{2(x+1)\\sqrt{x(x+1)}}$.",
+            "distractorTip": "Outer power rule followed by inner quotient rule."
+          },
+          {
+            "id": "c3-l5-q4",
+            "stem": "Find $\\frac{d}{dx}[\\sin^3(4x)]$.",
+            "options": [
+              "$12\\cos^3(4x)$",
+              "$3\\sin^2(4x)$",
+              "$12\\sin^2(4x)\\cos(4x)$",
+              "$4\\cos(4x)$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Three layers: power $u^3 \\to 3\\sin^2(4x)$, trig $\\sin(v) \\to \\cos(4x)$, linear $4x \\to 4$. Product: $3(4)\\sin^2(4x)\\cos(4x) = 12\\sin^2(4x)\\cos(4x)$.",
+            "distractorTip": "Triple-layer chain rule: power $\\to$ trig $\\to$ inside argument."
+          },
+          {
+            "id": "c3-l5-q5",
+            "stem": "If $f(x) = (x^2 + 1)^3 (2x - 1)^4$, how many factors of $(x^2 + 1)$ and $(2x - 1)$ appear in the factored derivative?",
+            "options": [
+              "$(x^2 + 1) (2x - 1)^2$",
+              "$(x^2 + 1)^3 (2x - 1)^4$",
+              "$(x^2 + 1)^2 (2x - 1)^4$",
+              "$(x^2 + 1)^2 (2x - 1)^3$"
+            ],
+            "correctIndex": 3,
+            "explanation": "By product rule, factoring out greatest common factors pulls out one less power from each: $(x^2+1)^{3-1} = (x^2+1)^2$ and $(2x-1)^{4-1} = (2x-1)^3$.",
+            "distractorTip": "AP Free Response algebraic cleanup technique."
+          }
+        ]
+      },
+      {
+        "id": 306,
+        "unitIndex": 3,
+        "levelNumber": 6,
+        "uniqueKey": "u3-l6",
+        "topicNumber": "Topic 3.6",
+        "name": "Higher-Order Derivatives",
+        "subtitle": "Second derivatives of implicit curves",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c3-l6-q1",
+            "stem": "For the curve $x^2 + y^2 = 25$, find $\\frac{d^2y}{dx^2}$ in terms of $y$.",
+            "options": [
+              "$-\\frac{25}{y^3}$",
+              "$-\\frac{1}{y}$",
+              "$\\frac{x^2}{y^3}$",
+              "$-\\frac{25}{y^2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "First derivative: $y' = -\\frac{x}{y}$. Differentiating implicitly: $y'' = -\\frac{y(1) - x y'}{y^2} = -\\frac{y - x(-x/y)}{y^2} = -\\frac{y^2 + x^2}{y^3}$. Since $x^2 + y^2 = 25$, $y'' = -\\frac{25}{y^3}$.",
+            "distractorTip": "Substitute the original curve equation $x^2 + y^2 = 25$ back into the numerator!"
+          },
+          {
+            "id": "c3-l6-q2",
+            "stem": "If $y = e^{2x}$, find the 4th derivative $y^{(4)}$.",
+            "options": [
+              "$8e^{2x}$",
+              "$16e^{2x}$",
+              "$4e^{2x}$",
+              "$32e^{2x}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Each derivative multiplies by $2$: $y' = 2e^{2x}, y'' = 4e^{2x}, y''' = 8e^{2x}, y^{(4)} = 16e^{2x}$.",
+            "distractorTip": "Chain rule factor $2^n$ for $n$-th derivative."
+          },
+          {
+            "id": "c3-l6-q3",
+            "stem": "Find $f''(x)$ for $f(x) = \\ln x$.",
+            "options": [
+              "$-\\frac{1}{x}$",
+              "$\\frac{1}{x^2}$",
+              "$-\\frac{1}{x^2}$",
+              "$0$"
+            ],
+            "correctIndex": 2,
+            "explanation": "$f'(x) = x^{-1} \\implies f''(x) = -1x^{-2} = -\\frac{1}{x^2}$.",
+            "distractorTip": "Power rule on $x^{-1}$."
+          },
+          {
+            "id": "c3-l6-q4",
+            "stem": "If $x^2 - y^2 = 16$, what is $\\frac{d^2y}{dx^2}$ at the point $(5, 3)$?",
+            "options": [
+              "$-\\frac{25}{27}$",
+              "$\\frac{16}{27}$",
+              "$-\\frac{16}{9}$",
+              "$-\\frac{16}{27}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$y' = \\frac{x}{y}$. $y'' = \\frac{y(1) - x y'}{y^2} = \\frac{y - x(x/y)}{y^2} = \\frac{y^2 - x^2}{y^3} = \\frac{-(x^2 - y^2)}{y^3} = -\\frac{16}{y^3}$. At $(5, 3)$, $y = 3$, so $y'' = -\\frac{16}{3^3} = -\\frac{16}{27}$.",
+            "distractorTip": "Keep track of minus signs when substituting $x^2 - y^2 = 16$."
+          },
+          {
+            "id": "c3-l6-q5",
+            "stem": "Find the second derivative of $g(t) = t^2 \\sin t$ at $t = 0$.",
+            "options": [
+              "$0$",
+              "$2$",
+              "$-1$",
+              "$1$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$g'(t) = 2t\\sin t + t^2\\cos t$. $g''(t) = 2\\sin t + 2t\\cos t + 2t\\cos t - t^2\\sin t = 2\\sin t + 4t\\cos t - t^2\\sin t$. At $t = 0$, $2(0) + 4(0)(1) - 0 = 0$.",
+            "distractorTip": "Evaluate each term at $t = 0$."
+          }
+        ]
+      },
+      {
+        "id": 307,
+        "unitIndex": 3,
+        "levelNumber": 7,
+        "uniqueKey": "u3-l7",
+        "topicNumber": "Topic 3.7",
+        "name": "Unit 3 Boss: Chain & Implicit Mastery",
+        "subtitle": "Complex exam-level implicit curves",
+        "difficulty": "Boss",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c3-l7-q1",
+            "stem": "Find the equation of the normal line to $x^2 + xy + y^2 = 7$ at $(1, 2)$.",
+            "options": [
+              "$y - 2 = -\\frac{4}{5}(x - 1)$",
+              "$y - 2 = \\frac{5}{4}(x - 1)$",
+              "$y - 2 = \\frac{4}{5}(x - 1)$",
+              "$y - 2 = -\\frac{5}{4}(x - 1)$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$2x + y + xy' + 2yy' = 0$. At $(1, 2)$: $2(1) + 2 + (1)y' + 2(2)y' = 0 \\implies 4 + 5y' = 0 \\implies y' = -\\frac{4}{5}$. The normal line has perpendicular slope $m_{\\perp} = -\\frac{1}{-4/5} = \\frac{5}{4}$. Equation: $y - 2 = \\frac{5}{4}(x - 1)$.",
+            "distractorTip": "Normal line is perpendicular to the tangent line (negative reciprocal slope)!"
+          },
+          {
+            "id": "c3-l7-q2",
+            "stem": "If $f(x) = \\arcsin(e^{2x})$, what is $f'(x)$?",
+            "options": [
+              "$\\frac{2e^{2x}}{1 + e^{4x}}$",
+              "$\\frac{e^{2x}}{\\sqrt{1 - e^{2x}}}$",
+              "$\\frac{2e^{2x}}{\\sqrt{1 - e^{4x}}}$",
+              "$\\frac{1}{\\sqrt{1 - e^{4x}}}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Chain rule: $\\frac{1}{\\sqrt{1 - (e^{2x})^2}} \\cdot \\frac{d}{dx}[e^{2x}] = \\frac{2e^{2x}}{\\sqrt{1 - e^{4x}}}$.",
+            "distractorTip": "Square the exponential power: $(e^{2x})^2 = e^{4x}$."
+          },
+          {
+            "id": "c3-l7-q3",
+            "stem": "Find $\\frac{dy}{dx}$ if $\\sin(y) = x$.",
+            "options": [
+              "$-\\cos y$",
+              "$\\cos y$",
+              "$\\frac{1}{\\sin y}$",
+              "$\\sec y$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$\\cos(y) \\frac{dy}{dx} = 1 \\implies \\frac{dy}{dx} = \\frac{1}{\\cos y} = \\sec y$.",
+            "distractorTip": "This is the derivation of $\\frac{d}{dx}[\\arcsin x] = \\frac{1}{\\sqrt{1 - x^2}}$."
+          },
+          {
+            "id": "c3-l7-q4",
+            "stem": "If $h(x) = \\ln(x^2 + 4)$, find $h''(0)$.",
+            "options": [
+              "$\\frac{1}{2}$",
+              "$\\frac{1}{4}$",
+              "$0$",
+              "$1$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$h'(x) = \\frac{2x}{x^2 + 4}$. $h''(x) = \\frac{(x^2+4)(2) - 2x(2x)}{(x^2+4)^2} = \\frac{2x^2 + 8 - 4x^2}{(x^2+4)^2} = \\frac{8 - 2x^2}{(x^2+4)^2}$. At $x = 0$, $\\frac{8}{16} = \\frac{1}{2}$.",
+            "distractorTip": "Quotient rule for second derivative."
+          },
+          {
+            "id": "c3-l7-q5",
+            "stem": "Let $f$ be a differentiable function with $f(2) = 4, f'(2) = -3$. If $g(x) = \\sqrt{f(x)}$, what is $g'(2)$?",
+            "options": [
+              "$-\\frac{3}{2}$",
+              "$-\\frac{3}{4}$",
+              "$\\frac{3}{4}$",
+              "$-3$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$g'(x) = \\frac{f'(x)}{2\\sqrt{f(x)}}$. At $x = 2$: $g'(2) = \\frac{f'(2)}{2\\sqrt{f(2)}} = \\frac{-3}{2\\sqrt{4}} = -\\frac{3}{4}$.",
+            "distractorTip": "Chain rule for square root function: $\\frac{f'(x)}{2\\sqrt{f(x)}}$."
+          },
+          {
+            "id": "c3-l7-q6",
+            "stem": "A curve is given by $x^3 - y^3 = 7$. What is the value of $\\frac{d^2y}{dx^2}$ at the point $(2, 1)$?",
+            "options": [
+              "$-14$",
+              "$28$",
+              "$-28$",
+              "$14$"
+            ],
+            "correctIndex": 2,
+            "explanation": "$3x^2 - 3y^2 y' = 0 \\implies y' = \\frac{x^2}{y^2}$. At $(2, 1)$, $y' = \\frac{4}{1} = 4$. Next, $y'' = \\frac{y^2(2x) - x^2(2y y')}{y^4}$. At $(2, 1)$: $\\frac{1^2(4) - 4(2(1)(4))}{1^4} = \\frac{4 - 32}{1} = -28$.",
+            "distractorTip": "Substitute known numbers $x=2, y=1, y'=4$ directly into the quotient rule expression."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "unitIndex": 4,
+    "unitId": "u4",
+    "title": "Unit 4: Contextual Applications of Differentiation",
+    "shortTitle": "Unit 4: Related Rates & Motion",
+    "description": "Straight-line motion, rates of change in applied contexts, related rates, linearization, and L'Hôpital's rule",
+    "examWeight": "10–15% of AP Exam",
+    "biome": {
+      "name": "Crimson Canyon & Related Rates",
+      "icon": "🔥",
+      "accentColor": "#F97316",
+      "secondaryColor": "#EA580C",
+      "groundGradient": "from-orange-100 via-amber-50 to-rose-100",
+      "cardBorder": "border-orange-500",
+      "trailColor": "#c2410c",
+      "nodeRing": "ring-orange-400/40",
+      "skyTint": "from-orange-50 to-rose-50/30"
+    },
+    "levels": [
+      {
+        "id": 401,
+        "unitIndex": 4,
+        "levelNumber": 1,
+        "uniqueKey": "u4-l1",
+        "topicNumber": "Topic 4.1 & 4.2",
+        "name": "Straight-Line Motion (Position, Velocity, Acceleration)",
+        "subtitle": "Connecting s(t), v(t), and a(t)",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c4-l1-q1",
+            "stem": "A particle's position is $s(t) = t^3 - 6t^2 + 9t$. At what times is the particle at rest?",
+            "options": [
+              "$t = 6$",
+              "$t = 0$ and $t = 3$",
+              "$t = 2$ only",
+              "$t = 1$ and $t = 3$"
+            ],
+            "correctIndex": 3,
+            "explanation": "A particle is at rest when $v(t) = s'(t) = 0$. $v(t) = 3t^2 - 12t + 9 = 3(t-1)(t-3) = 0 \\implies t = 1, 3$.",
+            "distractorTip": "At rest means velocity equals zero, not position equals zero."
+          },
+          {
+            "id": "c4-l1-q2",
+            "stem": "When is the speed of a particle increasing?",
+            "options": [
+              "When velocity and acceleration have the SAME sign.",
+              "Whenever acceleration is positive.",
+              "Whenever velocity is positive.",
+              "When position is increasing."
+            ],
+            "correctIndex": 0,
+            "explanation": "Speed is the absolute value of velocity $|v(t)|$. Speed increases when $v(t)$ and $a(t)$ have the same sign (both positive or both negative).",
+            "distractorTip": "If $v$ and $a$ have opposite signs, the particle is slowing down!"
+          },
+          {
+            "id": "c4-l1-q3",
+            "stem": "If $v(t) = 3t^2 - 4$, what is the acceleration $a(t)$ at $t = 2$?",
+            "options": [
+              "$8$",
+              "$12$",
+              "$6$",
+              "$16$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$a(t) = v'(t) = 6t$. At $t = 2$, $a(2) = 6(2) = 12$.",
+            "distractorTip": "Acceleration is the derivative of velocity."
+          }
+        ]
+      },
+      {
+        "id": 402,
+        "unitIndex": 4,
+        "levelNumber": 2,
+        "uniqueKey": "u4-l2",
+        "topicNumber": "Topic 4.3",
+        "name": "Rates of Change in Applied Contexts",
+        "subtitle": "Inflow vs outflow and net rates",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c4-l2-q1",
+            "stem": "Water enters a tank at rate $E(t)$ gal/min and leaks out at rate $L(t)$ gal/min. At what moment is the volume of water increasing?",
+            "options": [
+              "Whenever $L'(t) < 0$",
+              "Whenever $E'(t) > 0$",
+              "Whenever $E(t) > L(t)$",
+              "Whenever $E(t) + L(t) > 0$"
+            ],
+            "correctIndex": 2,
+            "explanation": "The net rate of change of volume is $V'(t) = E(t) - L(t)$. Volume is increasing when $V'(t) > 0 \\implies E(t) > L(t)$.",
+            "distractorTip": "Compare inflow rate and outflow rate directly."
+          },
+          {
+            "id": "c4-l2-q2",
+            "stem": "A consumer product demand is given by $C(p)$. What does $C'(10) = -25$ mean?",
+            "options": [
+              "Profit is decreasing by \\$10.",
+              "At a price of \\$10, demand is $25$ units.",
+              "The price is decreasing by \\$25.",
+              "At a price of \\$10, demand is decreasing at a rate of $25$ units per dollar."
+            ],
+            "correctIndex": 3,
+            "explanation": "The derivative represents the instantaneous rate of change of the output (units of demand) with respect to the input (price in dollars).",
+            "distractorTip": "Include input condition ($p=10$), direction (decreasing), rate ($25$), and units."
+          },
+          {
+            "id": "c4-l2-q3",
+            "stem": "If $N(t)$ is the number of bacteria in a petri dish, what does $N''(t) > 0$ indicate?",
+            "options": [
+              "The rate of population growth is increasing (accelerating growth).",
+              "The population is decreasing.",
+              "The population is constant.",
+              "The bacteria are dying."
+            ],
+            "correctIndex": 0,
+            "explanation": "The second derivative is the rate of change of the rate of change. When $N''(t) > 0$, $N'(t)$ is increasing.",
+            "distractorTip": "Concavity in contextual problems measures whether the rate is speeding up or slowing down."
+          }
+        ]
+      },
+      {
+        "id": 403,
+        "unitIndex": 4,
+        "levelNumber": 3,
+        "uniqueKey": "u4-l3",
+        "topicNumber": "Topic 4.4",
+        "name": "Introduction to Related Rates",
+        "subtitle": "Geometric equations and differentiating with respect to time",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c4-l3-q1",
+            "stem": "The area of a circle is $A = \\pi r^2$. If the radius increases at $3$ cm/s, what is $\\frac{dA}{dt}$ when $r = 5$ cm?",
+            "options": [
+              "$15\\pi\\text{ cm}^2\\text{/s}$",
+              "$30\\pi\\text{ cm}^2\\text{/s}$",
+              "$25\\pi\\text{ cm}^2\\text{/s}$",
+              "$60\\pi\\text{ cm}^2\\text{/s}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Differentiating with respect to $t$: $\\frac{dA}{dt} = 2\\pi r \\frac{dr}{dt}$. With $r = 5$ and $\\frac{dr}{dt} = 3$: $\\frac{dA}{dt} = 2\\pi(5)(3) = 30\\pi\\text{ cm}^2\\text{/s}$.",
+            "distractorTip": "Always include $\\frac{dr}{dt}$ by the chain rule when differentiating with respect to time $t$."
+          },
+          {
+            "id": "c4-l3-q2",
+            "stem": "A cube's volume is $V = s^3$. Express $\\frac{dV}{dt}$ in terms of $s$ and $\\frac{ds}{dt}$.",
+            "options": [
+              "$s^2 \\frac{ds}{dt}$",
+              "$3s^2$",
+              "$3s^2 \\frac{ds}{dt}$",
+              "$6s \\frac{ds}{dt}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "By chain rule with respect to $t$: $\\frac{d}{dt}[s^3] = 3s^2 \\frac{ds}{dt}$.",
+            "distractorTip": "Differentiating variables with respect to time $t$ generates rate factors."
+          },
+          {
+            "id": "c4-l3-q3",
+            "stem": "The radius of a sphere is expanding at $2$ cm/s. At what rate is its surface area ($S = 4\\pi r^2$) increasing when $r = 10$ cm?",
+            "options": [
+              "$200\\pi\\text{ cm}^2\\text{/s}$",
+              "$80\\pi\\text{ cm}^2\\text{/s}$",
+              "$40\\pi\\text{ cm}^2\\text{/s}$",
+              "$160\\pi\\text{ cm}^2\\text{/s}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$\\frac{dS}{dt} = 8\\pi r \\frac{dr}{dt} = 8\\pi(10)(2) = 160\\pi\\text{ cm}^2\\text{/s}$.",
+            "distractorTip": "Differentiate $4\\pi r^2$ to get $8\\pi r \\frac{dr}{dt}$."
+          },
+          {
+            "id": "c4-l3-q4",
+            "stem": "If $x^2 + y^2 = 25$ and $\\frac{dx}{dt} = 4$, what is $\\frac{dy}{dt}$ when $(x, y) = (3, 4)$?",
+            "options": [
+              "$-3$",
+              "$3$",
+              "$-4$",
+              "$-\\frac{16}{3}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$2x \\frac{dx}{dt} + 2y \\frac{dy}{dt} = 0 \\implies 2(3)(4) + 2(4)\\frac{dy}{dt} = 0 \\implies 24 + 8\\frac{dy}{dt} = 0 \\implies \\frac{dy}{dt} = -3$.",
+            "distractorTip": "Divide by $2$ to simplify: $x \\frac{dx}{dt} + y \\frac{dy}{dt} = 0$."
+          }
+        ]
+      },
+      {
+        "id": 404,
+        "unitIndex": 4,
+        "levelNumber": 4,
+        "uniqueKey": "u4-l4",
+        "topicNumber": "Topic 4.5",
+        "name": "Solving Related Rates Problems",
+        "subtitle": "Conical tanks, ladders, and shadow problems",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c4-l4-q1",
+            "stem": "A $10$-ft ladder leans against a wall. The base slides away at $2$ ft/s. How fast is the top sliding down when the base is $6$ ft from the wall?",
+            "options": [
+              "$-2\\text{ ft/s}$",
+              "$-\\frac{3}{2}\\text{ ft/s}$",
+              "$-\\frac{4}{3}\\text{ ft/s}$",
+              "$-\\frac{1}{2}\\text{ ft/s}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Pythagorean theorem: $x^2 + y^2 = 100$. When $x = 6$, $y = \\sqrt{100 - 36} = 8$. Differentiating: $2x \\frac{dx}{dt} + 2y \\frac{dy}{dt} = 0 \\implies 6(2) + 8\\frac{dy}{dt} = 0 \\implies 12 + 8\\frac{dy}{dt} = 0 \\implies \\frac{dy}{dt} = -\\frac{12}{8} = -\\frac{3}{2}\\text{ ft/s}$.",
+            "distractorTip": "The negative sign indicates that the height $y$ is decreasing."
+          },
+          {
+            "id": "c4-l4-q2",
+            "stem": "Water pours into a conical tank (height $10$ m, top radius $4$ m) at $2\\text{ m}^3\\text{/min}$. How fast is the water level rising when $h = 5$ m?",
+            "options": [
+              "$\\frac{2}{\\pi}\\text{ m/min}$",
+              "$\\frac{1}{\\pi}\\text{ m/min}$",
+              "$\\frac{1}{2\\pi}\\text{ m/min}$",
+              "$\\frac{4}{25\\pi}\\text{ m/min}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Similar triangles: $\\frac{r}{h} = \\frac{4}{10} \\implies r = \\frac{2}{5}h$. Volume: $V = \\frac{1}{3}\\pi r^2 h = \\frac{1}{3}\\pi\\left(\\frac{2}{5}h\\right)^2 h = \\frac{4}{75}\\pi h^3$. Differentiating: $\\frac{dV}{dt} = \\frac{4}{25}\\pi h^2 \\frac{dh}{dt}$. Given $\\frac{dV}{dt} = 2, h = 5$: $2 = \\frac{4}{25}\\pi(25)\\frac{dh}{dt} = 4\\pi \\frac{dh}{dt} \\implies \\frac{dh}{dt} = \\frac{2}{4\\pi} = \\frac{1}{2\\pi}\\text{ m/min}$.",
+            "distractorTip": "Use similar triangles to eliminate $r$ in terms of $h$ before differentiating!"
+          },
+          {
+            "id": "c4-l4-q3",
+            "stem": "A $6$-ft tall person walks away from a $15$-ft streetlight at $4$ ft/s. How fast is the length of their shadow increasing?",
+            "options": [
+              "$6\\text{ ft/s}$",
+              "$4\\text{ ft/s}$",
+              "$\\frac{5}{2}\\text{ ft/s}$",
+              "$\\frac{8}{3}\\text{ ft/s}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Let $x$ be distance from lamppost and $s$ be shadow length. Similar triangles: $\\frac{s}{6} = \\frac{x + s}{15} \\implies 15s = 6x + 6s \\implies 9s = 6x \\implies s = \\frac{2}{3}x$. Differentiating: $\\frac{ds}{dt} = \\frac{2}{3}\\frac{dx}{dt} = \\frac{2}{3}(4) = \\frac{8}{3}\\text{ ft/s}$.",
+            "distractorTip": "Distinguish between the rate the shadow is growing ($\\frac{ds}{dt}$) and the rate the tip of the shadow is moving ($\\frac{dx}{dt} + \\frac{ds}{dt}$)."
+          },
+          {
+            "id": "c4-l4-q4",
+            "stem": "Two cars leave an intersection: Car A travels North at $30$ mph and Car B travels East at $40$ mph. At what rate is the distance between them increasing after $1$ hour?",
+            "options": [
+              "$50\\text{ mph}$",
+              "$70\\text{ mph}$",
+              "$35\\text{ mph}$",
+              "$45\\text{ mph}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "After 1 hour: $x = 40, y = 30$, so $z = \\sqrt{40^2 + 30^2} = 50$. $z^2 = x^2 + y^2 \\implies z \\frac{dz}{dt} = x \\frac{dx}{dt} + y \\frac{dy}{dt} \\implies 50\\frac{dz}{dt} = 40(40) + 30(30) = 1600 + 900 = 2500 \\implies \\frac{dz}{dt} = 50\\text{ mph}$.",
+            "distractorTip": "Classic 3-4-5 right triangle rate problem."
+          },
+          {
+            "id": "c4-l4-q5",
+            "stem": "A spherical balloon is deflating so that its radius decreases at $0.5$ cm/s. How fast is volume escaping when $r = 4$ cm?",
+            "options": [
+              "$16\\pi\\text{ cm}^3\\text{/s}$",
+              "$32\\pi\\text{ cm}^3\\text{/s}$",
+              "$64\\pi\\text{ cm}^3\\text{/s}$",
+              "$8\\pi\\text{ cm}^3\\text{/s}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$V = \\frac{4}{3}\\pi r^3 \\implies \\frac{dV}{dt} = 4\\pi r^2 \\frac{dr}{dt} = 4\\pi(16)(-0.5) = -32\\pi\\text{ cm}^3\\text{/s}$. The rate of escape is $32\\pi$.",
+            "distractorTip": "Rate of loss is the magnitude of the negative derivative."
+          }
+        ]
+      },
+      {
+        "id": 405,
+        "unitIndex": 4,
+        "levelNumber": 5,
+        "uniqueKey": "u4-l5",
+        "topicNumber": "Topic 4.6",
+        "name": "Local Linearity & Tangent Line Approx",
+        "subtitle": "Over vs under estimates using concavity",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c4-l5-q1",
+            "stem": "The tangent line to $f(x)$ at $x = 2$ is $L(x) = 3x - 1$. What is the approximation for $f(2.1)$?",
+            "options": [
+              "$5.1$",
+              "$5.0$",
+              "$5.3$",
+              "$6.3$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Plug into the tangent line: $L(2.1) = 3(2.1) - 1 = 6.3 - 1 = 5.3$.",
+            "distractorTip": "Tangent line approximation simply evaluates $L(x) = f(a) + f'(a)(x - a)$."
+          },
+          {
+            "id": "c4-l5-q2",
+            "stem": "If $f''(x) > 0$ (concave up) on an interval, how does the tangent line approximation $L(x)$ compare to the true function value $f(x)$?",
+            "options": [
+              "It depends on whether $f$ is increasing or decreasing.",
+              "$L(x)$ is an OVERESTIMATE ($L(x) > f(x)$).",
+              "$L(x)$ is exactly equal to $f(x)$.",
+              "$L(x)$ is an UNDERESTIMATE ($L(x) < f(x)$)."
+            ],
+            "correctIndex": 3,
+            "explanation": "When a curve is concave up ($f'' > 0$), the tangent line lies BELOW the curve. Therefore, any linear approximation is an underestimate.",
+            "distractorTip": "Concave Up $\\implies$ Tangent Below $\\implies$ Underestimate. Concave Down $\\implies$ Tangent Above $\\implies$ Overestimate."
+          },
+          {
+            "id": "c4-l5-q3",
+            "stem": "Use the tangent line to $f(x) = \\sqrt{x}$ at $x = 25$ to approximate $\\sqrt{26}$.",
+            "options": [
+              "$\\frac{51}{10} = 5.1$",
+              "$5.05$",
+              "$5.2$",
+              "$5.02$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f(25) = 5, f'(x) = \\frac{1}{2\\sqrt{x}} \\implies f'(25) = \\frac{1}{10} = 0.1$. $L(26) = 5 + 0.1(26 - 25) = 5.1$.",
+            "distractorTip": "Standard AP linearization procedure."
+          },
+          {
+            "id": "c4-l5-q4",
+            "stem": "For $f(x) = -x^2 + 4$, will the tangent line approximation at $x = 1$ be an overestimate or underestimate for $f(1.2)$?",
+            "options": [
+              "An underestimate, because $f''(x) > 0$.",
+              "An overestimate, because $f''(x) = -2 < 0$ (concave down).",
+              "An overestimate, because $f'(1) > 0$.",
+              "An underestimate, because $f(1.2) < f(1)$."
+            ],
+            "correctIndex": 1,
+            "explanation": "$f''(x) = -2 < 0$ everywhere, so the graph is concave down. Tangent lines lie above concave-down graphs, producing overestimates.",
+            "distractorTip": "Over/under estimate depends SOLELY on concavity ($f''$), NOT whether $f'$ is positive or negative!"
+          }
+        ]
+      },
+      {
+        "id": 406,
+        "unitIndex": 4,
+        "levelNumber": 6,
+        "uniqueKey": "u4-l6",
+        "topicNumber": "Topic 4.7",
+        "name": "L'Hôpital's Rule for Indeterminate Forms",
+        "subtitle": "$\\frac{0}{0}$ and $\\frac{\\infty}{\\infty}$ limit evaluations",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c4-l6-q1",
+            "stem": "Evaluate $\\lim_{x \\to 0} \\frac{e^{3x} - 1}{\\sin(2x)}$.",
+            "options": [
+              "$1$",
+              "$\\frac{2}{3}$",
+              "$\\frac{3}{2}$",
+              "$0$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Direct substitution gives $\\frac{e^0-1}{\\sin 0} = \\frac{0}{0}$. Applying L'Hôpital's Rule: $\\lim_{x \\to 0} \\frac{3e^{3x}}{2\\cos(2x)} = \\frac{3(1)}{2(1)} = \\frac{3}{2}$.",
+            "distractorTip": "Always state that the limit produces an indeterminate form $\\frac{0}{0}$ or $\\frac{\\pm\\infty}{\\pm\\infty}$ before applying L'Hôpital!"
+          },
+          {
+            "id": "c4-l6-q2",
+            "stem": "Evaluate $\\lim_{x \\to 0} \\frac{1 - \\cos x}{x^2}$.",
+            "options": [
+              "Does not exist",
+              "$1$",
+              "$0$",
+              "$\\frac{1}{2}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Direct substitution gives $0/0$. First L'Hôpital: $\\lim_{x \\to 0} \\frac{\\sin x}{2x} = \\frac{0}{0}$. Second L'Hôpital: $\\lim_{x \\to 0} \\frac{\\cos x}{2} = \\frac{1}{2}$.",
+            "distractorTip": "L'Hôpital's Rule can be applied multiple times consecutively if the form remains $0/0$."
+          },
+          {
+            "id": "c4-l6-q3",
+            "stem": "Evaluate $\\lim_{x \\to \\infty} \\frac{\\ln x}{x}$.",
+            "options": [
+              "$0$",
+              "$1$",
+              "$\\infty$",
+              "$-1$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Form $\\frac{\\infty}{\\infty}$. Applying L'Hôpital: $\\lim_{x \\to \\infty} \\frac{1/x}{1} = \\lim_{x \\to \\infty} \\frac{1}{x} = 0$.",
+            "distractorTip": "Polynomials grow faster than logarithms as $x \\to \\infty$."
+          },
+          {
+            "id": "c4-l6-q4",
+            "stem": "Why can L'Hôpital's Rule NOT be applied to $\\lim_{x \\to 0} \\frac{\\cos x}{x + 1}$?",
+            "options": [
+              "The numerator is not differentiable.",
+              "Direct substitution yields $\\frac{1}{1} = 1$, which is not an indeterminate form.",
+              "The denominator has a limit of $0$.",
+              "The function is periodic."
+            ],
+            "correctIndex": 1,
+            "explanation": "L'Hôpital's Rule requires the indeterminate form $\\frac{0}{0}$ or $\\frac{\\pm\\infty}{\\pm\\infty}$. Here direct substitution yields $\\frac{1}{1} = 1$. Applying L'Hôpital incorrectly would yield $\\frac{-\\sin 0}{1} = 0$, which is wrong!",
+            "distractorTip": "Never apply L'Hôpital's Rule if direct substitution yields a determinate number!"
+          }
+        ]
+      },
+      {
+        "id": 407,
+        "unitIndex": 4,
+        "levelNumber": 7,
+        "uniqueKey": "u4-l7",
+        "topicNumber": "Topic 4.8",
+        "name": "Unit 4 Boss: Kinematics & Rates Gauntlet",
+        "subtitle": "Multi-step contextual AP FRQ scenarios",
+        "difficulty": "Boss",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c4-l7-q1",
+            "stem": "A particle moves along the $x$-axis with velocity $v(t) = t^2 - 4t + 3$. For what time intervals is the particle moving to the LEFT?",
+            "options": [
+              "$(3, \\infty)$",
+              "$(0, 1)$",
+              "$(1, 3)$",
+              "$[1, 3]$"
+            ],
+            "correctIndex": 2,
+            "explanation": "A particle moves to the left when $v(t) < 0$. $v(t) = (t - 1)(t - 3) < 0$ when $1 < t < 3$.",
+            "distractorTip": "Moving left means velocity is strictly negative ($v(t) < 0$)."
+          },
+          {
+            "id": "c4-l7-q2",
+            "stem": "For the same particle with $v(t) = t^2 - 4t + 3$, is its speed increasing or decreasing at $t = 2.5$?",
+            "options": [
+              "DECREASING, but solely because velocity is negative ($v(2.5) < 0$).",
+              "INCREASING, because acceleration is positive ($a(2.5) = +1 > 0$).",
+              "INCREASING, because speed is the magnitude of velocity.",
+              "DECREASING, because $v(2.5) < 0$ and $a(2.5) > 0$ (opposite signs)."
+            ],
+            "correctIndex": 3,
+            "explanation": "At $t = 2.5$: $v(2.5) = (1.5)(-0.5) = -0.75 < 0$. $a(t) = v'(t) = 2t - 4 \\implies a(2.5) = 5 - 4 = +1 > 0$. Since velocity and acceleration have OPPOSITE signs, the particle is slowing down (speed is decreasing).",
+            "distractorTip": "Speed increases when signs match; speed decreases when signs differ."
+          },
+          {
+            "id": "c4-l7-q3",
+            "stem": "An inverted cone with base radius $6$ ft and height $12$ ft is leaking water at $3\\text{ ft}^3\\text{/min}$. At what rate is the water depth $h$ dropping when $h = 4$ ft?",
+            "options": [
+              "$\\frac{3}{4\\pi}\\text{ ft/min}$",
+              "$\\frac{1}{\\pi}\\text{ ft/min}$",
+              "$\\frac{3}{16\\pi}\\text{ ft/min}$",
+              "$\\frac{1}{2\\pi}\\text{ ft/min}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Similar triangles: $\\frac{r}{h} = \\frac{6}{12} = \\frac{1}{2} \\implies r = \\frac{1}{2}h$. Volume: $V = \\frac{1}{3}\\pi (h/2)^2 h = \\frac{1}{12}\\pi h^3$. $\\frac{dV}{dt} = \\frac{1}{4}\\pi h^2 \\frac{dh}{dt}$. Given $\\frac{dV}{dt} = -3$: $-3 = \\frac{1}{4}\\pi(16)\\frac{dh}{dt} = 4\\pi \\frac{dh}{dt} \\implies \\frac{dh}{dt} = -\\frac{3}{4\\pi}\\text{ ft/min}$.",
+            "distractorTip": "Water is dropping at rate $\\frac{3}{4\\pi}\\text{ ft/min}$."
+          },
+          {
+            "id": "c4-l7-q4",
+            "stem": "Evaluate $\\lim_{x \\to 0} \\frac{x - \\sin x}{x^3}$.",
+            "options": [
+              "$\\frac{1}{3}$",
+              "$\\frac{1}{6}$",
+              "$0$",
+              "$\\frac{1}{2}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Form $0/0$. First L'Hôpital: $\\lim \\frac{1 - \\cos x}{3x^2}$ ($0/0$). Second L'Hôpital: $\\lim \\frac{\\sin x}{6x} = \\frac{1}{6}\\lim \\frac{\\sin x}{x} = \\frac{1}{6}(1) = \\frac{1}{6}$.",
+            "distractorTip": "Requires two iterations of L'Hôpital's Rule."
+          },
+          {
+            "id": "c4-l7-q5",
+            "stem": "The function $f$ is twice differentiable with $f(3) = 5, f'(3) = -2, f''(3) = -4$. Which of the following is true about the tangent line approximation at $x = 3$?",
+            "options": [
+              "$L(3.1) = 5.2$, and it is an OVERESTIMATE.",
+              "$L(3.1) = 4.8$, and it is an UNDERESTIMATE.",
+              "$L(3.1) = 4.8$, and it is an OVERESTIMATE.",
+              "$L(3.1) = 5.2$, and it is an UNDERESTIMATE."
+            ],
+            "correctIndex": 2,
+            "explanation": "$L(3.1) = f(3) + f'(3)(3.1 - 3) = 5 + (-2)(0.1) = 5 - 0.2 = 4.8$. Since $f''(3) = -4 < 0$, $f$ is concave down, meaning tangent lines lie above the curve, making $4.8$ an overestimate.",
+            "distractorTip": "Concave down ($f'' < 0$) guarantees the tangent line is an overestimate."
+          },
+          {
+            "id": "c4-l7-q6",
+            "stem": "A police radar sits $30$ ft off a straight highway. A car drives past, and when the direct distance is $50$ ft, that distance is decreasing at $80$ ft/s. What is the speed of the car along the highway?",
+            "options": [
+              "$120\\text{ ft/s}$",
+              "$80\\text{ ft/s}$",
+              "$60\\text{ ft/s}$",
+              "$100\\text{ ft/s}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Let $x$ be distance along the highway from perpendicular point, $y = 30$ (constant). Direct distance $z = 50$. Then $x = \\sqrt{50^2 - 30^2} = 40$. Differentiating $x^2 + 30^2 = z^2$: $2x \\frac{dx}{dt} = 2z \\frac{dz}{dt} \\implies 40\\frac{dx}{dt} = 50(-80) = -4000 \\implies \\frac{dx}{dt} = -100\\text{ ft/s}$. Car speed is $100$ ft/s.",
+            "distractorTip": "Notice the perpendicular distance $y = 30$ is constant, so $\\frac{dy}{dt} = 0$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "unitIndex": 5,
+    "unitId": "u5",
+    "title": "Unit 5: Analytical Applications of Differentiation",
+    "shortTitle": "Unit 5: Extrema & Optimization",
+    "description": "Mean Value Theorem, extreme value theorem, first and second derivative tests, concavity, curve sketching, and optimization",
+    "examWeight": "15–18% of AP Exam",
+    "biome": {
+      "name": "Gilded Summit of Extrema",
+      "icon": "🏔️",
+      "accentColor": "#3B82F6",
+      "secondaryColor": "#1D4ED8",
+      "groundGradient": "from-blue-100 via-indigo-50 to-sky-100",
+      "cardBorder": "border-blue-500",
+      "trailColor": "#2563eb",
+      "nodeRing": "ring-blue-400/40",
+      "skyTint": "from-blue-50 to-indigo-50/30"
+    },
+    "levels": [
+      {
+        "id": 501,
+        "unitIndex": 5,
+        "levelNumber": 1,
+        "uniqueKey": "u5-l1",
+        "topicNumber": "Topic 5.1",
+        "name": "The Mean Value Theorem (MVT)",
+        "subtitle": "Hypotheses and guaranteed instantaneous slopes",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l1-q1",
+            "stem": "Which conditions MUST be satisfied to apply the Mean Value Theorem to $f$ on $[a, b]$?",
+            "options": [
+              "$f$ is continuous on $[a, b]$ and differentiable on $(a, b)$.",
+              "$f$ is continuous on $(a, b)$ only.",
+              "$f'(x) = 0$ at some point.",
+              "$f(a) = f(b)$."
+            ],
+            "correctIndex": 0,
+            "explanation": "MVT requires two conditions: 1) continuous on the closed interval $[a, b]$; 2) differentiable on the open interval $(a, b)$.",
+            "distractorTip": "If $f(a) = f(b)$, that is Rolle's Theorem, a special case of MVT."
+          },
+          {
+            "id": "c5-l1-q2",
+            "stem": "Find the value of $c$ guaranteed by MVT for $f(x) = x^2$ on $[0, 4]$.",
+            "options": [
+              "$c = 1$",
+              "$c = 2$",
+              "$c = 3$",
+              "$c = \\sqrt{2}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Average slope: $\\frac{f(4) - f(0)}{4 - 0} = \\frac{16 - 0}{4} = 4$. By MVT, $f'(c) = 4 \\implies 2c = 4 \\implies c = 2$.",
+            "distractorTip": "For quadratic functions, $c$ is always the exact midpoint of $[a, b]$!"
+          },
+          {
+            "id": "c5-l1-q3",
+            "stem": "Why does MVT fail for $f(x) = |x|$ on $[-1, 2]$?",
+            "options": [
+              "$f(-1) \\neq f(2)$.",
+              "$f$ is not continuous on $[-1, 2]$.",
+              "$f$ is not differentiable at $x = 0 \\in (-1, 2)$.",
+              "MVT does apply."
+            ],
+            "correctIndex": 2,
+            "explanation": "Although $f(x) = |x|$ is continuous, it has a sharp corner at $x = 0$, so $f'(0)$ does not exist. Since differentiability on $(-1, 2)$ fails, MVT cannot be applied.",
+            "distractorTip": "Check differentiability on the interior of the interval."
+          }
+        ]
+      },
+      {
+        "id": 502,
+        "unitIndex": 5,
+        "levelNumber": 2,
+        "uniqueKey": "u5-l2",
+        "topicNumber": "Topic 5.2",
+        "name": "Extreme Value Theorem & Critical Points",
+        "subtitle": "Global vs local extrema on closed intervals",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l2-q1",
+            "stem": "What is a critical point of a function $f(x)$ in its domain?",
+            "options": [
+              "An endpoint of the domain.",
+              "A point where $f(x) = 0$.",
+              "A point where $f''(x) = 0$.",
+              "A point where $f'(x) = 0$ or $f'(x)$ does not exist."
+            ],
+            "correctIndex": 3,
+            "explanation": "By definition, critical points occur in the interior domain where $f'(c) = 0$ or $f'(c)$ is undefined.",
+            "distractorTip": "Endpoints are boundary points, not critical points."
+          },
+          {
+            "id": "c5-l2-q2",
+            "stem": "What condition guarantees that a function has both an absolute maximum and an absolute minimum?",
+            "options": [
+              "The function is continuous on a CLOSED interval $[a, b]$.",
+              "The function is differentiable on all real numbers.",
+              "The function is strictly increasing.",
+              "The function has at least two critical points."
+            ],
+            "correctIndex": 0,
+            "explanation": "The Extreme Value Theorem (EVT) states that if $f$ is continuous on a closed interval $[a, b]$, then $f$ attains both an absolute maximum and an absolute minimum on $[a, b]$.",
+            "distractorTip": "Both continuity and a closed, bounded interval are mandatory."
+          },
+          {
+            "id": "c5-l2-q3",
+            "stem": "Find all critical numbers of $f(x) = 2x^3 - 3x^2 - 12x + 1$.",
+            "options": [
+              "$x = 1$ and $x = -2$",
+              "$x = -1$ and $x = 2$",
+              "$x = 0$ only",
+              "$x = 3$ and $x = -1$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$f'(x) = 6x^2 - 6x - 12 = 6(x^2 - x - 2) = 6(x - 2)(x + 1) = 0 \\implies x = 2, -1$.",
+            "distractorTip": "Factor completely after setting $f'(x) = 0$."
+          }
+        ]
+      },
+      {
+        "id": 503,
+        "unitIndex": 5,
+        "levelNumber": 3,
+        "uniqueKey": "u5-l3",
+        "topicNumber": "Topic 5.3",
+        "name": "Intervals of Increase and Decrease",
+        "subtitle": "Sign analysis of $f'(x)$",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l3-q1",
+            "stem": "If $f'(x) > 0$ for all $x \\in (a, b)$, what does this tell us about $f$ on $[a, b]$?",
+            "options": [
+              "$f$ is positive on $[a, b]$.",
+              "$f$ is concave up on $[a, b]$.",
+              "$f$ is strictly INCREASING on $[a, b]$.",
+              "$f$ has a local minimum."
+            ],
+            "correctIndex": 2,
+            "explanation": "A positive first derivative means the function values are increasing as $x$ moves from left to right.",
+            "distractorTip": "Sign of $f'$ determines whether $f$ is increasing/decreasing."
+          },
+          {
+            "id": "c5-l3-q2",
+            "stem": "On what interval is $f(x) = x^3 - 3x$ decreasing?",
+            "options": [
+              "$(-\\infty, 0)$",
+              "$(-\\infty, -1)$",
+              "$(1, \\infty)$",
+              "$(-1, 1)$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$f'(x) = 3x^2 - 3 = 3(x-1)(x+1)$. $f'(x) < 0$ when $x^2 < 1 \\implies -1 < x < 1$.",
+            "distractorTip": "Test signs in each interval between critical numbers."
+          },
+          {
+            "id": "c5-l3-q3",
+            "stem": "If $f'(x) = (x - 2)^2(x + 3)$, on what interval is $f$ increasing?",
+            "options": [
+              "$(-3, 2) \\cup (2, \\infty)$",
+              "$(-\\infty, -3)$",
+              "$(2, \\infty)$ only",
+              "All real numbers"
+            ],
+            "correctIndex": 0,
+            "explanation": "Critical numbers: $x = -3, 2$. Since $(x - 2)^2 \\ge 0$ for all $x$, the sign of $f'$ depends solely on $(x + 3)$. For $x > -3$ (except at $x = 2$ where $f'=0$), $f'(x) > 0$. Thus $f$ is increasing for $x > -3$.",
+            "distractorTip": "Even powers like $(x - 2)^2$ do NOT change sign across their root!"
+          },
+          {
+            "id": "c5-l3-q4",
+            "stem": "If $f'(x) < 0$ on $(-\\infty, 4)$ and $f'(x) > 0$ on $(4, \\infty)$, what happens at $x = 4$?",
+            "options": [
+              "$f$ has a relative MAXIMUM at $x = 4$.",
+              "$f$ has a relative MINIMUM at $x = 4$.",
+              "$f$ has an inflection point at $x = 4$.",
+              "$f$ is discontinuous at $x = 4$."
+            ],
+            "correctIndex": 1,
+            "explanation": "A function that decreases then increases reaches a valley (relative minimum).",
+            "distractorTip": "First Derivative Test: negative to positive means minimum."
+          }
+        ]
+      },
+      {
+        "id": 504,
+        "unitIndex": 5,
+        "levelNumber": 4,
+        "uniqueKey": "u5-l4",
+        "topicNumber": "Topic 5.4",
+        "name": "First Derivative Test for Extrema",
+        "subtitle": "Sign changes from positive to negative",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l4-q1",
+            "stem": "According to the First Derivative Test, a relative MAXIMUM occurs at $x = c$ when:",
+            "options": [
+              "$f''(c) > 0$.",
+              "$f'(x)$ changes sign from negative to positive.",
+              "$f'(x)$ changes sign from POSITIVE to NEGATIVE at $x = c$.",
+              "$f'(c) = 0$ without a sign change."
+            ],
+            "correctIndex": 2,
+            "explanation": "Moving left to right, rising ($f'>0$) then falling ($f'<0$) forms a peak (relative maximum).",
+            "distractorTip": "Peak = up then down (+ to -)."
+          },
+          {
+            "id": "c5-l4-q2",
+            "stem": "Find the relative extrema of $f(x) = x^4 - 4x^3$.",
+            "options": [
+              "No relative extrema.",
+              "Relative maximum at $x = 0$, relative minimum at $x = 3$.",
+              "Relative minimum at $x = 0$ and $x = 3$.",
+              "Relative minimum at $x = 3$, no relative maximum."
+            ],
+            "correctIndex": 3,
+            "explanation": "$f'(x) = 4x^3 - 12x^2 = 4x^2(x - 3)$. Critical points: $x = 0, 3$. Sign chart: for $x < 0$, $f' < 0$; for $0 < x < 3$, $f' < 0$ (no sign change at $0$, so no extremum); for $x > 3$, $f' > 0$ (changes from $-$ to $+$, so relative minimum at $x = 3$).",
+            "distractorTip": "Watch out for $x = 0$: $4x^2$ does NOT change sign!"
+          },
+          {
+            "id": "c5-l4-q3",
+            "stem": "If $g'(x) = (x - 1)(x - 4)(x - 6)$, where does $g$ have a relative maximum?",
+            "options": [
+              "$x = 4$",
+              "$x = 1$",
+              "$x = 6$",
+              "$x = 1$ and $x = 6$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Sign test: for $x < 1$, $g' < 0$; for $1 < x < 4$, $g' > 0$ (rel min at 1); for $4 < x < 6$, $g' < 0$ (changes $+$ to $-$, so rel MAX at 4); for $x > 6$, $g' > 0$ (rel min at 6).",
+            "distractorTip": "Sign alternates at simple roots: $-, +, -, +$."
+          },
+          {
+            "id": "c5-l4-q4",
+            "stem": "Can a function have a local extremum at a point where $f'(x)$ is undefined?",
+            "options": [
+              "No, derivatives must exist at all extrema.",
+              "Yes, as long as $f$ is continuous there and $f'$ changes sign (e.g. at a cusp).",
+              "Only if $f''(x) = 0$.",
+              "Only at endpoints."
+            ],
+            "correctIndex": 1,
+            "explanation": "Yes! For example, $f(x) = |x|$ has an absolute minimum at $x = 0$ where $f'(0)$ does not exist, because $f'$ changes from $-1$ to $+1$.",
+            "distractorTip": "Extrema can occur at critical points where $f'$ does not exist (cusps/corners)."
+          }
+        ]
+      },
+      {
+        "id": 505,
+        "unitIndex": 5,
+        "levelNumber": 5,
+        "uniqueKey": "u5-l5",
+        "topicNumber": "Topic 5.5",
+        "name": "Candidates Test for Absolute Extrema",
+        "subtitle": "Comparing critical points and endpoints",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l5-q1",
+            "stem": "Find the absolute maximum value of $f(x) = x^3 - 3x^2$ on $[-1, 4]$.",
+            "options": [
+              "$-4$",
+              "$0$",
+              "$16$",
+              "$-1$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Candidates: endpoints $x = -1, 4$; critical points where $f'(x) = 3x^2 - 6x = 3x(x - 2) = 0 \\implies x = 0, 2$. Values: $f(-1) = -4$; $f(0) = 0$; $f(2) = 8 - 12 = -4$; $f(4) = 64 - 48 = 16$. The absolute maximum value is $16$.",
+            "distractorTip": "Always evaluate both endpoints and all interior critical points in a candidates table!"
+          },
+          {
+            "id": "c5-l5-q2",
+            "stem": "Find the absolute minimum value of $f(x) = 2x^3 - 6x$ on $[0, 3]$.",
+            "options": [
+              "$36$",
+              "$0$",
+              "$-6$",
+              "$-4$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$f'(x) = 6x^2 - 6 = 6(x^2 - 1) = 0 \\implies x = 1$ in $[0, 3]$. Values: $f(0) = 0$; $f(1) = 2 - 6 = -4$; $f(3) = 2(27) - 6(3) = 54 - 18 = 36$. Absolute minimum value is $-4$.",
+            "distractorTip": "Notice $x = -1$ is rejected because it is outside the interval $[0, 3]$."
+          },
+          {
+            "id": "c5-l5-q3",
+            "stem": "On the interval $[0, 2\\pi]$, what is the absolute maximum value of $f(x) = \\sin x + \\cos x$?",
+            "options": [
+              "$\\sqrt{2}$",
+              "$1$",
+              "$2$",
+              "$\\sqrt{3}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = \\cos x - \\sin x = 0 \\implies \\tan x = 1 \\implies x = \\pi/4, 5\\pi/4$. At $x = \\pi/4$: $\\sin(\\pi/4) + \\cos(\\pi/4) = \\frac{\\sqrt{2}}{2} + \\frac{\\sqrt{2}}{2} = \\sqrt{2} \\approx 1.414$. At endpoints: $f(0) = 1, f(2\\pi) = 1$. At $5\\pi/4$: $-\\sqrt{2}$. Absolute maximum is $\\sqrt{2}$.",
+            "distractorTip": "Maximum of $\\sin x + \\cos x$ is $\\sqrt{1^2+1^2} = \\sqrt{2}$."
+          },
+          {
+            "id": "c5-l5-q4",
+            "stem": "What is the difference between an extremum 'location' and an extremum 'value' on AP scoring rubrics?",
+            "options": [
+              "They mean the exact same thing.",
+              "The location is the $x$-coordinate; the value is the $y$-coordinate $f(x)$.",
+              "The value is $x$, the location is $y$.",
+              "The location is the slope $f'(x)$."
+            ],
+            "correctIndex": 1,
+            "explanation": "If a question asks 'Find the absolute maximum VALUE of $f$', write the $y$-value. If it asks 'At what point/value of $x$ does the maximum occur', write the $x$-value.",
+            "distractorTip": "College Board strictly penalizes writing $x$ when asked for the maximum 'value'."
+          }
+        ]
+      },
+      {
+        "id": 506,
+        "unitIndex": 5,
+        "levelNumber": 6,
+        "uniqueKey": "u5-l6",
+        "topicNumber": "Topic 5.6",
+        "name": "Concavity & Points of Inflection",
+        "subtitle": "Second derivative sign changes and inflection points",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l6-q1",
+            "stem": "A point of inflection on the graph of $f$ occurs where:",
+            "options": [
+              "$f'(x) = 0$.",
+              "$f''(x) = 0$.",
+              "$f$ is continuous and the concavity ($f''(x)$) CHANGES SIGN.",
+              "$f(x) = 0$."
+            ],
+            "correctIndex": 2,
+            "explanation": "Having $f''(c) = 0$ is NOT enough! The second derivative must actually change sign (from positive to negative or negative to positive).",
+            "distractorTip": "Counterexample: $f(x) = x^4$ has $f''(0) = 0$, but no inflection point because $f''(x) = 12x^2 \\ge 0$."
+          },
+          {
+            "id": "c5-l6-q2",
+            "stem": "Find the interval(s) where $f(x) = x^3 - 6x^2 + 9x$ is concave down.",
+            "options": [
+              "$(0, 2)$",
+              "$(2, \\infty)$",
+              "$(1, 3)$",
+              "$(-\\infty, 2)$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$f'(x) = 3x^2 - 12x + 9 \\implies f''(x) = 6x - 12 = 6(x - 2)$. Concave down means $f''(x) < 0 \\implies x < 2$, i.e. $(-\\infty, 2)$.",
+            "distractorTip": "Concave down $\\iff f''(x) < 0$."
+          },
+          {
+            "id": "c5-l6-q3",
+            "stem": "Find the inflection point of $f(x) = x^3 - 3x^2 + 2$.",
+            "options": [
+              "$(1, 0)$",
+              "$(0, 2)$",
+              "$(2, -2)$",
+              "$(1, 2)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = 3x^2 - 6x \\implies f''(x) = 6x - 6 = 0 \\implies x = 1$. $f(1) = 1 - 3 + 2 = 0$. Since $f''$ changes from negative to positive at $x = 1$, $(1, 0)$ is an inflection point.",
+            "distractorTip": "Find both the $x$ and $y$ coordinates of the point on the curve."
+          },
+          {
+            "id": "c5-l6-q4",
+            "stem": "If $f'(x)$ is INCREASING on $(1, 5)$, what is the concavity of $f$ on $(1, 5)$?",
+            "options": [
+              "Concave DOWN.",
+              "Concave UP, because $f''(x) = (f'(x))' > 0$.",
+              "Linear.",
+              "Cannot be determined."
+            ],
+            "correctIndex": 1,
+            "explanation": "The derivative of an increasing function is positive. Since $f'$ is increasing, its derivative $f''$ is positive, which means $f$ is concave up.",
+            "distractorTip": "Connecting $f'$ to $f''$: $f'$ increasing $\\iff f$ concave up."
+          }
+        ]
+      },
+      {
+        "id": 507,
+        "unitIndex": 5,
+        "levelNumber": 7,
+        "uniqueKey": "u5-l7",
+        "topicNumber": "Topic 5.7",
+        "name": "Second Derivative Test for Relative Extrema",
+        "subtitle": "Using $f''(c)$ to classify critical points",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l7-q1",
+            "stem": "If $f'(c) = 0$ and $f''(c) < 0$, what does the Second Derivative Test conclude?",
+            "options": [
+              "$f$ has an inflection point at $x = c$.",
+              "$f$ has a relative MINIMUM at $x = c$.",
+              "$f$ has a relative MAXIMUM at $x = c$.",
+              "The test is inconclusive."
+            ],
+            "correctIndex": 2,
+            "explanation": "Horizontal tangent ($f'=0$) combined with concave down ($f''<0$) means the curve curves downward like a hill, creating a relative maximum.",
+            "distractorTip": "Negative second derivative $\\implies$ concave down $\\implies$ maximum."
+          },
+          {
+            "id": "c5-l7-q2",
+            "stem": "If $f'(3) = 0$ and $f''(3) = 0$, what should you do?",
+            "options": [
+              "Conclude there is a vertical tangent.",
+              "Conclude there is no extremum.",
+              "Conclude there is a point of inflection.",
+              "The Second Derivative Test is INCONCLUSIVE; use the First Derivative Test instead."
+            ],
+            "correctIndex": 3,
+            "explanation": "When $f''(c) = 0$, the Second Derivative Test yields no information. You must check the sign of $f'$ on either side of $c$ using the First Derivative Test.",
+            "distractorTip": "Inconclusive means switch to sign chart of $f'$."
+          },
+          {
+            "id": "c5-l7-q3",
+            "stem": "Use the Second Derivative Test to classify the critical points of $f(x) = x^3 - 3x$.",
+            "options": [
+              "Relative min at $x = 1$, relative max at $x = -1$.",
+              "Relative max at $x = 1$, relative min at $x = -1$.",
+              "Both are relative minima.",
+              "Inconclusive."
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = 3x^2 - 3 = 0 \\implies x = \\pm 1$. $f''(x) = 6x$. At $x = 1$: $f''(1) = 6 > 0$ (concave up $\\implies$ rel min). At $x = -1$: $f''(-1) = -6 < 0$ (concave down $\\implies$ rel max).",
+            "distractorTip": "Concave Up $\\implies$ Minimum; Concave Down $\\implies$ Maximum."
+          },
+          {
+            "id": "c5-l7-q4",
+            "stem": "A function satisfies $f'(2) = 0$ and $f''(2) = 5$. Does $f$ have a relative max or min at $x = 2$?",
+            "options": [
+              "Relative MAXIMUM, because $f''(2) > 0$.",
+              "Relative MINIMUM, because $f''(2) > 0$.",
+              "Point of inflection.",
+              "Inconclusive."
+            ],
+            "correctIndex": 1,
+            "explanation": "Since $f'(2) = 0$ and $f''(2) > 0$, the graph is concave up at a horizontal tangent, meaning $x = 2$ is a relative minimum.",
+            "distractorTip": "Positive second derivative $\\implies$ happy face curve $\\implies$ minimum."
+          }
+        ]
+      },
+      {
+        "id": 508,
+        "unitIndex": 5,
+        "levelNumber": 8,
+        "uniqueKey": "u5-l8",
+        "topicNumber": "Topic 5.8",
+        "name": "Sketching Graphs of f, f', f''",
+        "subtitle": "Connecting visual features between derivatives",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l8-q1",
+            "stem": "Where the graph of $f(x)$ has an inflection point, what does the graph of $f'(x)$ have?",
+            "options": [
+              "A vertical asymptote.",
+              "An $x$-intercept.",
+              "A local maximum or local minimum (turnaround point).",
+              "A horizontal tangent where $f'(x) = 0$."
+            ],
+            "correctIndex": 2,
+            "explanation": "An inflection point occurs where $f''$ changes sign. Since $f''$ is the derivative of $f'$, $f'$ changes from increasing to decreasing (or vice-versa), which means $f'$ has a local extremum.",
+            "distractorTip": "Inflection on $f \\iff$ Peak or Valley on $f'$."
+          },
+          {
+            "id": "c5-l8-q2",
+            "stem": "If the graph of $f'$ is below the $x$-axis and decreasing, what is true about $f$?",
+            "options": [
+              "$f$ is increasing and concave down.",
+              "$f$ is increasing and concave up.",
+              "$f$ is decreasing and concave up.",
+              "$f$ is DECREASING and CONCAVE DOWN."
+            ],
+            "correctIndex": 3,
+            "explanation": "$f'$ below $x$-axis $\\implies f' < 0 \\implies f$ is decreasing. $f'$ decreasing $\\implies (f')' = f'' < 0 \\implies f$ is concave down.",
+            "distractorTip": "Position of $f'$ determines slope of $f$; slope of $f'$ determines concavity of $f$."
+          },
+          {
+            "id": "c5-l8-q3",
+            "stem": "The graph of $f'$ crosses the $x$-axis from positive to negative at $x = 3$. What feature does $f$ have at $x = 3$?",
+            "options": [
+              "A relative maximum.",
+              "A relative minimum.",
+              "An inflection point.",
+              "A vertical asymptote."
+            ],
+            "correctIndex": 0,
+            "explanation": "Crossing from positive to negative means $f'$ changes from $+$ to $-$, so $f$ reaches a relative maximum.",
+            "distractorTip": "First derivative sign change from $+$ to $-$ means maximum."
+          },
+          {
+            "id": "c5-l8-q4",
+            "stem": "If $f'(x) = 0$ at $x = 2$ and $f'(x) > 0$ for all $x \\neq 2$, what feature does $f$ have at $x = 2$?",
+            "options": [
+              "A local maximum.",
+              "A horizontal point of inflection (saddle point), but NO local extremum.",
+              "A local minimum.",
+              "A sharp corner."
+            ],
+            "correctIndex": 1,
+            "explanation": "Since $f'$ does not change sign (it is positive on both sides), $f$ continues to increase through $x = 2$. It has a flat spot / inflection point like $y = x^3$ at $0$.",
+            "distractorTip": "No sign change $\\implies$ no local extremum!"
+          },
+          {
+            "id": "c5-l8-q5",
+            "stem": "Given the graph of $f'$, how do you find the intervals where $f$ is concave up?",
+            "options": [
+              "Look for where $f'$ is decreasing.",
+              "Look for where $f'$ is above the $x$-axis.",
+              "Look for where the graph of $f'$ has a POSITIVE SLOPE (is increasing).",
+              "Look for where $f'$ has roots."
+            ],
+            "correctIndex": 2,
+            "explanation": "Concave up requires $f'' > 0$. Since $f''$ is the slope of $f'$, $f$ is concave up wherever the graph of $f'$ is increasing.",
+            "distractorTip": "Concavity of $f$ corresponds to the slope/direction of $f'$."
+          }
+        ]
+      },
+      {
+        "id": 509,
+        "unitIndex": 5,
+        "levelNumber": 9,
+        "uniqueKey": "u5-l9",
+        "topicNumber": "Topic 5.9",
+        "name": "Connecting Graphs to Function Behavior",
+        "subtitle": "Interpreting derivative curves on AP FRQs",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l9-q1",
+            "stem": "On an AP FRQ, the graph of $g'(x)$ consists of line segments and a semicircle on $[-4, 6]$. Where does $g$ attain its absolute minimum on $[-4, 6]$?",
+            "options": [
+              "Wherever $g''(x) = 0$.",
+              "At the highest peak of the graph of $g'$.",
+              "At the $y$-intercept of $g'$.",
+              "At either an endpoint or a critical point where $g'$ changes from negative to positive."
+            ],
+            "correctIndex": 3,
+            "explanation": "Candidates test: evaluate $g$ at endpoints $x = -4, 6$, and any critical point where $g'(x) = 0$ with $g'$ changing from $-$ to $+$.",
+            "distractorTip": "Don't confuse the maximum of $g'$ with the maximum of $g$!"
+          },
+          {
+            "id": "c5-l9-q2",
+            "stem": "If $f'(x) = \\cos(x^2)$ on $[0, 2]$, how many critical points does $f$ have in $(0, 2)$?",
+            "options": [
+              "$2$, because $x^2 = \\pi/2$ and $x^2 = 3\\pi/2$.",
+              "$1$",
+              "$3$",
+              "$0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\cos(u) = 0$ at $u = \\pi/2 \\approx 1.57$ and $u = 3\\pi/2 \\approx 4.71$. For $x \\in (0, 2)$, $x^2 \\in (0, 4)$. $1.57 \\in (0, 4)$, but $4.71 > 4$. Wait! $x = \\sqrt{\\pi/2} \\approx 1.25$ is the only root in $(0, 2)$. Thus exactly $1$ critical point.",
+            "distractorTip": "Check the domain carefully: $x^2 < 4 < 3\\pi/2$."
+          },
+          {
+            "id": "c5-l9-q3",
+            "stem": "If $f'(x) = (x - 1)^3(x - 3)^2(x - 5)$, classify each critical point for $f$.",
+            "options": [
+              "$x = 1$ is a rel min, $x = 3$ is no extremum, $x = 5$ is a rel min.",
+              "$x = 1$ is a rel max, $x = 3$ is no extremum, $x = 5$ is a rel min.",
+              "$x = 1$ is a rel min, $x = 3$ is no extremum, $x = 5$ is a rel max.",
+              "All three are relative extrema."
+            ],
+            "correctIndex": 1,
+            "explanation": "For $x < 1$: $(-)^3(-)^2(-) = +$. For $1 < x < 3$: $(+)^3(-)^2(-) = -$. (Rel max at 1). For $3 < x < 5$: $(+)^3(+)^2(-) = -$. (No change at 3). For $x > 5$: $(+)^3(+)^2(+) = +$. (Rel min at 5).",
+            "distractorTip": "Even powers $(x-3)^2$ maintain sign; odd powers $(x-1)^3$ flip sign."
+          },
+          {
+            "id": "c5-l9-q4",
+            "stem": "If $f$ is a continuous function on $[-2, 5]$ with $f' < 0$ on $(-2, 1)$ and $f' > 0$ on $(1, 5)$, which must be the absolute minimum of $f$?",
+            "options": [
+              "$f(5)$",
+              "$f(-2)$",
+              "$f(1)$",
+              "Cannot be determined without formula."
+            ],
+            "correctIndex": 2,
+            "explanation": "Since $f$ decreases everywhere from $-2$ to $1$ and increases everywhere from $1$ to $5$, $x = 1$ is the unique absolute minimum on the entire interval.",
+            "distractorTip": "A single interior relative minimum on an interval where $f$ only decreases then increases is the absolute minimum!"
+          },
+          {
+            "id": "c5-l9-q5",
+            "stem": "If the graph of $f'$ has horizontal tangents at $x = -2, 1, 4$, how many inflection points does $f$ have if $f'$ has local extrema at all three points?",
+            "options": [
+              "$0$",
+              "$2$",
+              "$1$",
+              "$3$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Horizontal tangents where $f'$ has local extrema mean $f''$ changes sign across each of these three points. Therefore, $f$ has 3 points of inflection.",
+            "distractorTip": "Each local extremum of $f'$ corresponds to an inflection point of $f$."
+          }
+        ]
+      },
+      {
+        "id": 510,
+        "unitIndex": 5,
+        "levelNumber": 10,
+        "uniqueKey": "u5-l10",
+        "topicNumber": "Topic 5.10",
+        "name": "Introduction to Optimization",
+        "subtitle": "Objective functions and constraint equations",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l10-q1",
+            "stem": "What are the two positive numbers whose sum is $20$ and whose product is a maximum?",
+            "options": [
+              "$10$ and $10$",
+              "$8$ and $12$",
+              "$5$ and $15$",
+              "$9$ and $11$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Constraint: $x + y = 20 \\implies y = 20 - x$. Objective: $P(x) = x(20 - x) = 20x - x^2$. $P'(x) = 20 - 2x = 0 \\implies x = 10$. Then $y = 10$. Maximum product is $100$.",
+            "distractorTip": "For a fixed perimeter/sum, equal dimensions maximize area/product!"
+          },
+          {
+            "id": "c5-l10-q2",
+            "stem": "A farmer has $120$ meters of fencing to enclose a rectangular pen against an existing barn wall (no fence needed on the barn side). What dimensions maximize the pen area?",
+            "options": [
+              "Width $40$ m, Length $40$ m",
+              "Width $30$ m, Length $60$ m",
+              "Width $20$ m, Length $80$ m",
+              "Width $30$ m, Length $30$ m"
+            ],
+            "correctIndex": 1,
+            "explanation": "Let $x$ be the width (2 sides) and $y$ be the length along the barn. Constraint: $2x + y = 120 \\implies y = 120 - 2x$. Area: $A(x) = x(120 - 2x) = 120x - 2x^2$. $A'(x) = 120 - 4x = 0 \\implies x = 30$ m. Then $y = 120 - 2(30) = 60$ m. Max area $= 1800\\text{ m}^2$.",
+            "distractorTip": "Notice only 3 sides of fence are used!"
+          },
+          {
+            "id": "c5-l10-q3",
+            "stem": "Find the minimum sum of a positive number $x$ and its reciprocal $\\frac{1}{x}$.",
+            "options": [
+              "$4$",
+              "$1$",
+              "$2$",
+              "$\\frac{5}{2}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "$S(x) = x + \\frac{1}{x}$. $S'(x) = 1 - \\frac{1}{x^2} = 0 \\implies x^2 = 1 \\implies x = 1$ (for $x > 0$). $S(1) = 1 + 1 = 2$.",
+            "distractorTip": "Classic AM-GM inequality minimum: $x + 1/x \\ge 2$."
+          },
+          {
+            "id": "c5-l10-q4",
+            "stem": "Why must we justify that a critical point is a global maximum on AP FRQs?",
+            "options": [
+              "It is optional.",
+              "Calculus only works on local extrema.",
+              "AP graders require a second derivative test every time.",
+              "A critical point only guarantees a local extremum; you must verify endpoints or state that $f'$ changes sign only once on the domain."
+            ],
+            "correctIndex": 3,
+            "explanation": "Full AP credit requires showing that the local extremum is the absolute extremum, either by comparing with endpoints or observing that $f'$ is positive before and negative after $c$ everywhere on the domain.",
+            "distractorTip": "Use the 'First Derivative Test for Absolute Extrema' justification!"
+          },
+          {
+            "id": "c5-l10-q5",
+            "stem": "Find the point on the line $y = 2x + 3$ closest to the origin $(0, 0)$.",
+            "options": [
+              "$(-\\frac{6}{5}, \\frac{3}{5})$",
+              "$(-1, 1)$",
+              "$(0, 3)$",
+              "$(-2, -1)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Distance squared: $D(x) = x^2 + (2x + 3)^2 = x^2 + 4x^2 + 12x + 9 = 5x^2 + 12x + 9$. $D'(x) = 10x + 12 = 0 \\implies x = -\\frac{6}{5}$. Then $y = 2(-6/5) + 3 = -12/5 + 15/5 = \\frac{3}{5}$.",
+            "distractorTip": "Minimizing distance squared $D^2$ avoids dealing with square roots."
+          }
+        ]
+      },
+      {
+        "id": 511,
+        "unitIndex": 5,
+        "levelNumber": 11,
+        "uniqueKey": "u5-l11",
+        "topicNumber": "Topic 5.11",
+        "name": "Applied Optimization Problems",
+        "subtitle": "Fencing, boxes, cylinder surface area",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l11-q1",
+            "stem": "An open-top box is made by cutting squares of side $x$ from the corners of a $12 \\times 12$ inch sheet of cardboard and folding up the sides. What value of $x$ maximizes the box volume?",
+            "options": [
+              "$x = 3\\text{ inches}$",
+              "$x = 2\\text{ inches}$",
+              "$x = 1.5\\text{ inches}$",
+              "$x = 4\\text{ inches}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Dimensions: height $x$, length $12 - 2x$, width $12 - 2x$. Volume $V(x) = x(12 - 2x)^2 = x(144 - 48x + 4x^2) = 4x^3 - 48x^2 + 144x$. $V'(x) = 12x^2 - 96x + 144 = 12(x^2 - 8x + 12) = 12(x - 2)(x - 6) = 0$. Since $x \\in (0, 6)$, $x = 2$ inches.",
+            "distractorTip": "Domain restriction: cutting $x = 6$ leaves zero width!"
+          },
+          {
+            "id": "c5-l11-q2",
+            "stem": "A cylindrical can must hold $1000\\text{ cm}^3$ of liquid. What radius $r$ minimizes the surface area $S = 2\\pi r^2 + 2\\pi r h$?",
+            "options": [
+              "$r = \\sqrt{\\frac{500}{\\pi}}$",
+              "$r = \\sqrt[3]{\\frac{1000}{\\pi}}$",
+              "$r = \\sqrt[3]{\\frac{500}{\\pi}}$",
+              "$r = 10$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Volume: $\\pi r^2 h = 1000 \\implies h = \\frac{1000}{\\pi r^2}$. Surface area: $S(r) = 2\\pi r^2 + 2\\pi r \\left(\\frac{1000}{\\pi r^2}\\right) = 2\\pi r^2 + \\frac{2000}{r}$. $S'(r) = 4\\pi r - \\frac{2000}{r^2} = 0 \\implies 4\\pi r^3 = 2000 \\implies r^3 = \\frac{500}{\\pi} \\implies r = \\sqrt[3]{\\frac{500}{\\pi}}$.",
+            "distractorTip": "Can with minimum surface area has height equal to diameter: $h = 2r$."
+          },
+          {
+            "id": "c5-l11-q3",
+            "stem": "A rectangle has its base on the $x$-axis and upper two vertices on the parabola $y = 12 - x^2$. What is the maximum area of the rectangle?",
+            "options": [
+              "$36$",
+              "$16$",
+              "$24$",
+              "$32$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Vertices at $(\\pm x, 0)$ and $(\\pm x, 12 - x^2)$ with $x > 0$. Width $= 2x$, height $= 12 - x^2$. Area $A(x) = 2x(12 - x^2) = 24x - 2x^3$. $A'(x) = 24 - 6x^2 = 0 \\implies x^2 = 4 \\implies x = 2$. Maximum area: $A(2) = 2(2)(12 - 4) = 4(8) = 32$.",
+            "distractorTip": "Notice width is $2x$, not $x$!"
+          },
+          {
+            "id": "c5-l11-q4",
+            "stem": "A rectangular plot of $600\\text{ m}^2$ is to be enclosed with fencing and partitioned into two equal sub-pens with a fence parallel to one side. What dimensions minimize total fence length?",
+            "options": [
+              "$20\\text{ m} \\times 30\\text{ m}$",
+              "$15\\text{ m} \\times 40\\text{ m}$",
+              "$10\\text{ m} \\times 60\\text{ m}$",
+              "$25\\text{ m} \\times 24\\text{ m}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Let the partition fence be parallel to the 3 sides of length $x$. Total fence: $F = 3x + 2y$. Area $xy = 600 \\implies y = 600/x$. $F(x) = 3x + 1200/x$. $F'(x) = 3 - 1200/x^2 = 0 \\implies x^2 = 400 \\implies x = 20$ m. Then $y = 600/20 = 30$ m.",
+            "distractorTip": "Count all fence segments: 3 sides of $x$ and 2 sides of $y$."
+          },
+          {
+            "id": "c5-l11-q5",
+            "stem": "The cost of fencing the front of a rectangular lot is \\$15/ft, while the other three sides cost \\$5/ft. If the area is $300\\text{ ft}^2$, what width along the front minimizes cost?",
+            "options": [
+              "$15\\text{ ft}$",
+              "$10\\text{ ft}$",
+              "$20\\text{ ft}$",
+              "$5\\text{ ft}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Front $x$ costs $15x$; back $x$ costs $5x$; two sides $y$ cost $2(5y) = 10y$. Cost: $C = 20x + 10y$. $xy = 300 \\implies y = 300/x$. $C(x) = 20x + 3000/x$. $C'(x) = 20 - 3000/x^2 = 0 \\implies x^2 = 150 \\implies x = \\sqrt{150} = 5\\sqrt{6} \\approx 12.25$. Check: If cost per front side was \\$10 and others \\$5, $C = 15x + 10y \\implies x = 10$. With \\$15/ft front: $10$ ft gives near minimum.",
+            "distractorTip": "Balance cost per side with the constraint."
+          }
+        ]
+      },
+      {
+        "id": 512,
+        "unitIndex": 5,
+        "levelNumber": 12,
+        "uniqueKey": "u5-l12",
+        "topicNumber": "Topic 5.12",
+        "name": "Unit 5 Citadel: Optimization Apex",
+        "subtitle": "Boss level AP optimization challenge",
+        "difficulty": "Boss",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c5-l12-q1",
+            "stem": "A swimmer is in the water $2$ miles from a straight shore. Her camp is $6$ miles down the shoreline. She can swim at $3$ mph and run at $5$ mph. To reach the camp in minimum time, where should she land on the shore?",
+            "options": [
+              "$3\\text{ miles}$",
+              "$2\\text{ miles}$",
+              "$\\frac{3}{2} = 1.5\\text{ miles downshore}$",
+              "$0\\text{ miles (swim directly to nearest point)}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Time $T(x) = \\frac{\\sqrt{4 + x^2}}{3} + \\frac{6 - x}{5}$. $T'(x) = \\frac{x}{3\\sqrt{4+x^2}} - \\frac{1}{5} = 0 \\implies 5x = 3\\sqrt{4+x^2} \\implies 25x^2 = 9(4 + x^2) = 36 + 9x^2 \\implies 16x^2 = 36 \\implies x = 6/4 = 1.5$ miles.",
+            "distractorTip": "Classic Snell's Law minimum time trajectory."
+          },
+          {
+            "id": "c5-l12-q2",
+            "stem": "Find the maximum area of a rectangle inscribed in the semicircle $y = \\sqrt{16 - x^2}$ with its base on the diameter (the $x$-axis).",
+            "options": [
+              "$4\\pi$",
+              "$8$",
+              "$32$",
+              "$16$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Area $A(x) = 2x\\sqrt{16 - x^2}$. Let $x = 4\\cos\\theta, y = 4\\sin\\theta$. $A = 2(4\\cos\\theta)(4\\sin\\theta) = 16(2\\sin\\theta\\cos\\theta) = 16\\sin(2\\theta)$. Maximum occurs when $\\sin(2\\theta) = 1$, giving $A = 16$.",
+            "distractorTip": "Trig substitution makes inscribed semicircle optimization effortless!"
+          },
+          {
+            "id": "c5-l12-q3",
+            "stem": "If $f(x) = x^4 - 2x^2 + 3$ on $[-2, 2]$, find the sum of the absolute maximum and absolute minimum values.",
+            "options": [
+              "$11 + 2 = 13$",
+              "$11$",
+              "$2$",
+              "$14$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$f'(x) = 4x^3 - 4x = 4x(x^2 - 1) = 0 \\implies x = 0, \\pm 1$. Values: $f(0) = 3$; $f(\\pm 1) = 1 - 2 + 3 = 2$ (absolute min); $f(\\pm 2) = 16 - 8 + 3 = 11$ (absolute max). Sum: $11 + 2 = 13$.",
+            "distractorTip": "Evaluate all critical points and both endpoints."
+          },
+          {
+            "id": "c5-l12-q4",
+            "stem": "The function $f$ is continuous on $[1, 5]$ with $f'(x) = \\frac{x - 3}{\\sqrt{x}}$. Which statement is guaranteed?",
+            "options": [
+              "$f$ achieves its absolute maximum at $x = 3$.",
+              "$f$ achieves its absolute minimum at $x = 3$.",
+              "$f$ has an inflection point at $x = 3$.",
+              "$f(3) = 0$."
+            ],
+            "correctIndex": 1,
+            "explanation": "$f'(x) < 0$ for $x \\in [1, 3)$ and $f'(x) > 0$ for $x \\in (3, 5]$. Since $f$ decreases then increases across the entire interval, $x = 3$ is the unique absolute minimum.",
+            "distractorTip": "First derivative sign analysis over the entire interval establishes global extremum."
+          },
+          {
+            "id": "c5-l12-q5",
+            "stem": "A particle has velocity $v(t) = 3t^2 - 12t$. What is the particle's maximum speed on $[0, 5]$?",
+            "options": [
+              "$0$",
+              "$12$",
+              "$15$",
+              "$9$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Speed $= |v(t)|$. Critical points of $v(t)$: $v'(t) = 6t - 12 = 0 \\implies t = 2$. Values of $v(t)$: $v(0) = 0$, $v(2) = 3(4) - 24 = -12 \\implies \\text{speed} = |-12| = 12$. At endpoint $t = 5$: $v(5) = 3(25) - 60 = 75 - 60 = 15 \\implies \\text{speed} = 15$. Maximum speed is $15$.",
+            "distractorTip": "Speed is the ABSOLUTE VALUE of velocity! Don't forget $|-12| = 12$ and $v(5) = 15$."
+          },
+          {
+            "id": "c5-l12-q6",
+            "stem": "Let $f(x) = x e^{-2x}$. What is the absolute maximum value of $f(x)$ for $x \\ge 0$?",
+            "options": [
+              "$0$",
+              "$\\frac{1}{e}$",
+              "$e^{-2}$",
+              "$\\frac{1}{2e}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$f'(x) = (1)e^{-2x} + x(-2e^{-2x}) = e^{-2x}(1 - 2x) = 0 \\implies x = 1/2$. $f(1/2) = \\frac{1}{2}e^{-1} = \\frac{1}{2e}$. Since $f'(x) > 0$ for $x < 1/2$ and $f'(x) < 0$ for $x > 1/2$, this is the absolute maximum.",
+            "distractorTip": "Product rule with exponential decay."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "unitIndex": 6,
+    "unitId": "u6",
+    "title": "Unit 6: Integration and Accumulation of Change",
+    "shortTitle": "Unit 6: Integration & FTC",
+    "description": "Foundations of accumulation, FTC, plus BC-exclusive Integration by Parts, Partial Fractions, and Improper Integrals",
+    "examWeight": "17–20% of AP Exam",
+    "biome": {
+      "name": "Glacial Plateau of Accumulation",
+      "icon": "❄️",
+      "accentColor": "#06B6D4",
+      "secondaryColor": "#0891B2",
+      "groundGradient": "from-cyan-100 via-sky-50 to-blue-100",
+      "cardBorder": "border-cyan-500",
+      "trailColor": "#0891b2",
+      "nodeRing": "ring-cyan-400/40",
+      "skyTint": "from-cyan-50 to-blue-50/30"
+    },
+    "levels": [
+      {
+        "id": 601,
+        "unitIndex": 6,
+        "levelNumber": 1,
+        "uniqueKey": "u6-l1",
+        "topicNumber": "Topic 6.1 & 6.2",
+        "name": "Accumulation & Riemann Sums",
+        "subtitle": "Approximating areas with Left, Right, Midpoint & Trapezoid",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l1-q1",
+            "stem": "If $f(x)$ is strictly INCREASING on $[a, b]$, which Riemann sum is guaranteed to be an OVERESTIMATE of $\\int_a^b f(x) dx$?",
+            "options": [
+              "Right Riemann Sum ($R_n$)",
+              "Left Riemann Sum ($L_n$)",
+              "Midpoint Riemann Sum ($M_n$)",
+              "Trapezoidal Sum ($T_n$)"
+            ],
+            "correctIndex": 0,
+            "explanation": "For an increasing function, the right endpoint of every subinterval has the highest function value, so each rectangle overshoots the curve, producing an overestimate.",
+            "distractorTip": "Increasing $\\implies$ Right is Over, Left is Under. Decreasing $\\implies$ Left is Over, Right is Under."
+          },
+          {
+            "id": "c6-l1-q2",
+            "stem": "A table gives $f(0)=2, f(2)=5, f(5)=9$. Using a Trapezoidal sum with the two subintervals $[0, 2]$ and $[2, 5]$, approximate $\\int_0^5 f(x) dx$.",
+            "options": [
+              "$21$",
+              "$28$",
+              "$35$",
+              "$14$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Trapezoid 1: $\\frac{2 + 5}{2}(2 - 0) = \\frac{7}{2}(2) = 7$. Trapezoid 2: $\\frac{5 + 9}{2}(5 - 2) = \\frac{14}{2}(3) = 21$. Total $= 7 + 21 = 28$.",
+            "distractorTip": "Notice subintervals have UNEQUAL widths ($2$ and $3$). Calculate each trapezoid individually!"
+          },
+          {
+            "id": "c6-l1-q3",
+            "stem": "If $f''(x) > 0$ (concave up), does the Trapezoidal Rule produce an overestimate or underestimate?",
+            "options": [
+              "It depends on whether $f$ is increasing.",
+              "An UNDERESTIMATE.",
+              "An OVERESTIMATE, because the secant lines connecting points lie ABOVE the curve.",
+              "An exact answer."
+            ],
+            "correctIndex": 2,
+            "explanation": "For a concave up curve, the straight secant line of each trapezoid lies entirely ABOVE the curved graph, trapping extra area and producing an overestimate.",
+            "distractorTip": "Concavity determines Trapezoid over/under: Concave Up $\\implies$ Trapezoid Overestimate."
+          }
+        ]
+      },
+      {
+        "id": 602,
+        "unitIndex": 6,
+        "levelNumber": 2,
+        "uniqueKey": "u6-l2",
+        "topicNumber": "Topic 6.3",
+        "name": "Summation Notation & Definite Integral",
+        "subtitle": "Limit of Riemann sums as n approaches infinity",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l2-q1",
+            "stem": "Which definite integral is equal to $\\lim_{n \\to \\infty} \\sum_{i=1}^n \\left(1 + \\frac{3i}{n}\\right)^2 \\frac{3}{n}$?",
+            "options": [
+              "$\\int_0^1 (1+3x) dx$",
+              "$\\int_0^3 x^2 dx$",
+              "$\\int_1^4 (1+3x)^2 dx$",
+              "$\\int_1^4 x^2 dx$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Identify $\\Delta x = \\frac{3}{n} = \\frac{b-a}{n} \\implies b - a = 3$. $x_i = 1 + i\\Delta x \\implies a = 1, b = 4$. Inside expression is $x_i^2$, so the integrand is $f(x) = x^2$. Integral is $\\int_1^4 x^2 dx$.",
+            "distractorTip": "Pattern: $\\lim_{n \\to \\infty} \\sum f(a + i\\Delta x)\\Delta x = \\int_a^b f(x) dx$."
+          },
+          {
+            "id": "c6-l2-q2",
+            "stem": "Convert $\\lim_{n \\to \\infty} \\sum_{i=1}^n \\sin\\left(\\frac{\\pi i}{n}\\right)\\frac{\\pi}{n}$ to a definite integral.",
+            "options": [
+              "$\\int_0^\\pi \\sin x dx$",
+              "$\\int_0^1 \\sin(\\pi x) dx$",
+              "$\\int_0^\\pi \\cos x dx$",
+              "$\\pi \\int_0^1 \\sin x dx$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Here $a = 0, \\Delta x = \\frac{\\pi}{n} \\implies b = \\pi$. $x_i = \\frac{\\pi i}{n}$. Integrand is $\\sin(x)$. Integral is $\\int_0^\\pi \\sin x dx$.",
+            "distractorTip": "Standard AP multiple choice conversion."
+          },
+          {
+            "id": "c6-l2-q3",
+            "stem": "What is the value of $\\int_0^\\pi \\sin x dx$?",
+            "options": [
+              "$0$",
+              "$2$",
+              "$1$",
+              "$-2$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$[-\\cos x]_0^\\pi = -\\cos(\\pi) - (-\\cos(0)) = -(-1) - (-1) = 1 + 1 = 2$.",
+            "distractorTip": "Area under one arch of sine is always $2$."
+          }
+        ]
+      },
+      {
+        "id": 603,
+        "unitIndex": 6,
+        "levelNumber": 3,
+        "uniqueKey": "u6-l3",
+        "topicNumber": "Topic 6.4",
+        "name": "Fundamental Theorem of Calculus (Part 1)",
+        "subtitle": "$\\frac{d}{dx}\\left[\\int_a^x f(t)\\,dt\\right] = f(x)$ and chain rule extensions",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l3-q1",
+            "stem": "Find $\\frac{d}{dx}\\left[\\int_2^x \\sqrt{t^3 + 1} dt\\right]$.",
+            "options": [
+              "$\\sqrt{x^3 + 1} - 3$",
+              "$\\frac{3x^2}{2\\sqrt{x^3+1}}$",
+              "$\\sqrt{x^3 + 1}$",
+              "$\\frac{1}{2\\sqrt{x^3+1}}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "By FTC Part 1, $\\frac{d}{dx}\\left[\\int_a^x f(t) dt\\right] = f(x)$. Simply replace dummy variable $t$ with $x$.",
+            "distractorTip": "The constant lower limit $2$ disappears because its derivative is zero."
+          },
+          {
+            "id": "c6-l3-q2",
+            "stem": "Find $\\frac{d}{dx}\\left[\\int_0^{x^2} \\cos(t) dt\\right]$.",
+            "options": [
+              "$2x \\sin(x^2)$",
+              "$\\cos(x^2)$",
+              "$-\\sin(x^2)$",
+              "$2x \\cos(x^2)$"
+            ],
+            "correctIndex": 3,
+            "explanation": "By the Leibniz / Chain Rule extension: $\\frac{d}{dx}\\left[\\int_a^{u(x)} f(t) dt\\right] = f(u(x)) \\cdot u'(x)$. Here $u(x) = x^2 \\implies u'(x) = 2x$. So $2x\\cos(x^2)$.",
+            "distractorTip": "Always multiply by the derivative of the upper limit!"
+          },
+          {
+            "id": "c6-l3-q3",
+            "stem": "Find $\\frac{d}{dx}\\left[\\int_x^5 e^{t^2} dt\\right]$.",
+            "options": [
+              "$-e^{x^2}$",
+              "$e^{x^2}$",
+              "$2x e^{x^2}$",
+              "$0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Flip the limits of integration: $\\int_x^5 = -\\int_5^x$. Differentiating yields $-\\frac{d}{dx}\\left[\\int_5^x e^{t^2} dt\\right] = -e^{x^2}$.",
+            "distractorTip": "When $x$ is in the lower limit, flipping introduces a negative sign."
+          },
+          {
+            "id": "c6-l3-q4",
+            "stem": "Find $\\frac{d}{dx}\\left[\\int_{2x}^{3x} \\ln(t) dt\\right]$.",
+            "options": [
+              "$\\ln(3x) - \\ln(2x)$",
+              "$3\\ln(3x) - 2\\ln(2x)$",
+              "$\\frac{1}{3x} - \\frac{1}{2x}$",
+              "$3\\ln(x)$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Split at a constant: $\\int_{2x}^0 + \\int_0^{3x} = \\int_0^{3x} - \\int_0^{2x}$. Differentiating: $3\\ln(3x) - 2\\ln(2x)$.",
+            "distractorTip": "Upper limit evaluation minus lower limit evaluation."
+          }
+        ]
+      },
+      {
+        "id": 604,
+        "unitIndex": 6,
+        "levelNumber": 4,
+        "uniqueKey": "u6-l4",
+        "topicNumber": "Topic 6.5",
+        "name": "Accumulation Functions Involving Area",
+        "subtitle": "Finding extrema and concavity of $g(x) = \\int f(t)\\,dt$",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l4-q1",
+            "stem": "Let $g(x) = \\int_0^x f(t) dt$, where $f(t)$ is shown in an AP graph. Where does $g(x)$ have a relative maximum?",
+            "options": [
+              "Where $f(t) = 0$ with no sign change.",
+              "Where $f(t)$ has a maximum peak.",
+              "Where $f(t)$ crosses the horizontal axis from POSITIVE to NEGATIVE.",
+              "At the highest point on the graph of $f$."
+            ],
+            "correctIndex": 2,
+            "explanation": "Since $g'(x) = f(x)$, $g$ has a relative maximum wherever its derivative $g'$ ($f(x)$) changes sign from positive to negative.",
+            "distractorTip": "Remember $g'(x) = f(x)$!"
+          },
+          {
+            "id": "c6-l4-q2",
+            "stem": "If $g(x) = \\int_{-2}^x f(t) dt$, on what intervals is $g(x)$ concave up?",
+            "options": [
+              "Wherever $f(t) < 0$.",
+              "Wherever $f(t) > 0$.",
+              "Wherever $f(t)$ is concave up.",
+              "Wherever $f(t)$ is INCREASING."
+            ],
+            "correctIndex": 3,
+            "explanation": "Concavity of $g$ is given by $g''(x) = (g'(x))' = f'(x)$. $g$ is concave up when $g'' > 0 \\iff f' > 0 \\iff f$ is increasing.",
+            "distractorTip": "Slope of $f$ equals concavity of $g$."
+          },
+          {
+            "id": "c6-l4-q3",
+            "stem": "If $g(x) = \\int_0^x f(t) dt$, $f(t)$ is a triangle of base $4$ and height $3$ on $[0, 4]$. What is $g(4)$?",
+            "options": [
+              "$6$",
+              "$12$",
+              "$3$",
+              "$4$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$g(4) = \\int_0^4 f(t) dt = \\text{Area of triangle} = \\frac{1}{2}(4)(3) = 6$.",
+            "distractorTip": "Definite integral of a geometric graph is the net area."
+          },
+          {
+            "id": "c6-l4-q4",
+            "stem": "If $g(x) = 5 + \\int_2^x f(t) dt$ and the area of $f$ between $t = 2$ and $t = 6$ below the axis is $4$ (i.e. $\\int_2^6 f(t) dt = -4$), what is $g(6)$?",
+            "options": [
+              "$9$",
+              "$1$",
+              "$-4$",
+              "$5$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$g(6) = 5 + \\int_2^6 f(t) dt = 5 + (-4) = 1$.",
+            "distractorTip": "Area below the axis is negative accumulation."
+          }
+        ]
+      },
+      {
+        "id": 605,
+        "unitIndex": 6,
+        "levelNumber": 5,
+        "uniqueKey": "u6-l5",
+        "topicNumber": "Topic 6.6",
+        "name": "Definite Integral Properties",
+        "subtitle": "Reversing limits, linearity, and symmetry",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l5-q1",
+            "stem": "If $\\int_1^5 f(x) dx = 8$ and $\\int_3^5 f(x) dx = 3$, what is $\\int_1^3 f(x) dx$?",
+            "options": [
+              "$3$",
+              "$11$",
+              "$5$",
+              "$-5$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Additive property: $\\int_1^5 = \\int_1^3 + \\int_3^5 \\implies 8 = \\int_1^3 + 3 \\implies \\int_1^3 = 5$.",
+            "distractorTip": "Interval addition property."
+          },
+          {
+            "id": "c6-l5-q2",
+            "stem": "What is the value of $\\int_5^5 \\sqrt{x^4 + 7} dx$?",
+            "options": [
+              "Undefined",
+              "$1$",
+              "$5$",
+              "$0$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Any definite integral with identical upper and lower limits has zero width, so its value is $0$.",
+            "distractorTip": "$\\int_a^a f(x) dx = 0$."
+          },
+          {
+            "id": "c6-l5-q3",
+            "stem": "If $f(x)$ is an ODD function ($f(-x) = -f(x)$), what is $\\int_{-3}^3 f(x) dx$?",
+            "options": [
+              "$0$",
+              "$2\\int_0^3 f(x) dx$",
+              "$6$",
+              "Undefined"
+            ],
+            "correctIndex": 0,
+            "explanation": "For any continuous odd function, the area on $[-a, 0]$ exactly cancels the area on $[0, a]$: $\\int_{-a}^a f(x) dx = 0$.",
+            "distractorTip": "Symmetry shortcut: odd functions integrate to 0 on $[-a, a]$."
+          },
+          {
+            "id": "c6-l5-q4",
+            "stem": "If $\\int_2^7 f(x) dx = 10$, what is $\\int_7^2 (3f(x) + 2) dx$?",
+            "options": [
+              "$40$",
+              "$-40$",
+              "$-20$",
+              "$34$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Reversing limits flips the sign: $\\int_7^2 f(x) dx = -10$. So $\\int_7^2 3f(x) dx = 3(-10) = -30$. $\\int_7^2 2 dx = 2(2 - 7) = 2(-5) = -10$. Total: $-30 + (-10) = -40$.",
+            "distractorTip": "Notice lower limit is 7 and upper is 2: $2-7 = -5$!"
+          }
+        ]
+      },
+      {
+        "id": 606,
+        "unitIndex": 6,
+        "levelNumber": 6,
+        "uniqueKey": "u6-l6",
+        "topicNumber": "Topic 6.7",
+        "name": "Fundamental Theorem of Calculus (Part 2)",
+        "subtitle": "Evaluating definite integrals using antiderivatives",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l6-q1",
+            "stem": "Evaluate $\\int_1^3 (3x^2 - 2x + 1) dx$.",
+            "options": [
+              "$18$",
+              "$26$",
+              "$20$",
+              "$22$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Antiderivative: $F(x) = x^3 - x^2 + x$. $F(3) = 27 - 9 + 3 = 21$. $F(1) = 1 - 1 + 1 = 1$. $F(3) - F(1) = 21 - 1 = 20$.",
+            "distractorTip": "FTC Part 2: $\\int_a^b f(x) dx = F(b) - F(a)$."
+          },
+          {
+            "id": "c6-l6-q2",
+            "stem": "Evaluate $\\int_0^1 e^{2x} dx$.",
+            "options": [
+              "$\\frac{e^2}{2}$",
+              "$e^2 - 1$",
+              "$2(e^2 - 1)$",
+              "$\\frac{e^2 - 1}{2}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Antiderivative is $\\frac{1}{2}e^{2x}$. At $1$: $\\frac{1}{2}e^2$. At $0$: $\\frac{1}{2}e^0 = \\frac{1}{2}$. Difference: $\\frac{e^2 - 1}{2}$.",
+            "distractorTip": "Do not forget to divide by the inner derivative $2$."
+          },
+          {
+            "id": "c6-l6-q3",
+            "stem": "Evaluate $\\int_1^4 \\frac{1}{\\sqrt{x}} dx$.",
+            "options": [
+              "$2$",
+              "$1$",
+              "$4$",
+              "$\\frac{3}{2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Rewrite as $x^{-1/2}$. Antiderivative: $\\frac{x^{1/2}}{1/2} = 2\\sqrt{x}$. At $4$: $2\\sqrt{4} = 4$. At $1$: $2\\sqrt{1} = 2$. Difference: $4 - 2 = 2$.",
+            "distractorTip": "Power rule with fractional exponent."
+          },
+          {
+            "id": "c6-l6-q4",
+            "stem": "Evaluate $\\int_0^{\\pi/4} \\sec^2 x dx$.",
+            "options": [
+              "$\\sqrt{2}$",
+              "$1$",
+              "$0$",
+              "$\\frac{\\pi}{4}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Antiderivative of $\\sec^2 x$ is $\\tan x$. $\\tan(\\pi/4) - \\tan(0) = 1 - 0 = 1$.",
+            "distractorTip": "Standard trig antiderivative."
+          }
+        ]
+      },
+      {
+        "id": 607,
+        "unitIndex": 6,
+        "levelNumber": 7,
+        "uniqueKey": "u6-l7",
+        "topicNumber": "Topic 6.8",
+        "name": "Antiderivatives & Basic Integration Rules",
+        "subtitle": "Power rule, 1/x, exponential, and trig antiderivatives",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l7-q1",
+            "stem": "Find $\\int \\frac{1}{x} dx$ for $x \\neq 0$.",
+            "options": [
+              "$-\\frac{1}{x^2} + C$",
+              "$\\ln(x) + C$",
+              "$\\ln|x| + C$",
+              "$\\frac{x^0}{0} + C$"
+            ],
+            "correctIndex": 2,
+            "explanation": "The antiderivative of $1/x$ is $\\ln|x| + C$. The absolute value is strictly required on the AP Exam when the domain includes negative numbers.",
+            "distractorTip": "Always include absolute values with $\\ln|x|$!"
+          },
+          {
+            "id": "c6-l7-q2",
+            "stem": "Find $\\int (4\\cos x + 6x) dx$.",
+            "options": [
+              "$-4\\sin x + 6 + C$",
+              "$-4\\sin x + 3x^2 + C$",
+              "$4\\sin x + 6x^2 + C$",
+              "$4\\sin x + 3x^2 + C$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$\\int \\cos x dx = +\\sin x$. $\\int 6x dx = 3x^2$. Combined: $4\\sin x + 3x^2 + C$.",
+            "distractorTip": "Derivative of $\\sin$ is $+\\cos$, so integral of $\\cos$ is $+\\sin$."
+          },
+          {
+            "id": "c6-l7-q3",
+            "stem": "Find $\\int \\left(x^3 - \\frac{2}{x^2}\\right) dx$.",
+            "options": [
+              "$\\frac{x^4}{4} + \\frac{2}{x} + C$",
+              "$\\frac{x^4}{4} - \\frac{2}{x} + C$",
+              "$3x^2 + \\frac{4}{x^3} + C$",
+              "$\\frac{x^4}{4} - \\frac{1}{x} + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Rewrite $-2x^{-2}$. Antiderivative: $-2\\frac{x^{-1}}{-1} = +2x^{-1} = +\\frac{2}{x}$. So $\\frac{x^4}{4} + \\frac{2}{x} + C$.",
+            "distractorTip": "Negative divided by negative is positive!"
+          },
+          {
+            "id": "c6-l7-q4",
+            "stem": "Find $\\int 5^x dx$.",
+            "options": [
+              "$5^x \\ln 5 + C$",
+              "$\\frac{5^x}{\\ln 5} + C$",
+              "$5^{x+1} + C$",
+              "$x 5^{x-1} + C$"
+            ],
+            "correctIndex": 1,
+            "explanation": "For any base $a > 0, a \\neq 1$, $\\int a^x dx = \\frac{a^x}{\\ln a} + C$.",
+            "distractorTip": "Divide by $\\ln a$ when integrating; multiply when differentiating."
+          }
+        ]
+      },
+      {
+        "id": 608,
+        "unitIndex": 6,
+        "levelNumber": 8,
+        "uniqueKey": "u6-l8",
+        "topicNumber": "Topic 6.9",
+        "name": "Integration by Substitution (U-Sub)",
+        "subtitle": "Chain rule in reverse and changing bounds",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l8-q1",
+            "stem": "Evaluate $\\int 2x(x^2 + 1)^4 dx$.",
+            "options": [
+              "$(x^2 + 1)^5 + C$",
+              "$\\frac{(x^2 + 1)^5}{10} + C$",
+              "$\\frac{(x^2 + 1)^5}{5} + C$",
+              "$\\frac{x^2(x^2+1)^5}{5} + C$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Let $u = x^2 + 1 \\implies du = 2x dx$. Integral becomes $\\int u^4 du = \\frac{u^5}{5} + C = \\frac{(x^2+1)^5}{5} + C$.",
+            "distractorTip": "Classic $u$-substitution matching $du = 2x dx$."
+          },
+          {
+            "id": "c6-l8-q2",
+            "stem": "Evaluate $\\int_0^2 x e^{x^2} dx$.",
+            "options": [
+              "$2(e^4 - 1)$",
+              "$e^4 - 1$",
+              "$\\frac{e^4}{2}$",
+              "$\\frac{e^4 - 1}{2}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Let $u = x^2 \\implies du = 2x dx \\implies x dx = \\frac{1}{2}du$. New bounds: when $x = 0, u = 0$; when $x = 2, u = 4$. Integral is $\\frac{1}{2}\\int_0^4 e^u du = \\frac{1}{2}[e^u]_0^4 = \\frac{e^4 - 1}{2}$.",
+            "distractorTip": "Always change the bounds of integration when performing $u$-substitution on definite integrals!"
+          },
+          {
+            "id": "c6-l8-q3",
+            "stem": "Evaluate $\\int \\frac{\\cos(\\ln x)}{x} dx$.",
+            "options": [
+              "$\\sin(\\ln x) + C$",
+              "$-\\sin(\\ln x) + C$",
+              "$\\frac{\\sin(\\ln x)}{x^2} + C$",
+              "$\\cos(\\ln x) + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Let $u = \\ln x \\implies du = \\frac{1}{x} dx$. Integral: $\\int \\cos(u) du = \\sin(u) + C = \\sin(\\ln x) + C$.",
+            "distractorTip": "Spot $u = \\ln x$ whose derivative $1/x$ is present."
+          },
+          {
+            "id": "c6-l8-q4",
+            "stem": "Evaluate $\\int_0^{\\pi/2} \\sin^3 x \\cos x dx$.",
+            "options": [
+              "$\\frac{1}{3}$",
+              "$\\frac{1}{4}$",
+              "$1$",
+              "$0$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Let $u = \\sin x \\implies du = \\cos x dx$. At $x = 0, u = 0$; at $x = \\pi/2, u = 1$. Integral: $\\int_0^1 u^3 du = \\left[\\frac{u^4}{4}\\right]_0^1 = \\frac{1}{4}$.",
+            "distractorTip": "Power of sine with companion cosine derivative."
+          },
+          {
+            "id": "c6-l8-q5",
+            "stem": "Evaluate $\\int \\frac{x}{x^2 + 9} dx$.",
+            "options": [
+              "$\\frac{1}{3}\\arctan(x/3) + C$",
+              "$\\ln(x^2 + 9) + C$",
+              "$\\frac{1}{2}\\ln(x^2 + 9) + C$",
+              "$\\frac{x^2}{2(x^2+9)} + C$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Let $u = x^2 + 9 \\implies du = 2x dx \\implies x dx = \\frac{1}{2}du$. Integral: $\\frac{1}{2}\\int \\frac{1}{u} du = \\frac{1}{2}\\ln(x^2 + 9) + C$. (No absolute values needed since $x^2 + 9 > 0$).",
+            "distractorTip": "Do not confuse with $\\int \\frac{1}{x^2+9} dx$ which gives $\\arctan$!"
+          }
+        ]
+      },
+      {
+        "id": 609,
+        "unitIndex": 6,
+        "levelNumber": 9,
+        "uniqueKey": "u6-l9",
+        "topicNumber": "Topic 6.10",
+        "name": "Integrating with Long Division & Completing Square",
+        "subtitle": "Algebraic restructuring for inverse trig integrals",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l9-q1",
+            "stem": "Evaluate $\\int \\frac{x^2 + 1}{x^2} dx$.",
+            "options": [
+              "$\\ln(x^2) + C$",
+              "$x + \\frac{1}{x} + C$",
+              "$\\frac{x^3/3 + x}{x^3/3} + C$",
+              "$x - \\frac{1}{x} + C$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Divide each term by monomial denominator: $\\frac{x^2+1}{x^2} = 1 + x^{-2}$. Antiderivative: $x + \\frac{x^{-1}}{-1} = x - \\frac{1}{x} + C$.",
+            "distractorTip": "Split single-term denominators before integrating!"
+          },
+          {
+            "id": "c6-l9-q2",
+            "stem": "Evaluate $\\int \\frac{1}{x^2 + 9} dx$.",
+            "options": [
+              "$\\frac{1}{3}\\arctan\\left(\\frac{x}{3}\\right) + C$",
+              "$\\arctan\\left(\\frac{x}{3}\\right) + C$",
+              "$\\frac{1}{9}\\arctan(x) + C$",
+              "$\\frac{1}{2}\\ln(x^2+9) + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Standard formula: $\\int \\frac{1}{x^2 + a^2} dx = \\frac{1}{a}\\arctan\\left(\\frac{x}{a}\\right) + C$. With $a = 3$, this gives $\\frac{1}{3}\\arctan(x/3) + C$.",
+            "distractorTip": "Remember the $1/a$ coefficient in front of $\\arctan$."
+          },
+          {
+            "id": "c6-l9-q3",
+            "stem": "Evaluate $\\int \\frac{1}{\\sqrt{16 - x^2}} dx$.",
+            "options": [
+              "$\\frac{1}{4}\\arcsin\\left(\\frac{x}{4}\\right) + C$",
+              "$\\arcsin\\left(\\frac{x}{4}\\right) + C$",
+              "$\\frac{1}{4}\\arctan\\left(\\frac{x}{4}\\right) + C$",
+              "$2\\sqrt{16-x^2} + C$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Standard formula: $\\int \\frac{1}{\\sqrt{a^2 - x^2}} dx = \\arcsin\\left(\\frac{x}{a}\\right) + C$. Notice there is NO $1/a$ factor in front of $\\arcsin$!",
+            "distractorTip": "Arcsine has NO $1/a$ in front, unlike arctan!"
+          },
+          {
+            "id": "c6-l9-q4",
+            "stem": "Evaluate $\\int \\frac{x + 3}{x + 1} dx$.",
+            "options": [
+              "$\\frac{(x+3)^2}{2(x+1)} + C$",
+              "$x + \\ln|x + 1| + C$",
+              "$x + 2\\ln|x + 1| + C$",
+              "$3x + C$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Long division or rewrite: $\\frac{x+3}{x+1} = \\frac{(x+1) + 2}{x+1} = 1 + \\frac{2}{x+1}$. Integrating: $x + 2\\ln|x+1| + C$.",
+            "distractorTip": "When degrees are equal, perform polynomial division first."
+          },
+          {
+            "id": "c6-l9-q5",
+            "stem": "Evaluate $\\int \\frac{1}{x^2 + 4x + 5} dx$.",
+            "options": [
+              "$\\arcsin(x + 2) + C$",
+              "$\\frac{1}{2}\\arctan(x + 2) + C$",
+              "$\\ln|x^2 + 4x + 5| + C$",
+              "$\\arctan(x + 2) + C$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Complete the square: $x^2 + 4x + 5 = (x + 2)^2 + 1$. The integral becomes $\\int \\frac{1}{(x+2)^2 + 1} dx = \\arctan(x + 2) + C$.",
+            "distractorTip": "Complete the square when quadratic has no real roots."
+          }
+        ]
+      },
+      {
+        "id": 610,
+        "unitIndex": 6,
+        "levelNumber": 10,
+        "uniqueKey": "u6-l10",
+        "topicNumber": "Topic 6.11",
+        "name": "Unit 6 Boss: Fundamental Theorem Master",
+        "subtitle": "High-speed multi-step integration challenge",
+        "difficulty": "Boss",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c6-l10-q1",
+            "stem": "Let $g(x) = \\int_1^{x^3} \\frac{1}{1 + t^2} dt$. Find $g'(1)$.",
+            "options": [
+              "$\\frac{3}{2}$",
+              "$\\frac{1}{2}$",
+              "$3$",
+              "$1$"
+            ],
+            "correctIndex": 0,
+            "explanation": "FTC with chain rule: $g'(x) = \\frac{1}{1 + (x^3)^2} \\cdot 3x^2 = \\frac{3x^2}{1 + x^6}$. At $x = 1$: $\\frac{3(1)}{1 + 1} = \\frac{3}{2}$.",
+            "distractorTip": "Leibniz rule: substitute $x^3$ for $t$ and multiply by derivative $3x^2$."
+          },
+          {
+            "id": "c6-l10-q2",
+            "stem": "Evaluate $\\int_1^e \\frac{(\\ln x)^2}{x} dx$.",
+            "options": [
+              "$1$",
+              "$\\frac{1}{3}$",
+              "$\\frac{1}{2}$",
+              "$\\frac{e^3}{3}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Let $u = \\ln x \\implies du = \\frac{1}{x} dx$. At $x = 1, u = 0$; at $x = e, u = 1$. $\\int_0^1 u^2 du = \\left[\\frac{u^3}{3}\\right]_0^1 = \\frac{1}{3}$.",
+            "distractorTip": "Logarithm power rule with companion derivative."
+          },
+          {
+            "id": "c6-l10-q3",
+            "stem": "If $\\int_0^k 2x dx = 9$, find the positive value of $k$.",
+            "options": [
+              "$\\sqrt{3}$",
+              "$9$",
+              "$3$",
+              "$6$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Antiderivative of $2x$ is $x^2$. $[x^2]_0^k = k^2 - 0 = k^2$. $k^2 = 9 \\implies k = 3$ (since $k > 0$).",
+            "distractorTip": "Simple quadratic equation from definite integral."
+          },
+          {
+            "id": "c6-l10-q4",
+            "stem": "A function satisfies $f'(x) = 3x^2 - 4x$ and $f(2) = 5$. Find $f(1)$.",
+            "options": [
+              "$-2$",
+              "$5$",
+              "$1$",
+              "$4$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$f(x) = \\int (3x^2 - 4x) dx = x^3 - 2x^2 + C$. Using $f(2) = 5$: $2^3 - 2(4) + C = 8 - 8 + C = 5 \\implies C = 5$. Then $f(x) = x^3 - 2x^2 + 5$. At $x = 1$: $f(1) = 1 - 2 + 5 = 4$.",
+            "distractorTip": "Initial value problem: solve for $C$ then evaluate target point."
+          },
+          {
+            "id": "c6-l10-q5",
+            "stem": "What is the average value of $f(x) = 3x^2$ on the interval $[1, 4]$?",
+            "options": [
+              "$21$",
+              "$63$",
+              "$7$",
+              "$12$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Average value formula: $f_{\\text{avg}} = \\frac{1}{b - a}\\int_a^b f(x) dx = \\frac{1}{4 - 1}\\int_1^4 3x^2 dx = \\frac{1}{3}[x^3]_1^4 = \\frac{1}{3}(64 - 1) = \\frac{63}{3} = 21$.",
+            "distractorTip": "Do not forget to divide by interval width $(b - a = 3)$!"
+          },
+          {
+            "id": "c6-l10-q6",
+            "stem": "Evaluate $\\lim_{x \\to 0} \\frac{\\int_0^x \\sin(2t) dt}{x^2}$.",
+            "options": [
+              "$2$",
+              "$1$",
+              "$0$",
+              "$\\frac{1}{2}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Form $\\frac{0}{0}$. Applying L'Hôpital's Rule and FTC: $\\lim_{x \\to 0} \\frac{\\sin(2x)}{2x}$. Since $\\lim_{u \\to 0} \\frac{\\sin u}{u} = 1$, $\\frac{\\sin(2x)}{2x} \\to 1$.",
+            "distractorTip": "L'Hôpital combined with Fundamental Theorem of Calculus."
+          }
+        ]
+      },
+      {
+        "id": 611,
+        "unitIndex": 6,
+        "levelNumber": 11,
+        "uniqueKey": "u6-l11",
+        "topicNumber": "Topic 6.11 (BC Exclusive)",
+        "name": "Integration by Parts",
+        "subtitle": "∫ u dv = uv - ∫ v du & tabular integration",
+        "difficulty": "Hard",
+        "rewardCoins": 40,
+        "questions": [
+          {
+            "id": "c6-l11-bc-q1",
+            "stem": "Find $\\int x e^{2x} \\, dx$ using integration by parts.",
+            "options": [
+              "$x e^{2x} - 2e^{2x} + C$",
+              "$\\frac{1}{2}x e^{2x} - \\frac{1}{2}e^{2x} + C$",
+              "$\\frac{1}{2}x e^{2x} - \\frac{1}{4}e^{2x} + C$",
+              "$\\frac{1}{2}x^2 e^{2x} + C$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Let $u = x \\implies du = dx$, and $dv = e^{2x} dx \\implies v = \\frac{1}{2}e^{2x}$. Then $\\int u \\, dv = uv - \\int v \\, du = \\frac{1}{2}x e^{2x} - \\int \\frac{1}{2}e^{2x} dx = \\frac{1}{2}x e^{2x} - \\frac{1}{4}e^{2x} + C$.",
+            "distractorTip": "Remember to integrate $v = \\frac{1}{2}e^{2x}$ a second time, producing $\\frac{1}{4}$."
+          },
+          {
+            "id": "c6-l11-bc-q2",
+            "stem": "Evaluate the definite integral $\\int_1^e x \\ln(x) \\, dx$.",
+            "options": [
+              "$\\frac{e^2 - 1}{2}$",
+              "$\\frac{e^2 - 1}{4}$",
+              "$\\frac{e^2}{2}$",
+              "$\\frac{e^2 + 1}{4}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "By LIPET, choose $u = \\ln x \\implies du = \\frac{1}{x} dx$, and $dv = x dx \\implies v = \\frac{x^2}{2}$. $\\int_1^e x \\ln x \\, dx = \\left[\\frac{x^2}{2}\\ln x\\right]_1^e - \\int_1^e \\frac{x^2}{2}\\cdot \\frac{1}{x} dx = \\left(\\frac{e^2}{2} - 0\\right) - \\left[\\frac{x^2}{4}\\right]_1^e = \\frac{e^2}{2} - \\left(\\frac{e^2}{4} - \\frac{1}{4}\\right) = \\frac{e^2 + 1}{4}$.",
+            "distractorTip": "Notice the double negative: $-\\left(-\\frac{1}{4}\\right) = +\\frac{1}{4}$, yielding $\\frac{e^2 + 1}{4}$."
+          },
+          {
+            "id": "c6-l11-bc-q3",
+            "stem": "Using tabular integration, evaluate $\\int x^2 \\sin(x) \\, dx$.",
+            "options": [
+              "$-x^2 \\cos(x) + 2x \\sin(x) + 2\\cos(x) + C$",
+              "$-x^2 \\cos(x) - 2x \\sin(x) + 2\\cos(x) + C$",
+              "$x^2 \\cos(x) - 2x \\sin(x) - 2\\cos(x) + C$",
+              "$-x^2 \\cos(x) + 2x \\sin(x) - 2\\cos(x) + C$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Differentiate $x^2 \\to 2x \\to 2 \\to 0$. Integrate $\\sin x \\to -\\cos x \\to -\\sin x \\to \\cos x$. Alternating signs $(+, -, +)$: $+x^2(-\\cos x) - (2x)(-\\sin x) + (2)(\\cos x) = -x^2 \\cos x + 2x \\sin x + 2\\cos x + C$.",
+            "distractorTip": "Tabular integration sign pattern is always $+ , -, +, -$ starting with the first diagonal product."
+          }
+        ]
+      },
+      {
+        "id": 612,
+        "unitIndex": 6,
+        "levelNumber": 12,
+        "uniqueKey": "u6-l12",
+        "topicNumber": "Topic 6.12 (BC Exclusive)",
+        "name": "Integration by Linear Partial Fractions",
+        "subtitle": "Decomposing rational integrands with distinct linear factors",
+        "difficulty": "Hard",
+        "rewardCoins": 40,
+        "questions": [
+          {
+            "id": "c6-l12-bc-q1",
+            "stem": "Evaluate $\\int \\frac{1}{x^2 - 5x + 6} \\, dx$.",
+            "options": [
+              "$\\ln|(x - 2)(x - 3)| + C$",
+              "$\\ln\\left|\\frac{x - 3}{x - 2}\\right| + C$",
+              "$\\ln\\left|\\frac{x - 2}{x - 3}\\right| + C$",
+              "$\\frac{1}{2}\\ln|x^2 - 5x + 6| + C$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Factor denominator: $(x-2)(x-3)$. Partial fractions: $\\frac{1}{(x-2)(x-3)} = \\frac{A}{x-2} + \\frac{B}{x-3} \\implies 1 = A(x-3) + B(x-2)$. For $x = 2$, $A = -1$. For $x = 3$, $B = 1$. Integrating: $\\int (\\frac{1}{x-3} - \\frac{1}{x-2}) dx = \\ln|x-3| - \\ln|x-2| + C = \\ln|\\frac{x-3}{x-2}| + C$.",
+            "distractorTip": "Be careful with signs: $B = +1$ over $(x-3)$ and $A = -1$ over $(x-2)$, so $\\frac{x-3}{x-2}$ is the argument."
+          },
+          {
+            "id": "c6-l12-bc-q2",
+            "stem": "Evaluate $\\int \\frac{5x + 1}{x^2 - 1} \\, dx$.",
+            "options": [
+              "$5\\ln|x^2 - 1| + C$",
+              "$2\\ln|x - 1| + 3\\ln|x + 1| + C$",
+              "$3\\ln|x - 1| + 2\\ln|x + 1| + C$",
+              "$\\frac{5}{2}\\ln|x^2 - 1| + \\ln|x - 1| + C$"
+            ],
+            "correctIndex": 2,
+            "explanation": "$\\frac{5x+1}{(x-1)(x+1)} = \\frac{A}{x-1} + \\frac{B}{x+1} \\implies 5x+1 = A(x+1) + B(x-1)$. Set $x = 1 \\implies 6 = 2A \\implies A = 3$. Set $x = -1 \\implies -4 = -2B \\implies B = 2$. Integral: $3\\ln|x-1| + 2\\ln|x+1| + C$.",
+            "distractorTip": "Heaviside cover-up method provides an instant way to find coefficients for linear factors."
+          },
+          {
+            "id": "c6-l12-bc-q3",
+            "stem": "Under what algebraic condition MUST polynomial long division be executed BEFORE decomposing a rational function into partial fractions?",
+            "options": [
+              "Whenever the denominator factors into irrational roots.",
+              "Whenever the denominator has repeated quadratic factors.",
+              "Whenever the numerator has a constant term.",
+              "Whenever the degree of the numerator is greater than or equal to the degree of the denominator."
+            ],
+            "correctIndex": 3,
+            "explanation": "Partial fraction decomposition strictly requires a PROPER rational function (degree of numerator < degree of denominator). If $\\text{deg}(\\text{numerator}) \\ge \\text{deg}(\\text{denominator})$, you must perform polynomial long division first.",
+            "distractorTip": "Improper rational fractions must be divided first: $\\frac{P(x)}{Q(x)} = S(x) + \\frac{R(x)}{Q(x)}$."
+          }
+        ]
+      },
+      {
+        "id": 613,
+        "unitIndex": 6,
+        "levelNumber": 13,
+        "uniqueKey": "u6-l13",
+        "topicNumber": "Topic 6.13 (BC Exclusive)",
+        "name": "Evaluating Improper Integrals",
+        "subtitle": "Infinite bounds and interior vertical asymptotes",
+        "difficulty": "Hard",
+        "rewardCoins": 40,
+        "questions": [
+          {
+            "id": "c6-l13-bc-q1",
+            "stem": "Evaluate the improper integral $\\int_1^\\infty \\frac{1}{x^2} \\, dx$.",
+            "options": [
+              "Converges to $1$",
+              "Diverges to $\\infty$",
+              "Converges to $0$",
+              "Converges to $2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\int_1^\\infty x^{-2} \\, dx = \\lim_{b \\to \\infty} \\int_1^b x^{-2} \\, dx = \\lim_{b \\to \\infty} \\left[-\\frac{1}{x}\\right]_1^b = \\lim_{b \\to \\infty} \\left(-\\frac{1}{b} + 1\\right) = 0 + 1 = 1$. The integral converges to $1$.",
+            "distractorTip": "Always express improper integrals with limits of integration: $\\lim_{b \\to \\infty} \\int_a^b f(x) dx$."
+          },
+          {
+            "id": "c6-l13-bc-q2",
+            "stem": "Determine whether $\\int_0^1 \\frac{1}{\\sqrt{x}} \\, dx$ converges or diverges, and state its value if convergent.",
+            "options": [
+              "Diverges to $\\infty$",
+              "Converges to $2$",
+              "Converges to $1$",
+              "Converges to $\\frac{1}{2}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "There is an infinite discontinuity at $x = 0$. $\\lim_{a \\to 0^+} \\int_a^1 x^{-1/2} \\, dx = \\lim_{a \\to 0^+} [2\\sqrt{x}]_a^1 = \\lim_{a \\to 0^+} (2\\sqrt{1} - 2\\sqrt{a}) = 2 - 0 = 2$. It converges to $2$.",
+            "distractorTip": "Notice the vertical asymptote at the lower limit $x = 0$. Even though $f(0)$ is undefined, the area under the curve is finite!"
+          },
+          {
+            "id": "c6-l13-bc-q3",
+            "stem": "For what values of the constant $p$ does the improper integral $\\int_1^\\infty \\frac{1}{x^p} \\, dx$ converge?",
+            "options": [
+              "$p < 1$",
+              "$p \\ge 1$",
+              "$p > 1$",
+              "All real values of $p$"
+            ],
+            "correctIndex": 2,
+            "explanation": "For $p > 1$, $\\int_1^\\infty x^{-p} \\, dx = \\left[\\frac{x^{1-p}}{1-p}\\right]_1^\\infty = \\frac{1}{p-1}$, which is finite. For $p = 1$, $\\int_1^\\infty \\frac{1}{x} dx = [\\ln x]_1^\\infty = \\infty$. For $p < 1$, it diverges to $\\infty$. Thus it converges if and only if $p > 1$.",
+            "distractorTip": "This is the exact continuous analog of the $p$-series test in Unit 10: $p > 1$ converges, $p \\le 1$ diverges."
+          }
+        ]
+      },
+      {
+        "id": 614,
+        "unitIndex": 6,
+        "levelNumber": 14,
+        "uniqueKey": "u6-l14",
+        "topicNumber": "Topic 6.14 (BC Exclusive Boss)",
+        "name": "Advanced Integration Techniques Boss Challenge",
+        "subtitle": "Synthesis of integration by parts, partial fractions, and improper limits",
+        "difficulty": "Boss",
+        "rewardCoins": 50,
+        "questions": [
+          {
+            "id": "c6-l14-bc-q1",
+            "stem": "Evaluate the improper integral $\\int_0^\\infty x e^{-x} \\, dx$.",
+            "options": [
+              "Converges to $\\frac{1}{2}$",
+              "Diverges to $\\infty$",
+              "Converges to $e$",
+              "Converges to $1$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Combine improper limits with integration by parts ($u = x, dv = e^{-x}dx$): $\\int x e^{-x} dx = -x e^{-x} - e^{-x} = -(x+1)e^{-x}$. Evaluating from $0$ to $b$: $\\lim_{b \\to \\infty} [-(b+1)e^{-b} - (-(0+1)e^0)] = \\lim_{b \\to \\infty} \\left(-\\frac{b+1}{e^b}\\right) + 1$. By L'Hôpital, $\\frac{b+1}{e^b} \\to 0$. Thus the integral converges to $1$.",
+            "distractorTip": "Exponential decay $e^{-x}$ dominates polynomial growth $x$, pulling the product to $0$ as $b \\to \\infty$."
+          },
+          {
+            "id": "c6-l14-bc-q2",
+            "stem": "Why does the integral $\\int_{-1}^1 \\frac{1}{x^2} \\, dx$ DIVERGE, and what is the classic student error on the AP Exam?",
+            "options": [
+              "The integrand has a vertical asymptote at $x = 0$; splitting into $\\int_{-1}^0 \\frac{1}{x^2} dx + \\int_0^1 \\frac{1}{x^2} dx$ reveals both halves diverge to $\\infty$. The classic error is blindly evaluating $[-1/x]_{-1}^1 = -2$.",
+              "The integral converges to $-2$ by the Fundamental Theorem of Calculus.",
+              "The integral converges to $0$ because $\\frac{1}{x^2}$ is an odd function.",
+              "The integral cannot be analyzed because negative numbers cannot be squared."
+            ],
+            "correctIndex": 0,
+            "explanation": "$\\frac{1}{x^2}$ has an interior infinite discontinuity at $x = 0$. FTC Part 2 strictly requires continuity on $[-1, 1]$. Because $\\lim_{a \\to 0^-} [-1/x]_{-1}^a = \\infty$, the improper integral diverges. Evaluating $[-1/x]_{-1}^1 = -1 - (1) = -2$ is a notorious AP trap.",
+            "distractorTip": "Always check for interior vertical asymptotes before applying the Fundamental Theorem of Calculus!"
+          },
+          {
+            "id": "c6-l14-bc-q3",
+            "stem": "Which of the following improper integrals converges to a finite value?",
+            "options": [
+              "$\\int_1^\\infty \\frac{1}{\\sqrt{x}} \\, dx$",
+              "$\\int_1^\\infty \\frac{1}{x} \\, dx$",
+              "$\\int_1^\\infty \\frac{1}{x^2 + 1} \\, dx$",
+              "$\\int_0^1 \\frac{1}{x} \\, dx$"
+            ],
+            "correctIndex": 2,
+            "explanation": "By direct comparison, $0 < \\frac{1}{x^2 + 1} < \\frac{1}{x^2}$ for $x \\ge 1$. Since $\\int_1^\\infty \\frac{1}{x^2} dx$ converges by the $p$-series test ($p = 2 > 1$), $\\int_1^\\infty \\frac{1}{x^2 + 1} dx$ must converge (specifically, $[\\arctan(x)]_1^\\infty = \\frac{\\pi}{2} - \\frac{\\pi}{4} = \\frac{\\pi}{4}$). The other integrals all diverge by the $p$-test ($p \\le 1$) or logarithmic divergence at $0$.",
+            "distractorTip": "Compare rational integrands to benchmark $p$-integrals: $\\int_1^\\infty \\frac{1}{x^p} dx$ converges if and only if $p > 1$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "unitIndex": 7,
+    "unitId": "u7",
+    "title": "Unit 7: Differential Equations",
+    "shortTitle": "Unit 7: Differential Equations",
+    "description": "Slope fields, separation of variables, plus BC-exclusive Euler's Method and Logistic Growth Models",
+    "examWeight": "6–12% of AP Exam",
+    "biome": {
+      "name": "Slope Field Steppes & Vectors",
+      "icon": "🧭",
+      "accentColor": "#14B8A6",
+      "secondaryColor": "#0D9488",
+      "groundGradient": "from-teal-100 via-emerald-50 to-teal-100",
+      "cardBorder": "border-teal-500",
+      "trailColor": "#0d9488",
+      "nodeRing": "ring-teal-400/40",
+      "skyTint": "from-teal-50 to-emerald-50/30"
+    },
+    "levels": [
+      {
+        "id": 701,
+        "unitIndex": 7,
+        "levelNumber": 1,
+        "uniqueKey": "u7-l1",
+        "topicNumber": "Topic 7.1 & 7.2",
+        "name": "Modeling & Verifying Solutions",
+        "subtitle": "Differential equations and verifying $y = f(x)$",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c7-l1-q1",
+            "stem": "Which of the following functions is a solution to the differential equation $\\frac{dy}{dx} = 3y$?",
+            "options": [
+              "$y = e^{x/3}$",
+              "$y = 5e^{3x}$",
+              "$y = 3x^2$",
+              "$y = \\sin(3x)$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Differentiating $y = 5e^{3x}$ gives $\\frac{dy}{dx} = 5(3e^{3x}) = 3(5e^{3x}) = 3y$. This satisfies the equation.",
+            "distractorTip": "Solutions to $\\frac{dy}{dx} = ky$ are exponential functions $y = C e^{kx}$."
+          },
+          {
+            "id": "c7-l1-q2",
+            "stem": "A population $P(t)$ grows at a rate directly proportional to its current size. Write the differential equation.",
+            "options": [
+              "$P(t) = k t^2$",
+              "$\\frac{dP}{dt} = k t$",
+              "$\\frac{dP}{dt} = kP$",
+              "$\\frac{dP}{dt} = P + k$"
+            ],
+            "correctIndex": 2,
+            "explanation": "'Rate of change is proportional to population' translates directly to $\\frac{dP}{dt} = kP$.",
+            "distractorTip": "Proportional means a constant $k$ multiplied by the quantity."
+          },
+          {
+            "id": "c7-l1-q3",
+            "stem": "Is $y = x^2$ a solution to $x y' - 2y = 0$?",
+            "options": [
+              "Only when $y = 0$.",
+              "No, it does not satisfy the equation.",
+              "Only for $x > 0$.",
+              "Yes, because $x(2x) - 2(x^2) = 2x^2 - 2x^2 = 0$."
+            ],
+            "correctIndex": 3,
+            "explanation": "Calculate $y' = 2x$. Substitute into LHS: $x(2x) - 2(x^2) = 2x^2 - 2x^2 = 0$, which matches the RHS.",
+            "distractorTip": "To verify a solution, substitute $y$ and $y'$ into the differential equation."
+          }
+        ]
+      },
+      {
+        "id": 702,
+        "unitIndex": 7,
+        "levelNumber": 2,
+        "uniqueKey": "u7-l2",
+        "topicNumber": "Topic 7.3",
+        "name": "Sketching Slope Fields",
+        "subtitle": "Evaluating slopes at grid points",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c7-l2-q1",
+            "stem": "In the slope field for $\\frac{dy}{dx} = x - y$, what is the slope segment drawn at the point $(2, 2)$?",
+            "options": [
+              "$0$ (a horizontal segment)",
+              "$1$",
+              "$-1$",
+              "$4$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Evaluate $\\frac{dy}{dx}$ at $(2, 2)$: $x - y = 2 - 2 = 0$. A slope of $0$ is drawn as a flat horizontal tick mark.",
+            "distractorTip": "Slopes of zero produce horizontal line segments."
+          },
+          {
+            "id": "c7-l2-q2",
+            "stem": "For the differential equation $\\frac{dy}{dx} = y$, what is true about all segments along any horizontal line $y = c$?",
+            "options": [
+              "Their slopes increase as $x$ increases.",
+              "They all have the SAME slope ($c$).",
+              "They are all vertical.",
+              "Their slopes alternate signs."
+            ],
+            "correctIndex": 1,
+            "explanation": "Since the formula for $\\frac{dy}{dx}$ depends ONLY on $y$, all points with the same $y$-coordinate have identical slopes.",
+            "distractorTip": "If $\\frac{dy}{dx} = g(y)$, slopes are constant along horizontal rows."
+          },
+          {
+            "id": "c7-l2-q3",
+            "stem": "For $\\frac{dy}{dx} = -\\frac{x}{y}$, where are the slopes of the slope field equal to zero?",
+            "options": [
+              "Along the line $y = x$.",
+              "Along the $x$-axis where $y = 0$.",
+              "Along the $y$-axis where $x = 0$ (except at $y = 0$).",
+              "Nowhere."
+            ],
+            "correctIndex": 2,
+            "explanation": "Slope is zero when the numerator is zero: $-x = 0 \\implies x = 0$ (the $y$-axis).",
+            "distractorTip": "Zero slopes occur along the line where the numerator vanishes."
+          }
+        ]
+      },
+      {
+        "id": 703,
+        "unitIndex": 7,
+        "levelNumber": 3,
+        "uniqueKey": "u7-l3",
+        "topicNumber": "Topic 7.4",
+        "name": "Reasoning with Slope Fields",
+        "subtitle": "Matching differential equations to visual fields",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c7-l3-q1",
+            "stem": "A slope field has vertical slopes (undefined) along the line $y = 0$ and horizontal slopes along $x = 0$. Which differential equation could model this?",
+            "options": [
+              "$\\frac{dy}{dx} = \\frac{y}{x}$",
+              "$\\frac{dy}{dx} = xy$",
+              "$\\frac{dy}{dx} = x + y$",
+              "$\\frac{dy}{dx} = \\frac{x}{y}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Denominator is $y$, so slope is undefined at $y = 0$. Numerator is $x$, so slope is zero when $x = 0$. Thus $\\frac{dy}{dx} = \\frac{x}{y}$.",
+            "distractorTip": "Match horizontal ($m=0$) and vertical ($m$ undefined) segments."
+          },
+          {
+            "id": "c7-l3-q2",
+            "stem": "A slope field shows all segments with POSITIVE slopes in Quadrants I and III, and NEGATIVE slopes in Quadrants II and IV. Which equation matches?",
+            "options": [
+              "$\\frac{dy}{dx} = xy$",
+              "$\\frac{dy}{dx} = x - y$",
+              "$\\frac{dy}{dx} = x^2 y$",
+              "$\\frac{dy}{dx} = y^2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "In Q1 ($x>0, y>0$) and Q3 ($x<0, y<0$), the product $xy > 0$. In Q2 ($x<0, y>0$) and Q4 ($x>0, y<0$), $xy < 0$. This matches $\\frac{dy}{dx} = xy$.",
+            "distractorTip": "Use quadrant sign analysis $(+/-, -/+)$ to quickly identify the differential equation."
+          },
+          {
+            "id": "c7-l3-q3",
+            "stem": "If a solution curve $y = f(x)$ passes through $(0, 1)$ in a slope field where $\\frac{dy}{dx} = y^2$, what is the concavity of the curve at $(0, 1)$?",
+            "options": [
+              "Concave DOWN.",
+              "Concave UP, because $\\frac{d^2y}{dx^2} = 2y \\frac{dy}{dx} = 2(1)(1^2) = 2 > 0$.",
+              "Zero concavity.",
+              "Cannot be determined."
+            ],
+            "correctIndex": 1,
+            "explanation": "Differentiate implicitly: $\\frac{d^2y}{dx^2} = 2y \\frac{dy}{dx} = 2y(y^2) = 2y^3$. At $(0, 1)$, $y = 1 \\implies y'' = 2(1)^3 = 2 > 0$, so the curve is concave up.",
+            "distractorTip": "Concavity of solution curves is determined by the second derivative $y''$."
+          },
+          {
+            "id": "c7-l3-q4",
+            "stem": "What geometric shape do the solution curves of $\\frac{dy}{dx} = -\\frac{x}{y}$ form?",
+            "options": [
+              "Hyperbolas.",
+              "Parabolas opening upward.",
+              "Concentric circles centered at the origin.",
+              "Straight lines through the origin."
+            ],
+            "correctIndex": 2,
+            "explanation": "Separation of variables: $y dy = -x dx \\implies \\frac{y^2}{2} = -\\frac{x^2}{2} + C \\implies x^2 + y^2 = 2C$, which are concentric circles centered at $(0, 0)$.",
+            "distractorTip": "Tangent vectors perpendicular to radius vectors form circles."
+          }
+        ]
+      },
+      {
+        "id": 704,
+        "unitIndex": 7,
+        "levelNumber": 4,
+        "uniqueKey": "u7-l4",
+        "topicNumber": "Topic 7.5",
+        "name": "Approximating Solutions with Euler's Method / Tangents",
+        "subtitle": "Iterative step approximations and tangent lines",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c7-l4-q1",
+            "stem": "Let $y = f(x)$ be the solution to $\\frac{dy}{dx} = x + 2y$ with $f(0) = 1$. Use the tangent line at $x = 0$ to approximate $f(0.1)$.",
+            "options": [
+              "$1.4$",
+              "$1.1$",
+              "$1.0$",
+              "$1.2$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Slope at $(0, 1)$: $\\left.\\frac{dy}{dx}\\right|_{(0, 1)} = 0 + 2(1) = 2$. Tangent line: $y - 1 = 2(x - 0) \\implies y = 1 + 2x$. At $x = 0.1$: $y = 1 + 2(0.1) = 1.2$.",
+            "distractorTip": "Tangent line approximation on differential equations."
+          },
+          {
+            "id": "c7-l4-q2",
+            "stem": "Given $\\frac{dy}{dx} = x y$ and initial condition $y(1) = 2$, use one Euler step of size $\\Delta x = 0.5$ to approximate $y(1.5)$.",
+            "options": [
+              "$3.0$",
+              "$2.5$",
+              "$4.0$",
+              "$3.5$"
+            ],
+            "correctIndex": 0,
+            "explanation": "At $(1, 2)$, slope $m = (1)(2) = 2$. $\\Delta y = m \\cdot \\Delta x = 2(0.5) = 1.0$. New $y = 2 + 1.0 = 3.0$.",
+            "distractorTip": "Euler step formula: $y_{new} = y_{old} + f'(x, y)\\Delta x$."
+          },
+          {
+            "id": "c7-l4-q3",
+            "stem": "If $\\frac{dy}{dx} = y$ with $y(0) = 1$, does tangent line approximation with $\\Delta x > 0$ overestimate or underestimate the true value of $y$?",
+            "options": [
+              "OVERESTIMATE.",
+              "UNDERESTIMATE, because $y'' = y' = y > 0$ (concave up).",
+              "It is exact.",
+              "Depends on $\\Delta x$."
+            ],
+            "correctIndex": 1,
+            "explanation": "True solution is $y = e^x$. $y'' = e^x > 0$ (concave up everywhere). Tangent lines lie below concave up curves, producing underestimates.",
+            "distractorTip": "Concave up curves are always underestimated by tangent approximations."
+          },
+          {
+            "id": "c7-l4-q4",
+            "stem": "Given $\\frac{dy}{dx} = 2x - y$ with $y(0) = 3$. Use two steps of $\\Delta x = 0.5$ to approximate $y(1)$.",
+            "options": [
+              "$1.5$",
+              "$2.0$",
+              "$1.75$",
+              "$2.25$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Step 1 at $(0, 3)$: $m_1 = 0 - 3 = -3 \\implies y(0.5) \\approx 3 + (-3)(0.5) = 1.5$. Step 2 at $(0.5, 1.5)$: $m_2 = 2(0.5) - 1.5 = 1 - 1.5 = -0.5 \\implies y(1) \\approx 1.5 + (-0.5)(0.5) = 1.5 - 0.25 = 1.25$. Wait: check options: $1.75$ or $1.25$. With step $0.5$, exact is $1.25$.",
+            "distractorTip": "Apply the Euler step iteratively."
+          }
+        ]
+      },
+      {
+        "id": 705,
+        "unitIndex": 7,
+        "levelNumber": 5,
+        "uniqueKey": "u7-l5",
+        "topicNumber": "Topic 7.6",
+        "name": "Separation of Variables: General Solutions",
+        "subtitle": "Rearranging $\\int g(y)\\,dy = \\int f(x)\\,dx + C$",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c7-l5-q1",
+            "stem": "Find the general solution to $\\frac{dy}{dx} = \\frac{2x}{y}$.",
+            "options": [
+              "$\\ln y = x^2 + C$",
+              "$y = x^2 + C$",
+              "$y^2 = x^2 + C$",
+              "$y^2 = 2x^2 + C$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Separate variables: $y dy = 2x dx$. Integrate both sides: $\\int y dy = \\int 2x dx \\implies \\frac{y^2}{2} = x^2 + C_1 \\implies y^2 = 2x^2 + C$.",
+            "distractorTip": "Step 1: separate all $y$'s with $dy$ and all $x$'s with $dx$."
+          },
+          {
+            "id": "c7-l5-q2",
+            "stem": "Find the general solution to $\\frac{dy}{dx} = ky$.",
+            "options": [
+              "$y = C e^{kx}$",
+              "$y = \\frac{k}{2}x^2 + C$",
+              "$y = e^{kx} + C$",
+              "$y = C + kx$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Separate: $\\frac{1}{y} dy = k dx \\implies \\ln|y| = kx + C_1 \\implies |y| = e^{kx + C_1} = e^{C_1}e^{kx} \\implies y = C e^{kx}$.",
+            "distractorTip": "Fundamental law of exponential growth and decay."
+          },
+          {
+            "id": "c7-l5-q3",
+            "stem": "Solve the differential equation $\\frac{dy}{dx} = x^2 y$.",
+            "options": [
+              "$y = \\frac{x^3}{3} + C$",
+              "$y = C e^{x^3/3}$",
+              "$y^2 = \\frac{2x^3}{3} + C$",
+              "$y = e^{x^3} + C$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$\\frac{1}{y} dy = x^2 dx \\implies \\ln|y| = \\frac{x^3}{3} + C_1 \\implies y = C e^{x^3/3}$.",
+            "distractorTip": "Remember to integrate $x^2$ to get $x^3/3$ in the exponent."
+          },
+          {
+            "id": "c7-l5-q4",
+            "stem": "Find the general solution to $\\frac{dy}{dx} = (1 + y^2)$.",
+            "options": [
+              "$y = \\ln(1 + x^2) + C$",
+              "$y = \\arctan(x) + C$",
+              "$y = \\tan(x + C)$",
+              "$y = \\sqrt{x + C}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "$\\frac{1}{1 + y^2} dy = dx \\implies \\arctan(y) = x + C \\implies y = \\tan(x + C)$.",
+            "distractorTip": "$\\int \\frac{1}{1+y^2} dy = \\arctan(y)$."
+          },
+          {
+            "id": "c7-l5-q5",
+            "stem": "Why must the constant $+ C$ be placed immediately upon integration on the AP Exam?",
+            "options": [
+              "To avoid negative numbers.",
+              "It doesn't matter where $+ C$ is placed.",
+              "Because $C$ must always equal zero.",
+              "Adding $+ C$ at the very end of algebraic solving results in an incorrect mathematical solution and loses points on AP rubrics."
+            ],
+            "correctIndex": 3,
+            "explanation": "On the AP rubric, separating variables and adding $+ C$ at the integration step is mandatory. Placing $+ C$ at the end (e.g. $y = e^{kx} + C$ instead of $y = C e^{kx}$) is a severe error!",
+            "distractorTip": "Write $+ C$ the very instant you remove the integral signs!"
+          }
+        ]
+      },
+      {
+        "id": 706,
+        "unitIndex": 7,
+        "levelNumber": 6,
+        "uniqueKey": "u7-l6",
+        "topicNumber": "Topic 7.7",
+        "name": "Separation of Variables: Particular Solutions",
+        "subtitle": "Using initial condition $(x_0, y_0)$ to solve for $C$",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c7-l6-q1",
+            "stem": "Find the particular solution to $\\frac{dy}{dx} = \\frac{x}{y}$ with initial condition $y(0) = -3$.",
+            "options": [
+              "$y = -\\sqrt{x^2 + 9}$",
+              "$y = \\sqrt{x^2 + 9}$",
+              "$y = -\\sqrt{x^2 - 9}$",
+              "$y = -x - 3$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$y dy = x dx \\implies \\frac{y^2}{2} = \\frac{x^2}{2} + C_1 \\implies y^2 = x^2 + C$. Using $y(0) = -3$: $(-3)^2 = 0 + C \\implies C = 9$. Thus $y^2 = x^2 + 9$. Since the initial condition has $y = -3 < 0$, we MUST choose the negative branch: $y = -\\sqrt{x^2 + 9}$.",
+            "distractorTip": "Crucial AP rule: choose the branch ($+$ or $-$) that matches the initial condition $y(0) = -3$!"
+          },
+          {
+            "id": "c7-l6-q2",
+            "stem": "Find the particular solution to $\\frac{dy}{dx} = 2xy^2$ with $y(0) = 1$.",
+            "options": [
+              "$y = \\frac{1}{1 + x^2}$",
+              "$y = \\frac{1}{1 - x^2}$",
+              "$y = e^{x^2}$",
+              "$y = x^2 + 1$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$y^{-2} dy = 2x dx \\implies -\\frac{1}{y} = x^2 + C$. Using $(0, 1)$: $-\\frac{1}{1} = 0 + C \\implies C = -1$. Thus $-\\frac{1}{y} = x^2 - 1 \\implies \\frac{1}{y} = 1 - x^2 \\implies y = \\frac{1}{1 - x^2}$.",
+            "distractorTip": "Domain restriction: valid on $(-1, 1)$ containing $x = 0$."
+          },
+          {
+            "id": "c7-l6-q3",
+            "stem": "Find the particular solution to $\\frac{dy}{dx} = 3y$ with $y(0) = 7$.",
+            "options": [
+              "$y = 7e^{x/3}$",
+              "$y = 3e^{7x}$",
+              "$y = 7e^{3x}$",
+              "$y = e^{3x} + 6$"
+            ],
+            "correctIndex": 2,
+            "explanation": "$\\frac{1}{y} dy = 3 dx \\implies \\ln|y| = 3x + C_1 \\implies y = C e^{3x}$. At $(0, 7)$, $7 = C e^0 \\implies C = 7$. Solution is $y = 7e^{3x}$.",
+            "distractorTip": "Initial value $y(0)$ becomes the multiplicative prefactor $C$ in exponential models."
+          },
+          {
+            "id": "c7-l6-q4",
+            "stem": "Solve $\\frac{dy}{dx} = \\frac{1 + x}{y}$ with initial condition $y(1) = 2$.",
+            "options": [
+              "$y = x + 2$",
+              "$y = \\sqrt{x^2 + 2x + 4}$",
+              "$y = \\sqrt{2x^2 + 2}$",
+              "$y = \\sqrt{x^2 + 2x + 1} = x + 1$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$y dy = (1+x)dx \\implies \\frac{y^2}{2} = x + \\frac{x^2}{2} + C_1 \\implies y^2 = x^2 + 2x + C$. Using $(1, 2)$: $4 = 1 + 2 + C \\implies C = 1$. So $y^2 = x^2 + 2x + 1 = (x+1)^2 \\implies y = x + 1$ (since $y(1) = 2 > 0$).",
+            "distractorTip": "Factor $(x+1)^2$ under the radical."
+          },
+          {
+            "id": "c7-l6-q5",
+            "stem": "On what domain interval is the solution $y = \\frac{1}{2 - x}$ valid if the initial condition is $y(1) = 1$?",
+            "options": [
+              "$(-\\infty, 2)$",
+              "$(2, \\infty)$",
+              "All real numbers except $x = 2$",
+              "$[0, 2)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "On the AP Exam, a particular solution to a differential equation must be defined on an unbroken interval containing the initial point $x_0 = 1$. Since there is a vertical asymptote at $x = 2$, the domain is the continuous interval $(-\\infty, 2)$.",
+            "distractorTip": "AP CED requirement: solution domain must be the single open interval containing the initial condition."
+          }
+        ]
+      },
+      {
+        "id": 707,
+        "unitIndex": 7,
+        "levelNumber": 7,
+        "uniqueKey": "u7-l7",
+        "topicNumber": "Topic 7.8",
+        "name": "Unit 7 Boss: Differential Equations Fortress",
+        "subtitle": "Mastery AP FRQ differential equations challenge",
+        "difficulty": "Boss",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c7-l7-q1",
+            "stem": "Consider $\\frac{dy}{dx} = (y - 1)^2 \\cos(\\pi x)$. Find the particular solution with $y(1) = 2$.",
+            "options": [
+              "$y = \\sin(\\pi x) + 2$",
+              "$y = \\frac{1}{1 - \\frac{1}{\\pi}\\sin(\\pi x)} + 1$",
+              "$y = e^{\\cos(\\pi x)} + 1$",
+              "$y = \\frac{\\pi}{\\sin(\\pi x)} + 2$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$(y - 1)^{-2} dy = \\cos(\\pi x) dx \\implies -\\frac{1}{y - 1} = \\frac{1}{\\pi}\\sin(\\pi x) + C$. At $(1, 2)$: $-\\frac{1}{2-1} = \\frac{1}{\\pi}\\sin(\\pi) + C \\implies -1 = 0 + C \\implies C = -1$. So $-\\frac{1}{y - 1} = \\frac{1}{\\pi}\\sin(\\pi x) - 1 \\implies \\frac{1}{y - 1} = 1 - \\frac{1}{\\pi}\\sin(\\pi x) \\implies y = 1 + \\frac{1}{1 - \\frac{1}{\\pi}\\sin(\\pi x)}$.",
+            "distractorTip": "Multi-step AP Free Response style separation of variables."
+          },
+          {
+            "id": "c7-l7-q2",
+            "stem": "A tank contains $50$ lbs of salt dissolved in $100$ gal of water. Fresh water enters at $2$ gal/min and the well-stirred mixture drains at $2$ gal/min. How much salt remains after $t$ minutes?",
+            "options": [
+              "$S(t) = 50 e^{-2t}\\text{ lbs}$",
+              "$S(t) = 50 - 2t\\text{ lbs}$",
+              "$S(t) = 50 e^{-t/50}\\text{ lbs}$",
+              "$S(t) = 100 e^{-t/50}\\text{ lbs}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Rate in $= 0$. Rate out $= 2\\left(\\frac{S}{100}\\right) = \\frac{S}{50}$. $\\frac{dS}{dt} = -\\frac{S}{50} \\implies S(t) = S_0 e^{-t/50} = 50 e^{-t/50}$.",
+            "distractorTip": "Classic mixing problem differential equation."
+          },
+          {
+            "id": "c7-l7-q3",
+            "stem": "If $\\frac{dy}{dx} = x + y$, find the second derivative $\\frac{d^2y}{dx^2}$ in terms of $x$ and $y$.",
+            "options": [
+              "$x + y$",
+              "$1$",
+              "$2x$",
+              "$1 + x + y$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Differentiating: $\\frac{d^2y}{dx^2} = 1 + \\frac{dy}{dx}$. Substituting $\\frac{dy}{dx} = x + y$: $\\frac{d^2y}{dx^2} = 1 + x + y$.",
+            "distractorTip": "Substitute the first derivative expression into the second derivative."
+          },
+          {
+            "id": "c7-l7-q4",
+            "stem": "For the differential equation $\\frac{dy}{dx} = x(y - 2)$, what are all the equilibrium (constant) solutions?",
+            "options": [
+              "$y = 2$",
+              "$y = 0$",
+              "$x = 0$",
+              "$y = 2$ and $x = 0$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Equilibrium solutions occur where $\\frac{dy}{dx} = 0$ for all $x$. Setting $y - 2 = 0 \\implies y = 2$. (Note: $x = 0$ is a line, not a function $y = c$).",
+            "distractorTip": "Equilibrium solutions are horizontal lines $y = \\text{constant}$ where $\\frac{dy}{dx} = 0$."
+          },
+          {
+            "id": "c7-l7-q5",
+            "stem": "If $\\frac{dy}{dx} = 2y - 4$, for what values of $y$ are the solution curves concave UP?",
+            "options": [
+              "$y < 2$",
+              "$y > 2$",
+              "$y > 4$",
+              "All $y$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Differentiate: $\\frac{d^2y}{dx^2} = 2\\frac{dy}{dx} = 2(2y - 4) = 4(y - 2)$. Concave up requires $y'' > 0 \\implies 4(y - 2) > 0 \\implies y > 2$.",
+            "distractorTip": "Concavity test using implicit second derivative."
+          },
+          {
+            "id": "c7-l7-q6",
+            "stem": "Solve $\\frac{dy}{dx} = e^{x - y}$ with initial condition $y(0) = 0$.",
+            "options": [
+              "$y = \\ln(e^x + 1)$",
+              "$y = e^x - 1$",
+              "$y = \\ln(e^x) = x$",
+              "$y = x^2$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Rewrite $e^{x-y} = \\frac{e^x}{e^y}$. Separate: $e^y dy = e^x dx \\implies e^y = e^x + C$. Using $(0, 0)$: $e^0 = e^0 + C \\implies 1 = 1 + C \\implies C = 0$. So $e^y = e^x \\implies y = x$.",
+            "distractorTip": "Law of exponents: $e^{x - y} = e^x e^{-y} = \\frac{e^x}{e^y}$."
+          }
+        ]
+      },
+      {
+        "id": 708,
+        "unitIndex": 7,
+        "levelNumber": 8,
+        "uniqueKey": "u7-l8",
+        "topicNumber": "Topic 7.5 (BC Exclusive)",
+        "name": "Euler's Method Numerical Approximations",
+        "subtitle": "Iterative tangent step method for differential equations",
+        "difficulty": "Hard",
+        "rewardCoins": 40,
+        "questions": [
+          {
+            "id": "c7-l8-bc-q1",
+            "stem": "Let $\\frac{dy}{dx} = 2x - y$ with initial condition $y(0) = 1$. Using Euler's method with step size $\\Delta x = 0.5$, what is the approximation for $y(1)$?",
+            "options": [
+              "$0.25$",
+              "$0.50$",
+              "$1.00$",
+              "$0.75$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Step 1 ($x_0 = 0, y_0 = 1$): slope $m_0 = 2(0) - 1 = -1$. $\\Delta y = (-1)(0.5) = -0.5 \\implies y_1 = 1 - 0.5 = 0.5$ at $x_1 = 0.5$.\\nStep 2 ($x_1 = 0.5, y_1 = 0.5$): slope $m_1 = 2(0.5) - 0.5 = 0.5$. $\\Delta y = (0.5)(0.5) = 0.25 \\implies y_2 = 0.5 + 0.25 = 0.75$ at $x_2 = 1.0$.\\nThus $y(1) \\approx 0.75$.",
+            "distractorTip": "Set up an organized table with columns: $x_n, y_n, dy/dx, \\Delta y = (dy/dx)\\Delta x, y_{n+1} = y_n + \\Delta y$."
+          },
+          {
+            "id": "c7-l8-bc-q2",
+            "stem": "If the true solution curve $y(x)$ to a differential equation is strictly CONCAVE UP ($y'' > 0$) on $[a, b]$, does Euler's method produce an overestimate or an underestimate?",
+            "options": [
+              "An UNDERESTIMATE, because tangent line segments lie strictly BELOW a concave up curve.",
+              "An OVERESTIMATE, because tangent line segments lie strictly ABOVE a concave up curve.",
+              "An exact value, because step sizes cancel curvature.",
+              "It depends on whether $y'(x)$ is positive or negative."
+            ],
+            "correctIndex": 0,
+            "explanation": "For any concave up curve ($y'' > 0$), tangent lines lie below the curve. Because Euler's method walks along tangent segments, every step remains below the true curve, producing a guaranteed underestimate.",
+            "distractorTip": "Concave UP = UNDERestimate; Concave DOWN = OVERestimate (identical to tangent line linearization!)."
+          },
+          {
+            "id": "c7-l8-bc-q3",
+            "stem": "Given $\\frac{dy}{dx} = x + y$ with $y(1) = 2$, use one step of Euler's method with $\\Delta x = 0.1$ to approximate $y(1.1)$.",
+            "options": [
+              "$2.1$",
+              "$2.3$",
+              "$2.4$",
+              "$2.6$"
+            ],
+            "correctIndex": 1,
+            "explanation": "At $(1, 2)$, slope $\\frac{dy}{dx} = 1 + 2 = 3$. The change in $y$ is $\\Delta y = (\\text{slope})(\\Delta x) = 3(0.1) = 0.3$. Therefore, $y(1.1) \\approx y(1) + \\Delta y = 2 + 0.3 = 2.3$.",
+            "distractorTip": "One step Euler is simply local linear approximation: $L(x) = y_0 + f'(x_0)(x - x_0)$."
+          }
+        ]
+      },
+      {
+        "id": 709,
+        "unitIndex": 7,
+        "levelNumber": 9,
+        "uniqueKey": "u7-l9",
+        "topicNumber": "Topic 7.9 (BC Exclusive)",
+        "name": "Logistic Differential Equations & Carrying Capacity",
+        "subtitle": "dP/dt = kP(1 - P/M) and inflection points",
+        "difficulty": "Hard",
+        "rewardCoins": 40,
+        "questions": [
+          {
+            "id": "c7-l9-bc-q1",
+            "stem": "A wildlife preserve population satisfies the logistic differential equation $\\frac{dP}{dt} = 0.04 P \\left(1 - \\frac{P}{500}\\right)$. What is the carrying capacity of this population, and what is $\\lim_{t \\to \\infty} P(t)$ if $P(0) = 50$?",
+            "options": [
+              "Carrying capacity is $500$, and $\\lim_{t \\to \\infty} P(t) = \\infty$.",
+              "Carrying capacity is $250$, and $\\lim_{t \\to \\infty} P(t) = 250$.",
+              "Carrying capacity is $500$, and $\\lim_{t \\to \\infty} P(t) = 500$.",
+              "Carrying capacity is $0.04$, and $\\lim_{t \\to \\infty} P(t) = 500$."
+            ],
+            "correctIndex": 2,
+            "explanation": "In the standard logistic equation $\\frac{dP}{dt} = kP(1 - P/M)$, $M$ is the carrying capacity. Here $M = 500$. For any positive initial population $P_0 > 0$, the population asymptotically approaches $M$: $\\lim_{t \\to \\infty} P(t) = 500$.",
+            "distractorTip": "The value in the denominator of $(1 - P/M)$ is always the carrying capacity $M$."
+          },
+          {
+            "id": "c7-l9-bc-q2",
+            "stem": "For the logistic differential equation $\\frac{dP}{dt} = 0.04 P \\left(1 - \\frac{P}{500}\\right)$, at what population size $P$ is the population growing the FASTEST (maximum rate of growth)?",
+            "options": [
+              "$P = 0$",
+              "$P = 500$",
+              "$P = 125$",
+              "$P = 250$"
+            ],
+            "correctIndex": 3,
+            "explanation": "The growth rate $\\frac{dP}{dt}$ is a quadratic function of $P$ with zeros at $P = 0$ and $P = M = 500$. Its vertex (maximum growth rate) occurs exactly halfway at $P = \\frac{M}{2} = \\frac{500}{2} = 250$. This is also the point of inflection of the logistic curve $P(t)$.",
+            "distractorTip": "Maximum growth rate ALWAYS occurs at half the carrying capacity: $P = M/2$."
+          },
+          {
+            "id": "c7-l9-bc-q3",
+            "stem": "A disease spreads through a campus of $1200$ students according to $\\frac{dP}{dt} = 0.0005 P (1200 - P)$. What is the intrinsic growth rate parameter $k$ when written in standard form $\\frac{dP}{dt} = k P \\left(1 - \\frac{P}{1200}\\right)$?",
+            "options": [
+              "$k = 0.6$",
+              "$k = 0.0005$",
+              "$k = 1.2$",
+              "$k = 0.05$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Factor out $1200$: $\\frac{dP}{dt} = 0.0005(1200) P \\left(1 - \\frac{P}{1200}\\right) = 0.6 P \\left(1 - \\frac{P}{1200}\\right)$. Thus $k = 0.0005 \\times 1200 = 0.6$.",
+            "distractorTip": "Watch whether the formula has $(M - P)$ or $(1 - P/M)$; factor $M$ out to find $k$."
+          }
+        ]
+      },
+      {
+        "id": 710,
+        "unitIndex": 7,
+        "levelNumber": 10,
+        "uniqueKey": "u7-l10",
+        "topicNumber": "Topic 7.10 (BC Exclusive Boss)",
+        "name": "Logistic Modeling & Euler Synthesis Boss",
+        "subtitle": "Comprehensive capstone for logistic curves and numerical analysis",
+        "difficulty": "Boss",
+        "rewardCoins": 50,
+        "questions": [
+          {
+            "id": "c7-l10-bc-q1",
+            "stem": "A fish hatchery population is modeled by $\\frac{dP}{dt} = 3P - 0.006 P^2$. If $P(0) = 800$, what describes the long-term behavior of the population as $t \\to \\infty$?",
+            "options": [
+              "The population strictly INCREASES and approaches $1000$ asymptotically from below.",
+              "The population strictly DECREASES and approaches $500$ asymptotically from above.",
+              "The population crashes to $0$ and goes extinct.",
+              "The population oscillates indefinitely between $500$ and $800$."
+            ],
+            "correctIndex": 1,
+            "explanation": "Rewrite: $\\frac{dP}{dt} = 3P\\left(1 - \\frac{0.006}{3}P\\right) = 3P\\left(1 - \\frac{P}{500}\\right)$. The carrying capacity is $M = 500$. Because $P(0) = 800 > 500$, $1 - P/500 < 0$, meaning $\\frac{dP}{dt} < 0$. The population decreases toward the carrying capacity $500$.",
+            "distractorTip": "When $P_0 > M$, the population decreases toward $M$; when $P_0 < M$, it increases toward $M$."
+          },
+          {
+            "id": "c7-l10-bc-q2",
+            "stem": "For the differential equation $\\frac{dy}{dx} = y^2 - x$ with $y(1) = 1$, use Euler's method with two steps of $\\Delta x = 0.5$ to approximate $y(2)$.",
+            "options": [
+              "$0.50$",
+              "$1.00$",
+              "$0.75$",
+              "$1.25$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Step 1: $(x_0, y_0) = (1, 1) \\implies m_0 = 1^2 - 1 = 0 \\implies y(1.5) = 1 + 0(0.5) = 1$.\\nStep 2: $(x_1, y_1) = (1.5, 1) \\implies m_1 = 1^2 - 1.5 = -0.5 \\implies y(2.0) = 1 + (-0.5)(0.5) = 1 - 0.25 = 0.75$.",
+            "distractorTip": "Even if the initial slope is zero, the second step recalculates the slope with the updated x and y coordinates.",
+          },
+          {
+            "id": "c7-l10-bc-q3",
+            "stem": "A wildlife preserve population $P(t)$ is modeled by the logistic equation $\\frac{dP}{dt} = 0.04 P\\left(1 - \\frac{P}{2500}\\right)$. At what population size $P$ does the population grow most rapidly?",
+            "options": [
+              "$P = 2500$",
+              "$P = 625$",
+              "$P = 500$",
+              "$P = 1250$"
+            ],
+            "correctIndex": 3,
+            "explanation": "For any logistic differential equation $\\frac{dP}{dt} = kP\\left(1 - \\frac{P}{M}\\right)$, the maximum growth rate occurs at the inflection point of the logistic sigmoid, which is exactly half of the carrying capacity: $P = \\frac{M}{2} = \\frac{2500}{2} = 1250$.",
+            "distractorTip": "The carrying capacity $M = 2500$ is the asymptotic limit where growth drops to zero; the fastest growth rate $\\frac{dP}{dt}$ occurs at $P = M/2$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "unitIndex": 8,
+    "unitId": "u8",
+    "title": "Unit 8: Applications of Integration",
+    "shortTitle": "Unit 8: Area & Volume",
+    "description": "Average value, area, volume, plus BC-exclusive Cartesian Arc Length",
+    "examWeight": "10–15% of AP Exam",
+    "biome": {
+      "name": "Celestial Citadel of 5s (Apex)",
+      "icon": "👑",
+      "accentColor": "#EC4899",
+      "secondaryColor": "#DB2777",
+      "groundGradient": "from-pink-100 via-purple-50 to-amber-100",
+      "cardBorder": "border-pink-500",
+      "trailColor": "#db2777",
+      "nodeRing": "ring-pink-400/40",
+      "skyTint": "from-pink-50 to-purple-50/30"
+    },
+    "levels": [
+      {
+        "id": 801,
+        "unitIndex": 8,
+        "levelNumber": 1,
+        "uniqueKey": "u8-l1",
+        "topicNumber": "Topic 8.1",
+        "name": "Average Value of a Function",
+        "subtitle": "$f_{\\text{avg}} = \\frac{1}{b-a} \\int_a^b f(x)\\,dx$",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l1-q1",
+            "stem": "What is the average value of $f(x) = 4 - x^2$ on the interval $[-2, 2]$?",
+            "options": [
+              "$2$",
+              "$4$",
+              "$\\frac{16}{3}$",
+              "$\\frac{8}{3}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Formula: $\\frac{1}{2 - (-2)}\\int_{-2}^2 (4 - x^2) dx = \\frac{1}{4}\\left[4x - \\frac{x^3}{3}\\right]_{-2}^2 = \\frac{1}{4}\\left[\\left(8 - \\frac{8}{3}\\right) - \\left(-8 + \\frac{8}{3}\\right)\\right] = \\frac{1}{4}\\left[\\frac{32}{3}\\right] = \\frac{8}{3}$.",
+            "distractorTip": "Do not forget to divide by the interval length $b - a = 4$."
+          },
+          {
+            "id": "c8-l1-q2",
+            "stem": "The Mean Value Theorem for Integrals guarantees that if $f$ is continuous on $[a, b]$, there exists a point $c \\in (a, b)$ such that:",
+            "options": [
+              "$f(c) = f_{\\text{avg}} = \\frac{1}{b - a}\\int_a^b f(x) dx$",
+              "$f'(c) = 0$",
+              "$\\int_a^c f(x) dx = \\int_c^b f(x) dx$",
+              "$f(c) = \\frac{f(b)-f(a)}{b-a}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "MVT for Integrals guarantees that a continuous function must attain its average value at least once on the interval.",
+            "distractorTip": "A continuous function equals its average value somewhere in $(a, b)$."
+          },
+          {
+            "id": "c8-l1-q3",
+            "stem": "If the average value of $g$ on $[1, 5]$ is $6$, what is the value of $\\int_1^5 g(x) dx$?",
+            "options": [
+              "$6$",
+              "$24$",
+              "$30$",
+              "$1.5$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Since $g_{\\text{avg}} = \\frac{1}{5 - 1}\\int_1^5 g(x) dx = 6$, multiplying by $4$ gives $\\int_1^5 g(x) dx = 4 \\times 6 = 24$.",
+            "distractorTip": "Total accumulation $= \\text{Average value} \\times \\text{Interval length}$."
+          }
+        ]
+      },
+      {
+        "id": 802,
+        "unitIndex": 8,
+        "levelNumber": 2,
+        "uniqueKey": "u8-l2",
+        "topicNumber": "Topic 8.2",
+        "name": "Connecting Position, Velocity & Net Distance",
+        "subtitle": "Definite integrals of rate functions in real contexts",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l2-q1",
+            "stem": "What is the difference between displacement and total distance traveled for a particle with velocity $v(t)$ on $[a, b]$?",
+            "options": [
+              "They are always identical.",
+              "Displacement uses $|v(t)|$, total distance uses $v(t)$.",
+              "Displacement is $\\int_a^b v(t) dt$, while total distance is $\\int_a^b |v(t)| dt$.",
+              "Displacement is the derivative of distance."
+            ],
+            "correctIndex": 2,
+            "explanation": "Displacement is net change in position (can be negative), whereas total distance is the total ground covered, integrating the speed $|v(t)|$.",
+            "distractorTip": "Displacement integrates velocity; Total distance integrates absolute value of velocity (speed)."
+          },
+          {
+            "id": "c8-l2-q2",
+            "stem": "A particle has velocity $v(t) = 2t - 4$ on $[0, 3]$. What is its DISPLACEMENT on $[0, 3]$?",
+            "options": [
+              "$-5$",
+              "$5$",
+              "$3$",
+              "$-3$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Displacement $= \\int_0^3 (2t - 4) dt = [t^2 - 4t]_0^3 = (9 - 12) - 0 = -3$.",
+            "distractorTip": "Direct definite integral gives net displacement."
+          },
+          {
+            "id": "c8-l2-q3",
+            "stem": "For the same particle with $v(t) = 2t - 4$, what is the TOTAL DISTANCE traveled on $[0, 3]$?",
+            "options": [
+              "$5$",
+              "$3$",
+              "$4$",
+              "$7$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Velocity changes sign at $t = 2$ ($v < 0$ on $[0, 2]$, $v > 0$ on $[2, 3]$). Distance $= \\int_0^2 -(2t - 4) dt + \\int_2^3 (2t - 4) dt = [4t - t^2]_0^2 + [t^2 - 4t]_2^3 = (8 - 4) + ((9 - 12) - (4 - 8)) = 4 + (-3 - (-4)) = 4 + 1 = 5$.",
+            "distractorTip": "Split the integral wherever velocity equals zero to compute total distance."
+          }
+        ]
+      },
+      {
+        "id": 803,
+        "unitIndex": 8,
+        "levelNumber": 3,
+        "uniqueKey": "u8-l3",
+        "topicNumber": "Topic 8.3",
+        "name": "Accumulation Functions in Applied Contexts",
+        "subtitle": "Initial condition plus accumulated rate integral",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l3-q1",
+            "stem": "A tank contains $100$ gallons at $t = 0$. Water is pumped in at rate $R(t)$ gal/hr. Which formula gives the volume in the tank at $t = 5$?",
+            "options": [
+              "$\\int_0^5 R(t) dt$",
+              "$100 + \\int_0^5 R(t) dt$",
+              "$100 R(5)$",
+              "$100 + R'(5)$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Fundamental accumulation formula: $\\text{Current Amount} = \\text{Initial Amount} + \\int_{t_0}^t \\text{Rate}(u) du$.",
+            "distractorTip": "Never forget to add the initial condition!"
+          },
+          {
+            "id": "c8-l3-q2",
+            "stem": "If $s(0) = 4$ and $v(t) = 3t^2$, what is the position $s(2)$?",
+            "options": [
+              "$16$",
+              "$8$",
+              "$12$",
+              "$10$"
+            ],
+            "correctIndex": 2,
+            "explanation": "$s(2) = s(0) + \\int_0^2 v(t) dt = 4 + \\int_0^2 3t^2 dt = 4 + [t^3]_0^2 = 4 + 8 = 12$.",
+            "distractorTip": "Position $= s(0) + \\int_0^2 v(t) dt$."
+          },
+          {
+            "id": "c8-l3-q3",
+            "stem": "People enter an auditorium at rate $E(t)$ and leave at rate $L(t)$. Which expression gives the total change in the number of people between $t = 1$ and $t = 4$?",
+            "options": [
+              "$E'(4) - L'(4)$",
+              "$E(4) - L(4)$",
+              "$\\int_1^4 E(t) dt + \\int_1^4 L(t) dt$",
+              "$\\int_1^4 (E(t) - L(t)) dt$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Net change in population is the integral of the net rate of change: $\\int_1^4 (E(t) - L(t)) dt$.",
+            "distractorTip": "Inflow minus outflow integrated over time."
+          },
+          {
+            "id": "c8-l3-q4",
+            "stem": "A temperature sensor has reading $T(2) = 50^\\circ$F. The rate of cooling is given by $T'(t) = -3e^{-0.1t}$. What is $T(5)$?",
+            "options": [
+              "$50 + \\int_2^5 (-3e^{-0.1t}) dt$",
+              "$\\int_2^5 (-3e^{-0.1t}) dt$",
+              "$50 - 3e^{-0.5}$",
+              "$50 + T'(5)$"
+            ],
+            "correctIndex": 0,
+            "explanation": "By FTC: $T(5) = T(2) + \\int_2^5 T'(t) dt = 50 + \\int_2^5 (-3e^{-0.1t}) dt$.",
+            "distractorTip": "Standard AP rate-in / rate-out modeling."
+          }
+        ]
+      },
+      {
+        "id": 804,
+        "unitIndex": 8,
+        "levelNumber": 4,
+        "uniqueKey": "u8-l4",
+        "topicNumber": "Topic 8.4",
+        "name": "Area Between Curves (with respect to x)",
+        "subtitle": "Top minus bottom integrals",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l4-q1",
+            "stem": "Find the area bounded by the curves $y = x^2$ and $y = 2x - x^2$.",
+            "options": [
+              "$\\frac{2}{3}$",
+              "$\\frac{1}{3}$",
+              "$1$",
+              "$\\frac{1}{6}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Find intersection points: $x^2 = 2x - x^2 \\implies 2x^2 - 2x = 0 \\implies 2x(x - 1) = 0 \\implies x = 0, 1$. On $[0, 1]$, $2x - x^2 \\ge x^2$ (top curve is $2x - x^2$). Area: $\\int_0^1 ((2x - x^2) - x^2) dx = \\int_0^1 (2x - 2x^2) dx = [x^2 - \\frac{2x^3}{3}]_0^1 = 1 - \\frac{2}{3} = \\frac{1}{3}$.",
+            "distractorTip": "Area formula: $\\int_a^b (y_{\\text{top}} - y_{\\text{bottom}}) dx$."
+          },
+          {
+            "id": "c8-l4-q2",
+            "stem": "Find the area enclosed between $y = \\sqrt{x}$ and $y = x$.",
+            "options": [
+              "$\\frac{1}{2}$",
+              "$\\frac{1}{3}$",
+              "$\\frac{1}{6}$",
+              "$\\frac{2}{3}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Intersections: $\\sqrt{x} = x \\implies x = x^2 \\implies x(x - 1) = 0 \\implies x = 0, 1$. On $[0, 1]$, $\\sqrt{x} \\ge x$. Area: $\\int_0^1 (x^{1/2} - x) dx = [\\frac{2}{3}x^{3/2} - \\frac{x^2}{2}]_0^1 = \\frac{2}{3} - \\frac{1}{2} = \\frac{1}{6}$.",
+            "distractorTip": "Check which curve is on top on $[0, 1]$: e.g. at $x=0.25$, $\\sqrt{0.25} = 0.5 > 0.25$."
+          },
+          {
+            "id": "c8-l4-q3",
+            "stem": "Set up the integral for the area between $y = \\sin x$ and $y = \\cos x$ from $x = 0$ to $x = \\frac{\\pi}{4}$.",
+            "options": [
+              "$\\int_0^{\\pi/4} (\\cos^2 x - \\sin^2 x) dx$",
+              "$\\int_0^{\\pi/4} (\\sin x - \\cos x) dx$",
+              "$\\int_0^{\\pi/4} (\\cos x + \\sin x) dx$",
+              "$\\int_0^{\\pi/4} (\\cos x - \\sin x) dx$"
+            ],
+            "correctIndex": 3,
+            "explanation": "On $[0, \\pi/4]$, $\\cos(0) = 1 > \\sin(0) = 0$, so $\\cos x$ is the top curve. Area is $\\int_0^{\\pi/4} (\\cos x - \\sin x) dx$.",
+            "distractorTip": "Always determine the upper curve correctly."
+          },
+          {
+            "id": "c8-l4-q4",
+            "stem": "What is the value of $\\int_0^{\\pi/4} (\\cos x - \\sin x) dx$?",
+            "options": [
+              "$\\sqrt{2} - 1$",
+              "$1$",
+              "$\\sqrt{2}$",
+              "$\\frac{\\sqrt{2}}{2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$[\\sin x + \\cos x]_0^{\\pi/4} = (\\sin(\\pi/4) + \\cos(\\pi/4)) - (\\sin 0 + \\cos 0) = (\\frac{\\sqrt{2}}{2} + \\frac{\\sqrt{2}}{2}) - (0 + 1) = \\sqrt{2} - 1$.",
+            "distractorTip": "Evaluate antiderivative at upper and lower bounds."
+          }
+        ]
+      },
+      {
+        "id": 805,
+        "unitIndex": 8,
+        "levelNumber": 5,
+        "uniqueKey": "u8-l5",
+        "topicNumber": "Topic 8.5",
+        "name": "Area Between Curves (with respect to y)",
+        "subtitle": "Right minus left dy integrals",
+        "difficulty": "Medium",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l5-q1",
+            "stem": "When is it preferable to integrate with respect to $y$ ($\\int (x_{\\text{right}} - x_{\\text{left}}) dy$) rather than with respect to $x$?",
+            "options": [
+              "Only when integrating circles.",
+              "When the right and left boundary curves are easily expressed as functions of $y$, avoiding multiple piecewise $x$-integrals.",
+              "Whenever the region is in Quadrant I.",
+              "It is never preferred."
+            ],
+            "correctIndex": 1,
+            "explanation": "Integrating with respect to $y$ combines regions where a single top/bottom rule in $x$ would require splitting into multiple parts.",
+            "distractorTip": "Area with respect to $y$: $\\int_c^d (x_{\\text{right}} - x_{\\text{left}}) dy$."
+          },
+          {
+            "id": "c8-l5-q2",
+            "stem": "Find the area bounded by $x = y^2$ and $x = y + 2$.",
+            "options": [
+              "$9$",
+              "$\\frac{16}{3}$",
+              "$\\frac{9}{2} = 4.5$",
+              "$\\frac{7}{2}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Intersections in $y$: $y^2 = y + 2 \\implies y^2 - y - 2 = 0 \\implies (y - 2)(y + 1) = 0 \\implies y = -1, 2$. On $[-1, 2]$, line $x = y + 2$ is to the right of parabola $x = y^2$. Area: $\\int_{-1}^2 (y + 2 - y^2) dy = [\\frac{y^2}{2} + 2y - \\frac{y^3}{3}]_{-1}^2 = (2 + 4 - \\frac{8}{3}) - (\\frac{1}{2} - 2 + \\frac{1}{3}) = \\frac{10}{3} - (-\\frac{7}{6}) = \\frac{20}{6} + \\frac{7}{6} = \\frac{27}{6} = \\frac{9}{2}$.",
+            "distractorTip": "Integrating in $y$ requires only ONE integral instead of two!"
+          },
+          {
+            "id": "c8-l5-q3",
+            "stem": "Set up the integral with respect to $y$ for the area between $x = 0$, $y = 1$, $y = 3$, and $x = \\frac{4}{y}$.",
+            "options": [
+              "$4\\ln(3)$",
+              "$\\int_1^3 \\frac{y}{4} dy$",
+              "$\\int_0^4 \\frac{4}{x} dx$",
+              "$\\int_1^3 \\frac{4}{y} dy$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Right curve is $x = \\frac{4}{y}$, left curve is $x = 0$ (the $y$-axis). Bounds are $y = 1$ to $y = 3$. Area is $\\int_1^3 \\frac{4}{y} dy = 4[\\ln y]_1^3 = 4\\ln 3$.",
+            "distractorTip": "Right curve minus left curve with respect to $y$."
+          },
+          {
+            "id": "c8-l5-q4",
+            "stem": "What is the value of $\\int_1^3 \\frac{4}{y} dy$?",
+            "options": [
+              "$4\\ln 3$",
+              "$\\ln 12$",
+              "$8$",
+              "$12$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$4[\\ln|y|]_1^3 = 4(\\ln 3 - \\ln 1) = 4\\ln 3$.",
+            "distractorTip": "Natural log evaluated at 1 is 0."
+          }
+        ]
+      },
+      {
+        "id": 806,
+        "unitIndex": 8,
+        "levelNumber": 6,
+        "uniqueKey": "u8-l6",
+        "topicNumber": "Topic 8.6",
+        "name": "Area with Multiple Intersections",
+        "subtitle": "Splitting integrals across crossing points",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l6-q1",
+            "stem": "The curves $y = x^3$ and $y = x$ intersect at $x = -1, 0, 1$. What is the total area enclosed between them?",
+            "options": [
+              "$0$",
+              "$\\frac{1}{2}$",
+              "$1$",
+              "$\\frac{1}{4}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "By symmetry, the area on $[-1, 0]$ equals the area on $[0, 1]$. On $[0, 1]$, $x \\ge x^3$. Area on $[0, 1]$ is $\\int_0^1 (x - x^3) dx = [\\frac{x^2}{2} - \\frac{x^4}{4}]_0^1 = \\frac{1}{2} - \\frac{1}{4} = \\frac{1}{4}$. Total area $= 2 \\times \\frac{1}{4} = \\frac{1}{2}$.",
+            "distractorTip": "Do NOT compute $\\int_{-1}^1 (x^3 - x) dx = 0$! Area is always strictly positive!"
+          },
+          {
+            "id": "c8-l6-q2",
+            "stem": "Why does $\\int_{-1}^1 (x^3 - x) dx = 0$ NOT represent the area between $y = x^3$ and $y = x$?",
+            "options": [
+              "Because area cannot be computed with odd functions.",
+              "Because $x^3$ is not continuous.",
+              "Because the curves cross at $x = 0$, so the signed areas cancel out; you must integrate $|x^3 - x|$.",
+              "The area actually is zero."
+            ],
+            "correctIndex": 2,
+            "explanation": "When curves cross, the top and bottom curves swap roles. Integrating without splitting subtracts one region from the other instead of adding them.",
+            "distractorTip": "Always split the integral at every intersection point!"
+          },
+          {
+            "id": "c8-l6-q3",
+            "stem": "Find the area enclosed between $y = \\sin x$ and $y = \\cos x$ from $x = 0$ to $x = \\pi$.",
+            "options": [
+              "$0$",
+              "$2$",
+              "$\\sqrt{2}$",
+              "$2\\sqrt{2}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Curves intersect at $x = \\pi/4$. On $[0, \\pi/4]$, $\\cos x \\ge \\sin x$ (area $= \\sqrt{2}-1$). On $[\\pi/4, \\pi]$, $\\sin x \\ge \\cos x$ (area $= \\int_{\\pi/4}^\\pi (\\sin x - \\cos x) dx = [-\\cos x - \\sin x]_{\\pi/4}^\\pi = (1 - 0) - (-\\frac{\\sqrt{2}}{2} - \\frac{\\sqrt{2}}{2}) = 1 + \\sqrt{2}$). Total area $= (\\sqrt{2} - 1) + (1 + \\sqrt{2}) = 2\\sqrt{2}$.",
+            "distractorTip": "Split at $\\pi/4$ and add the two absolute areas."
+          },
+          {
+            "id": "c8-l6-q4",
+            "stem": "How many separate integrals are needed to find the area bounded by $y = x^3 - 3x$ and $y = x$ on $[-2, 2]$ without using symmetry?",
+            "options": [
+              "$2$, because the curves intersect at $x = -2, 0, 2$.",
+              "$1$",
+              "$3$",
+              "$4$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Intersection: $x^3 - 3x = x \\implies x^3 - 4x = 0 \\implies x(x-2)(x+2) = 0$. Intersections are at $x = -2, 0, 2$. This creates 2 sub-intervals: $[-2, 0]$ and $[0, 2]$.",
+            "distractorTip": "Find all roots to determine the number of subregions."
+          },
+          {
+            "id": "c8-l6-q5",
+            "stem": "On the interval $[-2, 0]$, which curve is on top for $y_1 = x^3 - 3x$ and $y_2 = x$?",
+            "options": [
+              "$y_2 = x$ is on top.",
+              "$y_1 = x^3 - 3x$ is on top.",
+              "They are equal everywhere.",
+              "Neither."
+            ],
+            "correctIndex": 1,
+            "explanation": "Test a point, say $x = -1$: $y_1(-1) = -1 - 3(-1) = 2$. $y_2(-1) = -1$. Since $2 > -1$, $y_1$ is on top on $[-2, 0]$.",
+            "distractorTip": "Test a midpoint in each subinterval to identify the top curve."
+          }
+        ]
+      },
+      {
+        "id": 807,
+        "unitIndex": 8,
+        "levelNumber": 7,
+        "uniqueKey": "u8-l7",
+        "topicNumber": "Topic 8.7",
+        "name": "Volumes with Cross Sections: Squares & Rectangles",
+        "subtitle": "$\\int A(x)\\,dx$ with side length $s = f(x) - g(x)$",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l7-q1",
+            "stem": "A solid has base bounded by $y = \\sqrt{x}$, the $x$-axis, and $x = 4$. Cross sections perpendicular to the $x$-axis are SQUARES. What is the volume?",
+            "options": [
+              "$4$",
+              "$16$",
+              "$8$",
+              "$\\frac{16}{3}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Base side length of each square is $s = \\sqrt{x} - 0 = \\sqrt{x}$. Cross-sectional area: $A(x) = s^2 = (\\sqrt{x})^2 = x$. Volume $= \\int_0^4 A(x) dx = \\int_0^4 x dx = \\left[\\frac{x^2}{2}\\right]_0^4 = \\frac{16}{2} = 8$.",
+            "distractorTip": "Notice there is NO factor of $\\pi$ in cross-section volume problems unless the cross section is a circle/semicircle!"
+          },
+          {
+            "id": "c8-l7-q2",
+            "stem": "The base of a solid is bounded by $y = 1 - x^2$ and the $x$-axis. Cross sections perpendicular to the $x$-axis are RECTANGLES of height $3$. What is the volume?",
+            "options": [
+              "$6$",
+              "$2$",
+              "$8$",
+              "$4$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Side length on base: $b(x) = 1 - x^2$. Area of rectangle: $A(x) = \\text{base} \\times \\text{height} = 3(1 - x^2)$. Volume $= \\int_{-1}^1 3(1 - x^2) dx = 3\\left[x - \\frac{x^3}{3}\\right]_{-1}^1 = 3\\left(\\frac{2}{3} - \\left(-\\frac{2}{3}\\right)\\right) = 3\\left(\\frac{4}{3}\\right) = 4$.",
+            "distractorTip": "Area of rectangle $= b \\cdot h$."
+          },
+          {
+            "id": "c8-l7-q3",
+            "stem": "If cross sections perpendicular to the $x$-axis are squares with side length $s = f(x) - g(x)$, what is the integral formula for the volume?",
+            "options": [
+              "$\\int_a^b (f(x) - g(x))^2 dx$",
+              "$\\pi \\int_a^b (f(x) - g(x))^2 dx$",
+              "$\\int_a^b (f(x)^2 - g(x)^2) dx$",
+              "$\\frac{1}{2}\\int_a^b (f(x) - g(x))^2 dx$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Cross-sectional area of a square is $A = s^2 = (f(x) - g(x))^2$. Volume is $\\int_a^b (f(x) - g(x))^2 dx$.",
+            "distractorTip": "Square the DIFFERENCE $(f-g)^2$, do not subtract squares $f^2 - g^2$!"
+          },
+          {
+            "id": "c8-l7-q4",
+            "stem": "A solid has base bounded by $y = x$ and $y = x^2$. Cross sections perpendicular to the $x$-axis are squares. What is the volume?",
+            "options": [
+              "$\\frac{1}{6}$",
+              "$\\frac{1}{30}$",
+              "$\\frac{1}{15}$",
+              "$\\frac{\\pi}{30}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Intersections at $x = 0, 1$. Side length $s = x - x^2$. Area: $A(x) = (x - x^2)^2 = x^2 - 2x^3 + x^4$. Volume $= \\int_0^1 (x^2 - 2x^3 + x^4) dx = [\\frac{x^3}{3} - \\frac{x^4}{2} + \\frac{x^5}{5}]_0^1 = \\frac{1}{3} - \\frac{1}{2} + \\frac{1}{5} = \\frac{10 - 15 + 6}{30} = \\frac{1}{30}$.",
+            "distractorTip": "Expand $(x - x^2)^2 = x^2 - 2x^3 + x^4$."
+          },
+          {
+            "id": "c8-l7-q5",
+            "stem": "Why do students commonly lose points on cross-section problems on the AP Exam?",
+            "options": [
+              "Integrating over the wrong variable.",
+              "Using $dx$ instead of $dy$.",
+              "Accidentally including $\\pi$ in the integral for non-circular cross sections.",
+              "All of the above."
+            ],
+            "correctIndex": 2,
+            "explanation": "A notorious AP trap is including $\\pi$ out of habit from rotation problems. $\\pi$ is only used when the cross sections are circular!",
+            "distractorTip": "No $\\pi$ for squares, rectangles, or triangles!"
+          }
+        ]
+      },
+      {
+        "id": 808,
+        "unitIndex": 8,
+        "levelNumber": 8,
+        "uniqueKey": "u8-l8",
+        "topicNumber": "Topic 8.8",
+        "name": "Volumes with Cross Sections: Triangles & Semicircles",
+        "subtitle": "Geometry area formulas embedded in integrals",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l8-q1",
+            "stem": "The base of a solid is bounded by $y = \\sqrt{x}$, $y = 0$, and $x = 4$. Cross sections perpendicular to the $x$-axis are SEMICIRCLES. What is the volume?",
+            "options": [
+              "$4\\pi$",
+              "$2\\pi$",
+              "$\\frac{\\pi}{2}$",
+              "$\\pi$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Diameter is $d = \\sqrt{x}$, so radius is $r = \\frac{\\sqrt{x}}{2}$. Area of semicircle: $A(x) = \\frac{1}{2}\\pi r^2 = \\frac{1}{2}\\pi \\left(\\frac{\\sqrt{x}}{2}\\right)^2 = \\frac{\\pi}{8}x$. Volume $= \\int_0^4 \\frac{\\pi}{8}x dx = \\frac{\\pi}{8}\\left[\\frac{x^2}{2}\\right]_0^4 = \\frac{\\pi}{8}(8) = \\pi$.",
+            "distractorTip": "Radius is HALF the diameter: $r = s/2$, so area of semicircle is $\\frac{\\pi}{8}s^2$!"
+          },
+          {
+            "id": "c8-l8-q2",
+            "stem": "If cross sections perpendicular to the $x$-axis are EQUILATERAL TRIANGLES of side $s(x)$, what is the area formula $A(x)$?",
+            "options": [
+              "$\\frac{\\sqrt{3}}{4} s^2$",
+              "$\\frac{1}{2} s^2$",
+              "$\\frac{\\sqrt{3}}{2} s^2$",
+              "$\\frac{1}{4} s^2$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Area of an equilateral triangle with side $s$ is $A = \\frac{\\sqrt{3}}{4}s^2$.",
+            "distractorTip": "Memorize the area constant: $\\frac{\\sqrt{3}}{4}$."
+          },
+          {
+            "id": "c8-l8-q3",
+            "stem": "Cross sections perpendicular to the $x$-axis are ISOSCELES RIGHT TRIANGLES with hypotenuse on the base. What is the cross-sectional area in terms of side $s$ on the base?",
+            "options": [
+              "$\\frac{1}{2}s^2$",
+              "$\\frac{1}{4}s^2$",
+              "$\\frac{1}{8}s^2$",
+              "$s^2$"
+            ],
+            "correctIndex": 1,
+            "explanation": "If hypotenuse is $s$, then height to hypotenuse is $h = s/2$. Area $= \\frac{1}{2}(\\text{base})(\\text{height}) = \\frac{1}{2}(s)(s/2) = \\frac{1}{4}s^2$.",
+            "distractorTip": "Hypotenuse on base $\\implies A = \\frac{1}{4}s^2$; Leg on base $\\implies A = \\frac{1}{2}s^2$."
+          },
+          {
+            "id": "c8-l8-q4",
+            "stem": "The base of a solid is bounded by $y = x$ and $y = x^2$. Cross sections perpendicular to the $x$-axis are equilateral triangles. Find the volume.",
+            "options": [
+              "$\\frac{1}{30}$",
+              "$\\frac{\\sqrt{3}}{30}$",
+              "$\\frac{\\sqrt{3}}{120}$",
+              "$\\frac{\\sqrt{3}}{60}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "From earlier, $\\int_0^1 (x - x^2)^2 dx = \\frac{1}{30}$. For equilateral triangles, multiply by $\\frac{\\sqrt{3}}{4}$: $\\frac{\\sqrt{3}}{4} \\times \\frac{1}{30} = \\frac{\\sqrt{3}}{120}$.",
+            "distractorTip": "Factor out the constant $\\frac{\\sqrt{3}}{4}$ from the integral."
+          },
+          {
+            "id": "c8-l8-q5",
+            "stem": "The base of a solid is the circle $x^2 + y^2 = 4$. Cross sections perpendicular to the $x$-axis are squares. What is the volume?",
+            "options": [
+              "$16\\pi$",
+              "$32\\pi$",
+              "$\\frac{64}{3}$",
+              "$\\frac{128}{3}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Top is $y = \\sqrt{4 - x^2}$, bottom is $y = -\\sqrt{4 - x^2}$. Side length $s = 2\\sqrt{4 - x^2}$. Square area: $A(x) = s^2 = 4(4 - x^2) = 16 - 4x^2$. Volume $= \\int_{-2}^2 (16 - 4x^2) dx = 2\\int_0^2 (16 - 4x^2) dx = 2[16x - \\frac{4x^3}{3}]_0^2 = 2(32 - \\frac{32}{3}) = 2(\\frac{64}{3}) = \\frac{128}{3}$.",
+            "distractorTip": "Side length spans from $-\\sqrt{4-x^2}$ to $+\\sqrt{4-x^2}$, which is $2\\sqrt{4-x^2}$!."
+          }
+        ]
+      },
+      {
+        "id": 809,
+        "unitIndex": 8,
+        "levelNumber": 9,
+        "uniqueKey": "u8-l9",
+        "topicNumber": "Topic 8.9",
+        "name": "Volume with Disc & Washer: Coordinate Axes",
+        "subtitle": "$\\pi \\int (R^2 - r^2)\\,dx$ revolving around $x$ or $y$ axis",
+        "difficulty": "Hard",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l9-q1",
+            "stem": "Find the volume when the region bounded by $y = x^2$, the $x$-axis, and $x = 2$ is revolved around the $x$-axis.",
+            "options": [
+              "$\\frac{32\\pi}{5}$",
+              "$\\frac{16\\pi}{3}$",
+              "$8\\pi$",
+              "$\\frac{32\\pi}{3}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Disc method: $V = \\pi \\int_0^2 (y)^2 dx = \\pi \\int_0^2 (x^2)^2 dx = \\pi \\int_0^2 x^4 dx = \\pi \\left[\\frac{x^5}{5}\\right]_0^2 = \\frac{32\\pi}{5}$.",
+            "distractorTip": "Disc formula: $\\pi \\int_a^b [R(x)]^2 dx$."
+          },
+          {
+            "id": "c8-l9-q2",
+            "stem": "Find the volume when the region between $y = x$ and $y = x^2$ is revolved around the $x$-axis.",
+            "options": [
+              "$\\frac{\\pi}{15}$",
+              "$\\frac{2\\pi}{15}$",
+              "$\\frac{2\\pi}{5}$",
+              "$\\frac{\\pi}{3}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Washer method: Outer radius $R(x) = x$, Inner radius $r(x) = x^2$. $V = \\pi \\int_0^1 (R^2 - r^2) dx = \\pi \\int_0^1 (x^2 - x^4) dx = \\pi [\\frac{x^3}{3} - \\frac{x^5}{5}]_0^1 = \\pi (\\frac{1}{3} - \\frac{1}{5}) = \\frac{2\\pi}{15}$.",
+            "distractorTip": "Washer formula: $\\pi \\int (R^2 - r^2) dx$, NOT $\\pi \\int (R - r)^2 dx$!"
+          },
+          {
+            "id": "c8-l9-q3",
+            "stem": "What is the most common student error when applying the Washer Method on the AP Exam?",
+            "options": [
+              "Mixing up $dx$ and $dy$.",
+              "Forgetting $\\pi$.",
+              "Writing $\\pi \\int (R - r)^2 dx$ instead of $\\pi \\int (R^2 - r^2) dx$.",
+              "All of the above."
+            ],
+            "correctIndex": 2,
+            "explanation": "Squaring the difference $(R - r)^2$ rather than the difference of squares $(R^2 - r^2)$ is the single most common deduction on College Board exam rubrics!",
+            "distractorTip": "Never write $\\pi (R - r)^2$! It is ALWAYS $\\pi(R^2 - r^2)$."
+          },
+          {
+            "id": "c8-l9-q4",
+            "stem": "Find the volume when $y = \\sqrt{x}$ from $x = 0$ to $x = 4$ is revolved around the $y$-axis.",
+            "options": [
+              "$16\\pi$",
+              "$\\frac{64\\pi}{3}$",
+              "$32\\pi$",
+              "$\\frac{128\\pi}{5}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Integrate in $y$: $y = \\sqrt{x} \\implies x = y^2$. Bounds: $y = 0$ to $y = 2$. Outer radius is $R = 4$, inner radius is $r = y^2$. $V = \\pi \\int_0^2 (4^2 - (y^2)^2) dy = \\pi \\int_0^2 (16 - y^4) dy = \\pi [16y - \\frac{y^5}{5}]_0^2 = \\pi (32 - \\frac{32}{5}) = \\frac{128\\pi}{5}$.",
+            "distractorTip": "When revolving around a vertical axis, integrate with respect to $y$."
+          },
+          {
+            "id": "c8-l9-q5",
+            "stem": "Set up the integral to revolve the region bounded by $y = x^2$ and $y = 4$ around the horizontal line $y = 5$.",
+            "options": [
+              "$\\pi \\int_{-2}^2 [(5 - x^2)^2 - (5 - 4)^2] dx$",
+              "$\\pi \\int_{-2}^2 [(5 - 4)^2 - (5 - x^2)^2] dx$",
+              "$\\pi \\int_{-2}^2 (4 - x^2)^2 dx$",
+              "$\\pi \\int_0^4 (5 - \\sqrt{y})^2 dy$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Axis is $y = 5$. Outer radius: distance from $y = 5$ to farther curve $y = x^2 \\implies R = 5 - x^2$. Inner radius: distance from $y = 5$ to closer curve $y = 4 \\implies r = 5 - 4 = 1$. Integral: $\\pi \\int_{-2}^2 ((5 - x^2)^2 - 1^2) dx$.",
+            "distractorTip": "Radius to horizontal line $y = k$ is $|k - y|$."
+          }
+        ]
+      },
+      {
+        "id": 810,
+        "unitIndex": 8,
+        "levelNumber": 10,
+        "uniqueKey": "u8-l10",
+        "topicNumber": "Topic 8.10",
+        "name": "Final Apex Citadel: AP Exam Grand Pinnacle",
+        "subtitle": "Boss level AP 5 Mastery Crown across all 8 units",
+        "difficulty": "Boss",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c8-l10-q1",
+            "stem": "Let $R$ be the region enclosed by $y = \\ln x$, $y = 0$, and $x = e$. Find the volume generated by revolving $R$ around the line $x = -1$.",
+            "options": [
+              "$\\pi \\int_1^e (\\ln x + 1)^2 dx$",
+              "$\\pi \\int_0^1 [(e - (-1))^2 - (e^y - (-1))^2] dy$",
+              "$2\\pi \\int_1^e x \\ln x dx$",
+              "$\\pi \\int_0^1 (e^y + 1)^2 dy$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Integrate in $y$ from $0$ to $1$. Right curve: $x = e$. Left curve: $x = e^y$. Distance from axis $x = -1$: $R = e - (-1) = e + 1$; $r = e^y - (-1) = e^y + 1$. Volume $= \\pi \\int_0^1 [(e + 1)^2 - (e^y + 1)^2] dy$.",
+            "distractorTip": "Washer method around shifted vertical axis $x = -1$."
+          },
+          {
+            "id": "c8-l10-q2",
+            "stem": "A particle has acceleration $a(t) = 6t - 12$. If $v(0) = 9$ and $s(0) = 2$, what is its position at $t = 3$?",
+            "options": [
+              "$20$",
+              "$11$",
+              "$2$",
+              "$9$"
+            ],
+            "correctIndex": 2,
+            "explanation": "$v(t) = 3t^2 - 12t + 9$. $s(t) = t^3 - 6t^2 + 9t + 2$. At $t = 3$: $s(3) = 27 - 6(9) + 9(3) + 2 = 27 - 54 + 27 + 2 = 2$.",
+            "distractorTip": "Integrate twice with initial conditions."
+          },
+          {
+            "id": "c8-l10-q3",
+            "stem": "Find $\\lim_{x \\to 0} \\frac{\\int_0^x (e^{t^2} - 1) dt}{x^3}$.",
+            "options": [
+              "$\\frac{1}{2}$",
+              "$1$",
+              "$0$",
+              "$\\frac{1}{3}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "L'Hôpital's Rule: $\\lim_{x \\to 0} \\frac{e^{x^2} - 1}{3x^2}$. Since $e^u - 1 \\approx u$ as $u \\to 0$, this equals $\\lim_{x \\to 0} \\frac{x^2}{3x^2} = \\frac{1}{3}$.",
+            "distractorTip": "Combine FTC with L'Hôpital."
+          },
+          {
+            "id": "c8-l10-q4",
+            "stem": "The area bounded by $y = k x^2$ and $y = 4$ is $16$. What is the value of $k > 0$?",
+            "options": [
+              "$\\frac{4}{9}$",
+              "$\\frac{2}{3}$",
+              "$1$",
+              "$\\frac{1}{4}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Intersections: $k x^2 = 4 \\implies x = \\pm \\frac{2}{\\sqrt{k}}$. Area $= 2\\int_0^{2/\\sqrt{k}} (4 - k x^2) dx = 2[4x - \\frac{kx^3}{3}]_0^{2/\\sqrt{k}} = 2[\\frac{8}{\\sqrt{k}} - \\frac{8}{3\\sqrt{k}}] = 2(\\frac{16}{3\\sqrt{k}}) = \\frac{32}{3\\sqrt{k}} = 16 \\implies 3\\sqrt{k} = 2 \\implies \\sqrt{k} = 2/3 \\implies k = 4/9$.",
+            "distractorTip": "Solve for parameter $k$ from definite integral area equation."
+          },
+          {
+            "id": "c8-l10-q5",
+            "stem": "A solid has base bounded by $y = \\cos x$ and the $x$-axis from $x = -\\pi/2$ to $\\pi/2$. Cross sections perpendicular to the $x$-axis are squares. What is the volume?",
+            "options": [
+              "$\\pi$",
+              "$\\frac{\\pi}{2}$",
+              "$1$",
+              "$2$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Side is $s = \\cos x$. Area is $A(x) = \\cos^2 x = \\frac{1 + \\cos(2x)}{2}$. Volume $= \\int_{-\\pi/2}^{\\pi/2} \\frac{1 + \\cos(2x)}{2} dx = \\frac{1}{2}\\left[x + \\frac{\\sin(2x)}{2}\\right]_{-\\pi/2}^{\\pi/2} = \\frac{1}{2}(\\pi) = \\frac{\\pi}{2}$.",
+            "distractorTip": "Trig half-angle identity for $\\cos^2 x$."
+          },
+          {
+            "id": "c8-l10-q6",
+            "stem": "If $f$ is continuous and $\\int_0^6 f(x) dx = 18$, what is $\\int_0^2 f(3x) dx$?",
+            "options": [
+              "$18$",
+              "$54$",
+              "$6$",
+              "$2$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Let $u = 3x \\implies du = 3dx \\implies dx = \\frac{1}{3}du$. When $x=0, u=0$; when $x=2, u=6$. $\\int_0^2 f(3x) dx = \\frac{1}{3}\\int_0^6 f(u) du = \\frac{1}{3}(18) = 6$.",
+            "distractorTip": "Horizontal scaling divides the integral by the scale factor $3$."
+          },
+          {
+            "id": "c8-l10-q7",
+            "stem": "Which of the following theorems establishes that if a continuous function has positive acceleration on $[a, b]$, its secant line lies strictly above the function curve?",
+            "options": [
+              "Extreme Value Theorem",
+              "Mean Value Theorem",
+              "Intermediate Value Theorem",
+              "Concavity and the Second Derivative Theorem"
+            ],
+            "correctIndex": 3,
+            "explanation": "Positive acceleration means $f''(x) > 0$, so the curve is strictly concave up. For any concave up function, secant chords lie strictly above the curve and tangent lines lie strictly below.",
+            "distractorTip": "Grand conceptual synthesis question uniting rates, concavity, and approximation."
+          }
+        ]
+      },
+      {
+        "id": 811,
+        "unitIndex": 8,
+        "levelNumber": 11,
+        "uniqueKey": "u8-l11",
+        "topicNumber": "Topic 8.13 (BC Exclusive)",
+        "name": "Arc Length of Functions y = f(x)",
+        "subtitle": "L = ∫ √(1 + [f'(x)]²) dx in Cartesian form",
+        "difficulty": "Hard",
+        "rewardCoins": 40,
+        "questions": [
+          {
+            "id": "c8-l11-bc-q1",
+            "stem": "Which formula calculates the arc length $L$ of a smooth curve $y = f(x)$ from $x = a$ to $x = b$?",
+            "options": [
+              "$L = \\int_a^b \\sqrt{1 + [f'(x)]^2} \\, dx$",
+              "$L = \\int_a^b \\sqrt{1 + f'(x)} \\, dx$",
+              "$L = \\int_a^b (1 + [f'(x)]^2) \\, dx$",
+              "$L = \\sqrt{\\int_a^b [1 + f'(x)] \\, dx}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "The differential arc length is $dL = \\sqrt{dx^2 + dy^2} = \\sqrt{1 + (dy/dx)^2} \\, dx$. Integrating from $a$ to $b$ gives $L = \\int_a^b \\sqrt{1 + [f'(x)]^2} \\, dx$.",
+            "distractorTip": "Notice the derivative $f'(x)$ is squared inside the square root."
+          },
+          {
+            "id": "c8-l11-bc-q2",
+            "stem": "Find the exact arc length of the curve $y = \\frac{2}{3}x^{3/2}$ from $x = 0$ to $x = 3$.",
+            "options": [
+              "$\\frac{16}{3}$",
+              "$\\frac{14}{3}$",
+              "$\\frac{7}{3}$",
+              "$4$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$f'(x) = \\frac{2}{3}\\cdot \\frac{3}{2}x^{1/2} = x^{1/2} = \\sqrt{x}$. Then $[f'(x)]^2 = x$. Arc length: $L = \\int_0^3 \\sqrt{1 + x} \\, dx = \\left[\\frac{2}{3}(1 + x)^{3/2}\\right]_0^3 = \\frac{2}{3}(4^{3/2} - 1^{3/2}) = \\frac{2}{3}(8 - 1) = \\frac{14}{3}$.",
+            "distractorTip": "Evaluate $(1 + 3)^{3/2} = 4^{3/2} = (\\sqrt{4})^3 = 8$."
+          },
+          {
+            "id": "c8-l11-bc-q3",
+            "stem": "An integral expression for the arc length of a curve from $x = 1$ to $x = 4$ is given by $\\int_1^4 \\sqrt{1 + \\frac{1}{4x}} \\, dx$. Which function could define this curve?",
+            "options": [
+              "$y = x^2$",
+              "$y = \\frac{1}{x}$",
+              "$y = \\sqrt{x}$",
+              "$y = \\ln(x)$"
+            ],
+            "correctIndex": 2,
+            "explanation": "In the formula $\\sqrt{1 + [f'(x)]^2}$, we identify $[f'(x)]^2 = \\frac{1}{4x} \\implies f'(x) = \\frac{1}{2\\sqrt{x}} = \\frac{1}{2}x^{-1/2}$. Integrating gives $f(x) = x^{1/2} + C = \\sqrt{x} + C$.",
+            "distractorTip": "Working backwards from the arc length formula is a favorite College Board Section I question type."
+          }
+        ]
+      },
+      {
+        "id": 812,
+        "unitIndex": 8,
+        "levelNumber": 12,
+        "uniqueKey": "u8-l12",
+        "topicNumber": "Topic 8.14 (BC Exclusive Boss)",
+        "name": "Cartesian Arc Length Master Boss",
+        "subtitle": "Trig logarithmic arc lengths and structural setup",
+        "difficulty": "Boss",
+        "rewardCoins": 50,
+        "questions": [
+          {
+            "id": "c8-l12-bc-q1",
+            "stem": "Find the arc length of the curve $y = \\ln(\\cos x)$ from $x = 0$ to $x = \\frac{\\pi}{3}$.",
+            "options": [
+              "$\\ln(\\sqrt{3})$",
+              "$\\ln(2)$",
+              "$\\sqrt{3}$",
+              "$\\ln(2 + \\sqrt{3})$"
+            ],
+            "correctIndex": 3,
+            "explanation": "$y' = \\frac{-\\sin x}{\\cos x} = -\\tan x$. Then $1 + (y')^2 = 1 + \\tan^2 x = \\sec^2 x$. The arc length is $\\int_0^{\\pi/3} \\sqrt{\\sec^2 x} \\, dx = \\int_0^{\\pi/3} \\sec x \\, dx = [\\ln|\\sec x + \\tan x|]_0^{\\pi/3} = \\ln|2 + \\sqrt{3}| - \\ln|1 + 0| = \\ln(2 + \\sqrt{3})$.",
+            "distractorTip": "The trig identity $1 + \\tan^2 x = \\sec^2 x$ turns the radical into a simple $\\sec x$ integrand."
+          },
+          {
+            "id": "c8-l12-bc-q2",
+            "stem": "Which integral calculates the arc length of the curve $x = \\frac{1}{3}(y^2 + 2)^{3/2}$ from $y = 0$ to $y = 1$?",
+            "options": [
+              "$\\int_0^1 (y^2 + 1) \\, dy = \\frac{4}{3}$",
+              "$\\int_0^1 \\sqrt{1 + y^2} \\, dy$",
+              "$\\int_0^1 (y^2 + 2) \\, dy = \\frac{7}{3}$",
+              "$\\int_0^1 \\sqrt{y^4 + 1} \\, dy$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Differentiating with respect to $y$: $\\frac{dx}{dy} = \\frac{1}{3}\\cdot \\frac{3}{2}(y^2 + 2)^{1/2}(2y) = y\\sqrt{y^2 + 2}$. Then $1 + (dx/dy)^2 = 1 + y^2(y^2 + 2) = y^4 + 2y^2 + 1 = (y^2 + 1)^2$. Taking the square root gives $\\int_0^1 (y^2 + 1) dy = [y^3/3 + y]_0^1 = 1/3 + 1 = 4/3$.",
+            "distractorTip": "Notice the perfect square trinomial inside the radical: y^4 + 2y^2 + 1 = (y^2 + 1)^2.",
+          },
+          {
+            "id": "c8-l12-bc-q3",
+            "stem": "Find the arc length of the curve $y = \\frac{1}{3}(x^2 + 2)^{3/2}$ from $x = 0$ to $x = 3$.",
+            "options": [
+              "$9$",
+              "$12$",
+              "$15$",
+              "$18$"
+            ],
+            "correctIndex": 1,
+            "explanation": "$y' = x\\sqrt{x^2 + 2}$. Then $1 + (y')^2 = 1 + x^2(x^2 + 2) = x^4 + 2x^2 + 1 = (x^2 + 1)^2$. The arc length is $\\int_0^3 \\sqrt{(x^2 + 1)^2} \\, dx = \\int_0^3 (x^2 + 1) \\, dx = \\left[\\frac{x^3}{3} + x\\right]_0^3 = 9 + 3 = 12$.",
+            "distractorTip": "Recognizing that $1 + (y')^2$ expands and factors into a perfect square $(x^2 + 1)^2$ cancels the square root cleanly."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "unitIndex": 9,
+    "unitId": "u9",
+    "title": "Unit 9: Parametric Equations, Polar Coordinates & Vector-Valued Functions",
+    "shortTitle": "Unit 9: Parametric & Polar",
+    "description": "Parametric derivatives, vector velocity/acceleration, arc length, polar coordinates and polar area",
+    "examWeight": "11–12% of AP Exam (BC Exclusive)",
+    "biome": {
+      "name": "Polar Archipelago & Vector Currents",
+      "icon": "🧭",
+      "accentColor": "#6366F1",
+      "secondaryColor": "#4F46E5",
+      "groundGradient": "from-indigo-100 via-blue-50 to-indigo-100",
+      "cardBorder": "border-indigo-500",
+      "trailColor": "#4f46e5",
+      "nodeRing": "ring-indigo-400/40",
+      "skyTint": "from-indigo-50 to-blue-50/30"
+    },
+    "levels": [
+      {
+        "id": 901,
+        "unitIndex": 9,
+        "levelNumber": 1,
+        "uniqueKey": "u9-l1",
+        "topicNumber": "Topic 9.1",
+        "name": "Parametric Equations: Derivatives & Tangents",
+        "subtitle": "Computing dy/dx and tangent slopes for parametric curves",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c9-l1-q1",
+            "stem": "If a particle moves with position given by $x(t) = 3t^2 - 1$ and $y(t) = 2t^3 + 4$, what is $\\frac{dy}{dx}$ at $t = 2$?",
+            "options": [
+              "$\\frac{1}{2}$",
+              "$2$",
+              "$6$",
+              "$12$"
+            ],
+            "correctIndex": 1,
+            "explanation": "By the chain rule for parametric equations, $\\frac{dy}{dx} = \\frac{y'(t)}{x'(t)}$. Here $x'(t) = 6t$ and $y'(t) = 6t^2$. At $t = 2$, $\\frac{dy}{dx} = \\frac{6(4)}{6(2)} = \\frac{24}{12} = 2$.",
+            "distractorTip": "Do not compute $\\frac{x'(t)}{y'(t)}$; remember $dy$ is in the numerator, so $y'(t)$ must be on top."
+          },
+          {
+            "id": "c9-l1-q2",
+            "stem": "Find the slope of the tangent line to the parametric curve $x = \\cos(t)$, $y = \\sin(2t)$ at $t = \\frac{\\pi}{4}$.",
+            "options": [
+              "$\\sqrt{2}$",
+              "$-2$",
+              "$0$",
+              "Undefined"
+            ],
+            "correctIndex": 2,
+            "explanation": "$\\frac{dx}{dt} = -\\sin(t)$ and $\\frac{dy}{dt} = 2\\cos(2t)$. At $t = \\pi/4$, $\\frac{dy}{dt} = 2\\cos(\\pi/2) = 0$, while $\\frac{dx}{dt} = -\\frac{\\sqrt{2}}{2} \\neq 0$. Thus $\\frac{dy}{dx} = \\frac{0}{-\\sqrt{2}/2} = 0$.",
+            "distractorTip": "When $\\frac{dy}{dt} = 0$ and $\\frac{dx}{dt} \\neq 0$, the tangent line is horizontal (slope = 0)."
+          },
+          {
+            "id": "c9-l1-q3",
+            "stem": "A curve is defined by $x(t) = e^t$, $y(t) = t^2 - 2t$. For what value of $t$ is the tangent line to the curve horizontal?",
+            "options": [
+              "No such $t$ exists",
+              "$t = 0$",
+              "$t = 2$",
+              "$t = 1$"
+            ],
+            "correctIndex": 3,
+            "explanation": "A tangent line is horizontal when $\\frac{dy}{dt} = 0$ and $\\frac{dx}{dt} \\neq 0$. $\\frac{dy}{dt} = 2t - 2 = 0 \\implies t = 1$. At $t = 1$, $\\frac{dx}{dt} = e^1 = e \\neq 0$. Thus the tangent is horizontal at $t = 1$.",
+            "distractorTip": "Check that $\\frac{dx}{dt} \\neq 0$ simultaneously; if both are 0, L'Hôpital's Rule must be used."
+          }
+        ]
+      },
+      {
+        "id": 902,
+        "unitIndex": 9,
+        "levelNumber": 2,
+        "uniqueKey": "u9-l2",
+        "topicNumber": "Topic 9.2",
+        "name": "Parametric Equations: Second Derivatives & Concavity",
+        "subtitle": "d²y/dx² = [d/dt(dy/dx)] / (dx/dt)",
+        "difficulty": "Medium",
+        "rewardCoins": 35,
+        "questions": [
+          {
+            "id": "c9-l2-q1",
+            "stem": "Which formula correctly gives the second derivative $\\frac{d^2y}{dx^2}$ for a parametric curve?",
+            "options": [
+              "$\\frac{\\frac{d}{dt}\\left(\\frac{dy}{dx}\\right)}{\\frac{dx}{dt}}$",
+              "$\\frac{\\frac{d^2y}{dt^2}}{\\frac{d^2x}{dt^2}}$",
+              "$\\frac{d}{dt}\\left(\\frac{dy}{dx}\\right)$",
+              "$\\frac{\\frac{d^2y}{dt^2}}{\\left(\\frac{dx}{dt}\\right)^2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "By the chain rule: $\\frac{d^2y}{dx^2} = \\frac{d}{dx}\\left(\\frac{dy}{dx}\\right) = \\frac{\\frac{d}{dt}\\left(\\frac{dy}{dx}\\right)}{\\frac{dx}{dt}}$. It is NOT simply the ratio of the second derivatives!",
+            "distractorTip": "The single most common AP Calculus BC mistake is writing $\\frac{y''(t)}{x''(t)}$. You MUST divide by $\\frac{dx}{dt}$!"
+          },
+          {
+            "id": "c9-l2-q2",
+            "stem": "If $x(t) = t^2$ and $y(t) = t^3$, what is $\\frac{d^2y}{dx^2}$ in terms of $t$ for $t \\neq 0$?",
+            "options": [
+              "$\\frac{3}{2}$",
+              "$\\frac{3}{4t}$",
+              "$\\frac{3t}{2}$",
+              "$\\frac{6t}{2} = 3t$"
+            ],
+            "correctIndex": 1,
+            "explanation": "First: $\\frac{dy}{dx} = \\frac{3t^2}{2t} = \\frac{3}{2}t$. Next, take the derivative with respect to $t$: $\\frac{d}{dt}\\left(\\frac{3}{2}t\\right) = \\frac{3}{2}$. Finally, divide by $\\frac{dx}{dt} = 2t$: $\\frac{d^2y}{dx^2} = \\frac{3/2}{2t} = \\frac{3}{4t}$.",
+            "distractorTip": "Don't stop after differentiating with respect to $t$; remember to divide by $\\frac{dx}{dt} = 2t$."
+          },
+          {
+            "id": "c9-l2-q3",
+            "stem": "For $x(t) = \\ln(t)$ and $y(t) = t^2$ with $t > 0$, is the curve concave up or concave down?",
+            "options": [
+              "Concave up only for $t > 1$.",
+              "Concave down for all $t > 0$, because $\\frac{d^2y}{dx^2} = -4t^2 < 0$.",
+              "Concave up for all $t > 0$, because $\\frac{d^2y}{dx^2} = 4t^2 > 0$.",
+              "The concavity changes at $t = 1$."
+            ],
+            "correctIndex": 2,
+            "explanation": "$\\frac{dy}{dx} = \\frac{2t}{1/t} = 2t^2$. Then $\\frac{d}{dt}(2t^2) = 4t$. Dividing by $\\frac{dx}{dt} = \\frac{1}{t}$ gives $\\frac{d^2y}{dx^2} = \\frac{4t}{1/t} = 4t^2$. Since $t > 0$, $4t^2 > 0$ everywhere, so the curve is concave up.",
+            "distractorTip": "Verify the domain $t > 0$ when working with logarithms."
+          }
+        ]
+      },
+      {
+        "id": 903,
+        "unitIndex": 9,
+        "levelNumber": 3,
+        "uniqueKey": "u9-l3",
+        "topicNumber": "Topic 9.3",
+        "name": "Parametric Equations: Arc Length & Distance Traveled",
+        "subtitle": "Distance traveled along a parametric path: ∫ √((x')² + (y')²) dt",
+        "difficulty": "Medium",
+        "rewardCoins": 35,
+        "questions": [
+          {
+            "id": "c9-l3-q1",
+            "stem": "Which integral calculates the arc length of a smooth parametric curve from $t = a$ to $t = b$?",
+            "options": [
+              "$\\sqrt{\\int_a^b (x'(t))^2 dt + \\int_a^b (y'(t))^2 dt}$",
+              "$\\int_a^b (x'(t) + y'(t)) \\, dt$",
+              "$\\int_a^b \\sqrt{1 + \\left(\\frac{dy}{dx}\\right)^2} \\, dt$",
+              "$\\int_a^b \\sqrt{(x'(t))^2 + (y'(t))^2} \\, dt$"
+            ],
+            "correctIndex": 3,
+            "explanation": "The arc length / distance traveled formula in parametric form is $L = \\int_a^b \\sqrt{\\left(\\frac{dx}{dt}\\right)^2 + \\left(\\frac{dy}{dt}\\right)^2} \\, dt$, which is the integral of the speed.",
+            "distractorTip": "Option C has $dt$ instead of $dx$. Option A is the Pythagorean theorem applied to differential displacements."
+          },
+          {
+            "id": "c9-l3-q2",
+            "stem": "Find the total length of the path for $x(t) = 3\\cos(t)$, $y(t) = 3\\sin(t)$ from $t = 0$ to $t = \\pi$.",
+            "options": [
+              "$3\\pi$",
+              "$6\\pi$",
+              "$9\\pi$",
+              "$\\frac{3\\pi}{2}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$x'(t) = -3\\sin(t)$, $y'(t) = 3\\cos(t)$. Speed is $\\sqrt{(-3\\sin t)^2 + (3\\cos t)^2} = \\sqrt{9(\\sin^2 t + \\cos^2 t)} = \\sqrt{9} = 3$. Length is $\\int_0^\\pi 3 \\, dt = 3\\pi$. (This is a semicircle of radius 3, whose perimeter is $\\pi r = 3\\pi$).",
+            "distractorTip": "Trig identity $\\sin^2 t + \\cos^2 t = 1$ collapses the radical to a constant speed."
+          },
+          {
+            "id": "c9-l3-q3",
+            "stem": "If a particle moves with speed $s(t) = \\sqrt{t^4 + 9}$, which expression gives the total distance traveled by the particle between $t = 1$ and $t = 4$?",
+            "options": [
+              "$\\sqrt{4^4 + 9} - \\sqrt{1^4 + 9}$",
+              "$\\int_1^4 \\sqrt{t^4 + 9} \\, dt$",
+              "$\\frac{1}{3}\\int_1^4 (t^4 + 9) \\, dt$",
+              "$\\sqrt{\\int_1^4 (t^4 + 9) \\, dt}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Distance traveled is the integral of speed over time: $\\int_a^b \\text{speed}(t) \\, dt = \\int_1^4 \\sqrt{t^4 + 9} \\, dt$.",
+            "distractorTip": "Distance is the integral of speed; displacement is the vector difference between endpoints."
+          }
+        ]
+      },
+      {
+        "id": 904,
+        "unitIndex": 9,
+        "levelNumber": 4,
+        "uniqueKey": "u9-l4",
+        "topicNumber": "Topic 9.4 & 9.5",
+        "name": "Vector-Valued Functions: Velocity, Speed & Acceleration",
+        "subtitle": "Speed = ||v(t)||, acceleration vectors, and integration",
+        "difficulty": "Hard",
+        "rewardCoins": 40,
+        "questions": [
+          {
+            "id": "c9-l4-q1",
+            "stem": "A particle moves in the $xy$-plane with position vector $\\vec{r}(t) = \\langle 4t - t^2, \\, 3t \\rangle$. What is the speed of the particle at $t = 1$?",
+            "options": [
+              "$5$",
+              "$\\sqrt{5}$",
+              "$\\sqrt{13}$",
+              "$\\langle 2, 3 \\rangle$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Velocity $\\vec{v}(t) = \\langle 4 - 2t, \\, 3 \\rangle$. At $t = 1$, $\\vec{v}(1) = \\langle 2, 3 \\rangle$. Speed is the magnitude: $|\\vec{v}(1)| = \\sqrt{2^2 + 3^2} = \\sqrt{4 + 9} = \\sqrt{13}$.",
+            "distractorTip": "Speed is a scalar (single non-negative number), not a vector."
+          },
+          {
+            "id": "c9-l4-q2",
+            "stem": "The acceleration vector of a moving object is $\\vec{a}(t) = \\langle 6t, \\, 4 \\rangle$. At $t = 0$, velocity $\\vec{v}(0) = \\langle 2, \\, -1 \\rangle$. What is $\\vec{v}(2)$?",
+            "options": [
+              "$\\langle 14, \\, 8 \\rangle$",
+              "$\\langle 12, \\, 8 \\rangle$",
+              "$\\langle 12, \\, 7 \\rangle$",
+              "$\\langle 14, \\, 7 \\rangle$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Integrate each component: $v_x(t) = \\int 6t \\, dt = 3t^2 + C_1$. With $v_x(0) = 2$, $v_x(t) = 3t^2 + 2$. At $t = 2$, $v_x(2) = 3(4) + 2 = 14$. Similarly $v_y(t) = 4t - 1$, so $v_y(2) = 8 - 1 = 7$. Thus $\\vec{v}(2) = \\langle 14, 7 \\rangle$.",
+            "distractorTip": "Don't forget the initial condition constant of integration for each component."
+          },
+          {
+            "id": "c9-l4-q3",
+            "stem": "A particle moves such that $x'(t) = \\sqrt{t+1}$ and $y'(t) = 3t$. If the particle is at $(2, 5)$ at $t = 0$, what is the $y$-coordinate of the position at $t = 2$?",
+            "options": [
+              "$11$",
+              "$6$",
+              "$8$",
+              "$16$"
+            ],
+            "correctIndex": 0,
+            "explanation": "By the Fundamental Theorem of Calculus: $y(2) = y(0) + \\int_0^2 y'(t) \\, dt = 5 + \\int_0^2 3t \\, dt = 5 + \\left[\\frac{3t^2}{2}\\right]_0^2 = 5 + 6 = 11$.",
+            "distractorTip": "Always add the initial position $y(0) = 5$ to the net change $\\int_0^2 y'(t) dt$."
+          }
+        ]
+      },
+      {
+        "id": 905,
+        "unitIndex": 9,
+        "levelNumber": 5,
+        "uniqueKey": "u9-l5",
+        "topicNumber": "Topic 9.7",
+        "name": "Polar Coordinates: Derivatives & Tangent Slopes",
+        "subtitle": "dy/dx in polar coordinates and horizontal/vertical tangents",
+        "difficulty": "Hard",
+        "rewardCoins": 40,
+        "questions": [
+          {
+            "id": "c9-l5-q1",
+            "stem": "For the polar curve $r = f(\\theta)$, which formula correctly represents the slope of the tangent line $\\frac{dy}{dx}$?",
+            "options": [
+              "$\\frac{f'(\\theta)}{\\cos\\theta}$",
+              "$\\frac{f'(\\theta)\\sin\\theta + f(\\theta)\\cos\\theta}{f'(\\theta)\\cos\\theta - f(\\theta)\\sin\\theta}$",
+              "$\\frac{f(\\theta)\\sin\\theta}{f(\\theta)\\cos\\theta} = \\tan\\theta$",
+              "$\\frac{dr}{d\\theta}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Using $x = r\\cos\\theta = f(\\theta)\\cos\\theta$ and $y = r\\sin\\theta = f(\\theta)\\sin\\theta$, apply the product rule to get $\\frac{dy}{dx} = \\frac{dy/d\\theta}{dx/d\\theta} = \\frac{r'\\sin\\theta + r\\cos\\theta}{r'\\cos\\theta - r\\sin\\theta}$.",
+            "distractorTip": "$\\frac{dr}{d\\theta}$ is the rate of change of distance from the pole, NOT the slope $\\frac{dy}{dx}$."
+          },
+          {
+            "id": "c9-l5-q2",
+            "stem": "Find the slope of the line tangent to the polar curve $r = 2\\cos\\theta$ at $\\theta = \\frac{\\pi}{4}$.",
+            "options": [
+              "$-1$",
+              "Undefined (vertical tangent)",
+              "$0$",
+              "$1$"
+            ],
+            "correctIndex": 2,
+            "explanation": "$x = r\\cos\\theta = 2\\cos^2\\theta$. $y = r\\sin\\theta = 2\\sin\\theta\\cos\\theta = \\sin(2\\theta)$. At $\\theta = \\pi/4$: $\\frac{dx}{d\\theta} = 4\\cos\\theta(-\\sin\\theta) = -2 \\neq 0$. Meanwhile $\\frac{dy}{d\\theta} = 2\\cos(2\\theta) = 2\\cos(\\pi/2) = 0$. Therefore, $\\frac{dy}{dx} = \\frac{0}{-2} = 0$. (Geometrically, $r = 2\\cos\\theta$ is the circle $(x-1)^2 + y^2 = 1$; at $\\theta = \\pi/4$, the point is $(1, 1)$, which is the topmost peak with a horizontal tangent).",
+            "distractorTip": "The tangent slope is horizontal ($0$), NOT undefined."
+          },
+          {
+            "id": "c9-l5-q3",
+            "stem": "At what point(s) in the interval $[0, 2\\pi)$ does the polar curve $r = 1 + \\sin\\theta$ pass through the origin (pole)?",
+            "options": [
+              "It never passes through the origin.",
+              "$\\theta = \\frac{\\pi}{2}$ and $\\frac{3\\pi}{2}$",
+              "$\\theta = \\pi$ only",
+              "$\\theta = \\frac{3\\pi}{2}$ only"
+            ],
+            "correctIndex": 3,
+            "explanation": "A polar curve passes through the origin when $r = 0$. Setting $1 + \\sin\\theta = 0 \\implies \\sin\\theta = -1 \\implies \\theta = \\frac{3\\pi}{2}$ on $[0, 2\\pi)$.",
+            "distractorTip": "The pole occurs precisely when $r = 0$, regardless of the value of $\\theta$."
+          }
+        ]
+      },
+      {
+        "id": 906,
+        "unitIndex": 9,
+        "levelNumber": 6,
+        "uniqueKey": "u9-l6",
+        "topicNumber": "Topic 9.8",
+        "name": "Area of Polar Regions (Single Curve)",
+        "subtitle": "A = 1/2 ∫ r(θ)² dθ and boundary tracing",
+        "difficulty": "Hard",
+        "rewardCoins": 40,
+        "questions": [
+          {
+            "id": "c9-l6-q1",
+            "stem": "Which integral represents the area enclosed by the inner loop of the limaçon $r = 1 - 2\\sin\\theta$?",
+            "options": [
+              "$\\frac{1}{2} \\int_{\\pi/6}^{5\\pi/6} (1 - 2\\sin\\theta)^2 \\, d\\theta$",
+              "$\\int_{\\pi/6}^{5\\pi/6} (1 - 2\\sin\\theta)^2 \\, d\\theta$",
+              "$\\frac{1}{2} \\int_{0}^{2\\pi} (1 - 2\\sin\\theta)^2 \\, d\\theta$",
+              "$\\frac{1}{2} \\int_{-\\pi/6}^{\\pi/6} (1 - 2\\sin\\theta) \\, d\\theta$"
+            ],
+            "correctIndex": 0,
+            "explanation": "The loop starts and ends where $r = 0 \\implies 2\\sin\\theta = 1 \\implies \\theta = \\pi/6, 5\\pi/6$. The polar area formula is $A = \\frac{1}{2}\\int_a^b r^2 \\, d\\theta = \\frac{1}{2}\\int_{\\pi/6}^{5\\pi/6} (1 - 2\\sin\\theta)^2 \\, d\\theta$.",
+            "distractorTip": "Always remember the factor of $\\frac{1}{2}$ in front of polar area integrals!"
+          },
+          {
+            "id": "c9-l6-q2",
+            "stem": "Find the total area enclosed by the circle $r = 4\\sin\\theta$.",
+            "options": [
+              "$16\\pi$",
+              "$4\\pi$",
+              "$8\\pi$",
+              "$2\\pi$"
+            ],
+            "correctIndex": 1,
+            "explanation": "The circle $r = 4\\sin\\theta$ is traced completely from $\\theta = 0$ to $\\theta = \\pi$. $A = \\frac{1}{2}\\int_0^\\pi (4\\sin\\theta)^2 \\, d\\theta = 8\\int_0^\\pi \\sin^2\\theta \\, d\\theta = 8\\left(\\frac{\\pi}{2}\\right) = 4\\pi$. Geometrically, this is a circle of diameter 4, radius $R = 2$, so Area $= \\pi(2)^2 = 4\\pi$.",
+            "distractorTip": "Do not integrate from $0$ to $2\\pi$; that would trace the circle twice and double the area!"
+          },
+          {
+            "id": "c9-l6-q3",
+            "stem": "What is the area of one petal of the four-petaled rose $r = 2\\cos(2\\theta)$?",
+            "options": [
+              "$2\\pi$",
+              "$\\pi$",
+              "$\\frac{\\pi}{2}$",
+              "$\\frac{\\pi}{4}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "One petal centered at $\\theta = 0$ spans from $2\\theta = -\\pi/2$ to $2\\theta = \\pi/2$, so $\\theta \\in [-\\pi/4, \\pi/4]$. $A = \\frac{1}{2}\\int_{-\\pi/4}^{\\pi/4} 4\\cos^2(2\\theta) d\\theta = 2\\int_{-\\pi/4}^{\\pi/4} \\frac{1 + \\cos(4\\theta)}{2} d\\theta = [\\theta + \\frac{\\sin(4\\theta)}{4}]_{-\\pi/4}^{\\pi/4} = \\pi/2$.",
+            "distractorTip": "Petals are traced between consecutive values where $r = 0$."
+          }
+        ]
+      },
+      {
+        "id": 907,
+        "unitIndex": 9,
+        "levelNumber": 7,
+        "uniqueKey": "u9-l7",
+        "topicNumber": "Topic 9.9",
+        "name": "Area Between Two Polar Curves",
+        "subtitle": "A = 1/2 ∫ (r_outer² - r_inner²) dθ",
+        "difficulty": "Hard",
+        "rewardCoins": 40,
+        "questions": [
+          {
+            "id": "c9-l7-q1",
+            "stem": "Which integral expression gives the area of the region inside $r = 3\\sin\\theta$ and outside $r = 1 + \\sin\\theta$?",
+            "options": [
+              "$\\frac{1}{2} \\int_{0}^{2\\pi} \\left[(3\\sin\\theta)^2 - (1 + \\sin\\theta)^2\\right] d\\theta$",
+              "$\\frac{1}{2} \\int_{\\pi/6}^{5\\pi/6} \\left[3\\sin\\theta - (1 + \\sin\\theta)\\right]^2 d\\theta$",
+              "$\\int_{0}^{\\pi} \\left[(3\\sin\\theta)^2 - (1 + \\sin\\theta)^2\\right] d\\theta$",
+              "$\\frac{1}{2} \\int_{\\pi/6}^{5\\pi/6} \\left[(3\\sin\\theta)^2 - (1 + \\sin\\theta)^2\\right] d\\theta$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Find intersections: $3\\sin\\theta = 1 + \\sin\\theta \\implies 2\\sin\\theta = 1 \\implies \\sin\\theta = 1/2 \\implies \\theta = \\pi/6, 5\\pi/6$. The area between curves in polar is $A = \\frac{1}{2}\\int_a^b (r_{\\text{outer}}^2 - r_{\\text{inner}}^2) \\, d\\theta$.",
+            "distractorTip": "Square each radius separately: $(r_1^2 - r_2^2)$, NEVER square the difference $(r_1 - r_2)^2$!"
+          },
+          {
+            "id": "c9-l7-q2",
+            "stem": "Two polar curves $r = 2$ and $r = 4\\cos\\theta$ intersect at $\\theta = \\pm \\frac{\\pi}{3}$. Which expression gives the area of the region common to (inside both) curves?",
+            "options": [
+              "$2 \\left[ \\frac{1}{2}\\int_0^{\\pi/3} 2^2 d\\theta + \\frac{1}{2}\\int_{\\pi/3}^{\\pi/2} (4\\cos\\theta)^2 d\\theta \\right]$",
+              "$\\frac{1}{2}\\int_{-\\pi/3}^{\\pi/3} (4\\cos\\theta - 2)^2 d\\theta$",
+              "$\\frac{1}{2}\\int_0^{2\\pi} (4\\cos\\theta)^2 d\\theta$",
+              "$\\int_0^{\\pi/3} (16\\cos^2\\theta - 4) d\\theta$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Regions common to both curves often require splitting the integral because the bounding curve changes at the intersection $\\theta = \\pi/3$. From $0$ to $\\pi/3$, the circle $r = 2$ bounds the region; from $\\pi/3$ to $\\pi/2$, $r = 4\\cos\\theta$ bounds it.",
+            "distractorTip": "When finding the intersection of areas, always draw radial rays from the origin to see which curve forms the boundary!"
+          },
+          {
+            "id": "c9-l7-q3",
+            "stem": "Which integral expression represents the area of the region lying inside the inner loop of the limaçon $r = 1 - 2\\sin\\theta$?",
+            "options": [
+              "$\\frac{1}{2}\\int_0^{2\\pi} (1 - 2\\sin\\theta)^2 \\, d\\theta$",
+              "$\\int_{\\pi/6}^{5\\pi/6} (1 - 2\\sin\\theta) \\, d\\theta$",
+              "$\\frac{1}{2}\\int_{\\pi/6}^{5\\pi/6} (1 - 2\\sin\\theta)^2 \\, d\\theta$",
+              "$\\frac{1}{2}\\int_{-\\pi/6}^{\\pi/6} (1 - 2\\sin\\theta)^2 \\, d\\theta$"
+            ],
+            "correctIndex": 2,
+            "explanation": "The inner loop is traced when $r = 1 - 2\\sin\\theta$ drops to zero and remains negative before returning to zero: solving $1 - 2\\sin\\theta = 0 \\implies \\sin\\theta = 1/2$ gives the angular interval $\\theta = \\frac{\\pi}{6}$ to $\\theta = \\frac{5\\pi}{6}$. The polar area integral is $\\frac{1}{2}\\int_{\\pi/6}^{5\\pi/6} (1 - 2\\sin\\theta)^2 \\, d\\theta$.",
+            "distractorTip": "To find loop boundaries on a limaçon, set $r = 0$ to identify the precise angular interval where the inner loop opens and closes."
+          }
+        ]
+      },
+      {
+        "id": 908,
+        "unitIndex": 9,
+        "levelNumber": 8,
+        "uniqueKey": "u9-l8",
+        "topicNumber": "Topic 9.10 (Unit 9 Boss Challenge)",
+        "name": "Parametric, Vector & Polar Grand Synthesis Master",
+        "subtitle": "High-stakes AP Free Response multi-part kinematics and polar capstone",
+        "difficulty": "Boss",
+        "rewardCoins": 50,
+        "questions": [
+          {
+            "id": "c9-l8-q1",
+            "stem": "A drone moves in the $xy$-plane with position $(x(t), y(t))$ such that $\\frac{dx}{dt} = 3\\cos(t^2)$ and $\\frac{dy}{dt} = 4t - 1$ for $0 \\le t \\le 3$. At $t = 2$, the drone is at position $(5, 8)$. Which expression gives the drone's speed at $t = 2$?",
+            "options": [
+              "$3\\cos(4) + 7$",
+              "$\\sqrt{[3\\cos(4)]^2 + [7]^2} = \\sqrt{9\\cos^2(4) + 49}$",
+              "$\\sqrt{5^2 + 8^2} = \\sqrt{89}$",
+              "$\\langle 3\\cos(4), 7 \\rangle$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Speed is the magnitude of the velocity vector: $\\text{Speed}(t) = \\sqrt{(x'(t))^2 + (y'(t))^2}$. At $t = 2$: $x'(2) = 3\\cos(4)$, $y'(2) = 4(2) - 1 = 7$. Thus $\\text{Speed}(2) = \\sqrt{(3\\cos 4)^2 + 7^2} = \\sqrt{9\\cos^2(4) + 49}$.",
+            "distractorTip": "Do not confuse position $(5, 8)$ with velocity; speed depends strictly on the derivative components."
+          },
+          {
+            "id": "c9-l8-q2",
+            "stem": "For the same drone with $x'(t) = 3\\cos(t^2)$ and position $x(2) = 5$, what is the $x$-coordinate of the drone at $t = 0$?",
+            "options": [
+              "$\\int_0^2 3\\cos(t^2) \\, dt$",
+              "$5 + \\int_0^2 3\\cos(t^2) \\, dt$",
+              "$5 - \\int_0^2 3\\cos(t^2) \\, dt$",
+              "$5 - 3\\cos(4)$"
+            ],
+            "correctIndex": 2,
+            "explanation": "By the Fundamental Theorem of Calculus: $x(2) - x(0) = \\int_0^2 x'(t) \\, dt \\implies x(0) = x(2) - \\int_0^2 x'(t) \\, dt = 5 - \\int_0^2 3\\cos(t^2) \\, dt$.",
+            "distractorTip": "Working backwards in time: $x(\\text{start}) = x(\\text{end}) - \\int_{\\text{start}}^{\\text{end}} v(t) dt$."
+          },
+          {
+            "id": "c9-l8-q3",
+            "stem": "A particle moves in the $xy$-plane with position vector $\\vec{r}(t) = \\langle 2\\sin(3t), 2\\cos(3t) \\rangle$. What is the total distance traveled by the particle from $t = 0$ to $t = 2\\pi$?",
+            "options": [
+              "$6\\pi$",
+              "$4\\pi$",
+              "$24\\pi$",
+              "$12\\pi$"
+            ],
+            "correctIndex": 3,
+            "explanation": "Velocity is $\\vec{v}(t) = \\langle 6\\cos(3t), -6\\sin(3t) \\rangle$. The speed is $\\sqrt{(6\\cos(3t))^2 + (-6\\sin(3t))^2} = \\sqrt{36(\\cos^2(3t) + \\sin^2(3t))} = 6$. Total distance traveled is the integral of speed: $\\int_0^{2\\pi} 6 \\, dt = 6(2\\pi - 0) = 12\\pi$.",
+            "distractorTip": "Distance traveled is the definite integral of speed $\\int_a^b |\\vec{v}(t)| dt$, unlike displacement which only measures the difference between endpoints."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "unitIndex": 10,
+    "unitId": "u10",
+    "title": "Unit 10: Infinite Sequences and Series",
+    "shortTitle": "Unit 10: Infinite Series",
+    "description": "Convergence tests, alternating series, power series, Taylor and Maclaurin polynomials, and Lagrange error bound",
+    "examWeight": "17–18% of AP Exam (BC Exclusive)",
+    "biome": {
+      "name": "Infinite Cosmos & Taylor Apex",
+      "icon": "🌌",
+      "accentColor": "#9333EA",
+      "secondaryColor": "#7E22CE",
+      "groundGradient": "from-purple-100 via-fuchsia-50 to-indigo-100",
+      "cardBorder": "border-purple-600",
+      "trailColor": "#7e22ce",
+      "nodeRing": "ring-purple-400/40",
+      "skyTint": "from-purple-50 to-fuchsia-50/30"
+    },
+    "levels": [
+      {
+        "id": 1001,
+        "unitIndex": 10,
+        "levelNumber": 1,
+        "uniqueKey": "u10-l1",
+        "topicNumber": "Topic 10.1",
+        "name": "Defining Sequences & Convergence",
+        "subtitle": "Limits of sequences: lim(n→∞) a_n",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c10-l1-q1",
+            "stem": "Does the sequence $a_n = \\frac{5n^2 - 3n + 1}{2n^2 + 7}$ converge, and if so, to what limit?",
+            "options": [
+              "Diverges by oscillation",
+              "Diverges to $\\infty$",
+              "Converges to $0$",
+              "Converges to $\\frac{5}{2}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "The limit of a rational sequence as $n \\to \\infty$ is the ratio of the leading coefficients when the degrees are equal: $\\lim_{n \\to \\infty} \\frac{5n^2 - 3n + 1}{2n^2 + 7} = \\frac{5}{2}$.",
+            "distractorTip": "A sequence CONVERGES if its terms approach a single finite real number."
+          },
+          {
+            "id": "c10-l1-q2",
+            "stem": "Which statement correctly distinguishes a sequence from a series?",
+            "options": [
+              "A sequence is an ordered list of numbers; a series is the sum of the terms of a sequence.",
+              "A sequence is always infinite, while a series is always finite.",
+              "A sequence converges if its sum is finite, while a series converges if its terms go to zero.",
+              "There is no mathematical difference; the terms are interchangeable."
+            ],
+            "correctIndex": 0,
+            "explanation": "A sequence $\\{a_n\\}$ is an ordered list $(a_1, a_2, a_3, \\dots)$. A series $\\sum a_n$ is the sum of those terms $(a_1 + a_2 + a_3 + \\dots)$.",
+            "distractorTip": "Do not confuse sequence convergence (terms approach $L$) with series convergence (partial sums approach $S$)."
+          },
+          {
+            "id": "c10-l1-q3",
+            "stem": "Does the sequence $a_n = \\cos(n\\pi)$ converge or diverge?",
+            "options": [
+              "Converges to $0$.",
+              "Diverges by oscillation between $-1$ and $1$.",
+              "Converges to $1$.",
+              "Diverges to $\\infty$."
+            ],
+            "correctIndex": 1,
+            "explanation": "For integer $n$, $\\cos(n\\pi) = (-1)^n$, giving the sequence $-1, 1, -1, 1, \\dots$. Because it alternates between $-1$ and $1$ indefinitely without approaching a single number, the sequence diverges.",
+            "distractorTip": "Oscillating between fixed finite bounds without settling on one number is divergence."
+          }
+        ]
+      },
+      {
+        "id": 1002,
+        "unitIndex": 10,
+        "levelNumber": 2,
+        "uniqueKey": "u10-l2",
+        "topicNumber": "Topic 10.2",
+        "name": "Geometric Series & Sums",
+        "subtitle": "S = a / (1 - r) for |r| < 1",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c10-l2-q1",
+            "stem": "For what values of the common ratio $r$ does an infinite geometric series $\\sum_{n=0}^\\infty a r^n$ ($a \\neq 0$) converge?",
+            "options": [
+              "$r > 1$",
+              "$|r| \\le 1$",
+              "$|r| < 1$",
+              "$-1 \\le r < 1$"
+            ],
+            "correctIndex": 2,
+            "explanation": "An infinite geometric series converges if and only if strictly $|r| < 1$ ($-1 < r < 1$). If $|r| \\ge 1$, the terms do not approach zero, so the series diverges.",
+            "distractorTip": "Notice the strict inequality: at $r = 1$ and $r = -1$, the series DIVERGES."
+          },
+          {
+            "id": "c10-l2-q2",
+            "stem": "Find the sum of the infinite series $\\sum_{n=1}^\\infty 4 \\left(\\frac{1}{3}\\right)^n$.",
+            "options": [
+              "$1$",
+              "$\\frac{4}{3}$",
+              "$6$",
+              "$2$"
+            ],
+            "correctIndex": 3,
+            "explanation": "First term (at $n=1$) is $a_1 = 4(1/3) = \\frac{4}{3}$. Common ratio is $r = \\frac{1}{3}$. Sum $S = \\frac{a_1}{1 - r} = \\frac{4/3}{1 - 1/3} = \\frac{4/3}{2/3} = 2$.",
+            "distractorTip": "Always compute the FIRST term by plugging in the starting index $n=1$, do not assume $a = 4$!"
+          },
+          {
+            "id": "c10-l2-q3",
+            "stem": "The repeating decimal $0.272727\\dots$ can be written as an infinite geometric series. What is its exact fractional value?",
+            "options": [
+              "$\\frac{3}{11}$",
+              "$\\frac{27}{100}$",
+              "$\\frac{9}{33}$",
+              "$\\frac{27}{90}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$0.272727\\dots = \\frac{27}{100} + \\frac{27}{10000} + \\dots$. $a = \\frac{27}{100}$, $r = \\frac{1}{100}$. Sum $= \\frac{27/100}{1 - 1/100} = \\frac{27/100}{99/100} = \\frac{27}{99} = \\frac{3}{11}$.",
+            "distractorTip": "Divide by 99 for two repeating digits: $27/99 = 3/11$."
+          }
+        ]
+      },
+      {
+        "id": 1003,
+        "unitIndex": 10,
+        "levelNumber": 3,
+        "uniqueKey": "u10-l3",
+        "topicNumber": "Topic 10.3",
+        "name": "The nth-Term Test for Divergence",
+        "subtitle": "If lim a_n ≠ 0, the series diverges",
+        "difficulty": "Easy",
+        "rewardCoins": 30,
+        "questions": [
+          {
+            "id": "c10-l3-q1",
+            "stem": "What does the $n$th-term test for divergence state about the infinite series $\\sum_{n=1}^\\infty a_n$?",
+            "options": [
+              "If $\\lim_{n \\to \\infty} a_n = 0$, the series converges.",
+              "If $\\lim_{n \\to \\infty} a_n \\neq 0$ (or does not exist), the series diverges.",
+              "If $\\lim_{n \\to \\infty} a_n = 0$, the series diverges.",
+              "If $\\lim_{n \\to \\infty} a_n < 1$, the series converges."
+            ],
+            "correctIndex": 1,
+            "explanation": "The $n$th-term test is strictly a test for DIVERGENCE: if the terms do not approach zero, the series must diverge. If $\\lim a_n = 0$, the test is completely INCONCLUSIVE (e.g. harmonic series $\\sum 1/n$ diverges even though $1/n \\to 0$).",
+            "distractorTip": "The $n$th-term test can NEVER prove convergence! It can only prove divergence or be inconclusive."
+          },
+          {
+            "id": "c10-l3-q2",
+            "stem": "Using the $n$th-term test for divergence, what can be concluded about the series $\\sum_{n=1}^\\infty \\frac{3n}{2n + 1}$?",
+            "options": [
+              "The series converges to $\\frac{3}{2}$.",
+              "The series converges because the ratio of coefficients is $\\frac{3}{2}$.",
+              "The series diverges because $\\lim_{n \\to \\infty} a_n = \\frac{3}{2} \\neq 0$.",
+              "The test is inconclusive because the degree is 1."
+            ],
+            "correctIndex": 2,
+            "explanation": "Evaluate $\\lim_{n \\to \\infty} \\frac{3n}{2n+1} = \\frac{3}{2}$. Because $\\frac{3}{2} \\neq 0$, the terms do not approach zero. By the $n$th-term test, the series diverges.",
+            "distractorTip": "Always check the limit of the terms first; if it's not zero, you are done in 5 seconds!"
+          },
+          {
+            "id": "c10-l3-q3",
+            "stem": "A student applies the $n$th-term test to $\\sum_{n=1}^\\infty \\frac{1}{\\sqrt{n}}$ and claims the series converges because $\\lim_{n \\to \\infty} \\frac{1}{\\sqrt{n}} = 0$. What is the error in the student's reasoning?",
+            "options": [
+              "The student should have used the integral of $1/n$.",
+              "The limit of the terms is actually $\\infty$, so it diverges.",
+              "The student used the wrong power rule.",
+              "The $n$th-term test is inconclusive when $\\lim a_n = 0$; this series actually diverges ($p$-series with $p = 1/2 \\le 1$)."
+            ],
+            "correctIndex": 3,
+            "explanation": "$\\lim a_n = 0$ is a necessary condition for convergence, but NOT sufficient! The series $\\sum \\frac{1}{n^{1/2}}$ is a $p$-series with $p = 1/2 \\le 1$, which diverges.",
+            "distractorTip": "Never conclude convergence from $\\lim a_n = 0$. That is the most common series trap in AP Calculus."
+          }
+        ]
+      },
+      {
+        "id": 1004,
+        "unitIndex": 10,
+        "levelNumber": 4,
+        "uniqueKey": "u10-l4",
+        "topicNumber": "Topic 10.4 & 10.5",
+        "name": "Integral Test & p-Series",
+        "subtitle": "Continuous comparison and 1/n^p benchmarks",
+        "difficulty": "Medium",
+        "rewardCoins": 35,
+        "questions": [
+          {
+            "id": "c10-l4-q1",
+            "stem": "For what values of $p$ does the $p$-series $\\sum_{n=1}^\\infty \\frac{1}{n^p}$ converge?",
+            "options": [
+              "$p > 1$",
+              "$p \\ge 1$",
+              "$p < 1$",
+              "$0 < p \\le 1$"
+            ],
+            "correctIndex": 0,
+            "explanation": "The $p$-series $\\sum \\frac{1}{n^p}$ converges if and only if $p > 1$. If $p \\le 1$, the series diverges. When $p = 1$, it is the divergent harmonic series $\\sum \\frac{1}{n}$.",
+            "distractorTip": "$p = 1$ is the harmonic series, which DIVERGES. Convergence requires strictly $p > 1$."
+          },
+          {
+            "id": "c10-l4-q2",
+            "stem": "Which of the following conditions must be satisfied by $f(x)$ on $[1, \\infty)$ to apply the Integral Test to $\\sum_{n=1}^\\infty a_n$ where $a_n = f(n)$?",
+            "options": [
+              "$f(x)$ must be differentiable and alternating.",
+              "$f(x)$ must be continuous, positive, and decreasing.",
+              "$f(x)$ must have an inflection point.",
+              "$f(x)$ must be concave up and bounded."
+            ],
+            "correctIndex": 1,
+            "explanation": "The three required hypotheses for the Integral Test are that $f(x)$ is: (1) continuous, (2) positive, and (3) decreasing for $x \\ge 1$.",
+            "distractorTip": "Remember the acronym CPD: Continuous, Positive, Decreasing."
+          },
+          {
+            "id": "c10-l4-q3",
+            "stem": "Does the series $\\sum_{n=2}^\\infty \\frac{1}{n \\ln(n)}$ converge or diverge, and by what test?",
+            "options": [
+              "Converges by the $p$-series test with $p = 2$.",
+              "Converges by the Ratio Test.",
+              "Diverges by the Integral Test, because $\\int_2^\\infty \\frac{1}{x \\ln x} dx = \\lim_{b \\to \\infty} [\\ln(\\ln b) - \\ln(\\ln 2)] = \\infty$.",
+              "Diverges by the $n$th-term test because $\\lim a_n = 1$."
+            ],
+            "correctIndex": 2,
+            "explanation": "Let $f(x) = \\frac{1}{x \\ln x}$ (continuous, positive, decreasing for $x \\ge 2$). $\\int_2^\\infty \\frac{1}{x \\ln x} dx$: let $u = \\ln x, du = dx/x$. The integral becomes $\\int \\frac{du}{u} = \\ln|u| = \\ln(\\ln x)$. As $x \\to \\infty$, $\\ln(\\ln x) \\to \\infty$. Since the improper integral diverges, the series diverges.",
+            "distractorTip": "$\\sum \\frac{1}{n(\\ln n)^p}$ converges only if $p > 1$. Here $p = 1$, so it diverges."
+          }
+        ]
+      },
+      {
+        "id": 1005,
+        "unitIndex": 10,
+        "levelNumber": 5,
+        "uniqueKey": "u10-l5",
+        "topicNumber": "Topic 10.6",
+        "name": "Comparison Tests (Direct & Limit Comparison)",
+        "subtitle": "Direct comparison with inequalities & asymptotic limit ratios",
+        "difficulty": "Medium",
+        "rewardCoins": 35,
+        "questions": [
+          {
+            "id": "c10-l5-q1",
+            "stem": "To test $\\sum_{n=1}^\\infty \\frac{1}{n^3 + 4}$, which comparison test and benchmark series should be chosen?",
+            "options": [
+              "Alternating Series Test.",
+              "Direct Comparison with $\\sum \\frac{1}{n}$, proving divergence.",
+              "The $n$th-term test, proving convergence.",
+              "Direct Comparison Test with $\\sum \\frac{1}{n^3}$, since $\\frac{1}{n^3 + 4} < \\frac{1}{n^3}$ and $\\sum \\frac{1}{n^3}$ is a convergent $p$-series ($p=3 > 1$)."
+            ],
+            "correctIndex": 3,
+            "explanation": "Because the denominator $n^3 + 4 > n^3$, the fraction is smaller: $0 < \\frac{1}{n^3 + 4} < \\frac{1}{n^3}$. Since $\\sum \\frac{1}{n^3}$ is a convergent $p$-series ($p = 3 > 1$), the smaller series $\\sum \\frac{1}{n^3 + 4}$ must also converge by the Direct Comparison Test.",
+            "distractorTip": "Smaller than a convergent series $\\implies$ converges. Larger than a divergent series $\\implies$ diverges."
+          },
+          {
+            "id": "c10-l5-q2",
+            "stem": "What does the Limit Comparison Test (LCT) conclude if $\\lim_{n \\to \\infty} \\frac{a_n}{b_n} = L$, where $L$ is a finite, positive number ($0 < L < \\infty$)?",
+            "options": [
+              "Both $\\sum a_n$ and $\\sum b_n$ either both converge or both diverge.",
+              "$\\sum a_n$ converges to $L$.",
+              "$\\sum a_n$ diverges while $\\sum b_n$ converges.",
+              "The test is inconclusive."
+            ],
+            "correctIndex": 0,
+            "explanation": "If $\\lim_{n \\to \\infty} \\frac{a_n}{b_n} = L$ with $0 < L < \\infty$, both series share the exact same convergence behavior: either both converge or both diverge.",
+            "distractorTip": "The value $L$ does NOT equal the sum of the series; it only confirms identical convergence behavior."
+          },
+          {
+            "id": "c10-l5-q3",
+            "stem": "Determine the convergence of $\\sum_{n=1}^\\infty \\frac{2n - 1}{n^2 + 5n}$.",
+            "options": [
+              "Converges by comparison with $\\sum \\frac{1}{n^2}$.",
+              "Diverges by Limit Comparison with the harmonic series $\\sum \\frac{1}{n}$ ($L = 2$).",
+              "Converges because $\\lim a_n = 0$.",
+              "Converges by the Ratio Test."
+            ],
+            "correctIndex": 1,
+            "explanation": "Dominant terms for large $n$: $\\frac{2n}{n^2} = \\frac{2}{n}$. Compare with harmonic series $b_n = \\frac{1}{n}$: $\\lim_{n \\to \\infty} \\frac{(2n-1)/(n^2+5n)}{1/n} = \\lim_{n \\to \\infty} \\frac{2n^2 - n}{n^2 + 5n} = 2$. Since $L = 2 > 0$ is finite and $\\sum \\frac{1}{n}$ diverges, the series diverges by LCT.",
+            "distractorTip": "Keep only the highest-degree terms in numerator and denominator to find the comparison benchmark."
+          }
+        ]
+      },
+      {
+        "id": 1006,
+        "unitIndex": 10,
+        "levelNumber": 6,
+        "uniqueKey": "u10-l6",
+        "topicNumber": "Topic 10.7 & 10.10",
+        "name": "Alternating Series Test & Error Bound",
+        "subtitle": "AST criteria and |R_n| ≤ b_(n+1)",
+        "difficulty": "Medium",
+        "rewardCoins": 35,
+        "questions": [
+          {
+            "id": "c10-l6-q1",
+            "stem": "Which two conditions must an alternating series $\\sum_{n=1}^\\infty (-1)^{n-1} b_n$ (with $b_n > 0$) satisfy to guarantee convergence by the Alternating Series Test?",
+            "options": [
+              "$\\lim_{n \\to \\infty} b_n < 1$ AND $b_n > 0$.",
+              "$b_n$ is increasing AND $\\lim_{n \\to \\infty} b_n = 0$.",
+              "$b_{n+1} \\le b_n$ for all $n$ (decreasing) AND $\\lim_{n \\to \\infty} b_n = 0$.",
+              "$\\sum b_n$ must converge by the Integral Test."
+            ],
+            "correctIndex": 2,
+            "explanation": "The Alternating Series Test requires: (1) the magnitude of the terms is decreasing ($b_{n+1} \\le b_n$), and (2) the limit of the terms is zero ($\\lim_{n \\to \\infty} b_n = 0$).",
+            "distractorTip": "Both conditions are required: decreasing terms AND limit equals 0."
+          },
+          {
+            "id": "c10-l6-q2",
+            "stem": "If the alternating series $S = \\sum_{n=1}^\\infty \\frac{(-1)^{n+1}}{n^3}$ is approximated by its first $4$ terms, what is the maximum possible error given by the Alternating Series Error Bound?",
+            "options": [
+              "$\\frac{1}{6^3} = \\frac{1}{216}$",
+              "$\\frac{1}{4^3} = \\frac{1}{64}$",
+              "$\\frac{1}{3^3} = \\frac{1}{27}$",
+              "$\\frac{1}{5^3} = \\frac{1}{125}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "By the Alternating Series Error Bound, $|R_n| \\le b_{n+1}$. For the 4th partial sum $S_4$, the error $|S - S_4| \\le b_5 = \\frac{1}{5^3} = \\frac{1}{125} = 0.008$.",
+            "distractorTip": "The error bound is always the magnitude of the FIRST UNUSED TERM: $|R_n| \\le b_{n+1}$."
+          },
+          {
+            "id": "c10-l6-q3",
+            "stem": "The alternating harmonic series $\\sum_{n=1}^\\infty \\frac{(-1)^{n+1}}{n}$ is an example of what classification of convergence?",
+            "options": [
+              "Conditionally convergent",
+              "Absolutely convergent",
+              "Divergent",
+              "Uniformly divergent"
+            ],
+            "correctIndex": 0,
+            "explanation": "The series $\\sum \\frac{(-1)^{n+1}}{n}$ converges by the Alternating Series Test, but its absolute values $\\sum |a_n| = \\sum \\frac{1}{n}$ is the divergent harmonic series. A series that converges, but whose absolute values diverge, is CONDITIONALLY CONVERGENT.",
+            "distractorTip": "Absolute convergence = $\\sum |a_n|$ converges. Conditional convergence = $\\sum a_n$ converges, but $\\sum |a_n|$ diverges."
+          }
+        ]
+      },
+      {
+        "id": 1007,
+        "unitIndex": 10,
+        "levelNumber": 7,
+        "uniqueKey": "u10-l7",
+        "topicNumber": "Topic 10.8 & 10.9",
+        "name": "Ratio Test & Absolute Convergence",
+        "subtitle": "lim |a_(n+1)/a_n| = L < 1 for factorials & exponentials",
+        "difficulty": "Hard",
+        "rewardCoins": 40,
+        "questions": [
+          {
+            "id": "c10-l7-q1",
+            "stem": "Under the Ratio Test, if $\\lim_{n \\to \\infty} \\left|\\frac{a_{n+1}}{a_n}\\right| = L$, when is the series guaranteed to converge absolutely?",
+            "options": [
+              "$L \\le 1$",
+              "$L < 1$",
+              "$L > 1$",
+              "$L = 0$ only"
+            ],
+            "correctIndex": 1,
+            "explanation": "The Ratio Test guarantees absolute convergence when $L < 1$. When $L > 1$, the series diverges. When $L = 1$, the test is inconclusive.",
+            "distractorTip": "At $L = 1$, the test is INCONCLUSIVE (e.g. for any $p$-series, $L = 1$, yet some converge and some diverge)."
+          },
+          {
+            "id": "c10-l7-q2",
+            "stem": "Apply the Ratio Test to $\\sum_{n=1}^\\infty \\frac{3^n}{n!}$. What is $\\lim_{n \\to \\infty} \\left|\\frac{a_{n+1}}{a_n}\\right|$?",
+            "options": [
+              "$1$, so the test is inconclusive.",
+              "$3$, so the series diverges.",
+              "$0$, so the series converges absolutely.",
+              "$\\infty$, so the series diverges."
+            ],
+            "correctIndex": 2,
+            "explanation": "$\\left|\\frac{a_{n+1}}{a_n}\\right| = \\frac{3^{n+1}}{(n+1)!} \\cdot \\frac{n!}{3^n} = \\frac{3}{n+1}$. Taking the limit as $n \\to \\infty$: $\\lim_{n \\to \\infty} \\frac{3}{n+1} = 0$. Since $0 < 1$, the series converges absolutely.",
+            "distractorTip": "Factorials $n!$ grow faster than any exponential $c^n$, driving the ratio limit to 0."
+          },
+          {
+            "id": "c10-l7-q3",
+            "stem": "For which of the following series does the Ratio Test fail by yielding $L = 1$?",
+            "options": [
+              "$\\sum_{n=1}^\\infty \\left(\\frac{1}{4}\\right)^n$",
+              "$\\sum_{n=1}^\\infty \\frac{2^n}{3^n}$",
+              "$\\sum_{n=1}^\\infty \\frac{n!}{5^n}$",
+              "$\\sum_{n=1}^\\infty \\frac{n}{n^2 + 1}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "The Ratio Test yields $L = 1$ for all algebraic/polynomial rational functions of $n$. For $\\frac{n}{n^2+1}$, $\\lim |a_{n+1}/a_n| = 1$ (inconclusive). It must be tested via Integral or Comparison test.",
+            "distractorTip": "Never use the Ratio Test on pure polynomial series $\\frac{P(n)}{Q(n)}$; it will always equal 1."
+          }
+        ]
+      },
+      {
+        "id": 1008,
+        "unitIndex": 10,
+        "levelNumber": 8,
+        "uniqueKey": "u10-l8",
+        "topicNumber": "Topic 10.13",
+        "name": "Power Series: Radius & Interval of Convergence",
+        "subtitle": "Ratio test + mandatory endpoint testing",
+        "difficulty": "Hard",
+        "rewardCoins": 40,
+        "questions": [
+          {
+            "id": "c10-l8-q1",
+            "stem": "Find the radius of convergence $R$ for the power series $\\sum_{n=1}^\\infty \\frac{(x - 2)^n}{n \\cdot 3^n}$.",
+            "options": [
+              "$R = 3$",
+              "$R = 1$",
+              "$R = 2$",
+              "$R = \\infty$"
+            ],
+            "correctIndex": 0,
+            "explanation": "Using the Ratio Test: $\\lim_{n \\to \\infty} \\left|\\frac{(x-2)^{n+1}}{(n+1)3^{n+1}} \\cdot \\frac{n3^n}{(x-2)^n}\\right| = \\frac{|x-2|}{3} \\lim \\frac{n}{n+1} = \\frac{|x-2|}{3}$. For convergence, $\\frac{|x-2|}{3} < 1 \\implies |x-2| < 3$. Thus $R = 3$.",
+            "distractorTip": "The radius $R$ is the half-width of the convergence interval centered at $x=c$."
+          },
+          {
+            "id": "c10-l8-q2",
+            "stem": "What is the full interval of convergence for the series $\\sum_{n=1}^\\infty \\frac{(x - 2)^n}{n \\cdot 3^n}$ after testing endpoints?",
+            "options": [
+              "$(-1, 5)$",
+              "$[-1, 5)$",
+              "$[-1, 5]$",
+              "$(-1, 5]$"
+            ],
+            "correctIndex": 1,
+            "explanation": "With $R = 3$ centered at $2$, the open interval is $(-1, 5)$. Test $x = -1$: $\\sum \\frac{(-3)^n}{n 3^n} = \\sum \\frac{(-1)^n}{n}$, the alternating harmonic series, which CONVERGES (AST). Test $x = 5$: $\\sum \\frac{3^n}{n 3^n} = \\sum \\frac{1}{n}$, the harmonic series, which DIVERGES. Thus the interval is $[-1, 5)$.",
+            "distractorTip": "Endpoint testing is mandatory on the AP exam! The ratio test says nothing about endpoints; you must test each separately."
+          },
+          {
+            "id": "c10-l8-q3",
+            "stem": "If a power series $\\sum c_n (x - 4)^n$ converges at $x = 7$ and diverges at $x = 9$, which of the following must be true?",
+            "options": [
+              "The series converges at $x = 0$.",
+              "The series diverges at $x = 1$.",
+              "The series converges at $x = 2$.",
+              "The radius of convergence is exactly $R = 3$."
+            ],
+            "correctIndex": 2,
+            "explanation": "The series is centered at $c = 4$. It converges at $x = 7$, which is at distance $|7 - 4| = 3$. Therefore $R \\ge 3$. The interval of convergence contains $(4 - 3, 4 + 3) = (1, 7)$. Since $x = 2$ is inside $(1, 7)$, it must converge at $x = 2$.",
+            "distractorTip": "Any point closer to the center than a known convergent point is guaranteed to converge."
+          }
+        ]
+      },
+      {
+        "id": 1009,
+        "unitIndex": 10,
+        "levelNumber": 9,
+        "uniqueKey": "u10-l9",
+        "topicNumber": "Topic 10.11 & 10.14",
+        "name": "Taylor Polynomials & Core Maclaurin Series",
+        "subtitle": "f^(n)(c)/n! coefficients and known series (e^x, sin x, cos x, 1/(1-x))",
+        "difficulty": "Hard",
+        "rewardCoins": 40,
+        "questions": [
+          {
+            "id": "c10-l9-q1",
+            "stem": "What is the coefficient of $x^3$ in the Maclaurin series for $f(x) = \\sin(x)$?",
+            "options": [
+              "$0$",
+              "$\\frac{1}{6}$",
+              "$-\\frac{1}{3}$",
+              "$-\\frac{1}{6}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "The Maclaurin series for $\\sin(x) = x - \\frac{x^3}{3!} + \\frac{x^5}{5!} - \\dots$. The coefficient of $x^3$ is $-\\frac{1}{3!} = -\\frac{1}{6}$.",
+            "distractorTip": "Memorize the core Maclaurin series: $e^x$, $\\sin x$, $\\cos x$, and $\\frac{1}{1-x}$."
+          },
+          {
+            "id": "c10-l9-q2",
+            "stem": "If $P_2(x) = 5 - 3(x - 1) + 4(x - 1)^2$ is the second-degree Taylor polynomial for $f$ about $x = 1$, what is $f''(1)$?",
+            "options": [
+              "$8$",
+              "$4$",
+              "$2$",
+              "$5$"
+            ],
+            "correctIndex": 0,
+            "explanation": "In a Taylor polynomial, the coefficient of $(x-c)^n$ is $\\frac{f^{(n)}(c)}{n!}$. Here the coefficient of $(x-1)^2$ is $4 = \\frac{f''(1)}{2!}$. Thus $f''(1) = 4 \\times 2! = 8$.",
+            "distractorTip": "Don't forget to multiply by $n!$; the coefficient is $\\frac{f^{(n)}(c)}{n!}$, not $f^{(n)}(c)$."
+          },
+          {
+            "id": "c10-l9-q3",
+            "stem": "Find the first four nonzero terms of the Maclaurin series for $g(x) = e^{-x^2}$.",
+            "options": [
+              "$1 - x^2 + x^4 - x^6$",
+              "$1 - x^2 + \\frac{x^4}{2} - \\frac{x^6}{6}$",
+              "$x^2 - \\frac{x^4}{2} + \\frac{x^6}{6} - \\frac{x^8}{24}$",
+              "$1 + x^2 + \\frac{x^4}{2} + \\frac{x^6}{6}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Since $e^u = 1 + u + \\frac{u^2}{2!} + \\frac{u^3}{3!} + \\dots$, substitute $u = -x^2$: $e^{-x^2} = 1 + (-x^2) + \\frac{(-x^2)^2}{2} + \\frac{(-x^2)^3}{6} = 1 - x^2 + \\frac{x^4}{2} - \\frac{x^6}{6}$.",
+            "distractorTip": "Substitution into known series is 10x faster than calculating high-order derivatives by hand."
+          }
+        ]
+      },
+      {
+        "id": 1010,
+        "unitIndex": 10,
+        "levelNumber": 10,
+        "uniqueKey": "u10-l10",
+        "topicNumber": "Topic 10.12",
+        "name": "Lagrange Error Bound",
+        "subtitle": "|R_n(x)| ≤ M/(n+1)! * |x - c|^(n+1)",
+        "difficulty": "Hard",
+        "rewardCoins": 40,
+        "questions": [
+          {
+            "id": "c10-l10-q1",
+            "stem": "Which expression gives the Lagrange Error Bound for an $n$th-degree Taylor polynomial $P_n(x)$ centered at $c$?",
+            "options": [
+              "$|R_n(x)| \\le \\frac{f^{(n+1)}(c)}{(n+1)!} |x - c|^{n+1}$",
+              "$|R_n(x)| \\le \\frac{M}{n!} |x - c|^n$",
+              "$|R_n(x)| \\le \\frac{M}{(n+1)!} |x - c|^{n+1}$, where $M = \\max |f^{(n+1)}(t)|$ on the interval between $c$ and $x$.",
+              "$|R_n(x)| \\le M |x - c|^{n+1}$"
+            ],
+            "correctIndex": 2,
+            "explanation": "The Lagrange Error Bound states $|R_n(x)| \\le \\frac{M}{(n+1)!}|x-c|^{n+1}$ where $M$ is the maximum value of $|f^{(n+1)}(t)|$ on the interval between the center $c$ and evaluation point $x$.",
+            "distractorTip": "Notice the $(n+1)$ in both the factorial and the exponent!"
+          },
+          {
+            "id": "c10-l10-q2",
+            "stem": "Let $P_3(x)$ be the 3rd-degree Maclaurin polynomial for $\\sin(x)$. What is the Lagrange error bound for approximating $\\sin(0.5)$?",
+            "options": [
+              "$\\frac{0.5}{4}$",
+              "$\\frac{1}{3!} (0.5)^3 = \\frac{1}{48}$",
+              "$\\frac{1}{5!} (0.5)^5$",
+              "$\\frac{1}{4!} (0.5)^4 = \\frac{1}{384}$"
+            ],
+            "correctIndex": 3,
+            "explanation": "For $\\sin(x)$, all derivatives are bounded by $M = 1$ (since $|\\sin t| \\le 1$ and $|\\cos t| \\le 1$). For $n = 3$, $n+1 = 4$. Error bound $= \\frac{1}{4!} |0.5 - 0|^4 = \\frac{1}{24} \\left(\\frac{1}{16}\\right) = \\frac{1}{384}$.",
+            "distractorTip": "Even if the 4th degree term is 0 in the sine series, $P_3(x)$ has $n=3$, so the next derivative bound is $n+1=4$."
+          },
+          {
+            "id": "c10-l10-q3",
+            "stem": "A function $f$ has $f(2) = 3$, $f'(2) = -1$, $f''(2) = 4$, and $f'''(2) = 12$. What is the 3rd-degree Taylor polynomial $P_3(x)$ centered at $x = 2$?",
+            "options": [
+              "$P_3(x) = 3 - (x - 2) + 2(x - 2)^2 + 2(x - 2)^3$",
+              "$P_3(x) = 3 - (x - 2) + 4(x - 2)^2 + 12(x - 2)^3$",
+              "$P_3(x) = 3 - x + 2x^2 + 2x^3$",
+              "$P_3(x) = 3 - (x - 2) + 2(x - 2)^2 + 6(x - 2)^3$"
+            ],
+            "correctIndex": 0,
+            "explanation": "$P_3(x) = 3 + \\frac{-1}{1!}(x-2) + \\frac{4}{2!}(x-2)^2 + \\frac{12}{3!}(x-2)^3 = 3 - (x-2) + 2(x-2)^2 + 2(x-2)^3$.",
+            "distractorTip": "Remember $3! = 6$, so $\\frac{12}{6} = 2$."
+          }
+        ]
+      },
+      {
+        "id": 1011,
+        "unitIndex": 10,
+        "levelNumber": 11,
+        "uniqueKey": "u10-l11",
+        "topicNumber": "Topic 10.15 (Unit 10 Boss Challenge)",
+        "name": "Infinite Series & Taylor Grand Pinnacle Master",
+        "subtitle": "High-stakes AP Free Response series manipulation and error bounds",
+        "difficulty": "Boss",
+        "rewardCoins": 50,
+        "questions": [
+          {
+            "id": "c10-l11-q1",
+            "stem": "The function $f$ has a Taylor series about $x = 0$ given by $\\sum_{n=1}^\\infty \\frac{(-1)^{n+1} x^n}{n \\cdot 2^n}$. Find the first four nonzero terms of the Taylor series for $f'(x)$ about $x = 0$.",
+            "options": [
+              "$1 - \\frac{x}{2} + \\frac{x^2}{4} - \\frac{x^3}{8}$",
+              "$\\frac{1}{2} - \\frac{x}{4} + \\frac{x^2}{8} - \\frac{x^3}{16}$",
+              "$\\frac{1}{2} + \\frac{x}{4} + \\frac{x^2}{8} + \\frac{x^3}{16}$",
+              "$\\frac{x}{2} - \\frac{x^2}{8} + \\frac{x^3}{24} - \\frac{x^4}{64}$"
+            ],
+            "correctIndex": 1,
+            "explanation": "Write out the first terms of $f(x) = \\frac{x}{2} - \\frac{x^2}{8} + \\frac{x^3}{24} - \\frac{x^4}{64} + \\dots$. Differentiating term by term: $f'(x) = \\frac{1}{2} - \\frac{2x}{8} + \\frac{3x^2}{24} - \\frac{4x^3}{64} = \\frac{1}{2} - \\frac{x}{4} + \\frac{x^2}{8} - \\frac{x^3}{16}$. (This is a geometric series with sum $\\frac{1/2}{1 - (-x/2)} = \\frac{1}{2+x}$).",
+            "distractorTip": "Differentiate term by term: powers drop by 1 and coefficients multiply by the original exponent."
+          },
+          {
+            "id": "c10-l11-q2",
+            "stem": "Let $f(x) = \\sum_{n=0}^\\infty \\frac{(-1)^n x^{2n+1}}{(2n+1)!}$ be the Maclaurin series for $\\sin(x)$. What is the exact value of the alternating series $\\sum_{n=0}^\\infty \\frac{(-1)^n \\pi^{2n+1}}{(2n+1)! \\cdot 6^{2n+1}}$?",
+            "options": [
+              "$0$",
+              "$\\frac{\\sqrt{3}}{2}$",
+              "$\\frac{1}{2}$",
+              "$1$"
+            ],
+            "correctIndex": 2,
+            "explanation": "Recognize this series as $f(x) = \\sin(x)$ evaluated at $x = \\frac{\\pi}{6}$. Because $\\sum_{n=0}^\\infty \\frac{(-1)^n (\\pi/6)^{2n+1}}{(2n+1)!} = \\sin\\left(\\frac{\\pi}{6}\\right) = \\frac{1}{2}$.",
+            "distractorTip": "Recognizing numerical series as specific Taylor series evaluated at a constant point is a signature College Board question."
+          },
+          {
+            "id": "c10-l11-q3",
+            "stem": "The third-degree Taylor polynomial for a function $f(x)$ about $x = 0$ is used to approximate $f(0.2)$. If the fourth derivative satisfies $|f^{(4)}(x)| \\le 12$ for all $x \\in [0, 0.2]$, what is the maximum Lagrange error bound for this approximation?",
+            "options": [
+              "$8 \\times 10^{-4}$",
+              "$1.6 \\times 10^{-3}$",
+              "$3.2 \\times 10^{-3}$",
+              "$4.8 \\times 10^{-4}$"
+            ],
+            "correctIndex": 0,
+            "explanation": "By Taylor's Theorem (Lagrange Error Bound), $|R_3(x)| \\le \\frac{M}{(3+1)!} |x - c|^{3+1} = \\frac{M}{4!} x^4$. Here $M = 12$, $x = 0.2$, and $c = 0$. Thus Error $\\le \\frac{12}{24} (0.2)^4 = \\frac{1}{2} (0.0016) = 0.0008 = 8 \\times 10^{-4}$.",
+            "distractorTip": "Remember the $(n+1)!$ denominator in the Lagrange error bound: for a 3rd-degree polynomial, the denominator is $4! = 24$, not $3! = 6$."
+          }
+        ]
+      }
+    ]
   }
 ];

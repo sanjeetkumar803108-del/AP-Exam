@@ -135,6 +135,25 @@ export const TOP_10_AP_SUBJECTS: APSubject[] = [
     ]
   },
   {
+    id: 'ap-statistics',
+    name: 'AP Statistics',
+    shortCode: 'STATS',
+    badge: 'Updated Fall 2026',
+    category: 'STEM & Math',
+    icon: '📊',
+    accentColor: '#0EA5E9',
+    gradient: 'from-cyan-600 via-teal-600 to-sky-800',
+    description: 'Official 5-Unit Redesigned Framework: Exploring One-Variable Data & Collection, Probability, Inferences for Proportions & Means, and Regression (Units 1–5)',
+    gradeLevels: ['10th', '11th', '12th'],
+    units: [
+      { id: 'u1', title: 'Unit 1: Exploring One-Variable Data and Collecting Data', description: 'Categorical & quantitative displays, summary statistics (mean/median/IQR/SD), 1.5*IQR outlier rule, sampling methods, and experimental design' },
+      { id: 'u2', title: 'Unit 2: Probability, Random Variables, and Probability Distributions', description: 'Two-way tables, probability axioms, conditional probability, discrete random variables, binomial models, normal distributions, and CLT' },
+      { id: 'u3', title: 'Unit 3: Inference for Categorical Data: Proportions', description: 'One-sample & two-sample z-intervals and z-tests for proportions, Type I/II errors, power, and Chi-Square tests of homogeneity & independence' },
+      { id: 'u4', title: 'Unit 4: Inference for Quantitative Data: Means', description: 'Student’s t-distributions, one-sample & two-sample t-intervals and t-tests, and matched pairs mean difference' },
+      { id: 'u5', title: 'Unit 5: Regression Analysis', description: 'Bivariate quantitative data, scatterplots, correlation r, least-squares regression lines, residuals, and coefficient of determination r²' }
+    ]
+  },
+  {
     id: 'ap-biology',
     name: 'AP Biology',
     shortCode: 'BIO',
@@ -288,23 +307,43 @@ export const TOP_10_AP_SUBJECTS: APSubject[] = [
     ]
   },
   {
-    id: 'ap-economics',
-    name: 'AP Micro & Macroeconomics',
-    shortCode: 'ECON',
-    badge: 'High Yield',
+    id: 'ap-microeconomics',
+    name: 'AP Microeconomics',
+    shortCode: 'MICRO',
+    badge: 'Market Theory',
     category: 'Humanities & Social Sciences',
-    icon: '📈',
+    icon: '📊',
     accentColor: '#14B8A6',
     gradient: 'from-teal-600 via-emerald-600 to-teal-800',
-    description: 'Market Equilibrium, Consumer Theory, GDP, Inflation & Monetary Policy',
+    description: 'Basic Economic Concepts, Supply & Demand, Elasticity, Production Costs, Perfect Competition, Monopolies, Factor Markets & Market Failure (Units 1–6)',
     gradeLevels: ['11th', '12th'],
     units: [
-      { id: 'u1', title: 'Micro 1: Supply, Demand & Elasticity', description: 'Price elasticity, consumer/producer surplus, deadweight loss, and taxes' },
-      { id: 'u2', title: 'Micro 2: Production Costs & Perfect Competition', description: 'Marginal cost/revenue curves, short-run vs long-run profit maximization' },
-      { id: 'u3', title: 'Micro 3: Imperfect Competition & Game Theory', description: 'Monopolies, price discrimination, oligopolies, and payoff matrices' },
-      { id: 'u4', title: 'Macro 1: Economic Indicators (GDP & Inflation)', description: 'Real vs nominal GDP, CPI calculation, unemployment types, and business cycles' },
-      { id: 'u5', title: 'Macro 2: AD-AS Model & Fiscal Policy', description: 'Aggregate demand, short-run/long-run AS, spending multiplier, and taxes' },
-      { id: 'u6', title: 'Macro 3: Financial Sector & Monetary Policy', description: 'Money market, bank balance sheets, reserve ratio, and Fed interest rate tools' }
+      { id: 'u1', title: 'Unit 1: Basic Economic Concepts', description: 'Scarcity, opportunity cost, PPC, and comparative advantage' },
+      { id: 'u2', title: 'Unit 2: Supply and Demand', description: 'Market equilibrium, price elasticity (PED), consumer/producer surplus, and price controls' },
+      { id: 'u3', title: 'Unit 3: Production, Cost & Perfect Competition', description: 'Short-run vs long-run cost curves (MC, ATC, AVC), profit maximization (MR=MC), and shutdown rule' },
+      { id: 'u4', title: 'Unit 4: Imperfect Competition', description: 'Monopoly pricing, price discrimination, oligopolies, and game theory payoff matrices' },
+      { id: 'u5', title: 'Unit 5: Factor Markets', description: 'Derived demand for labor, marginal revenue product (MRP), marginal factor cost (MFC), and monopsony' },
+      { id: 'u6', title: 'Unit 6: Market Failure & Role of Government', description: 'Positive/negative externalities, Pigouvian taxes/subsidies, public goods, and Lorenz income distribution' }
+    ]
+  },
+  {
+    id: 'ap-macroeconomics',
+    name: 'AP Macroeconomics',
+    shortCode: 'MACRO',
+    badge: 'Fiscal Policy',
+    category: 'Humanities & Social Sciences',
+    icon: '📈',
+    accentColor: '#0D9488',
+    gradient: 'from-emerald-700 via-teal-700 to-cyan-800',
+    description: 'Economic Indicators (GDP, CPI, Unemployment), AD-AS Model, Fiscal Policy Multipliers, Banking System, Phillips Curve & FOREX (Units 1–6)',
+    gradeLevels: ['11th', '12th'],
+    units: [
+      { id: 'u1', title: 'Unit 1: Basic Economic Concepts', description: 'Scarcity, opportunity costs, PPC model, and specialization through trade' },
+      { id: 'u2', title: 'Unit 2: Economic Indicators & Business Cycle', description: 'Circular flow, nominal vs real GDP, GDP deflator, CPI inflation, and unemployment types' },
+      { id: 'u3', title: 'Unit 3: National Income & Price Determination', description: 'Aggregate Demand, SRAS/LRAS, Keynesian spending/tax multipliers, and fiscal policy' },
+      { id: 'u4', title: 'Unit 4: Financial Sector', description: 'Money market, interest rates, commercial bank balance sheets, and central bank monetary tools' },
+      { id: 'u5', title: 'Unit 5: Long-Run Consequences of Stabilization', description: 'Fiscal/monetary interactions, Phillips Curve trade-off, crowding out, and loanable funds market' },
+      { id: 'u6', title: 'Unit 6: Open Economy—International Trade & Finance', description: 'Balance of payments, current vs financial accounts, and foreign exchange (FOREX) market' }
     ]
   },
   {

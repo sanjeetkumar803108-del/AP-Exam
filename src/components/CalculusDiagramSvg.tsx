@@ -913,33 +913,50 @@ export function renderCalculusDiagramSvg(type: string): React.ReactNode {
     // =========================================================================
     case 'regions_diagram':
       return (
-        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+        <svg viewBox="0 0 320 185" className="w-full h-auto bg-white rounded-xl border border-zinc-200 shadow-xs">
           {/* Formal Region */}
-          <rect x="15" y="25" width="80" height="95" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2" />
-          <text x="55" y="40" fontSize="8" fontWeight="black" textAnchor="middle" fill="#1d4ed8">1. FORMAL</text>
-          <text x="55" y="52" fontSize="6.5" fontWeight="bold" textAnchor="middle" fill="#3b82f6">(Uniform)</text>
-          <circle cx="35" cy="70" r="3" fill="#3b82f6" />
-          <circle cx="55" cy="70" r="3" fill="#3b82f6" />
-          <circle cx="75" cy="70" r="3" fill="#3b82f6" />
-          <circle cx="45" cy="85" r="3" fill="#3b82f6" />
-          <circle cx="65" cy="85" r="3" fill="#3b82f6" />
-          <text x="55" y="105" fontSize="6" textAnchor="middle" fill="#475569">Shared homogeneous trait (e.g. State law, Corn Belt)</text>
+          <rect x="12" y="14" width="92" height="122" rx="8" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+          <text x="58" y="32" fontSize="8" fontWeight="black" textAnchor="middle" fill="#1d4ed8">1. FORMAL</text>
+          <text x="58" y="44" fontSize="6" fontWeight="bold" textAnchor="middle" fill="#3b82f6">(Uniform)</text>
+          
+          <circle cx="38" cy="62" r="3" fill="#3b82f6" />
+          <circle cx="58" cy="62" r="3" fill="#3b82f6" />
+          <circle cx="78" cy="62" r="3" fill="#3b82f6" />
+          <circle cx="48" cy="74" r="3" fill="#3b82f6" />
+          <circle cx="68" cy="74" r="3" fill="#3b82f6" />
+          
+          <text x="58" y="94" fontSize="6" fontWeight="bold" textAnchor="middle" fill="#1e3a8a">Shared Trait</text>
+          <text x="58" y="106" fontSize="5" textAnchor="middle" fill="#475569">Uniform across area</text>
+          <text x="58" y="117" fontSize="5" textAnchor="middle" fill="#64748b">e.g. State laws, Corn Belt</text>
+
           {/* Functional Region */}
-          <rect x="110" y="25" width="80" height="95" rx="6" fill="#fefce8" stroke="#eab308" strokeWidth="2" />
-          <text x="150" y="40" fontSize="8" fontWeight="black" textAnchor="middle" fill="#a16207">2. FUNCTIONAL</text>
-          <text x="150" y="52" fontSize="6.5" fontWeight="bold" textAnchor="middle" fill="#ca8a04">(Nodal)</text>
-          <circle cx="150" cy="75" r="5" fill="#ca8a04" />
-          <circle cx="150" cy="75" r="14" fill="none" stroke="#eab308" strokeWidth="1" strokeDasharray="3 2" />
-          <circle cx="150" cy="75" r="22" fill="none" stroke="#eab308" strokeWidth="1" strokeDasharray="3 2" />
-          <text x="150" y="105" fontSize="6" textAnchor="middle" fill="#475569">Focal node with distance decay (e.g. TV signal, Pizza delivery)</text>
+          <rect x="114" y="14" width="92" height="122" rx="8" fill="#fefce8" stroke="#eab308" strokeWidth="1.5" />
+          <text x="160" y="32" fontSize="8" fontWeight="black" textAnchor="middle" fill="#a16207">2. FUNCTIONAL</text>
+          <text x="160" y="44" fontSize="6" fontWeight="bold" textAnchor="middle" fill="#ca8a04">(Nodal)</text>
+          
+          <circle cx="160" cy="66" r="4.5" fill="#ca8a04" />
+          <circle cx="160" cy="66" r="12" fill="none" stroke="#eab308" strokeWidth="1" strokeDasharray="3 2" />
+          <circle cx="160" cy="66" r="19" fill="none" stroke="#eab308" strokeWidth="1" strokeDasharray="3 2" />
+          
+          <text x="160" y="94" fontSize="6" fontWeight="bold" textAnchor="middle" fill="#854d0e">Central Node</text>
+          <text x="160" y="106" fontSize="5" textAnchor="middle" fill="#475569">Distance decay flows</text>
+          <text x="160" y="117" fontSize="5" textAnchor="middle" fill="#64748b">e.g. TV signal, Pizza shop</text>
+
           {/* Vernacular Region */}
-          <rect x="205" y="25" width="80" height="95" rx="6" fill="#fdf2f8" stroke="#ec4899" strokeWidth="2" strokeDasharray="4 3" />
-          <text x="245" y="40" fontSize="8" fontWeight="black" textAnchor="middle" fill="#be185d">3. VERNACULAR</text>
-          <text x="245" y="52" fontSize="6.5" fontWeight="bold" textAnchor="middle" fill="#db2777">(Perceptual)</text>
-          <path d="M 220 70 Q 245 60 270 75 Q 260 90 230 85 Z" fill="#fbcfe8" opacity="0.6" stroke="#db2777" strokeWidth="1" strokeDasharray="2 2" />
-          <text x="245" y="78" fontSize="6.5" fontWeight="bold" textAnchor="middle" fill="#9d174d">"The South"</text>
-          <text x="245" y="105" fontSize="6" textAnchor="middle" fill="#475569">Defined by cultural mental map & identity</text>
-          <text x="150" y="145" fontSize="8.5" fontWeight="black" textAnchor="middle" fill="#0f172a">Three Core Geographical Region Types Recognized by College Board</text>
+          <rect x="216" y="14" width="92" height="122" rx="8" fill="#fdf2f8" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="4 3" />
+          <text x="262" y="32" fontSize="8" fontWeight="black" textAnchor="middle" fill="#be185d">3. VERNACULAR</text>
+          <text x="262" y="44" fontSize="6" fontWeight="bold" textAnchor="middle" fill="#db2777">(Perceptual)</text>
+          
+          <path d="M 238 64 Q 262 55 284 66 Q 274 78 248 74 Z" fill="#fbcfe8" opacity="0.6" stroke="#db2777" strokeWidth="1" strokeDasharray="2 2" />
+          <text x="262" y="70" fontSize="6" fontWeight="bold" textAnchor="middle" fill="#9d174d">"The South"</text>
+          
+          <text x="262" y="94" fontSize="6" fontWeight="bold" textAnchor="middle" fill="#831843">Mental Map</text>
+          <text x="262" y="106" fontSize="5" textAnchor="middle" fill="#475569">Fuzzy, informal borders</text>
+          <text x="262" y="117" fontSize="5" textAnchor="middle" fill="#64748b">e.g. Cultural identity</text>
+
+          {/* Bottom Title & Subtitle */}
+          <text x="160" y="154" fontSize="7.5" fontWeight="black" textAnchor="middle" fill="#0f172a">Three Core Geographical Region Types (College Board CED)</text>
+          <text x="160" y="167" fontSize="5.5" textAnchor="middle" fill="#64748b">Formal (Uniform) | Functional (Nodal &amp; Decay) | Vernacular (Perceived)</text>
         </svg>
       );
 
@@ -1051,109 +1068,118 @@ export function renderCalculusDiagramSvg(type: string): React.ReactNode {
 
     case 'von_thunen_rings':
       return (
-        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
-          {/* Concentric rings centered at (100, 80) */}
-          <circle cx="100" cy="80" r="65" fill="#fef3c7" stroke="#d97706" strokeWidth="1.5" />
-          <circle cx="100" cy="80" r="50" fill="#fed7aa" stroke="#ea580c" strokeWidth="1.5" />
-          <circle cx="100" cy="80" r="35" fill="#bbf7d0" stroke="#16a34a" strokeWidth="1.5" />
-          <circle cx="100" cy="80" r="20" fill="#fbcfe8" stroke="#db2777" strokeWidth="1.5" />
-          <circle cx="100" cy="80" r="7" fill="#0f172a" />
-          <text x="100" y="83" fontSize="5" fontWeight="black" textAnchor="middle" fill="#FAF9F6">CBD</text>
-          {/* Legend and explanation */}
-          <g transform="translate(180, 15)">
+        <svg viewBox="0 0 320 185" className="w-full h-auto bg-white rounded-xl border border-zinc-200 shadow-xs">
+          {/* Concentric rings centered at (90, 72) */}
+          <circle cx="90" cy="72" r="54" fill="#fef3c7" stroke="#d97706" strokeWidth="1.2" />
+          <circle cx="90" cy="72" r="41" fill="#fed7aa" stroke="#ea580c" strokeWidth="1.2" />
+          <circle cx="90" cy="72" r="28" fill="#bbf7d0" stroke="#16a34a" strokeWidth="1.2" />
+          <circle cx="90" cy="72" r="16" fill="#fbcfe8" stroke="#db2777" strokeWidth="1.2" />
+          <circle cx="90" cy="72" r="6" fill="#0f172a" />
+          <text x="90" y="74.5" fontSize="4.5" fontWeight="black" textAnchor="middle" fill="#FAF9F6">CBD</text>
+          
+          {/* Legend and explanation on right */}
+          <g transform="translate(162, 14)">
             <circle cx="5" cy="10" r="4" fill="#0f172a" />
             <text x="15" y="13" fontSize="6.5" fontWeight="bold" fill="#0f172a">0. Central City / Market</text>
-            <circle cx="5" cy="25" r="4" fill="#fbcfe8" stroke="#db2777" />
-            <text x="15" y="28" fontSize="6.5" fontWeight="bold" fill="#db2777">1. Market Gardening & Dairy</text>
-            <text x="25" y="36" fontSize="5.5" fill="#64748b">Perishable, high land rent</text>
-            <circle cx="5" cy="48" r="4" fill="#bbf7d0" stroke="#16a34a" />
-            <text x="15" y="51" fontSize="6.5" fontWeight="bold" fill="#16a34a">2. Forestry & Fuel Wood</text>
-            <text x="25" y="59" fontSize="5.5" fill="#64748b">Heavy, high transport cost</text>
-            <circle cx="5" cy="71" r="4" fill="#fed7aa" stroke="#ea580c" />
-            <text x="15" y="74" fontSize="6.5" fontWeight="bold" fill="#ea580c">3. Grains & Field Crops</text>
-            <text x="25" y="82" fontSize="5.5" fill="#64748b">Extensive, durable goods</text>
-            <circle cx="5" cy="94" r="4" fill="#fef3c7" stroke="#d97706" />
-            <text x="15" y="97" fontSize="6.5" fontWeight="bold" fill="#d97706">4. Ranching & Livestock</text>
-            <text x="25" y="105" fontSize="5.5" fill="#64748b">Animals walk to market</text>
+            
+            <circle cx="5" cy="27" r="4" fill="#fbcfe8" stroke="#db2777" strokeWidth="1" />
+            <text x="15" y="30" fontSize="6.5" fontWeight="bold" fill="#db2777">1. Market Gardening &amp; Dairy</text>
+            <text x="25" y="38" fontSize="5" fill="#64748b">Perishable, intensive land use</text>
+            
+            <circle cx="5" cy="51" r="4" fill="#bbf7d0" stroke="#16a34a" strokeWidth="1" />
+            <text x="15" y="54" fontSize="6.5" fontWeight="bold" fill="#16a34a">2. Forestry &amp; Fuel Wood</text>
+            <text x="25" y="62" fontSize="5" fill="#64748b">Heavy, high transport cost</text>
+            
+            <circle cx="5" cy="75" r="4" fill="#fed7aa" stroke="#ea580c" strokeWidth="1" />
+            <text x="15" y="78" fontSize="6.5" fontWeight="bold" fill="#ea580c">3. Grains &amp; Field Crops</text>
+            <text x="25" y="86" fontSize="5" fill="#64748b">Extensive, durable goods</text>
+            
+            <circle cx="5" cy="99" r="4" fill="#fef3c7" stroke="#d97706" strokeWidth="1" />
+            <text x="15" y="102" fontSize="6.5" fontWeight="bold" fill="#d97706">4. Ranching &amp; Livestock</text>
+            <text x="25" y="110" fontSize="5" fill="#64748b">Animals walk to market</text>
           </g>
-          <text x="150" y="152" fontSize="8" fontWeight="black" textAnchor="middle" fill="#0f172a">Von Thünen Model: Intensive perishable farming closest; extensive ranching farthest</text>
+          
+          {/* Bottom Title: Clean, well-spaced, fits within 320 viewBox */}
+          <text x="160" y="152" fontSize="7.5" fontWeight="black" textAnchor="middle" fill="#0f172a">Von Thünen Agricultural Land-Use Model</text>
+          <text x="160" y="166" fontSize="5.5" textAnchor="middle" fill="#475569">Intensive farming closest to market; extensive ranching farthest</text>
         </svg>
       );
 
     case 'urban_models_diagram':
       return (
-        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+        <svg viewBox="0 0 320 170" className="w-full h-auto bg-white rounded-xl border border-zinc-200 shadow-xs">
           {/* 1. Burgess Concentric Zone */}
-          <g transform="translate(10, 15)">
-            <text x="40" y="12" fontSize="7" fontWeight="black" textAnchor="middle" fill="#1e3a8a">1. Burgess (1925)</text>
-            <text x="40" y="22" fontSize="6" textAnchor="middle" fill="#64748b">Concentric Zones</text>
-            <circle cx="40" cy="65" r="38" fill="#e0e7ff" stroke="#4f46e5" strokeWidth="1" />
-            <circle cx="40" cy="65" r="28" fill="#c7d2fe" stroke="#4f46e5" strokeWidth="1" />
-            <circle cx="40" cy="65" r="18" fill="#a5b4fc" stroke="#4f46e5" strokeWidth="1" />
-            <circle cx="40" cy="65" r="8" fill="#4338ca" />
-            <text x="40" y="67" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#FAF9F6">CBD</text>
-            <text x="40" y="115" fontSize="5.5" textAnchor="middle" fill="#475569">Ripples outward from CBD</text>
+          <g transform="translate(15, 14)">
+            <text x="40" y="10" fontSize="7" fontWeight="black" textAnchor="middle" fill="#1e3a8a">1. Burgess (1925)</text>
+            <text x="40" y="19" fontSize="5.5" textAnchor="middle" fill="#64748b">Concentric Zones</text>
+            <circle cx="40" cy="58" r="34" fill="#e0e7ff" stroke="#4f46e5" strokeWidth="1" />
+            <circle cx="40" cy="58" r="25" fill="#c7d2fe" stroke="#4f46e5" strokeWidth="1" />
+            <circle cx="40" cy="58" r="16" fill="#a5b4fc" stroke="#4f46e5" strokeWidth="1" />
+            <circle cx="40" cy="58" r="7" fill="#4338ca" />
+            <text x="40" y="60" fontSize="4.5" fontWeight="bold" textAnchor="middle" fill="#FAF9F6">CBD</text>
+            <text x="40" y="104" fontSize="5" textAnchor="middle" fill="#475569">Ripples outward from CBD</text>
           </g>
           {/* 2. Hoyt Sector Model */}
-          <g transform="translate(105, 15)">
-            <text x="45" y="12" fontSize="7" fontWeight="black" textAnchor="middle" fill="#065f46">2. Hoyt (1939)</text>
-            <text x="45" y="22" fontSize="6" textAnchor="middle" fill="#64748b">Sector / Wedges</text>
-            <circle cx="45" cy="65" r="38" fill="#d1fae5" stroke="#059669" strokeWidth="1" />
+          <g transform="translate(115, 14)">
+            <text x="45" y="10" fontSize="7" fontWeight="black" textAnchor="middle" fill="#065f46">2. Hoyt (1939)</text>
+            <text x="45" y="19" fontSize="5.5" textAnchor="middle" fill="#64748b">Sector / Wedges</text>
+            <circle cx="45" cy="58" r="34" fill="#d1fae5" stroke="#059669" strokeWidth="1" />
             {/* Sector wedges */}
-            <path d="M 45 65 L 75 40 A 38 38 0 0 1 83 65 Z" fill="#34d399" opacity="0.8" />
-            <path d="M 45 65 L 15 85 A 38 38 0 0 1 20 50 Z" fill="#6ee7b7" opacity="0.8" />
-            <circle cx="45" cy="65" r="8" fill="#047857" />
-            <text x="45" y="67" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#FAF9F6">CBD</text>
-            <text x="45" y="115" fontSize="5.5" textAnchor="middle" fill="#475569">Spreads along rail/transit</text>
+            <path d="M 45 58 L 72 35 A 34 34 0 0 1 79 58 Z" fill="#34d399" opacity="0.8" />
+            <path d="M 45 58 L 18 76 A 34 34 0 0 1 22 45 Z" fill="#6ee7b7" opacity="0.8" />
+            <circle cx="45" cy="58" r="7" fill="#047857" />
+            <text x="45" y="60" fontSize="4.5" fontWeight="bold" textAnchor="middle" fill="#FAF9F6">CBD</text>
+            <text x="45" y="104" fontSize="5" textAnchor="middle" fill="#475569">Spreads along rail corridors</text>
           </g>
           {/* 3. Harris-Ullman Multiple Nuclei */}
-          <g transform="translate(205, 15)">
-            <text x="40" y="12" fontSize="7" fontWeight="black" textAnchor="middle" fill="#854d0e">3. Harris-Ullman (1945)</text>
-            <text x="40" y="22" fontSize="6" textAnchor="middle" fill="#64748b">Multiple Nuclei</text>
-            <rect x="5" y="28" width="75" height="75" rx="4" fill="#fef9c3" stroke="#ca8a04" strokeWidth="1" />
-            <rect x="25" y="45" width="18" height="18" rx="2" fill="#ca8a04" />
-            <text x="34" y="56" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#FAF9F6">CBD</text>
-            <rect x="52" y="35" width="16" height="14" rx="2" fill="#eab308" />
-            <text x="60" y="44" fontSize="4.5" textAnchor="middle" fill="#713f12">Wholesale</text>
-            <rect x="48" y="65" width="18" height="16" rx="2" fill="#facc15" />
-            <text x="57" y="75" fontSize="4.5" textAnchor="middle" fill="#713f12">Sub Center</text>
-            <circle cx="18" cy="80" r="8" fill="#fbbf24" />
-            <text x="18" y="82" fontSize="4" textAnchor="middle" fill="#713f12">Airport</text>
-            <text x="42" y="115" fontSize="5.5" textAnchor="middle" fill="#475569">Multiple specialized nodes</text>
+          <g transform="translate(220, 14)">
+            <text x="40" y="10" fontSize="7" fontWeight="black" textAnchor="middle" fill="#854d0e">3. Harris-Ullman (1945)</text>
+            <text x="40" y="19" fontSize="5.5" textAnchor="middle" fill="#64748b">Multiple Nuclei</text>
+            <rect x="5" y="24" width="70" height="68" rx="4" fill="#fef9c3" stroke="#ca8a04" strokeWidth="1" />
+            <rect x="22" y="38" width="16" height="16" rx="2" fill="#ca8a04" />
+            <text x="30" y="48" fontSize="4.5" fontWeight="bold" textAnchor="middle" fill="#FAF9F6">CBD</text>
+            <rect x="46" y="30" width="15" height="12" rx="2" fill="#eab308" />
+            <text x="53.5" y="38" fontSize="4" textAnchor="middle" fill="#713f12">Wholesale</text>
+            <rect x="42" y="56" width="16" height="14" rx="2" fill="#facc15" />
+            <text x="50" y="65" fontSize="4" textAnchor="middle" fill="#713f12">Sub-center</text>
+            <circle cx="16" cy="70" r="7" fill="#fbbf24" />
+            <text x="16" y="72" fontSize="3.8" textAnchor="middle" fill="#713f12">Airport</text>
+            <text x="40" y="104" fontSize="5" textAnchor="middle" fill="#475569">Multiple decentralized nodes</text>
           </g>
-          <text x="150" y="148" fontSize="8" fontWeight="black" textAnchor="middle" fill="#0f172a">Classic North American Urban Morphology Models Tested on AP FRQs</text>
+          <text x="160" y="144" fontSize="7.5" fontWeight="black" textAnchor="middle" fill="#0f172a">Classic North American Urban Morphology Models</text>
+          <text x="160" y="156" fontSize="5.5" textAnchor="middle" fill="#64748b">Burgess Concentric, Hoyt Sector, &amp; Harris-Ullman Multiple Nuclei</text>
         </svg>
       );
 
     case 'weber_triangle':
       return (
-        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+        <svg viewBox="0 0 320 170" className="w-full h-auto bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="160" y="16" fontSize="7.5" fontWeight="black" textAnchor="middle" fill="#0f172a">Weber's Least Cost Theory: Raw Materials vs. Market Weight Pull</text>
           {/* Triangle vertices */}
           {/* Raw Material 1 */}
-          <circle cx="70" cy="40" r="14" fill="#ef4444" opacity="0.8" />
-          <text x="70" y="43" fontSize="7" fontWeight="black" textAnchor="middle" fill="#FAF9F6">RM 1</text>
+          <circle cx="75" cy="46" r="14" fill="#ef4444" opacity="0.85" />
+          <text x="75" y="49" fontSize="6.5" fontWeight="black" textAnchor="middle" fill="#FAF9F6">RM 1</text>
           {/* Raw Material 2 */}
-          <circle cx="70" cy="115" r="14" fill="#ef4444" opacity="0.8" />
-          <text x="70" y="118" fontSize="7" fontWeight="black" textAnchor="middle" fill="#FAF9F6">RM 2</text>
+          <circle cx="75" cy="118" r="14" fill="#ef4444" opacity="0.85" />
+          <text x="75" y="121" fontSize="6.5" fontWeight="black" textAnchor="middle" fill="#FAF9F6">RM 2</text>
           {/* Market */}
-          <circle cx="230" cy="78" r="16" fill="#3b82f6" opacity="0.8" />
-          <text x="230" y="81" fontSize="7.5" fontWeight="black" textAnchor="middle" fill="#FAF9F6">Market</text>
+          <circle cx="245" cy="82" r="16" fill="#3b82f6" opacity="0.85" />
+          <text x="245" y="85" fontSize="7" fontWeight="black" textAnchor="middle" fill="#FAF9F6">Market</text>
           {/* Triangle lines */}
-          <line x1="70" y1="40" x2="70" y2="115" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="4 3" />
-          <line x1="70" y1="40" x2="230" y2="78" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="4 3" />
-          <line x1="70" y1="115" x2="230" y2="78" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="4 3" />
+          <line x1="75" y1="46" x2="75" y2="118" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="4 3" />
+          <line x1="75" y1="46" x2="245" y2="82" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="4 3" />
+          <line x1="75" y1="118" x2="245" y2="82" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="4 3" />
           {/* Bulk Reducing Factory Location (Closer to RM) */}
-          <circle cx="105" cy="70" r="9" fill="#f59e0b" stroke="#b45309" strokeWidth="1.5" />
-          <text x="105" y="73" fontSize="6" fontWeight="bold" textAnchor="middle" fill="#FAF9F6">P₁</text>
-          <text x="105" y="90" fontSize="6" fontWeight="bold" textAnchor="middle" fill="#b45309">Bulk-Reducing</text>
-          <text x="105" y="98" fontSize="5" textAnchor="middle" fill="#78350f">(e.g. Copper smelting, Paper)</text>
+          <circle cx="112" cy="74" r="9" fill="#f59e0b" stroke="#b45309" strokeWidth="1.5" />
+          <text x="112" y="77" fontSize="6" fontWeight="bold" textAnchor="middle" fill="#FAF9F6">P₁</text>
+          <text x="112" y="94" fontSize="6" fontWeight="bold" textAnchor="middle" fill="#b45309">Bulk-Reducing</text>
+          <text x="112" y="102" fontSize="5" textAnchor="middle" fill="#78350f">(Copper smelting, Paper)</text>
           {/* Bulk Gaining Factory Location (Closer to Market) */}
-          <circle cx="190" cy="78" r="9" fill="#10b981" stroke="#047857" strokeWidth="1.5" />
-          <text x="190" y="81" fontSize="6" fontWeight="bold" textAnchor="middle" fill="#FAF9F6">P₂</text>
-          <text x="190" y="98" fontSize="6" fontWeight="bold" textAnchor="middle" fill="#047857">Bulk-Gaining</text>
-          <text x="190" y="106" fontSize="5" textAnchor="middle" fill="#065f46">(e.g. Soft drinks, Cars)</text>
-          <text x="150" y="18" fontSize="8" fontWeight="black" textAnchor="middle" fill="#0f172a">Weber's Least Cost Theory: Raw Materials vs. Market Weight Pull</text>
-          <text x="150" y="148" fontSize="7.5" fill="#475569" textAnchor="middle">Minimizes Total Transportation Costs based on Weight Loss vs. Weight Gain</text>
+          <circle cx="202" cy="82" r="9" fill="#10b981" stroke="#047857" strokeWidth="1.5" />
+          <text x="202" y="85" fontSize="6" fontWeight="bold" textAnchor="middle" fill="#FAF9F6">P₂</text>
+          <text x="202" y="102" fontSize="6" fontWeight="bold" textAnchor="middle" fill="#047857">Bulk-Gaining</text>
+          <text x="202" y="110" fontSize="5" textAnchor="middle" fill="#065f46">(Bottling, Auto Assembly)</text>
+          <text x="160" y="154" fontSize="6" fill="#475569" textAnchor="middle">Minimizes Total Transport Costs: Weight-Losing (Material-Oriented) vs. Weight-Gaining (Market-Oriented)</text>
         </svg>
       );
 
@@ -2702,6 +2728,267 @@ export function renderCalculusDiagramSvg(type: string): React.ReactNode {
         </svg>
       );
 
+    case 'trade_tariff_graph':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          {/* Axes */}
+          <line x1="45" y1="15" x2="45" y2="135" stroke="#475569" strokeWidth="2" />
+          <line x1="45" y1="135" x2="275" y2="135" stroke="#475569" strokeWidth="2" />
+          <text x="38" y="20" fontSize="6" fontWeight="bold" textAnchor="end" fill="#1e293b">Price ($)</text>
+          <text x="270" y="146" fontSize="6" fontWeight="bold" textAnchor="end" fill="#1e293b">Quantity (Q)</text>
+
+          {/* Domestic Demand & Supply */}
+          <line x1="60" y1="20" x2="250" y2="125" stroke="#dc2626" strokeWidth="2" />
+          <text x="253" y="128" fontSize="5.5" fontWeight="bold" fill="#dc2626">Sd</text>
+          <line x1="60" y1="125" x2="250" y2="20" stroke="#2563eb" strokeWidth="2" />
+          <text x="253" y="24" fontSize="5.5" fontWeight="bold" fill="#2563eb">Dd</text>
+
+          {/* World Price Pw (Horizontal line) */}
+          <line x1="45" y1="105" x2="260" y2="105" stroke="#059669" strokeWidth="1.5" strokeDasharray="3 2" />
+          <text x="40" y="108" fontSize="5" textAnchor="end" fill="#059669">Pw</text>
+
+          {/* Tariff Price Pt (Pw + Tariff) */}
+          <line x1="45" y1="80" x2="260" y2="80" stroke="#d97706" strokeWidth="1.5" />
+          <text x="40" y="83" fontSize="5" textAnchor="end" fill="#d97706">Pt</text>
+
+          {/* Tariff Revenue Box (Center Rectangle between Q2 and Q3) */}
+          <rect x="110" y="80" width="75" height="25" fill="#fef3c7" opacity="0.7" stroke="#d97706" strokeWidth="1" />
+          <text x="147" y="95" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#92400e">Tariff Revenue</text>
+
+          {/* DWL 1 (Production Distortion: Triangle left of tariff box) */}
+          <polygon points="90,105 110,80 110,105" fill="#fee2e2" stroke="#dc2626" strokeWidth="0.8" />
+          <text x="103" y="99" fontSize="4" fontWeight="bold" textAnchor="middle" fill="#dc2626">DWL</text>
+
+          {/* DWL 2 (Consumption Distortion: Triangle right of tariff box) */}
+          <polygon points="185,80 205,105 185,105" fill="#fee2e2" stroke="#dc2626" strokeWidth="0.8" />
+          <text x="192" y="99" fontSize="4" fontWeight="bold" textAnchor="middle" fill="#dc2626">DWL</text>
+
+          {/* Quantity points along x-axis */}
+          <line x1="90" y1="105" x2="90" y2="135" stroke="#94a3b8" strokeDasharray="2 2" />
+          <text x="90" y="144" fontSize="4.5" textAnchor="middle" fill="#64748b">Q₁</text>
+          <line x1="110" y1="80" x2="110" y2="135" stroke="#94a3b8" strokeDasharray="2 2" />
+          <text x="110" y="144" fontSize="4.5" textAnchor="middle" fill="#64748b">Q₂</text>
+          <line x1="185" y1="80" x2="185" y2="135" stroke="#94a3b8" strokeDasharray="2 2" />
+          <text x="185" y="144" fontSize="4.5" textAnchor="middle" fill="#64748b">Q₃</text>
+          <line x1="205" y1="105" x2="205" y2="135" stroke="#94a3b8" strokeDasharray="2 2" />
+          <text x="205" y="144" fontSize="4.5" textAnchor="middle" fill="#64748b">Q₄</text>
+
+          {/* Imports label */}
+          <text x="147" y="122" fontSize="4.5" fontWeight="bold" textAnchor="middle" fill="#0284c7">Imports with Tariff = Q₃ - Q₂</text>
+
+          <text x="150" y="152" fontSize="7" fontWeight="black" textAnchor="middle" fill="#0f172a">Tariffs & Trade: Protects Domestic Producers, Generates Gov Revenue & Creates 2 DWL Triangles</text>
+        </svg>
+      );
+
+    case 'cost_curves_graph':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          {/* Axes */}
+          <line x1="45" y1="15" x2="45" y2="135" stroke="#475569" strokeWidth="2" />
+          <line x1="45" y1="135" x2="275" y2="135" stroke="#475569" strokeWidth="2" />
+          <text x="38" y="20" fontSize="6" fontWeight="bold" textAnchor="end" fill="#1e293b">Cost ($)</text>
+          <text x="270" y="146" fontSize="6" fontWeight="bold" textAnchor="end" fill="#1e293b">Output (Q)</text>
+
+          {/* AFC curve (downward asymptotic) */}
+          <path d="M 60 70 Q 110 115 250 125" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3 2" />
+          <text x="253" y="127" fontSize="5" fontWeight="bold" fill="#64748b">AFC</text>
+
+          {/* AVC curve (U-shaped) */}
+          <path d="M 60 90 Q 120 110 240 70" fill="none" stroke="#059669" strokeWidth="2" />
+          <text x="243" y="73" fontSize="5" fontWeight="bold" fill="#059669">AVC</text>
+
+          {/* ATC curve (U-shaped, vertically higher by AFC) */}
+          <path d="M 60 45 Q 145 80 245 40" fill="none" stroke="#2563eb" strokeWidth="2" />
+          <text x="248" y="42" fontSize="5.5" fontWeight="bold" fill="#2563eb">ATC</text>
+
+          {/* MC curve (Checkmark, cuts min AVC and min ATC) */}
+          <path d="M 55 95 Q 85 118 115 105 L 145 77 L 210 20" fill="none" stroke="#dc2626" strokeWidth="2.5" />
+          <text x="213" y="22" fontSize="6" fontWeight="black" fill="#dc2626">MC</text>
+
+          {/* Minimum AVC (Shutdown Price) */}
+          <circle cx="115" cy="105" r="3" fill="#059669" />
+          <text x="100" y="118" fontSize="4.5" fontWeight="bold" fill="#047857">Shutdown: min AVC</text>
+
+          {/* Minimum ATC (Productive Efficiency / Break-even Price) */}
+          <circle cx="145" cy="77" r="3" fill="#2563eb" />
+          <text x="150" y="74" fontSize="4.5" fontWeight="bold" fill="#1d4ed8">Break-even: min ATC</text>
+
+          <text x="150" y="152" fontSize="7" fontWeight="black" textAnchor="middle" fill="#0f172a">Short-Run Cost Curves: MC Intersects min AVC (Shutdown) & min ATC (Productive Efficiency)</text>
+        </svg>
+      );
+
+    case 'natural_monopoly_graph':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          {/* Axes */}
+          <line x1="45" y1="15" x2="45" y2="135" stroke="#475569" strokeWidth="2" />
+          <line x1="45" y1="135" x2="275" y2="135" stroke="#475569" strokeWidth="2" />
+          <text x="38" y="20" fontSize="6" fontWeight="bold" textAnchor="end" fill="#1e293b">Price ($)</text>
+          <text x="270" y="146" fontSize="6" fontWeight="bold" textAnchor="end" fill="#1e293b">Quantity (Q)</text>
+
+          {/* Demand curve */}
+          <line x1="55" y1="20" x2="250" y2="120" stroke="#2563eb" strokeWidth="2" />
+          <text x="253" y="123" fontSize="5.5" fontWeight="bold" fill="#2563eb">Demand</text>
+
+          {/* MR curve */}
+          <line x1="55" y1="20" x2="160" y2="135" stroke="#7c3aed" strokeWidth="1.8" />
+          <text x="165" y="132" fontSize="5" fontWeight="bold" fill="#7c3aed">MR</text>
+
+          {/* Continually downward sloping LRATC (Economies of Scale) */}
+          <path d="M 55 35 Q 120 75 255 95" fill="none" stroke="#059669" strokeWidth="2" />
+          <text x="258" y="98" fontSize="5" fontWeight="bold" fill="#059669">LRATC</text>
+
+          {/* Flat low MC */}
+          <line x1="45" y1="110" x2="260" y2="110" stroke="#dc2626" strokeWidth="2" />
+          <text x="263" y="113" fontSize="5.5" fontWeight="bold" fill="#dc2626">MC</text>
+
+          {/* Unregulated Monopoly (MR = MC at x=135, y=110 -> Price on Demand at x=135, y=60) */}
+          <circle cx="135" cy="60" r="2.5" fill="#7c3aed" />
+          <text x="135" y="55" fontSize="4.5" fontWeight="bold" textAnchor="middle" fill="#7c3aed">Pm (Unregulated)</text>
+
+          {/* Fair-Return Regulation (P = LRATC at x=190, y=88) */}
+          <circle cx="190" cy="88" r="3" fill="#d97706" />
+          <line x1="45" y1="88" x2="190" y2="88" stroke="#d97706" strokeDasharray="2 2" />
+          <text x="40" y="91" fontSize="5" textAnchor="end" fill="#d97706">P_FR</text>
+          <text x="190" y="82" fontSize="4.5" fontWeight="bold" fill="#b45309">Fair-Return (P = ATC, 0 Profit)</text>
+
+          {/* Socially Optimal Regulation (P = MC at x=230, y=110) */}
+          <circle cx="230" cy="110" r="3" fill="#dc2626" />
+          <line x1="45" y1="110" x2="230" y2="110" stroke="#dc2626" strokeDasharray="2 2" />
+          <text x="40" y="113" fontSize="5" textAnchor="end" fill="#dc2626">P_SO</text>
+          <text x="230" y="125" fontSize="4.5" fontWeight="bold" fill="#dc2626">Socially Optimal (P = MC, Needs Subsidy)</text>
+
+          <text x="150" y="152" fontSize="7" fontWeight="black" textAnchor="middle" fill="#0f172a">Natural Monopoly: High Fixed Costs ➔ Regulated at Fair-Return (P=ATC) vs Socially Optimal (P=MC)</text>
+        </svg>
+      );
+
+    case 'monopolistic_comp_graph':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          {/* Axes */}
+          <line x1="45" y1="15" x2="45" y2="135" stroke="#475569" strokeWidth="2" />
+          <line x1="45" y1="135" x2="275" y2="135" stroke="#475569" strokeWidth="2" />
+          <text x="38" y="20" fontSize="6" fontWeight="bold" textAnchor="end" fill="#1e293b">Price ($)</text>
+          <text x="270" y="146" fontSize="6" fontWeight="bold" textAnchor="end" fill="#1e293b">Quantity (Q)</text>
+
+          {/* Highly Elastic Demand */}
+          <line x1="55" y1="30" x2="245" y2="115" stroke="#2563eb" strokeWidth="2" />
+          <text x="248" y="118" fontSize="5.5" fontWeight="bold" fill="#2563eb">d (Elastic)</text>
+
+          {/* MR Curve */}
+          <line x1="55" y1="30" x2="165" y2="135" stroke="#7c3aed" strokeWidth="1.8" />
+          <text x="168" y="132" fontSize="5" fontWeight="bold" fill="#7c3aed">mr</text>
+
+          {/* ATC curve tangent to Demand at Qlr */}
+          <path d="M 60 55 Q 130 80 230 45" fill="none" stroke="#059669" strokeWidth="2" />
+          <text x="233" y="47" fontSize="5.5" fontWeight="bold" fill="#059669">ATC</text>
+
+          {/* MC curve */}
+          <path d="M 65 95 Q 95 110 110 88 L 160 30" fill="none" stroke="#dc2626" strokeWidth="2" />
+          <text x="163" y="32" fontSize="5" fontWeight="bold" fill="#dc2626">MC</text>
+
+          {/* Long-run Tangency point at x=122, y=60 */}
+          <circle cx="122" cy="60" r="3" fill="#d97706" />
+          <line x1="45" y1="60" x2="122" y2="60" stroke="#d97706" strokeDasharray="2 2" />
+          <text x="40" y="63" fontSize="5" textAnchor="end" fill="#d97706">Plr</text>
+          <line x1="122" y1="60" x2="122" y2="135" stroke="#94a3b8" strokeDasharray="2 2" />
+          <text x="122" y="144" fontSize="5" textAnchor="middle" fill="#0f172a">Qlr</text>
+
+          {/* Minimum ATC point at x=155, y=70 */}
+          <circle cx="155" cy="70" r="2.5" fill="#059669" />
+          <line x1="155" y1="70" x2="155" y2="135" stroke="#94a3b8" strokeDasharray="2 2" />
+          <text x="155" y="144" fontSize="5" textAnchor="middle" fill="#059669">Qcap</text>
+
+          {/* Excess Capacity bracket between Qlr and Qcap */}
+          <line x1="122" y1="126" x2="155" y2="126" stroke="#b91c1c" strokeWidth="1.5" />
+          <text x="138" y="122" fontSize="4.5" fontWeight="black" textAnchor="middle" fill="#b91c1c">Excess Capacity</text>
+
+          <text x="150" y="152" fontSize="7" fontWeight="black" textAnchor="middle" fill="#0f172a">Monopolistic Competition (Long-Run): P = ATC (0 Profit) Tangency with Excess Capacity</text>
+        </svg>
+      );
+
+    case 'game_theory_matrix':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          {/* Header & Player Titles */}
+          <text x="175" y="20" fontSize="6.5" fontWeight="black" textAnchor="middle" fill="#1e293b">FIRM B (COLUMN PLAYER)</text>
+          <text x="25" y="85" fontSize="6.5" fontWeight="black" textAnchor="middle" transform="rotate(-90 25 85)" fill="#1e293b">FIRM A (ROW)</text>
+
+          {/* Strategy Headers */}
+          <text x="135" y="36" fontSize="5.5" fontWeight="bold" textAnchor="middle" fill="#2563eb">Price High</text>
+          <text x="215" y="36" fontSize="5.5" fontWeight="bold" textAnchor="middle" fill="#2563eb">Price Low</text>
+          <text x="75" y="65" fontSize="5.5" fontWeight="bold" textAnchor="end" fill="#dc2626">Price High</text>
+          <text x="75" y="105" fontSize="5.5" fontWeight="bold" textAnchor="end" fill="#dc2626">Price Low</text>
+
+          {/* 2x2 Matrix Grid */}
+          <rect x="95" y="45" width="80" height="40" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
+          <rect x="175" y="45" width="80" height="40" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
+          <rect x="95" y="85" width="80" height="40" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
+          {/* Bottom Right: Nash Equilibrium Highlighted */}
+          <rect x="175" y="85" width="80" height="40" fill="#dcfce7" stroke="#16a34a" strokeWidth="2" />
+
+          {/* Diagonal Dividers & Payoffs */}
+          {/* Top-Left: High, High */}
+          <line x1="95" y1="45" x2="175" y2="85" stroke="#e2e8f0" strokeWidth="1" />
+          <text x="115" y="75" fontSize="6" fontWeight="bold" fill="#dc2626">$100</text>
+          <text x="155" y="60" fontSize="6" fontWeight="bold" fill="#2563eb">$100</text>
+
+          {/* Top-Right: High, Low */}
+          <line x1="175" y1="45" x2="255" y2="85" stroke="#e2e8f0" strokeWidth="1" />
+          <text x="195" y="75" fontSize="6" fontWeight="bold" fill="#dc2626">$20</text>
+          <text x="235" y="60" fontSize="6" fontWeight="bold" fill="#2563eb">$150</text>
+
+          {/* Bottom-Left: Low, High */}
+          <line x1="95" y1="85" x2="175" y2="125" stroke="#e2e8f0" strokeWidth="1" />
+          <text x="115" y="115" fontSize="6" fontWeight="bold" fill="#dc2626">$150</text>
+          <text x="155" y="100" fontSize="6" fontWeight="bold" fill="#2563eb">$20</text>
+
+          {/* Bottom-Right: Low, Low (Nash Equilibrium) */}
+          <line x1="175" y1="85" x2="255" y2="125" stroke="#86efac" strokeWidth="1" />
+          <text x="195" y="115" fontSize="6" fontWeight="black" fill="#dc2626">$50*</text>
+          <text x="235" y="100" fontSize="6" fontWeight="black" fill="#2563eb">$50*</text>
+
+          {/* Star Note */}
+          <text x="175" y="137" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#15803d">★ (Price Low, Price Low) is the unique Nash Equilibrium</text>
+          <text x="150" y="152" fontSize="7" fontWeight="black" textAnchor="middle" fill="#0f172a">Game Theory Payoff Matrix: Dominant Strategies Lead to Non-Cooperative Nash Equilibrium</text>
+        </svg>
+      );
+
+    case 'lorenz_curve_gini':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          {/* Box Outline Axes */}
+          <rect x="55" y="20" width="110" height="110" fill="none" stroke="#475569" strokeWidth="1.5" />
+          <text x="110" y="142" fontSize="5.5" fontWeight="bold" textAnchor="middle" fill="#1e293b">Cumulative % of Population (0 - 100%)</text>
+          <text x="25" y="75" fontSize="5.5" fontWeight="bold" textAnchor="middle" transform="rotate(-90 25 75)" fill="#1e293b">Cumulative % of Income</text>
+
+          {/* 45 Degree Line of Perfect Equality */}
+          <line x1="55" y1="130" x2="165" y2="20" stroke="#16a34a" strokeWidth="2" strokeDasharray="3 2" />
+          <text x="125" y="65" fontSize="5" fontWeight="bold" transform="rotate(-45 125 65)" fill="#15803d">Line of Perfect Equality</text>
+
+          {/* Shaded Area A and Area B */}
+          <path d="M 55 130 Q 125 125 165 20 L 165 130 Z" fill="#dbeafe" opacity="0.6" />
+          <polygon points="55,130 165,20 165,130" fill="#fef3c7" opacity="0.5" />
+
+          {/* Lorenz Curve */}
+          <path d="M 55 130 Q 125 125 165 20" fill="none" stroke="#2563eb" strokeWidth="2.5" />
+          <text x="135" y="115" fontSize="5.5" fontWeight="black" fill="#1d4ed8">Lorenz Curve</text>
+
+          {/* Area Labels */}
+          <text x="115" y="80" fontSize="6.5" fontWeight="black" fill="#d97706">A</text>
+          <text x="140" y="105" fontSize="6.5" fontWeight="black" fill="#2563eb">B</text>
+
+          {/* Formula Callout Box on Right */}
+          <rect x="180" y="35" width="110" height="75" rx="8" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+          <text x="235" y="52" fontSize="6" fontWeight="black" textAnchor="middle" fill="#0f172a">GINI COEFFICIENT</text>
+          <text x="235" y="72" fontSize="7" fontWeight="black" textAnchor="middle" fill="#dc2626">G = Area A / (A + B)</text>
+          <text x="235" y="88" fontSize="4.5" textAnchor="middle" fill="#475569">G = 0 ➔ Perfect Equality</text>
+          <text x="235" y="98" fontSize="4.5" textAnchor="middle" fill="#475569">G = 1 ➔ Complete Inequality</text>
+
+          <text x="150" y="152" fontSize="7" fontWeight="black" textAnchor="middle" fill="#0f172a">Income Inequality: The Lorenz Curve & Gini Coefficient Formula Calculation</text>
+        </svg>
+      );
+
     case 'business_cycle_chart':
       return (
         <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
@@ -2891,6 +3178,101 @@ export function renderCalculusDiagramSvg(type: string): React.ReactNode {
           <text x="45" y="57" fontSize="5" fontWeight="bold" textAnchor="end" fill="#1d4ed8">e₂ (Appreciation)</text>
 
           <text x="150" y="152" fontSize="7" fontWeight="black" textAnchor="middle" fill="#0f172a">FOREX Market: High Interest Rates Attract Foreign Capital ➔ Currency Appreciates</text>
+        </svg>
+      );
+
+    case 'loanable_funds_graph':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          {/* Axes */}
+          <line x1="50" y1="15" x2="50" y2="135" stroke="#475569" strokeWidth="2" />
+          <line x1="50" y1="135" x2="275" y2="135" stroke="#475569" strokeWidth="2" />
+          <text x="42" y="20" fontSize="5.5" fontWeight="bold" textAnchor="end" fill="#1e293b">Real Rate (r%)</text>
+          <text x="270" y="146" fontSize="5.5" fontWeight="bold" textAnchor="end" fill="#1e293b">Quantity of Funds (QLF)</text>
+
+          {/* Supply of Loanable Funds (SLF: Savings) */}
+          <line x1="70" y1="120" x2="230" y2="25" stroke="#16a34a" strokeWidth="2" />
+          <text x="233" y="27" fontSize="5.5" fontWeight="bold" fill="#16a34a">SLF (Savings)</text>
+
+          {/* Demand for Loanable Funds 1 (DLF1: Investment + Deficit) */}
+          <line x1="70" y1="30" x2="225" y2="120" stroke="#2563eb" strokeWidth="2" />
+          <text x="228" y="123" fontSize="5" fontWeight="bold" fill="#2563eb">DLF₁</text>
+
+          {/* Demand for Loanable Funds 2 (DLF2: Deficit spending expansion) */}
+          <line x1="105" y1="30" x2="260" y2="120" stroke="#dc2626" strokeWidth="2" strokeDasharray="3 2" />
+          <text x="263" y="123" fontSize="5" fontWeight="bold" fill="#dc2626">DLF₂ (Gov Deficit)</text>
+
+          {/* Shift Arrow */}
+          <path d="M 140 70 L 175 70" stroke="#dc2626" strokeWidth="1.5" markerEnd="url(#arrow)" />
+          <text x="158" y="65" fontSize="4.5" fontWeight="bold" fill="#dc2626">Gov Borrows</text>
+
+          {/* Equilibrium 1 (r1, Q1) at x=140, y=78 */}
+          <circle cx="140" cy="78" r="3" fill="#2563eb" />
+          <line x1="50" y1="78" x2="140" y2="78" stroke="#94a3b8" strokeDasharray="2 2" />
+          <text x="45" y="81" fontSize="5" textAnchor="end" fill="#2563eb">r₁</text>
+          <line x1="140" y1="78" x2="140" y2="135" stroke="#94a3b8" strokeDasharray="2 2" />
+          <text x="140" y="144" fontSize="4.5" textAnchor="middle" fill="#64748b">Q₁</text>
+
+          {/* Equilibrium 2 (r2, Q2) at x=175, y=58 */}
+          <circle cx="175" cy="58" r="3" fill="#dc2626" />
+          <line x1="50" y1="58" x2="175" y2="58" stroke="#94a3b8" strokeDasharray="2 2" />
+          <text x="45" y="61" fontSize="5" fontWeight="bold" textAnchor="end" fill="#dc2626">r₂</text>
+          <line x1="175" y1="58" x2="175" y2="135" stroke="#94a3b8" strokeDasharray="2 2" />
+          <text x="175" y="144" fontSize="4.5" textAnchor="middle" fill="#64748b">Q₂</text>
+
+          {/* Crowding Out Callout */}
+          <rect x="185" y="30" width="85" height="24" rx="4" fill="#fee2e2" stroke="#dc2626" strokeWidth="0.8" />
+          <text x="227" y="41" fontSize="4.5" fontWeight="black" textAnchor="middle" fill="#991b1b">Crowding Out Effect</text>
+          <text x="227" y="49" fontSize="3.8" textAnchor="middle" fill="#7f1d1d">Higher r% reduces Private Investment</text>
+
+          <text x="150" y="152" fontSize="7" fontWeight="black" textAnchor="middle" fill="#0f172a">Loanable Funds Market: Budget Deficits Drive Real Rates Up & Crowd Out Private Investment</text>
+        </svg>
+      );
+
+    case 'circular_flow_chart':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          {/* Header */}
+          <text x="150" y="15" fontSize="6.5" fontWeight="black" textAnchor="middle" fill="#0f172a">MACROECONOMIC CIRCULAR FLOW: OUTPUT & FACTOR PAYMENTS</text>
+
+          {/* Top: Product Markets */}
+          <rect x="95" y="22" width="110" height="22" rx="5" fill="#dbeafe" stroke="#2563eb" strokeWidth="1.5" />
+          <text x="150" y="32" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#1e40af">PRODUCT MARKETS</text>
+          <text x="150" y="40" fontSize="4" textAnchor="middle" fill="#1d4ed8">Goods & Services Bought / Sold (GDP = C + I + G + Xn)</text>
+
+          {/* Left: Households */}
+          <rect x="15" y="60" width="75" height="38" rx="5" fill="#fef3c7" stroke="#d97706" strokeWidth="1.5" />
+          <text x="52" y="72" fontSize="6" fontWeight="black" textAnchor="middle" fill="#92400e">HOUSEHOLDS</text>
+          <text x="52" y="81" fontSize="4" textAnchor="middle" fill="#78350f">Own Factors of Production</text>
+          <text x="52" y="89" fontSize="4" textAnchor="middle" fill="#78350f">Spend on Consumer Goods (C)</text>
+
+          {/* Center: Government & Financial Intermediaries */}
+          <rect x="110" y="65" width="80" height="28" rx="4" fill="#f1f5f9" stroke="#64748b" strokeWidth="1.2" strokeDasharray="3 2" />
+          <text x="150" y="76" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#334155">GOV & FINANCIAL</text>
+          <text x="150" y="84" fontSize="3.8" textAnchor="middle" fill="#475569">Taxes, Transfers, Loans, Deficits</text>
+
+          {/* Right: Businesses / Firms */}
+          <rect x="210" y="60" width="75" height="38" rx="5" fill="#dcfce7" stroke="#16a34a" strokeWidth="1.5" />
+          <text x="247" y="72" fontSize="6" fontWeight="black" textAnchor="middle" fill="#14532d">FIRMS (BUSINESSES)</text>
+          <text x="247" y="81" fontSize="4" textAnchor="middle" fill="#166534">Hire Factors of Production</text>
+          <text x="247" y="89" fontSize="4" textAnchor="middle" fill="#166534">Produce Real GDP Output</text>
+
+          {/* Bottom: Factor / Resource Markets */}
+          <rect x="95" y="112" width="110" height="22" rx="5" fill="#f3e8ff" stroke="#7c3aed" strokeWidth="1.5" />
+          <text x="150" y="122" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#581c87">FACTOR MARKETS</text>
+          <text x="150" y="130" fontSize="4" textAnchor="middle" fill="#6b21a8">Wages, Rents, Interest, Profits (National Income)</text>
+
+          {/* Connecting Arrows */}
+          {/* Consumer Spending flow: Households -> Product Markets */}
+          <path d="M 52 60 L 52 33 L 90 33" fill="none" stroke="#d97706" strokeWidth="1.5" markerEnd="url(#arrow)" />
+          {/* Revenue to Firms: Product Markets -> Firms */}
+          <path d="M 210 33 L 247 33 L 247 60" fill="none" stroke="#2563eb" strokeWidth="1.5" markerEnd="url(#arrow)" />
+          {/* Factor Hiring: Firms -> Factor Markets */}
+          <path d="M 247 98 L 247 123 L 210 123" fill="none" stroke="#16a34a" strokeWidth="1.5" markerEnd="url(#arrow)" />
+          {/* Factor Income: Factor Markets -> Households */}
+          <path d="M 90 123 L 52 123 L 52 98" fill="none" stroke="#7c3aed" strokeWidth="1.5" markerEnd="url(#arrow)" />
+
+          <text x="150" y="152" fontSize="6.5" fontWeight="black" textAnchor="middle" fill="#0f172a">Circular Flow Principle: National Expenditure = National Output = National Income</text>
         </svg>
       );
 
@@ -3817,7 +4199,1358 @@ export function renderCalculusDiagramSvg(type: string): React.ReactNode {
         </svg>
       );
 
+    // =========================================================================
+    // AP U.S. HISTORY & HUMANITIES (AMERICAN SYSTEM & COMPROMISES)
+    // =========================================================================
+    case 'american_system_diagram':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          {/* Header Title */}
+          <rect x="25" y="6" width="250" height="18" rx="4" fill="#fef2f2" stroke="#b91c1c" strokeWidth="1" />
+          <text x="150" y="18" fontSize="6.5" fontWeight="black" textAnchor="middle" fill="#991b1b">
+            HENRY CLAY'S AMERICAN SYSTEM (1816–1824)
+          </text>
+
+          {/* Center Pillar: Bank of the United States */}
+          <circle cx="150" cy="72" r="24" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.8" />
+          <text x="150" y="66" fontSize="5.5" fontWeight="bold" textAnchor="middle" fill="#1e40af">2nd Bank</text>
+          <text x="150" y="74" fontSize="4.5" textAnchor="middle" fill="#1e3a8a">of the U.S.</text>
+          <text x="150" y="82" fontSize="3.8" textAnchor="middle" fill="#64748b">(Credit & Sound Currency)</text>
+
+          {/* Region 1: North / East (Top Left) */}
+          <rect x="15" y="32" width="75" height="42" rx="4" fill="#f8fafc" stroke="#334155" strokeWidth="1.2" />
+          <text x="52" y="44" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#0f172a">NORTH / EAST</text>
+          <text x="52" y="53" fontSize="4" textAnchor="middle" fill="#475569">Manufacturing & Mills</text>
+          <text x="52" y="61" fontSize="3.8" fontWeight="bold" textAnchor="middle" fill="#b91c1c">Protective Tariffs (1816)</text>
+          <text x="52" y="69" fontSize="3.5" textAnchor="middle" fill="#64748b">Buys Western Grain & Southern Cotton</text>
+
+          {/* Region 2: South (Bottom Left / Middle) */}
+          <rect x="35" y="100" width="85" height="40" rx="4" fill="#fefce8" stroke="#ca8a04" strokeWidth="1.2" />
+          <text x="77" y="112" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#854d0e">SOUTH</text>
+          <text x="77" y="121" fontSize="4" textAnchor="middle" fill="#713f12">Cash Crops (Cotton & Tobacco)</text>
+          <text x="77" y="129" fontSize="3.6" textAnchor="middle" fill="#a16207">Supplies Northern Textile Mills</text>
+          <text x="77" y="136" fontSize="3.5" fontWeight="bold" textAnchor="middle" fill="#dc2626">Opposed Tariffs ("Tariff of Abominations")</text>
+
+          {/* Region 3: West (Right) */}
+          <rect x="205" y="45" width="80" height="48" rx="4" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1.2" />
+          <text x="245" y="57" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#14532d">WEST</text>
+          <text x="245" y="66" fontSize="4" textAnchor="middle" fill="#166534">Grain, Livestock & Raw Materials</text>
+          <text x="245" y="74" fontSize="3.8" fontWeight="bold" textAnchor="middle" fill="#2563eb">Internal Improvements</text>
+          <text x="245" y="82" fontSize="3.5" textAnchor="middle" fill="#15803d">National Road & Erie Canal</text>
+          <text x="245" y="89" fontSize="3.3" textAnchor="middle" fill="#64748b">Feeds Industrial Cities in the East</text>
+
+          {/* Flow Arrows Connecting Regions */}
+          <path d="M 90 53 Q 120 40 150 48" fill="none" stroke="#2563eb" strokeWidth="1.5" markerEnd="url(#arrow)" />
+          <path d="M 174 72 L 205 72" fill="none" stroke="#16a34a" strokeWidth="1.5" />
+          <path d="M 215 93 Q 160 115 120 115" fill="none" stroke="#ca8a04" strokeWidth="1.5" />
+
+          {/* Footer Takeaway */}
+          <text x="150" y="153" fontSize="5.2" fontWeight="bold" textAnchor="middle" fill="#475569">
+            Goal: Interdependent National Economy through Tariffs, Centralized Banking, and Transport Infrastructure.
+          </text>
+        </svg>
+      );
+
+    case 'compromises_timeline_diagram':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="16" fontSize="6.5" fontWeight="black" textAnchor="middle" fill="#991b1b">
+            ROAD TO THE CIVIL WAR: SECTIONAL COMPROMISES TIMELINE
+          </text>
+          {/* Main Horizontal Timeline Bar */}
+          <line x1="20" y1="75" x2="280" y2="75" stroke="#94a3b8" strokeWidth="3" />
+
+          {/* Milestone 1: 1820 Missouri Compromise */}
+          <circle cx="45" cy="75" r="5" fill="#2563eb" />
+          <rect x="15" y="26" width="60" height="40" rx="3" fill="#eff6ff" stroke="#2563eb" strokeWidth="1" />
+          <text x="45" y="37" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#1e40af">1820</text>
+          <text x="45" y="45" fontSize="4" fontWeight="bold" textAnchor="middle" fill="#1e3a8a">Missouri Comp.</text>
+          <text x="45" y="53" fontSize="3.3" textAnchor="middle" fill="#475569">Maine Free, MO Slave</text>
+          <text x="45" y="61" fontSize="3.3" fontWeight="bold" textAnchor="middle" fill="#dc2626">36°30' Parallel Line</text>
+
+          {/* Milestone 2: 1850 Compromise of 1850 */}
+          <circle cx="115" cy="75" r="5" fill="#d97706" />
+          <rect x="85" y="85" width="60" height="42" rx="3" fill="#fefce8" stroke="#ca8a04" strokeWidth="1" />
+          <text x="115" y="96" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#854d0e">1850</text>
+          <text x="115" y="104" fontSize="4" fontWeight="bold" textAnchor="middle" fill="#713f12">Compromise of 1850</text>
+          <text x="115" y="112" fontSize="3.2" textAnchor="middle" fill="#475569">CA Free State</text>
+          <text x="115" y="119" fontSize="3.2" textAnchor="middle" fill="#475569">Popular Sov. (UT/NM)</text>
+          <text x="115" y="125" fontSize="3.2" fontWeight="bold" textAnchor="middle" fill="#b91c1c">Strict Fugitive Slave Law</text>
+
+          {/* Milestone 3: 1854 Kansas-Nebraska Act */}
+          <circle cx="185" cy="75" r="5" fill="#dc2626" />
+          <rect x="155" y="26" width="60" height="40" rx="3" fill="#fee2e2" stroke="#dc2626" strokeWidth="1" />
+          <text x="185" y="37" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#991b1b">1854</text>
+          <text x="185" y="45" fontSize="4" fontWeight="bold" textAnchor="middle" fill="#7f1d1d">Kansas-Nebraska</text>
+          <text x="185" y="53" fontSize="3.2" textAnchor="middle" fill="#475569">Repealed 36°30'</text>
+          <text x="185" y="61" fontSize="3.2" fontWeight="bold" textAnchor="middle" fill="#dc2626">"Bleeding Kansas"</text>
+
+          {/* Milestone 4: 1857 Dred Scott v. Sandford */}
+          <circle cx="255" cy="75" r="5" fill="#7c3aed" />
+          <rect x="225" y="85" width="60" height="42" rx="3" fill="#f3e8ff" stroke="#7c3aed" strokeWidth="1" />
+          <text x="255" y="96" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#581c87">1857</text>
+          <text x="255" y="104" fontSize="4" fontWeight="bold" textAnchor="middle" fill="#4c1d95">Dred Scott Ruling</text>
+          <text x="255" y="112" fontSize="3.2" textAnchor="middle" fill="#475569">Slaves = Property (5th Am.)</text>
+          <text x="255" y="119" fontSize="3.2" textAnchor="middle" fill="#475569">Cannot Sue in Court</text>
+          <text x="255" y="125" fontSize="3.2" fontWeight="bold" textAnchor="middle" fill="#dc2626">All Compromises Void!</text>
+
+          <text x="150" y="150" fontSize="5.2" fontWeight="bold" textAnchor="middle" fill="#475569">
+            Takeaway: Each legislative compromise temporarily averted disunion until judicial rulings eliminated federal compromise.
+          </text>
+        </svg>
+      );
+
+    // =========================================================================
+    // AP ENGLISH LANGUAGE: THE RHETORICAL TRIANGLE
+    // =========================================================================
+    case 'rhetorical_triangle_diagram':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          {/* Outer Context Oval */}
+          <ellipse cx="150" cy="80" rx="140" ry="72" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="4 3" />
+          <text x="150" y="18" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#475569">
+            RHETORICAL SITUATION: Context • Exigence • Kairos (Historical Moment)
+          </text>
+
+          {/* Central Rhetorical Triangle */}
+          <polygon points="150,32 55,125 245,125" fill="#f0fdf4" stroke="#059669" strokeWidth="2" />
+
+          {/* Center Purpose / Core Meaning */}
+          <circle cx="150" cy="90" r="16" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.2" />
+          <text x="150" y="88" fontSize="4.8" fontWeight="bold" textAnchor="middle" fill="#065f46">PURPOSE</text>
+          <text x="150" y="96" fontSize="3.8" textAnchor="middle" fill="#047857">Why write?</text>
+
+          {/* Vertex 1: Speaker / Persona (Top) */}
+          <rect x="110" y="24" width="80" height="20" rx="3" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.2" />
+          <text x="150" y="34" fontSize="5.2" fontWeight="black" textAnchor="middle" fill="#1e40af">SPEAKER / WRITER</text>
+          <text x="150" y="41" fontSize="4" fontWeight="bold" textAnchor="middle" fill="#2563eb">ETHOS (Credibility & Character)</text>
+
+          {/* Vertex 2: Audience (Bottom Left) */}
+          <rect x="15" y="115" width="80" height="22" rx="3" fill="#fef2f2" stroke="#dc2626" strokeWidth="1.2" />
+          <text x="55" y="125" fontSize="5.2" fontWeight="black" textAnchor="middle" fill="#991b1b">AUDIENCE / READER</text>
+          <text x="55" y="133" fontSize="4" fontWeight="bold" textAnchor="middle" fill="#dc2626">PATHOS (Emotions & Beliefs)</text>
+
+          {/* Vertex 3: Message / Subject (Bottom Right) */}
+          <rect x="205" y="115" width="80" height="22" rx="3" fill="#faf5ff" stroke="#7c3aed" strokeWidth="1.2" />
+          <text x="245" y="125" fontSize="5.2" fontWeight="black" textAnchor="middle" fill="#581c87">MESSAGE / SUBJECT</text>
+          <text x="245" y="133" fontSize="4" fontWeight="bold" textAnchor="middle" fill="#7c3aed">LOGOS (Reasoning & Evidence)</text>
+
+          {/* Bottom Summary */}
+          <text x="150" y="152" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#334155">
+            SPACE CAT: Speaker, Purpose, Audience, Context, Exigence | Choices, Appeals, Tone
+          </text>
+        </svg>
+      );
+
+    // =========================================================================
+    // AP COMPUTER SCIENCE A: JAVA MEMORY MODEL (STACK VS HEAP & ALIASING)
+    // =========================================================================
+    case 'csa_memory_reference_diagram':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="15" fontSize="6.2" fontWeight="black" textAnchor="middle" fill="#312e81">
+            JAVA MEMORY ARCHITECTURE: STACK (PRIMITIVES) VS HEAP (OBJECT REFERENCES)
+          </text>
+
+          {/* Left Column: Stack Memory */}
+          <rect x="20" y="24" width="115" height="115" rx="4" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" />
+          <text x="77" y="36" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#1e40af">STACK MEMORY (Local Vars)</text>
+
+          {/* Primitive Variable Box */}
+          <rect x="26" y="44" width="103" height="22" rx="2" fill="#ffffff" stroke="#93c5fd" strokeWidth="1" />
+          <text x="32" y="54" fontSize="4.5" fontWeight="bold" fill="#0f172a">int score = 95;</text>
+          <text x="32" y="62" fontSize="3.5" fill="#64748b">(Stores actual raw 32-bit value)</text>
+
+          {/* Object Reference Variable 1 Box */}
+          <rect x="26" y="72" width="103" height="26" rx="2" fill="#ffffff" stroke="#93c5fd" strokeWidth="1" />
+          <text x="32" y="82" fontSize="4.5" fontWeight="bold" fill="#4338ca">Student s1 = 0x4A2B;</text>
+          <text x="32" y="90" fontSize="3.5" fill="#64748b">(Stores MEMORY ADDRESS pointer)</text>
+
+          {/* Aliased Reference Variable 2 Box */}
+          <rect x="26" y="104" width="103" height="26" rx="2" fill="#ffffff" stroke="#93c5fd" strokeWidth="1" />
+          <text x="32" y="114" fontSize="4.5" fontWeight="bold" fill="#4338ca">Student s2 = s1; // Alias</text>
+          <text x="32" y="122" fontSize="3.5" fill="#dc2626">(Copies reference 0x4A2B, NOT object!)</text>
+
+          {/* Right Column: Heap Memory */}
+          <rect x="165" y="24" width="115" height="115" rx="4" fill="#faf5ff" stroke="#7c3aed" strokeWidth="1.5" />
+          <text x="222" y="36" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#581c87">HEAP MEMORY (Dynamic Objects)</text>
+
+          {/* Actual Object in Heap */}
+          <rect x="175" y="58" width="95" height="62" rx="4" fill="#ffffff" stroke="#c084fc" strokeWidth="1.5" />
+          <rect x="175" y="58" width="95" height="16" rx="3" fill="#f3e8ff" />
+          <text x="222" y="69" fontSize="4.5" fontWeight="bold" textAnchor="middle" fill="#6b21a8">Student Object @ 0x4A2B</text>
+          <text x="182" y="84" fontSize="4" fill="#0f172a">name = "Samira"</text>
+          <text x="182" y="94" fontSize="4" fill="#0f172a">gpa = 3.9</text>
+          <text x="182" y="104" fontSize="4" fill="#0f172a">id = 1042</text>
+          <text x="182" y="114" fontSize="3.2" fontWeight="bold" fill="#16a34a">s1.setName("Alex") affects s2!</text>
+
+          {/* Connecting Arrows from Stack to Heap */}
+          <path d="M 129 85 L 175 85" fill="none" stroke="#4338ca" strokeWidth="1.8" markerEnd="url(#arrow)" />
+          <path d="M 129 117 Q 152 117 175 100" fill="none" stroke="#dc2626" strokeWidth="1.8" markerEnd="url(#arrow)" />
+
+          <text x="150" y="152" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#475569">
+            Critical AP Trap: '==' compares reference addresses (0x4A2B == 0x4A2B); '.equals()' compares object content!
+          </text>
+        </svg>
+      );
+
+    // =========================================================================
+    // AP WORLD HISTORY: MODERN (COLUMBIAN EXCHANGE & TRIANGULAR TRADE)
+    // =========================================================================
+    case 'columbian_exchange_diagram':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="15" fontSize="6.2" fontWeight="black" textAnchor="middle" fill="#92400e">
+            THE COLUMBIAN EXCHANGE & TRANSATLANTIC FLOWS (1450–1750)
+          </text>
+
+          {/* Americas Box (Left) */}
+          <rect x="15" y="30" width="80" height="100" rx="4" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1.5" />
+          <text x="55" y="42" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#14532d">AMERICAS</text>
+          <text x="22" y="54" fontSize="3.8" fontWeight="bold" fill="#15803d">• High-Calorie Crops:</text>
+          <text x="26" y="62" fontSize="3.4" fill="#475569">Potatoes, Maize, Cassava</text>
+          <text x="22" y="72" fontSize="3.8" fontWeight="bold" fill="#15803d">• Cash Commodities:</text>
+          <text x="26" y="80" fontSize="3.4" fill="#475569">Sugar, Tobacco, Silver (Potosí)</text>
+          <text x="22" y="90" fontSize="3.8" fontWeight="bold" fill="#dc2626">• Devastating Disease:</text>
+          <text x="26" y="98" fontSize="3.4" fill="#991b1b">Smallpox, Measles (50–90% mortality)</text>
+          <text x="22" y="108" fontSize="3.8" fontWeight="bold" fill="#713f12">• Coerced Labor:</text>
+          <text x="26" y="116" fontSize="3.4" fill="#475569">Encomienda, Mita, Plantation Slavery</text>
+
+          {/* Europe Box (Top Right) */}
+          <rect x="205" y="24" width="80" height="50" rx="4" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" />
+          <text x="245" y="36" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#1e40af">EUROPE</text>
+          <text x="212" y="46" fontSize="3.6" fontWeight="bold" fill="#1d4ed8">• Population Explosion</text>
+          <text x="216" y="53" fontSize="3.2" fill="#475569">(due to American potatoes/corn)</text>
+          <text x="212" y="61" fontSize="3.6" fontWeight="bold" fill="#1d4ed8">• Mercantilism & Silver</text>
+          <text x="216" y="68" fontSize="3.2" fill="#475569">Manufactured goods, textiles, guns</text>
+
+          {/* Africa Box (Bottom Right) */}
+          <rect x="205" y="82" width="80" height="50" rx="4" fill="#fefce8" stroke="#ca8a04" strokeWidth="1.5" />
+          <text x="245" y="94" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#854d0e">AFRICA</text>
+          <text x="212" y="104" fontSize="3.6" fontWeight="bold" fill="#854d0e">• Middle Passage</text>
+          <text x="216" y="111" fontSize="3.2" fill="#475569">Enslaved persons to plantations</text>
+          <text x="212" y="119" fontSize="3.6" fontWeight="bold" fill="#854d0e">• Demographic Shift</text>
+          <text x="216" y="126" fontSize="3.2" fill="#475569">Gender imbalance, introduction of cassava</text>
+
+          {/* Curved Flow Lines */}
+          <path d="M 95 55 Q 150 25 205 38" fill="none" stroke="#16a34a" strokeWidth="1.8" />
+          <text x="150" y="38" fontSize="3.6" fontWeight="bold" fill="#15803d" textAnchor="middle">Potatoes, Corn, Silver ➔</text>
+
+          <path d="M 205 60 Q 150 75 95 85" fill="none" stroke="#2563eb" strokeWidth="1.8" />
+          <text x="150" y="73" fontSize="3.6" fontWeight="bold" fill="#1e40af" textAnchor="middle"> Horses, Cattle, Smallpox, Wheat</text>
+
+          <path d="M 205 108 Q 150 115 95 105" fill="none" stroke="#dc2626" strokeWidth="1.8" />
+          <text x="150" y="113" fontSize="3.6" fontWeight="bold" fill="#dc2626" textAnchor="middle"> Middle Passage (Enslaved Labor)</text>
+
+          <text x="150" y="152" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#475569">
+            CED Takeaway: Global biological transfer reshaped world demographics, diets, and mercantilist empires.
+          </text>
+        </svg>
+      );
+
+    // =========================================================================
+    // AP STATISTICS (17 OFFICIAL COLLEGE BOARD CED DIAGRAMS - 5 UNITS)
+    // =========================================================================
+    case 'boxplot_geometry':
+    case 'u1-diag-boxplot':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="15" fontSize="6.5" fontWeight="black" textAnchor="middle" fill="#0369a1">
+            MODIFIED BOXPLOT &amp; 1.5 &times; IQR OUTLIER FENCES
+          </text>
+          {/* Number Line */}
+          <line x1="25" y1="125" x2="275" y2="125" stroke="#94a3b8" strokeWidth="1.5" />
+          <text x="30" y="136" fontSize="4.8" textAnchor="middle" fill="#64748b">10</text>
+          <text x="80" y="136" fontSize="4.8" textAnchor="middle" fill="#64748b">30</text>
+          <text x="130" y="136" fontSize="4.8" textAnchor="middle" fill="#64748b">50</text>
+          <text x="180" y="136" fontSize="4.8" textAnchor="middle" fill="#64748b">70</text>
+          <text x="230" y="136" fontSize="4.8" textAnchor="middle" fill="#64748b">90</text>
+          <text x="270" y="136" fontSize="4.8" textAnchor="middle" fill="#64748b">110</text>
+
+          {/* Outlier Fences (Dashed Red Lines) */}
+          <line x1="55" y1="35" x2="55" y2="115" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3 3" />
+          <text x="55" y="30" fontSize="4.8" fontWeight="bold" textAnchor="middle" fill="#dc2626">Lower Fence: Q₁ - 1.5(IQR)</text>
+
+          <line x1="225" y1="35" x2="225" y2="115" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3 3" />
+          <text x="225" y="30" fontSize="4.8" fontWeight="bold" textAnchor="middle" fill="#dc2626">Upper Fence: Q₃ + 1.5(IQR)</text>
+
+          {/* Box (Q1=100, Q3=175, height=40, y=55) */}
+          <rect x="100" y="55" width="75" height="40" rx="3" fill="#e0f2fe" stroke="#0284c7" strokeWidth="2" />
+
+          {/* Median Line at 135 */}
+          <line x1="135" y1="55" x2="135" y2="95" stroke="#0369a1" strokeWidth="2.5" />
+          <text x="135" y="50" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#0369a1">Median (Q₂)</text>
+
+          {/* Q1 and Q3 Labels */}
+          <text x="100" y="106" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#0284c7">Q₁ (25%)</text>
+          <text x="175" y="106" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#0284c7">Q₃ (75%)</text>
+
+          {/* IQR Bracket */}
+          <line x1="100" y1="42" x2="175" y2="42" stroke="#0284c7" strokeWidth="1.2" />
+          <line x1="100" y1="40" x2="100" y2="44" stroke="#0284c7" strokeWidth="1.2" />
+          <line x1="175" y1="40" x2="175" y2="44" stroke="#0284c7" strokeWidth="1.2" />
+          <text x="137" y="39" fontSize="4.8" fontWeight="bold" textAnchor="middle" fill="#0284c7">IQR = Q₃ - Q₁ (Middle 50%)</text>
+
+          {/* Left Whisker (Min non-outlier at 75) */}
+          <line x1="75" y1="75" x2="100" y2="75" stroke="#0284c7" strokeWidth="1.8" />
+          <line x1="75" y1="65" x2="75" y2="85" stroke="#0284c7" strokeWidth="1.8" />
+          <text x="75" y="106" fontSize="4.6" fontWeight="bold" textAnchor="middle" fill="#0369a1">Min (In Fence)</text>
+
+          {/* Right Whisker (Max non-outlier at 210) */}
+          <line x1="175" y1="75" x2="210" y2="75" stroke="#0284c7" strokeWidth="1.8" />
+          <line x1="210" y1="65" x2="210" y2="85" stroke="#0284c7" strokeWidth="1.8" />
+          <text x="210" y="106" fontSize="4.6" fontWeight="bold" textAnchor="middle" fill="#0369a1">Max (In Fence)</text>
+
+          {/* Outlier Dots beyond fences */}
+          <circle cx="42" cy="75" r="3.5" fill="#ef4444" stroke="#b91c1c" strokeWidth="1" />
+          <text x="42" y="90" fontSize="4.5" fontWeight="bold" textAnchor="middle" fill="#dc2626">Outlier</text>
+
+          <circle cx="245" cy="75" r="3.5" fill="#ef4444" stroke="#b91c1c" strokeWidth="1" />
+          <circle cx="260" cy="75" r="3.5" fill="#ef4444" stroke="#b91c1c" strokeWidth="1" />
+          <text x="252" y="90" fontSize="4.5" fontWeight="bold" textAnchor="middle" fill="#dc2626">Outliers</text>
+
+          {/* Takeaway text */}
+          <text x="150" y="152" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#475569">
+            CED Rule: Whiskers extend only to the most extreme observation inside fences, NEVER to the fences!
+          </text>
+        </svg>
+      );
+
+    case 'distribution_skew_comparison':
+    case 'u1-diag-skewness':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="15" fontSize="6.5" fontWeight="black" textAnchor="middle" fill="#094cb2">
+            SHAPE, SKEWNESS &amp; MEASURES OF CENTER (MEAN VS. MEDIAN)
+          </text>
+
+          {/* Panel 1: Skewed Left */}
+          <g transform="translate(10, 22)">
+            <rect x="0" y="0" width="88" height="110" rx="4" fill="#fafafa" stroke="#e2e8f0" strokeWidth="1" />
+            <text x="44" y="14" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#dc2626">SKEWED LEFT</text>
+            <text x="44" y="21" fontSize="4" textAnchor="middle" fill="#64748b">(Negative Skew - Long Left Tail)</text>
+            <line x1="8" y1="88" x2="80" y2="88" stroke="#cbd5e1" strokeWidth="1" />
+            {/* Curve peaking to the right */}
+            <path d="M 12 88 Q 30 84 50 65 Q 65 35 72 35 Q 76 35 78 88" fill="none" stroke="#dc2626" strokeWidth="2" />
+            {/* Markers: Mean < Median < Mode */}
+            <line x1="42" y1="62" x2="42" y2="88" stroke="#dc2626" strokeWidth="1.2" strokeDasharray="2 2" />
+            <line x1="58" y1="48" x2="58" y2="88" stroke="#0284c7" strokeWidth="1.2" strokeDasharray="2 2" />
+            <line x1="72" y1="35" x2="72" y2="88" stroke="#16a34a" strokeWidth="1.2" strokeDasharray="2 2" />
+            <text x="42" y="96" fontSize="4.2" fontWeight="bold" textAnchor="middle" fill="#dc2626">Mean</text>
+            <text x="58" y="96" fontSize="4.2" fontWeight="bold" textAnchor="middle" fill="#0284c7">Med</text>
+            <text x="73" y="96" fontSize="4.2" fontWeight="bold" textAnchor="middle" fill="#16a34a">Mode</text>
+            <text x="44" y="105" fontSize="4.5" fontWeight="black" textAnchor="middle" fill="#b91c1c">Mean &lt; Median</text>
+          </g>
+
+          {/* Panel 2: Symmetric */}
+          <g transform="translate(106, 22)">
+            <rect x="0" y="0" width="88" height="110" rx="4" fill="#fafafa" stroke="#e2e8f0" strokeWidth="1" />
+            <text x="44" y="14" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#059669">SYMMETRIC (BELL)</text>
+            <text x="44" y="21" fontSize="4" textAnchor="middle" fill="#64748b">(Normal / Uniform Shape)</text>
+            <line x1="8" y1="88" x2="80" y2="88" stroke="#cbd5e1" strokeWidth="1" />
+            {/* Bell curve */}
+            <path d="M 12 88 Q 30 85 36 65 Q 44 35 52 65 Q 58 85 76 88" fill="none" stroke="#059669" strokeWidth="2" />
+            {/* Peak at 44: Mean = Median = Mode */}
+            <line x1="44" y1="35" x2="44" y2="88" stroke="#059669" strokeWidth="1.8" />
+            <text x="44" y="96" fontSize="4.2" fontWeight="bold" textAnchor="middle" fill="#059669">Mean = Median</text>
+            <text x="44" y="105" fontSize="4.5" fontWeight="black" textAnchor="middle" fill="#047857">Mean &asymp; Median</text>
+          </g>
+
+          {/* Panel 3: Skewed Right */}
+          <g transform="translate(202, 22)">
+            <rect x="0" y="0" width="88" height="110" rx="4" fill="#fafafa" stroke="#e2e8f0" strokeWidth="1" />
+            <text x="44" y="14" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#2563eb">SKEWED RIGHT</text>
+            <text x="44" y="21" fontSize="4" textAnchor="middle" fill="#64748b">(Positive Skew - Long Right Tail)</text>
+            <line x1="8" y1="88" x2="80" y2="88" stroke="#cbd5e1" strokeWidth="1" />
+            {/* Curve peaking to the left */}
+            <path d="M 10 88 Q 12 35 16 35 Q 23 35 38 65 Q 58 84 76 88" fill="none" stroke="#2563eb" strokeWidth="2" />
+            {/* Markers: Mode < Median < Mean */}
+            <line x1="16" y1="35" x2="16" y2="88" stroke="#16a34a" strokeWidth="1.2" strokeDasharray="2 2" />
+            <line x1="30" y1="48" x2="30" y2="88" stroke="#0284c7" strokeWidth="1.2" strokeDasharray="2 2" />
+            <line x1="46" y1="62" x2="46" y2="88" stroke="#dc2626" strokeWidth="1.2" strokeDasharray="2 2" />
+            <text x="16" y="96" fontSize="4.2" fontWeight="bold" textAnchor="middle" fill="#16a34a">Mode</text>
+            <text x="30" y="96" fontSize="4.2" fontWeight="bold" textAnchor="middle" fill="#0284c7">Med</text>
+            <text x="46" y="96" fontSize="4.2" fontWeight="bold" textAnchor="middle" fill="#dc2626">Mean</text>
+            <text x="44" y="105" fontSize="4.5" fontWeight="black" textAnchor="middle" fill="#1d4ed8">Mean &gt; Median</text>
+          </g>
+
+          {/* Bottom Takeaway */}
+          <text x="150" y="152" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#475569">
+            Key Rule: The Mean is pulled toward extreme tail values; the Median is resistant to skewness!
+          </text>
+        </svg>
+      );
+
+    case 'normal_curve_empirical_rule':
+    case 'u1-diag-empirical':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="15" fontSize="6.5" fontWeight="black" textAnchor="middle" fill="#1e3a8a">
+            THE EMPIRICAL RULE (68–95–99.7% BELL CURVE)
+          </text>
+
+          {/* Normal Curve */}
+          <path
+            d="M 20 120 Q 80 120 110 80 Q 135 30 150 25 Q 165 30 190 80 Q 220 120 280 120"
+            fill="none"
+            stroke="#2563eb"
+            strokeWidth="2.5"
+          />
+
+          {/* Shaded Middle 68% (mu - sigma to mu + sigma: 125 to 175) */}
+          <path
+            d="M 125 120 L 125 58 Q 135 30 150 25 Q 165 30 175 58 L 175 120 Z"
+            fill="#dbeafe"
+            opacity="0.6"
+          />
+
+          {/* Vertical Guides */}
+          <line x1="150" y1="25" x2="150" y2="120" stroke="#1d4ed8" strokeWidth="1.8" />
+          <line x1="125" y1="58" x2="125" y2="120" stroke="#3b82f6" strokeWidth="1" strokeDasharray="3 2" />
+          <line x1="175" y1="58" x2="175" y2="120" stroke="#3b82f6" strokeWidth="1" strokeDasharray="3 2" />
+          <line x1="100" y1="92" x2="100" y2="120" stroke="#93c5fd" strokeWidth="1" strokeDasharray="3 2" />
+          <line x1="200" y1="92" x2="200" y2="120" stroke="#93c5fd" strokeWidth="1" strokeDasharray="3 2" />
+          <line x1="75" y1="112" x2="75" y2="120" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3 2" />
+          <line x1="225" y1="112" x2="225" y2="120" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3 2" />
+
+          {/* Percentages inside sections */}
+          <text x="137" y="75" fontSize="5.5" fontWeight="black" fill="#1e40af" textAnchor="middle">34%</text>
+          <text x="163" y="75" fontSize="5.5" fontWeight="black" fill="#1e40af" textAnchor="middle">34%</text>
+          <text x="112" y="100" fontSize="4.8" fontWeight="bold" fill="#2563eb" textAnchor="middle">13.5%</text>
+          <text x="188" y="100" fontSize="4.8" fontWeight="bold" fill="#2563eb" textAnchor="middle">13.5%</text>
+          <text x="87" y="112" fontSize="4" fontWeight="bold" fill="#64748b" textAnchor="middle">2.35%</text>
+          <text x="213" y="112" fontSize="4" fontWeight="bold" fill="#64748b" textAnchor="middle">2.35%</text>
+          <text x="45" y="117" fontSize="3.6" fill="#94a3b8" textAnchor="middle">0.15%</text>
+          <text x="255" y="117" fontSize="3.6" fill="#94a3b8" textAnchor="middle">0.15%</text>
+
+          {/* Axis Baseline */}
+          <line x1="15" y1="120" x2="285" y2="120" stroke="#475569" strokeWidth="1.5" />
+
+          {/* X Axis Labels (mu +/- sigma) */}
+          <text x="75" y="130" fontSize="4.5" textAnchor="middle" fill="#475569">&mu;-3&sigma;</text>
+          <text x="100" y="130" fontSize="4.5" textAnchor="middle" fill="#475569">&mu;-2&sigma;</text>
+          <text x="125" y="130" fontSize="4.5" textAnchor="middle" fill="#475569">&mu;-&sigma;</text>
+          <text x="150" y="130" fontSize="5" fontWeight="black" textAnchor="middle" fill="#1e3a8a">&mu; (Mean)</text>
+          <text x="175" y="130" fontSize="4.5" textAnchor="middle" fill="#475569">&mu;+&sigma;</text>
+          <text x="200" y="130" fontSize="4.5" textAnchor="middle" fill="#475569">&mu;+2&sigma;</text>
+          <text x="225" y="130" fontSize="4.5" textAnchor="middle" fill="#475569">&mu;+3&sigma;</text>
+
+          {/* Z-Scores */}
+          <text x="75" y="139" fontSize="4" textAnchor="middle" fill="#94a3b8">z = -3</text>
+          <text x="100" y="139" fontSize="4" textAnchor="middle" fill="#94a3b8">z = -2</text>
+          <text x="125" y="139" fontSize="4" textAnchor="middle" fill="#94a3b8">z = -1</text>
+          <text x="150" y="139" fontSize="4.2" fontWeight="bold" textAnchor="middle" fill="#1e3a8a">z = 0</text>
+          <text x="175" y="139" fontSize="4" textAnchor="middle" fill="#94a3b8">z = +1</text>
+          <text x="200" y="139" fontSize="4" textAnchor="middle" fill="#94a3b8">z = +2</text>
+          <text x="225" y="139" fontSize="4" textAnchor="middle" fill="#94a3b8">z = +3</text>
+
+          {/* Empirical Rule Brackets */}
+          <text x="150" y="42" fontSize="5.5" fontWeight="black" fill="#1e40af" textAnchor="middle">&larr; 68% within 1 SD &rarr;</text>
+
+          <text x="150" y="153" fontSize="4.8" fontWeight="bold" textAnchor="middle" fill="#475569">
+            CED Standard: Apply 68-95-99.7% ONLY when the distribution is stated or verified to be approximately Normal!
+          </text>
+        </svg>
+      );
+
+    case 'sampling_methods_comparison':
+    case 'u1-diag-sampling':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="14" fontSize="6.2" fontWeight="black" textAnchor="middle" fill="#0f172a">
+            PROBABILITY SAMPLING METHODOLOGIES (STUDY DESIGN)
+          </text>
+
+          {/* 4 Quadrants */}
+          {/* Q1: SRS */}
+          <g transform="translate(15, 20)">
+            <rect x="0" y="0" width="130" height="52" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1" />
+            <text x="8" y="12" fontSize="5.2" fontWeight="black" fill="#1e40af">1. Simple Random Sample (SRS)</text>
+            <text x="8" y="21" fontSize="4" fill="#334155">&bull; Every individual AND group of size n has equal chance.</text>
+            <text x="8" y="29" fontSize="4" fill="#334155">&bull; Method: Number list 1 to N, use RNG without replacement.</text>
+            <rect x="8" y="34" width="114" height="13" rx="2" fill="#dbeafe" />
+            <text x="65" y="43" fontSize="4" fontWeight="bold" fill="#1d4ed8" textAnchor="middle">GOLD STANDARD: Unbiased baseline</text>
+          </g>
+
+          {/* Q2: Stratified */}
+          <g transform="translate(155, 20)">
+            <rect x="0" y="0" width="130" height="52" rx="4" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1" />
+            <text x="8" y="12" fontSize="5.2" fontWeight="black" fill="#15803d">2. Stratified Random Sample</text>
+            <text x="8" y="21" fontSize="4" fill="#334155">&bull; Divide population into HOMOGENEOUS strata (e.g. Grades).</text>
+            <text x="8" y="29" fontSize="4" fill="#334155">&bull; Select an independent SRS from EVERY stratum.</text>
+            <rect x="8" y="34" width="114" height="13" rx="2" fill="#dcfce7" />
+            <text x="65" y="43" fontSize="4" fontWeight="bold" fill="#166534" textAnchor="middle">Mnemonic: "SOME FROM ALL" &bull; Reduces sampling error</text>
+          </g>
+
+          {/* Q3: Cluster */}
+          <g transform="translate(15, 78)">
+            <rect x="0" y="0" width="130" height="52" rx="4" fill="#fefce8" stroke="#ca8a04" strokeWidth="1" />
+            <text x="8" y="12" fontSize="5.2" fontWeight="black" fill="#854d0e">3. Cluster Sample</text>
+            <text x="8" y="21" fontSize="4" fill="#334155">&bull; Divide into HETEROGENEOUS clusters (mini-populations).</text>
+            <text x="8" y="29" fontSize="4" fill="#334155">&bull; Randomly pick whole clusters; sample EVERY individual in them.</text>
+            <rect x="8" y="34" width="114" height="13" rx="2" fill="#fef08a" />
+            <text x="65" y="43" fontSize="4" fontWeight="bold" fill="#713f12" textAnchor="middle">Mnemonic: "ALL FROM SOME" &bull; Practical &amp; cost-efficient</text>
+          </g>
+
+          {/* Q4: Systematic */}
+          <g transform="translate(155, 78)">
+            <rect x="0" y="0" width="130" height="52" rx="4" fill="#fdf2f8" stroke="#db2777" strokeWidth="1" />
+            <text x="8" y="12" fontSize="5.2" fontWeight="black" fill="#9d174d">4. Systematic Random Sample</text>
+            <text x="8" y="21" fontSize="4" fill="#334155">&bull; Order population sequentially 1 to N.</text>
+            <text x="8" y="29" fontSize="4" fill="#334155">&bull; Choose random starting point from 1 to k, then every k-th.</text>
+            <rect x="8" y="34" width="114" height="13" rx="2" fill="#fce7f3" />
+            <text x="65" y="43" fontSize="4" fontWeight="bold" fill="#831843" textAnchor="middle">Caution: Avoid periodic cyclical patterns in list</text>
+          </g>
+
+          {/* Takeaway */}
+          <text x="150" y="148" fontSize="4.8" fontWeight="bold" textAnchor="middle" fill="#475569">
+            Sampling Trap: Stratified uses homogeneous groups; Cluster uses heterogeneous mini-groups!
+          </text>
+        </svg>
+      );
+
+    case 'clt_distribution_progression':
+    case 'u2-diag-clt':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="15" fontSize="6.2" fontWeight="black" textAnchor="middle" fill="#1e3a8a">
+            THE CENTRAL LIMIT THEOREM (SAMPLING DISTRIBUTION OF x̄)
+          </text>
+
+          {/* 3 Panels: n=1, n=5, n=30 */}
+          {/* Panel 1: Population (n=1) */}
+          <g transform="translate(10, 22)">
+            <rect x="0" y="0" width="88" height="110" rx="4" fill="#fafafa" stroke="#e2e8f0" strokeWidth="1" />
+            <text x="44" y="13" fontSize="5.2" fontWeight="black" textAnchor="middle" fill="#dc2626">POPULATION (n = 1)</text>
+            <text x="44" y="20" fontSize="4" textAnchor="middle" fill="#64748b">Strongly Skewed Right</text>
+            <line x1="8" y1="80" x2="80" y2="80" stroke="#cbd5e1" strokeWidth="1" />
+            <path d="M 10 80 Q 14 30 20 30 Q 30 30 45 65 Q 65 78 78 80" fill="none" stroke="#dc2626" strokeWidth="2" />
+            <line x1="28" y1="35" x2="28" y2="80" stroke="#dc2626" strokeWidth="1" strokeDasharray="2 2" />
+            <text x="28" y="90" fontSize="4.2" fontWeight="bold" textAnchor="middle" fill="#dc2626">&mu;</text>
+            <text x="44" y="100" fontSize="4" textAnchor="middle" fill="#64748b">Spread = &sigma;</text>
+            <text x="44" y="106" fontSize="4" fontWeight="bold" textAnchor="middle" fill="#dc2626">Non-Normal</text>
+          </g>
+
+          {/* Arrow 1 */}
+          <text x="100" y="70" fontSize="8" fontWeight="black" fill="#0284c7" textAnchor="middle">&rarr;</text>
+
+          {/* Panel 2: n=5 */}
+          <g transform="translate(106, 22)">
+            <rect x="0" y="0" width="88" height="110" rx="4" fill="#fafafa" stroke="#e2e8f0" strokeWidth="1" />
+            <text x="44" y="13" fontSize="5.2" fontWeight="black" textAnchor="middle" fill="#ea580c">SAMPLE SIZE n = 5</text>
+            <text x="44" y="20" fontSize="4" textAnchor="middle" fill="#64748b">Slight Skew Remaining</text>
+            <line x1="8" y1="80" x2="80" y2="80" stroke="#cbd5e1" strokeWidth="1" />
+            <path d="M 12 80 Q 20 75 32 40 Q 40 40 52 70 Q 64 78 76 80" fill="none" stroke="#ea580c" strokeWidth="2" />
+            <line x1="36" y1="40" x2="36" y2="80" stroke="#ea580c" strokeWidth="1" strokeDasharray="2 2" />
+            <text x="36" y="90" fontSize="4.2" fontWeight="bold" textAnchor="middle" fill="#ea580c">&mu;</text>
+            <text x="44" y="100" fontSize="4" textAnchor="middle" fill="#64748b">Spread = &sigma;/&radic;5</text>
+            <text x="44" y="106" fontSize="4" fontWeight="bold" textAnchor="middle" fill="#ea580c">Moderate Skew</text>
+          </g>
+
+          {/* Arrow 2 */}
+          <text x="198" y="70" fontSize="8" fontWeight="black" fill="#0284c7" textAnchor="middle">&rarr;</text>
+
+          {/* Panel 3: n >= 30 (CLT Active) */}
+          <g transform="translate(202, 22)">
+            <rect x="0" y="0" width="88" height="110" rx="4" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1.2" />
+            <text x="44" y="13" fontSize="5.2" fontWeight="black" textAnchor="middle" fill="#15803d">CLT: n &ge; 30 (APPROX NORMAL)</text>
+            <text x="44" y="20" fontSize="4" textAnchor="middle" fill="#166534">Symmetric Bell Curve</text>
+            <line x1="8" y1="80" x2="80" y2="80" stroke="#cbd5e1" strokeWidth="1" />
+            <path d="M 16 80 Q 30 78 36 60 Q 44 30 52 60 Q 58 78 72 80" fill="none" stroke="#16a34a" strokeWidth="2.2" />
+            <line x1="44" y1="30" x2="44" y2="80" stroke="#15803d" strokeWidth="1.2" strokeDasharray="2 2" />
+            <text x="44" y="90" fontSize="4.2" fontWeight="bold" textAnchor="middle" fill="#15803d">&mu;</text>
+            <text x="44" y="100" fontSize="4" textAnchor="middle" fill="#166534">Spread = &sigma;/&radic;30 (Narrow)</text>
+            <text x="44" y="106" fontSize="4" fontWeight="black" textAnchor="middle" fill="#15803d">N(&mu;, &sigma;/&radic;n)</text>
+          </g>
+
+          {/* Bottom Takeaway */}
+          <text x="150" y="152" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#475569">
+            CLT Rule: Applies strictly to the distribution of sample means x̄, NEVER to the individual sample data!
+          </text>
+        </svg>
+      );
+
+    case 'variance_combination_model':
+    case 'u2-diag-variance':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="14" fontSize="6.2" fontWeight="black" textAnchor="middle" fill="#991b1b">
+            INDEPENDENT RANDOM VARIABLES: WHY VARIANCES ALWAYS ADD!
+          </text>
+
+          {/* Pythagorean geometric representation */}
+          <g transform="translate(20, 22)">
+            {/* Horizontal Leg: Var(X) */}
+            <line x1="10" y1="95" x2="90" y2="95" stroke="#2563eb" strokeWidth="3" />
+            <text x="50" y="105" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#2563eb">&sigma;_X = 3 (Var = 9)</text>
+
+            {/* Vertical Leg: Var(Y) */}
+            <line x1="90" y1="95" x2="90" y2="35" stroke="#ea580c" strokeWidth="3" />
+            <text x="100" y="65" fontSize="5" fontWeight="bold" fill="#ea580c">&sigma;_Y = 4 (Var = 16)</text>
+
+            {/* Right Angle Symbol */}
+            <rect x="80" y="85" width="10" height="10" fill="none" stroke="#94a3b8" strokeWidth="1" />
+
+            {/* Hypotenuse: Combined SD */}
+            <line x1="10" y1="95" x2="90" y2="35" stroke="#16a34a" strokeWidth="3.5" />
+            <text x="42" y="58" fontSize="5.5" fontWeight="black" fill="#15803d">&sigma;_{'{X &plusmn; Y}'} = &radic;(3&sup2; + 4&sup2;) = 5</text>
+          </g>
+
+          {/* Rules Panel on the Right */}
+          <g transform="translate(150, 24)">
+            <rect x="0" y="0" width="135" height="95" rx="4" fill="#fafafa" stroke="#e2e8f0" strokeWidth="1" />
+            <text x="67" y="14" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#0f172a">CORE FORMULAS (INDEPENDENT X, Y)</text>
+
+            <rect x="8" y="20" width="119" height="18" rx="3" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
+            <text x="67" y="32" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#1e40af">
+              Var(X + Y) = Var(X) + Var(Y)
+            </text>
+
+            <rect x="8" y="42" width="119" height="24" rx="3" fill="#fef2f2" stroke="#fecaca" strokeWidth="1.2" />
+            <text x="67" y="54" fontSize="5" fontWeight="black" textAnchor="middle" fill="#dc2626">
+              Var(X - Y) = Var(X) + Var(Y)
+            </text>
+            <text x="67" y="62" fontSize="4.2" fontWeight="bold" textAnchor="middle" fill="#b91c1c">
+              NEVER SUBTRACT VARIANCES!
+            </text>
+
+            <text x="67" y="78" fontSize="4.2" textAnchor="middle" fill="#475569">
+              Subtracting uncertain quantities
+            </text>
+            <text x="67" y="86" fontSize="4.2" fontWeight="bold" textAnchor="middle" fill="#0f172a">
+              ACCUMULATES overall uncertainty!
+            </text>
+          </g>
+
+          {/* Takeaway */}
+          <text x="150" y="152" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#475569">
+            #1 AP Exam Trap: Standard deviations NEVER add directly: &sigma;_{'{X+Y}'} &ne; &sigma;_X + &sigma;_Y! Always square &rarr; add &rarr; square root!
+          </text>
+        </svg>
+      );
+
+    case 'binomial_normal_approximation':
+    case 'u2-diag-binomial':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="15" fontSize="6.2" fontWeight="black" textAnchor="middle" fill="#094cb2">
+            BINOMIAL DISTRIBUTION &amp; NORMAL APPROXIMATION
+          </text>
+
+          {/* Axes */}
+          <line x1="25" y1="120" x2="275" y2="120" stroke="#64748b" strokeWidth="1.2" />
+          <line x1="25" y1="25" x2="25" y2="120" stroke="#64748b" strokeWidth="1.2" />
+          <text x="18" y="25" fontSize="4.5" fill="#64748b">P(X)</text>
+          <text x="275" y="128" fontSize="4.5" fill="#64748b">k (Successes)</text>
+
+          {/* Binomial Histogram Bars (Discrete) */}
+          <rect x="45" y="112" width="12" height="8" fill="#bae6fd" stroke="#0284c7" strokeWidth="0.8" />
+          <rect x="60" y="102" width="12" height="18" fill="#bae6fd" stroke="#0284c7" strokeWidth="0.8" />
+          <rect x="75" y="85" width="12" height="35" fill="#bae6fd" stroke="#0284c7" strokeWidth="0.8" />
+          <rect x="90" y="65" width="12" height="55" fill="#bae6fd" stroke="#0284c7" strokeWidth="0.8" />
+          <rect x="105" y="48" width="12" height="72" fill="#bae6fd" stroke="#0284c7" strokeWidth="0.8" />
+          <rect x="120" y="38" width="12" height="82" fill="#bae6fd" stroke="#0284c7" strokeWidth="0.8" />
+          <rect x="135" y="35" width="12" height="85" fill="#7dd3fc" stroke="#0284c7" strokeWidth="1" />
+          <rect x="150" y="38" width="12" height="82" fill="#bae6fd" stroke="#0284c7" strokeWidth="0.8" />
+          <rect x="165" y="48" width="12" height="72" fill="#bae6fd" stroke="#0284c7" strokeWidth="0.8" />
+          <rect x="180" y="65" width="12" height="55" fill="#bae6fd" stroke="#0284c7" strokeWidth="0.8" />
+          <rect x="195" y="85" width="12" height="35" fill="#bae6fd" stroke="#0284c7" strokeWidth="0.8" />
+          <rect x="210" y="102" width="12" height="18" fill="#bae6fd" stroke="#0284c7" strokeWidth="0.8" />
+          <rect x="225" y="112" width="12" height="8" fill="#bae6fd" stroke="#0284c7" strokeWidth="0.8" />
+
+          {/* Continuous Normal Bell Curve Overlay */}
+          <path
+            d="M 40 118 Q 80 115 105 70 Q 125 35 141 32 Q 157 35 177 70 Q 202 115 242 118"
+            fill="none"
+            stroke="#1d4ed8"
+            strokeWidth="2.2"
+          />
+
+          {/* Condition Badges on the Right */}
+          <rect x="210" y="30" width="80" height="36" rx="4" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1" />
+          <text x="250" y="40" fontSize="4.5" fontWeight="black" textAnchor="middle" fill="#15803d">LARGE COUNTS CONDITION</text>
+          <text x="215" y="49" fontSize="4.2" fontWeight="bold" fill="#166534">&bull; np &ge; 10</text>
+          <text x="215" y="58" fontSize="4.2" fontWeight="bold" fill="#166534">&bull; n(1 - p) &ge; 10</text>
+
+          {/* Center line */}
+          <line x1="141" y1="32" x2="141" y2="120" stroke="#dc2626" strokeWidth="1.2" strokeDasharray="3 2" />
+          <text x="141" y="128" fontSize="4.8" fontWeight="bold" textAnchor="middle" fill="#dc2626">&mu; = np</text>
+
+          {/* Takeaway */}
+          <text x="150" y="152" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#475569">
+            When expected successes &ge; 10 and expected failures &ge; 10, Binomial(n, p) &asymp; Normal(&mu;=np, &sigma;=&radic;(np(1-p))).
+          </text>
+        </svg>
+      );
+
+    case 'hypothesis_decision_matrix':
+    case 'u3-diag-errors':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="14" fontSize="6.2" fontWeight="black" textAnchor="middle" fill="#0f172a">
+            HYPOTHESIS TESTING: 2&times;2 DECISION MATRIX &amp; ERROR TYPES
+          </text>
+
+          {/* Column Headers: True State of Nature */}
+          <text x="125" y="27" fontSize="5.2" fontWeight="black" textAnchor="middle" fill="#16a34a">H₀ IS ACTUALLY TRUE</text>
+          <text x="225" y="27" fontSize="5.2" fontWeight="black" textAnchor="middle" fill="#dc2626">H₀ IS ACTUALLY FALSE (H_a True)</text>
+
+          {/* Row Headers */}
+          <text x="15" y="55" fontSize="5" fontWeight="black" fill="#dc2626">REJECT H₀</text>
+          <text x="15" y="62" fontSize="3.8" fill="#64748b">(Statistically Significant)</text>
+
+          <text x="15" y="100" fontSize="5" fontWeight="black" fill="#1e40af">FAIL TO</text>
+          <text x="15" y="107" fontSize="5" fontWeight="black" fill="#1e40af">REJECT H₀</text>
+          <text x="15" y="114" fontSize="3.8" fill="#64748b">(Inconclusive)</text>
+
+          {/* 4 Cells */}
+          {/* Cell 1: Reject H0 when H0 True -> TYPE I ERROR */}
+          <rect x="75" y="34" width="100" height="42" rx="4" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" />
+          <text x="125" y="47" fontSize="6" fontWeight="black" textAnchor="middle" fill="#dc2626">TYPE I ERROR (&alpha;)</text>
+          <text x="125" y="56" fontSize="4.2" textAnchor="middle" fill="#991b1b">"False Alarm"</text>
+          <text x="125" y="65" fontSize="4" textAnchor="middle" fill="#7f1d1d">P(Reject H₀ | H₀ True) = &alpha;</text>
+
+          {/* Cell 2: Reject H0 when H0 False -> POWER */}
+          <rect x="180" y="34" width="105" height="42" rx="4" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1.5" />
+          <text x="232" y="47" fontSize="6" fontWeight="black" textAnchor="middle" fill="#15803d">CORRECT: POWER (1 - &beta;)</text>
+          <text x="232" y="56" fontSize="4.2" textAnchor="middle" fill="#166534">"True Positive Detection"</text>
+          <text x="232" y="65" fontSize="4" textAnchor="middle" fill="#14532d">P(Reject H₀ | H₀ False) = Power</text>
+
+          {/* Cell 3: Fail to Reject H0 when H0 True -> CORRECT DECISION */}
+          <rect x="75" y="80" width="100" height="42" rx="4" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1.5" />
+          <text x="125" y="93" fontSize="6" fontWeight="black" textAnchor="middle" fill="#15803d">CORRECT DECISION (1 - &alpha;)</text>
+          <text x="125" y="102" fontSize="4.2" textAnchor="middle" fill="#166534">"True Negative / Retain Truth"</text>
+          <text x="125" y="111" fontSize="4" textAnchor="middle" fill="#14532d">Confidence Level: 1 - &alpha;</text>
+
+          {/* Cell 4: Fail to Reject H0 when H0 False -> TYPE II ERROR */}
+          <rect x="180" y="80" width="105" height="42" rx="4" fill="#fffbeb" stroke="#f59e0b" strokeWidth="1.5" />
+          <text x="232" y="93" fontSize="6" fontWeight="black" textAnchor="middle" fill="#b45309">TYPE II ERROR (&beta;)</text>
+          <text x="232" y="102" fontSize="4.2" textAnchor="middle" fill="#92400e">"Missed Detection / False Negative"</text>
+          <text x="232" y="111" fontSize="4" textAnchor="middle" fill="#78350f">P(Fail to Reject | H₀ False) = &beta;</text>
+
+          {/* Takeaway */}
+          <text x="150" y="152" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#475569">
+            Power Golden Rule: Increasing sample size n increases Power (1 - &beta;) without inflating Type I Error (&alpha;)!
+          </text>
+        </svg>
+      );
+
+    case 'power_curve_type1_type2':
+    case 'u3-diag-power':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="14" fontSize="6.2" fontWeight="black" textAnchor="middle" fill="#1e3a8a">
+            POWER, SIGNIFICANCE LEVEL (&alpha;) &amp; TYPE II ERROR (&beta;)
+          </text>
+
+          {/* Axis */}
+          <line x1="20" y1="120" x2="280" y2="120" stroke="#475569" strokeWidth="1.2" />
+
+          {/* Null Distribution H0 centered at 100 */}
+          <path
+            d="M 30 120 Q 70 120 90 70 Q 100 35 110 70 Q 130 120 170 120"
+            fill="none"
+            stroke="#2563eb"
+            strokeWidth="2"
+          />
+          <text x="100" y="30" fontSize="5.5" fontWeight="bold" fill="#2563eb" textAnchor="middle">H₀ Curve (p₀ or &mu;₀)</text>
+
+          {/* Alternative Distribution Ha centered at 180 */}
+          <path
+            d="M 110 120 Q 150 120 170 70 Q 180 35 190 70 Q 210 120 250 120"
+            fill="none"
+            stroke="#16a34a"
+            strokeWidth="2"
+          />
+          <text x="180" y="30" fontSize="5.5" fontWeight="bold" fill="#16a34a" textAnchor="middle">H_a Curve (True Truth)</text>
+
+          {/* Decision Cutoff Line C at x=135 */}
+          <line x1="135" y1="25" x2="135" y2="120" stroke="#dc2626" strokeWidth="2" strokeDasharray="3 2" />
+          <text x="135" y="20" fontSize="5" fontWeight="black" textAnchor="middle" fill="#dc2626">Critical Value Cutoff (C)</text>
+
+          {/* Shaded Alpha in H0 tail (right of C) */}
+          <path
+            d="M 135 120 L 135 90 Q 145 115 170 120 Z"
+            fill="#ef4444"
+            opacity="0.7"
+          />
+          <text x="145" y="105" fontSize="4.5" fontWeight="black" fill="#b91c1c">&alpha;</text>
+
+          {/* Shaded Beta in Ha tail (left of C) */}
+          <path
+            d="M 110 120 Q 125 120 135 95 L 135 120 Z"
+            fill="#f59e0b"
+            opacity="0.6"
+          />
+          <text x="125" y="112" fontSize="4.5" fontWeight="black" fill="#b45309">&beta;</text>
+
+          {/* Power Shading in Ha (right of C) */}
+          <path
+            d="M 135 120 L 135 95 Q 155 45 180 35 Q 200 65 250 120 Z"
+            fill="#dcfce7"
+            opacity="0.5"
+          />
+          <text x="190" y="70" fontSize="6" fontWeight="black" fill="#15803d">POWER = 1 - &beta;</text>
+
+          {/* Legend Badges */}
+          <rect x="25" y="128" width="55" height="12" rx="2" fill="#fee2e2" />
+          <text x="52" y="136" fontSize="4" fontWeight="bold" fill="#b91c1c" textAnchor="middle">&alpha; = P(Type I Error)</text>
+
+          <rect x="85" y="128" width="55" height="12" rx="2" fill="#fef3c7" />
+          <text x="112" y="136" fontSize="4" fontWeight="bold" fill="#92400e" textAnchor="middle">&beta; = P(Type II Error)</text>
+
+          <rect x="145" y="128" width="60" height="12" rx="2" fill="#dcfce7" />
+          <text x="175" y="136" fontSize="4" fontWeight="bold" fill="#166534" textAnchor="middle">Power = 1 - &beta; (Target &ge; 80%)</text>
+
+          <text x="150" y="153" fontSize="4.8" fontWeight="bold" textAnchor="middle" fill="#475569">
+            4 Ways to Increase Power: (1) Increase n, (2) Increase &alpha;, (3) Increase true effect size, (4) Decrease &sigma;.
+          </text>
+        </svg>
+      );
+
+    case 'chi_square_curve':
+    case 'u3-diag-chisquare':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="14" fontSize="6.2" fontWeight="black" textAnchor="middle" fill="#9d174d">
+            CHI-SQUARE DISTRIBUTION GEOMETRY (&chi;&sup2; REJECTION REGION)
+          </text>
+
+          {/* Coordinate Axes */}
+          <line x1="30" y1="120" x2="280" y2="120" stroke="#475569" strokeWidth="1.5" />
+          <line x1="30" y1="20" x2="30" y2="120" stroke="#475569" strokeWidth="1.5" />
+          <text x="30" y="132" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#475569">0 (Strictly &ge; 0)</text>
+          <text x="280" y="128" fontSize="4.5" fill="#475569">&chi;&sup2; Statistic</text>
+
+          {/* Curve 1: df = 1 (Sharp drop from infinity) */}
+          <path d="M 33 25 Q 38 95 65 110 Q 95 118 150 120" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3 2" />
+          <text x="48" y="55" fontSize="4.2" fill="#64748b">df = 1</text>
+
+          {/* Curve 2: df = 4 (Right-skewed mode around 2) */}
+          <path d="M 30 120 Q 40 45 55 45 Q 85 45 130 95 Q 180 115 260 120" fill="none" stroke="#db2777" strokeWidth="2.2" />
+          <text x="65" y="40" fontSize="5" fontWeight="bold" fill="#db2777">df = 4</text>
+
+          {/* Curve 3: df = 10 (Modes to right, more bell-shaped) */}
+          <path d="M 30 120 Q 60 118 85 90 Q 115 60 145 60 Q 190 60 270 120" fill="none" stroke="#0284c7" strokeWidth="1.8" />
+          <text x="145" y="55" fontSize="5" fontWeight="bold" fill="#0284c7">df = 10 (Becomes more symmetric)</text>
+
+          {/* Critical Value Cutoff for df=4 at x=180 */}
+          <line x1="180" y1="45" x2="180" y2="120" stroke="#dc2626" strokeWidth="1.8" strokeDasharray="3 2" />
+          <text x="180" y="40" fontSize="4.8" fontWeight="black" textAnchor="middle" fill="#dc2626">&chi;&sup2; Critical (&alpha; = 0.05)</text>
+
+          {/* Shaded Upper Tail Rejection Area */}
+          <path
+            d="M 180 120 L 180 108 Q 210 116 260 120 Z"
+            fill="#fecdd3"
+            stroke="#e11d48"
+            strokeWidth="1"
+          />
+          <text x="215" y="112" fontSize="5" fontWeight="black" fill="#be123c">P-value (Reject H₀)</text>
+
+          {/* Formula box */}
+          <rect x="200" y="65" width="85" height="30" rx="3" fill="#fdf2f8" stroke="#fbcfe8" strokeWidth="1" />
+          <text x="242" y="76" fontSize="4.8" fontWeight="bold" textAnchor="middle" fill="#9d174d">&chi;&sup2; = &Sigma; (O - E)&sup2; / E</text>
+          <text x="242" y="88" fontSize="4" textAnchor="middle" fill="#831843">Expected E &ge; 5 for ALL cells</text>
+
+          {/* Takeaway */}
+          <text x="150" y="152" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#475569">
+            CED Key Insight: All Chi-Square tests are strictly UPPER-TAILED because discrepancies are squared!
+          </text>
+        </svg>
+      );
+
+    case 't_distribution_comparison':
+    case 'u4-diag-tcurve':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="14" fontSize="6.2" fontWeight="black" textAnchor="middle" fill="#1d4ed8">
+            STUDENT'S t-DISTRIBUTION VS. STANDARD NORMAL Z (df EFFECT)
+          </text>
+
+          {/* Axis */}
+          <line x1="20" y1="120" x2="280" y2="120" stroke="#475569" strokeWidth="1.2" />
+          <line x1="150" y1="20" x2="150" y2="120" stroke="#cbd5e1" strokeWidth="1" />
+          <text x="150" y="130" fontSize="5" fontWeight="black" textAnchor="middle" fill="#1e3a8a">0 (Center)</text>
+
+          {/* Normal Curve Z (df = infinity) - Highest peak at 25, thin tails */}
+          <path
+            d="M 30 120 Q 90 120 120 75 Q 140 25 150 25 Q 160 25 180 75 Q 210 120 270 120"
+            fill="none"
+            stroke="#16a34a"
+            strokeWidth="2.5"
+          />
+          <text x="150" y="20" fontSize="5" fontWeight="black" textAnchor="middle" fill="#15803d">Normal Z (df = &infin;) - Highest Peak</text>
+
+          {/* t-curve df = 10 - Medium peak at 38 */}
+          <path
+            d="M 28 120 Q 85 118 118 78 Q 138 38 150 38 Q 162 38 182 78 Q 215 118 272 120"
+            fill="none"
+            stroke="#2563eb"
+            strokeWidth="1.8"
+            strokeDasharray="4 2"
+          />
+          <text x="195" y="55" fontSize="4.5" fontWeight="bold" fill="#2563eb">t (df = 10)</text>
+
+          {/* t-curve df = 2 - Lowest peak at 52, FATTEST TAILS */}
+          <path
+            d="M 25 118 Q 80 114 115 84 Q 135 52 150 52 Q 165 52 185 84 Q 220 114 275 118"
+            fill="none"
+            stroke="#dc2626"
+            strokeWidth="2"
+          />
+          <text x="215" y="90" fontSize="4.8" fontWeight="black" fill="#dc2626">t (df = 2) - FAT HEAVY TAILS</text>
+
+          {/* Critical Value Marks on Right Tail */}
+          {/* z* = 1.96 */}
+          <line x1="208" y1="90" x2="208" y2="120" stroke="#16a34a" strokeWidth="1.5" />
+          <text x="208" y="130" fontSize="4.2" fontWeight="bold" textAnchor="middle" fill="#16a34a">z* = 1.96</text>
+
+          {/* t* (df=2) = 4.30 */}
+          <line x1="245" y1="105" x2="245" y2="120" stroke="#dc2626" strokeWidth="1.5" />
+          <text x="245" y="130" fontSize="4.2" fontWeight="black" textAnchor="middle" fill="#dc2626">t* = 4.303</text>
+
+          {/* Explanation badge */}
+          <rect x="25" y="35" width="85" height="38" rx="3" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+          <text x="67" y="46" fontSize="4.5" fontWeight="bold" textAnchor="middle" fill="#0f172a">WHY USE t INSTEAD OF z?</text>
+          <text x="30" y="55" fontSize="3.8" fill="#475569">&bull; Population &sigma; is unknown.</text>
+          <text x="30" y="62" fontSize="3.8" fill="#475569">&bull; Sample s estimates &sigma;.</text>
+          <text x="30" y="69" fontSize="3.8" fontWeight="bold" fill="#dc2626">&bull; Extra uncertainty &rarr; fatter tails!</text>
+
+          {/* Takeaway */}
+          <text x="150" y="152" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#475569">
+            Confidence Interval Impact: Because t* &gt; z*, t-intervals are wider and more conservative!
+          </text>
+        </svg>
+      );
+
+    case 'paired_difference_histogram':
+    case 'u4-diag-paired':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="14" fontSize="6.2" fontWeight="black" textAnchor="middle" fill="#059669">
+            MATCHED PAIRS DESIGN: COLLAPSING TO ONE DIFFERENCE VECTOR
+          </text>
+
+          {/* Left Panel: Raw Paired Data */}
+          <g transform="translate(15, 22)">
+            <rect x="0" y="0" width="115" height="98" rx="4" fill="#fafafa" stroke="#e2e8f0" strokeWidth="1" />
+            <text x="57" y="13" fontSize="5" fontWeight="black" textAnchor="middle" fill="#0f172a">DEPENDENT PAIRS (PRE / POST)</text>
+
+            <text x="10" y="28" fontSize="4.5" fontWeight="bold" fill="#475569">Subject</text>
+            <text x="38" y="28" fontSize="4.5" fontWeight="bold" fill="#2563eb">Before</text>
+            <text x="62" y="28" fontSize="4.5" fontWeight="bold" fill="#16a34a">After</text>
+            <text x="88" y="28" fontSize="4.5" fontWeight="black" fill="#dc2626">d = Diff</text>
+            <line x1="8" y1="32" x2="108" y2="32" stroke="#cbd5e1" strokeWidth="1" />
+
+            <text x="12" y="44" fontSize="4" fill="#64748b">User 1:</text>
+            <text x="40" y="44" fontSize="4" fill="#2563eb">120</text>
+            <text x="65" y="44" fontSize="4" fill="#16a34a">112</text>
+            <text x="92" y="44" fontSize="4" fontWeight="bold" fill="#dc2626">-8</text>
+
+            <text x="12" y="56" fontSize="4" fill="#64748b">User 2:</text>
+            <text x="40" y="56" fontSize="4" fill="#2563eb">135</text>
+            <text x="65" y="56" fontSize="4" fill="#16a34a">121</text>
+            <text x="92" y="56" fontSize="4" fontWeight="bold" fill="#dc2626">-14</text>
+
+            <text x="12" y="68" fontSize="4" fill="#64748b">User 3:</text>
+            <text x="40" y="68" fontSize="4" fill="#2563eb">110</text>
+            <text x="65" y="68" fontSize="4" fill="#16a34a">115</text>
+            <text x="92" y="68" fontSize="4" fontWeight="bold" fill="#16a34a">+5</text>
+
+            <text x="12" y="80" fontSize="4" fill="#64748b">User 4:</text>
+            <text x="40" y="80" fontSize="4" fill="#2563eb">128</text>
+            <text x="65" y="80" fontSize="4" fill="#16a34a">119</text>
+            <text x="92" y="80" fontSize="4" fontWeight="bold" fill="#dc2626">-9</text>
+
+            <rect x="5" y="86" width="105" height="10" rx="2" fill="#fee2e2" />
+            <text x="57" y="93" fontSize="3.8" fontWeight="bold" fill="#b91c1c" textAnchor="middle">Collapse pairs &rarr; Column d</text>
+          </g>
+
+          {/* Big Arrow */}
+          <text x="142" y="72" fontSize="12" fontWeight="black" fill="#059669" textAnchor="middle">&rarr;</text>
+
+          {/* Right Panel: One-Sample Distribution */}
+          <g transform="translate(155, 22)">
+            <rect x="0" y="0" width="130" height="98" rx="4" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1.2" />
+            <text x="65" y="13" fontSize="5" fontWeight="black" textAnchor="middle" fill="#15803d">ONE-SAMPLE t-TEST ON DIFFERENCES</text>
+
+            {/* Dotplot/Distribution of d */}
+            <line x1="10" y1="65" x2="120" y2="65" stroke="#475569" strokeWidth="1" />
+            <text x="35" y="74" fontSize="4" textAnchor="middle" fill="#64748b">-15</text>
+            <text x="55" y="74" fontSize="4" textAnchor="middle" fill="#64748b">-10</text>
+            <text x="75" y="74" fontSize="4" textAnchor="middle" fill="#64748b">-5</text>
+            <text x="95" y="74" fontSize="4.5" fontWeight="bold" textAnchor="middle" fill="#dc2626">0 (H₀: &mu;_d = 0)</text>
+
+            {/* Null Reference line at 0 */}
+            <line x1="95" y1="28" x2="95" y2="65" stroke="#dc2626" strokeWidth="1.5" strokeDasharray="3 2" />
+
+            {/* Data dots */}
+            <circle cx="40" cy="58" r="3" fill="#0284c7" />
+            <circle cx="58" cy="58" r="3" fill="#0284c7" />
+            <circle cx="58" cy="51" r="3" fill="#0284c7" />
+            <circle cx="62" cy="58" r="3" fill="#0284c7" />
+            <circle cx="70" cy="58" r="3" fill="#0284c7" />
+            <circle cx="110" cy="58" r="3" fill="#0284c7" />
+
+            <text x="60" y="42" fontSize="4.8" fontWeight="black" fill="#0284c7" textAnchor="middle">x̄_d = -6.5</text>
+
+            <rect x="8" y="80" width="114" height="15" rx="2" fill="#dcfce7" />
+            <text x="65" y="87" fontSize="4" fontWeight="bold" fill="#166534" textAnchor="middle">df = n_{'{pairs}'} - 1 (NOT 2-Sample!)</text>
+            <text x="65" y="93" fontSize="3.6" fill="#14532d" textAnchor="middle">t = (x̄_d - 0) / (s_d / &radic;n)</text>
+          </g>
+
+          {/* Takeaway */}
+          <text x="150" y="152" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#475569">
+            Lethal AP Trap: Never perform a 2-sample t-test on matched pairs! Pairing controls extraneous individual variation.
+          </text>
+        </svg>
+      );
+
+    case 'confidence_interval_capture_rate':
+    case 'u4-diag-ci-capture':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="14" fontSize="6.2" fontWeight="black" textAnchor="middle" fill="#1e3a8a">
+            95% CONFIDENCE LEVEL: THE REPEATED SAMPLING INTERPRETATION
+          </text>
+
+          {/* True Parameter Vertical Line mu */}
+          <line x1="150" y1="24" x2="150" y2="128" stroke="#1d4ed8" strokeWidth="2.5" />
+          <text x="150" y="22" fontSize="5.5" fontWeight="black" textAnchor="middle" fill="#1d4ed8">True Population Parameter &mu; (Fixed &amp; Constant)</text>
+
+          {/* 10 Representative Intervals */}
+          {/* Interval 1 (Captures) */}
+          <line x1="110" y1="32" x2="175" y2="32" stroke="#16a34a" strokeWidth="2" />
+          <circle cx="142" cy="32" r="2.5" fill="#15803d" />
+
+          {/* Interval 2 (Captures) */}
+          <line x1="125" y1="42" x2="190" y2="42" stroke="#16a34a" strokeWidth="2" />
+          <circle cx="158" cy="42" r="2.5" fill="#15803d" />
+
+          {/* Interval 3 (Captures) */}
+          <line x1="95" y1="52" x2="160" y2="52" stroke="#16a34a" strokeWidth="2" />
+          <circle cx="128" cy="52" r="2.5" fill="#15803d" />
+
+          {/* Interval 4 (Captures) */}
+          <line x1="130" y1="62" x2="195" y2="62" stroke="#16a34a" strokeWidth="2" />
+          <circle cx="162" cy="62" r="2.5" fill="#15803d" />
+
+          {/* Interval 5 - FAILS TO CAPTURE (Red) */}
+          <line x1="165" y1="72" x2="230" y2="72" stroke="#dc2626" strokeWidth="2.5" />
+          <circle cx="197" cy="72" r="3" fill="#b91c1c" />
+          <text x="245" y="74" fontSize="4.5" fontWeight="black" fill="#dc2626">&times; Misses &mu;!</text>
+
+          {/* Interval 6 (Captures) */}
+          <line x1="105" y1="82" x2="170" y2="82" stroke="#16a34a" strokeWidth="2" />
+          <circle cx="138" cy="82" r="2.5" fill="#15803d" />
+
+          {/* Interval 7 (Captures) */}
+          <line x1="120" y1="92" x2="185" y2="92" stroke="#16a34a" strokeWidth="2" />
+          <circle cx="152" cy="92" r="2.5" fill="#15803d" />
+
+          {/* Interval 8 (Captures) */}
+          <line x1="138" y1="102" x2="202" y2="102" stroke="#16a34a" strokeWidth="2" />
+          <circle cx="170" cy="102" r="2.5" fill="#15803d" />
+
+          {/* Interval 9 (Captures) */}
+          <line x1="90" y1="112" x2="155" y2="112" stroke="#16a34a" strokeWidth="2" />
+          <circle cx="122" cy="112" r="2.5" fill="#15803d" />
+
+          {/* Interval 10 (Captures) */}
+          <line x1="115" y1="122" x2="180" y2="122" stroke="#16a34a" strokeWidth="2" />
+          <circle cx="148" cy="122" r="2.5" fill="#15803d" />
+
+          {/* Side Box: Definition vs Trap */}
+          <rect x="15" y="45" width="75" height="58" rx="3" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1" />
+          <text x="52" y="56" fontSize="4.5" fontWeight="black" textAnchor="middle" fill="#0f172a">PROPER MEANING:</text>
+          <text x="20" y="65" fontSize="3.6" fill="#475569">&bull; In repeated sampling,</text>
+          <text x="20" y="73" fontSize="3.6" fill="#475569">approx 95% of intervals</text>
+          <text x="20" y="81" fontSize="3.6" fill="#475569">will capture &mu;.</text>
+          <text x="20" y="90" fontSize="3.6" fontWeight="bold" fill="#dc2626">&bull; NEVER say "95% chance</text>
+          <text x="20" y="97" fontSize="3.6" fontWeight="bold" fill="#dc2626">&mu; lies in this interval!"</text>
+
+          {/* Takeaway */}
+          <text x="150" y="152" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#475569">
+            FRQ Phrasing: "If we took many random samples of size n, about 95% of resulting intervals would capture the true mean."
+          </text>
+        </svg>
+      );
+
+    case 'residual_geometry_scatterplot':
+    case 'u5-diag-residuals':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="14" fontSize="6.2" fontWeight="black" textAnchor="middle" fill="#0369a1">
+            LEAST-SQUARES REGRESSION: RESIDUAL GEOMETRY (y - ŷ)
+          </text>
+
+          {/* Coordinate Axes */}
+          <line x1="35" y1="125" x2="275" y2="125" stroke="#475569" strokeWidth="1.5" />
+          <line x1="35" y1="20" x2="35" y2="125" stroke="#475569" strokeWidth="1.5" />
+          <text x="275" y="134" fontSize="4.5" fill="#475569">Explanatory Variable (x)</text>
+          <text x="25" y="25" fontSize="4.5" fill="#475569">Response (y)</text>
+
+          {/* Regression Line y-hat = a + bx */}
+          <line x1="45" y1="110" x2="255" y2="35" stroke="#0284c7" strokeWidth="2.5" />
+          <text x="245" y="30" fontSize="5.5" fontWeight="black" fill="#0284c7">ŷ = a + bx</text>
+
+          {/* Centroid Point (x-bar, y-bar) on the line */}
+          <circle cx="150" cy="72" r="3.5" fill="#7c3aed" stroke="#5b21b6" strokeWidth="1" />
+          <text x="150" y="64" fontSize="4.8" fontWeight="bold" textAnchor="middle" fill="#7c3aed">Point of Means (x̄, ȳ)</text>
+
+          {/* Point 1: Positive Residual (Above line) */}
+          <circle cx="105" cy="65" r="3" fill="#16a34a" />
+          <line x1="105" y1="65" x2="105" y2="89" stroke="#16a34a" strokeWidth="1.8" strokeDasharray="2 2" />
+          <text x="105" y="60" fontSize="4.2" fontWeight="bold" textAnchor="middle" fill="#15803d">(x₁, y₁)</text>
+          <text x="110" y="79" fontSize="4.5" fontWeight="black" fill="#15803d">+ Residual (y &gt; ŷ)</text>
+
+          {/* Point 2: Negative Residual (Below line) */}
+          <circle cx="195" cy="75" r="3" fill="#dc2626" />
+          <line x1="195" y1="75" x2="195" y2="56" stroke="#dc2626" strokeWidth="1.8" strokeDasharray="2 2" />
+          <text x="195" y="84" fontSize="4.2" fontWeight="bold" textAnchor="middle" fill="#b91c1c">(x₂, y₂)</text>
+          <text x="198" y="67" fontSize="4.5" fontWeight="black" fill="#dc2626">- Residual (y &lt; ŷ)</text>
+
+          {/* Other scatter dots */}
+          <circle cx="65" cy="100" r="2.5" fill="#64748b" />
+          <circle cx="85" cy="98" r="2.5" fill="#64748b" />
+          <circle cx="130" cy="85" r="2.5" fill="#64748b" />
+          <circle cx="170" cy="60" r="2.5" fill="#64748b" />
+          <circle cx="225" cy="48" r="2.5" fill="#64748b" />
+
+          {/* Formula Callout Box */}
+          <rect x="40" y="28" width="95" height="28" rx="3" fill="#f0f9ff" stroke="#bae6fd" strokeWidth="1" />
+          <text x="87" y="38" fontSize="4.8" fontWeight="black" textAnchor="middle" fill="#0369a1">Residual = Actual - Predicted</text>
+          <text x="87" y="46" fontSize="4.5" fontWeight="bold" textAnchor="middle" fill="#0284c7">e_i = y_i - ŷ_i</text>
+          <text x="87" y="53" fontSize="3.8" textAnchor="middle" fill="#475569">&Sigma; (y - ŷ) is ALWAYS 0!</text>
+
+          {/* Takeaway */}
+          <text x="150" y="152" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#475569">
+            Geometric Rule: Residuals are measured VERTICALLY along the y-axis, never perpendicularly to the line!
+          </text>
+        </svg>
+      );
+
+    case 'leverage_influence_plot':
+    case 'u5-diag-leverage':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="14" fontSize="6.2" fontWeight="black" textAnchor="middle" fill="#0f172a">
+            OUTLIER, HIGH LEVERAGE &amp; INFLUENTIAL POINTS
+          </text>
+
+          {/* Coordinate Axes */}
+          <line x1="30" y1="125" x2="280" y2="125" stroke="#475569" strokeWidth="1.2" />
+          <line x1="30" y1="22" x2="30" y2="125" stroke="#475569" strokeWidth="1.2" />
+          <text x="275" y="133" fontSize="4.2" fill="#475569">x</text>
+          <text x="24" y="25" fontSize="4.2" fill="#475569">y</text>
+
+          {/* Central Cluster Points */}
+          <circle cx="55" cy="105" r="2.5" fill="#64748b" />
+          <circle cx="70" cy="98" r="2.5" fill="#64748b" />
+          <circle cx="85" cy="92" r="2.5" fill="#64748b" />
+          <circle cx="95" cy="85" r="2.5" fill="#64748b" />
+          <circle cx="110" cy="80" r="2.5" fill="#64748b" />
+          <circle cx="125" cy="74" r="2.5" fill="#64748b" />
+
+          {/* Original LSRL without influential point (Solid Blue Line) */}
+          <line x1="45" y1="112" x2="260" y2="30" stroke="#2563eb" strokeWidth="2" />
+          <text x="220" y="28" fontSize="4.8" fontWeight="bold" fill="#2563eb">LSRL without Point C</text>
+
+          {/* Tilted LSRL with Influential Point C (Dashed Red Line) */}
+          <line x1="45" y1="95" x2="260" y2="95" stroke="#dc2626" strokeWidth="2" strokeDasharray="4 2" />
+          <text x="220" y="105" fontSize="4.8" fontWeight="black" fill="#dc2626">Tilted LSRL (With C)</text>
+
+          {/* POINT A: High Leverage on Trend */}
+          <circle cx="240" cy="38" r="3.5" fill="#059669" stroke="#047857" strokeWidth="1" />
+          <rect x="180" y="42" width="75" height="18" rx="2" fill="#ecfdf5" stroke="#a7f3d0" strokeWidth="0.8" />
+          <text x="217" y="50" fontSize="4" fontWeight="bold" fill="#047857" textAnchor="middle">POINT A: High Leverage</text>
+          <text x="217" y="57" fontSize="3.4" fill="#065f46" textAnchor="middle">On trend &rarr; Strengthens r</text>
+
+          {/* POINT B: Outlier with Low Leverage */}
+          <circle cx="85" cy="45" r="3.5" fill="#f59e0b" stroke="#d97706" strokeWidth="1" />
+          <rect x="50" y="32" width="70" height="18" rx="2" fill="#fffbeb" stroke="#fde68a" strokeWidth="0.8" />
+          <text x="85" y="40" fontSize="4" fontWeight="bold" fill="#b45309" textAnchor="middle">POINT B: Outlier in y</text>
+          <text x="85" y="47" fontSize="3.4" fill="#92400e" textAnchor="middle">Average x &rarr; Low leverage</text>
+
+          {/* POINT C: High Leverage & INFLUENTIAL POINT */}
+          <circle cx="250" cy="100" r="4.5" fill="#dc2626" stroke="#991b1b" strokeWidth="1.5" />
+          <rect x="180" y="110" width="95" height="20" rx="2" fill="#fef2f2" stroke="#fecaca" strokeWidth="1" />
+          <text x="227" y="118" fontSize="4.2" fontWeight="black" fill="#b91c1c" textAnchor="middle">POINT C: INFLUENTIAL POINT</text>
+          <text x="227" y="126" fontSize="3.5" fill="#7f1d1d" textAnchor="middle">Extreme x &amp; off-trend &rarr; Tilts slope!</text>
+
+          {/* Lever Fulcrum Icon */}
+          <path d="M 125 74 L 120 86 L 130 86 Z" fill="#475569" />
+          <text x="125" y="93" fontSize="3.8" textAnchor="middle" fill="#64748b">Fulcrum</text>
+
+          {/* Takeaway */}
+          <text x="150" y="152" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#475569">
+            CED Definitions: High Leverage = extreme x. Influential Point = removing it substantially changes slope b or r.
+          </text>
+        </svg>
+      );
+
+    case 'residual_plot_diagnostics':
+    case 'u5-diag-resplot':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="14" fontSize="6.2" fontWeight="black" textAnchor="middle" fill="#0f172a">
+            RESIDUAL PLOT DIAGNOSTICS: MODEL APPROPRIATENESS (LINE)
+          </text>
+
+          {/* Plot 1: Ideal Random Scatter */}
+          <g transform="translate(10, 22)">
+            <rect x="0" y="0" width="88" height="110" rx="4" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1" />
+            <text x="44" y="13" fontSize="5" fontWeight="black" textAnchor="middle" fill="#15803d">1. RANDOM SCATTER</text>
+            <text x="44" y="20" fontSize="3.8" textAnchor="middle" fill="#166534">Residuals vs. x</text>
+            <line x1="8" y1="60" x2="80" y2="60" stroke="#475569" strokeWidth="1" strokeDasharray="3 2" />
+            <text x="82" y="62" fontSize="4" fill="#64748b">0</text>
+            {/* Uniform random dots */}
+            <circle cx="16" cy="45" r="2.2" fill="#16a34a" />
+            <circle cx="25" cy="72" r="2.2" fill="#16a34a" />
+            <circle cx="35" cy="52" r="2.2" fill="#16a34a" />
+            <circle cx="45" cy="68" r="2.2" fill="#16a34a" />
+            <circle cx="55" cy="48" r="2.2" fill="#16a34a" />
+            <circle cx="65" cy="74" r="2.2" fill="#16a34a" />
+            <circle cx="75" cy="55" r="2.2" fill="#16a34a" />
+            <rect x="5" y="88" width="78" height="16" rx="2" fill="#dcfce7" />
+            <text x="44" y="96" fontSize="4.2" fontWeight="black" fill="#14532d" textAnchor="middle">&check; LINEAR APPROPRIATE</text>
+            <text x="44" y="102" fontSize="3.5" fill="#166534" textAnchor="middle">Constant variance met</text>
+          </g>
+
+          {/* Plot 2: Curved Pattern */}
+          <g transform="translate(106, 22)">
+            <rect x="0" y="0" width="88" height="110" rx="4" fill="#fef2f2" stroke="#ef4444" strokeWidth="1" />
+            <text x="44" y="13" fontSize="5" fontWeight="black" textAnchor="middle" fill="#dc2626">2. CURVED U-PATTERN</text>
+            <text x="44" y="20" fontSize="3.8" textAnchor="middle" fill="#991b1b">Residuals vs. x</text>
+            <line x1="8" y1="60" x2="80" y2="60" stroke="#475569" strokeWidth="1" strokeDasharray="3 2" />
+            <text x="82" y="62" fontSize="4" fill="#64748b">0</text>
+            {/* Parabolic dots */}
+            <circle cx="15" cy="40" r="2.2" fill="#dc2626" />
+            <circle cx="25" cy="52" r="2.2" fill="#dc2626" />
+            <circle cx="35" cy="72" r="2.2" fill="#dc2626" />
+            <circle cx="45" cy="78" r="2.2" fill="#dc2626" />
+            <circle cx="55" cy="72" r="2.2" fill="#dc2626" />
+            <circle cx="65" cy="52" r="2.2" fill="#dc2626" />
+            <circle cx="75" cy="40" r="2.2" fill="#dc2626" />
+            <rect x="5" y="88" width="78" height="16" rx="2" fill="#fee2e2" />
+            <text x="44" y="96" fontSize="4.2" fontWeight="black" fill="#991b1b" textAnchor="middle">&cross; NOT APPROPRIATE</text>
+            <text x="44" y="102" fontSize="3.5" fill="#7f1d1d" textAnchor="middle">Non-linear relationship</text>
+          </g>
+
+          {/* Plot 3: Megaphone / Fan Pattern */}
+          <g transform="translate(202, 22)">
+            <rect x="0" y="0" width="88" height="110" rx="4" fill="#fffbeb" stroke="#f59e0b" strokeWidth="1" />
+            <text x="44" y="13" fontSize="5" fontWeight="black" textAnchor="middle" fill="#b45309">3. MEGAPHONE / FAN</text>
+            <text x="44" y="20" fontSize="3.8" textAnchor="middle" fill="#92400e">Residuals vs. x</text>
+            <line x1="8" y1="60" x2="80" y2="60" stroke="#475569" strokeWidth="1" strokeDasharray="3 2" />
+            <text x="82" y="62" fontSize="4" fill="#64748b">0</text>
+            {/* Fan dots spreading out */}
+            <circle cx="16" cy="58" r="2.2" fill="#d97706" />
+            <circle cx="25" cy="63" r="2.2" fill="#d97706" />
+            <circle cx="35" cy="52" r="2.2" fill="#d97706" />
+            <circle cx="45" cy="70" r="2.2" fill="#d97706" />
+            <circle cx="55" cy="45" r="2.2" fill="#d97706" />
+            <circle cx="65" cy="80" r="2.2" fill="#d97706" />
+            <circle cx="75" cy="35" r="2.2" fill="#d97706" />
+            <circle cx="75" cy="85" r="2.2" fill="#d97706" />
+            <rect x="5" y="88" width="78" height="16" rx="2" fill="#fef3c7" />
+            <text x="44" y="96" fontSize="4.2" fontWeight="black" fill="#92400e" textAnchor="middle">&cross; EQUAL VAR VIOLATED</text>
+            <text x="44" y="102" fontSize="3.5" fill="#78350f" textAnchor="middle">Heteroscedasticity</text>
+          </g>
+
+          {/* Takeaway */}
+          <text x="150" y="152" fontSize="5" fontWeight="bold" textAnchor="middle" fill="#475569">
+            LINE Condition: Residual plot MUST show random scatter with roughly equal vertical spread to conduct inference!
+          </text>
+        </svg>
+      );
+
+    case 'regression_computer_output_annotated':
+    case 'u5-diag-output':
+      return (
+        <svg viewBox="0 0 300 160" className="w-full h-40 bg-white rounded-xl border border-zinc-200 shadow-xs">
+          <text x="150" y="13" fontSize="6.2" fontWeight="black" textAnchor="middle" fill="#0f172a">
+            READING COMPUTER REGRESSION OUTPUT (MINITAB / R / TI-84)
+          </text>
+
+          {/* Computer Output Table Mock */}
+          <g transform="translate(15, 20)">
+            <rect x="0" y="0" width="270" height="75" rx="3" fill="#1e293b" stroke="#0f172a" strokeWidth="1.2" />
+
+            {/* Table Header */}
+            <text x="15" y="15" fontSize="4.8" fontFamily="monospace" fontWeight="bold" fill="#94a3b8">Predictor</text>
+            <text x="80" y="15" fontSize="4.8" fontFamily="monospace" fontWeight="bold" fill="#94a3b8">Coef</text>
+            <text x="135" y="15" fontSize="4.8" fontFamily="monospace" fontWeight="bold" fill="#94a3b8">SE Coef</text>
+            <text x="190" y="15" fontSize="4.8" fontFamily="monospace" fontWeight="bold" fill="#94a3b8">t-ratio</text>
+            <text x="240" y="15" fontSize="4.8" fontFamily="monospace" fontWeight="bold" fill="#94a3b8">P-value</text>
+            <line x1="10" y1="20" x2="260" y2="20" stroke="#334155" strokeWidth="1" />
+
+            {/* Row 1: Constant (Intercept) */}
+            <text x="15" y="32" fontSize="5" fontFamily="monospace" fill="#f8fafc">Constant</text>
+            <rect x="74" y="23" width="30" height="13" rx="2" fill="#1e3a8a" stroke="#3b82f6" strokeWidth="1" />
+            <text x="89" y="32" fontSize="5" fontFamily="monospace" fontWeight="bold" fill="#60a5fa" textAnchor="middle">14.820</text>
+            <text x="145" y="32" fontSize="5" fontFamily="monospace" fill="#cbd5e1">1.250</text>
+            <text x="198" y="32" fontSize="5" fontFamily="monospace" fill="#cbd5e1">11.86</text>
+            <text x="248" y="32" fontSize="5" fontFamily="monospace" fill="#cbd5e1">0.0000</text>
+
+            {/* Row 2: Variable (Slope) */}
+            <text x="15" y="48" fontSize="5" fontFamily="monospace" fill="#f8fafc">Temperature</text>
+            <rect x="74" y="39" width="30" height="13" rx="2" fill="#701a75" stroke="#d946ef" strokeWidth="1" />
+            <text x="89" y="48" fontSize="5" fontFamily="monospace" fontWeight="bold" fill="#f0abfc" textAnchor="middle">-0.380</text>
+            <rect x="130" y="39" width="30" height="13" rx="2" fill="#7c2d12" stroke="#f97316" strokeWidth="1" />
+            <text x="145" y="48" fontSize="5" fontFamily="monospace" fontWeight="bold" fill="#fdba74" textAnchor="middle">0.082</text>
+            <rect x="185" y="39" width="28" height="13" rx="2" fill="#064e3b" stroke="#10b981" strokeWidth="1" />
+            <text x="199" y="48" fontSize="5" fontFamily="monospace" fontWeight="bold" fill="#6ee7b7" textAnchor="middle">-4.63</text>
+            <rect x="235" y="39" width="28" height="13" rx="2" fill="#7f1d1d" stroke="#ef4444" strokeWidth="1" />
+            <text x="249" y="48" fontSize="5" fontFamily="monospace" fontWeight="bold" fill="#fca5a5" textAnchor="middle">0.0001</text>
+
+            <line x1="10" y1="56" x2="260" y2="56" stroke="#334155" strokeWidth="1" />
+
+            {/* Row 3: S, R-Sq, R-Sq(adj) */}
+            <text x="20" y="68" fontSize="5" fontFamily="monospace" fill="#94a3b8">S =</text>
+            <text x="32" y="68" fontSize="5" fontFamily="monospace" fontWeight="bold" fill="#38bdf8">0.742</text>
+            <text x="95" y="68" fontSize="5" fontFamily="monospace" fill="#94a3b8">R-Sq =</text>
+            <text x="120" y="68" fontSize="5" fontFamily="monospace" fontWeight="bold" fill="#4ade80">57.2%</text>
+            <text x="185" y="68" fontSize="5" fontFamily="monospace" fill="#94a3b8">R-Sq(adj) = 54.3%</text>
+          </g>
+
+          {/* Color-Coded Callouts Below Table */}
+          <g transform="translate(15, 100)">
+            <rect x="0" y="0" width="62" height="16" rx="2" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="0.8" />
+            <text x="31" y="7" fontSize="3.8" fontWeight="bold" fill="#1e40af" textAnchor="middle">a = 14.820</text>
+            <text x="31" y="13" fontSize="3.5" fill="#1d4ed8" textAnchor="middle">y-Intercept</text>
+
+            <rect x="67" y="0" width="62" height="16" rx="2" fill="#fdf4ff" stroke="#f5d0fe" strokeWidth="0.8" />
+            <text x="98" y="7" fontSize="3.8" fontWeight="bold" fill="#86198f" textAnchor="middle">b = -0.380</text>
+            <text x="98" y="13" fontSize="3.5" fill="#a21caf" textAnchor="middle">Slope of LSRL</text>
+
+            <rect x="134" y="0" width="65" height="16" rx="2" fill="#fff7ed" stroke="#fed7aa" strokeWidth="0.8" />
+            <text x="166" y="7" fontSize="3.8" fontWeight="bold" fill="#9a3412" textAnchor="middle">SE_b = 0.082</text>
+            <text x="166" y="13" fontSize="3.5" fill="#c2410c" textAnchor="middle">Std Error of Slope</text>
+
+            <rect x="204" y="0" width="66" height="16" rx="2" fill="#f0fdf4" stroke="#bbf7d0" strokeWidth="0.8" />
+            <text x="237" y="7" fontSize="3.8" fontWeight="bold" fill="#14532d" textAnchor="middle">R&sup2; = 57.2%</text>
+            <text x="237" y="13" fontSize="3.5" fill="#15803d" textAnchor="middle">% Variation in y</text>
+
+            {/* Row 2 of callouts */}
+            <rect x="25" y="20" width="105" height="15" rx="2" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="0.8" />
+            <text x="77" y="27" fontSize="3.8" fontWeight="bold" fill="#0f172a" textAnchor="middle">t = (b - 0) / SE_b = -4.63</text>
+            <text x="77" y="33" fontSize="3.4" fill="#64748b" textAnchor="middle">Degrees of freedom df = n - 2</text>
+
+            <rect x="140" y="20" width="115" height="15" rx="2" fill="#f0f9ff" stroke="#bae6fd" strokeWidth="0.8" />
+            <text x="197" y="27" fontSize="3.8" fontWeight="bold" fill="#0369a1" textAnchor="middle">s = 0.742: Std Dev of Residuals</text>
+            <text x="197" y="33" fontSize="3.4" fill="#0284c7" textAnchor="middle">Typical prediction error in units of y</text>
+          </g>
+
+          {/* Takeaway */}
+          <text x="150" y="154" fontSize="4.8" fontWeight="bold" textAnchor="middle" fill="#475569">
+            Calculator / Output Trap: Always check if the P-value in the table is 2-sided; divide by 2 if H_a is one-sided!
+          </text>
+        </svg>
+      );
+
     default:
       return null;
   }
 }
+

@@ -807,21 +807,74 @@ export const AP_SUBJECT_ARCHETYPES: Record<string, ArchetypeBundle> = {
   },
   statistics: {
     general: [
-      "Data display interpretation: Histograms, stemplots, boxplots with 1.5*IQR outlier criterion, and normal probability plots",
-      "Bivariate relationship analysis: Least-squares regression line (LSRL), correlation coefficient r, and residual plot diagnostic patterns",
-      "Experimental and survey design: Simple random sampling, stratified sampling, blocking, confounding variables, and placebo double-blinding",
-      "Statistical inference: Null vs alternative hypotheses, Type I vs Type II errors, p-value interpretation, and confidence intervals"
+      "Exploratory data analysis: Comparing distributions using Shape, Outliers, Center, Spread (SOCS) in real-world context",
+      "Data collection integrity: Random sampling vs random assignment, observational studies vs comparative experiments, confounding variables, and blinding",
+      "Probability foundations: Conditional probability P(A|B), independence tests, discrete random variable combinations E(X±Y) and Var(X±Y)",
+      "Sampling distributions: Central Limit Theorem for sample means (x-bar) and sample proportions (p-hat) with 10% condition",
+      "Statistical inference 4-step framework: State hypotheses/parameters, Plan procedure with numerical condition checks, Do mechanics/P-value, Conclude in context",
+      "Linear regression diagnostics: Least-squares regression equation y-hat = b0 + b1*x, residual plots, r^2 interpretation, and inference for slope beta"
     ],
     units: {
-      "1": ["Exploring One-Variable Data: Center, shape, spread, standard deviation formula, z-score transformations, empirical 68-95-99.7 rule"],
-      "2": ["Exploring Two-Variable Data: LSRL y-hat = a + bx, slope and intercept contextual interpretations, coefficient of determination r^2, influential points"],
-      "3": ["Collecting Data: Observational study vs randomized controlled experiment, voluntary response bias, nonresponse bias, and completely randomized designs"],
-      "4": ["Probability and distributions: Addition/multiplication probability rules, conditional probability P(A|B), binomial B(n,p) vs geometric distributions"],
-      "5": ["Sampling Distributions: Central Limit Theorem (CLT), sampling distribution of sample mean x-bar and sample proportion p-hat, standard error"],
-      "6": ["Inference for Categorical Proportions: One-sample and two-sample z-intervals and z-tests, normal approximation conditions np >= 10 and n(1-p) >= 10"],
-      "7": ["Inference for Quantitative Means: One-sample and two-sample t-procedures, degrees of freedom, matched-pairs t-tests, robustness to normality"],
-      "8": ["Chi-Square Inference: Chi-Square goodness-of-fit test, test of independence, test of homogeneity, expected cell count requirements"],
-      "9": ["Inference for Regression Slopes: t-test for population regression slope beta, standard error of the slope SE_b, linear regression condition checks"]
+      "1": [
+        "Describing quantitative distributions with SOCS: Shape (skewed right/left, symmetric, bimodal), Center (median vs mean), Spread (IQR vs standard deviation), Outliers in context",
+        "The 1.5 x IQR outlier rule: Calculating lower fence (Q1 - 1.5*IQR) and upper fence (Q3 + 1.5*IQR) with explicit numerical verification",
+        "Resistant vs nonresistant summary statistics: Why median and IQR resist extreme outliers while mean and standard deviation are pulled toward the skew",
+        "Comparing side-by-side boxplots and back-to-back stemplots across two independent treatment groups in an authentic clinical context",
+        "Standardized z-scores and Empirical Rule: Calculating z = (x - mu)/sigma, percentiles, and 68-95-99.7 normal approximations for standardized scores",
+        "Probability sampling designs: Simple Random Sample (SRS), Stratified Random Sampling (homogeneous strata), Cluster Sampling, and Systematic Sampling",
+        "Sources of sampling bias: Voluntary response bias, convenience sampling, undercoverage of hidden populations, and nonresponse / wording bias",
+        "Principles of experimental design: Comparison, Random Assignment to balance confounders, Control of extraneous factors, and Replication",
+        "Blocking and Matched Pairs design: Randomized block design to isolate known nuisance variability (e.g., age, soil moisture) vs completely randomized design"
+      ],
+      "2": [
+        "Probability rules and two-way tables: General Addition Rule P(A U B) = P(A) + P(B) - P(A ∩ B), mutually exclusive vs disjoint events",
+        "Conditional probability and independence: Calculating P(A|B) = P(A ∩ B)/P(B) and testing independence via P(A|B) = P(A) or P(A ∩ B) = P(A)*P(B)",
+        "Tree diagrams and Bayes' theorem: Multi-stage diagnostic medical test screening (sensitivity, specificity, false positive rate calculation)",
+        "Discrete random variables: Calculating expected value mu_X = E(X) = sum(x*P(x)) and variance sigma_X^2 = sum((x - mu_X)^2 * P(x))",
+        "Linear transformations of random variables: Effects of scaling and shifting Y = a + bX on mean E(Y) = a + b*E(X) and standard deviation SD(Y) = |b|*SD(X)",
+        "Independent random variable combinations: Mean E(X ± Y) = E(X) ± E(Y) and variance Var(X ± Y) = Var(X) + Var(Y) strictly assuming independence",
+        "Binomial probability distribution B(n, p): Fixed trials n, binary outcomes, constant probability p, independent trials, calculating P(X = k) and P(X >= k)",
+        "Geometric distribution: Probability of first success on trial k, P(Y = k) = (1-p)^(k-1) * p, with expected waiting time E(Y) = 1/p",
+        "Sampling distribution of sample proportion (p-hat): Mean mu_p-hat = p, standard error sigma_p-hat = sqrt(p(1-p)/n), 10% condition, and Large Counts condition",
+        "Sampling distribution of sample mean (x-bar): Mean mu_x-bar = mu, standard error sigma_x-bar = sigma/sqrt(n), and Central Limit Theorem normality for n >= 30"
+      ],
+      "3": [
+        "Inference for 1-proportion z-interval: Stating parameter, verifying Random, 10% condition (n <= 0.10N), Large Counts (np-hat >= 10, n(1-p-hat) >= 10), formula p-hat ± z* * SE",
+        "Inference for 1-proportion z-test: Stating H0: p = p0 vs Ha, calculating test statistic z = (p-hat - p0)/sqrt(p0(1-p0)/n), P-value from standard normal table",
+        "Inference for 2-proportion z-test: Pooled sample proportion p-hat_c = (x1 + x2)/(n1 + n2), testing H0: p1 - p2 = 0, and concluding in context",
+        "Interpreting confidence intervals and levels: 'We are 95% confident that the true proportion of...' vs 'In repeated random sampling, 95% of intervals will capture...'",
+        "Type I error, Type II error, and Power: P(Type I) = alpha, P(Type II) = beta, Power = 1 - beta, and consequences of increasing sample size or alpha",
+        "Chi-Square Goodness-of-Fit test: Formulating H0: categorical proportions equal historical model, calculating expected counts E_i = n*p_i >= 5, df = k - 1",
+        "Chi-Square test for Homogeneity: Single categorical variable across 2+ independent populations, expected counts E_ij = (Row Total * Col Total) / Grand Total",
+        "Chi-Square test for Independence: Two categorical variables from a single sample, testing association/independence with df = (r - 1)(c - 1)"
+      ],
+      "4": [
+        "Properties of Student's t-distribution: Degrees of freedom (df = n - 1), heavier tails than standard normal, approaching normal as df -> infinity",
+        "One-sample t-interval for population mean: x-bar ± t* * (s / sqrt(n)), verifying Random, 10% condition, and Normality/No outliers condition",
+        "One-sample t-test for mean: Stating H0: mu = mu0 vs Ha, calculating t = (x-bar - mu0)/(s/sqrt(n)), determining P-value with df = n - 1",
+        "Matched Pairs t-test: Dependent pre-post or twin pairs, calculating differences d_i = x1_i - x2_i, testing H0: mu_d = 0 with sample mean difference d-bar",
+        "Two-sample t-interval for difference of independent means: (x-bar1 - x-bar2) ± t* * sqrt(s1^2/n1 + s2^2/n2), conservative vs Welch-Satterthwaite df",
+        "Two-sample t-test for difference of means: H0: mu1 - mu2 = 0, verifying independent random samples, 10% condition, and sample size robustness",
+        "Statistical significance vs practical importance: Distinguishing between small P-values from large sample sizes and practically meaningful effect sizes",
+        "Diagnostic checking for normality: Analyzing sample histograms, stemplots, or normal probability plots when n < 30 without extreme skewness or outliers"
+      ],
+      "5": [
+        "Analyzing scatterplots and correlation: Direction (positive/negative), Form (linear/curved), Strength (weak/moderate/strong), and Outliers in bivariate data",
+        "Properties of correlation coefficient r: Scale-invariance, unitless range [-1, 1], extreme sensitivity to outliers, not implying causation",
+        "Least-squares regression line: Slope b1 = r * (sy / sx), intercept b0 = y-bar - b1 * x-bar, passing through centroid point (x-bar, y-bar)",
+        "Interpreting regression coefficients in context: Slope b1 ('for each additional 1 x-unit, predicted y changes by b1'), intercept b0 ('when x is 0, predicted y is b0')",
+        "Residual calculation and residual plot diagnostics: Residual e = actual y - predicted y-hat, random scatter indicating linearity, fan-shaped spread showing heteroscedasticity",
+        "Coefficient of determination r^2: Interpreting 'r^2 x 100% of the variability in [y] is accounted for by the linear model relating [y] to [x]'",
+        "Standard deviation of the residuals s: Interpreting 'the actual [y] typically differs from the predicted [y] by about s units'",
+        "High leverage points vs outliers vs influential points: High leverage points have extreme x-values; influential points substantially alter slope and correlation",
+        "Inference for linear regression slope beta: LINE conditions (Linear, Independent, Normal residuals, Equal variance of residuals), t = (b1 - 0) / SE_b1 with df = n - 2",
+        "Decoding computer regression output: Reading Predictor table (Constant, Slope), Coef column, SE Coef, T-statistic, and P-value for regression slope testing"
+      ],
+      // Backward compatibility for any historical 9-unit queries:
+      "6": ["Inference for Categorical Proportions: 1-proportion and 2-proportion z-procedures with 10% and Large Counts conditions"],
+      "7": ["Inference for Quantitative Means: 1-sample and 2-sample t-tests and intervals, matched-pairs differences"],
+      "8": ["Chi-Square Inference: Goodness-of-fit, Homogeneity, and Independence with expected counts >= 5"],
+      "9": ["Inference for Regression Slopes: t-test for beta, SE of slope, LINE conditions"]
     }
   },
   general_academic: {
@@ -989,6 +1042,90 @@ export function getGranularSubjectArchetypes(subject: string, unitOrTopic: strin
   // Detect unit number from unitOrTopic string (e.g. "Unit 3: Cultural Patterns" -> "3", "Period 5" -> "5")
   const unitMatch = u.match(/(?:unit|period|chapter|u|p)\s*([0-9]+)/i);
   const detectedUnit = unitMatch ? unitMatch[1] : null;
+
+  // SPECIAL COLLEGE BOARD SECTION II REPLICA FOR AP STATISTICS (6, 5, 10, 15 FRQS)
+  if ((s.includes('statistic') || s.includes('stat') || s.includes('ap-stat')) && !detectedUnit) {
+    const statCanonicalSix = [
+      "[Section II Part A - Q1 Canonical Archetype] Exploring Quantitative Data & Comparative Displays: Side-by-side boxplots, back-to-back stemplots, or histograms in authentic context; comparative distribution analysis using SOCS (Shape, Outliers, Center, Spread), calculating 1.5 x IQR fences with explicit numerical checks, and identifying resistant vs nonresistant measures.",
+      "[Section II Part A - Q2 Canonical Archetype] Collecting Data & Experimental Design: Comparative randomized clinical trial or agricultural field study; random assignment to balance confounding variables, randomized block design isolating nuisance factors, placebo control, double-blinding, and scope of inference (causation vs generalizability).",
+      "[Section II Part A - Q3 Canonical Archetype] Probability & Random Variables / Probability Models: Two-way contingency table, conditional probability P(A|B), independence test P(A|B) = P(A), discrete random variable linear combination E(X ± Y) and Var(X ± Y) under independence, or Binomial B(n, p) / Geometric distribution probability.",
+      "[Section II Part A - Q4 Canonical Archetype] Statistical Inference for Proportions or Means: Complete 4-Step inference framework: (1) State hypotheses H0 and Ha with population parameters defined in context, (2) Plan procedure and verify Random, 10% condition (n <= 0.10N), and Large Counts/Normality with actual numbers, (3) Do test statistic and P-value mechanics, (4) Conclude in context comparing P-value to alpha.",
+      "[Section II Part A - Q5 Canonical Archetype] Chi-Square Tests or Linear Regression Inference: Chi-Square Test for Homogeneity / Independence with expected cell counts matrix E_ij = (Row*Col)/Total >= 5 and df = (r-1)(c-1), OR Linear regression slope inference with LINE conditions, interpretation of s, r^2, and computer output decoding.",
+      "[Section II Part B - Q6 Canonical Archetype | Investigative Task] The Signature AP Statistics Investigative Task: Non-standard statistical problem requiring students to extend knowledge to novel situations (evaluating an unconventional point estimator, designing a simulation to model multi-stage risk, or comparing transformed regression models)."
+    ];
+
+    if (count === 6) {
+      return [...statCanonicalSix];
+    }
+
+    if (count === 4) {
+      // Official College Board Fall 2026 Redesigned Section II Blueprint (4 Questions, 10 Pts each):
+      // Question 1: Data Analysis & Collection (Units 1 & 5)
+      // Question 2: Probability, Random Variables & Distributions (Unit 2)
+      // Question 3: Statistical Inference for Proportions or Means (Units 3 & 4)
+      // Question 4: The Signature Investigative Task (Multi-Unit Synthesis)
+      return [
+        statCanonicalSix[0], // Q1 Data Analysis & Collection
+        statCanonicalSix[2], // Q2 Probability & Distributions
+        statCanonicalSix[3], // Q3 Statistical Inference
+        statCanonicalSix[5]  // Q4 Investigative Task
+      ];
+    }
+
+    if (count === 5) {
+      // 5-Unit Redesigned Comprehensive Section II Coverage:
+      // Q1: Unit 1 Exploring One-Variable Data & Study Design
+      // Q2: Unit 2 Probability Models & Sampling Distributions
+      // Q3: Unit 3 Inference for Categorical Proportions & Chi-Square
+      // Q4: Unit 4 Inference for Quantitative Means & Matched Pairs
+      // Q5: Unit 5 Regression Modeling & Investigative Synthesis
+      return [
+        statCanonicalSix[0],
+        statCanonicalSix[1],
+        statCanonicalSix[2],
+        statCanonicalSix[3],
+        statCanonicalSix[5]
+      ];
+    }
+
+    if (count === 10) {
+      // Full 6-question canonical exam + 4 high-yield mixed variations
+      return [
+        statCanonicalSix[0],
+        statCanonicalSix[1],
+        statCanonicalSix[2],
+        statCanonicalSix[3],
+        statCanonicalSix[4],
+        statCanonicalSix[5],
+        "[Section II Part A - Q1/Q2 Mixed Variation] Observational Study Sampling Bias vs Stratified Sampling with Comparative Histograms & Summary Statistics",
+        "[Section II Part A - Q3/Q4 Mixed Variation] Sampling Distributions of Sample Proportions (p-hat) & 2-Proportion z-Test with Pooled Standard Error",
+        "[Section II Part A - Q4/Q5 Mixed Variation] Matched Pairs t-Test for Dependent Means with Normal Probability Plot Diagnostic & LINE Residual Checks",
+        "[Section II Part B - Q6 Mixed Variation] Investigative Task: Bootstrapping / Permutation Resampling Test & Comparing Confidence Interval Capture Rates"
+      ];
+    }
+
+    if (count === 15) {
+      // 2 Full 6-question cycles + 3 mixed questions
+      return [
+        ...statCanonicalSix,
+        "[Section II Part A - Q1 Cycle 2] Bivariate Quantitative Modeling: Residual plot diagnostics, identifying high leverage points vs influential outliers, and slope interpretation in ecological context.",
+        "[Section II Part A - Q2 Cycle 2] Multi-Stage Stratified Sampling vs Cluster Sampling: Evaluating logistical trade-offs, design effects, and nonresponse bias in educational survey research.",
+        "[Section II Part A - Q3 Cycle 2] Medical Screening Test Bayes' Formulation: Sensitivity, specificity, prevalence rate, and false positive conditional probability P(Disease | Positive).",
+        "[Section II Part A - Q4 Cycle 2] Two-Sample t-Test for Difference of Independent Means: Unpooled Welch-Satterthwaite degrees of freedom, sample size robustness, and practical vs statistical significance.",
+        "[Section II Part A - Q5 Cycle 2] Chi-Square Goodness-of-Fit Test: Evaluating Mendelian genetic ratios or seasonal demographic distribution with expected counts >= 5.",
+        "[Section II Part B - Q6 Cycle 2] Investigative Task: Evaluating Non-Standard Truncated Estimators vs Sample Mean in Skewed Heavy-Tailed Distributions.",
+        "[Section II Part A - Q3 Cycle 3] Independent Random Variables in Manufacturing: Sum and difference of container tolerances with normal distribution tail probabilities.",
+        "[Section II Part A - Q4 Cycle 3] One-Sample z-Interval for Proportion with Margin of Error Optimization: Calculating sample size required to achieve target margin of error within 2%.",
+        "[Section II Part B - Q6 Master Capstone] Investigative Task: Non-Linear Power Transformation log(y) vs log(x) for Allometric Biological Scaling."
+      ];
+    }
+
+    const pool: string[] = [];
+    while (pool.length < count) {
+      pool.push(statCanonicalSix[pool.length % statCanonicalSix.length]);
+    }
+    return pool;
+  }
 
   // SPECIAL COLLEGE BOARD SECTION II REPLICA FOR AP CALCULUS BC (5, 6, 10, 15 FRQS)
   if ((s.includes('bc') || s.includes('calculus bc')) && !detectedUnit) {

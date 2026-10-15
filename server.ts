@@ -27,6 +27,7 @@ import { getStandardizedModelSvg } from "./src/utils/standardizedApDiagrams";
 import { getSubjectWhitelist } from "./src/data/apSubjectWhitelists";
 import { TOP_10_AP_SUBJECTS } from "./src/utils/apCurriculum";
 import { runMultiStageVerificationPipeline, getAphgPristineUnitQuestion } from "./src/utils/apMultiStageVerification";
+import { parseFirebaseToken, requireAuth, securityLog } from "./src/server/authHelper";
 
 
 
@@ -42,7 +43,46 @@ const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// Security 1: Hardened CORS with strict domain whitelist
+const ALLOWED_ORIGINS = new Set([
+  'https://ap-exam-five.vercel.app',
+  'capacitor://localhost',
+  'http://localhost',
+  'https://localhost',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000'
+]);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (
+      ALLOWED_ORIGINS.has(origin) ||
+      origin.endsWith('.vercel.app') ||
+      origin.startsWith('http://192.168.') ||
+      origin.startsWith('http://10.')
+    ) {
+      return callback(null, true);
+    }
+    console.warn(`[CORS Guard] Blocked unauthorized origin: ${origin}`);
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'x-admin-secret', 'x-webhook-secret']
+}));
+
+// Security 2: Hardened HTTP Security Headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
@@ -57,17 +97,19 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
+// 2. Sanitized Health Check (No Key Prefix Leakage, Health & Monitoring Metrics)
 app.all(["/api/health", "/health", "/api/status"], (req, res) => {
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),
     hasGeminiKey: Boolean(process.env.GEMINI_API_KEY),
-    geminiKeyPrefix: process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.slice(0, 6) + "..." : "MISSING",
-    isVercel: Boolean(process.env.VERCEL)
+    isVercel: Boolean(process.env.VERCEL),
+    uptimeSeconds: Math.floor(process.uptime()),
+    memoryUsageMB: Math.round(process.memoryUsage().rss / (1024 * 1024))
   });
 });
 
-// 2. Global Input Sanitization Middleware (Injection Prevention)
+// 3. Global Input Sanitization Middleware (Injection & XSS Prevention)
 const sanitizeInput = (obj: any): any => {
   if (typeof obj === 'string') {
     return xss(obj); // Strips <script> and dangerous HTML
@@ -85,9 +127,17 @@ const sanitizeInput = (obj: any): any => {
   return obj;
 };
 
-
-
-
+// Mount global input sanitization middleware on all request bodies
+app.use((req, res, next) => {
+  if (req.body && typeof req.body === 'object') {
+    try {
+      req.body = sanitizeInput(req.body);
+    } catch (e) {
+      console.warn('[Sanitization Warning] Failed to sanitize request body:', e);
+    }
+  }
+  next();
+});
 
 app.use((req, res, next) => {
   if (!req.url.startsWith('/api/battle/room/')) {
@@ -1426,9 +1476,30 @@ DO NOT GUESS. DO NOT ASSUME. DO NOT SILENTLY AUTO-CORRECT STUDENT ERRORS.
 STEP 4: DETAILED STEP-BY-STEP AP RUBRIC EVALUATION
 =======================================================
 - Grade strictly according to official College Board AP Scoring Guidelines with the "NO WORK, NO CREDIT" rule.
-- All mathematical expressions, formulas, variables ($x$, $y$, $t$), derivatives (\\frac{d}{dx}), integrals, limits, equations, powers, and units MUST be wrapped in KaTeX math delimiters ($...$ for inline or $$...$$ for display).
-- MANDATORY ZERO-BARE-LATEX RULE: NEVER output plain-text ASCII math, bare derivatives (d/dx), carets outside delimiters, or raw asterisks (*) without LaTeX delimiters! Always use \\cdot for multiplication.
+- All mathematical expressions, formulas, variables ($x$, $y$, $t$), derivatives (\frac{d}{dx}), integrals, limits, equations, powers, and units MUST be wrapped in KaTeX math delimiters ($...$ for inline or $$...$$ for display).
+- MANDATORY ZERO-BARE-LATEX RULE: NEVER output plain-text ASCII math, bare derivatives (d/dx), carets outside delimiters, or raw asterisks (*) without LaTeX delimiters! Always use \cdot for multiplication.
 - Break down grading into official rubric parts/steps: Part (a), Part (b), etc.
+
+=======================================================
+SPECIAL COLLEGE BOARD AP STATISTICS SCORING PROTOCOL:
+=======================================================
+When evaluating AP Statistics questions and student work:
+1. THE E-P-I SCORING MODEL (Essentially Correct / Partially Correct / Incorrect):
+   - For every part/step, evaluate against official College Board standards:
+     * "Essentially Correct (E)": All required statistical components and reasoning are present in context.
+     * "Partially Correct (P)": Most components are correct, but one key element (e.g. context, condition check, or parameter definition) is incomplete.
+     * "Incorrect (I)": Substantially flawed statistical reasoning or missed criteria.
+   - Include the E-P-I classification clearly in "stepTitle" or "feedback" (e.g. "Part (a): Comparing Distributions [E - Essentially Correct]").
+2. "NO CONTEXT, NO CREDIT" MANDATE:
+   - In AP Statistics, College Board Table Leaders strictly penalize naked numbers. If a student calculates a correct numerical value, correlation, slope, confidence interval, or test statistic, but fails to interpret it in terms of the actual problem context (variables, units, treatments), DO NOT award full credit (drop to "P").
+3. HYPOTHESIS TESTING & INFERENCE:
+   - Parameter Definition: Students must define population parameters in context (e.g., $\mu = \text{true mean...}$ or $p = \text{true proportion...}$). Hypotheses using sample statistics (like $H_0: \bar{x} = 50$ or $H_0: \hat{p} = 0.5$) are FATAL ERRORS (award 0 pts for hypotheses).
+   - Condition Checks: Students must verify conditions with explicit numbers (Random, $10\%$ condition $n \le 0.10N$, Large Counts $np \ge 10$ and $n(1-p) \ge 10$, or sample size $n \ge 30$). Barely reciting conditions without verification gets partial credit only.
+   - Conclusion Language: Conclusion must state decision by explicitly comparing $P$-value to $\alpha$ and conclude in context. Penalize dogmatic statements such as "we accept $H_0$" or "it proves $H_a$".
+4. REGRESSION INTERPRETATION:
+   - Slope: Must use predictive language ("for each 1 unit increase in $x$, the predicted $y$ changes by...").
+   - Residuals: $\text{Residual} = \text{Actual } y - \text{Predicted } \hat{y}$.
+
 - In each step:
   * "criteria": State the exact College Board benchmark requirement with KaTeX math.
   * "workEvaluated": Quote the student's exact written work (including their actual numbers and signs in KaTeX) evaluated for this part.
@@ -4601,6 +4672,10 @@ Every part of the FRQ MUST diagnose the exact real-world pitfalls documented in 
 🪤 The Scope Creep / Wrong Scale Trap (discussing the wrong geographic scale or outside historical era).
 🪤 The Endpoint Exclusion Trap / Boundary Slip Trap (omitting boundary convergence tests).
 🪤 The Naked Number / Missing Units Trap (ONLY if units are present in the problem stem).
+🪤 The Parameter Omission Trap [AP Statistics]: Using sample statistics (x-bar or p-hat) in hypotheses instead of population parameters (mu or p), or omitting parameter definitions in context.
+🪤 The Unverified Condition Trap [AP Statistics]: Checking conditions with mere checkmarks without showing the actual numerical calculation (e.g. 50 * 0.3 = 15 >= 10).
+🪤 The Dogmatic Conclusion Trap [AP Statistics]: Concluding that the test "proves" the alternative hypothesis is true or "accepts" the null hypothesis.
+🪤 The Naked Slope / Scope Creep Trap [AP Statistics]: Interpreting slope without the word "predicted" or "on average", or asserting causality from an observational study.
 
 STRICT JSON OUTPUT FORMAT:
 Return ONLY a valid JSON array of ${batchCount} question objects:
@@ -4707,7 +4782,13 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
       if (questionsList.length < requestedCount) {
         const deficit = requestedCount - questionsList.length;
         console.warn(`[ap-trap-radar] Subjective deficit detected: got ${questionsList.length}/${requestedCount}. Backfilling ${deficit} questions from authentic curriculum fallback...`);
-        const FALLBACK_FRQ_TRAP_TYPES = [
+        const isStatSubj = (subject || '').toLowerCase().includes('stat');
+        const FALLBACK_FRQ_TRAP_TYPES = isStatSubj ? [
+          { name: "🪤 The Parameter Omission Trap", issue: "Students use sample statistics (x-bar or p-hat) in hypotheses instead of population parameters (mu or p), or fail to define parameters in context.", fix: "Always state hypotheses in terms of population parameters (mu or p) and explicitly define them in context." },
+          { name: "🪤 The Unverified Condition Trap", issue: "Students state 'Normality holds' without showing explicit numerical verification (e.g. np0 >= 10 and n(1-p0) >= 10).", fix: "Show the exact numbers plugged into every condition equation before checking the condition." },
+          { name: "🪤 The Dogmatic Conclusion Trap", issue: "Students claim the test 'proves' the alternative hypothesis is true or 'accepts' the null hypothesis.", fix: "Always use non-dogmatic language: 'There is convincing statistical evidence that...' or 'fail to reject H0'." },
+          { name: "🪤 The Naked Slope Trap", issue: "Students omit the words 'predicted' or 'on average' when interpreting the slope of the regression line.", fix: "Always state: 'For each additional 1 unit increase in x, the PREDICTED y changes by b1 on average.'" }
+        ] : [
           { name: "🪤 The Unjustified Claim Trap", issue: "Students state the correct conclusion but fail to cite specific data from the stimulus or show explicit calculation setup.", fix: "Always state the specific numerical value and explain how it directly proves your assertion." },
           { name: "🪤 The Formula Setup / Incomplete Work Trap", issue: "Students write only the final answer without showing the intermediate derivative, integral, or governing formula.", fix: "Write out the fundamental theorem or formula setup before evaluating." },
           { name: "🪤 The Prompt Echo / Circular Logic Trap", issue: "Students restate the wording of the prompt instead of identifying the underlying scientific/economic mechanism.", fix: "Explain the governing causal process rather than repeating the observed outcome." },
@@ -4868,20 +4949,29 @@ AUTHENTIC COLLEGE BOARD AP EXAM STANDARDS (STRICT REQUIREMENT):
 1. REAL AP STIMULUS-BASED FORMAT:
    - AP History / Social Sciences (APUSH, World History, Euro, Gov, Human Geography): Every question MUST feature an authentic historical primary/secondary source excerpt (with author attribution, document title, and date e.g. "Source: John Locke, Two Treatises of Government, 1689"), historical treaty, political speech, map interpretation, or economic data table.
    - AP STEM Sciences (Biology, Chemistry, Physics, Environmental Science): Every question MUST feature a realistic laboratory experiment scenario, biological feedback pathway, reaction coordinate, data observation table, or physical system with formal variables.
-   - AP Mathematics (Calculus AB/BC, Statistics): Questions MUST use rigorous College Board mathematical notation ($f(x)$, derivatives, Riemann sums, differential equations, sampling distributions) testing conceptual theorems (MVT, IVT, EVT) or rate-of-change tables.
+   - AP Calculus (AB/BC): Questions MUST use rigorous College Board mathematical notation ($f(x)$, derivatives, Riemann sums, differential equations, polar/series) testing conceptual theorems (MVT, IVT, EVT) or rate-of-change tables.
+   - AP Statistics (College Board Fall 2026 Redesigned 5-Unit Framework): Questions MUST test authentic real-world scenarios (clinical randomized trials, observational surveys, two-way tables, sampling distributions, bivariate regression outputs, confidence intervals, hypothesis testing). Questions MUST use rigorous statistical notation ($\bar{x}, s, \mu, \sigma, \hat{p}, p_0, z^*, t^*, \text{df}, r, r^2, \text{SE}$).
    - AP Computer Science (CSA, CSP): Questions MUST contain authentic AP Java Subset code snippets (e.g. 2D arrays, ArrayList, object references, off-by-one loop boundaries, boolean logic) requiring precise execution tracing.
    - AP Economics (Macroeconomics, Microeconomics): Questions MUST test multi-step fiscal/monetary chain reactions, curve shifts, elasticity calculations, or market equilibrium models.
 
 2. AUTHENTIC COLLEGE BOARD DISTRACTOR TRAPS (NO OBVIOUS / SILLY WRONG ANSWERS):
    Every question MUST feature 4 options (A, B, C, D):
    - EXACTLY 1 OPTION: The 100% verified, mathematically/historically sound College Board Target.
-   - THE OTHER 3 OPTIONS: Must be genuine statistical traps designed to exploit standard high-school misconceptions that 40%-60% of AP test-takers pick:
+   - THE OTHER 3 OPTIONS: Must be genuine psychometric traps designed to exploit standard high-school misconceptions that 40%-60% of AP test-takers pick:
      🪤 The Reverse Logic / Arithmetic Slip Trap (inverted derivative/integral sign, reciprocal, flipped cause-and-effect).
      🪤 The Half-Truth / Scope Creep Trap (factually true in real life, BUT does not answer the stimulus excerpt or exceeds CED scope).
      🪤 The Chronological / Evolutionary Anachronism Trap (correct historical event or biological mechanism, but out of historical order or incorrect phase).
      🪤 The Absolute Qualifier Trap ('always', 'solely', 'invariably' turning a plausible assertion into an invalid claim).
      🪤 The Pseudo-Vocabulary Jargon Salad Trap (strings together legitimate unit keywords into a mechanism that makes no logical sense).
      🪤 The Intermediate Calculation Stop Trap (stops after finding an intermediate variable $x$ or moles $n$, rather than the final requested quantity).
+     🪤 The Variance Subtraction Fallacy [AP Statistics]: Calculating $\text{Var}(X - Y) = \text{Var}(X) - \text{Var}(Y)$ instead of adding variances.
+     🪤 The Null Parameter Inversion Trap [AP Statistics]: Using sample proportion $\hat{p}$ instead of hypothesized null parameter $p_0$ in the denominator standard error.
+     🪤 The Disjoint vs Independent Conflation [AP Statistics]: Assuming mutually exclusive (disjoint) events are independent.
+     🪤 The Inverse Conditional Fallacy [AP Statistics]: Confusing $P(A|B)$ with $P(B|A)$, e.g. $P(\text{Disease} \mid \text{Positive})$ vs $P(\text{Positive} \mid \text{Disease})$.
+     🪤 The CLT Misinterpretation Trap [AP Statistics]: Claiming CLT makes the population or individual observations normal, rather than the sampling distribution of $\bar{x}$.
+     🪤 The Causal Scope Creep Trap [AP Statistics]: Claiming cause-and-effect from an observational study without random assignment, or confusing correlation with causation.
+     🪤 The Naked Slope Trap [AP Statistics]: Omitting 'predicted' or 'on average' in linear regression slope interpretation.
+     🪤 The Acceptance Fallacy [AP Statistics]: Concluding to 'accept $H_0$' instead of 'fail to reject $H_0$'.
 
 3. SCORING & DISARMING SECRETS:
    - Provide the "5-Second Disarm Secret": A sharp, pragmatic mental heuristic used by AP 5-scorers to neutralize and cross out the distractors in seconds.
@@ -5134,7 +5224,34 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
     }
     if (fallbackBank && fallbackBank.length > 0) {
       const letters = ['A', 'B', 'C', 'D'];
-      const FALLBACK_TRAP_ARCHETYPES = [
+      const isStatSubj = (subject || '').toLowerCase().includes('stat');
+      const FALLBACK_TRAP_ARCHETYPES = isStatSubj ? [
+        {
+          type: '🪤 Variance Subtraction / Sign Slip Trap',
+          desc: 'Students mistakenly subtract variances when computing Var(X - Y) instead of adding them: Var(X - Y) = Var(X) + Var(Y).',
+          mindset: 'College Board evaluates whether students grasp that variability always compounds regardless of operation sign.'
+        },
+        {
+          type: '🪤 Null Parameter Inversion Trap',
+          desc: 'Students erroneously use the sample proportion p-hat in the standard error denominator of a hypothesis test rather than the hypothesized null parameter p0.',
+          mindset: 'Tests whether students understand that under H0, the population parameter p0 is assumed known.'
+        },
+        {
+          type: '🪤 Causal Scope Creep / Confounding Trap',
+          desc: 'Students infer a cause-and-effect relationship from an observational study or correlational data without randomized treatment assignment.',
+          mindset: 'Distinguishes between random selection (generalizability) and random assignment (causality).'
+        },
+        {
+          type: '🪤 Disjoint vs Independent Conflation',
+          desc: 'Students assume mutually exclusive events are independent; if probabilities are non-zero, disjoint events can never be independent.',
+          mindset: 'Exploits the common confusion between events that cannot happen together versus events that do not affect each other.'
+        },
+        {
+          type: '🪤 Naked Slope Interpretation Trap',
+          desc: 'Students omit the critical word "predicted" or "on average" when interpreting the slope of the regression line.',
+          mindset: 'Evaluates whether students recognize that regression equations model expected averages, not deterministic outcomes.'
+        }
+      ] : [
         {
           type: '🪤 Reverse Logic / Sign Slip Trap',
           desc: 'Students commonly pick this distractor by confusing inverse causal relationships or misapplying directional changes.',
@@ -5482,16 +5599,29 @@ function writeStoredSubscriptions(subs: Record<string, boolean>) {
   }
 }
 
-// REST Endpoint to persist/verify VIP subscription status across accounts
+// REST Endpoint to persist/verify VIP subscription status across accounts (Protected)
 app.post("/api/set-subscription", (req, res) => {
   const { userId, isPro } = req.body;
   if (!userId) {
     return res.status(400).json({ error: "Missing required parameter: userId" });
   }
+
+  // Security Check: Verify caller identity or admin secret
+  const tokenData = parseFirebaseToken(req.headers.authorization);
+  const adminSecret = req.headers['x-admin-secret'] || req.headers['x-webhook-secret'];
+  const isValidAdmin = adminSecret && (adminSecret === (process.env.ADMIN_SECRET_KEY || 'apexam_admin_secure_key') || adminSecret === process.env.REVENUECAT_WEBHOOK_SECRET);
+
+  if (!isValidAdmin) {
+    if (!tokenData || tokenData.uid !== userId) {
+      securityLog("UNAUTHORIZED_SET_SUBSCRIPTION_ATTEMPT", { targetUserId: userId, isPro, callerUid: tokenData?.uid }, req);
+      return res.status(403).json({ error: "Forbidden: Cannot set subscription without authenticated user or admin authorization." });
+    }
+  }
+
   const subs = getStoredSubscriptions();
   subs[userId] = !!isPro;
   writeStoredSubscriptions(subs);
-  console.log(`[Subscription API] Stored subscription status for user ${userId}: ${!!isPro}`);
+  securityLog("SUBSCRIPTION_STATUS_UPDATED", { userId, isPro: !!isPro, updatedBy: isValidAdmin ? 'admin/webhook' : userId }, req);
   res.json({ success: true, userId, isPro: !!isPro });
 });
 
@@ -5500,9 +5630,16 @@ app.post("/api/verify-subscription", (req, res) => {
   if (!userId) {
     return res.status(400).json({ error: "Missing required parameter: userId" });
   }
+
+  // Optional token verification for subscription check
+  const tokenData = parseFirebaseToken(req.headers.authorization);
+  if (tokenData && tokenData.uid !== userId && !tokenData.admin) {
+    securityLog("SUBSCRIPTION_CHECK_MISMATCH", { requestedUserId: userId, tokenUid: tokenData.uid }, req);
+    return res.status(403).json({ error: "Forbidden: User token does not match requested userId." });
+  }
+
   const subs = getStoredSubscriptions();
   const isPro = !!subs[userId];
-  console.log(`[Subscription API] Verified subscription status for user ${userId}: ${isPro}`);
   res.json({ userId, isPro });
 });
 
@@ -5784,10 +5921,46 @@ Every single question you produce MUST be 100% NOVEL, ORIGINAL, and FRESH. Test 
       }
     }
 
+    let subjectSpecificGuidance = "";
+    const lowerSubj = (subjectId + " " + subjectName).toLowerCase();
+    if (lowerSubj.includes("stat")) {
+      subjectSpecificGuidance = `
+CRITICAL OFFICIAL COLLEGE BOARD AP STATISTICS CURRICULUM BLUEPRINT (FALL 2026 REDESIGNED 5-UNIT FRAMEWORK):
+Every generated question MUST strictly adhere to the 5 official redesigned units (NEVER use outdated 9-unit structures):
+- Unit 1: Exploring One-Variable Data and Collecting Data (20%–30% exam weight):
+  * Distributions: Dotplots, histograms, stemplots, boxplots (1.5 x IQR outlier rule: Q1 - 1.5*IQR and Q3 + 1.5*IQR).
+  * Centers & Spreads: Mean/SD (non-resistant) vs Median/IQR (resistant). Skewed right -> Mean > Median; Skewed left -> Mean < Median.
+  * Z-scores: z = (x - mu)/sigma, and Normal Empirical Rule (68-95-99.7%).
+  * Sampling Methods: SRS, stratified (homogeneous strata), cluster (heterogeneous mini-populations), systematic. Biases: voluntary response, undercoverage, nonresponse.
+  * Experiments: Comparison, Random Assignment (balances confounding variables), Control, Replication, Blocking (reduces known variation). Random selection -> generalize to population; Random assignment -> causality.
+- Unit 2: Probability, Random Variables, and Probability Distributions (15%–25% exam weight):
+  * Addition Rule P(A or B) = P(A) + P(B) - P(A and B), Conditional P(A|B) = P(A and B)/P(B), Independence test P(A|B) = P(A) <=> P(A and B) = P(A)*P(B).
+  * Discrete RVs: E(X) = sum x_i*P(x_i), Var(X) = sum (x_i - mu)^2*P(x_i). Linear transformation: E(aX+b) = aE(X)+b, Var(aX+b) = a^2*Var(X).
+  * Combining Independent RVs: E(X +/- Y) = E(X) +/- E(Y), Var(X +/- Y) = Var(X) + Var(Y). Variances ALWAYS add! Standard deviation sigma = sqrt(Var_X + Var_Y).
+  * Binomial (BINS): Binary, Independent, Fixed n, Same p. mu = np, sigma = sqrt(np(1-p)). Geometric: P(Y=k) = (1-p)^(k-1)*p, mu = 1/p.
+  * Sampling Distributions: mu_{x-bar} = mu, sigma_{x-bar} = sigma / sqrt(n). Central Limit Theorem (CLT): if n >= 30, x-bar sampling distribution is approximately Normal regardless of population shape. Proportions: mu_{p-hat} = p, sigma_{p-hat} = sqrt[p(1-p)/n] (Normal if np >= 10, n(1-p) >= 10).
+- Unit 3: Inference for Categorical Data: Proportions (15%–25% exam weight):
+  * One-Sample & Two-Sample z-intervals/tests. Test statistic uses null p0 for SE: z = (p-hat - p0) / sqrt[p0(1-p0)/n]. Pooled proportion p_c = (X1 + X2)/(n1 + n2) for two-sample test.
+  * Type I Error (reject true H0, prob alpha), Type II Error (fail to reject false H0, prob beta), Power (1 - beta). Increasing n increases power.
+  * Chi-Square Goodness-of-Fit (df = k - 1), Independence / Homogeneity (df = (r-1)(c-1)), expected counts E = (Row * Col)/Total >= 5.
+- Unit 4: Inference for Quantitative Data: Means (10%–20% exam weight):
+  * Student's t-distribution: Symmetric, heavier tails than normal, df = n - 1. Used when sigma is unknown and estimated by s.
+  * One-Sample and Two-Sample t-test/interval. Never pool standard deviations on AP exam!
+  * Matched Pairs: Dependent measurements (pre/post, twins) analyzed as ONE-sample t-test on differences d = x1 - x2 testing mu_d with df = n_pairs - 1.
+- Unit 5: Regression Analysis (10%–20% exam weight):
+  * LSRL: y-hat = a + bx, slope b = r*(s_y / s_x), intercept a = y-bar - b*(x-bar). Always include "predicted" in slope interpretation.
+  * Residuals: y - y-hat (Actual - Predicted). Random scatter in residual plot confirms linear model appropriateness; curved pattern indicates non-linear model.
+  * r^2 is proportion of variation in y explained by linear relationship with x. Standard error of residuals s.
+  * Slope inference: t = (b - 0) / SE_b with df = n - 2. LINE conditions (Linear, Independent, Normal residuals, Equal variance).
+`;
+    }
+
     const prompt = `You are the Official AP Exam Question Engine for high-stakes 1v1 Quiz Battles.
 Generate exactly ${requestedCount} distinct, high-quality, competitive Multiple Choice Questions (MCQ) for: "${subjectName}".
 Target Student Level: ${normGrade}.
 Timestamp Seed: ${Date.now()}_${Math.random().toString(36).substring(2, 7)}
+
+${subjectSpecificGuidance}
 
 ${antiRepeatPrompt}
 
@@ -5859,6 +6032,14 @@ Strictly return a raw JSON array of ${requestedCount} objects matching this exac
           difficulty: item.difficulty === 'Easy' || item.difficulty === 'Hard' ? item.difficulty : 'Medium',
           timeLimit: item.timeLimit === 30 || item.timeLimit === 60 ? item.timeLimit : 45
         })).filter(q => q.stem && q.options.length === 4);
+
+        const uniqueSeen = new Set<string>();
+        generated = generated.filter(q => {
+          const norm = q.stem.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (!norm || uniqueSeen.has(norm)) return false;
+          uniqueSeen.add(norm);
+          return true;
+        });
       }
     } catch (parseErr) {
       console.warn("[Battle AI Generator] Failed to parse JSON:", parseErr);
@@ -5873,7 +6054,17 @@ Strictly return a raw JSON array of ${requestedCount} objects matching this exac
     const needed = requestedCount - generated.length;
     const combinedAvoid = [...(avoidStems || []), ...generated.map(g => g.stem)];
     const fallbackBank = getBattleQuestions(subjectId, Math.max(needed, 5), combinedAvoid);
-    const finalQs = [...generated, ...fallbackBank].slice(0, requestedCount);
+    const candidateQs = [...generated, ...fallbackBank];
+    const finalSet = new Set<string>();
+    const finalQs: BattleQuestion[] = [];
+    for (const q of candidateQs) {
+      const norm = q.stem.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (!finalSet.has(norm)) {
+        finalSet.add(norm);
+        finalQs.push(q);
+      }
+      if (finalQs.length >= requestedCount) break;
+    }
 
     res.json({ success: true, questions: finalQs, source: generated.length > 0 ? "hybrid" : "bank" });
   } catch (err: any) {

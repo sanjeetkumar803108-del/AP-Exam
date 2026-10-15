@@ -171,14 +171,17 @@ const bcUnits1to8: APUnitNote[] = AP_CALCULUS_AB_NOTES.map(unit => {
     };
   }
 
-  return unit;
+  return {
+    ...unit,
+    title: `${unit.title} (AB Core Foundation on BC)`,
+  };
 });
 
 // Unit 9: Parametric Equations, Polar Coordinates, and Vector-Valued Functions (BC Exclusive)
 const bcUnit9: APUnitNote = {
   unitId: 'u9',
   unitNumber: 9,
-  title: 'Parametric Equations, Polar Coordinates, and Vectors (BC Exclusive)',
+  title: 'Unit 9: Parametric Equations, Polar Coordinates, and Vectors (BC Exclusive)',
   examWeight: '11%–12% of BC Exam',
   bigIdea: 'Planar motion can be expressed parametrically or through polar coordinates, extending differentiation and integration to 2D trajectory vectors and polar areas.',
   keyTheorems: [
@@ -296,7 +299,7 @@ const bcUnit9: APUnitNote = {
 const bcUnit10: APUnitNote = {
   unitId: 'u10',
   unitNumber: 10,
-  title: 'Infinite Sequences and Series (BC Exclusive)',
+  title: 'Unit 10: Infinite Sequences and Series (BC Exclusive Heavyweight)',
   examWeight: '17%–18% of BC Exam',
   bigIdea: 'Infinite series evaluate whether an infinite sum of terms converges to a finite value. Taylor polynomials approximate transcendental functions with quantifiable error bounds.',
   keyTheorems: [
@@ -384,6 +387,29 @@ const bcUnit10: APUnitNote = {
 | **Bound Value** | Absolute value of the **very next omitted term** | $M = \\max |f^{(n+1)}(z)|$ between center $c$ and evaluation point $x$ |
 | **Conditions** | Series must alternate, terms decrease $|b_{n+1}| \\le |b_n|$, and $\\lim b_n = 0$ | $f(x)$ must be $n+1$ times differentiable on interval containing $c$ and $x$ |
 | **AP Exam Frequency** | Appears on nearly 80% of BC FRQ 6 problems | Tested when finding max error or proving an approximation is within $\\epsilon$ |`
+    },
+    {
+      heading: '4. Series Convergence Test Decision Algorithm (Flowchart in Steps)',
+      content: `When faced with an unfamiliar infinite series $\\sum a_n$, follow this exact 5-step decision algorithm:
+
+* **Step 0: The Quick Divergence Screen ($n$th-Term Test)**
+  * Take $\\lim_{n\\to\\infty} a_n$. If the limit is NOT $0$ (or DNE), **STOP immediately** $\\implies$ The series **DIVERGES** by the $n$th-Term Test.
+  * If $\\lim a_n = 0$, move to Step 1 (*remember: $\\lim a_n = 0$ NEVER proves convergence!*).
+* **Step 1: Check for Known Standard Forms**
+  * **Geometric Series** ($\\sum a r^n$): Converges if $|r| < 1$; Diverges if $|r| \\ge 1$.
+  * **$p$-Series** ($\\sum 1/n^p$): Converges if $p > 1$; Diverges if $p \\le 1$ (Harmonic $\\sum 1/n$ diverges).
+  * **Alternating Series** ($\\sum (-1)^n b_n$): If $b_n > 0$, terms decrease ($b_{n+1} \\le b_n$), and $\\lim b_n = 0$, then it **CONVERGES by AST**!
+  * **Telescoping Series**: Fractions that cancel out upon partial fraction expansion (e.g., $\\sum \\frac{1}{n(n+1)}$).
+* **Step 2: Are There Factorials ($n!$) or Base-to-the-Power ($c^n$)?**
+  * **Use the Ratio Test**: Compute $L = \\lim_{n\\to\\infty} |a_{n+1} / a_n|$.
+  * If $L < 1 \\implies$ Absolutely Convergent; $L > 1 \\implies$ Divergent; $L = 1 \\implies$ Inconclusive (switch to comparison tests).
+* **Step 3: Is it an Algebraic Fraction of Polynomials or Roots?**
+  * E.g., $\\sum \\frac{2n^2 + 3}{5n^5 - n + 4}$. Keep only the highest degree in numerator and denominator: $b_n = \\frac{n^2}{n^5} = \\frac{1}{n^3}$.
+  * **Limit Comparison Test (LCT)**: Compute $L = \\lim_{n\\to\\infty} \\frac{a_n}{b_n}$. If $0 < L < \\infty$, both series share the exact same fate. Since $\\sum 1/n^3$ is a convergent $p$-series ($p=3 > 1$), $\\sum a_n$ **CONVERGES**!
+  * **Direct Comparison Test (DCT)**: Use if you can easily prove $0 \\le a_n \\le b_n$ (for convergence) or $0 \\le b_n \\le a_n$ (for divergence).
+* **Step 4: Can the Expression be Easily Integrated?**
+  * **Integral Test**: If $f(x)$ is continuous, positive, and decreasing for $x \\ge 1$, then $\\sum_{n=1}^\\infty a_n$ and $\\int_1^\\infty f(x)\\,dx$ converge or diverge together.
+  * Classic target: $\\sum \\frac{1}{n \\ln(n)}$ or $\\sum n e^{-n^2}$.`
     }
   ],
   workedExamples: [
@@ -401,6 +427,37 @@ const bcUnit10: APUnitNote = {
       ],
       finalAnswer: 'Radius of convergence $R = 3$; Interval of convergence is $(-1, 5]$.',
       apScoringTip: 'You MUST test endpoints individually! The Ratio Test gives no information about endpoints ($L = 1$). Forgetting to test endpoints loses 2 out of 3 points on interval of convergence FRQs.'
+    },
+    {
+      title: 'Limit Comparison Test & Dominant Term Selection',
+      topicRef: 'CED 10.5 Comparison Tests for Convergence',
+      question: 'Determine whether the infinite series converges or diverges: $\\sum_{n=1}^\\infty \\frac{3n^2 - 4}{2n^4 + 5n + 1}$. Justify your answer using an appropriate convergence test.',
+      solutionSteps: [
+        'Step 1: Inspect the general term: $a_n = \\frac{3n^2 - 4}{2n^4 + 5n + 1}$. As $n \\to \\infty$, lower-degree terms $(-4, 5n, 1)$ become negligible compared to dominant powers ($n^2$ and $n^4$).',
+        'Step 2: Choose the comparison series $b_n$: Keep dominant terms: $b_n = \\frac{n^2}{n^4} = \\frac{1}{n^2}$. Note that $\\sum_{n=1}^\\infty \\frac{1}{n^2}$ is a $p$-series with $p = 2 > 1$, which CONVERGES.',
+        'Step 3: Setup the Limit Comparison Test (LCT): Verify terms are positive for all $n \\ge 2$ ($3n^2 - 4 > 0$). Compute $L = \\lim_{n\\to\\infty} \\frac{a_n}{b_n} = \\lim_{n\\to\\infty} \\left( \\frac{3n^2 - 4}{2n^4 + 5n + 1} \\cdot \\frac{n^2}{1} \\right)$.',
+        'Step 4: Evaluate the limit: $L = \\lim_{n\\to\\infty} \\frac{3n^4 - 4n^2}{2n^4 + 5n + 1} = \\frac{3}{2}$.',
+        'Step 5: Apply LCT criteria: Since $L = 3/2$ is a finite, strictly positive number ($0 < L < \\infty$), both series share the identical convergence behavior.',
+        'Step 6: Formulate complete AP conclusion: Since $\\sum_{n=1}^\\infty \\frac{1}{n^2}$ converges as a $p$-series with $p = 2 > 1$, by the Limit Comparison Test, $\\sum_{n=1}^\\infty \\frac{3n^2 - 4}{2n^4 + 5n + 1}$ also CONVERGES.'
+      ],
+      finalAnswer: 'The series $\\sum_{n=1}^\\infty \\frac{3n^2 - 4}{2n^4 + 5n + 1}$ CONVERGES by the Limit Comparison Test with $\\sum \\frac{1}{n^2}$.',
+      apScoringTip: 'Always name the test (Limit Comparison Test), state the comparison series and why it converges ($p$-series with $p=2 > 1$), show the limit calculation $L = 3/2$, and note that $0 < L < \\infty$. Skipping any of these 4 steps loses justification points on FRQ 6!'
+    },
+    {
+      title: 'Taylor Polynomial Derivation from Scratch & Lagrange Error Bound',
+      topicRef: 'CED 10.11 & 10.12 Taylor Polynomials and Lagrange Error Bound',
+      question: 'Let $f(x) = \\ln(x)$. (a) Write the third-degree Taylor polynomial $P_3(x)$ for $f$ centered at $c = 1$. (b) Use $P_3(x)$ to approximate $\\ln(1.1)$. (c) Use the Lagrange Error Bound to show that $|f(1.1) - P_3(1.1)| < 3 \\times 10^{-5}$.',
+      solutionSteps: [
+        'Step 1: Compute derivatives of $f(x) = \\ln(x)$ and evaluate at center $c = 1$:\n  * $f(1) = \\ln(1) = 0$\n  * $f\'(x) = x^{-1} \\implies f\'(1) = 1$\n  * $f\'\'(x) = -x^{-2} \\implies f\'\'(1) = -1$\n  * $f\'\'\'(x) = 2x^{-3} \\implies f\'\'\'(1) = 2$\n  * $f^{(4)}(x) = -6x^{-4}$ (needed for Lagrange bound).',
+        'Step 2: Construct Taylor coefficients $a_k = \\frac{f^{(k)}(1)}{k!}$:\n  * Degree 1: $\\frac{1}{1!}(x-1)^1 = (x-1)$\n  * Degree 2: $\\frac{-1}{2!}(x-1)^2 = -\\frac{1}{2}(x-1)^2$\n  * Degree 3: $\\frac{2}{3!}(x-1)^3 = \\frac{2}{6}(x-1)^3 = \\frac{1}{3}(x-1)^3$.\n  Therefore, $P_3(x) = (x-1) - \\frac{1}{2}(x-1)^2 + \\frac{1}{3}(x-1)^3$.',
+        'Step 3: Approximate $\\ln(1.1)$ using $x = 1.1 \\implies (x-1) = 0.1$:\n  $P_3(1.1) = 0.1 - \\frac{1}{2}(0.01) + \\frac{1}{3}(0.001) = 0.1 - 0.005 + 0.000333... \\approx 0.095333$.',
+        'Step 4: Set up the Lagrange Error Bound for $n = 3$: $|R_3(1.1)| \\le \\frac{M}{(3+1)!}|1.1 - 1|^4 = \\frac{M}{24}(0.1)^4 = \\frac{M}{24}(0.0001)$, where $M = \\max_{1 \\le z \\le 1.1} |f^{(4)}(z)|$.',
+        'Step 5: Find upper bound $M$: $|f^{(4)}(z)| = |\\frac{-6}{z^4}| = \\frac{6}{z^4}$. Since $\\frac{6}{z^4}$ is strictly decreasing on $[1, 1.1]$, its maximum value occurs at the left endpoint $z = 1$: $M = \\frac{6}{1^4} = 6$.',
+        'Step 6: Compute the bound: $|R_3(1.1)| \\le \\frac{6}{24}(0.0001) = \\frac{1}{4}(0.0001) = 0.000025 = 2.5 \\times 10^{-5}$.',
+        'Step 7: Conclude: Since $2.5 \\times 10^{-5} < 3 \\times 10^{-5}$, the error bound is proven.'
+      ],
+      finalAnswer: '(a) $P_3(x) = (x - 1) - \\frac{1}{2}(x - 1)^2 + \\frac{1}{3}(x - 1)^3$. (b) $P_3(1.1) \\approx 0.095333$. (c) Error $|R_3(1.1)| \\le 2.5 \\times 10^{-5} < 3 \\times 10^{-5}$.',
+      apScoringTip: 'When finding $M$ for Lagrange error bound, you MUST clearly state the interval ($[1, 1.1]$) and justify why your $M$ is the maximum (e.g. "since $6/z^4$ is decreasing, the max on $[1, 1.1]$ occurs at $z=1$ so $M=6$").'
     }
   ],
   diagrams: [

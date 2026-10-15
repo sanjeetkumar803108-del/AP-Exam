@@ -1797,7 +1797,7 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
                                 : 'bg-zinc-50 border-zinc-200'
                             }`}
                           >
-                            <div className="flex items-center justify-between mb-1.5">
+                            <div className="flex items-center justify-between mb-1.5 flex-wrap gap-2">
                               <div className="flex items-center gap-2">
                                 {result.submissionMode === 'question_prompt' || step.status === 'full' ? (
                                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -1810,13 +1810,34 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
                                   {step.stepTitle || step.part || `Step ${idx + 1}`}
                                 </span>
                               </div>
-                              <span className="text-xs font-black font-mono text-zinc-800">
-                                {result.submissionMode === 'question_prompt'
-                                  ? `${step.pointsPossible} pts`
-                                  : (step.pointsEarned === 0 || (result.totalPointsEarned ?? 0) === 0
-                                    ? "0 pts"
-                                    : `${step.pointsEarned} / ${step.pointsPossible} pts`)}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                {(result.subjectDetected?.toLowerCase().includes('stat') || 
+                                  step.stepTitle?.includes('[E') || 
+                                  step.stepTitle?.includes('[P') || 
+                                  step.feedback?.includes('Essentially Correct') ||
+                                  step.feedback?.includes('Partially Correct')) && (
+                                  <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md border tracking-wider ${
+                                    step.status === 'full'
+                                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                      : step.status === 'partial'
+                                      ? 'bg-amber-100 text-amber-800 border-amber-300'
+                                      : 'bg-red-100 text-red-800 border-red-300'
+                                  }`}>
+                                    {step.status === 'full' 
+                                      ? 'E • Essentially Correct' 
+                                      : step.status === 'partial' 
+                                      ? 'P • Partially Correct' 
+                                      : 'I • Incorrect'}
+                                  </span>
+                                )}
+                                <span className="text-xs font-black font-mono text-zinc-800">
+                                  {result.submissionMode === 'question_prompt'
+                                    ? `${step.pointsPossible} pts`
+                                    : (step.pointsEarned === 0 || (result.totalPointsEarned ?? 0) === 0
+                                      ? "0 pts"
+                                      : `${step.pointsEarned} / ${step.pointsPossible} pts`)}
+                                </span>
+                              </div>
                             </div>
 
                             <div className="text-[11px] font-bold text-zinc-600 mb-2 min-w-0 max-w-full overflow-x-auto">

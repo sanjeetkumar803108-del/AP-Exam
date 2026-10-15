@@ -794,50 +794,54 @@ const getChatCategory = (chat: SavedChat): { name: string; tag: string; color: s
 const PERSONAS = {
   owl: {
     id: 'owl' as const,
-    name: 'Professor Owl',
-    title: 'Professor Owl Protocol',
-    emoji: '🦉',
+    name: 'Professor Pang',
+    title: 'Professor Pang Protocol',
+    emoji: '🐧',
+    avatarImg: '/professor-pang-white.png',
     color: 'from-purple-500 to-indigo-600',
     borderColor: 'border-purple-500/30',
     bgLight: 'bg-purple-500/10',
     textColor: 'text-purple-300',
-    description: 'Elite academic rigor. Formal proofs, first principles, and exam-mastery insights.',
-    promptSuffix: `\n\nYour persona: You are Professor Owl, an elite academic master educator with 20+ years of teaching experience. Your tone is Analytical, Rigorous, and Inspiring. You explain first principles, standard definitions, and formal mathematical proofs with absolute precision. You highlight high-yield insights and ensure zero misconceptions.`
+    description: 'Rigorous concepts, proofs, and exam mastery.',
+    promptSuffix: `\n\nYour persona: You are Professor Pang, an elite academic master educator with 20+ years of teaching experience. Your tone is Analytical, Rigorous, and Inspiring. You explain first principles, standard definitions, and formal mathematical proofs with absolute precision. You highlight high-yield insights and ensure zero misconceptions.`
   },
   cosmo: {
     id: 'cosmo' as const,
     name: 'Captain Cosmo',
     title: 'Captain Cosmo Protocol',
     emoji: '🚀',
+    avatarImg: '',
     color: 'from-blue-500 to-cyan-600',
     borderColor: 'border-blue-500/30',
     bgLight: 'bg-blue-500/10',
     textColor: 'text-blue-300',
-    description: 'Dynamic STEM explorer! Explains concepts through astrophysics, orbital mechanics, and real-world forces.',
+    description: 'Dynamic STEM concepts through real-world physics.',
     promptSuffix: `\n\nYour persona: You are Captain Cosmo, a brilliant aerospace physicist and energetic STEM explorer. Your teaching methodology anchors every concept in thrilling real-world physics, space mechanics, planetary forces, and cutting-edge engineering. Connect abstract formulas to dynamic physical phenomena with high intellectual excitement.`
   },
   wizard: {
     id: 'wizard' as const,
-    name: 'Dr. Sage (Math Expert)',
+    name: 'Dr. Sage',
     title: 'Dr. Sage Protocol',
     emoji: '👨‍🏫',
+    avatarImg: '',
     color: 'from-amber-500 to-yellow-600',
     borderColor: 'border-amber-500/30',
     bgLight: 'bg-amber-500/10',
     textColor: 'text-amber-300',
-    description: 'Speed-math & Olympiad grandmaster. Algebraic shortcuts, symmetries, and intuitive visual tricks.',
+    description: 'Speed-math shortcuts, symmetries, and visual tricks.',
     promptSuffix: `\n\nYour persona: You are Dr. Sage, a legendary speed-math and Olympiad problem-solving grandmaster. Your specialty is revealing mental calculation shortcuts, algebraic symmetries, identity simplifications, and intuitive visual tricks. Teach students how to spot patterns instantly and solve problems with effortless elegance. Format ALL equations strictly using LaTeX.`
   },
   dino: {
     id: 'dino' as const,
-    name: 'Investigator Max (Science Expert)',
+    name: 'Investigator Max',
     title: 'Investigator Max Protocol',
     emoji: '🔬',
+    avatarImg: '',
     color: 'from-emerald-500 to-teal-600',
     borderColor: 'border-emerald-500/30',
     bgLight: 'bg-emerald-500/10',
     textColor: 'text-emerald-300',
-    description: 'Empirical scientific investigator. Molecular mechanisms, lab observations, and cause-and-effect reasoning.',
+    description: 'Empirical lab observations and scientific reasoning.',
     promptSuffix: `\n\nYour persona: You are Investigator Max, a senior empirical researcher and scientific investigator. Your methodology is grounded in the scientific method, experimental observation, molecular-level mechanics, and data-driven cause-and-effect reasoning. Explain the 'Why' behind every chemical reaction, biological mechanism, and physical law with vivid laboratory clarity.`
   }
 };
@@ -1978,7 +1982,7 @@ Please evaluate this answer strictly according to your system rubric.`;
               <Sparkles className="w-4 h-4 text-purple-500 animate-pulse" />
             </div>
             <div className="min-w-0">
-              <h2 className="font-bold text-sm text-zinc-800 tracking-tight leading-none">Magic AI Tutor</h2>
+              <h2 className="font-bold text-sm text-zinc-800 tracking-tight leading-none">AI Tutor</h2>
             </div>
           </div>
         </div>
@@ -1992,7 +1996,12 @@ Please evaluate this answer strictly according to your system rubric.`;
             >
               <span className="flex items-center gap-1.5">
                 {!isVip && <Lock className="w-2.5 h-2.5 text-amber-400" />}
-                {PERSONAS[activePersona].emoji} {PERSONAS[activePersona].name.split(' ')[0]}
+                {PERSONAS[activePersona].avatarImg ? (
+                  <img src={PERSONAS[activePersona].avatarImg} alt={PERSONAS[activePersona].name} className="w-4 h-4 rounded-full object-cover inline-block" />
+                ) : (
+                  <span>{PERSONAS[activePersona].emoji}</span>
+                )}
+                {PERSONAS[activePersona].name.split(' ')[0]}
               </span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${personaModalOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -2064,8 +2073,12 @@ Please evaluate this answer strictly according to your system rubric.`;
                               </div>
                             )}
 
-                            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${p.color} flex items-center justify-center text-3xl shrink-0 shadow-lg border-2 border-white dark:border-zinc-700 group-hover:scale-110 transition-transform duration-500`}>
-                              {p.emoji}
+                            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${p.color} flex items-center justify-center text-3xl shrink-0 shadow-lg border-2 border-white dark:border-zinc-700 group-hover:scale-110 transition-transform duration-500 overflow-hidden`}>
+                              {p.avatarImg ? (
+                                <img src={p.avatarImg} alt={p.name} className="w-full h-full object-cover bg-white" />
+                              ) : (
+                                p.emoji
+                              )}
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="text-sm font-black leading-tight mb-1 flex items-center justify-between gap-2">
@@ -2245,11 +2258,15 @@ Please evaluate this answer strictly according to your system rubric.`;
               className="flex flex-col min-h-full justify-center max-w-md mx-auto pt-4 pb-8 px-2"
             >
               <div className="text-center mb-6">
-                <div className={`w-16 h-16 bg-gradient-to-tr ${PERSONAS[activePersona].color} rounded-3xl flex items-center justify-center mx-auto mb-3 shadow-md border border-zinc-200 relative group`}>
+                <div className={`w-16 h-16 bg-gradient-to-tr ${PERSONAS[activePersona].color} rounded-3xl flex items-center justify-center mx-auto mb-3 shadow-md border border-zinc-200 relative group overflow-hidden`}>
                   <div className={`absolute inset-0 rounded-3xl ${activePersona === 'owl' ? 'bg-purple-500/10' : activePersona === 'cosmo' ? 'bg-blue-500/10' : activePersona === 'wizard' ? 'bg-amber-500/10' : 'bg-emerald-500/10'} blur-lg group-hover:blur-xl transition-all`} />
-                  <span className="text-3xl relative z-10 animate-[bounce_3s_infinite]">{PERSONAS[activePersona].emoji}</span>
+                  {PERSONAS[activePersona].avatarImg ? (
+                    <img src={PERSONAS[activePersona].avatarImg} alt={PERSONAS[activePersona].name} className="w-full h-full object-cover relative z-10 bg-white" />
+                  ) : (
+                    <span className="text-3xl relative z-10 animate-[bounce_3s_infinite]">{PERSONAS[activePersona].emoji}</span>
+                  )}
                 </div>
-                <h3 className="text-2xl font-black text-zinc-800 tracking-tight mb-1">AI Tutor</h3>
+                <h3 className="text-2xl font-black text-zinc-800 tracking-tight mb-1">{PERSONAS[activePersona].name}</h3>
               </div>
 
               {/* Stress / Mood Quick Actions */}

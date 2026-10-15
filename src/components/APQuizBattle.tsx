@@ -124,7 +124,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       let cat = 'STEM & Math';
       if (['ap-physics', 'ap-chemistry', 'ap-biology', 'ap-environmental-science'].includes(s.id)) {
         cat = 'Sciences';
-      } else if (['ap-us-history', 'ap-world-history', 'ap-human-geography', 'ap-psychology', 'ap-economics'].includes(s.id)) {
+      } else if (['ap-us-history', 'ap-world-history', 'ap-human-geography', 'ap-psychology', 'ap-microeconomics', 'ap-macroeconomics'].includes(s.id)) {
         cat = 'History & Social';
       } else if (['ap-english-lang'].includes(s.id)) {
         cat = 'English';
@@ -242,9 +242,15 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // --- DYNAMIC AI QUESTION GENERATION & ZERO-REPEAT HISTORY ENGINE ---
   const SEEN_QUESTIONS_KEY = 'ap_battle_seen_stems';
-
-  const getSeenStems = (): string[] => {
+  const getSeenStems = (subjId?: string): string[] => {
     try {
+      const sub = subjId || selectedSubjectId;
+      const subKey = `ap_battle_seen_stems_${sub}`;
+      const rawSub = safeGetItem(subKey);
+      if (rawSub) {
+        const list = JSON.parse(rawSub);
+        if (Array.isArray(list) && list.length > 0) return list;
+      }
       const raw = safeGetItem(SEEN_QUESTIONS_KEY);
       if (raw) {
         const list = JSON.parse(raw);
@@ -254,14 +260,43 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     return [];
   };
 
-  const recordSeenStems = (newQuestions: BattleQuestion[]) => {
+  const recordSeenStems = (newQuestions: BattleQuestion[], subjId?: string) => {
     try {
-      const current = getSeenStems();
+      const sub = subjId || selectedSubjectId;
+      const subKey = `ap_battle_seen_stems_${sub}`;
+      const currentSub = getSeenStems(sub);
       const newStems = (newQuestions || []).map(q => q.stem?.trim()).filter(Boolean);
+      const combinedSub = Array.from(new Set([...currentSub, ...newStems]));
+      safeSetItem(subKey, JSON.stringify(combinedSub.slice(-500)));
+
+      const current = getSeenStems();
       const combined = Array.from(new Set([...current, ...newStems]));
-      const trimmed = combined.slice(-500);
-      safeSetItem(SEEN_QUESTIONS_KEY, JSON.stringify(trimmed));
+      safeSetItem(SEEN_QUESTIONS_KEY, JSON.stringify(combined.slice(-500)));
     } catch (e) {}
+  };
+
+  const ensureUniqueBattleQuestions = (rawQuestions: BattleQuestion[], subjId: string): BattleQuestion[] => {
+    const seenStems = new Set<string>();
+    const unique: BattleQuestion[] = [];
+    for (const q of (rawQuestions || [])) {
+      const norm = (q.stem || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (norm && !seenStems.has(norm)) {
+        seenStems.add(norm);
+        unique.push(q);
+      }
+    }
+    if (unique.length < 5) {
+      const fill = getBattleQuestions(subjId, 5 - unique.length, Array.from(seenStems));
+      for (const f of fill) {
+        const norm = (f.stem || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (norm && !seenStems.has(norm)) {
+          seenStems.add(norm);
+          unique.push(f);
+        }
+        if (unique.length >= 5) break;
+      }
+    }
+    return unique.slice(0, 5);
   };
 
   const preloadedQuestionsRef = useRef<Record<string, BattleQuestion[]>>({});
@@ -271,10 +306,10 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     if (isGeneratingAiRef.current) return;
     isGeneratingAiRef.current = true;
     try {
-      const seen = getSeenStems();
+      const seen = getSeenStems(subjId);
       const qs = await battleSync.generateBattleQuestions(subjId, myGrade, seen);
       if (qs && qs.length >= 5) {
-        preloadedQuestionsRef.current[subjId] = qs;
+        preloadedQuestionsRef.current[subjId] = ensureUniqueBattleQuestions(qs, subjId);
       }
     } catch (e) {
       console.warn('[APQuizBattle] prefetch error:', e);
@@ -409,11 +444,12 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     liveRoomIdRef.current = roomId;
     setOpponent(matchedOpponent);
 
-    const safeQuestions = (matchedQuestions && matchedQuestions.length > 0)
+    const rawQuestions = (matchedQuestions && matchedQuestions.length > 0)
       ? matchedQuestions
-      : getBattleQuestions(effectiveSubject, 5, getSeenStems());
+      : getBattleQuestions(effectiveSubject, 5, getSeenStems(effectiveSubject));
+    const safeQuestions = ensureUniqueBattleQuestions(rawQuestions, effectiveSubject);
 
-    recordSeenStems(safeQuestions);
+    recordSeenStems(safeQuestions, effectiveSubject);
     setQuestions(safeQuestions);
     questionsRef.current = safeQuestions;
 
@@ -440,16 +476,17 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     // Fetch brand new AI questions (using pre-generated cache or real-time AI generation)
     let initialQs = preloadedQuestionsRef.current[selectedSubjectId];
     if (!initialQs || initialQs.length < 5) {
-      const seen = getSeenStems();
+      const seen = getSeenStems(selectedSubjectId);
       initialQs = await battleSync.generateBattleQuestions(selectedSubjectId, myGrade, seen);
     } else {
       delete preloadedQuestionsRef.current[selectedSubjectId];
       prefetchAiQuestions(selectedSubjectId);
     }
 
-    recordSeenStems(initialQs);
-    setQuestions(initialQs);
-    questionsRef.current = initialQs;
+    const uniqueQs = ensureUniqueBattleQuestions(initialQs, selectedSubjectId);
+    recordSeenStems(uniqueQs, selectedSubjectId);
+    setQuestions(uniqueQs);
+    questionsRef.current = uniqueQs;
 
     // Call server to match or enter active queue
     const matchResult = await battleSync.enterMatchQueue(
@@ -457,7 +494,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       myName,
       myAvatar,
       selectedSubjectId,
-      initialQs,
+      uniqueQs,
       myGrade
     );
 
@@ -518,10 +555,11 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     isRealOpponentRef.current = false;
     setLiveRoomId(null);
     liveRoomIdRef.current = null;
-    const finalQs = (fallbackQs && fallbackQs.length >= 5)
+    const rawFinalQs = (fallbackQs && fallbackQs.length >= 5)
       ? fallbackQs
-      : getBattleQuestions(selectedSubjectId, 5, getSeenStems());
-    recordSeenStems(finalQs);
+      : getBattleQuestions(selectedSubjectId, 5, getSeenStems(selectedSubjectId));
+    const finalQs = ensureUniqueBattleQuestions(rawFinalQs, selectedSubjectId);
+    recordSeenStems(finalQs, selectedSubjectId);
     setQuestions(finalQs);
     questionsRef.current = finalQs;
     setOpponent(ghost);
@@ -546,16 +584,17 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     // Get brand new AI questions for friend room
     let initialQs = preloadedQuestionsRef.current[selectedSubjectId];
     if (!initialQs || initialQs.length < 5) {
-      const seen = getSeenStems();
+      const seen = getSeenStems(selectedSubjectId);
       initialQs = await battleSync.generateBattleQuestions(selectedSubjectId, myGrade, seen);
     } else {
       delete preloadedQuestionsRef.current[selectedSubjectId];
       prefetchAiQuestions(selectedSubjectId);
     }
 
-    recordSeenStems(initialQs);
-    setQuestions(initialQs);
-    questionsRef.current = initialQs;
+    const uniqueFriendQs = ensureUniqueBattleQuestions(initialQs, selectedSubjectId);
+    recordSeenStems(uniqueFriendQs, selectedSubjectId);
+    setQuestions(uniqueFriendQs);
+    questionsRef.current = uniqueFriendQs;
 
     const myProfile: PlayerProfile = {
       id: myId,
@@ -569,7 +608,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       tagline: `${myGrade} • AP Scholar`
     };
 
-    const res = await battleSync.createFriendRoom(roomCode, myProfile, selectedSubjectId, initialQs);
+    const res = await battleSync.createFriendRoom(roomCode, myProfile, selectedSubjectId, uniqueFriendQs);
     if (!res.success || !res.roomId) {
       setJoinError('Could not create room. Please check internet connection.');
       setPhase('LOBBY');
@@ -580,7 +619,8 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     if (res.code) {
       setRoomCode(res.code);
     }
-    const finalRoomQuestions = res.questions || initialQs;
+    const finalRoomQuestions = ensureUniqueBattleQuestions(res.questions || uniqueFriendQs, selectedSubjectId);
+    recordSeenStems(finalRoomQuestions, selectedSubjectId);
     setQuestions(finalRoomQuestions);
     questionsRef.current = finalRoomQuestions;
 
@@ -632,7 +672,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     handleMatchedWithRealPlayer(
       res.roomId,
       res.opponent,
-      res.questions || getBattleQuestions(hostSubject, 5, getSeenStems()),
+      res.questions || getBattleQuestions(hostSubject, 5, getSeenStems(hostSubject)),
       hostSubject,
       false
     );

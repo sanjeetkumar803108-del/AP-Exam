@@ -33,36 +33,47 @@ export const AP_PSYCHOLOGY_NOTES: APUnitNote[] = [
     ],
     sections: [
       {
-        heading: '1. Neurotransmitter Function and Malfunction Matrix',
-        content: `Essential neurochemicals, behavioral roles, and clinical pathologies:
+        heading: '1. Master Neurotransmitter Cheat Table & Agonist/Antagonist Guide',
+        content: `Comprehensive guide to neurochemicals, psychological roles, deficit/surplus pathologies, and clinical pharmacology:
 
-| Neurotransmitter | Primary Function | Deficit Pathology | Surplus Pathology |
-| :--- | :--- | :--- | :--- |
-| **Dopamine** | Reward pathway, pleasure, motor control | Parkinson’s Disease (tremors, rigidity) | Schizophrenia (hallucinations, delusions), addiction |
-| **Serotonin** | Mood regulation, sleep, hunger, arousal | Major Depressive Disorder, anxiety | Serotonin Syndrome, shivering, seizures |
-| **Acetylcholine (ACh)** | Muscle action, motor movement, memory | Alzheimer’s Disease (ACh-producing neurons deteriorate) | Severe muscle convulsions (spasms) |
-| **GABA** | Primary *inhibitory* neurotransmitter (calms CNS) | Insomnia, tremors, seizures, severe anxiety | Extreme sedation, lethargy, respiratory depression |
-| **Glutamate** | Primary *excitatory* neurotransmitter (learning & memory) | Cognitive fog, lethargy, poor memory consolidation | Migraines, seizures (excitotoxicity; avoids MSG) |
-| **Norepinephrine** | Alertness, arousal, fight-or-flight response | Depressive moods, fatigue, lack of focus (ADHD) | Anxiety, hypertension, panic attacks |
-| **Endorphins** | Natural opiate-like pain relief and euphoric runner’s high | Chronic pain sensitivity | Inability to feel physiological pain warning signals |`
-      }
-    ,
+| Neurotransmitter | Primary Function / Psychological Role | Deficit Disease (Too Little) | Surplus Disease (Too Much) | Clinical & Pharmacology Links (Agonist vs Antagonist) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Dopamine** | Reward pathway, pleasure, fine motor control, anticipation | Parkinson’s Disease (tremors, bradykinesia, muscle rigidity) | Schizophrenia (auditory hallucinations, delusions), addiction | **Agonist**: L-Dopa, Amphetamines, Cocaine. **Antagonist**: Haloperidol, Thorazine (antipsychotics). |
+| **Serotonin** | Mood regulation, sleep-wake cycles, appetite, emotional arousal | Major Depressive Disorder (MDD), OCD, generalized anxiety | Serotonin Syndrome (hyperthermia, tremors, shivering, seizures) | **Agonist / Reuptake Inhibitor**: SSRIs (Fluoxetine/Prozac, Zoloft block reuptake into axon terminal). |
+| **Acetylcholine (ACh)** | Muscle contraction (PNS), motor learning, memory encoding (CNS) | Alzheimer’s Disease (degeneration of cholinergic neurons in cortex) | Severe muscle spasms, convulsions (organophosphate pesticide toxicity) | **Agonist**: Nicotine, Black Widow spider venom. **Antagonist**: Curare (paralysis), Botulinum toxin (Botox blocks release). |
+| **GABA** (Gamma-aminobutyric acid) | Primary **inhibitory** neurotransmitter; calms central nervous system | Insomnia, seizures, tremors, severe chronic anxiety | Extreme lethargy, sedation, coma, respiratory arrest | **Agonist**: Alcohol, Barbiturates, Benzodiazepines (Xanax, Valium boost GABA receptor opening). |
+| **Glutamate** | Primary **excitatory** neurotransmitter; synaptic plasticity, LTP | Cognitive fog, exhaustion, impaired memory consolidation | Excitotoxicity, migraines, seizures (stroke-induced cell death; MSG avoidance) | **Antagonist**: Ketamine, PCP (blocks NMDA receptor ion channels). |
+| **Norepinephrine** | Alertness, physiological arousal, sympathetic fight-or-flight | Depressive moods, fatigue, lack of focus (ADHD) | Anxiety, hypertension, panic attacks, tachycardia | **Agonist**: Adderall, SNRIs. **Antagonist**: Beta-blockers (propranolol blunts stage-fright heart spikes). |
+| **Endorphins** | Natural opioid peptide; pain suppression, 'runner’s high' | Hyperalgesia (chronic pain hypersensitivity) | Insensitivity to physiological injury signals | **Agonist**: Morphine, Heroin, Oxycodone (mimic endorphins). **Antagonist**: Naloxone (Narcan reverses opioid overdose). |
+
+* **The Agonist vs. Antagonist Rule of Thumb**:
+  * **Agonists**: Molecules that excite neurons by mimicking a neurotransmitter or blocking its reuptake (e.g., SSRIs leave more serotonin in the synapse; morphine fits endorphin receptors).
+  * **Antagonists**: Molecules that inhibit neurons by occupying receptor sites without activating them, physically blocking normal neurotransmission (e.g., Curare blocks ACh receptors, causing fatal paralysis).`
+      },
       {
-        heading: '2. Brain Anatomy, Limbic System & Split-Brain Research (CED 1.3-1.4)',
-        content: `Neuroanatomy, hemispheric lateralization, and endocrine integration:
+        heading: '2. Neuroanatomy Scaffolding: Brainstem, Limbic System & Cerebral Cortex (CED 1.3-1.4)',
+        content: `Structural hierarchy of the human central nervous system:
 
-* **Cerebral Cortex Lobes**:
-  * **Frontal Lobe**: Prefrontal executive functioning, moral reasoning, planning, primary motor cortex, and **Broca's Area** (speech production, left hemisphere only).
-  * **Parietal Lobe**: Somatosensory cortex processing tactile touch, pressure, temperature, and spatial positioning.
-  * **Occipital Lobe**: Primary visual cortex processing shapes, angles, color, and visual perception.
-  * **Temporal Lobe**: Primary auditory cortex, facial recognition (fusiform gyrus), and **Wernicke's Area** (language comprehension, left hemisphere only).
-* **The Limbic System (Emotion & Memory)**:
-  * **Hippocampus**: Encodes and consolidates conscious, declarative memories into long-term storage.
-  * **Amygdala**: Regulates intense primal emotions, particularly fear detection, anger, and threat conditioning.
-  * **Hypothalamus**: Maintains internal bodily homeostasis; regulates the 'Four Fs' (Fighting, Fleeing, Feeding, and Reproduction); commands the endocrine system via the pituitary master gland.
-* **Split-Brain Research (Sperry & Gazzaniga)**:
-  * Severing the **corpus callosum** prevents communication between cerebral hemispheres.
-  * An image flashed to the **left visual field** travels to the **right hemisphere**: Patient can point to the object with the left hand, but **CANNOT verbally name it** (speech requires the left hemisphere)!`
+* **Brainstem & Hindbrain (Old Brain - Survival Basics)**:
+  * **Medulla Oblongata**: Controls automatic life-support functions: Heart rate, respiration, blood pressure, vomiting, and swallowing. Damage is immediately fatal.
+  * **Pons**: Bridges cerebellum and cortex; regulates facial expressions, sleep cycles, dreaming, and bladder control.
+  * **Reticular Formation**: Network of neurons ascending the brainstem; regulates alertness, arousal, and filters incoming sensory stimuli. Severing it causes an irreversible, permanent coma.
+  * **Cerebellum ("Little Brain")**: Coordinates voluntary motor movements, procedural balance, fine-motor agility, and implicit procedural memories (e.g., riding a bike, playing an instrument).
+* **The Sensory Switchboard**:
+  * **Thalamus**: The brain's sensory relay hub sitting atop the brainstem. Directs incoming sensory streams for vision, hearing, touch, and taste to their specialized cortical regions.
+  * **CRITICAL AP EXCEPTION**: **Olfaction (Smell) completely BYPASSES the Thalamus**! Smell signals route straight to the olfactory bulb near the limbic system, explaining why aromas trigger intense, vivid emotional memories.
+* **The Limbic System (Emotion, Motivation & Memory - "HOME")**:
+  * **Hippocampus**: Encodes and consolidates conscious, explicit (declarative) memories into long-term storage. Damage results in anterograde amnesia (inability to form new declarative memories).
+  * **Amygdala**: Two almond-shaped clusters regulating primal emotions—especially fear appraisal, defensive aggression, and emotional memory valence.
+  * **Hypothalamus**: Maintains internal bodily homeostasis; controls the autonomic nervous system and the 'Four Fs' (Fighting, Fleeing, Feeding, and Reproduction); commands the endocrine master pituitary gland.
+* **Cerebral Cortex Lobes & Functional Cortices**:
+  * **Frontal Lobe**: Prefrontal executive planning, judgment, impulse inhibition, motor strip (voluntary movement), and **Broca's Area** (left frontal only: motor production of fluent speech).
+  * **Parietal Lobe**: Houses the primary somatosensory cortex processing tactile touch, pain, temperature, and body positioning.
+  * **Occipital Lobe**: Houses the primary visual cortex (striate cortex); feature detectors isolate angles, edges, and movement.
+  * **Temporal Lobe**: Houses the primary auditory cortex and **Wernicke's Area** (left temporal only: speech comprehension and coherent semantic syntax).
+* **Split-Brain Research (Roger Sperry & Michael Gazzaniga)**:
+  * Severing the **corpus callosum** prevents communication between the cerebral hemispheres.
+  * Contralateral wiring: The right visual field feeds into the left hemisphere (speech capable); the left visual field feeds into the right hemisphere (cannot speak, but can touch/draw with left hand)!`
       }
     ],
     workedExamples: [
@@ -155,15 +166,27 @@ export const AP_PSYCHOLOGY_NOTES: APUnitNote[] = [
 * **Algorithms vs. Heuristics**:
   * **Algorithm**: Step-by-step exhaustive rule guaranteed to produce a correct solution (slow, resource-intensive).
   * **Heuristic**: Mental shortcut / 'rule of thumb' providing rapid problem-solving but prone to predictable errors.
-* **Classic Cognitive Biases**:
-  * **Availability Heuristic**: Estimating the frequency or likelihood of an event based on how easily examples come to mind (e.g. fearing plane crashes or shark attacks over car crashes due to vivid news coverage).
-  * **Representativeness Heuristic**: Judging the probability of an event by comparing it to a prototype or stereotype while ignoring base-rate statistical realities.
-  * **Confirmation Bias**: Actively seeking and remembering information that validates pre-existing beliefs while ignoring contradictory evidence.
-  * **Functional Fixedness**: Inability to perceive an object being used for purposes other than its customary designed role.
+
+* **Master Cognitive Biases & Heuristics Matrix**:
+
+| Cognitive Bias / Heuristic | Psychological Mechanism | AP Exam Scenario Example | Memory Anchor / Trigger |
+| :--- | :--- | :--- | :--- |
+| **Availability Heuristic** | Judging likelihood based on how easily examples pop into memory. | Fearing plane crashes or shark attacks after watching viral news, while driving daily without anxiety. | *"If it's vivid & fresh in mind, I assume it's common."* |
+| **Representativeness Heuristic** | Estimating probability by matching a description to an internal stereotype. | Assuming a quiet, bespectacled poetry lover is an Ivy League English professor rather than a truck driver (ignoring base rates). | *"Matches my prototype / stereotype."* |
+| **Confirmation Bias** | Actively hunting for information that validates existing beliefs while ignoring contradictory facts. | A student who believes coffee improves focus only reads blogs praising caffeine while ignoring medical studies on anxiety. | *"Looking only for evidence that agrees with me."* |
+| **Belief Perseverance** | Clinging to an initial belief even AFTER the supporting evidence has been completely disproven. | Maintaining that a political candidate is guilty of a crime even after official investigators admit the document was forged. | *"Refusing to abandon a belief after it is debunked."* |
+| **Anchoring Bias** | Over-relying on the first number or piece of data presented when making subsequent estimates. | A car sticker lists $40,000; when the dealer agrees to $32,000, the buyer feels they scored a massive bargain. | *"Mentally tethered to the initial anchor number."* |
+| **Framing Effect** | Changing decisions based on how the choices or numerical data are linguistically presented. | Preferring ground beef labeled "85% Lean" over beef labeled "15% Fat", even though they are chemically identical. | *"Same exact reality, different emotional frame."* |
+| **Functional Fixedness** | The inability to view an everyday tool or object as having uses beyond its designated traditional purpose. | Searching everywhere for a screwdriver while failing to realize a dime, butter knife, or car key could tighten the screw. | *"Blind to an object's unconventional uses."* |
+| **Mental Set** | Approaching a problem using ONLY strategies that worked in the past, even when ineffective for the new problem. | Trying the same algebraic formula repeatedly on a geometry problem because it succeeded on previous homework. | *"Trapped in past problem-solving habits."* |
+| **Hindsight Bias** | The post-outcome belief that one foresaw or could have easily predicted the outcome all along. | Proclaiming *"I knew they were going to lose the game all along!"* only after the final whistle blows. | *"The 'I-knew-it-all-along' effect."* |
+
 * **Language Structural Hierarchy**:
-  * **Phoneme**: Smallest distinctive unit of sound in a language (e.g. /k/, /a/, /t/).
-  * **Morpheme**: Smallest unit of meaningful language (e.g. 'un-', 'break-', '-able').
-  * **Noam Chomsky's Nativist Theory**: Humans possess an innate biological Language Acquisition Device (LAD) with universal grammar principles, opposing B.F. Skinner's purely behaviorist imitation model.`
+  * **Phoneme**: Smallest distinctive unit of sound in a language (e.g. /k/, /a/, /t/; English has ~40 phonemes).
+  * **Morpheme**: Smallest unit of language that carries meaning (e.g. 'un-', 'break-', '-able'; root words and prefixes/suffixes).
+  * **Syntax**: Rules governing how words are arranged into grammatically valid sentences.
+  * **Semantics**: Rules by which we derive meaning from morphemes, words, and sentences.
+  * **Noam Chomsky's Nativist Theory**: Humans possess an innate biological Language Acquisition Device (LAD) with universal grammar principles, opposing B.F. Skinner's purely behaviorist operant conditioning and imitation model.`
       }
     ],
     workedExamples: [

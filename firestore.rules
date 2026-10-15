@@ -20,12 +20,41 @@ service cloud.firestore {
       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
-    // Users Profile Collection Rules
-    match /users/{userId} {
-      allow read, write: if isOwner(userId);
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.admin == true ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'student') == 'admin')
+      );
     }
 
-    // 2. Pocket Items Collection Rules
+    // 2. Users Profile Collection Rules (Protected against VIP / isPro spoofing)
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // On creation, users cannot self-grant VIP (isPro) or admin role
+      allow create: if isOwner(userId) 
+        && request.resource.data.get('isPro', false) == false
+        && request.resource.data.get('role', 'student') == 'student';
+        
+      // On update, users CANNOT elevate their own isPro, role, or subscriptionExpiresAt
+      allow update: if isOwner(userId) && (
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isPro', 'role', 'subscriptionExpiresAt'])
+        || isAdmin()
+      );
+      
+      // On delete, user can purge their account (COPPA/GDPR compliance)
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    // 3. Allocated Emails (For welcome bonus tracking, write once, immutable)
+    match /allocated_emails/{email} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // 4. Pocket Items Collection Rules
     match /pocket_items/{itemId} {
       allow read, write: if isSignedIn() && (
         (resource == null && request.resource.data.userId == request.auth.uid) ||
@@ -33,7 +62,7 @@ service cloud.firestore {
       );
     }
 
-    // 3. AI Tutor Chats Collection Rules
+    // 5. AI Tutor Chats Collection Rules
     match /ai_tutor_chats/{chatId} {
       allow read, write: if isSignedIn() && (
         (resource == null && request.resource.data.userId == request.auth.uid) ||
@@ -41,7 +70,7 @@ service cloud.firestore {
       );
     }
 
-    // 4. Quiz Results Collection Rules
+    // 6. Quiz Results Collection Rules
     match /quiz_results/{resultId} {
       allow read, write: if isSignedIn() && (
         (resource == null && request.resource.data.userId == request.auth.uid) ||
@@ -49,7 +78,7 @@ service cloud.firestore {
       );
     }
 
-    // 5. Mistake Vault Collection Rules
+    // 7. Mistake Vault Collection Rules
     match /MistakeVault/{mistakeId} {
       allow read, write: if isSignedIn() && (
         (resource == null && request.resource.data.userId == request.auth.uid) ||
@@ -57,7 +86,7 @@ service cloud.firestore {
       );
     }
 
-    // 6. Generated Questions Collection Rules
+    // 8. Generated Questions Collection Rules
     match /generated_questions/{questionId} {
       allow read, write: if isSignedIn() && (
         (resource == null && request.resource.data.userId == request.auth.uid) ||
@@ -65,7 +94,7 @@ service cloud.firestore {
       );
     }
 
-    // 7. PDF History Collection Rules
+    // 9. PDF History Collection Rules
     match /pdf_history/{pdfId} {
       allow read, write: if isSignedIn() && (
         (resource == null && request.resource.data.userId == request.auth.uid) ||
@@ -73,10 +102,10 @@ service cloud.firestore {
       );
     }
 
-    // 8. AP Sample Papers Collection Rules (Publicly readable by all students, writable by authenticated users)
+    // 10. AP Sample Papers Collection Rules (Publicly readable, write/delete strictly restricted to Admin)
     match /ap_sample_papers/{paperId} {
       allow read: if true;
-      allow write: if isSignedIn();
+      allow write: if isAdmin();
     }
   }
 }

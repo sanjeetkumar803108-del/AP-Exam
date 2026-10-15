@@ -748,18 +748,53 @@ In "modelAnswer", every part (A, B, C) MUST be written in explicit, exemplary AC
     }
   }
 
-  if (s.includes('economic')) {
+  if (s.includes('micro')) {
     if (questionType === 'objective') {
-      return `AP MICRO & MACROECONOMICS EXAM SPECIFICATIONS (College Board CED):
-- Microeconomics: Supply & demand elasticity, consumer/producer surplus, market structures (perfect competition, monopoly, oligopoly), externalities, marginal cost/revenue, factor markets.
-- Macroeconomics: GDP, inflation, unemployment, Aggregate Demand / Aggregate Supply (AD-AS), fiscal policy, monetary policy (Federal Reserve tools), Money Market, Loanable Funds, Phillips Curve, Foreign Exchange.
-- Distractors: Confusing shifts of a curve with movements along a curve, or miscalculating tax incidence / multiplier effects.`;
+      return `AP MICROECONOMICS EXAM SPECIFICATIONS (College Board CED):
+- Target Course: AP Microeconomics (Strictly Microeconomics ONLY. Under NO circumstances include Macroeconomics concepts like GDP, Aggregate Demand, Inflation, Central Banks, or Fiscal Policy).
+- Scope & Core Units (Units 1–6):
+  1. Unit 1: Basic Economic Concepts (Scarcity, opportunity cost, Production Possibilities Curve [PPC], comparative advantage & gains from trade).
+  2. Unit 2: Supply and Demand (Market equilibrium, consumer & producer surplus, deadweight loss, price elasticity of demand [PED], cross-price elasticity, income elasticity, price ceilings & floors, excise taxes & tax incidence).
+  3. Unit 3: Production, Cost & Perfect Competition (Short-run cost curves [MC, ATC, AVC, AFC], diminishing marginal returns, long-run economies of scale, profit maximization MR=MC, shutdown condition P < AVC, allocative [P=MC] and productive efficiency [min ATC]).
+  4. Unit 4: Imperfect Competition (Monopoly pricing & deadweight loss, natural monopoly regulation [socially optimal vs fair-return], price discrimination, monopolistic competition in short/long run, oligopoly payoff matrices, dominant strategies & Nash equilibrium).
+  5. Unit 5: Factor Markets (Derived demand for labor, Marginal Revenue Product [MRP = MP * P], Marginal Factor Cost [MFC], profit-maximizing hiring MRP=MFC, monopsony wage-setting).
+  6. Unit 6: Market Failure & the Role of Government (Positive & negative externalities, marginal private vs social costs/benefits, Pigouvian taxes/subsidies, public goods & free-rider problem, Lorenz curve & Gini coefficient).
+- Strict Trap Focus: Confusing movements along curves (price change) with shifts of curves, confusing shutdown rule (P < AVC) with exit rule (P < ATC), confusing economic profit with accounting profit, confusing MC=MR output with socially optimal output.
+- FORBIDDEN: Strictly NO macroeconomics questions (NO GDP, NO unemployment, NO CPI/inflation, NO fiscal/monetary policy, NO Federal Reserve, NO Phillips Curve, NO FOREX).`;
     } else {
-      return `AP ECONOMICS FREE RESPONSE STANDARDS (College Board CED):
-- Formats:
-  1. Long FRQ (10 points, ~30 min): Multi-part scenario with explicit graphing instructions (e.g., 'Draw a correctly labeled graph of the money market and show the effect of an open market purchase of bonds on the nominal interest rate').
-  2. Short FRQ (5 points, ~15 min): Targeted calculations (elasticity, spending multiplier, balance of payments) and directional explanations.
-- Rubric: Explicit points for graph labeling, curve shift directions, and numerical calculations.`;
+      return `AP MICROECONOMICS FREE RESPONSE STANDARDS (College Board Section II - CED Blueprint):
+- Exam Structure: Section II consists of 3 Free-Response Questions (1 Long FRQ ~10 points, 2 Short FRQs ~5 points each).
+- Official Question Archetypes:
+  1. Long FRQ (10 Points): Multi-market or Firm Analysis with Graphing (e.g., Perfectly competitive market side-by-side with firm graph showing long-run equilibrium, or single-price monopoly showing profit-maximizing price, output, deadweight loss, and tax impacts).
+  2. Short FRQ 1 (5 Points): Game Theory Payoff Matrix OR Factor Market hiring analysis (MRPL = MFCL).
+  3. Short FRQ 2 (5 Points): Elasticity calculations, tax incidence, or externality graph analysis (MSC vs MSB, deadweight loss, corrective Pigouvian tax/subsidy).
+- Rubric: Strict point breakdown for graph axes/labels, curve shift directions, labeling coordinates (P, Q), and calculations.
+- STRICT CURRICULUM BOUNDARY: Under NO circumstances include Macroeconomics concepts (NO GDP, NO money market, NO Aggregate Demand, NO FOREX)!`;
+    }
+  }
+
+  if (s.includes('macro') || s.includes('economic')) {
+    if (questionType === 'objective') {
+      return `AP MACROECONOMICS EXAM SPECIFICATIONS (College Board CED):
+- Target Course: AP Macroeconomics (Strictly Macroeconomics ONLY. Under NO circumstances include Microeconomics firm theory, MC/ATC cost curves, monopoly pricing, or factor markets).
+- Scope & Core Units (Units 1–6):
+  1. Unit 1: Basic Economic Concepts (Scarcity, opportunity cost, PPC model, comparative advantage & terms of trade).
+  2. Unit 2: Economic Indicators & the Business Cycle (Circular flow, nominal vs real GDP, GDP deflator, CPI & inflation rate, unemployment rate calculation, frictional/structural/cyclical unemployment, natural rate of unemployment [NRU]).
+  3. Unit 3: National Income and Price Determination (Aggregate Demand [AD] components, Short-Run Aggregate Supply [SRAS], Long-Run Aggregate Supply [LRAS], recessionary & inflationary gaps, Keynesian spending multiplier [1/(1-MPC)] and tax multiplier [-MPC/(1-MPC)], fiscal policy).
+  4. Unit 4: Financial Sector (Money assets & M1/M2, commercial bank balance sheets [reserves, loans, deposits], money multiplier [1/rr], Money Market graph [MD and MS, nominal interest rate], Central Bank monetary policy tools [open market operations, reserve requirement, discount rate, administered rates IORB], Loanable Funds market [real interest rate]).
+  5. Unit 5: Long-Run Consequences of Stabilization Policies (Fiscal and monetary policy interactions, crowding-out effect, Short-Run Phillips Curve [SRPC] and Long-Run Phillips Curve [LRPC], equation of exchange MV=PY, national debt & budget deficits, economic growth drivers).
+  6. Unit 6: Open Economy—International Trade and Finance (Balance of payments [current account vs financial account], Foreign Exchange [FOREX] market supply & demand for currency, exchange rate appreciation & depreciation, net export effects).
+- Strict Trap Focus: Confusing nominal interest rate (Money Market) with real interest rate (Loanable Funds), confusing monetary policy (Fed) with fiscal policy (Congress/Taxes), confusing short-run shifts of SRPC with long-run shifts of LRPC, misapplying spending vs tax multipliers.
+- FORBIDDEN: Strictly NO microeconomics firm cost graphs (NO ATC/AVC/MC curves, NO monopolistic competition excess capacity, NO factor market MRPL/MFCL, NO oligopoly Nash equilibrium payoff matrices).`;
+    } else {
+      return `AP MACROECONOMICS FREE RESPONSE STANDARDS (College Board Section II - CED Blueprint):
+- Exam Structure: Section II consists of 3 Free-Response Questions (1 Long FRQ ~10 points, 2 Short FRQs ~5 points each).
+- Official Question Archetypes:
+  1. Long FRQ (10 Points): Comprehensive Macro Equilibrium (AD-AS graph showing economy in recession or inflation, fiscal/monetary policy response, Money Market or Loanable Funds shift, effect on real output and price level).
+  2. Short FRQ 1 (5 Points): Commercial Bank Balance Sheet analysis (calculating required reserves, excess reserves, maximum change in money supply using money multiplier) OR Phillips Curve shifts.
+  3. Short FRQ 2 (5 Points): Open Economy & Foreign Exchange Market (graphing FOREX, effect of interest rate differences on capital flows, exchange rates, and net exports).
+- Rubric: Strict points for correctly labeled axes (Price Level, Real GDP, Nominal Interest Rate, Quantity of Money), curve shifts with direction arrows, and multiplier math.
+- STRICT CURRICULUM BOUNDARY: Under NO circumstances include Microeconomics firm theory (NO MC/ATC/AVC cost curves, NO monopoly price discrimination, NO factor market MRP=MFC)!`;
     }
   }
 
@@ -1386,6 +1421,97 @@ RUBRIC POINT PARITY & FORMAT RULES:
    - Verification Pass 1: Confirm Question 1 has Parts A, B, C, D, E, F and totals exactly 7 points. Confirm Question 2 has 3 full research sources and Parts A, B(i), B(ii), C(i), C(ii) totaling exactly 7 points.
    - Verification Pass 2: Verify that generalizability in Q1 tests representativeness (not sample size), and Q2 requires two distinct CED concepts.
    - Instant Self-Healing: If any section is incomplete or deviates from the 7-point schema, repair immediately before outputting JSON.`;
+    }
+  }
+
+  if (s.includes('statistic') || s.includes('stat')) {
+    if (questionType === 'objective') {
+      return `AP STATISTICS EXAM SPECIFICATIONS (College Board Fall 2026 Redesigned 5-Unit Framework):
+- Format & Rigor: 42 Multiple-Choice Questions in 90 minutes. 4 options (A, B, C, D) per question. Strictly stimulus-based, testing conceptual mastery and analytical reasoning without formulaic recall.
+- Core 5-Unit Structure (Deprecates previous 9 units):
+  1. Unit 1: Exploring One-Variable Data and Collecting Data (20%–30% weight):
+     * Graphical Displays: Dotplots, stemplots, histograms, boxplots. Compare distributions using SOCS (Shape, Outliers, Center, Spread) in authentic context.
+     * Outlier Rule: Lower fence = Q1 - 1.5*IQR, Upper fence = Q3 + 1.5*IQR.
+     * Summary Statistics: Mean and standard deviation are non-resistant (pulled toward skew/outliers); Median and IQR are resistant.
+     * Skewness Relationships: Right-skewed -> Mean > Median; Left-skewed -> Mean < Median; Symmetric -> Mean ≈ Median.
+     * Standardized Z-Scores: z = (x - mu)/sigma, Empirical Rule (68-95-99.7).
+     * Sampling Methods: Simple Random Sample (SRS), Stratified (homogeneous strata, take some from all), Cluster (heterogeneous mini-populations, take all from some), Systematic.
+     * Sampling Biases: Voluntary response, convenience sampling, undercoverage, nonresponse, wording bias.
+     * Experimental Design: Comparison, Random Assignment (balances confounding variables across groups), Control, Replication, Blocking (isolates known nuisance variation).
+     * Scope of Inference: Random selection -> generalize results to population; Random assignment -> establish cause-and-effect relationship.
+  2. Unit 2: Probability, Random Variables, and Probability Distributions (15%–25% weight):
+     * Probability Rules: Addition rule P(A U B) = P(A) + P(B) - P(A ∩ B), conditional probability P(A|B) = P(A ∩ B) / P(B), independence test P(A|B) = P(A) or P(A ∩ B) = P(A)*P(B).
+     * Disjoint vs Independent: Mutually exclusive (disjoint) events with P > 0 are NEVER independent!
+     * Discrete Random Variables: E(X) = mu_X = sum x_i*P(x_i), Var(X) = sigma_X^2 = sum (x_i - mu_X)^2 * P(x_i).
+     * Linear Transformations: E(aX + b) = a*E(X) + b, Var(aX + b) = a^2 * Var(X), SD(aX + b) = |a| * SD(X). (Adding constant b does NOT change spread!).
+     * Combining Independent RVs: E(X ± Y) = E(X) ± E(Y). Variances ALWAYS ADD under independence: Var(X ± Y) = Var(X) + Var(Y).
+     * Binomial Distribution: B(n, p) with mean mu = np, SD sigma = sqrt(np(1-p)). Large Counts: np >= 10, n(1-p) >= 10.
+     * Geometric Distribution: Waiting time for 1st success, P(Y = k) = (1-p)^(k-1)*p, mean mu = 1/p.
+     * Sampling Distributions: For means: mu_{x-bar} = mu, sigma_{x-bar} = sigma / sqrt(n). Central Limit Theorem (CLT): if n >= 30, x-bar distribution is approximately normal regardless of population shape.
+     * Sampling Distribution of Proportions: mu_{p-hat} = p, sigma_{p-hat} = sqrt[p(1-p)/n] (Requires 10% condition n <= 0.10N and Large Counts).
+  3. Unit 3: Inference for Categorical Data: Proportions (15%–25% weight):
+     * 1-Sample z-Interval: p-hat ± z* * sqrt[p-hat(1 - p-hat)/n].
+     * 1-Sample z-Test: Denominator standard error MUST use hypothesized null parameter p0: z = (p-hat - p0) / sqrt[p0(1-p0)/n].
+     * 2-Sample z-Test: MUST use pooled sample proportion p-hat_c = (x1 + x2)/(n1 + n2) for the standard error when testing H0: p1 - p2 = 0.
+     * Type I Error (reject true H0, P = alpha), Type II Error (fail to reject false H0, P = beta), Power (1 - beta). Increasing sample size n or alpha increases power.
+     * Chi-Square Goodness-of-Fit: 1 categorical variable vs historical/expected distribution, df = k - 1.
+     * Chi-Square Homogeneity vs Independence: Homogeneity = 2+ independent samples, 1 categorical variable; Independence = 1 sample, 2 categorical variables. Both use df = (r - 1)(c - 1) and expected counts E_ij = (Row Total * Col Total) / Grand Total >= 5.
+  4. Unit 4: Inference for Quantitative Data: Means (10%–20% weight):
+     * Student's t-Distribution: df = n - 1, heavier tails than standard normal curve, approaches normal as df -> infinity. Used when population SD sigma is unknown.
+     * 1-Sample & 2-Sample t-Procedures: Never pool variances for means in AP Statistics.
+     * Matched Pairs Design: Dependent pairs analyzed as a ONE-sample t-procedure on differences d_i = x1_i - x2_i with df = n_pairs - 1.
+     * Confidence Interval Interpretation: "We are C% confident that the true parameter lies between L and U" (NOT "there is a C% probability that the parameter is in this interval").
+  5. Unit 5: Regression Analysis (10%–20% weight):
+     * Least-Squares Regression Line (LSRL): y-hat = b0 + b1*x, slope b1 = r*(s_y / s_x), intercept b0 = y-bar - b1*x-bar. Passes through centroid (x-bar, y-bar).
+     * Slope Interpretation: "For each additional 1 unit increase in x, the PREDICTED y changes by b1 on average." (Mandatory "predicted" wording!).
+     * Residuals: e = actual y - predicted y-hat = y - y-hat. Random scatter in residual plot -> linear model is appropriate.
+     * Coefficient of Determination r^2: "r^2 * 100% of the variation in [response variable y] is explained by the linear relationship with [explanatory variable x]."
+     * High Leverage vs Outliers vs Influential Points: High leverage points have extreme x-values; influential points substantially change slope or correlation when removed.
+     * Slope Inference: t = (b1 - 0) / SE_{b1} with df = n - 2. LINE conditions.
+
+- MANDATORY AP STATISTICS PSYCHOMETRIC DISTRACTOR TRAPS (EVERY DISTRACTOR MUST EXPLOIT ONE OF THESE):
+  🪤 The Null Parameter Inversion Trap: In 1-proportion hypothesis test, using sample proportion p-hat in the denominator standard error instead of null parameter p0.
+  🪤 The Variance Subtraction Fallacy: In independent random variable combinations, calculating Var(X - Y) = Var(X) - Var(Y) instead of adding variances.
+  🪤 The Disjoint vs Independent Conflation: Claiming mutually exclusive events are independent (if P > 0, disjoint events are NEVER independent).
+  🪤 The Inverse Conditional Fallacy: Confusing P(A|B) with P(B|A), e.g., P(Disease | Positive) vs P(Positive | Disease).
+  🪤 The CLT Misinterpretation Trap: Claiming CLT makes the individual observations or population distribution normal, rather than the sampling distribution of x-bar.
+  🪤 The Causal Scope Creep Trap: Asserting cause-and-effect from an observational study without random assignment, or claiming correlation implies causation.
+  🪤 The Naked Slope Trap: Omitting "predicted" or "on average" in linear regression slope interpretation.
+  🪤 The Acceptance Fallacy: Stating "Accept H0" or "Prove H0 is true" instead of "Fail to reject H0".
+  🪤 The Matched Pairs Misclassification Trap: Analyzing paired data as two independent samples instead of one sample of differences d_i.
+  🪤 The 1.5 x IQR Fence Trap: Calculating outlier fences using the mean instead of Q1 and Q3.`;
+    } else {
+      return `AP STATISTICS SECTION II: FREE RESPONSE (COLLEGE BOARD FALL 2026 OFFICIAL 4-QUESTION BLUEPRINT):
+- Format & Rigor: Section II consists of 4 Free-Response Questions in 90 minutes.
+- Analytic Scoring: Each question is worth exactly 10 points (total 40 points). Questions are scored using the official College Board E-P-I (Essentially Correct, Partially Correct, Incorrect) rubric rubric criteria.
+- 4-Question Official Blueprint:
+  * Question 1 (10 pts): Data Analysis & Collection (Units 1 & 5).
+    - Graphical comparisons (boxplots, stemplots, histograms) using SOCS (Shape, Outliers, Center, Spread) in full context with units.
+    - Explicit 1.5 x IQR outlier rule calculation: Lower = Q1 - 1.5*IQR, Upper = Q3 + 1.5*IQR.
+    - Experimental design vs observational study critique, random assignment to balance confounding variables, and scope of inference.
+  * Question 2 (10 pts): Probability & Distributions (Unit 2).
+    - Two-way contingency tables, conditional probability P(A|B), independence tests.
+    - Discrete random variables, linear transformations E(aX+b) & Var(aX+b), and independent combinations Var(X±Y) = Var(X) + Var(Y).
+    - Binomial distribution probability B(n, p) with Large Counts verification, or Geometric distribution waiting time.
+    - Sampling distributions of sample means (x-bar) and sample proportions (p-hat) with Central Limit Theorem justifications.
+  * Question 3 (10 pts): Statistical Inference (Units 3 & 4).
+    - Complete 4-Step Inference Protocol:
+      1. State: Define parameters of interest in context (mu or p, NOT sample statistics x-bar or p-hat). State null H0 and alternative Ha hypotheses with proper inequality direction. State significance level alpha.
+      2. Plan: Name the exact inference procedure (e.g., "Two-sample t-test for difference of means"). Verify all required conditions WITH EXPLICIT NUMBERS:
+         * Random sample / assignment.
+         * 10% condition: n <= 0.10N when sampling without replacement.
+         * Normality / Large Counts: np0 >= 10 and n(1-p0) >= 10 for proportions; or n >= 30 (CLT) or sample display showing no strong skewness/outliers for means.
+      3. Do: State formula, show numerical substitution, report test statistic (z or t), degrees of freedom (df), and calculated P-value.
+      4. Conclude: Make explicit comparative decision: "Because P-value (e.g. 0.024) < alpha (0.05), we reject H0." State conclusion in context of the alternative hypothesis using non-dogmatic language.
+  * Question 4 (10 pts): Investigative Task (Synthesis across multiple units).
+    - Novel statistical scenario requiring students to synthesize knowledge and extend course concepts to unfamiliar problems (e.g., evaluating non-standard estimators, bootstrap resampling distributions, non-linear regression transformations, multi-stage clinical trials).
+
+- AUTHENTIC AP STATISTICS CHIEF READER RUBRIC TRAPS:
+  🪤 The Parameter Omission Trap: Using sample statistics (x-bar or p-hat) in hypotheses instead of population parameters (mu or p), or failing to define parameters in context.
+  🪤 The Unverified Condition Trap: Writing "Normality is met" or checkmarks without showing the actual numerical calculation (e.g., 50 * 0.3 = 15 >= 10).
+  🪤 The Dogmatic Conclusion Trap: Concluding that the test "proves" the alternative hypothesis is true or "proves" the null hypothesis is false.
+  🪤 The Naked Slope / Scope Creep Trap: Interpreting slope without the word "predicted" or "on average", or interpreting a confidence interval as the probability of capturing the parameter.
+  🪤 The Variance Subtraction Trap: Subtracting variances when calculating standard error of differences.`;
     }
   }
 

@@ -1,0 +1,39 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // 1. Global Default Deny
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isImageUnder5MB() {
+      return request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|jpg|png|webp|gif)');
+    }
+
+    // 2. Chat Tutor Images: User isolated upload directory
+    // Pattern: chat_images/{userId}/{fileName}
+    match /chat_images/{userId}/{fileName} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isImageUnder5MB();
+      allow delete: if isOwner(userId);
+    }
+
+    // 3. Homework OCR scans directory
+    match /scans/{userId}/{fileName} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isImageUnder5MB();
+      allow delete: if isOwner(userId);
+    }
+  }
+}

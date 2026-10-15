@@ -26,7 +26,10 @@ import {
   Brain,
   Lightbulb,
   HelpCircle,
-  RefreshCw
+  RefreshCw,
+  Shield,
+  Zap,
+  BookOpen
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { TOP_10_AP_SUBJECTS, APSubject } from '../utils/apCurriculum';
@@ -46,6 +49,7 @@ import { TreasureIslandCanvas } from './TreasureIslandCanvas';
 import { getApiUrl } from '../utils/api';
 import { getStudyXP, getStudyLevel, addStudyXP } from '../utils/gamification';
 import { getUserProfileData } from '../utils/profile';
+import { getTopicCheatSheet, TopicCheatSheet } from '../data/quiz/topicCheatSheets';
 
 interface LearningIslandProps {
   onBack: () => void;
@@ -57,6 +61,18 @@ interface UserLevelProgress {
   claimedXpLevelIds?: number[];
   lastPlayedUnitIndex?: number;
   lastPlayedLevelId?: number;
+  unitMasteryShields?: Record<number, { completedAt: number; strength: number }>;
+}
+
+interface CompletedUnitDiagnostic {
+  unitIndex: number;
+  unitTitle: string;
+  totalQuestions: number;
+  totalCorrect: number;
+  accuracy: number;
+  predictedScore: number;
+  qualificationTitle: string;
+  qualColor: string;
 }
 
 
@@ -343,6 +359,11 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
   const aiExplanationRef = useRef<HTMLDivElement>(null);
   const quizScrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // Idea 1, 5, 6 States: Topic Formulas, In-Quiz Cheat Sheet, and Predicted AP Score Diagnostic
+  const [showCheatSheetInModal, setShowCheatSheetInModal] = useState<boolean>(false);
+  const [showInQuizCheatSheet, setShowInQuizCheatSheet] = useState<boolean>(false);
+  const [completedUnitDiagnostic, setCompletedUnitDiagnostic] = useState<CompletedUnitDiagnostic | null>(null);
+
   // User Profile Gamification Study XP State
   const [studyXP, setStudyXP] = useState<number>(getStudyXP);
 
@@ -365,8 +386,13 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
       triggerVibration(10);
       if (showSubjectModal) {
         setShowSubjectModal(false);
+      } else if (completedUnitDiagnostic) {
+        setCompletedUnitDiagnostic(null);
+      } else if (showInQuizCheatSheet) {
+        setShowInQuizCheatSheet(false);
       } else if (selectedLevel) {
         setSelectedLevel(null);
+        setShowCheatSheetInModal(false);
       } else if (showAIExplanation) {
         setShowAIExplanation(false);
       } else if (activeQuizLevel) {
@@ -374,13 +400,14 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
         setIsQuizCompleted(false);
         setSelectedOptionIndex(null);
         setIsAnswerSubmitted(false);
+        setShowInQuizCheatSheet(false);
       } else {
         onBack();
       }
     };
     window.addEventListener('appBackButton', handleHardwareBack);
     return () => window.removeEventListener('appBackButton', handleHardwareBack);
-  }, [showSubjectModal, selectedLevel, showAIExplanation, activeQuizLevel, onBack]);
+  }, [showSubjectModal, completedUnitDiagnostic, showInQuizCheatSheet, selectedLevel, showAIExplanation, activeQuizLevel, onBack]);
 
   // Map Scroll Reference
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -420,7 +447,8 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
       completedLevels: {},
       claimedXpLevelIds: [],
       lastPlayedUnitIndex: 1,
-      lastPlayedLevelId: undefined
+      lastPlayedLevelId: undefined,
+      unitMasteryShields: {}
     };
 
     try {
@@ -437,13 +465,17 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
           const safeCompleted = (parsed.completedLevels && typeof parsed.completedLevels === 'object' && !Array.isArray(parsed.completedLevels))
             ? parsed.completedLevels
             : {};
+          const safeShields = (parsed.unitMasteryShields && typeof parsed.unitMasteryShields === 'object' && !Array.isArray(parsed.unitMasteryShields))
+            ? parsed.unitMasteryShields
+            : {};
           const rawClaimed = Array.isArray(parsed.claimedXpLevelIds) ? parsed.claimedXpLevelIds : [];
           return {
             unlockedLevels: combined.length > 0 ? combined : initialDefaultUnlocked,
             completedLevels: safeCompleted,
             claimedXpLevelIds: rawClaimed,
             lastPlayedUnitIndex: typeof parsed.lastPlayedUnitIndex === 'number' ? parsed.lastPlayedUnitIndex : 1,
-            lastPlayedLevelId: typeof parsed.lastPlayedLevelId === 'number' ? parsed.lastPlayedLevelId : undefined
+            lastPlayedLevelId: typeof parsed.lastPlayedLevelId === 'number' ? parsed.lastPlayedLevelId : undefined,
+            unitMasteryShields: safeShields
           };
         }
       }
@@ -469,13 +501,17 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
           const safeCompleted = (parsed.completedLevels && typeof parsed.completedLevels === 'object' && !Array.isArray(parsed.completedLevels))
             ? parsed.completedLevels
             : {};
+          const safeShields = (parsed.unitMasteryShields && typeof parsed.unitMasteryShields === 'object' && !Array.isArray(parsed.unitMasteryShields))
+            ? parsed.unitMasteryShields
+            : {};
           const rawClaimed = Array.isArray(parsed.claimedXpLevelIds) ? parsed.claimedXpLevelIds : [];
           setProgress({
             unlockedLevels: combined.length > 0 ? combined : defaultUnlocked,
             completedLevels: safeCompleted,
             claimedXpLevelIds: rawClaimed,
             lastPlayedUnitIndex: typeof parsed.lastPlayedUnitIndex === 'number' ? parsed.lastPlayedUnitIndex : 1,
-            lastPlayedLevelId: typeof parsed.lastPlayedLevelId === 'number' ? parsed.lastPlayedLevelId : undefined
+            lastPlayedLevelId: typeof parsed.lastPlayedLevelId === 'number' ? parsed.lastPlayedLevelId : undefined,
+            unitMasteryShields: safeShields
           });
           return;
         }
@@ -488,7 +524,8 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
       completedLevels: {},
       claimedXpLevelIds: [],
       lastPlayedUnitIndex: 1,
-      lastPlayedLevelId: undefined
+      lastPlayedLevelId: undefined,
+      unitMasteryShields: {}
     });
   }, [selectedSubject?.id, defaultUnlocked]);
 
@@ -794,6 +831,8 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
       lastPlayedLevelId: lvl.id
     }));
     setSelectedLevel(null);
+    setShowCheatSheetInModal(false);
+    setShowInQuizCheatSheet(false);
     // All questions are pre-balanced deterministically and standardized across all devices and users
     setActiveQuizLevel(lvl);
     setCurrentQuestionIndex(0);
@@ -808,6 +847,30 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
     if (quizScrollContainerRef.current) {
       quizScrollContainerRef.current.scrollTop = 0;
     }
+  };
+
+  // Start Blitz Refresher Sprint (Idea 5)
+  const handleStartBlitzRefresher = (unitIdx: number) => {
+    const unitLevels = allLevels.filter(l => l.unitIndex === unitIdx);
+    const bossOrHardLevels = unitLevels.filter(l => l.difficulty === 'Boss' || l.difficulty === 'Hard');
+    const pool = (bossOrHardLevels.length > 0 ? bossOrHardLevels : unitLevels).flatMap(l => l.questions);
+
+    // Pick 3 high-yield questions
+    const selectedQuestions = pool.slice(0, 3);
+    const refresherLevel: UnitQuestLevel = {
+      id: 9900 + unitIdx,
+      unitIndex: unitIdx,
+      levelNumber: 99,
+      uniqueKey: `u${unitIdx}-blitz-refresher`,
+      topicNumber: `Unit ${unitIdx} Blitz`,
+      name: `Unit ${unitIdx} 3-Q Refresher Sprint`,
+      subtitle: '14-Day Memory Recall Defense',
+      difficulty: 'Hard',
+      rewardCoins: 25,
+      questions: selectedQuestions
+    };
+
+    handleStartQuiz(refresherLevel);
   };
 
   // Option selection
@@ -1004,6 +1067,58 @@ Please structure your response into these 4 clear sections:
       // Unlock next level in this unit ONLY IF PASSED (at least 1 correct answer!)
       const nextLevelId = activeQuizLevel.id + 1;
       const nextLvlExists = allLevels.some(l => l.id === nextLevelId && l.unitIndex === activeQuizLevel.unitIndex);
+      const isBossOrFinalLevel = activeQuizLevel.difficulty === 'Boss' || !nextLvlExists;
+
+      // IDEA 6: When passing Boss level or final unit level, compute official Predicted AP Score (1 to 5)
+      if (isPassed && isBossOrFinalLevel) {
+        const unitLevels = allLevels.filter(l => l.unitIndex === activeQuizLevel.unitIndex);
+        const totalUnitQ = unitLevels.reduce((sum, lvl) => sum + lvl.questions.length, 0);
+
+        let totalUnitCorrect = 0;
+        unitLevels.forEach(lvl => {
+          if (lvl.id === activeQuizLevel.id) {
+            totalUnitCorrect += correctAnswersCount;
+          } else {
+            totalUnitCorrect += progress.completedLevels[lvl.id]?.score || 0;
+          }
+        });
+
+        const unitAccuracy = Math.round((totalUnitCorrect / Math.max(totalUnitQ, 1)) * 100);
+
+        let predictedScore = 1;
+        let qualTitle = 'No Recommendation';
+        let qualColor = 'text-zinc-700 bg-zinc-100 border-zinc-300';
+
+        if (unitAccuracy >= 85) {
+          predictedScore = 5;
+          qualTitle = 'Extremely Well Qualified';
+          qualColor = 'text-emerald-900 bg-emerald-100 border-emerald-300';
+        } else if (unitAccuracy >= 70) {
+          predictedScore = 4;
+          qualTitle = 'Well Qualified';
+          qualColor = 'text-blue-900 bg-blue-100 border-blue-300';
+        } else if (unitAccuracy >= 55) {
+          predictedScore = 3;
+          qualTitle = 'Qualified';
+          qualColor = 'text-amber-900 bg-amber-100 border-amber-300';
+        } else if (unitAccuracy >= 40) {
+          predictedScore = 2;
+          qualTitle = 'Possibly Qualified';
+          qualColor = 'text-orange-900 bg-orange-100 border-orange-300';
+        }
+
+        const currentUnitDef = currentUnits.find(u => u.unitIndex === activeQuizLevel.unitIndex);
+        setCompletedUnitDiagnostic({
+          unitIndex: activeQuizLevel.unitIndex,
+          unitTitle: currentUnitDef?.title || `Unit ${activeQuizLevel.unitIndex}`,
+          totalQuestions: totalUnitQ,
+          totalCorrect: totalUnitCorrect,
+          accuracy: unitAccuracy,
+          predictedScore,
+          qualificationTitle: qualTitle,
+          qualColor
+        });
+      }
 
       const targetNextLvl = (isPassed && nextLvlExists) ? nextLevelId : activeQuizLevel.id;
       setProgress(prev => {
@@ -1015,12 +1130,23 @@ Please structure your response into these 4 clear sections:
           ? Array.from(new Set([...(prev.claimedXpLevelIds || []), activeQuizLevel.id]))
           : (prev.claimedXpLevelIds || []);
 
+        const updatedShields = (isPassed && isBossOrFinalLevel)
+          ? {
+              ...(prev.unitMasteryShields || {}),
+              [activeQuizLevel.unitIndex]: {
+                completedAt: Date.now(),
+                strength: 100
+              }
+            }
+          : (prev.unitMasteryShields || {});
+
         return {
           ...prev,
           unlockedLevels: updatedUnlocked,
           claimedXpLevelIds: updatedClaimed,
           lastPlayedUnitIndex: activeQuizLevel.unitIndex,
           lastPlayedLevelId: targetNextLvl,
+          unitMasteryShields: updatedShields,
           completedLevels: {
             ...prev.completedLevels,
             [activeQuizLevel.id]: {
@@ -1196,7 +1322,7 @@ Please structure your response into these 4 clear sections:
                   {selectedLevel.difficulty === 'Boss' ? '👑' : '🎯'}
                 </div>
 
-                <div className="flex items-center gap-1.5 mb-1">
+                <div className="flex flex-wrap items-center justify-center gap-1.5 mb-1">
                   <span className="text-[10px] font-black uppercase tracking-wider text-indigo-900 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full">
                     Unit {selectedLevel.unitIndex} • {selectedLevel.topicNumber}
                   </span>
@@ -1211,7 +1337,22 @@ Please structure your response into these 4 clear sections:
                   >
                     {selectedLevel.difficulty}
                   </span>
+                  {/* IDEA 4: 4-Word Alignment Badge */}
+                  <span className="text-[10px] font-black text-indigo-900 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
+                    Official AP CED Aligned
+                  </span>
                 </div>
+
+                {/* IDEA 3: Apex Boss Banner */}
+                {selectedLevel.difficulty === 'Boss' && (
+                  <div className="w-full bg-gradient-to-r from-rose-50 via-amber-50 to-rose-50 border-2 border-rose-300 rounded-2xl p-2.5 my-2 flex items-center gap-2.5 text-left shadow-2xs">
+                    <span className="text-2xl shrink-0">👑</span>
+                    <div>
+                      <span className="text-xs font-black text-rose-950 block">Apex Unit Boss: Toughest Exam Synthesis + FRQ</span>
+                      <span className="text-[10px] font-bold text-rose-700 block">Mixed multi-step MCQs & authentic Guided FRQ with scoring rubric</span>
+                    </div>
+                  </div>
+                )}
 
                 <div className="text-base font-black text-zinc-950 mt-1">
                   <GlobalMarkdown content={selectedLevel.name} className="[&_p]:my-0 [&_p]:inline text-base font-black text-zinc-950" />
@@ -1220,7 +1361,65 @@ Please structure your response into these 4 clear sections:
                   <GlobalMarkdown content={selectedLevel.subtitle} className="[&_p]:my-0 [&_p]:inline text-xs text-zinc-600 font-medium text-center" />
                 </div>
 
-                <div className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-3 my-4 flex items-center justify-around text-center">
+                {/* IDEA 1: 10-Sec Formula Cheat Card Accordion */}
+                <div className="w-full my-2.5 text-left">
+                  <button
+                    type="button"
+                    onClick={() => setShowCheatSheetInModal(prev => !prev)}
+                    className="w-full py-2 px-3 rounded-2xl bg-amber-50 hover:bg-amber-100 border-2 border-amber-300 text-amber-950 font-black text-xs flex items-center justify-between transition-all cursor-pointer shadow-2xs"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5 text-amber-600 fill-amber-400" />
+                      <span>10-Sec Formula Cheat Card</span>
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-amber-800 transition-transform duration-200 ${showCheatSheetInModal ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  <AnimatePresence>
+                    {showCheatSheetInModal && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden mt-1.5"
+                      >
+                        {(() => {
+                          const sheet = getTopicCheatSheet(selectedLevel.topicNumber, selectedLevel.name, selectedLevel.difficulty);
+                          return (
+                            <div className="p-3 bg-zinc-50 border border-amber-200 rounded-2xl text-xs space-y-2 text-zinc-900 shadow-inner max-h-48 overflow-y-auto momentum-scroll">
+                              <div>
+                                <span className="text-[10px] font-black uppercase text-amber-800 tracking-wider block">Golden Rule</span>
+                                <div className="font-bold text-zinc-950 text-xs mt-0.5 leading-relaxed">
+                                  <GlobalMarkdown content={sheet.goldenRule} />
+                                </div>
+                              </div>
+
+                              <div>
+                                <span className="text-[10px] font-black uppercase text-indigo-800 tracking-wider block">Core Formulas</span>
+                                <div className="space-y-1 mt-1 font-semibold text-zinc-900">
+                                  {sheet.formulas.map((form, fIdx) => (
+                                    <div key={fIdx} className="bg-white p-1.5 rounded-xl border border-zinc-200 text-xs overflow-x-auto">
+                                      <GlobalMarkdown content={form} />
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div>
+                                <span className="text-[10px] font-black uppercase text-rose-800 tracking-wider block">Key Traps</span>
+                                <div className="font-semibold text-zinc-800 mt-0.5 leading-relaxed text-xs">
+                                  <GlobalMarkdown content={sheet.keyTraps} />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <div className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-3 my-2 flex items-center justify-around text-center">
                   <div>
                     <span className="text-[10px] font-bold text-zinc-500 uppercase block">Questions</span>
                     <span className="text-sm font-black text-zinc-950">
@@ -1262,12 +1461,13 @@ Please structure your response into these 4 clear sections:
             className="absolute inset-0 z-[100] bg-white light-surface flex flex-col h-full max-h-full overflow-hidden"
           >
             {/* Quiz Top Header */}
-            <header className="px-4 py-3 border-b border-zinc-200 flex items-center justify-between bg-white shrink-0 z-20">
+            <header className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-zinc-200 flex items-center justify-between bg-white shrink-0 z-20">
               <button
                 onClick={() => {
                   triggerVibration(10);
                   setIsQuizCompleted(false);
                   setActiveQuizLevel(null);
+                  setShowInQuizCheatSheet(false);
                 }}
                 className="w-9 h-9 rounded-xl flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border border-zinc-200 active:scale-95 transition-all cursor-pointer shadow-2xs"
                 title="Exit Quiz"
@@ -1275,20 +1475,116 @@ Please structure your response into these 4 clear sections:
                 <X className="w-4 h-4" />
               </button>
 
-              <div className="text-center">
+              <div className="flex items-center gap-1.5 text-center">
                 <span className="text-[11px] font-black uppercase tracking-wider text-amber-900 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full">
-                  Unit {activeQuizLevel.unitIndex} • Level {activeQuizLevel.levelNumber} ({activeQuizLevel.difficulty})
+                  Unit {activeQuizLevel.unitIndex} • Level {activeQuizLevel.levelNumber}
+                </span>
+                {/* IDEA 4: 4-Word Alignment Badge */}
+                <span className="hidden xs:inline-block text-[10px] font-black text-indigo-900 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
+                  Official AP CED Aligned
                 </span>
               </div>
 
-              {!isQuizCompleted ? (
-                <div className="text-xs font-black text-zinc-900 bg-zinc-100 px-2.5 py-1 rounded-xl border border-zinc-200">
-                  {currentQuestionIndex + 1} / {activeQuizLevel.questions.length}
-                </div>
-              ) : (
-                <div className="w-9" />
-              )}
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                {/* IDEA 1: In-Quiz Cheat Card Button */}
+                {!isQuizCompleted && (
+                  <button
+                    onClick={() => {
+                      triggerVibration(10);
+                      setShowInQuizCheatSheet(prev => !prev);
+                    }}
+                    className="px-2 sm:px-2.5 py-1 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-black flex items-center gap-1 active:scale-95 transition-all shadow-2xs cursor-pointer"
+                    title="View Formulas"
+                  >
+                    <Zap className="w-3.5 h-3.5 text-amber-600 fill-amber-400" />
+                    <span className="hidden sm:inline">Cheat Card</span>
+                  </button>
+                )}
+
+                {!isQuizCompleted ? (
+                  <div className="text-xs font-black text-zinc-900 bg-zinc-100 px-2.5 py-1 rounded-xl border border-zinc-200">
+                    {currentQuestionIndex + 1} / {activeQuizLevel.questions.length}
+                  </div>
+                ) : (
+                  <div className="w-9" />
+                )}
+              </div>
             </header>
+
+            {/* In-Quiz Cheat Sheet Overlay Modal (Idea 1) */}
+            <AnimatePresence>
+              {showInQuizCheatSheet && activeQuizLevel && (
+                <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs">
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0, y: 15 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    exit={{ scale: 0.95, opacity: 0, y: 15 }}
+                    className="w-full max-w-md bg-white rounded-3xl p-5 border-2 border-amber-300 shadow-2xl relative max-h-[85vh] flex flex-col overflow-hidden"
+                  >
+                    <div className="flex items-center justify-between pb-3 border-b border-zinc-200 shrink-0">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                          ⚡
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-black text-zinc-950">10-Sec Formula Cheat Card</h3>
+                          <p className="text-[10px] font-bold text-amber-800">
+                            Official AP CED Aligned • Unit {activeQuizLevel.unitIndex} Level {activeQuizLevel.levelNumber}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setShowInQuizCheatSheet(false)}
+                        className="w-7 h-7 rounded-lg bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-600 cursor-pointer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-1 py-3 space-y-3 momentum-scroll">
+                      {(() => {
+                        const sheet = getTopicCheatSheet(activeQuizLevel.topicNumber, activeQuizLevel.name, activeQuizLevel.difficulty);
+                        return (
+                          <>
+                            <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-3">
+                              <span className="text-[10px] font-black uppercase text-amber-900 tracking-wider block">Golden Principle</span>
+                              <div className="font-bold text-zinc-950 text-xs mt-1 leading-relaxed">
+                                <GlobalMarkdown content={sheet.goldenRule} />
+                              </div>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <span className="text-[10px] font-black uppercase text-indigo-900 tracking-wider block">Essential Formulas</span>
+                              {sheet.formulas.map((form, fIdx) => (
+                                <div key={fIdx} className="bg-zinc-50 border border-zinc-200 rounded-xl p-2.5 text-xs overflow-x-auto font-semibold">
+                                  <GlobalMarkdown content={form} />
+                                </div>
+                              ))}
+                            </div>
+
+                            <div className="bg-rose-50/80 border border-rose-200 rounded-2xl p-3">
+                              <span className="text-[10px] font-black uppercase text-rose-900 tracking-wider block">College Board Trap Watch</span>
+                              <div className="font-bold text-rose-950 text-xs mt-1 leading-relaxed">
+                                <GlobalMarkdown content={sheet.keyTraps} />
+                              </div>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+
+                    <div className="pt-3 border-t border-zinc-200 shrink-0">
+                      <button
+                        onClick={() => setShowInQuizCheatSheet(false)}
+                        className="w-full py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs cursor-pointer active:scale-95 transition-all"
+                      >
+                        Got It, Back to Question
+                      </button>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
 
             {/* Quiz Content Body OR In-Place Completion Screen (Prevents dual-layer GPU compositing crash) */}
             {!isQuizCompleted ? (
@@ -1522,11 +1818,19 @@ Please structure your response into these 4 clear sections:
                                   <div className="text-xs sm:text-sm font-medium text-zinc-950 leading-relaxed space-y-2 min-w-0 max-w-full overflow-x-auto">
                                     <GlobalMarkdown content={currentQ.explanation} className="text-zinc-950 font-medium" />
 
-                                    {currentQ.distractorTip && (
-                                      <div className="text-[11px] font-semibold text-zinc-700 mt-2 leading-relaxed">
-                                        <GlobalMarkdown content={currentQ.distractorTip} className="text-zinc-700 font-semibold" />
+                                    {/* IDEA 2: Prominent College Board Examiner Trap Decoded (ONLY shown when AI is asked) */}
+                                    <div className="p-3.5 rounded-2xl bg-amber-50/90 border-2 border-amber-300 text-amber-950 space-y-1.5 shadow-xs my-2">
+                                      <div className="flex items-center gap-1.5 font-black text-xs text-amber-900 uppercase tracking-wider">
+                                        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                                        <span>College Board Examiner Trap Decoded</span>
                                       </div>
-                                    )}
+                                      <div className="text-xs font-semibold text-amber-950 leading-relaxed">
+                                        <GlobalMarkdown
+                                          content={currentQ.distractorTip || "College Board specifically designs this distractor for students who confuse definitions, misread endpoints, or switch average and instantaneous rates."}
+                                          className="text-amber-950 font-semibold"
+                                        />
+                                      </div>
+                                    </div>
 
                                     {/* AI Safety Disclaimer & Report */}
                                     <div className="text-center pt-2 pb-0.5 flex flex-col items-center gap-1.5">
@@ -1706,7 +2010,61 @@ Please structure your response into these 4 clear sections:
                         <span>{isPassed ? 'Retry for 3 Stars' : 'Retry Quiz'}</span>
                       </button>
 
+                      {/* IDEA 5: UNIT MASTERY SHIELD WIDGET (Rendered when completing unit final / Boss level) */}
+                      {(activeQuizLevel.difficulty === 'Boss' || !nextLvl) && isPassed && (
+                        <div className="w-full bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border-2 border-emerald-300 rounded-2xl p-3 text-left shadow-2xs mt-2.5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
+                                🛡️
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-black text-emerald-950">Unit {activeQuizLevel.unitIndex} Mastery Shield Active</h4>
+                                <p className="text-[10px] font-bold text-emerald-700">14-Day Memory Decay Protection</p>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900 border border-emerald-300 shrink-0">
+                              100%
+                            </span>
+                          </div>
 
+                          {/* Working Quick 3-Q Refresher Button */}
+                          <div className="pt-2 mt-2 border-t border-emerald-200/80 flex items-center justify-between gap-1.5">
+                            <span className="text-[10px] text-zinc-600 font-semibold">Test recall anytime:</span>
+                            <button
+                              onClick={() => {
+                                triggerVibration(15);
+                                handleStartBlitzRefresher(activeQuizLevel.unitIndex);
+                              }}
+                              className="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-black flex items-center gap-1 active:scale-95 transition-all shadow-2xs cursor-pointer"
+                            >
+                              <Zap className="w-3 h-3 text-yellow-300 fill-yellow-300" />
+                              <span>Quick 3-Q Refresher</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* IDEA 6: PREDICTED AP SCORE CERTIFICATE TRIGGER BUTTON */}
+                      {completedUnitDiagnostic && (
+                        <button
+                          onClick={() => {
+                            triggerVibration(20);
+                            try {
+                              confetti.reset();
+                            } catch (_) {}
+                            confetti({
+                              particleCount: 80,
+                              spread: 70,
+                              origin: { y: 0.5 }
+                            });
+                          }}
+                          className="w-full py-2.5 px-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-purple-600 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-md cursor-pointer active:scale-95 mt-2"
+                        >
+                          <Award className="w-4 h-4 text-yellow-300" />
+                          <span>Predicted AP Score: {completedUnitDiagnostic.predictedScore}/5 (View Diagnostic)</span>
+                        </button>
+                      )}
                     </div>
                   </motion.div>
                 </div>
@@ -1753,6 +2111,92 @@ Please structure your response into these 4 clear sections:
               </footer>
             )}
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* 8. PREDICTED AP EXAM SCORE CERTIFICATE MODAL (IDEA 6)                     */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {completedUnitDiagnostic && (
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs">
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.85, opacity: 0, y: 20 }}
+              className="w-full max-w-sm bg-white rounded-3xl p-6 border-2 border-indigo-400 shadow-2xl relative overflow-hidden text-center light-surface"
+            >
+              <button
+                onClick={() => setCompletedUnitDiagnostic(null)}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-600 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Certificate Header Banner */}
+              <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 text-white flex items-center justify-center mx-auto mb-3 shadow-xl border-4 border-white">
+                <Award className="w-10 h-10 text-yellow-300" />
+              </div>
+
+              <span className="text-[10px] font-black uppercase tracking-wider text-indigo-900 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full inline-block mb-1.5">
+                Official AP CED Aligned
+              </span>
+
+              <h2 className="text-xl font-black text-zinc-950">
+                Unit {completedUnitDiagnostic.unitIndex} Mastery Complete!
+              </h2>
+              <p className="text-xs text-zinc-600 font-semibold mt-0.5">
+                {completedUnitDiagnostic.unitTitle}
+              </p>
+
+              {/* Predicted AP Score Card */}
+              <div className="bg-gradient-to-b from-indigo-50/80 to-white border-2 border-indigo-200 rounded-2xl p-4 my-4 space-y-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-700 block">
+                  Predicted College Board AP Score
+                </span>
+                <div className="flex items-center justify-center gap-1.5">
+                  <span className="text-5xl font-black text-indigo-950 tracking-tight">
+                    {completedUnitDiagnostic.predictedScore}
+                  </span>
+                  <span className="text-xl font-black text-indigo-400">/ 5</span>
+                </div>
+
+                <div className="inline-block mt-1">
+                  <span className={`text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full border shadow-2xs ${completedUnitDiagnostic.qualColor}`}>
+                    {completedUnitDiagnostic.qualificationTitle}
+                  </span>
+                </div>
+
+                {/* Real Unit Performance Stats */}
+                <div className="pt-2.5 mt-2 border-t border-indigo-100 flex items-center justify-around text-center text-xs">
+                  <div>
+                    <span className="text-[10px] font-bold text-zinc-500 block">Unit Accuracy</span>
+                    <span className="text-sm font-black text-zinc-950">
+                      {completedUnitDiagnostic.accuracy}%
+                    </span>
+                  </div>
+                  <div className="w-px h-6 bg-zinc-200" />
+                  <div>
+                    <span className="text-[10px] font-bold text-zinc-500 block">Items Solved</span>
+                    <span className="text-sm font-black text-zinc-950">
+                      {completedUnitDiagnostic.totalCorrect} / {completedUnitDiagnostic.totalQuestions}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <button
+                onClick={() => {
+                  triggerVibration(15);
+                  setCompletedUnitDiagnostic(null);
+                }}
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm shadow-md transition-all cursor-pointer active:scale-95"
+              >
+                Claim Mastery Certificate
+              </button>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

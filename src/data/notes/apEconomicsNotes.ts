@@ -1142,3 +1142,7 @@ export const AP_ECONOMICS_NOTES: APUnitNote[] = [
     ]
   }
 ];
+
+export { AP_MICROECONOMICS_NOTES } from './apMicroeconomicsNotes';
+export { AP_MACROECONOMICS_NOTES } from './apMacroeconomicsNotes';
+

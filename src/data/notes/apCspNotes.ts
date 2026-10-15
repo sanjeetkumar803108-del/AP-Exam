@@ -57,6 +57,42 @@ export const AP_CSP_NOTES: APUnitNote[] = [
     * **NC (NonCommercial)**: Work cannot be used for commercial profit.
     * **SA (ShareAlike)**: Derivative works must inherit the identical license.
   * **Open Source vs. Proprietary**: Open-source software provides full source code access for inspection and collaborative modification; proprietary software restricts source code access.`
+      },
+      {
+        heading: '3. Official College Board Create Performance Task (CPT) 5-Point Scoring Checklist',
+        content: `Master checklist to guarantee full points on the AP CSP Create Task Written Response & Personalized Project Reference (PPR):
+
+* **Criterion 1: Program Purpose vs. Function & Video Demo (Row 1)**:
+  * **Program Purpose**: Clearly state the *problem your program solves* or the *creative goal it achieves for the user* (e.g., "The purpose is to help high school athletes track daily caloric intake and prevent dehydration"). DO NOT confuse purpose with function!
+  * **Program Function**: State *what the program actually does* (e.g., "The program accepts daily meal logs, computes macro totals, and alerts the user if water intake is below target").
+  * **Video Requirements**: Must be under 1 minute, demonstrate input, functionality, and output. **CRITICAL**: No human voice narration, no personal identifiable information (name, school).
+
+* **Criterion 2: Data Abstraction via a Named List Managing Complexity (Row 5)**:
+  * **Named Collection**: You must identify a student-created list, array, or dictionary.
+  * **Managing Complexity**: You must explicitly explain why using this list makes the program significantly easier to develop and maintain.
+  * **The Magic Formula**: Explain what would happen WITHOUT the list: *"Without this list, I would have had to declare over 50 separate individual variables (e.g., score1, score2, score3...). I would not be able to iterate dynamically with a loop or handle variable amounts of user inputs, leading to hundreds of lines of repetitive, error-prone code."*
+
+* **Criterion 3: Student-Developed Procedural Abstraction with Parameters (Row 6)**:
+  * **Custom Procedure**: The procedure must be written by YOU (not a built-in library function like \`Math.random()\` or an event handler block like \`onEvent\`).
+  * **Parameters**: The procedure MUST accept at least one explicit parameter (argument) that directly changes the execution flow or outcome of the procedure.
+  * **Contribution**: Clearly explain how this procedure contributes to the overall functioning of the broader program.
+
+* **Criterion 4: Custom Algorithm with Sequencing, Selection, & Iteration (Rows 2 & 3)**:
+  * **The Holy Trinity**: Your procedure MUST contain all three:
+    1. **Sequencing**: Statements executing sequentially one after another.
+    2. **Selection**: Conditional logic using \`IF\`, \`IF-ELSE\`, or nested \`IF\` statements.
+    3. **Iteration**: A loop (\`REPEAT n TIMES\`, \`REPEAT UNTIL\`, \`FOR EACH\`, or \`WHILE\`).
+  * **Algorithmic Explanation**: Write a step-by-step description so detailed that another programmer could recreate your algorithm from scratch without looking at your code.
+
+* **Criterion 5: Two Distinct Test Cases & PPR Code Alignment (Row 4)**:
+  * **Test Case 1**: State exact input parameters passed into your procedure, the specific conditional branch executed, and the expected vs actual output.
+  * **Test Case 2**: State a DIFFERENT set of parameters that triggers a completely DIFFERENT execution branch (e.g., valid input vs invalid boundary input), tracing the alternative result.
+  * **100% PPR Consistency**: Every variable name, list name, and function name in your written exam response MUST match the code snippets printed on your Personalized Project Reference (PPR) sheet word-for-word!
+
+> ⚠️ **College Board Automatic Zero Traps**:
+> 1. Calling a built-in sort function (like \`Array.sort()\`) and claiming it as your student-developed algorithm $\\rightarrow$ Immediate 0 points!
+> 2. Using a list that only stores 1 single item or never changes $\\rightarrow$ Fails the managing complexity test!
+> 3. Writing a procedure with no parameters or where the parameter is never used in an \`IF\` statement $\\rightarrow$ Fails procedural abstraction!`
       }
     ],
     workedExamples: [
@@ -72,6 +108,16 @@ export const AP_CSP_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Logic Error; The divisor should be 5 (or `LENGTH(scores)`) rather than 4.',
         apScoringTip: 'Always use dynamic list length `LENGTH(list)` rather than hardcoding numbers so the code adapts to lists of any size.'
+      }
+    ],
+    diagrams: [
+      {
+        id: 'csp_dev_cycle',
+        title: 'Iterative Software Development Lifecycle',
+        subtitle: '4 Cyclic Stages of Engineering (Investigate, Design, Prototype, Test)',
+        type: 'csp_dev_cycle',
+        description: 'Cyclical flowchart showing non-linear movement between investigating requirements, designing algorithms, prototyping modules, and iterative testing/debugging with feedback loops.',
+        takeaway: 'Software development is iterative and non-linear: Testing uncovers new requirements that cycle back to earlier investigation and design phases.'
       }
     ],
     commonTraps: [
@@ -169,6 +215,16 @@ $$\\text{Decimal Value} = 128 + 32 + 4 + 2 = 166$$
         apScoringTip: 'Remember that $n$ bits can represent numbers from $0$ to $2^n - 1$.'
       }
     ],
+    diagrams: [
+      {
+        id: 'csp_analog_sampling',
+        title: 'Analog to Digital Sampling & Quantization',
+        subtitle: 'Continuous Waves vs Discrete Binary Approximations',
+        type: 'csp_analog_sampling',
+        description: 'Continuous analog wave sampled at discrete time intervals. Shows quantization levels and how sampling rate impacts digital reconstruction fidelity.',
+        takeaway: 'Analog signals are continuous; digital data is a discrete binary approximation. Sampling frequency and bit depth determine reproduction quality and file size.'
+      }
+    ],
     commonTraps: [
       'Thinking lossy compression allows exact file reconstruction. Discarded bits are gone forever; a lossy file cannot be restored to original quality.',
       'Confusing overflow errors with round-off errors. Overflow occurs when an integer is too large for the allocated bits; round-off occurs with floating-point decimals (e.g. $0.1 + 0.2 = 0.30000000000000004$).',
@@ -264,6 +320,16 @@ $$\\text{Decimal Value} = 128 + 32 + 4 + 2 = 166$$
         apScoringTip: 'Draw a small 4x4 grid on scratch paper and physically trace the robot with an arrow at each step to avoid rotation orientation errors.'
       }
     ],
+    diagrams: [
+      {
+        id: 'csp_binary_vs_linear',
+        title: 'Linear vs Binary Search Runtime Complexity',
+        subtitle: 'O(N) vs O(log₂ N) Growth Curves and Comparison Inset',
+        type: 'csp_binary_vs_linear',
+        description: 'Comparison of linear search O(N) steep line vs binary search O(log N) logarithmic curve, illustrating dramatic efficiency difference on 1,000,000 element lists.',
+        takeaway: 'Binary search runs in logarithmic time O(log₂ N) but STRICTLY requires sorted data. Linear search runs in O(N) and works on unsorted lists.'
+      }
+    ],
     commonTraps: [
       'Assuming lists in AP CSP start at index 0. On the AP CSP exam, lists are 1-INDEXED: The first item is at `list[1]`!',
       'Using binary search on an unsorted list. Binary search works ONLY if the list is already sorted in advance.',
@@ -335,6 +401,20 @@ $$\\text{Decimal Value} = 128 + 32 + 4 + 2 = 166$$
   * **HTTP vs. HTTPS**: HTTP transmits plain text susceptible to eavesdropping; HTTPS uses Transport Layer Security (TLS/SSL) to encrypt all client-server communications.
 * **Net Neutrality**:
   * The regulatory principle that Internet Service Providers (ISPs) must treat all data packets equally, without throttling, blocking, or charging extra for specific content or services.`
+      },
+      {
+        heading: '3. Beginner Real-World Mental Models & Analogies (Protocols, Packets & Cryptography)',
+        content: `For students encountering networking and security for the first time, these intuitive real-world mental models make abstract protocols immediately tangible:
+
+| Internet / Security Concept | Real-World Beginner Analogy | How the Analogy Directly Maps to the Exam Concept |
+| :--- | :--- | :--- |
+| **Packet-Switched Architecture** | **Tearing a 500-page novel into numbered postcards.** | Instead of mailing a 10-pound book in one piece (circuit switching), you rip out each page, stamp it with the recipient address, return address, and sequence number ("Page 14 of 500"), and mail them separately. They take different trucks and flights; some arrive out of order, but the recipient reassembles them perfectly using page numbers. |
+| **TCP (Transmission Control Protocol)** | **Certified Postal Mail with Signed Return Receipt.** | Every single envelope is registered and tracked. The receiver sends back an acknowledgement card ("Got Page 14!"). If Page 15 is lost in transit, the sender automatically re-mails another copy before the reader moves ahead. It is 100% reliable, sequential, and error-checked, but involves a small setup handshake delay. |
+| **UDP (User Datagram Protocol)** | **Live Stadium Megaphone or FM Radio Broadcast.** | The announcer shouts plays in real time. Packets fly out continuously without waiting for listeners to confirm receipt. If a gust of wind causes you to miss two words, the announcer doesn't stop or rewind—the game keeps playing! Perfect for live video streaming (Zoom, YouTube Live), voice calls, and multiplayer gaming where speed and low latency matter far more than recovering a dropped pixel. |
+| **DNS (Domain Name System)** | **Your Smartphone Contact List / Phonebook.** | Humans remember names like "Mom" or \`wikipedia.org\`; cell towers and networks only understand numeric strings like \`198.35.26.96\`. When you type a URL, DNS looks up the phonebook to find the numeric IP address so your computer knows where to dial. |
+| **Routers & Fault Tolerance** | **Waze / Google Maps GPS Traffic Rerouting.** | If a tree falls across Highway 101, your GPS doesn't cancel your entire road trip. It detects the blocked link and instantly recalculates an alternate route through side streets. Even if several individual intersections crash, the overall network stays alive (fault tolerance through redundancy). |
+| **Symmetric Encryption** | **A Heavy Metal Lockbox with One Shared Physical Key.** | Alice puts a secret document into a steel box, locks it with a physical key, and mails the box to Bob. The huge vulnerability: How does Bob get the key? If Alice mails the key, an eavesdropper can intercept it and make a duplicate key. Both parties must share the exact same secret key. |
+| **Asymmetric / Public Key Cryptography** | **An Open Padlock Distributed to the World + One Secret Key.** | Bob buys an open padlock and produces millions of exact copies, freely handing open padlocks to anyone on Earth (**Bob's Public Key**). Alice puts her secret letter in a box, snaps Bob's open padlock shut (**Encryption**), and sends the box over the public courier. Once snapped shut, nobody—not even Alice—can reopen the box! ONLY Bob possesses the unique physical key that unlocks his padlocks (**Bob's Private Key**). Bob decrypts the box at home without ever having to risk mailing a secret key across the network! |`
       }
     ],
     workedExamples: [
@@ -351,6 +431,16 @@ $$\\text{Decimal Value} = 128 + 32 + 4 + 2 = 166$$
         ],
         finalAnswer: 'Minimum 1 failure (the single link between D and E).',
         apScoringTip: 'Trace every path from source to destination. A single point of failure exists wherever all alternate paths converge through a single shared link.'
+      }
+    ],
+    diagrams: [
+      {
+        id: 'csp_packet_routing',
+        title: 'Internet Packet Routing & Redundant Architecture',
+        subtitle: 'Fault-Tolerant Dynamic Mesh Topology',
+        type: 'csp_packet_routing',
+        description: 'Network diagram showing files split into packets traveling along independent redundant router paths from Sender to Receiver host.',
+        takeaway: 'The Internet is fault-tolerant: Packets travel independently through redundant paths. If an individual router crashes, packets automatically reroute without breaking the connection.'
       }
     ],
     commonTraps: [
@@ -444,6 +534,16 @@ $$\\text{Decimal Value} = 128 + 32 + 4 + 2 = 166$$
         ],
         finalAnswer: 'Alice encrypts using Bob’s Public Key; Bob decrypts using Bob’s Private Key.',
         apScoringTip: 'Remember: You always encrypt with the RECIPIENT’S public key so only the recipient’s private key can open it.'
+      }
+    ],
+    diagrams: [
+      {
+        id: 'csp_public_key',
+        title: 'Public-Key (Asymmetric) Encryption Model',
+        subtitle: 'Public Key Encryption vs Private Key Decryption',
+        type: 'csp_public_key',
+        description: 'Alice encrypts plaintext using Bob’s Public Key. Ciphertext travels over insecure Internet. Only Bob’s secret Private Key can decrypt the message.',
+        takeaway: 'Always encrypt using the recipient’s PUBLIC key; only the recipient’s matching PRIVATE key can decrypt it. Private keys are never transmitted.'
       }
     ],
     commonTraps: [

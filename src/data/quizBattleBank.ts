@@ -1,5 +1,8 @@
 import { EXPANDED_BATTLE_QUESTIONS } from './quiz/expandedBattleQuestions';
 import { getAllCalculusAbLevels } from './quiz/apCalculusUnitsData';
+import { ALL_AP_MICROECONOMICS_UNIT_DEFINITIONS } from './quiz/apMicroeconomicsUnitsData';
+import { ALL_AP_MACROECONOMICS_UNIT_DEFINITIONS } from './quiz/apMacroeconomicsUnitsData';
+import { ALL_AP_STATISTICS_UNIT_DEFINITIONS } from './quiz/apStatisticsUnitsData';
 
 export interface BattleQuestion {
   id: string;
@@ -39,6 +42,7 @@ export interface GhostPlayer {
 export const AP_BATTLE_SUBJECTS = [
   { id: 'ap-calculus-ab', name: 'AP Calculus AB', icon: '📐', color: 'from-blue-600 to-indigo-700' },
   { id: 'ap-calculus-bc', name: 'AP Calculus BC', icon: '∫', color: 'from-indigo-600 to-purple-700' },
+  { id: 'ap-statistics', name: 'AP Statistics', icon: '📊', color: 'from-cyan-600 to-teal-700' },
   { id: 'ap-physics', name: 'AP Physics 1', icon: '⚡', color: 'from-amber-600 to-orange-700' },
   { id: 'ap-chemistry', name: 'AP Chemistry', icon: '⚗️', color: 'from-purple-600 to-violet-700' },
   { id: 'ap-biology', name: 'AP Biology', icon: '🧬', color: 'from-emerald-600 to-teal-700' },
@@ -49,7 +53,8 @@ export const AP_BATTLE_SUBJECTS = [
   { id: 'ap-world-history', name: 'AP World History: Modern', icon: '🌍', color: 'from-orange-600 to-amber-700' },
   { id: 'ap-human-geography', name: 'AP Human Geography', icon: '🗺️', color: 'from-sky-600 to-teal-700' },
   { id: 'ap-psychology', name: 'AP Psychology', icon: '🧠', color: 'from-pink-600 to-rose-700' },
-  { id: 'ap-economics', name: 'AP Micro & Macroeconomics', icon: '📊', color: 'from-emerald-700 to-teal-800' },
+  { id: 'ap-microeconomics', name: 'AP Microeconomics', icon: '📊', color: 'from-emerald-700 to-teal-800' },
+  { id: 'ap-macroeconomics', name: 'AP Macroeconomics', icon: '📈', color: 'from-teal-600 to-cyan-800' },
   { id: 'ap-english-lang', name: 'AP English Language', icon: '✍️', color: 'from-violet-600 to-purple-800' },
 ];
 
@@ -3207,10 +3212,10 @@ export const BATTLE_QUESTIONS_BANK: Record<string, BattleQuestion[]> = {
       "timeLimit": 60
     }
   ],
-  "ap-economics": [
+  "ap-microeconomics": [
     {
-      "id": "econ_1",
-      "subjectId": "ap-economics",
+      "id": "micro_1",
+      "subjectId": "ap-microeconomics",
       "stem": "If the price of a good increases by 10% and the quantity demanded falls by 20%, the price elasticity of demand is:",
       "options": [
         "Elastic ($E_d = 2.0$)",
@@ -3224,8 +3229,8 @@ export const BATTLE_QUESTIONS_BANK: Record<string, BattleQuestion[]> = {
       "timeLimit": 30
     },
     {
-      "id": "econ_2",
-      "subjectId": "ap-economics",
+      "id": "micro_2",
+      "subjectId": "ap-microeconomics",
       "stem": "What occurs when the government establishes a legally mandated price ceiling below the competitive market equilibrium price?",
       "options": [
         "A persistent market shortage",
@@ -3239,38 +3244,8 @@ export const BATTLE_QUESTIONS_BANK: Record<string, BattleQuestion[]> = {
       "timeLimit": 30
     },
     {
-      "id": "econ_3",
-      "subjectId": "ap-economics",
-      "stem": "In macroeconomics, expansionary fiscal policy intended to combat an economic recession involves:",
-      "options": [
-        "Increasing government spending and/or reducing taxes",
-        "Increasing taxes and reducing spending",
-        "Raising the central bank discount rate",
-        "Selling government bonds in open market operations"
-      ],
-      "correctIndex": 0,
-      "explanation": "Expansionary fiscal policy boosts aggregate demand by injecting federal expenditure or increasing household disposable income via tax cuts.",
-      "difficulty": "Easy",
-      "timeLimit": 30
-    },
-    {
-      "id": "econ_4",
-      "subjectId": "ap-economics",
-      "stem": "If the reserve requirement set by the central bank is 10%, what is the simple money multiplier?",
-      "options": [
-        "$10$",
-        "$5$",
-        "$20$",
-        "$1$"
-      ],
-      "correctIndex": 0,
-      "explanation": "The simple deposit expansion multiplier is $M = \\frac{1}{\\text{Reserve Ratio}} = \\frac{1}{0.10} = 10$.",
-      "difficulty": "Easy",
-      "timeLimit": 30
-    },
-    {
-      "id": "econ_5",
-      "subjectId": "ap-economics",
+      "id": "micro_3",
+      "subjectId": "ap-microeconomics",
       "stem": "Country A can produce 10 cars or 20 computers. Country B can produce 6 cars or 18 computers. Who holds the comparative advantage in computers?",
       "options": [
         "Country B",
@@ -3284,8 +3259,8 @@ export const BATTLE_QUESTIONS_BANK: Record<string, BattleQuestion[]> = {
       "timeLimit": 30
     },
     {
-      "id": "econ_6",
-      "subjectId": "ap-economics",
+      "id": "micro_4",
+      "subjectId": "ap-microeconomics",
       "stem": "What type of market structure features a single seller with high barriers to entry and no close product substitutes?",
       "options": [
         "Monopoly",
@@ -3299,8 +3274,8 @@ export const BATTLE_QUESTIONS_BANK: Record<string, BattleQuestion[]> = {
       "timeLimit": 45
     },
     {
-      "id": "econ_7",
-      "subjectId": "ap-economics",
+      "id": "micro_5",
+      "subjectId": "ap-microeconomics",
       "stem": "A negative externality in production (such as factory smoke pollution) causes the unregulated free market to:",
       "options": [
         "Overproduce the good relative to the socially optimal quantity",
@@ -3314,23 +3289,8 @@ export const BATTLE_QUESTIONS_BANK: Record<string, BattleQuestion[]> = {
       "timeLimit": 45
     },
     {
-      "id": "econ_8",
-      "subjectId": "ap-economics",
-      "stem": "What does Gross Domestic Product (GDP) measure?",
-      "options": [
-        "The total market value of all final goods and services produced within a country in a given year",
-        "The total financial wealth of all households and banks",
-        "The value of intermediate goods exported abroad",
-        "The total income earned by multinational citizens overseas"
-      ],
-      "correctIndex": 0,
-      "explanation": "GDP encompasses the monetary value of all finished, final goods and services produced domestically within geographic borders in a specified period.",
-      "difficulty": "Medium",
-      "timeLimit": 45
-    },
-    {
-      "id": "econ_9",
-      "subjectId": "ap-economics",
+      "id": "micro_6",
+      "subjectId": "ap-microeconomics",
       "stem": "A profit-maximizing firm in any market structure expands output until:",
       "options": [
         "Marginal Revenue equals Marginal Cost ($MR = MC$)",
@@ -3344,38 +3304,8 @@ export const BATTLE_QUESTIONS_BANK: Record<string, BattleQuestion[]> = {
       "timeLimit": 45
     },
     {
-      "id": "econ_10",
-      "subjectId": "ap-economics",
-      "stem": "The Phillips Curve in the short run illustrates a historical trade-off between:",
-      "options": [
-        "Inflation and unemployment",
-        "Interest rates and GDP growth",
-        "Government debt and trade deficits",
-        "Taxes and investment"
-      ],
-      "correctIndex": 0,
-      "explanation": "The short-run Phillips curve demonstrates an inverse relationship: lower unemployment rates are typically associated with higher inflation rates.",
-      "difficulty": "Medium",
-      "timeLimit": 45
-    },
-    {
-      "id": "econ_11",
-      "subjectId": "ap-economics",
-      "stem": "What type of unemployment occurs when workers are temporarily between jobs or searching for the best career fit?",
-      "options": [
-        "Frictional unemployment",
-        "Structural unemployment",
-        "Cyclical unemployment",
-        "Seasonal unemployment"
-      ],
-      "correctIndex": 0,
-      "explanation": "Frictional unemployment is voluntary and natural, reflecting the normal time lag workers spend transitioning between careers.",
-      "difficulty": "Hard",
-      "timeLimit": 60
-    },
-    {
-      "id": "econ_12",
-      "subjectId": "ap-economics",
+      "id": "micro_7",
+      "subjectId": "ap-microeconomics",
       "stem": "Consumer surplus is represented graphically as the area:",
       "options": [
         "Below the demand curve and above the market price",
@@ -3389,8 +3319,100 @@ export const BATTLE_QUESTIONS_BANK: Record<string, BattleQuestion[]> = {
       "timeLimit": 60
     },
     {
-      "id": "econ_13",
-      "subjectId": "ap-economics",
+      "id": "micro_8",
+      "subjectId": "ap-microeconomics",
+      "stem": "Public goods are characterized by which two economic properties?",
+      "options": [
+        "Non-excludable and non-rivalrous in consumption",
+        "Excludable and rivalrous",
+        "Produced solely by monopolies",
+        "Tax-exempt and subsidized"
+      ],
+      "correctIndex": 0,
+      "explanation": "Public goods (e.g. national defense, lighthouses) cannot exclude non-payers, and one person's use does not diminish another's.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    }
+  ],
+  "ap-macroeconomics": [
+    {
+      "id": "macro_1",
+      "subjectId": "ap-macroeconomics",
+      "stem": "In macroeconomics, expansionary fiscal policy intended to combat an economic recession involves:",
+      "options": [
+        "Increasing government spending and/or reducing taxes",
+        "Increasing taxes and reducing spending",
+        "Raising the central bank discount rate",
+        "Selling government bonds in open market operations"
+      ],
+      "correctIndex": 0,
+      "explanation": "Expansionary fiscal policy boosts aggregate demand by injecting federal expenditure or increasing household disposable income via tax cuts.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "macro_2",
+      "subjectId": "ap-macroeconomics",
+      "stem": "If the reserve requirement set by the central bank is 10%, what is the simple money multiplier?",
+      "options": [
+        "$10$",
+        "$5$",
+        "$20$",
+        "$1$"
+      ],
+      "correctIndex": 0,
+      "explanation": "The simple deposit expansion multiplier is $M = \\frac{1}{\\text{Reserve Ratio}} = \\frac{1}{0.10} = 10$.",
+      "difficulty": "Easy",
+      "timeLimit": 30
+    },
+    {
+      "id": "macro_3",
+      "subjectId": "ap-macroeconomics",
+      "stem": "What does Gross Domestic Product (GDP) measure?",
+      "options": [
+        "The total market value of all final goods and services produced within a country in a given year",
+        "The total financial wealth of all households and banks",
+        "The value of intermediate goods exported abroad",
+        "The total income earned by multinational citizens overseas"
+      ],
+      "correctIndex": 0,
+      "explanation": "GDP encompasses the monetary value of all finished, final goods and services produced domestically within geographic borders in a specified period.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "macro_4",
+      "subjectId": "ap-macroeconomics",
+      "stem": "The Phillips Curve in the short run illustrates a historical trade-off between:",
+      "options": [
+        "Inflation and unemployment",
+        "Interest rates and GDP growth",
+        "Government debt and trade deficits",
+        "Taxes and investment"
+      ],
+      "correctIndex": 0,
+      "explanation": "The short-run Phillips curve demonstrates an inverse relationship: lower unemployment rates are typically associated with higher inflation rates.",
+      "difficulty": "Medium",
+      "timeLimit": 45
+    },
+    {
+      "id": "macro_5",
+      "subjectId": "ap-macroeconomics",
+      "stem": "What type of unemployment occurs when workers are temporarily between jobs or searching for the best career fit?",
+      "options": [
+        "Frictional unemployment",
+        "Structural unemployment",
+        "Cyclical unemployment",
+        "Seasonal unemployment"
+      ],
+      "correctIndex": 0,
+      "explanation": "Frictional unemployment is voluntary and natural, reflecting the normal time lag workers spend transitioning between careers.",
+      "difficulty": "Hard",
+      "timeLimit": 60
+    },
+    {
+      "id": "macro_6",
+      "subjectId": "ap-macroeconomics",
       "stem": "When the central bank purchases government treasury bonds on the open market, what is the impact on bank reserves and interest rates?",
       "options": [
         "Bank reserves increase, and nominal interest rates fall",
@@ -3404,23 +3426,8 @@ export const BATTLE_QUESTIONS_BANK: Record<string, BattleQuestion[]> = {
       "timeLimit": 60
     },
     {
-      "id": "econ_14",
-      "subjectId": "ap-economics",
-      "stem": "Public goods are characterized by which two economic properties?",
-      "options": [
-        "Non-excludable and non-rivalrous in consumption",
-        "Excludable and rivalrous",
-        "Produced solely by monopolies",
-        "Tax-exempt and subsidized"
-      ],
-      "correctIndex": 0,
-      "explanation": "Public goods (e.g. national defense, lighthouses) cannot exclude non-payers, and one person's use does not diminish another's.",
-      "difficulty": "Hard",
-      "timeLimit": 60
-    },
-    {
-      "id": "econ_15",
-      "subjectId": "ap-economics",
+      "id": "macro_7",
+      "subjectId": "ap-macroeconomics",
       "stem": "If the Marginal Propensity to Consume (MPC) is 0.8, what is the government spending multiplier?",
       "options": [
         "$5$",
@@ -3707,6 +3714,75 @@ try {
   console.warn('[QuizBattleBank] Expanded subjects auto-merge note:', e);
 }
 
+// 3. Populate and augment AP Microeconomics and AP Macroeconomics dedicated question pools with full CED banks
+try {
+  if (Array.isArray(ALL_AP_MICROECONOMICS_UNIT_DEFINITIONS)) {
+    const microCedQuestions: BattleQuestion[] = ALL_AP_MICROECONOMICS_UNIT_DEFINITIONS.flatMap(u =>
+      (u.levels || []).flatMap(l =>
+        (l.questions || []).map(q => ({
+          id: `micro_ced_${q.id}`,
+          subjectId: 'ap-microeconomics',
+          stem: q.stem,
+          options: q.options,
+          correctIndex: q.correctIndex,
+          explanation: q.explanation || "Verified AP Microeconomics College Board standard.",
+          difficulty: (l.difficulty === 'Easy' || l.difficulty === 'Hard' ? l.difficulty : 'Medium') as 'Easy' | 'Medium' | 'Hard',
+          timeLimit: l.difficulty === 'Easy' ? 30 : (l.difficulty === 'Hard' ? 60 : 45)
+        }))
+      )
+    );
+    if (!BATTLE_QUESTIONS_BANK['ap-microeconomics']) BATTLE_QUESTIONS_BANK['ap-microeconomics'] = [];
+    BATTLE_QUESTIONS_BANK['ap-microeconomics'].push(...microCedQuestions);
+  }
+
+  if (Array.isArray(ALL_AP_MACROECONOMICS_UNIT_DEFINITIONS)) {
+    const macroCedQuestions: BattleQuestion[] = ALL_AP_MACROECONOMICS_UNIT_DEFINITIONS.flatMap(u =>
+      (u.levels || []).flatMap(l =>
+        (l.questions || []).map(q => ({
+          id: `macro_ced_${q.id}`,
+          subjectId: 'ap-macroeconomics',
+          stem: q.stem,
+          options: q.options,
+          correctIndex: q.correctIndex,
+          explanation: q.explanation || "Verified AP Macroeconomics College Board standard.",
+          difficulty: (l.difficulty === 'Easy' || l.difficulty === 'Hard' ? l.difficulty : 'Medium') as 'Easy' | 'Medium' | 'Hard',
+          timeLimit: l.difficulty === 'Easy' ? 30 : (l.difficulty === 'Hard' ? 60 : 45)
+        }))
+      )
+    );
+    if (!BATTLE_QUESTIONS_BANK['ap-macroeconomics']) BATTLE_QUESTIONS_BANK['ap-macroeconomics'] = [];
+    BATTLE_QUESTIONS_BANK['ap-macroeconomics'].push(...macroCedQuestions);
+  }
+} catch (e) {
+  console.warn('[QuizBattleBank] Micro/Macro CED auto-merge note:', e);
+}
+
+// 4. Populate and augment AP Statistics dedicated question pool with full CED 5-unit bank (87 authentic questions)
+try {
+  if (Array.isArray(ALL_AP_STATISTICS_UNIT_DEFINITIONS)) {
+    const statCedQuestions: BattleQuestion[] = ALL_AP_STATISTICS_UNIT_DEFINITIONS.flatMap(u =>
+      (u.levels || []).flatMap(l =>
+        (l.questions || []).map(q => ({
+          id: `stat_ced_${q.id}`,
+          subjectId: 'ap-statistics',
+          stem: q.stem,
+          options: q.options,
+          correctIndex: q.correctIndex,
+          explanation: q.explanation || "Verified AP Statistics College Board standard.",
+          difficulty: (l.difficulty === 'Easy' || l.difficulty === 'Hard' ? l.difficulty : 'Medium') as 'Easy' | 'Medium' | 'Hard',
+          timeLimit: l.difficulty === 'Easy' ? 30 : (l.difficulty === 'Hard' ? 60 : 45)
+        }))
+      )
+    );
+    if (!BATTLE_QUESTIONS_BANK['ap-statistics']) BATTLE_QUESTIONS_BANK['ap-statistics'] = [];
+    BATTLE_QUESTIONS_BANK['ap-statistics'].push(...statCedQuestions);
+    if (!BATTLE_QUESTIONS_BANK['ap-stats']) BATTLE_QUESTIONS_BANK['ap-stats'] = [];
+    BATTLE_QUESTIONS_BANK['ap-stats'].push(...statCedQuestions);
+  }
+} catch (e) {
+  console.warn('[QuizBattleBank] AP Statistics CED auto-merge note:', e);
+}
+
 // --- ZERO-REPEAT CYCLIC DECK SHUFFLER ENGINE ---
 const RUNTIME_SEEN_STEMS: Record<string, Set<string>> = {};
 
@@ -3765,6 +3841,10 @@ export function getBattleQuestions(
   // Normalize subject alias
   let key = subjectId;
   if (key === 'ap-physics-1') key = 'ap-physics';
+  if (key === 'ap-micro' || key === 'microeconomics') key = 'ap-microeconomics';
+  if (key === 'ap-macro' || key === 'macroeconomics') key = 'ap-macroeconomics';
+  if (key === 'ap-economics' || key === 'economics') key = 'ap-microeconomics';
+  if (key === 'ap-stats' || key === 'statistics' || key === 'stats') key = 'ap-statistics';
   if (!BATTLE_QUESTIONS_BANK[key]) {
     key = Object.keys(BATTLE_QUESTIONS_BANK).find(k => k.includes(subjectId) || subjectId.includes(k)) || 'ap-calculus-ab';
   }

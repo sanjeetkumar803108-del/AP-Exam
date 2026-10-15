@@ -75,6 +75,54 @@ function getDiagramBadge(type: APNoteDiagram['type']) {
       return { label: 'Differential Equations', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' };
     case 'area_between_curves_disc':
       return { label: 'Applications of Integrals', bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200' };
+    case 'ppc_frontier_graph':
+      return { label: 'Scarcity & Opportunity Cost', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' };
+    case 'supply_demand_graph':
+      return { label: 'Market Welfare & DWL', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' };
+    case 'trade_tariff_graph':
+      return { label: 'Tariff Distortion', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' };
+    case 'cost_curves_graph':
+      return { label: 'Cost Geometry & Shutdown', bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200' };
+    case 'side_by_side_econ':
+      return { label: 'Perfect Competition Benchmark', bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200' };
+    case 'monopoly_graph':
+      return { label: 'Price Maker & DWL', bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' };
+    case 'natural_monopoly_graph':
+      return { label: 'Rate Regulation', bg: 'bg-teal-50', text: 'text-teal-700', border: 'border-teal-200' };
+    case 'monopolistic_comp_graph':
+      return { label: 'Excess Capacity', bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' };
+    case 'game_theory_matrix':
+      return { label: 'Nash Equilibrium', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' };
+    case 'factor_market_graph':
+      return { label: 'MRP & Monopsony', bg: 'bg-cyan-50', text: 'text-cyan-700', border: 'border-cyan-200' };
+    case 'externality_graph':
+      return { label: 'Pigouvian Correction', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' };
+    case 'lorenz_curve_gini':
+      return { label: 'Inequality & Gini Index', bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200' };
+    case 'business_cycle_chart':
+      return { label: 'Output Gaps & Trendline', bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200' };
+    case 'ad_as_graph':
+      return { label: 'AD-AS Macro Equilibrium', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' };
+    case 'money_market_graph':
+      return { label: 'Monetary Policy & i%', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' };
+    case 'phillips_curve_graph':
+      return { label: 'Inflation-Unemployment Curve', bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' };
+    case 'forex_market_graph':
+      return { label: 'FOREX & Capital Inflows', bg: 'bg-teal-50', text: 'text-teal-700', border: 'border-teal-200' };
+    case 'loanable_funds_graph':
+      return { label: 'Real Interest & Crowding Out', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' };
+    case 'circular_flow_chart':
+      return { label: 'National Income Circular Flow', bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200' };
+    case 'american_system_diagram':
+      return { label: 'Regional Interdependence', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' };
+    case 'compromises_timeline_diagram':
+      return { label: 'Sectional Compromise Road', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' };
+    case 'rhetorical_triangle_diagram':
+      return { label: 'Rhetorical Appeals & Context', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' };
+    case 'csa_memory_reference_diagram':
+      return { label: 'Stack vs Heap & Aliasing', bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200' };
+    case 'columbian_exchange_diagram':
+      return { label: 'Global Biological Exchange', bg: 'bg-yellow-50', text: 'text-yellow-800', border: 'border-yellow-200' };
     default:
       return { label: 'Visual Guide', bg: 'bg-zinc-50', text: 'text-zinc-700', border: 'border-zinc-200' };
   }

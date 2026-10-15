@@ -177,6 +177,16 @@ export const AP_CSA_NOTES: APUnitNote[] = [
         apScoringTip: 'Always multiply by `(max - min + 1)` before casting to int and adding `min`.'
       }
     ],
+    diagrams: [
+      {
+        id: 'csa_memory_reference_diagram',
+        title: 'Java Memory Architecture: Stack vs Heap & Object Aliasing',
+        subtitle: 'Primitive Storage vs Reference Pointer Memory Addresses',
+        type: 'csa_memory_reference_diagram',
+        description: 'Memory architecture diagram illustrating primitive variables stored directly on the Stack (e.g. int score = 95) versus object reference variables holding memory addresses (e.g. Student s1 = 0x4A2B) pointing to dynamically allocated objects on the Heap.',
+        takeaway: "The '==' operator checks reference address equality; the '.equals()' method checks object content. Assigning an object reference (s2 = s1) creates an alias pointing to the exact same Heap object!"
+      }
+    ],
     commonTraps: [
       'Using `==` to compare Strings. `==` checks if they are the same memory pointer; `.equals()` checks character content.',
       'Passing index out of bounds to `substring` (e.g. `to > str.length()`). This throws `StringIndexOutOfBoundsException`.',

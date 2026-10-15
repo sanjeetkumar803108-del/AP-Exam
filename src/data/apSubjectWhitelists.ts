@@ -254,15 +254,11 @@ export const AP_SUBJECT_WHITELISTS: Record<string, APSubjectWhitelist> = {
     category: 'stem_math',
     mathExpected: true,
     canonicalUnits: [
-      { unitNumber: 1, title: 'Exploring One-Variable Data', keywords: ['mean', 'median', 'mode', 'standard deviation', 'iqr', 'outlier', 'box plot', 'histogram', 'z-score', 'normal distribution'] },
-      { unitNumber: 2, title: 'Exploring Two-Variable Data', keywords: ['scatter plot', 'correlation r', 'coefficient of determination r-squared', 'residual', 'least-squares regression line', 'influential point', 'extrapolation'] },
-      { unitNumber: 3, title: 'Collecting Data', keywords: ['simple random sample', 'srs', 'stratified sample', 'cluster sample', 'systematic sample', 'convenience sample', 'bias', 'confounding', 'placebo', 'double blind', 'blocking'] },
-      { unitNumber: 4, title: 'Probability, Random Variables & Probability Distributions', keywords: ['mutually exclusive', 'independent events', 'conditional probability', 'binomial distribution', 'geometric distribution', 'expected value', 'variance'] },
-      { unitNumber: 5, title: 'Sampling Distributions', keywords: ['central limit theorem', 'clt', 'sampling variability', 'unbiased estimator', 'standard error', 'normal approximation'] },
-      { unitNumber: 6, title: 'Inference for Categorical Data: Proportions', keywords: ['confidence interval for p', 'one-sample z-test', 'two-sample z-test', 'p-value', 'type i error', 'type ii error', 'power', 'margin of error'] },
-      { unitNumber: 7, title: 'Inference for Quantitative Data: Means', keywords: ['t-distribution', 'degrees of freedom', 'one-sample t-test', 'two-sample t-test', 'paired t-test', 't-interval'] },
-      { unitNumber: 8, title: 'Inference for Categorical Data: Chi-Square', keywords: ['chi-square goodness of fit', 'chi-square test of independence', 'chi-square test of homogeneity', 'expected counts', 'observed counts'] },
-      { unitNumber: 9, title: 'Inference for Quantitative Data: Slopes', keywords: ['t-test for slope', 'confidence interval for slope', 'linear regression model conditions'] }
+      { unitNumber: 1, title: 'Exploring One-Variable Data and Collecting Data', keywords: ['mean', 'median', 'mode', 'standard deviation', 'iqr', 'outlier', 'box plot', 'histogram', 'z-score', 'normal distribution', 'simple random sample', 'srs', 'stratified sample', 'cluster sample', 'systematic sample', 'bias', 'confounding', 'placebo', 'double blind', 'blocking', 'observational study', 'experiment'] },
+      { unitNumber: 2, title: 'Probability, Random Variables, and Probability Distributions', keywords: ['mutually exclusive', 'independent events', 'conditional probability', 'bayes theorem', 'binomial distribution', 'geometric distribution', 'expected value', 'variance', 'linear transformations', 'sampling distribution', 'central limit theorem', 'clt', 'standard error'] },
+      { unitNumber: 3, title: 'Inference for Categorical Data: Proportions', keywords: ['confidence interval for p', 'one-sample z-test for proportion', 'two-sample z-test for proportions', 'p-value', 'type i error', 'type ii error', 'power', 'chi-square goodness of fit', 'chi-square test of independence', 'chi-square test of homogeneity', 'expected counts', 'margin of error'] },
+      { unitNumber: 4, title: 'Inference for Quantitative Data: Means', keywords: ['t-distribution', 'degrees of freedom', 'one-sample t-test for mean', 'two-sample t-test for means', 'paired t-test', 'matched pairs', 't-interval', 'standard error of mean'] },
+      { unitNumber: 5, title: 'Regression Analysis', keywords: ['scatter plot', 'correlation r', 'coefficient of determination r-squared', 'residual', 'least-squares regression line', 'influential point', 'extrapolation', 't-test for slope', 'confidence interval for slope', 'standard error of slope', 'residual plot'] }
     ],
     allowedDomains: ['descriptive statistics', 'probability', 'sampling', 'hypothesis testing', 'confidence intervals', 'regression inference'],
     forbiddenSignatures: [
@@ -307,6 +303,53 @@ export const AP_SUBJECT_WHITELISTS: Record<string, APSubjectWhitelist> = {
     forbiddenSignatures: [
       /\b(?:definite\s+integral|indefinite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|chloroplast|mitosis|rotational\s+inertia|stoichiometry)\b/i
     ]
+  },
+  'ap-microeconomics': {
+    subjectId: 'ap-microeconomics',
+    subjectName: 'AP Microeconomics',
+    category: 'social_science',
+    mathExpected: true,
+    canonicalUnits: [
+      { unitNumber: 1, title: 'Basic Economic Concepts', keywords: ['scarcity', 'opportunity cost', 'production possibilities curve', 'ppc', 'ppf', 'comparative advantage', 'absolute advantage', 'terms of trade', 'marginal analysis', 'cost-benefit analysis'] },
+      { unitNumber: 2, title: 'Supply and Demand', keywords: ['law of demand', 'law of supply', 'market equilibrium', 'consumer surplus', 'producer surplus', 'deadweight loss', 'price elasticity of demand', 'ped', 'cross-price elasticity', 'income elasticity', 'price elasticity of supply', 'price ceiling', 'price floor', 'excise tax', 'tax incidence', 'tariff', 'quota'] },
+      { unitNumber: 3, title: 'Production, Cost & Perfect Competition', keywords: ['diminishing marginal returns', 'fixed cost', 'variable cost', 'marginal cost', 'atc', 'avc', 'afc', 'economies of scale', 'diseconomies of scale', 'perfect competition', 'price taker', 'mr=mc', 'shutdown rule', 'p < avc', 'break-even', 'allocative efficiency', 'productive efficiency', 'constant-cost industry'] },
+      { unitNumber: 4, title: 'Imperfect Competition', keywords: ['monopoly', 'price maker', 'mr < p', 'single-price monopoly', 'price discrimination', 'natural monopoly', 'fair-return price', 'socially optimal price', 'monopolistic competition', 'excess capacity', 'oligopoly', 'game theory', 'payoff matrix', 'dominant strategy', 'nash equilibrium', 'collusion', 'cartel'] },
+      { unitNumber: 5, title: 'Factor Markets', keywords: ['derived demand', 'marginal revenue product', 'mrp', 'mrpl', 'marginal factor cost', 'mfc', 'mfcl', 'profit-maximizing hiring', 'mrp = mfc', 'monopsony', 'least-cost rule', 'marginal product of labor'] },
+      { unitNumber: 6, title: 'Market Failure & the Role of Government', keywords: ['externality', 'negative externality', 'positive externality', 'marginal social cost', 'msc', 'marginal social benefit', 'msb', 'pigouvian tax', 'pigouvian subsidy', 'public good', 'non-rival', 'non-excludable', 'free-rider problem', 'common resource', 'lorenz curve', 'gini coefficient'] }
+    ],
+    allowedDomains: ['microeconomics', 'market theory', 'consumer choice', 'firm behavior', 'elasticity', 'market structures', 'factor markets', 'externalities', 'market failure'],
+    forbiddenSignatures: [
+      // Macroeconomics concepts forbidden in Microeconomics
+      /\b(?:gross\s+domestic\s+product|\bGDP\b|real\s+GDP|nominal\s+GDP|GDP\s+deflator|consumer\s+price\s+index|\bCPI\b|inflation\s+rate|hyperinflation|unemployment\s+rate|natural\s+rate\s+of\s+unemployment|\bNRU\b|\bNAIRU\b|structural\s+unemployment|cyclical\s+unemployment|frictional\s+unemployment)\b/i,
+      /\b(?:aggregate\s+demand|\bAD\b-AS|\bSRAS\b|\bLRAS\b|macroeconomic\s+equilibrium|recessionary\s+gap|inflationary\s+gap|fiscal\s+policy|discretionary\s+spending|spending\s+multiplier|tax\s+multiplier|balanced\s+budget\s+multiplier)\b/i,
+      /\b(?:federal\s+reserve|\bcentral\s+bank\b|monetary\s+policy|open\s+market\s+operations|reserve\s+requirement|discount\s+rate|federal\s+funds\s+rate|money\s+market\b|money\s+supply\b|\bM1\b|\bM2\b|fractional\s+reserve|money\s+multiplier|loanable\s+funds|crowding\s+out)\b/i,
+      /\b(?:phillips\s+curve|\bSRPC\b|\bLRPC\b|stagflation|balance\s+of\s+payments|current\s+account\b|financial\s+account\b|capital\s+account\b|foreign\s+exchange|\bFOREX\b|currency\s+appreciation|currency\s+depreciation|exchange\s+rate)\b/i,
+      // Calculus and Advanced Science
+      /\b(?:definite\s+integral|indefinite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|chloroplast|mitosis|rotational\s+inertia|stoichiometry)\b/i
+    ]
+  },
+  'ap-macroeconomics': {
+    subjectId: 'ap-macroeconomics',
+    subjectName: 'AP Macroeconomics',
+    category: 'social_science',
+    mathExpected: true,
+    canonicalUnits: [
+      { unitNumber: 1, title: 'Basic Economic Concepts', keywords: ['scarcity', 'opportunity cost', 'production possibilities curve', 'ppc', 'comparative advantage', 'terms of trade', 'specialization'] },
+      { unitNumber: 2, title: 'Economic Indicators & the Business Cycle', keywords: ['circular flow', 'gross domestic product', 'gdp', 'nominal gdp', 'real gdp', 'gdp deflator', 'unemployment rate', 'civilian labor force', 'labor force participation', 'frictional unemployment', 'structural unemployment', 'cyclical unemployment', 'natural rate of unemployment', 'cpi', 'inflation rate', 'real interest rate', 'business cycle'] },
+      { unitNumber: 3, title: 'National Income & Price Determination', keywords: ['aggregate demand', 'ad', 'short-run aggregate supply', 'sras', 'long-run aggregate supply', 'lras', 'full employment', 'recessionary gap', 'inflationary gap', 'stagflation', 'mpc', 'mps', 'spending multiplier', 'tax multiplier', 'fiscal policy', 'automatic stabilizers'] },
+      { unitNumber: 4, title: 'Financial Sector', keywords: ['financial assets', 'money definitions', 'm1', 'm2', 'commercial bank balance sheet', 'required reserves', 'excess reserves', 'money multiplier', 'money market', 'money demand', 'money supply', 'nominal interest rate', 'central bank', 'federal reserve', 'monetary policy', 'open market operations', 'administered rates', 'iorb', 'discount rate', 'loanable funds', 'real interest rate'] },
+      { unitNumber: 5, title: 'Long-Run Consequences of Stabilization Policies', keywords: ['crowding out', 'phillips curve', 'srpc', 'lrpc', 'expected inflation', 'quantity theory of money', 'mv=py', 'national debt', 'budget deficit', 'economic growth', 'human capital', 'physical capital', 'technology'] },
+      { unitNumber: 6, title: 'Open Economy—International Trade and Finance', keywords: ['balance of payments', 'current account', 'financial account', 'capital account', 'foreign exchange', 'forex', 'exchange rate', 'currency appreciation', 'currency depreciation', 'capital flows', 'net exports'] }
+    ],
+    allowedDomains: ['macroeconomics', 'fiscal policy', 'monetary policy', 'national income', 'banking', 'inflation', 'gdp', 'economic indicators', 'forex', 'open economy', 'business cycle'],
+    forbiddenSignatures: [
+      // Microeconomics firm theory forbidden in Macroeconomics
+      /\b(?:marginal\s+cost\s+curve|\bATC\b\s+curve|\bAVC\b\s+curve|\bAFC\b\s+curve|perfect\s+competition\s+firm|profit\s+maximization\s+rule\s+MR\s*=\s*MC|shut-down\s+rule\s+P\s*<\s*AVC|single-price\s+monopoly|price\s+discriminat(?:ion|ing)\s+monopoly|monopolistic\s+competition\s+excess\s+capacity|oligopoly\s+game\s+theory|payoff\s+matrix|nash\s+equilibrium|dominant\s+strategy|kinked\s+demand)\b/i,
+      /\b(?:factor\s+market|marginal\s+revenue\s+product|\bMRP\b|\bMRPL\b|marginal\s+factor\s+cost|\bMFC\b|\bMFCL\b|monopsony\s+labor|least-cost\s+rule\s+MPL\/w)\b/i,
+      /\b(?:cross-price\s+elasticity|income\s+elasticity\s+of\s+demand|pigouvian\s+tax|pigouvian\s+subsidy|lorenz\s+curve|gini\s+coefficient|consumer\s+choice\s+utility\s+maximization|marginal\s+utility\s+per\s+dollar|indifference\s+curve)\b/i,
+      // Calculus and Advanced Science
+      /\b(?:definite\s+integral|indefinite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|chloroplast|mitosis|rotational\s+inertia|stoichiometry)\b/i
+    ]
   }
 };
 
@@ -319,6 +362,10 @@ export function getSubjectWhitelist(subjectIdentifier?: string): APSubjectWhitel
 
   // 1. Direct ID match
   if (AP_SUBJECT_WHITELISTS[s]) return AP_SUBJECT_WHITELISTS[s];
+
+  // Specific high-priority matches
+  if (s.includes('micro')) return AP_SUBJECT_WHITELISTS['ap-microeconomics'];
+  if (s.includes('macro')) return AP_SUBJECT_WHITELISTS['ap-macroeconomics'];
 
   // 2. Fuzzy name match
   for (const [key, wl] of Object.entries(AP_SUBJECT_WHITELISTS)) {
@@ -344,3 +391,4 @@ export function getSubjectWhitelist(subjectIdentifier?: string): APSubjectWhitel
 
   return null;
 }
+

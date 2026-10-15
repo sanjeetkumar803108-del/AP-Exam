@@ -279,7 +279,7 @@ const TRAP_ARCHETYPES = [
     frequency: 'Very High (40% of Math/Science MCQs)',
     dangerLevel: 'Brutal',
     description: 'The student executes the entire concept correctly, but inverts the sign (- vs +), takes the reciprocal (e.g. 1/2 vs 2), or flips the cause-and-effect direction.',
-    example: 'In AP Physics/Calc: Calculating acceleration instead of deceleration, or forgetting that work done BY the system has an opposite sign.',
+    example: 'In AP Physics/Calc: Calculating acceleration instead of deceleration. In AP Statistics: Subtracting variances Var(X - Y) instead of adding, or confusing P(A|B) with P(B|A).',
     disarmRule: 'Always circle the question prompt’s TARGET direction before solving. Check if the question asks for loss vs gain or rate of decrease.'
   },
   {
@@ -289,7 +289,7 @@ const TRAP_ARCHETYPES = [
     frequency: 'Extremely High (55% of History/Gov/Bio MCQs)',
     dangerLevel: 'Deceptive',
     description: 'The option contains a statement that is 100% historically or scientifically true in the real world, BUT it answers a completely different question or exceeds the provided stimulus.',
-    example: 'In APUSH/AP Gov: A statement praising the New Deal that happened in 1933, when the prompt asked about Progressive Era reforms (1900-1917).',
+    example: 'In APUSH/AP Gov: Praising the New Deal when asked about Progressive reforms. In AP Statistics: Concluding causation from an observational study without random assignment, or claiming correlation implies causation.',
     disarmRule: 'Ask yourself: "Even if this is true, does the stimulus text directly prove it?" If it requires outside assumptions not in the text, cross it out.'
   },
   {
@@ -299,7 +299,7 @@ const TRAP_ARCHETYPES = [
     frequency: 'High (35% of Humanities & Genetics)',
     dangerLevel: 'Subtle',
     description: 'Pairs cause-and-effect in reverse chronological order, or swaps key historical treaties/phases that happened just before or after.',
-    example: 'In AP World: Claiming the Columbian Exchange led to the Black Death (which happened 150 years prior).',
+    example: 'In AP World: Claiming Columbian Exchange led to the Black Death. In AP Statistics: Confusing randomized blocking (done BEFORE treatment assignment) with stratification (done during sampling).',
     disarmRule: 'Pin the prompt to a decade/era landmark. Eliminate any option referencing technology, treaties, or models not yet conceived.'
   },
   {
@@ -309,7 +309,7 @@ const TRAP_ARCHETYPES = [
     frequency: 'High (30% of All AP MCQs)',
     dangerLevel: 'High',
     description: 'Uses absolute words like "always", "never", "solely", "completely", "invariably" to make an otherwise reasonable claim scientifically or historically indefensible.',
-    example: 'In AP Biology: "Enzyme activity is completely halted at all temperatures below 37°C."',
+    example: 'In AP Biology: "Enzyme activity is completely halted at all temperatures below 37°C." In AP Statistics: Concluding "Accept H0", claiming a test "proves" Ha, or claiming "95% of data values fall in this interval."',
     disarmRule: 'Red-flag absolute words ("all", "never", "only"). College Board favors nuanced, qualified words like "typically", "tends to", "facilitates".'
   },
   {
@@ -319,7 +319,7 @@ const TRAP_ARCHETYPES = [
     frequency: 'Moderate (25% of Bio/Psych/CSP)',
     dangerLevel: 'Deceptive',
     description: 'Strings together authentic, impressive unit keywords into a mechanism that does not exist in nature or logic. Catches students guessing based on familiar buzzwords.',
-    example: 'In AP Psychology: "Negative reinforcement decreases the unconditioned response through retro-active interference."',
+    example: 'In AP Psychology: "Negative reinforcement decreases the unconditioned response..." In AP Statistics: "The Central Limit Theorem ensures that a skewed population becomes approximately normal when sample size n >= 30."',
     disarmRule: 'Define every noun and verb in the sentence. If the mechanism sounds complicated but makes no mechanical sense, it was manufactured to bait guessers.'
   },
   {
@@ -329,7 +329,7 @@ const TRAP_ARCHETYPES = [
     frequency: 'High (35% of Calc/Chem/Physics)',
     dangerLevel: 'Brutal',
     description: 'Calculates an intermediate step (e.g. finding the radius $r$, finding moles $n$, or derivative $f\'(x)$) and lists it as an option, when the prompt asked for area, molarity, or critical points.',
-    example: 'In AP Calculus: Finding where $f\'(x) = 0$ is $x = 2$, but the question asked for the absolute maximum value $f(2)$, not the $x$-coordinate.',
+    example: 'In AP Calculus: Finding x = 2 when asked for max value f(2). In AP Statistics: Calculating test statistic z = 2.14 correctly, but stopping before calculating the two-tailed P-value or confidence interval margin of error.',
     disarmRule: 'Underline the FINAL UNIT or quantity requested before looking at options. When you finish a math problem, re-read the last sentence of the stem.'
   }
 ];
@@ -384,7 +384,7 @@ interface APTrapRadarProps {
 }
 
 export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps) {
-  const [activeTab, setActiveTab] = useState<'challenge' | 'archetypes' | 'vault'>('challenge');
+  const [activeTab, setActiveTab] = useState<'challenge' | 'archetypes' | 'vault' | 'scan'>('challenge');
 
   // Challenge Mode State
   const [challengeStep, setChallengeStep] = useState<'select' | 'configure' | 'active'>('select');
@@ -2113,25 +2113,6 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                 </>
                               )}
                             </button>
-
-                            {!((userFrqDraft[String(activeQuestion.id || currentIndex)] || '').trim() || (frqAttachedImages[String(activeQuestion.id || currentIndex)] || []).length > 0) && (
-                              <div className="flex flex-col items-center gap-1.5 pt-1 text-center">
-                                <span className="text-[11px] text-zinc-500 font-medium">
-                                  ✍️ Type or attach answer above
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    triggerVibration(15);
-                                    setIsRadarRevealed(true);
-                                    showToast('Viewing Official Reference Solution & Rubric (No answer submitted).', 'info');
-                                  }}
-                                  className="text-xs font-semibold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 underline underline-offset-4 cursor-pointer py-1 transition-colors"
-                                >
-                                  View Official Solution
-                                </button>
-                              </div>
-                            )}
                           </div>
                         ) : (
                           <div className="w-full space-y-4">

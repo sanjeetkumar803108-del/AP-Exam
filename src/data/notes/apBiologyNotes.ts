@@ -189,11 +189,12 @@ export const AP_BIOLOGY_NOTES: APUnitNote[] = [
   * As a sphere or cube grows in linear dimension $r$, surface area increases by $r^2$ while volume increases by $r^3$.
   * **Smaller cells have a larger $SA/V$ ratio**, facilitating rapid exchange of nutrients, waste gases, and thermal energy. Large eukaryotic cells overcome this constraint through internal membrane folding (mitochondrial cristae, ER folds).
 * **Tonicity and Cellular Osmotic States**:
-  | Environment | Solute Concentration | Water Movement | Plant Cell State | Animal Cell State |
-  | :--- | :--- | :--- | :--- | :--- |
-  | **Hypotonic** | Lower solute than cell | Flows INTO cell | **Turgid (Normal)** | Lysis (Bursts) |
-  | **Isotonic** | Equal solute to cell | Equal dynamic exchange | Flaccid (Wilts) | **Normal (Homeostasis)** |
-  | **Hypertonic** | Higher solute than cell | Flows OUT of cell | Plasmolyzed (Shrinks) | Crenated (Shriveled) |`
+
+| Environment | Solute Concentration | Water Movement | Plant Cell State | Animal Cell State |
+| :--- | :--- | :--- | :--- | :--- |
+| **Hypotonic** | Lower solute than cell | Flows INTO cell | **Turgid (Normal)** | Lysis (Bursts) |
+| **Isotonic** | Equal solute to cell | Equal dynamic exchange | Flaccid (Wilts) | **Normal (Homeostasis)** |
+| **Hypertonic** | Higher solute than cell | Flows OUT of cell | Plasmolyzed (Shrinks) | Crenated (Shriveled) |`
       }
     ],
     workedExamples: [

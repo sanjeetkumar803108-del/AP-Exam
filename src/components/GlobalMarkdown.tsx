@@ -48,9 +48,9 @@ export function cleanMarkdownMath(content: string): string {
   let text = healUnitSuperscripts(String(content));
 
   // 0. Unescape literal escaped newlines (e.g. ".\nStep 2" or "\\n")
-  // Protect LaTeX commands starting with \n (e.g. \neq, \nabla, \notin, \natural, \nearrow, \nwarrow, \nu, \not, \neg, \nexists, \nsim, \nleq, \ngeq)
-  text = text.replace(/\\r\\n/g, '\n\n');
-  text = text.replace(/\\n(?!(?:eq|abla|otin|atural|earrow|warrow|nu\b|not\b|neg\b|nexists|nsim|nleq|ngeq)\b)/g, '\n\n');
+  // Protect LaTeX commands starting with \n (e.g. \ne, \neq, \nabla, \notin, \natural, \nearrow, \nwarrow, \nu, \not, \neg, \nexists, \nsim, \nleq, \ngeq, \nparallel, \nmid)
+  text = text.replace(/\\r\\n/g, '\n');
+  text = text.replace(/\\n(?!(?:eq|e\b|e[^a-zA-Z]|abla|otin|atural|earrow|warrow|nu\b|not\b|neg\b|nexists|nsim|nleq|ngeq|nparallel|nmid)\b)/g, '\n');
 
   // Strip standalone orphaned asterisks on their own lines (e.g. "**\n\nStep 1...\n\n**")
   text = text.replace(/^\s*\*\*\s*$/gm, '');
@@ -97,10 +97,10 @@ export function cleanMarkdownMath(content: string): string {
   text = text.replace(/\n{3,}/g, '\n\n');
 
   // Fix missing opening ** on labels like "- Teacher Verdict**: " -> "- **Teacher Verdict:** "
-  text = text.replace(/^(\s*[-*•]\s*)([A-Za-z0-9\s/]+?)\*\*\s*:\s*/gm, '$1**$2:** ');
+  text = text.replace(/^([ \t]*[-*•][ \t]*)([A-Za-z0-9 /]+?)\*\*[ \t]*:[ \t]*/gm, '$1**$2:** ');
 
-  // Fix label with colon outside bold like "- **Teacher Verdict**:" -> "- **Teacher Verdict:**"
-  text = text.replace(/^(\s*[-*•]\s*\*\*[^*:\n]+?)\*\*\s*:\s*/gm, '$1:** ');
+  // Fix label with colon outside bold like "- **Teacher Verdict**:" -> "- **Teacher Verdict:** "
+  text = text.replace(/^([ \t]*[-*•][ \t]*)\*\*([^*\r\n:]+?)\*\*[ \t]*:[ \t]*/gm, '$1**$2:** ');
 
   // Heal stray trailing ** on list lines
   text = text.replace(/^(\s*[-*•]\s*\*\*[^*:\n]+?\*\*:\s*)([^*\n]+?)\*\*\s*$/gm, (_m, prefix, val) => {
@@ -180,11 +180,10 @@ export function cleanMarkdownMath(content: string): string {
   text = text.replace(/(^|[\s$(=_])ext\{/g, '$1\\text{');
   text = text.replace(/(^|[\s$(=_])heta([\s$_^0-9A-Za-z])/g, '$1\\theta$2');
   text = text.replace(/([0-9a-zA-Z])\\'/g, "$1'");
-  text = text.replace(/(?<![0-9a-zA-Z\)\}])\^\s*\\?circ/g, '^{\\circ}');
   text = text.replace(/(\d+)\^\\?circ(?![a-zA-Z{])/g, '$1^{\\circ}');
 
-  // Heal multiline inline math ($ ... \n ... $)
-  text = text.replace(/(?<!\$)\$([^\$\n]+?(?:\\[a-zA-Z]+|[=+\-*/^_])[^\$]*?\n[^\$]+?)\$(?!\$)/g, (match, body) => {
+  // Heal multiline inline math ($ ... \n ... $) - strictly avoid crossing table pipe delimiters '|' or multiple lines
+  text = text.replace(/(?<!\$)\$([^$|\n]+?(?:\\[a-zA-Z]+|[=+\-*/^_])[^$|\n]*\n[^$|\n]+?)\$(?!\$)/g, (match, body) => {
     if (!body.includes('\n\n')) {
       return `$${body.replace(/\s*\n\s*/g, ' ').trim()}$`;
     }
@@ -248,12 +247,31 @@ export function healGlobalMarkdown(content: string): string {
   if (!content) return '';
   let text = cleanMarkdownMath(String(content));
 
+  // 0. XSS Prevention: Neutralize malicious scripts, iframes, event handlers, and javascript: URIs
+  text = text.replace(/<\s*(?:script|iframe|object|embed|applet|meta|link|base|form|input|style)[^>]*>[\s\S]*?<\s*\/\s*(?:script|iframe|object|embed|applet|meta|link|base|form|input|style)\s*>/gi, '');
+  text = text.replace(/<\s*(?:script|iframe|object|embed|applet|meta|link|base|form|input|style)[^>]*\/?\s*>/gi, '');
+  text = text.replace(/\s*on[a-zA-Z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+  text = text.replace(/javascript\s*:/gi, 'blocked:');
+
   // 1. Protect Code Blocks (```...```) and Inline Code (`...`)
   const codePlaceholders: string[] = [];
   text = text.replace(/(```[\s\S]*?```|`[^`\n]+`)/g, (match) => {
     const token = `___CODE_BLOCK_${codePlaceholders.length}___`;
     codePlaceholders.push(match);
     return token;
+  });
+
+  // 1.5. Protect and Normalize Markdown Tables (Prevents sentence splitters & regexes from breaking tables)
+  const tablePlaceholders: string[] = [];
+  text = text.replace(/(?:^|\r?\n)([ \t]*\|[^\r\n]+\|[ \t]*\r?\n[ \t]*\|[\s\-:|]+\|[ \t]*(?:\r?\n[ \t]*\|[^\r\n]+\|[ \t]*)*)(?=\r?\n|$)/g, (_match, tableBlock) => {
+    const normalizedRows = tableBlock
+      .split(/\r?\n/)
+      .map((row: string) => row.trim())
+      .filter((row: string) => row.length > 0);
+
+    const token = `___TABLE_BLOCK_${tablePlaceholders.length}___`;
+    tablePlaceholders.push(`\n\n${normalizedRows.join('\n')}\n\n`);
+    return `\n\n${token}\n\n`;
   });
 
   // 2. Protect existing block math ($$...$$) and inline math ($...$)
@@ -288,7 +306,9 @@ export function healGlobalMarkdown(content: string): string {
   // 2.5. Explicit formula prefixes with greedy capture until pipe, semicolon, or newline:
   // e.g. "Formula/Concept: v = u + at, \quad a = -g \approx -9.8 \text{ m/s}^2 |"
   text = text.replace(/((?:Formula(?:\/Concept)?|Equation|Identity|Reaction):\s*)([^|\n]+)(\s*\||\s*$)/gi, (match, prefix, formula, suffix) => {
-    if (/\\[a-zA-Z]+|[=+\-*/^_]/.test(formula)) {
+    const formulaWords = formula.match(/[a-zA-Z]{3,}/g) || [];
+    const isNarrative = formulaWords.length >= 4 && !/\\(?:frac|sqrt|cdot|times|int|sum|pi|theta|pm|alpha|beta|mu)\b/.test(formula);
+    if (!isNarrative && (/\\[a-zA-Z]+/.test(formula) || /[=+\-*/^_]/.test(formula))) {
       let trimmed = formula.trim().replace(/^\$+|\$+$/g, '').trim();
       const token = `___MATH_BLOCK_${mathPlaceholders.length}___`;
       mathPlaceholders.push(`$${trimmed}$`);
@@ -474,8 +494,8 @@ export function healGlobalMarkdown(content: string): string {
     });
   });
 
-  // Line breaks after sentences and formulas
-  text = text.replace(/(?<!\d)([.?!])\s+(?=[A-Z\u0900-\u097F$#*—\(\["'___MATH_BLOCK_]|(?:Setting|Now|The\s+(?:first|second|third)|Since|Therefore|Hence|Thus|Substituting)\b)/g, '$1\n\n');
+  // Line breaks after sentences and formulas on the same line (guarded against middle initials, abbreviations, and titles, never eats existing indentation/newlines)
+  text = text.replace(/(?<!\d)(?<!\b[A-Z])(?<!\b(?:Assoc|Inc|Corp|Ltd|Co|Dr|Mr|Mrs|Ms|Prof|vs|eg|ie|Fig|Eq|No|al|approx|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec|St|Ave|Rd|Gen|Col|Maj|Capt|Lt|Sgt|Gov|Sen|Rep))([.?!])[ \t]+(?=[A-Z\u0900-\u097F$#—\(\["'___MATH_BLOCK_]|(?:Setting|Now|The\s+(?:first|second|third)|Since|Therefore|Hence|Thus|Substituting)\b)/g, '$1\n\n');
   text = text.replace(/(?<=:)\s+(?=\$\$)/g, '\n\n');
 
   // Restore abbreviations
@@ -493,6 +513,12 @@ export function healGlobalMarkdown(content: string): string {
   for (let i = 0; i < codePlaceholders.length; i++) {
     const val = codePlaceholders[i];
     text = text.replace(`___CODE_BLOCK_${i}___`, () => val);
+  }
+
+  // 14b. Restore all Markdown Tables intact
+  for (let i = 0; i < tablePlaceholders.length; i++) {
+    const val = tablePlaceholders[i];
+    text = text.replace(`___TABLE_BLOCK_${i}___`, () => val);
   }
 
   // 15. Promote standalone derivation and calculation lines to centered block math ($$...$$)

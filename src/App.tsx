@@ -31,6 +31,7 @@ import { refillDailyCoins } from './utils/coins';
 import { showToast } from './utils/toast';
 import { setupDailyLocalNotifications } from './utils/notifications';
 import { recordActiveUser, getUserHistory, saveUserHistory } from './utils/userHistory';
+import { scrubTransientData } from './utils/dataRetention';
 import confetti from 'canvas-confetti';
 
 import { resilientLazy, resetAllLazyChunks } from './utils/resilientLazy';
@@ -57,6 +58,8 @@ import SplashScreen from './components/SplashScreen';
 import AuthGuard from './components/AuthGuard';
 import ErrorBoundary from './components/ErrorBoundary';
 import ToastProvider from './components/ToastProvider';
+import WelcomeCelebrationModal from './components/WelcomeCelebrationModal';
+import FloatingTutorPenguin from './components/FloatingTutorPenguin';
 import './utils/toast';
 import { requestCameraPermission, requestMicrophonePermission, requestNotificationPermission } from './utils/nativePermissions';
 
@@ -274,7 +277,35 @@ export default function App() {
   const isProUser = isVip; // Alias for consistency with new requirements
   const [showVipModal, setShowVipModal] = useState(false);
   const [showAcademicSetup, setShowAcademicSetup] = useState(false);
+  const [showWelcomeCelebration, setShowWelcomeCelebration] = useState(false);
   const [showPaywallModal, setShowPaywallModal] = useState(false);
+
+  // Listen for welcome penguin celebration trigger (after new user onboarding/academic tracks completion)
+  useEffect(() => {
+    const handleTrigger = () => {
+      const activeUid = user?.uid;
+      const alreadySeen = activeUid ? safeGetItem(`welcome_penguin_seen_${activeUid}`) === 'true' : false;
+      if (!alreadySeen) {
+        setShowWelcomeCelebration(true);
+      }
+    };
+    window.addEventListener('trigger-welcome-celebration', handleTrigger);
+    return () => window.removeEventListener('trigger-welcome-celebration', handleTrigger);
+  }, [user]);
+
+  // Only trigger once for a newly registered user who just completed AcademicSetup
+  useEffect(() => {
+    if (user && !authLoading && !showSplash && !showOnboarding && !showAcademicSetup) {
+      const activeUid = user.uid;
+      const alreadySeen = safeGetItem(`welcome_penguin_seen_${activeUid}`) === 'true';
+      const pending = safeGetItem(`pending_welcome_celebration_${activeUid}`) === 'true';
+      if (pending && !alreadySeen) {
+        safeSetItem(`pending_welcome_celebration_${activeUid}`, 'false');
+        safeSetItem('pending_welcome_celebration', 'false');
+        setShowWelcomeCelebration(true);
+      }
+    }
+  }, [user, authLoading, showSplash, showOnboarding, showAcademicSetup]);
   const [paywallFeature, setPaywallFeature] = useState<string | undefined>(undefined);
   const [mobileToast, setMobileToast] = useState<string | null>(null);
   const [sessionRevokedNotice, setSessionRevokedNotice] = useState<string | null>(null);
@@ -368,6 +399,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    // Scrub expired transient cache and temporary data per data retention policy
+    scrubTransientData();
     // Warm up PaywallModal chunk during idle so Flash Sale and Pro modals open instantly with zero lag
     const timer = setTimeout(() => {
       import('./components/PaywallModal').catch(() => {});
@@ -1263,13 +1296,6 @@ export default function App() {
               isLightTheme={!isDarkMode}
             />
             <NavItem 
-              icon={<Sparkles className="w-5 h-5" />} 
-              label="Tutor" 
-              isActive={activeTab === 'aitutor'} 
-              onClick={() => setActiveTab('aitutor')} 
-              isLightTheme={!isDarkMode}
-            />
-            <NavItem 
               icon={<UserCircle className="w-5 h-5" />} 
               label="Profile" 
               isActive={activeTab === 'profile'} 
@@ -1279,6 +1305,15 @@ export default function App() {
           </div>
         </nav>
       )}
+
+      {/* Floating Circular AI Magic Tutor Penguin on Homepage */}
+      <FloatingTutorPenguin
+        isVisible={activeTab === 'notes' && activeTool === null && !showWelcomeCelebration}
+        onOpenTutor={() => {
+          setActiveTab('aitutor');
+          setActiveTool(null);
+        }}
+      />
 
       <AnimatePresence>
         {showSplash && (
@@ -1392,6 +1427,21 @@ export default function App() {
           }}
         />
       </Suspense>
+
+      <WelcomeCelebrationModal 
+        isOpen={showWelcomeCelebration} 
+        onClose={() => {
+          if (user?.uid) {
+            safeSetItem(`welcome_penguin_seen_${user.uid}`, 'true');
+            safeSetItem(`pending_welcome_celebration_${user.uid}`, 'false');
+          }
+          safeSetItem('welcome_penguin_seen_global', 'true');
+          safeSetItem('pending_welcome_celebration', 'false');
+          setShowWelcomeCelebration(false);
+        }} 
+        userId={user?.uid}
+        userName={user?.displayName || 'Scholar'}
+      />
       </div>
       </AuthGuard>
     </>

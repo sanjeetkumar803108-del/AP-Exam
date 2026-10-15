@@ -384,6 +384,44 @@ export function verifyMathAndFeasibility(q: any, subjectId: string): { isValid: 
     }
   }
 
+  // 14. AP Statistics Strict Verification Gate:
+  if (s.includes('statistic') || s.includes('stat')) {
+    // 1. Correlation coefficient range check: -1.0 <= r <= 1.0
+    const corrMatch = combined.match(/\br\s*=\s*(-?[0-9]+(?:\.[0-9]+)?)/i);
+    if (corrMatch) {
+      const rVal = parseFloat(corrMatch[1]);
+      if (rVal < -1.0 || rVal > 1.0) {
+        issues.push(`AP Statistics Correlation Violation: Correlation coefficient r (${rVal}) must be strictly between -1.0 and +1.0.`);
+      }
+    }
+    // 2. Coefficient of determination r^2 range check: 0 <= r^2 <= 1.0 or 0% <= r^2 <= 100%
+    const r2Match = combined.match(/\br\^?2\s*=\s*([0-9]+(?:\.[0-9]+)?)/i);
+    if (r2Match) {
+      const r2Val = parseFloat(r2Match[1]);
+      if (r2Val > 1.0 && !combined.includes('%')) {
+        issues.push(`AP Statistics r^2 Violation: Coefficient of determination r^2 (${r2Val}) cannot exceed 1.0 (or 100%).`);
+      }
+    }
+    // 3. Probability and P-value bounds: 0 <= P <= 1.0
+    const pValMatch = combined.match(/\bp\s*(?:-?\s*value)?\s*(?:<|>|=|:)?\s*([0-9]+(?:\.[0-9]+)?)/i);
+    if (pValMatch) {
+      const pVal = parseFloat(pValMatch[1]);
+      if (pVal > 1.0 && !combined.includes('%')) {
+        issues.push(`AP Statistics Probability Violation: Probability/P-value (${pVal}) cannot exceed 1.0.`);
+      }
+    }
+    // 4. Standard deviation / Standard error non-negativity
+    const sdNegativeMatch = combined.match(/(?:standard\s+deviation|standard\s+error|SE|SD|\bsigma|\bs)\s*(?:is|=|:)?\s*-\s*([0-9]+(?:\.[0-9]+)?)/i);
+    if (sdNegativeMatch) {
+      issues.push(`AP Statistics Non-Negativity Violation: Standard deviation or standard error cannot be negative (-${sdNegativeMatch[1]}).`);
+    }
+    // 5. Variance non-negativity
+    const varNegativeMatch = combined.match(/(?:variance|\bsigma\^2|\bs\^2)\s*(?:is|=|:)?\s*-\s*([0-9]+(?:\.[0-9]+)?)/i);
+    if (varNegativeMatch) {
+      issues.push(`AP Statistics Variance Violation: Variance cannot be negative (-${varNegativeMatch[1]}).`);
+    }
+  }
+
   return {
     isValid: issues.length === 0,
     issues
@@ -1242,6 +1280,128 @@ export const PRISTINE_GOLDEN_QUESTIONS: Record<string, any[]> = {
         "Complex Understanding (0-1 pt) [1 pt]: Demonstrates a complex understanding of the historical development by qualifying or modifying the argument (e.g. weighing the positive commercial/cultural transfers against the devastating demographic and economic collapse caused by the plague/Black Death)."
       ]
     }
+  ],
+  'ap-statistics': [
+    {
+      title: "FREE RESPONSE QUESTION 1  [4 POINTS]",
+      prompt: `A clinical trial evaluated the effectiveness of two pain-relief medications, Drug A and Drug B. The time (in minutes) until patients reported significant pain relief was recorded for independent random samples of 40 patients taking Drug A and 40 patients taking Drug B. The summary statistics and five-number summaries are shown below:
+
+$$\\begin{array}{|l|c|c|c|c|c|c|c|}\\hline \\textbf{Medication} & \\textbf{Mean} & \\textbf{SD} & \\textbf{Min} & Q_1 & \\textbf{Median} & Q_3 & \\textbf{Max} \\\\\\hline \\text{Drug A} & 48.2 & 14.6 & 22 & 36 & 44 & 58 & 96 \\\\\\hline \\text{Drug B} & 39.5 & 8.2 & 24 & 34 & 38 & 45 & 58 \\\\\\hline\\end{array}$$
+
+(a) Compare the distributions of relief times for Drug A and Drug B. Your comparison must address shape, center, spread, and outliers in context. [2 points]
+
+(b) Determine whether the maximum relief time of 96 minutes for Drug A is an outlier. Show the numerical calculations that support your answer. [1 point]
+
+(c) A medical researcher claims that Drug B is generally more effective because both its median and IQR are lower than those of Drug A. Explain why the median and IQR are more appropriate than the mean and standard deviation for comparing these two distributions. [1 point]`,
+      totalPoints: 4,
+      unitNumber: 1,
+      unitTitle: "Exploring One- and Two-Variable Quantitative Data",
+      skill: "Unit 1: Comparing Quantitative Distributions & Outlier Rule",
+      modelAnswer: `Part (a):
+- Shape: The distribution of pain relief times for Drug A is skewed to the right (since the mean $48.2$ is greater than the median $44$, and the upper whisker extends much further than the lower whisker), whereas the distribution for Drug B is approximately symmetric (mean $39.5$ is very close to median $38$, and the quartiles are evenly spaced around the median).
+- Center: The typical relief time is lower for Drug B than for Drug A, as shown by Drug B's median of $38$ minutes compared to Drug A's median of $44$ minutes (or mean of $39.5$ min vs $48.2$ min).
+- Spread: Relief times for Drug A exhibit greater variability than relief times for Drug B, with an IQR of $58 - 36 = 22$ minutes for Drug A compared to an IQR of $45 - 34 = 11$ minutes for Drug B (and a larger standard deviation of $14.6$ min vs $8.2$ min).
+- Outliers: Drug A has a potential upper outlier at $96$ minutes, while Drug B has no apparent outliers.
+
+Part (b):
+Using the $1.5 \\times \\text{IQR}$ rule for Drug A:
+$\\text{IQR} = Q_3 - Q_1 = 58 - 36 = 22$ minutes.
+$\\text{Upper Fence} = Q_3 + 1.5(\\text{IQR}) = 58 + 1.5(22) = 58 + 33 = 91$ minutes.
+$\\text{Lower Fence} = Q_1 - 1.5(\\text{IQR}) = 36 - 1.5(22) = 36 - 33 = 3$ minutes.
+Because the maximum value of $96$ minutes is strictly greater than the upper fence of $91$ minutes ($96 > 91$), $96$ minutes is an outlier.
+
+Part (c):
+The median and IQR are resistant statistics, meaning they are not substantially affected by extreme values or skewness. Because the distribution of relief times for Drug A is skewed to the right and contains an outlier at $96$ minutes, the mean ($48.2$) and standard deviation ($14.6$) are pulled upward by the extreme high values, artificially inflating the apparent typical time and variability. Therefore, the median and IQR provide a more accurate, resistant comparison of the center and spread.`,
+      scoringRubric: [
+        "Part (a) [2 points]: 1 point for comparing center and spread using explicit comparative language (e.g. 'greater than', 'lower') in context; 1 point for comparing shape (skewed right vs symmetric) and mentioning outliers in context.",
+        "Part (b) [1 point]: 1 point for correct calculation of IQR = 22, upper fence = 91, and concluding 96 > 91 is an outlier.",
+        "Part (c) [1 point]: 1 point for stating median/IQR are resistant to extreme values/skewness while mean/SD are nonresistant, tied specifically to Drug A's skewness/outlier."
+      ]
+    },
+    {
+      title: "FREE RESPONSE QUESTION 2  [4 POINTS]",
+      prompt: `An agricultural scientist investigates whether a new organic microbial soil amendment increases soybean yield compared to the standard fertilizer treatment. In a controlled field trial, 50 uniform field plots are randomly assigned: 25 plots receive the standard fertilizer and 25 plots receive the microbial amendment. At harvest, the mean yield for the standard fertilizer plots is $\\bar{x}_1 = 48.6$ bushels per acre with sample standard deviation $s_1 = 4.2$ bu/acre. The mean yield for the microbial amendment plots is $\\bar{x}_2 = 52.1$ bushels per acre with sample standard deviation $s_2 = 3.8$ bu/acre. Sample boxplots of yields for both groups show no extreme skewness and no outliers.
+
+(a) State the null and alternative hypotheses for a two-sample $t$-test to determine if the mean yield with the microbial amendment is significantly greater than with the standard fertilizer. Define the parameters used in your hypotheses in context. [1 point]
+
+(b) Identify the appropriate inference procedure and verify that the conditions for conducting this test have been met. [1 point]
+
+(c) The calculated test statistic is $t = -3.09$ with degrees of freedom $\\text{df} = 47.5$, resulting in a $P$-value of $0.0016$. Based on this $P$-value, what conclusion should the scientist reach at the $\\alpha = 0.05$ significance level? [1 point]
+
+(d) In the context of this experiment, describe a Type I error and state one practical consequence of committing this error. [1 point]`,
+      totalPoints: 4,
+      unitNumber: 4,
+      unitTitle: "Inference for Quantitative Data: Means",
+      skill: "Unit 4: Two-Sample t-Test for Difference of Means",
+      modelAnswer: `Part (a):
+Let $\\mu_1 =$ the true mean soybean yield (in bushels per acre) for plots treated with the standard fertilizer.
+Let $\\mu_2 =$ the true mean soybean yield (in bushels per acre) for plots treated with the organic microbial amendment.
+$H_0: \\mu_1 - \\mu_2 = 0$ (or $\\mu_1 = \\mu_2$)
+$H_a: \\mu_1 - \\mu_2 < 0$ (or $\\mu_2 > \\mu_1$, the microbial amendment yields a greater mean yield).
+
+Part (b):
+The appropriate procedure is a two-sample $t$-test for the difference between two population means ($\\mu_1 - \\mu_2$).
+Conditions:
+1. Random Assignment: The 50 plots were randomly assigned to the two treatments (25 to standard, 25 to microbial), satisfying the condition for independent treatment groups.
+2. Normality / Large Sample Condition: Although $n_1 = 25 < 30$ and $n_2 = 25 < 30$, the problem states that sample boxplots for both groups show no extreme skewness and no outliers. Therefore, the $t$-procedure is robust and appropriate.
+3. 10% Condition: Not applicable because this is a randomized comparative experiment, not sampling without replacement from a finite population.
+
+Part (c):
+Because the $P$-value ($0.0016$) is less than the significance level $\\alpha = 0.05$ ($0.0016 < 0.05$), we reject the null hypothesis $H_0$.
+There is convincing statistical evidence that the true mean soybean yield for plots treated with the organic microbial amendment is greater than the true mean soybean yield for plots treated with standard fertilizer.
+
+Part (d):
+A Type I error occurs if the scientist rejects $H_0$ when $H_0$ is actually true. In this context, it means concluding that the microbial amendment increases mean soybean yield when, in reality, it does not.
+A practical consequence: Farmers would spend extra money purchasing and applying the new microbial amendment expecting higher yields, but would receive no actual increase in crop production, wasting financial resources.`,
+      scoringRubric: [
+        "Part (a) [1 point]: 1 point for stating correct null and alternative hypotheses with population parameters clearly defined in context (mean yield of soybean crops).",
+        "Part (b) [1 point]: 1 point for identifying two-sample t-test and verifying Random Assignment and Normality (boxplots show no skew/outliers).",
+        "Part (c) [1 point]: 1 point for correctly linking P-value < alpha (0.0016 < 0.05), rejecting H0, and stating conclusion with non-dogmatic language in context.",
+        "Part (d) [1 point]: 1 point for describing Type I error in context (concluding microbial amendment works when it doesn't) and stating a realistic consequence (wasted farmer expenditure)."
+      ]
+    },
+    {
+      title: "FREE RESPONSE QUESTION 3  [4 POINTS]",
+      prompt: `Environmental scientists measured the water temperature ($x$, in degrees Celsius) and the dissolved oxygen concentration ($y$, in milligrams per liter) at 20 randomly selected locations along a river system during midsummer. The computer output from a least-squares linear regression analysis of the data is shown below:
+
+$$\\begin{array}{lcccc}\\hline \\textbf{Predictor} & \\textbf{Coef} & \\textbf{SE Coef} & \\textbf{T} & \\textbf{P} \\\\\\hline \\text{Constant} & 14.823 & 0.745 & 19.90 & 0.000 \\\\ \\text{Temperature} & -0.312 & 0.038 & -8.21 & 0.000 \\\\\\hline\\end{array}$$
+$$S = 0.428 \\quad R\\text{-Sq} = 78.9\\% \\quad R\\text{-Sq(adj)} = 77.7\\%$$
+
+(a) Write the equation of the least-squares regression line using descriptive variable names (or define your variables). [1 point]
+
+(b) Interpret the slope of the least-squares regression line in the context of this study. [1 point]
+
+(c) Interpret the value of $S = 0.428$ in context. [1 point]
+
+(d) At one monitoring site, the recorded water temperature was $22.0^\\circ\\text{C}$ and the dissolved oxygen was $7.45\\text{ mg/L}$. Calculate and interpret the residual for this observation. [1 point]`,
+      totalPoints: 4,
+      unitNumber: 5,
+      unitTitle: "Inference for Regression and Advanced Topics",
+      skill: "Unit 5: Linear Regression Modeling & Residuals",
+      modelAnswer: `Part (a):
+$\\widehat{\\text{Dissolved Oxygen}} = 14.823 - 0.312(\\text{Water Temperature})$
+(or $\\hat{y} = 14.823 - 0.312x$, where $x =$ water temperature in $^\\circ\\text{C}$ and $\\hat{y} =$ predicted dissolved oxygen in $\\text{mg/L}$).
+
+Part (b):
+Slope Interpretation:
+For each additional $1^\\circ\\text{C}$ increase in water temperature, the predicted dissolved oxygen concentration decreases by $0.312\\text{ mg/L}$.
+
+Part (c):
+Standard Deviation of the Residuals ($S$) Interpretation:
+The actual dissolved oxygen concentration in the river typically differs from the value predicted by the linear regression model with water temperature by about $0.428\\text{ mg/L}$.
+
+Part (d):
+Predicted value:
+$\\hat{y} = 14.823 - 0.312(22.0) = 14.823 - 6.864 = 7.959\\text{ mg/L}$.
+$\\text{Residual} = y - \\hat{y} = 7.45 - 7.959 = -0.509\\text{ mg/L}$.
+Interpretation: The actual dissolved oxygen concentration at this monitoring site was $0.509\\text{ mg/L}$ lower than the value predicted by the linear model for a water temperature of $22.0^\\circ\\text{C}$.`,
+      scoringRubric: [
+        "Part (a) [1 point]: 1 point for correct regression line with hat over response variable or explicit 'predicted' label.",
+        "Part (b) [1 point]: 1 point for interpreting slope in context with units, using language of prediction ('predicted', 'on average').",
+        "Part (c) [1 point]: 1 point for interpreting s as typical distance/difference between actual and predicted values in context with units.",
+        "Part (d) [1 point]: 1 point for calculating residual = -0.509 mg/L and interpreting as actual being 0.509 below predicted."
+      ]
+    }
   ]
 };
 
@@ -1262,6 +1422,9 @@ PRISTINE_GOLDEN_QUESTIONS['computer-science-a'] = PRISTINE_GOLDEN_QUESTIONS['ap-
 PRISTINE_GOLDEN_QUESTIONS['ap-whap'] = PRISTINE_GOLDEN_QUESTIONS['ap-world-history'];
 PRISTINE_GOLDEN_QUESTIONS['whap'] = PRISTINE_GOLDEN_QUESTIONS['ap-world-history'];
 PRISTINE_GOLDEN_QUESTIONS['world-history'] = PRISTINE_GOLDEN_QUESTIONS['ap-world-history'];
+PRISTINE_GOLDEN_QUESTIONS['statistics'] = PRISTINE_GOLDEN_QUESTIONS['ap-statistics'];
+PRISTINE_GOLDEN_QUESTIONS['ap-stat'] = PRISTINE_GOLDEN_QUESTIONS['ap-statistics'];
+PRISTINE_GOLDEN_QUESTIONS['stat'] = PRISTINE_GOLDEN_QUESTIONS['ap-statistics'];
 
 /**
  * Main Pipeline Orchestrator:
@@ -1288,8 +1451,9 @@ export function runMultiStageVerificationPipeline(
   const isPsych = s.includes('psych');
   const isCsa = s.includes('computer science a') || s.includes('csa') || (s.includes('computer') && !s.includes('principles') && !s.includes('csp'));
   const isWhap = s.includes('world history') || s.includes('whap') || (s.includes('world') && s.includes('history')) || (s.includes('history') && !s.includes('u.s.') && !s.includes('us') && !s.includes('euro'));
-  const goldenKey = isWhap ? 'ap-world-history' : (isCsa ? 'ap-computer-science' : (isPsych ? 'ap-psychology' : (isLang ? 'ap-english-lang' : (isAphg ? 'aphg' : (isApes ? 'apes' : (isCalculusBc ? 'ap-calculus-bc' : (isChem ? 'ap-chemistry' : (isBio ? 'ap-biology' : (isPhys1 ? 'ap-physics-1' : (s.includes('calculus') ? 'ap-calculus-ab' : s))))))))));
-  const goldenBank = PRISTINE_GOLDEN_QUESTIONS[goldenKey] || PRISTINE_GOLDEN_QUESTIONS[s] || (isWhap ? PRISTINE_GOLDEN_QUESTIONS['ap-world-history'] : (isCsa ? PRISTINE_GOLDEN_QUESTIONS['ap-computer-science'] : (isPsych ? PRISTINE_GOLDEN_QUESTIONS['ap-psychology'] : (isLang ? PRISTINE_GOLDEN_QUESTIONS['ap-english-lang'] : (isCalculusBc ? PRISTINE_GOLDEN_QUESTIONS['ap-calculus-bc'] : (isChem ? PRISTINE_GOLDEN_QUESTIONS['ap-chemistry'] : (isBio ? PRISTINE_GOLDEN_QUESTIONS['ap-biology'] : (isPhys1 ? PRISTINE_GOLDEN_QUESTIONS['ap-physics-1'] : (isAphg ? PRISTINE_GOLDEN_QUESTIONS['aphg'] : (isApes ? PRISTINE_GOLDEN_QUESTIONS['apes'] : PRISTINE_GOLDEN_QUESTIONS['ap-calculus-ab'])))))))))) || [];
+  const isStat = s.includes('statistic') || s.includes('stat');
+  const goldenKey = isStat ? 'ap-statistics' : (isWhap ? 'ap-world-history' : (isCsa ? 'ap-computer-science' : (isPsych ? 'ap-psychology' : (isLang ? 'ap-english-lang' : (isAphg ? 'aphg' : (isApes ? 'apes' : (isCalculusBc ? 'ap-calculus-bc' : (isChem ? 'ap-chemistry' : (isBio ? 'ap-biology' : (isPhys1 ? 'ap-physics-1' : (s.includes('calculus') ? 'ap-calculus-ab' : s)))))))))));
+  const goldenBank = PRISTINE_GOLDEN_QUESTIONS[goldenKey] || PRISTINE_GOLDEN_QUESTIONS[s] || (isStat ? PRISTINE_GOLDEN_QUESTIONS['ap-statistics'] : (isWhap ? PRISTINE_GOLDEN_QUESTIONS['ap-world-history'] : (isCsa ? PRISTINE_GOLDEN_QUESTIONS['ap-computer-science'] : (isPsych ? PRISTINE_GOLDEN_QUESTIONS['ap-psychology'] : (isLang ? PRISTINE_GOLDEN_QUESTIONS['ap-english-lang'] : (isCalculusBc ? PRISTINE_GOLDEN_QUESTIONS['ap-calculus-bc'] : (isChem ? PRISTINE_GOLDEN_QUESTIONS['ap-chemistry'] : (isBio ? PRISTINE_GOLDEN_QUESTIONS['ap-biology'] : (isPhys1 ? PRISTINE_GOLDEN_QUESTIONS['ap-physics-1'] : (isAphg ? PRISTINE_GOLDEN_QUESTIONS['aphg'] : (isApes ? PRISTINE_GOLDEN_QUESTIONS['apes'] : PRISTINE_GOLDEN_QUESTIONS['ap-calculus-ab']))))))))))) || [];
 
   for (let idx = 0; idx < rawQuestions.length; idx++) {
     const rawQ = rawQuestions[idx];

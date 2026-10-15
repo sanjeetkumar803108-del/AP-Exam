@@ -169,10 +169,15 @@ export default function AcademicSetup({ userId, onComplete }: AcademicSetupProps
       } catch (dbErr) {
         console.error('[AcademicSetup] Error saving onboarding state to Firestore:', dbErr);
       }
+      // Mark pending welcome celebration video for this new user so homepage displays it
+      safeSetItem(`pending_welcome_celebration_${activeUid}`, 'true');
     }
+    safeSetItem('pending_welcome_celebration', 'true');
+    window.dispatchEvent(new CustomEvent('trigger-welcome-celebration'));
 
     onComplete();
   };
+
 
   return (
     <div className="absolute inset-0 z-[80] bg-white text-zinc-900 flex flex-col h-[100dvh] overflow-hidden select-none font-sans">

@@ -39,7 +39,6 @@ export default function TestPrep({ onBack }: TestPrepProps) {
     subject: TestPrepSubject;
     unit: TestPrepUnit;
     pdfData: UploadedUnitPdf;
-    viewMode: 'html' | 'pdf';
   } | null>(null);
 
   const [comingSoonModal, setComingSoonModal] = useState<{
@@ -93,7 +92,6 @@ export default function TestPrep({ onBack }: TestPrepProps) {
         subject,
         unit,
         pdfData,
-        viewMode: pdfData.htmlUrl ? 'html' : 'pdf'
       });
     } else {
       setComingSoonModal({
@@ -224,8 +222,8 @@ export default function TestPrep({ onBack }: TestPrepProps) {
           {filteredSubjects.length === 0 ? (
             <div className="text-center py-12 bg-zinc-50 rounded-3xl border border-zinc-200">
               <BookOpen className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
-              <p className="text-sm font-bold text-zinc-700">Koi subject ya unit match nahi hua</p>
-              <p className="text-xs text-zinc-400 mt-1">Apna search query ya category filter clear karke check karein.</p>
+              <p className="text-sm font-bold text-zinc-700">No subjects or units found</p>
+              <p className="text-xs text-zinc-400 mt-1">Try clearing your search query or selecting a different category filter.</p>
             </div>
           ) : (
             filteredSubjects.map(subject => {
@@ -319,142 +317,59 @@ export default function TestPrep({ onBack }: TestPrepProps) {
       </main>
 
       {/* ========================================================================= */}
-      {/* 3. MODAL: UPLOADED PDF VIEWER & ACTIONS (When PDF is available)           */}
+      {/* 3. 100% DIRECT FULL-SCREEN PDF VIEWER (Pure Minimalist Header Only)       */}
       {/* ========================================================================= */}
       <AnimatePresence>
         {activePdfModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-zinc-950/60 backdrop-blur-sm animate-fade-in">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-3xl max-w-4xl w-full h-[90vh] flex flex-col shadow-2xl border border-zinc-200 overflow-hidden"
-            >
-              {/* Modal Header */}
-              <div className="px-5 py-4 border-b border-zinc-200 flex items-center justify-between bg-zinc-50/80">
-                <div className="min-w-0 pr-3">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md flex items-center gap-1">
-                      <span>{getTestPrepSubjectVisual(activePdfModal.subject.id).icon}</span>
-                      <span>{activePdfModal.subject.name}</span>
-                    </span>
-                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <Star className="w-2.5 h-2.5 fill-current text-amber-500" />
-                      Priority-Starred Master Set
-                    </span>
-                  </div>
-                  <h2 className="text-base sm:text-lg font-black text-zinc-900 truncate">
-                    {activePdfModal.unit.unitNumber === 0
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12 }}
+            className="fixed inset-0 z-50 w-full h-full bg-zinc-950 flex flex-col overflow-hidden select-text"
+          >
+            {/* Minimalist Top Bar: Back Button & Subject/Unit Heading ONLY */}
+            <div className="px-4 py-3 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between shrink-0 z-20">
+              <div className="flex items-center gap-3 min-w-0 pr-3">
+                <button
+                  onClick={() => {
+                    triggerVibration(10);
+                    setActivePdfModal(null);
+                  }}
+                  className="w-8 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0"
+                  title="Back"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+                <div className="flex items-center gap-2 min-w-0">
+                  <FileText className="w-4 h-4 text-indigo-400 shrink-0" />
+                  <h2 className="text-sm sm:text-base font-black text-white truncate">
+                    {activePdfModal.subject.name} • {activePdfModal.unit.unitNumber === 0
                       ? activePdfModal.unit.title
                       : `Unit ${activePdfModal.unit.unitNumber}: ${activePdfModal.unit.title}`}
                   </h2>
                 </div>
-
-                <button
-                  onClick={() => setActivePdfModal(null)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center bg-zinc-200/70 hover:bg-zinc-300 text-zinc-600 hover:text-zinc-900 transition-colors cursor-pointer shrink-0"
-                  title="Close"
-                >
-                  <X className="w-4 h-4" />
-                </button>
               </div>
 
-              {/* Action Toolbar */}
-              <div className="px-5 py-2.5 border-b border-zinc-200 bg-white flex items-center justify-between gap-2 flex-wrap">
-                {/* View Switcher: HTML Master View vs PDF (only shown when interactive HTML is available) */}
-                {activePdfModal.pdfData.htmlUrl ? (
-                  <div className="flex items-center gap-1 bg-zinc-100 p-1 rounded-xl">
-                    <button
-                      onClick={() => setActivePdfModal(prev => prev ? { ...prev, viewMode: 'html' } : null)}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        activePdfModal.viewMode === 'html'
-                          ? 'bg-white text-indigo-600 shadow-xs'
-                          : 'text-zinc-600 hover:text-zinc-900'
-                      }`}
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <Eye className="w-3 h-3" />
-                        <span>Interactive Master View</span>
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => setActivePdfModal(prev => prev ? { ...prev, viewMode: 'pdf' } : null)}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        activePdfModal.viewMode === 'pdf'
-                          ? 'bg-white text-indigo-600 shadow-xs'
-                          : 'text-zinc-600 hover:text-zinc-900'
-                      }`}
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <FileText className="w-3 h-3" />
-                        <span>PDF Document</span>
-                      </span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
-                    <FileText className="w-3.5 h-3.5" />
-                    <span>Official AP PDF Set</span>
-                  </div>
-                )}
+              <button
+                onClick={() => {
+                  triggerVibration(10);
+                  setActivePdfModal(null);
+                }}
+                className="w-8 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0"
+                title="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-                {/* Direct Action Links */}
-                <div className="flex items-center gap-2">
-                  <a
-                    href={activePdfModal.pdfData.pdfUrl}
-                    download
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-xl shadow-xs transition-colors"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Download PDF ({activePdfModal.pdfData.pageCount} Pages)</span>
-                  </a>
-
-                  <a
-                    href={activePdfModal.pdfData.pdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-zinc-700 bg-zinc-100 hover:bg-zinc-200 px-3 py-1.5 rounded-xl transition-colors"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Full Screen</span>
-                  </a>
-                </div>
-              </div>
-
-              {/* Priority Stars Breakdown Banner */}
-              {activePdfModal.pdfData.priorityStars && (
-                <div className="px-5 py-2 bg-gradient-to-r from-amber-50 via-indigo-50 to-teal-50 border-b border-zinc-200/80 flex items-center justify-between text-xs gap-2 flex-wrap">
-                  <span className="font-bold text-zinc-700">
-                    ⭐ Priority Breakdown:
-                  </span>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 font-bold text-[11px]">
-                      ★★★★★ Very Important ({activePdfModal.pdfData.priorityStars.star5} Qs)
-                    </span>
-                    <span className="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 font-bold text-[11px]">
-                      ★★★ Mandatory ({activePdfModal.pdfData.priorityStars.star3} Qs)
-                    </span>
-                    <span className="px-2 py-0.5 rounded-md bg-teal-100 text-teal-800 font-bold text-[11px]">
-                      ★★ Important ({activePdfModal.pdfData.priorityStars.star2} Qs)
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* PDF / HTML Preview Container */}
-              <div className="flex-1 bg-zinc-100 relative overflow-hidden">
-                {activePdfModal.viewMode === 'html' && activePdfModal.pdfData.htmlUrl ? (
-                  <iframe
-                    src={activePdfModal.pdfData.htmlUrl}
-                    title="Unit Master Practice Set"
-                    className="w-full h-full border-0"
-                  />
-                ) : (
-                  <SafePdfViewer pdfUrlOrBase64={activePdfModal.pdfData.pdfUrl} />
-                )}
-              </div>
-            </motion.div>
-          </div>
+            {/* Direct Full-Screen PDF Viewer */}
+            <div className="flex-1 w-full h-full overflow-hidden bg-zinc-100 relative">
+              <SafePdfViewer
+                pdfUrlOrBase64={activePdfModal.pdfData.pdfUrl || activePdfModal.pdfData.htmlUrl}
+              />
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -491,7 +406,14 @@ export default function TestPrep({ onBack }: TestPrepProps) {
               </h3>
 
               <p className="text-xs text-zinc-500 leading-relaxed mb-5">
-                <b className="text-zinc-700">{comingSoonModal.subject.name} · Unit {comingSoonModal.unit.unitNumber}: {comingSoonModal.unit.title}</b> ka Master Practice Set &amp; Short Notes PDF abhi upload nahi hua hai. Jald hi upload kar diya jayega!
+                The Master Practice Set and Review Booklet for{' '}
+                <b className="text-zinc-800">
+                  {comingSoonModal.subject.name} ·{' '}
+                  {comingSoonModal.unit.unitNumber === 0
+                    ? comingSoonModal.unit.title
+                    : `Unit ${comingSoonModal.unit.unitNumber}: ${comingSoonModal.unit.title}`}
+                </b>{' '}
+                is currently being prepared and will be released shortly.
               </p>
 
               <button
@@ -501,7 +423,7 @@ export default function TestPrep({ onBack }: TestPrepProps) {
                 }}
                 className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-colors cursor-pointer active:scale-95"
               >
-                Theek Hai / Got It
+                Got It
               </button>
             </motion.div>
           </div>

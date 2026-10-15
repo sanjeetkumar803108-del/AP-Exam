@@ -23,4 +23,11 @@ scratch/
 **/google-services.json
 active_battle_rooms.json
 
+# Temporary script test frames
+scripts/temp_frames/
+scripts/test_inspect/
+scripts/test_inspect_webm/
+scripts/test_verify_new/
+
+
 

@@ -261,6 +261,22 @@ export const AP_USH_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'Paine wrote *Common Sense* to convince common colonists that reconciliation with the British Crown was impossible, mobilizing public support for the Declaration of Independence.',
         apScoringTip: 'When sourcing a document on the DBQ, explain WHY the author’s perspective or historical situation matters for interpreting the document.'
+      },
+      {
+        title: 'Full 7-Point Annotated DBQ Exemplar: American Revolution (1775–1800)',
+        topicRef: 'Official College Board 7-Point DBQ Scoring Rubric (2024–2025 Standard)',
+        question: 'Evaluate the extent to which the American Revolutionary Era (1775–1800) fostered democratic political and social change in the United States.',
+        solutionSteps: [
+          'PROMPT ANALYSIS & RUBRIC BLUEPRINT: Historical Reasoning Skill: Continuity and Change over Time. Timeframe: 1775–1800. Thematic Categories: Democratic Political Restructuring vs. Social Hierarchies of Race and Gender.',
+          'DOCUMENT REPERTOIRE: Doc 1: Abigail Adams letter to John Adams ("Remember the Ladies", 1776); Doc 2: Thomas Paine, Common Sense (1776); Doc 3: Pennsylvania Abolition Society Constitution (1789); Doc 4: James Madison, Federalist No. 10 (1787); Doc 5: Thomas Jefferson, Declaration of Independence (1776); Doc 6: Northwest Ordinance Article VI prohibiting slavery (1787); Doc 7: Petition of Enslaved Africans to Massachusetts Legislature (1777).',
+          'STEP 1: CONTEXTUALIZATION [Point 1/1 Earned]: "Prior to 1763, the British North American colonies experienced decades of salutary neglect, developing self-governing colonial assemblies like the Virginia House of Burgesses and New England town meetings. However, following the Seven Years War (1754–1763), Britain abandoned this policy, imposing direct taxes such as the Stamp Act and Townshend Acts without parliamentary representation. Colonists embraced Enlightenment philosophies of popular sovereignty and natural rights, culminating in armed rebellion and the creation of a novel constitutional republic."',
+          'STEP 2: THESIS & LINE OF REASONING [Point 2/1 Earned]: "Although the American Revolutionary Era fostered revolutionary political change by dismantling monarchical rule, establishing a representative constitutional republic, and expanding popular sovereignty, it produced strictly limited social change, preserving existing racial slavery and denying political franchise to women and non-property holders."',
+          'STEP 3: BODY PARAGRAPH 1 — POLITICAL TRANSFORMATION [Points 3 & 4: Doc Evidence (2/2), Point 5: Outside Evidence (1/1), Point 6: Sourcing/HIPP (1/1)]: "The Revolution fundamentally dismantled monarchical hierarchy and established unprecedented republican self-government. Thomas Paine argued in Common Sense that hereditary monarchy was inherently unnatural and tyrannical, mobilizing common colonists to reject the Crown in favor of republican popular rule (Doc 2). [SOURCING DOC 2: HIPP - Purpose: Paine deliberately wrote in fiery, vernacular English to radicalize common laborers and farmers rather than just colonial elites, galvanizing mass support for self-governance]. This republican ideology culminated in Thomas Jefferson’s Declaration of Independence, which posited that legitimate governments derive their just powers exclusively from the consent of the governed (Doc 5). In Federalist No. 10, James Madison codified this political evolution by designing an extended federal republic that could manage factionalism and protect minority rights without resorting to autocracy (Doc 4). [OUTSIDE EVIDENCE: The initial Articles of Confederation deliberately created a weak unicameral legislature without an executive or taxation power, reflecting intense post-colonial fear of centralized tyranny before the 1787 Constitutional Convention]."',
+          'STEP 4: BODY PARAGRAPH 2 — SOCIAL LIMITATIONS [Points 3 & 4: Doc Evidence (2/2), Point 6: Sourcing/HIPP (1/1)]: "In contrast to sweeping political restructuring, the Revolution left foundational social hierarchies largely intact, especially regarding gender and race. Abigail Adams urged John Adams to Remember the Ladies and grant women legal protections against marital tyranny (Doc 1). [SOURCING DOC 1: HIPP - Point of View: As the wife of a leading revolutionary architect, Abigail utilized republican rhetoric to expose the hypocrisy of elite men fighting despotism abroad while exercising legal coverture over women at home]. Despite her plea, the doctrine of Republican Motherhood merely elevated women as moral educators of civic virtue without granting voting rights. Similarly, enslaved Africans petitioned the Massachusetts legislature in 1777, directly weaponizing the Revolution’s natural rights language to demand emancipation (Doc 7). While northern states gradually passed abolition laws and the Northwest Ordinance barred slavery north of the Ohio River (Doc 6), the US Constitution entrenched human bondage through the Three-Fifths Compromise, the Fugitive Slave Clause, and the 20-year international slave trade moratorium."',
+          'STEP 5: CONCLUSION & COMPLEXITY / SOPHISTICATION [Point 7/1 Earned]: "Ultimately, the American Revolution established a paradoxical legacy. It generated an unprecedented ideological framework of liberty and popular constitutionalism that permanently ended aristocratic entitlement for white male citizens, while simultaneously legitimizing chattel slavery and gender subjugation. This fundamental contradiction between revolutionary egalitarian rhetoric and oppressive social reality catalyzed subsequent democratic struggles, directly inspiring Frederick Douglass, the Seneca Falls Convention (1848), and the ongoing expansion of civil rights across American history."'
+        ],
+        finalAnswer: 'A complete 7/7 College Board scored DBQ essay demonstrating Contextualization (1/1), Thesis with Line of Reasoning (1/1), Document Evidence (2/2 - 6 docs used, 4+ supporting), Outside Historical Evidence (1/1 - Articles of Confederation & Shays’ Rebellion), Sourcing/HIPP (1/1 - Docs 1 & 2), and Complexity/Nuance (1/1 - Structural paradox of republicanism vs racial/gender subjugation).',
+        apScoringTip: 'To secure the elusive Complexity point, do not just summarize documents. Show the historic contradiction: Demonstrate how the Revolution created radical political frameworks while deliberately compromising on social equality.'
       }
     ],
     commonTraps: [
@@ -353,6 +369,16 @@ export const AP_USH_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'The Missouri Compromise admitted Missouri as slave, Maine as free, and drew the $36^\\circ 30\'$ line banning slavery north of it; it temporarily preserved legislative balance but failed to permanently settle the slavery expansion question.',
         apScoringTip: 'Remember all three components of the 1820 compromise: Missouri (slave), Maine (free), and the $36^\\circ 30\'$ boundary line.'
+      }
+    ],
+    diagrams: [
+      {
+        id: 'american_system_diagram',
+        title: "Henry Clay's American System (1816–1824)",
+        subtitle: 'Regional Interdependence: Protective Tariffs, 2nd BUS & Internal Infrastructure',
+        type: 'american_system_diagram',
+        description: 'Whig economic architecture linking Northern industrial factories, Western agricultural producers, and Southern cotton plantations via the Second Bank of the United States, protective tariffs, and the Erie Canal/National Road.',
+        takeaway: 'Forged a unified commercial home market, though the agricultural South politically opposed high tariffs.'
       }
     ],
     commonTraps: [
@@ -452,6 +478,16 @@ export const AP_USH_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'The Emancipation Proclamation freed slaves in rebellious Confederate states, added 180,000 Black soldiers to Union ranks, and blocked European intervention; it exempted loyal border states.',
         apScoringTip: 'Never say the Emancipation Proclamation freed ALL slaves! It freed only those in rebel territory; the 13th Amendment was required to officially abolish slavery nationwide.'
+      }
+    ],
+    diagrams: [
+      {
+        id: 'compromises_timeline_diagram',
+        title: 'Road to the Civil War: Sectional Compromises Timeline',
+        subtitle: 'Chronology of Antebellum Legislative Compromises on Slavery (1820–1857)',
+        type: 'compromises_timeline_diagram',
+        description: 'Visual timeline tracking the Missouri Compromise of 1820 (36°30 line), the Compromise of 1850 (Fugitive Slave Law), the Kansas-Nebraska Act of 1854 (Popular Sovereignty), and Dred Scott v. Sandford (1857).',
+        takeaway: 'Each legislative compromise temporarily preserved the Union until Supreme Court rulings and territorial violence made political compromise impossible.'
       }
     ],
     commonTraps: [

@@ -14,12 +14,15 @@ import { ALL_AP_USH_UNIT_DEFINITIONS } from './apUshUnitsData';
 import { ALL_AP_CSP_UNIT_DEFINITIONS } from './apCspUnitsData';
 import { ALL_AP_ENGLISH_LANG_UNIT_DEFINITIONS } from './apEnglishLangUnitsData';
 import { ALL_AP_CSA_UNIT_DEFINITIONS } from './apCsaUnitsData';
-import { ALL_AP_ECONOMICS_UNIT_DEFINITIONS } from './apEconomicsUnitsData';
+import { ALL_AP_MICROECONOMICS_UNIT_DEFINITIONS } from './apMicroeconomicsUnitsData';
+import { ALL_AP_MACROECONOMICS_UNIT_DEFINITIONS } from './apMacroeconomicsUnitsData';
 import { ALL_AP_WORLD_HISTORY_UNIT_DEFINITIONS } from './apWorldHistoryUnitsData';
+import { ALL_AP_STATISTICS_UNIT_DEFINITIONS } from './apStatisticsUnitsData';
 
 export const SUBJECT_QUEST_REGISTRY: Record<string, UnitDefinition[]> = {
   'ap-calculus-ab': ALL_CALC_AB_UNIT_DEFINITIONS,
   'ap-calculus-bc': ALL_CALC_BC_UNIT_DEFINITIONS,
+  'ap-statistics': ALL_AP_STATISTICS_UNIT_DEFINITIONS,
   'ap-human-geography': ALL_AP_HUMAN_GEOGRAPHY_UNIT_DEFINITIONS,
   'ap-biology': ALL_AP_BIOLOGY_UNIT_DEFINITIONS,
   'ap-psychology': ALL_AP_PSYCHOLOGY_UNIT_DEFINITIONS,
@@ -30,7 +33,8 @@ export const SUBJECT_QUEST_REGISTRY: Record<string, UnitDefinition[]> = {
   'ap-computer-science-principles': ALL_AP_CSP_UNIT_DEFINITIONS,
   'ap-english-lang': ALL_AP_ENGLISH_LANG_UNIT_DEFINITIONS,
   'ap-computer-science': ALL_AP_CSA_UNIT_DEFINITIONS,
-  'ap-economics': ALL_AP_ECONOMICS_UNIT_DEFINITIONS,
+  'ap-microeconomics': ALL_AP_MICROECONOMICS_UNIT_DEFINITIONS,
+  'ap-macroeconomics': ALL_AP_MACROECONOMICS_UNIT_DEFINITIONS,
   'ap-world-history': ALL_AP_WORLD_HISTORY_UNIT_DEFINITIONS,
 };
 
@@ -39,7 +43,10 @@ export const SUBJECT_QUEST_REGISTRY: Record<string, UnitDefinition[]> = {
  * Falls back to AP Calculus AB if the subject is not found.
  */
 export function getSubjectQuestUnits(subjectId: string): UnitDefinition[] {
-  const units = SUBJECT_QUEST_REGISTRY[subjectId];
+  let key = subjectId;
+  if (key === 'ap-economics' || key === 'ap-micro') key = 'ap-microeconomics';
+  if (key === 'ap-macro') key = 'ap-macroeconomics';
+  const units = SUBJECT_QUEST_REGISTRY[key];
   if (units && units.length > 0) {
     return units;
   }

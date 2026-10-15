@@ -431,10 +431,10 @@ export const EXPANDED_BATTLE_QUESTIONS: Record<string, BattleQuestion[]> = {
     }
   ],
 
-  "ap-economics": [
+  "ap-microeconomics": [
     {
-      id: "econ_exp_1",
-      subjectId: "ap-economics",
+      id: "micro_exp_1",
+      subjectId: "ap-microeconomics",
       stem: "If the cross-price elasticity of demand between Good X and Good Y is negative ($E_{XY} < 0$), what relationship exists between the two goods?",
       options: [
         "They are complementary goods",
@@ -448,8 +448,8 @@ export const EXPANDED_BATTLE_QUESTIONS: Record<string, BattleQuestion[]> = {
       timeLimit: 30
     },
     {
-      id: "econ_exp_2",
-      subjectId: "ap-economics",
+      id: "micro_exp_2",
+      subjectId: "ap-microeconomics",
       stem: "A firm in a perfectly competitive market maximizes profit by producing where:",
       options: [
         "Price equals Marginal Cost ($P = MC$)",
@@ -463,8 +463,26 @@ export const EXPANDED_BATTLE_QUESTIONS: Record<string, BattleQuestion[]> = {
       timeLimit: 45
     },
     {
-      id: "econ_exp_3",
-      subjectId: "ap-economics",
+      id: "micro_exp_3",
+      subjectId: "ap-microeconomics",
+      stem: "What is the economic definition of opportunity cost?",
+      options: [
+        "The value of the next best alternative forgone when making a decision",
+        "The sum total of all monetary expenditures on a project",
+        "The sunk cost that cannot be recovered",
+        "The price paid for raw material inventory"
+      ],
+      correctIndex: 0,
+      explanation: "Opportunity cost measures the sacrifice of the highest-valued alternative option when choosing among scarce resources.",
+      difficulty: "Easy",
+      timeLimit: 30
+    }
+  ],
+
+  "ap-macroeconomics": [
+    {
+      id: "macro_exp_1",
+      subjectId: "ap-macroeconomics",
       stem: "What action by a central bank constitutes expansionary monetary policy aimed at combatting a recession?",
       options: [
         "Buying government bonds on the open market",
@@ -478,9 +496,9 @@ export const EXPANDED_BATTLE_QUESTIONS: Record<string, BattleQuestion[]> = {
       timeLimit: 45
     },
     {
-      id: "econ_exp_4",
-      subjectId: "ap-economics",
-      stem: "What is the economic definition of opportunity cost?",
+      id: "macro_exp_2",
+      subjectId: "ap-macroeconomics",
+      stem: "What is the economic definition of opportunity cost in macroeconomic resource allocation?",
       options: [
         "The value of the next best alternative forgone when making a decision",
         "The sum total of all monetary expenditures on a project",

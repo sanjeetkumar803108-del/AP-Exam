@@ -12,11 +12,15 @@ import { AP_ENGLISH_LANG_NOTES } from './apEnglishLangNotes';
 import { AP_PSYCHOLOGY_NOTES } from './apPsychologyNotes';
 import { AP_CSA_NOTES } from './apComputerScienceNotes';
 import { AP_ECONOMICS_NOTES } from './apEconomicsNotes';
+import { AP_MICROECONOMICS_NOTES } from './apMicroeconomicsNotes';
+import { AP_MACROECONOMICS_NOTES } from './apMacroeconomicsNotes';
 import { AP_WORLD_HISTORY_NOTES } from './apWorldHistoryNotes';
+import { AP_STATISTICS_NOTES } from './apStatisticsNotes';
 
 export * from './types';
 export { AP_CALCULUS_AB_NOTES } from './apCalculusAbNotes';
 export { AP_CALCULUS_BC_NOTES } from './apCalculusBcNotes';
+export { AP_STATISTICS_NOTES } from './apStatisticsNotes';
 export { AP_PHYSICS_1_NOTES } from './apPhysics1Notes';
 export { AP_CHEMISTRY_NOTES } from './apChemistryNotes';
 export { AP_BIOLOGY_NOTES } from './apBiologyNotes';
@@ -28,6 +32,8 @@ export { AP_ENGLISH_LANG_NOTES } from './apEnglishLangNotes';
 export { AP_PSYCHOLOGY_NOTES } from './apPsychologyNotes';
 export { AP_CSA_NOTES } from './apComputerScienceNotes';
 export { AP_ECONOMICS_NOTES } from './apEconomicsNotes';
+export { AP_MICROECONOMICS_NOTES } from './apMicroeconomicsNotes';
+export { AP_MACROECONOMICS_NOTES } from './apMacroeconomicsNotes';
 export { AP_WORLD_HISTORY_NOTES } from './apWorldHistoryNotes';
 
 export interface APSubjectNoteEntry {
@@ -70,6 +76,19 @@ export const AP_NOTES_REGISTRY: Record<string, APSubjectNoteEntry> = {
     description: 'All Calculus AB Core Curriculum PLUS 2 Advanced BC-Exclusive Units: Parametric/Polar/Vectors & Infinite Sequences and Series (Units 1–10)',
     gradeLevels: ['11th', '12th'],
     notes: AP_CALCULUS_BC_NOTES
+  },
+  'ap-statistics': {
+    subjectId: 'ap-statistics',
+    subjectName: 'AP Statistics',
+    shortCode: 'STATS',
+    category: 'STEM & Math',
+    icon: '📊',
+    accentColor: '#0284C7',
+    gradient: 'from-blue-600 via-indigo-700 to-cyan-900',
+    badge: 'Updated Fall 2026',
+    description: 'Official 5-Unit Framework: One-Variable Data & Study Design, Probability & Distributions, Inference for Proportions, Inference for Means & Regression (Units 1–5)',
+    gradeLevels: ['10th', '11th', '12th'],
+    notes: AP_STATISTICS_NOTES
   },
   'ap-physics': {
     subjectId: 'ap-physics',
@@ -201,18 +220,31 @@ export const AP_NOTES_REGISTRY: Record<string, APSubjectNoteEntry> = {
     gradeLevels: ['10th', '11th', '12th'],
     notes: AP_CSA_NOTES
   },
-  'ap-economics': {
-    subjectId: 'ap-economics',
-    subjectName: 'AP Micro & Macroeconomics',
-    shortCode: 'ECON',
+  'ap-microeconomics': {
+    subjectId: 'ap-microeconomics',
+    subjectName: 'AP Microeconomics',
+    shortCode: 'MICRO',
+    category: 'Humanities & Social Sciences',
+    icon: '📊',
+    accentColor: '#10B981',
+    gradient: 'from-emerald-700 via-teal-800 to-slate-950',
+    badge: 'Market Theory',
+    description: 'Basic Economic Concepts, Supply & Demand, Elasticity, Production Costs, Perfect Competition, Monopolies, Factor Markets & Market Failure (Units 1–6)',
+    gradeLevels: ['11th', '12th'],
+    notes: AP_MICROECONOMICS_NOTES
+  },
+  'ap-macroeconomics': {
+    subjectId: 'ap-macroeconomics',
+    subjectName: 'AP Macroeconomics',
+    shortCode: 'MACRO',
     category: 'Humanities & Social Sciences',
     icon: '📈',
-    accentColor: '#0D9488',
-    gradient: 'from-teal-700 via-emerald-800 to-slate-950',
-    badge: 'High Yield',
-    description: 'PPC & Trade, Supply & Demand, Production Costs, Imperfect Competition, Factor Markets, Externalities, GDP & Inflation, AD-AS Fiscal Policy, Monetary Banking, Phillips Curve & FOREX (Units 1–11)',
+    accentColor: '#0EA5E9',
+    gradient: 'from-teal-700 via-cyan-800 to-slate-950',
+    badge: 'Fiscal Policy',
+    description: 'Economic Indicators (GDP, CPI, Unemployment), AD-AS Model, Fiscal Policy Multipliers, Banking System, Phillips Curve & FOREX (Units 1–6)',
     gradeLevels: ['11th', '12th'],
-    notes: AP_ECONOMICS_NOTES
+    notes: AP_MACROECONOMICS_NOTES
   },
   'ap-world-history': {
     subjectId: 'ap-world-history',
@@ -233,7 +265,11 @@ export const AP_NOTES_REGISTRY: Record<string, APSubjectNoteEntry> = {
  * Returns the note units array for a given subject ID, falling back to Calculus AB
  */
 export function getNotesForSubject(subjectId: string): APUnitNote[] {
-  const entry = AP_NOTES_REGISTRY[subjectId];
+  let key = subjectId;
+  if (key === 'ap-economics' || key === 'ap-micro') key = 'ap-microeconomics';
+  if (key === 'ap-macro') key = 'ap-macroeconomics';
+  if (key === 'ap-stats') key = 'ap-statistics';
+  const entry = AP_NOTES_REGISTRY[key];
   if (entry && entry.notes && entry.notes.length > 0) {
     return entry.notes;
   }

@@ -52,16 +52,16 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
         heading: '2. Exigence, Audience Orientation & Defensible Thesis Design (Skill 1.A-1.B, 3.A)',
         content: `Deconstructing the rhetorical situation and engineering arguable thesis statements:
 
-* **The Core Rhetorical Situation Triangle**:
-  * **Speaker**: Persona, credentials, and moral character presented to the audience.
-  * **Audience**: Specific demographic group with distinct values, predispositions, vulnerabilities, and prejudices.
-  * **Message**: Core argument and claims advanced by the text.
-  * **Purpose**: Concrete action, emotional shift, or intellectual realization the speaker seeks to produce in the audience.
-  * **Exigence**: The immediate historical spark, crisis, or urgent defect that compelled the author to speak or write at that exact moment!
-  * **Context**: Broad historical, political, and cultural climate shaping the text.
-* **Engineering a Defensible Thesis**:
+* **The Core Rhetorical Situation Triangle:**
+  * **Speaker:** Persona, credentials, and moral character presented to the audience.
+  * **Audience:** Specific demographic group with distinct values, predispositions, vulnerabilities, and prejudices.
+  * **Message:** Core argument and claims advanced by the text.
+  * **Purpose:** Concrete action, emotional shift, or intellectual realization the speaker seeks to produce in the audience.
+  * **Exigence:** The immediate historical spark, crisis, or urgent defect that compelled the author to speak or write at that exact moment!
+  * **Context:** Broad historical, political, and cultural climate shaping the text.
+* **Engineering a Defensible Thesis:**
   * A thesis must take a clear, arguable stance that a reasonable reader could dispute (never a statement of accepted fact or a plot summary).
-  * **Closed Thesis Formula**: 'By juxtaposing [Choice A] and establishing [Choice B], [Speaker] exposes [Insight] in order to compel [Audience] to [Action].'`
+  * **Closed Thesis Formula:** *"By juxtaposing [Choice A] and establishing [Choice B], [Speaker] exposes [Insight] in order to compel [Audience] to [Action]."*`
       }
     ],
     workedExamples: [
@@ -77,6 +77,16 @@ export const AP_ENGLISH_LANG_NOTES: APUnitNote[] = [
         ],
         finalAnswer: 'A high-scoring thesis identifying 2 distinct choices (juxtaposition, statistical appeals) tied directly to Kelley’s legislative and moral purpose.',
         apScoringTip: 'Earn the thesis point on Row A by ensuring your claim cannot be answered with a simple "yes" or "no" and offers an analytical roadmap.'
+      }
+    ],
+    diagrams: [
+      {
+        id: 'rhetorical_triangle_diagram',
+        title: 'The Rhetorical Triangle & SPACE CAT Framework',
+        subtitle: 'Aristotelian Appeals: Speaker (Ethos), Audience (Pathos) & Message (Logos)',
+        type: 'rhetorical_triangle_diagram',
+        description: 'Complete rhetorical situation framework depicting the equilateral relationship between Speaker (Ethos), Audience (Pathos), and Message (Logos), surrounded by the overarching Exigence, Context, and Kairos.',
+        takeaway: 'Rhetorical analysis examines not merely what devices an author uses, but how choices strategically influence a specific audience within an urgent historical context.'
       }
     ],
     commonTraps: [

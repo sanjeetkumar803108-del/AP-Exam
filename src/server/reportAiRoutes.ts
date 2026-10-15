@@ -4,6 +4,7 @@ import fs from "fs";
 import crypto from "crypto";
 import xss from "xss";
 import nodemailer from "nodemailer";
+import { parseFirebaseToken, securityLog } from "./authHelper";
 
 export const DEVELOPER_SUPPORT_EMAIL = "helpyou.ai.support@gmail.com";
 const AI_REPORTS_FILE = path.join(process.cwd(), "data", "ai_reports_vault.json");
@@ -213,8 +214,17 @@ export function registerReportAiRoutes(app: Express) {
     }
   });
 
-  // Admin endpoint to view reports
-  app.get("/api/ai-reports", (_req: Request, res: Response) => {
+  // Admin endpoint to view reports (Protected: Admin Secret or Admin Token Required)
+  app.get("/api/ai-reports", (req: Request, res: Response) => {
+    const adminSecret = req.headers["x-admin-secret"] || req.query.admin_key;
+    const tokenData = parseFirebaseToken(req.headers.authorization);
+    const validSecret = process.env.ADMIN_SECRET_KEY || "apexam_admin_secure_key";
+    const isAuthorized = (adminSecret && adminSecret === validSecret) || (tokenData && tokenData.admin);
+
+    if (!isAuthorized) {
+      securityLog("UNAUTHORIZED_AI_REPORTS_ACCESS", { query: req.query }, req);
+      return res.status(401).json({ error: "Unauthorized: Admin privileges required to view user reports." });
+    }
     res.json({ success: true, count: aiReportsVault.length, reports: aiReportsVault });
   });
 }
