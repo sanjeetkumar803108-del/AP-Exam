@@ -295,7 +295,7 @@ export default function TestPrep({ onBack }: TestPrepProps) {
                                   {isFullCourse ? unit.title : `Unit ${unit.unitNumber}: ${unit.title}`}
                                 </span>
                                 <p className="text-[11px] text-zinc-500 font-medium truncate mt-0.5">
-                                  {unit.weight} {unit.concepts ? `• ${unit.concepts}` : ''}
+                                  {unit.weight?.startsWith('Weight:') ? unit.weight : `Weight: ${unit.weight}`}
                                 </p>
                               </div>
                             </div>
