@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 import { User } from 'firebase/auth';
 import Login from './Login';
-import SplashScreen from './SplashScreen';
 import Onboarding from './Onboarding';
 import AcademicSetup from './AcademicSetup';
 import ErrorBoundary from './ErrorBoundary';
@@ -9,7 +8,6 @@ import ErrorBoundary from './ErrorBoundary';
 interface AuthGuardProps {
   user: User | null;
   authLoading: boolean;
-  showSplash: boolean;
   showOnboarding: boolean;
   showAcademicSetup: boolean;
   isDarkMode: boolean;
@@ -28,7 +26,6 @@ interface AuthGuardProps {
 export default function AuthGuard({
   user,
   authLoading,
-  showSplash,
   showOnboarding,
   showAcademicSetup,
   isDarkMode,
@@ -39,15 +36,6 @@ export default function AuthGuard({
   fallbackSkeleton,
 }: AuthGuardProps) {
   const containerClass = `w-full flex flex-col h-[100dvh] max-w-md mx-auto ${isDarkMode ? 'dark bg-zinc-950 text-zinc-100 sm:border-zinc-800' : 'bg-[#FAF9F6] text-zinc-900 sm:border-zinc-200'} font-sans overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.15)] sm:rounded-[2rem] sm:h-[90vh] sm:mt-[5vh] sm:border relative z-[999]`;
-
-  // 1. Splash Screen
-  if (showSplash) {
-    return (
-      <div className={containerClass}>
-        <SplashScreen />
-      </div>
-    );
-  }
 
   // 2. Auth Loading Skeleton
   if (authLoading) {

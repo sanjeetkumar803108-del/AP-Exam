@@ -55,7 +55,6 @@ const APTrapRadar = lazyWithRetry(() => import('./components/APTrapRadar'));
 const APMindMap = lazyWithRetry(() => import('./components/APMindMap'));
 const FRQGrader = lazyWithRetry(() => import('./components/FRQGrader'));
 const DeveloperDashboard = lazyWithRetry(() => import('./components/DeveloperPortal/DeveloperDashboard'));
-import SplashScreen from './components/SplashScreen';
 import AuthGuard from './components/AuthGuard';
 import ErrorBoundary from './components/ErrorBoundary';
 import ToastProvider from './components/ToastProvider';
@@ -89,13 +88,6 @@ function FullPageSkeleton() {
 let isRevenueCatConfigured = false;
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(() => {
-    try {
-      return sessionStorage.getItem('ap_splash_shown') !== 'true';
-    } catch (_) {
-      return true;
-    }
-  });
   const [activeTab, setActiveTab] = useState('notes');
   const [activeTool, setActiveTool] = useState<string | null>(null);
   
@@ -210,15 +202,6 @@ export default function App() {
     }
   }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-      try {
-        sessionStorage.setItem('ap_splash_shown', 'true');
-      } catch (_) {}
-    }, 2500);
-    return () => clearTimeout(timer);
-  }, []);
 
   // Permissions are requested Just-In-Time (JIT) when features are tapped (Camera button, Mic button, Notification toggle)
   // to adhere to Android WebView security policies and avoid launch dismissal crashes.
@@ -298,7 +281,7 @@ export default function App() {
 
   // Only trigger once for a newly registered user who just completed AcademicSetup
   useEffect(() => {
-    if (user && !authLoading && !showSplash && !showOnboarding && !showAcademicSetup) {
+    if (user && !authLoading && !showOnboarding && !showAcademicSetup) {
       const activeUid = user.uid;
       const alreadySeen = safeGetItem(`welcome_penguin_seen_${activeUid}`) === 'true';
       const email = user?.email?.toLowerCase().trim();
@@ -313,7 +296,7 @@ export default function App() {
         safeRemoveItem('pending_welcome_celebration');
       }
     }
-  }, [user, authLoading, showSplash, showOnboarding, showAcademicSetup]);
+  }, [user, authLoading, showOnboarding, showAcademicSetup]);
   const [paywallFeature, setPaywallFeature] = useState<string | undefined>(undefined);
   const [mobileToast, setMobileToast] = useState<string | null>(null);
   const [sessionRevokedNotice, setSessionRevokedNotice] = useState<string | null>(null);
@@ -1007,7 +990,6 @@ export default function App() {
       <AuthGuard
         user={user}
         authLoading={authLoading}
-        showSplash={showSplash}
         showOnboarding={showOnboarding}
         showAcademicSetup={showAcademicSetup}
         isDarkMode={isDarkMode}
@@ -1310,9 +1292,6 @@ export default function App() {
       />
 
       <AnimatePresence>
-        {showSplash && (
-          <SplashScreen key="splash" />
-        )}
         {showVipModal && !isVip && (
           <motion.div key="vip" 
             initial={{ opacity: 0, y: '100%' }}
