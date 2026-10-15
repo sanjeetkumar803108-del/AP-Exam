@@ -1,6 +1,8 @@
 import { safeGetItem, safeSetItem, safeJsonParse } from './storage';
 import { triggerVibration } from './vibrate';
 import confetti from 'canvas-confetti';
+import { auth, db } from '../lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 
 export interface StudyLevel {
   level: number;
@@ -197,6 +199,18 @@ export function addStudyXP(
 
   const newXP = currentXP + effectiveAmount;
   safeSetItem('study_total_xp', String(newXP));
+
+  // Sync to Firestore under users/{uid} document
+  try {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      setDoc(doc(db, 'users', currentUser.uid), {
+        studyXP: newXP
+      }, { merge: true }).catch(err => {
+        console.warn('[Gamification] Cloud XP sync notice:', err);
+      });
+    }
+  } catch (_) {}
   
   const newLevelDetails = getStudyLevel(newXP);
   const leveledUp = newLevelDetails.currentLevel.level > oldLevel.level;

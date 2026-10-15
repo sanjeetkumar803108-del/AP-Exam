@@ -830,6 +830,22 @@ export default function App() {
           safeSetItem('study_last_punch_date', lastActiveDate);
           window.dispatchEvent(new CustomEvent('study-streak-updated', { detail: currentStreak }));
         }
+
+        // 4. Sync Learning Island progress from Firestore
+        if (userData.learningIsland && typeof userData.learningIsland === 'object') {
+          Object.entries(userData.learningIsland).forEach(([subjId, subjProg]) => {
+            const serialized = JSON.stringify(subjProg);
+            safeSetItem(`learning_island_progress_${user.uid}_${subjId}`, serialized);
+            safeSetItem(`learning_island_progress_${subjId}`, serialized);
+          });
+          window.dispatchEvent(new CustomEvent('learning-island-cloud-synced'));
+        }
+
+        // 5. Sync Study XP from Firestore
+        if (typeof userData.studyXP === 'number') {
+          safeSetItem('study_total_xp', String(userData.studyXP));
+          window.dispatchEvent(new CustomEvent('study-xp-updated', { detail: userData.studyXP }));
+        }
       },
       error: (err) => {
         console.error("Error watching user document:", err);
@@ -1161,9 +1177,9 @@ export default function App() {
                     fallbackMessage="Unable to load Learning Island. Tap below to auto-repair or return to dashboard."
                     onClose={() => setActiveTool(null)}
                     onRetry={() => resetAllLazyChunks()}
-                    cacheKeysToPurgeOnCrash={['learning_island_progress_', 'learning_island_selected_subject_id']}
+                    cacheKeysToPurgeOnCrash={['learning_island_temp_']}
                   >
-                    <LearningIsland onBack={() => setActiveTool(null)} />
+                    <LearningIsland onBack={() => setActiveTool(null)} user={user} />
                   </ErrorBoundary>
                 </div>
               )}

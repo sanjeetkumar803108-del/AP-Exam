@@ -50,9 +50,13 @@ import { getApiUrl } from '../utils/api';
 import { getStudyXP, getStudyLevel, addStudyXP } from '../utils/gamification';
 import { getUserProfileData } from '../utils/profile';
 import { getTopicCheatSheet, TopicCheatSheet } from '../data/quiz/topicCheatSheets';
+import { auth, db } from '../lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { User } from 'firebase/auth';
 
 interface LearningIslandProps {
   onBack: () => void;
+  user?: User | null;
 }
 
 interface UserLevelProgress {
@@ -182,6 +186,92 @@ const MOUNTAIN_BIOME_ATMOSPHERES: Record<number, MountainBiomeAtmosphere> = {
 };
 
 const STORAGE_KEY = 'learning_island_multi_unit_progress_v2';
+
+/**
+ * Robustly merges local progress with cloud/cached progress, preserving highest score and unlocked levels.
+ */
+function mergeUserProgress(
+  existing: UserLevelProgress,
+  incoming: Partial<UserLevelProgress> | null | undefined,
+  defaultUnlocked: number[]
+): UserLevelProgress {
+  if (!incoming || typeof incoming !== 'object') return existing;
+
+  const rawUnlocked = Array.isArray(incoming.unlockedLevels) ? incoming.unlockedLevels : [];
+  const combinedUnlocked = Array.from(new Set([...(existing.unlockedLevels || []), ...rawUnlocked, ...defaultUnlocked]));
+
+  const mergedCompleted = { ...(existing.completedLevels || {}) };
+  if (incoming.completedLevels && typeof incoming.completedLevels === 'object' && !Array.isArray(incoming.completedLevels)) {
+    Object.entries(incoming.completedLevels).forEach(([lvlIdStr, data]) => {
+      const lvlId = Number(lvlIdStr);
+      if (
+        !mergedCompleted[lvlId] ||
+        (data && (data.stars > (mergedCompleted[lvlId]?.stars || 0) || data.score > (mergedCompleted[lvlId]?.score || 0)))
+      ) {
+        mergedCompleted[lvlId] = data;
+      }
+    });
+  }
+
+  const mergedClaimed = Array.from(new Set([
+    ...(existing.claimedXpLevelIds || []),
+    ...(Array.isArray(incoming.claimedXpLevelIds) ? incoming.claimedXpLevelIds : [])
+  ]));
+
+  const mergedShields = {
+    ...(existing.unitMasteryShields || {}),
+    ...(incoming.unitMasteryShields && typeof incoming.unitMasteryShields === 'object' && !Array.isArray(incoming.unitMasteryShields) ? incoming.unitMasteryShields : {})
+  };
+
+  return {
+    unlockedLevels: combinedUnlocked.length > 0 ? combinedUnlocked : defaultUnlocked,
+    completedLevels: mergedCompleted,
+    claimedXpLevelIds: mergedClaimed,
+    lastPlayedUnitIndex: typeof incoming.lastPlayedUnitIndex === 'number' ? incoming.lastPlayedUnitIndex : (existing.lastPlayedUnitIndex || 1),
+    lastPlayedLevelId: typeof incoming.lastPlayedLevelId === 'number' ? incoming.lastPlayedLevelId : existing.lastPlayedLevelId,
+    unitMasteryShields: mergedShields
+  };
+}
+
+/**
+ * Loads user-scoped local progress with tiered fallback to legacy keys to ensure zero data loss.
+ */
+function loadLocalIslandProgress(subjId: string, activeUid: string | null, defaultUnlocked: number[]): UserLevelProgress {
+  const defaultState: UserLevelProgress = {
+    unlockedLevels: defaultUnlocked,
+    completedLevels: {},
+    claimedXpLevelIds: [],
+    lastPlayedUnitIndex: 1,
+    lastPlayedLevelId: undefined,
+    unitMasteryShields: {}
+  };
+
+  try {
+    let saved: string | null = null;
+    // 1. User-scoped key if logged in
+    if (activeUid && activeUid !== 'guest') {
+      saved = safeGetItem(`learning_island_progress_${activeUid}_${subjId}`);
+    }
+    // 2. Fallback to generic subject key
+    if (!saved) {
+      saved = safeGetItem(`learning_island_progress_${subjId}`);
+    }
+    // 3. Fallback to calculus legacy key
+    if (!saved && subjId === 'ap-calculus-ab') {
+      saved = safeGetItem(STORAGE_KEY);
+    }
+
+    if (saved) {
+      const parsed = safeJsonParse<any>(saved, null);
+      if (parsed && typeof parsed === 'object') {
+        return mergeUserProgress(defaultState, parsed, defaultUnlocked);
+      }
+    }
+  } catch (err) {
+    console.warn('[LearningIsland] Local progress load error:', err);
+  }
+  return defaultState;
+}
 
 /**
  * Fast, deterministic string hashing algorithm (djb2).
@@ -317,16 +407,18 @@ function generateLocalAIExplanation(
   return text;
 }
 
-export default function LearningIsland({ onBack }: LearningIslandProps) {
+export default function LearningIsland({ onBack, user: propUser }: LearningIslandProps) {
+  const activeUser = propUser || auth.currentUser;
+  const activeUid = activeUser?.uid || safeGetItem('last_logged_in_user') || 'guest';
   // Active selected AP subject (default to AP Calculus AB or persisted choice)
   const calcSubject = useMemo(() => {
-    const savedSubjectId = safeGetItem('learning_island_selected_subject_id');
+    const savedSubjectId = (activeUid && activeUid !== 'guest' ? safeGetItem(`learning_island_selected_subject_id_${activeUid}`) : null) || safeGetItem('learning_island_selected_subject_id');
     if (savedSubjectId) {
       const found = TOP_10_AP_SUBJECTS.find(s => s.id === savedSubjectId);
       if (found) return found;
     }
     return TOP_10_AP_SUBJECTS.find(s => s.id === 'ap-calculus-ab') || TOP_10_AP_SUBJECTS[0];
-  }, []);
+  }, [activeUid]);
 
   const [selectedSubject, setSelectedSubject] = useState<APSubject>(calcSubject);
 
@@ -436,107 +528,73 @@ export default function LearningIsland({ onBack }: LearningIslandProps) {
       .filter((id): id is number => typeof id === 'number');
   }, [currentUnits]);
 
-  // Persistent Progress State per Subject with Strict Fallback Protection
+  // Persistent Progress State per Subject with Strict Fallback Protection & Multi-Account Isolation
   const [progress, setProgress] = useState<UserLevelProgress>(() => {
     const initialDefaultUnlocked = (currentUnits || [])
       .map(u => u.levels?.[0]?.id)
       .filter((id): id is number => typeof id === 'number');
-
-    const defaultState: UserLevelProgress = {
-      unlockedLevels: initialDefaultUnlocked,
-      completedLevels: {},
-      claimedXpLevelIds: [],
-      lastPlayedUnitIndex: 1,
-      lastPlayedLevelId: undefined,
-      unitMasteryShields: {}
-    };
-
-    try {
-      const key = `learning_island_progress_${selectedSubject?.id || 'ap-calculus-ab'}`;
-      let saved = safeGetItem(key);
-      if (!saved && selectedSubject?.id === 'ap-calculus-ab') {
-        saved = safeGetItem(STORAGE_KEY);
-      }
-      if (saved) {
-        const parsed = safeJsonParse<any>(saved, null);
-        if (parsed && typeof parsed === 'object') {
-          const rawUnlocked = Array.isArray(parsed.unlockedLevels) ? parsed.unlockedLevels : [];
-          const combined = Array.from(new Set([...rawUnlocked, ...initialDefaultUnlocked]));
-          const safeCompleted = (parsed.completedLevels && typeof parsed.completedLevels === 'object' && !Array.isArray(parsed.completedLevels))
-            ? parsed.completedLevels
-            : {};
-          const safeShields = (parsed.unitMasteryShields && typeof parsed.unitMasteryShields === 'object' && !Array.isArray(parsed.unitMasteryShields))
-            ? parsed.unitMasteryShields
-            : {};
-          const rawClaimed = Array.isArray(parsed.claimedXpLevelIds) ? parsed.claimedXpLevelIds : [];
-          return {
-            unlockedLevels: combined.length > 0 ? combined : initialDefaultUnlocked,
-            completedLevels: safeCompleted,
-            claimedXpLevelIds: rawClaimed,
-            lastPlayedUnitIndex: typeof parsed.lastPlayedUnitIndex === 'number' ? parsed.lastPlayedUnitIndex : 1,
-            lastPlayedLevelId: typeof parsed.lastPlayedLevelId === 'number' ? parsed.lastPlayedLevelId : undefined,
-            unitMasteryShields: safeShields
-          };
-        }
-      }
-    } catch (err) {
-      console.warn('[LearningIsland] Corrupted progress recovered with defaults:', err);
-    }
-    return defaultState;
+    return loadLocalIslandProgress(selectedSubject?.id || 'ap-calculus-ab', activeUid, initialDefaultUnlocked);
   });
 
-  // Load progress when subject changes
+  // Load progress when subject changes, user changes, or defaultUnlocked resolves
   useEffect(() => {
-    try {
-      const key = `learning_island_progress_${selectedSubject?.id || 'ap-calculus-ab'}`;
-      let saved = safeGetItem(key);
-      if (!saved && selectedSubject?.id === 'ap-calculus-ab') {
-        saved = safeGetItem(STORAGE_KEY);
-      }
-      if (saved) {
-        const parsed = safeJsonParse<any>(saved, null);
-        if (parsed && typeof parsed === 'object') {
-          const rawUnlocked = Array.isArray(parsed.unlockedLevels) ? parsed.unlockedLevels : [];
-          const combined = Array.from(new Set([...rawUnlocked, ...defaultUnlocked]));
-          const safeCompleted = (parsed.completedLevels && typeof parsed.completedLevels === 'object' && !Array.isArray(parsed.completedLevels))
-            ? parsed.completedLevels
-            : {};
-          const safeShields = (parsed.unitMasteryShields && typeof parsed.unitMasteryShields === 'object' && !Array.isArray(parsed.unitMasteryShields))
-            ? parsed.unitMasteryShields
-            : {};
-          const rawClaimed = Array.isArray(parsed.claimedXpLevelIds) ? parsed.claimedXpLevelIds : [];
-          setProgress({
-            unlockedLevels: combined.length > 0 ? combined : defaultUnlocked,
-            completedLevels: safeCompleted,
-            claimedXpLevelIds: rawClaimed,
-            lastPlayedUnitIndex: typeof parsed.lastPlayedUnitIndex === 'number' ? parsed.lastPlayedUnitIndex : 1,
-            lastPlayedLevelId: typeof parsed.lastPlayedLevelId === 'number' ? parsed.lastPlayedLevelId : undefined,
-            unitMasteryShields: safeShields
-          });
-          return;
-        }
-      }
-    } catch (err) {
-      console.warn('[LearningIsland] Progress change error:', err);
-    }
-    setProgress({
-      unlockedLevels: defaultUnlocked,
-      completedLevels: {},
-      claimedXpLevelIds: [],
-      lastPlayedUnitIndex: 1,
-      lastPlayedLevelId: undefined,
-      unitMasteryShields: {}
-    });
-  }, [selectedSubject?.id, defaultUnlocked]);
+    const local = loadLocalIslandProgress(selectedSubject?.id || 'ap-calculus-ab', activeUid, defaultUnlocked);
+    setProgress(local);
 
-  // Save progress on update
-  useEffect(() => {
-    const key = `learning_island_progress_${selectedSubject.id}`;
-    safeSetItem(key, JSON.stringify(progress));
-    if (selectedSubject.id === 'ap-calculus-ab') {
-      safeSetItem(STORAGE_KEY, JSON.stringify(progress));
+    // Two-tier cloud sync: fetch from Firestore users/{uid}
+    if (activeUid && activeUid !== 'guest') {
+      getDoc(doc(db, 'users', activeUid)).then(snap => {
+        if (snap.exists()) {
+          const data = snap.data();
+          const remoteIsland = data?.learningIsland?.[selectedSubject?.id || 'ap-calculus-ab'];
+          if (remoteIsland && typeof remoteIsland === 'object') {
+            setProgress(prev => {
+              const merged = mergeUserProgress(prev, remoteIsland, defaultUnlocked);
+              safeSetItem(`learning_island_progress_${activeUid}_${selectedSubject.id}`, JSON.stringify(merged));
+              return merged;
+            });
+          }
+        }
+      }).catch(err => console.warn('[LearningIsland] Cloud fetch error:', err));
     }
-  }, [progress, selectedSubject.id]);
+  }, [selectedSubject?.id, activeUid, defaultUnlocked]);
+
+  // Listen to cloud updates dispatched from App.tsx onSnapshot
+  useEffect(() => {
+    const handleCloudSync = () => {
+      const local = loadLocalIslandProgress(selectedSubject?.id || 'ap-calculus-ab', activeUid, defaultUnlocked);
+      setProgress(prev => mergeUserProgress(prev, local, defaultUnlocked));
+    };
+    window.addEventListener('learning-island-cloud-synced', handleCloudSync);
+    return () => window.removeEventListener('learning-island-cloud-synced', handleCloudSync);
+  }, [selectedSubject?.id, activeUid, defaultUnlocked]);
+
+  // Save progress on update (Local + Firestore Cloud Sync)
+  useEffect(() => {
+    if (!selectedSubject?.id) return;
+    const serialized = JSON.stringify(progress);
+
+    // 1. Save to user-scoped local key
+    if (activeUid && activeUid !== 'guest') {
+      safeSetItem(`learning_island_progress_${activeUid}_${selectedSubject.id}`, serialized);
+    }
+    // 2. Save to subject key & legacy key
+    safeSetItem(`learning_island_progress_${selectedSubject.id}`, serialized);
+    if (selectedSubject.id === 'ap-calculus-ab') {
+      safeSetItem(STORAGE_KEY, serialized);
+    }
+
+    // 3. Save to Firestore under users/{uid}.learningIsland[subjectId]
+    if (activeUid && activeUid !== 'guest') {
+      setDoc(doc(db, 'users', activeUid), {
+        learningIsland: {
+          [selectedSubject.id]: progress
+        }
+      }, { merge: true }).catch(err => {
+        console.warn('[LearningIsland] Firestore cloud sync error:', err);
+      });
+    }
+  }, [progress, selectedSubject?.id, activeUid]);
 
   // Flattened levels across all units (Unit 1 at bottom, Unit N at top)
   const allLevels: UnitQuestLevel[] = useMemo(() => {
@@ -2266,6 +2324,9 @@ Please structure your response into these 4 clear sections:
                         triggerVibration(12);
                         setSelectedSubject(sub);
                         safeSetItem('learning_island_selected_subject_id', sub.id);
+                        if (activeUid && activeUid !== 'guest') {
+                          safeSetItem(`learning_island_selected_subject_id_${activeUid}`, sub.id);
+                        }
                         setShowSubjectModal(false);
                       }}
                       className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${

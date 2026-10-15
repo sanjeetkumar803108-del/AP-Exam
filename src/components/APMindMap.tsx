@@ -16,6 +16,7 @@ import {
 } from '../data/mindmaps';
 import { exportMindMapPDF, shareMindMapPDF } from '../utils/mindMapPdfExporter';
 import { safeGetItem, safeSetItem } from '../utils/storage';
+import { getUserHistory, saveUserHistory } from '../utils/userHistory';
 import SafePdfViewer from './SafePdfViewer';
 import GlobalMarkdown from './GlobalMarkdown';
 import { ReportAiButton } from './ReportAiModal';
@@ -244,8 +245,8 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
   const [collapsedBranchIds, setCollapsedBranchIds] = useState<Set<string>>(() => new Set());
   const [masteredNodeIds, setMasteredNodeIds] = useState<Set<string>>(() => {
     try {
-      const saved = safeGetItem('ap_mindmap_mastered_ids');
-      return saved ? new Set(JSON.parse(saved)) : new Set();
+      const saved = getUserHistory<string[]>('ap_mindmap_mastered_ids', []);
+      return new Set(Array.isArray(saved) ? saved : []);
     } catch {
       return new Set();
     }
@@ -978,7 +979,7 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
                                   const next = new Set(prev);
                                   if (next.has(leaf.id)) next.delete(leaf.id);
                                   else next.add(leaf.id);
-                                  safeSetItem('ap_mindmap_mastered_ids', JSON.stringify(Array.from(next)));
+                                  saveUserHistory('ap_mindmap_mastered_ids', Array.from(next));
                                   return next;
                                 });
                               }}
@@ -1160,7 +1161,7 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
                       const next = new Set(prev);
                       if (next.has(leafId)) next.delete(leafId);
                       else next.add(leafId);
-                      safeSetItem('ap_mindmap_mastered_ids', JSON.stringify(Array.from(next)));
+                      saveUserHistory('ap_mindmap_mastered_ids', Array.from(next));
                       return next;
                     });
                   }}
