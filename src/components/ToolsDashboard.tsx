@@ -33,8 +33,8 @@ const FEATURE_COSTS: Record<string, number> = {
 
 const HeaderLogo = React.memo(() => (
   <div className="flex items-center gap-2 font-bold text-lg text-zinc-900 dark:text-white select-none">
-    <img src={appLogo} alt="AP Prep Logo" className="w-7 h-7 rounded-lg object-contain" referrerPolicy="no-referrer" loading="lazy" />
-    <span className="font-black tracking-tight text-zinc-950 dark:text-white">AP Prep</span>
+    <img src={appLogo} alt="AP Exam Logo" className="w-7 h-7 rounded-lg object-contain" referrerPolicy="no-referrer" loading="lazy" />
+    <span className="font-black tracking-tight text-zinc-950 dark:text-white">AP Exam</span>
   </div>
 ));
 HeaderLogo.displayName = 'HeaderLogo';
