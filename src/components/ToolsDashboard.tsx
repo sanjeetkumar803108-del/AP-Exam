@@ -33,8 +33,8 @@ const FEATURE_COSTS: Record<string, number> = {
 
 const HeaderLogo = React.memo(() => (
   <div className="flex items-center gap-2 font-bold text-lg text-zinc-900 dark:text-white select-none">
-    <img src={appLogo} alt="AP Exam Logo" className="w-7 h-7 rounded-lg object-contain" referrerPolicy="no-referrer" loading="lazy" />
-    <span className="font-black tracking-tight text-zinc-950 dark:text-white">AP Exam</span>
+    <img src={appLogo} alt="AP Prep Logo" className="w-7 h-7 rounded-lg object-contain" referrerPolicy="no-referrer" loading="lazy" />
+    <span className="font-black tracking-tight text-zinc-950 dark:text-white">AP Prep</span>
   </div>
 ));
 HeaderLogo.displayName = 'HeaderLogo';
@@ -256,7 +256,7 @@ function ToolsDashboard({
 
   const handleShareTool = (toolId: string) => {
     const cleanId = toolId.startsWith('tab:') ? toolId.substring(4) : toolId;
-    const shareText = `📚 Check out the AI Tool - "${cleanId.toUpperCase()}" on AP Exam App! It supercharges your learning! 🚀`;
+    const shareText = `📚 Check out the AI Tool - "${cleanId.toUpperCase()}" on AP Prep App! It supercharges your learning! 🚀`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(shareText);
       setShowToastMessage(`📋 Share text copied to clipboard!`);
@@ -701,19 +701,20 @@ function ToolsDashboard({
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
               onClick={() => setContextMenuItem(null)}
-              className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 transform-gpu"
             />
 
             {/* Menu Sheet */}
             <motion.div
-              initial={{ opacity: 0, y: 100, scale: 0.95 }}
+              initial={{ opacity: 0, y: 30, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 100, scale: 0.95 }}
-              transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="bg-white rounded-t-[2rem] sm:rounded-[2rem] w-full max-w-sm p-6 shadow-2xl border border-zinc-100 relative z-10 space-y-4 text-left"
+              exit={{ opacity: 0, y: 30, scale: 0.97 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-white rounded-t-[2rem] sm:rounded-[2rem] w-full max-w-sm p-6 shadow-2xl border border-zinc-100 relative z-10 space-y-4 text-left transform-gpu will-change-transform"
             >
               {/* Header */}
               <div className="flex items-center gap-3">

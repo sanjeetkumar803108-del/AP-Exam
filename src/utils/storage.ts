@@ -111,6 +111,15 @@ export const purgeUserDataPreservingSubscription = (keepSubscription: boolean): 
     delete memoryStorage[k];
   }
 
+  // Wipe sessionStorage completely
+  try {
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      window.sessionStorage.clear();
+    }
+  } catch (e) {
+    console.warn('Error purging sessionStorage on account delete:', e);
+  }
+
   if (keepSubscription) {
     safeSetItem('study_is_vip', 'true');
   }

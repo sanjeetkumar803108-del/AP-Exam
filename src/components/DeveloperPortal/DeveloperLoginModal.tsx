@@ -57,13 +57,13 @@ export default function DeveloperLoginModal({ isOpen, onClose, onSuccess }: Deve
   };
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 transform-gpu">
       <motion.div
-        initial={{ scale: 0.92, opacity: 0, y: 20 }}
+        initial={{ scale: 0.94, opacity: 0, y: 10 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.92, opacity: 0, y: 20 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-        className="w-full max-w-sm bg-zinc-900 border border-zinc-700/80 rounded-3xl p-6 shadow-2xl relative text-zinc-100 flex flex-col"
+        exit={{ scale: 0.94, opacity: 0, y: 10 }}
+        transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-sm bg-zinc-900 border border-zinc-700/80 rounded-3xl p-6 shadow-2xl relative text-zinc-100 flex flex-col transform-gpu will-change-transform"
       >
         {/* Close Button */}
         <button

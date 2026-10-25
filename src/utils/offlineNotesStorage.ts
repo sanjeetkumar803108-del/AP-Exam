@@ -204,3 +204,32 @@ export async function deleteOfflineNote(noteIdOrUnitId: string): Promise<void> {
 
   window.dispatchEvent(new CustomEvent('offline-notes-updated', { detail: { deletedId: noteId } }));
 }
+
+/**
+ * Permanently deletes all downloaded offline unit notes, manifests, and PDF binaries
+ * from both IndexedDB and localStorage upon account deletion or cache reset.
+ */
+export async function clearAllOfflineNotes(): Promise<void> {
+  try {
+    const currentManifest = await getOfflineNotesManifest();
+    if (Array.isArray(currentManifest)) {
+      for (const item of currentManifest) {
+        if (item && item.id) {
+          const dataKey = `${PDF_KEY_PREFIX}${item.id}`;
+          const oldDataKey = `${OLD_PDF_KEY_PREFIX}${item.id}`;
+          await del(dataKey).catch(() => {});
+          await del(oldDataKey).catch(() => {});
+          try { localStorage.removeItem(dataKey); } catch (_) {}
+          try { localStorage.removeItem(oldDataKey); } catch (_) {}
+        }
+      }
+    }
+    await del(MANIFEST_KEY).catch(() => {});
+    await del(OLD_MANIFEST_KEY).catch(() => {});
+    try { localStorage.removeItem(MANIFEST_KEY); } catch (_) {}
+    try { localStorage.removeItem(OLD_MANIFEST_KEY); } catch (_) {}
+    window.dispatchEvent(new CustomEvent('offline-notes-updated', { detail: { clearedAll: true } }));
+  } catch (err) {
+    console.warn('[OfflineNotes] Error during clearAllOfflineNotes:', err);
+  }
+}

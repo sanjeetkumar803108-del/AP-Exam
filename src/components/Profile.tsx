@@ -26,6 +26,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { triggerVibration } from '../utils/vibrate';
 import confetti from 'canvas-confetti';
 import { safeGetItem, safeSetItem, safeClearAll, safeRemoveItem, purgeUserDataPreservingSubscription } from '../utils/storage';
+import { clearAllOfflineNotes } from '../utils/offlineNotesStorage';
 import { getCoins, addCoins } from '../utils/coins';
 import { useSettings } from '../hooks/useSettings';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
@@ -46,6 +47,7 @@ import { runFullAppOptimization, restartAppCleanly, OptimizationResult } from '.
 import { releaseUserSession } from '../utils/sessionManager';
 import { showToast } from '../utils/toast';
 import { clearGoogleCredentialState } from '../utils/clearGoogleCredential';
+import FullScreenLegalModal from './FullScreenLegalModal';
 
 interface ProfileProps {
   user: FirebaseUser | null;
@@ -357,14 +359,18 @@ export default function Profile({
   // Hardware Android Back Button Navigation (Step-by-step)
   useEffect(() => {
     const handleHardwareBack = (e: Event) => {
-      if (showOptimizationModal) {
-        e.preventDefault();
-        triggerVibration(10);
-        setShowOptimizationModal(false);
-      } else if (activeModal) {
+      if (activeModal) {
         e.preventDefault();
         triggerVibration(10);
         setActiveModal(null);
+      } else if (showSettings) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowSettings(false);
+      } else if (showOptimizationModal) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowOptimizationModal(false);
       } else if (isGradeDropdownOpen || isTrackDropdownOpen || isSupportDropdownOpen) {
         e.preventDefault();
         triggerVibration(10);
@@ -375,7 +381,7 @@ export default function Profile({
     };
     window.addEventListener('appBackButton', handleHardwareBack);
     return () => window.removeEventListener('appBackButton', handleHardwareBack);
-  }, [showOptimizationModal, activeModal, isGradeDropdownOpen, isTrackDropdownOpen, isSupportDropdownOpen]);
+  }, [activeModal, showSettings, showOptimizationModal, isGradeDropdownOpen, isTrackDropdownOpen, isSupportDropdownOpen]);
 
   // 7-Day Passive App Usage Tracker State
   const [chartData, setChartData] = useState<PassiveUsageItem[]>(() => {
@@ -702,7 +708,7 @@ export default function Profile({
     }
 
     triggerVibration(15);
-    const originalText = `🔥 I have kept my daily study streak alive for ${studyStreak} days in AP Exam App! Keep up the grind! 🎓🎯`;
+    const originalText = `🔥 I have kept my daily study streak alive for ${studyStreak} days in AP Prep App! Keep up the grind! 🎓🎯`;
 
     try {
       showToast("📸 Capturing streak card...");
@@ -1105,7 +1111,7 @@ export default function Profile({
 
     ctx.fillStyle = '#166534';
     ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText('This activity log is passively recorded by the AP Exam Prep application during active study.', pad + 38, sealY + 44);
+    ctx.fillText('This activity log is passively recorded by the AP Prep application during active study.', pad + 38, sealY + 44);
     ctx.fillText('All durations, dates, and learning curves are tamper-proof and verified.', pad + 38, sealY + 58);
 
     // ==========================================
@@ -1115,7 +1121,7 @@ export default function Profile({
     ctx.textAlign = 'left';
     ctx.fillStyle = '#64748b';
     ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText('🎓 AP Exam Prep™ App • Study Analytics', pad + 24, footY);
+    ctx.fillText('🎓 AP Prep™ App • Study Analytics', pad + 24, footY);
 
     ctx.textAlign = 'right';
     ctx.fillStyle = '#94a3b8';
@@ -1139,7 +1145,7 @@ export default function Profile({
       ? `${(totalWeekMins / 60).toFixed(1)} hrs` 
       : `${totalWeekMins.toFixed(1)}m`;
 
-    const shareText = `📊 My AP Exam Prep Study Tracker: Logged ${todayMins.toFixed(1)}m today (${weekFormatted} this week) of focused learning! 🎓🚀 #APExam #StudyGrind`;
+    const shareText = `📊 My AP Prep Study Tracker: Logged ${todayMins.toFixed(1)}m today (${weekFormatted} this week) of focused learning! 🎓🚀 #APPrep #StudyGrind`;
 
     try {
       showToast("📸 Preparing official study tracker report...");
@@ -1252,8 +1258,8 @@ export default function Profile({
     try {
       const userIdentifier = user ? (user.email || user.uid) : "Anonymous Guest";
       const subject = encodeURIComponent(`Data Export Request - ${userIdentifier}`);
-      const body = encodeURIComponent("Hello AP Exam App Support, I would like to exercise my right to data portability. Please provide a complete export of my account data, including my profile, study notes, and history. Thank you.");
-      window.location.href = `mailto:helpyou.ai.support@gmail.com?subject=${subject}&body=${body}`;
+      const body = encodeURIComponent("Hello AP Prep App Support, I would like to exercise my right to data portability. Please provide a complete export of my account data, including my profile, study notes, and history. Thank you.");
+      window.location.href = `mailto:aiapexam@gmail.com?subject=${subject}&body=${body}`;
       showToast("✉️ Drafted data export email support request!");
     } catch (err) {
       console.error(err);
@@ -1460,6 +1466,13 @@ export default function Profile({
         })
       ];
 
+      // If user had an allocated email, delete allocated_emails record too
+      if (user.email) {
+        const cleanEmail = user.email.toLowerCase().trim().replace(/[^a-z0-9_]/gi, '_');
+        wipePromises.push(deleteDoc(doc(db, 'allocated_emails', cleanEmail)).catch(() => {}));
+        wipePromises.push(deleteDoc(doc(db, 'allocated_emails', user.email.toLowerCase().trim())).catch(() => {}));
+      }
+
       await Promise.race([
         Promise.allSettled(wipePromises),
         new Promise(resolve => setTimeout(resolve, 3500))
@@ -1476,6 +1489,13 @@ export default function Profile({
       // while safely preserving subscription status if user bought Pro!
       purgeUserDataPreservingSubscription(hasActiveSubscription);
 
+      // 5. Complete IndexedDB offline notes & downloaded PDFs purge
+      try {
+        await clearAllOfflineNotes();
+      } catch (idbErr) {
+        console.warn('Error clearing offline notes on account delete:', idbErr);
+      }
+
       if (hasActiveSubscription) {
         if (setIsVip) setIsVip(true);
         safeSetItem('study_is_vip', 'true');
@@ -1484,7 +1504,7 @@ export default function Profile({
         safeRemoveItem('study_is_vip');
       }
 
-      // 5. Clean native authentication & sign out
+      // 6. Clean native authentication & sign out
       safeRemoveItem('apexam_active_user_session');
       safeRemoveItem('apexam_user_authenticated');
       safeRemoveItem('apexam_login_in_progress');
@@ -1500,7 +1520,15 @@ export default function Profile({
         await signOut(auth);
       } catch (_) {}
 
-      // 6. UI Reset & Success feedback
+      // 7. Dispatch global reset events so all in-memory features reset immediately
+      try {
+        window.dispatchEvent(new CustomEvent('user_history_updated'));
+        window.dispatchEvent(new CustomEvent('study-mistake-vault-updated'));
+        window.dispatchEvent(new CustomEvent('offline-notes-updated', { detail: { clearedAll: true } }));
+        window.dispatchEvent(new CustomEvent('study-coins-updated', { detail: 20 }));
+      } catch (_) {}
+
+      // 8. UI Reset & Success feedback
       setActiveModal(null);
       setShowSettings(false);
       
@@ -1509,6 +1537,11 @@ export default function Profile({
       } else {
         showToast("🗑️ Account and all personal data permanently deleted.");
       }
+
+      // 9. Full clean reload: resets in-memory React state to 0 and lands on clean welcome/login screen
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1000);
     } catch (error: any) {
       console.error("Error during account deletion:", error);
       showToast("❌ Failed to complete data deletion. Please try again.");
@@ -2083,7 +2116,7 @@ export default function Profile({
                 {/* Subtle card branding for shared image */}
                 <div className="flex items-center justify-between pt-1 border-t border-zinc-100 dark:border-zinc-800 text-[10px] text-zinc-400 dark:text-zinc-300 font-semibold">
                   <span className="flex items-center gap-1.5">
-                    <GraduationCap className="w-3.5 h-3.5 text-purple-500" /> AP Exam Prep App
+                    <GraduationCap className="w-3.5 h-3.5 text-purple-500" /> AP Prep App
                   </span>
                   <span>Study Analytics</span>
                 </div>
@@ -2394,7 +2427,7 @@ export default function Profile({
           <div className="bg-blue-50/50 dark:bg-blue-950/30 rounded-2xl p-4 border border-blue-100 dark:border-blue-900/40 flex items-start gap-3">
             <Info className="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" />
             <p className="text-[10px] font-medium text-blue-700 dark:text-blue-300 leading-relaxed">
-              AP Exam App customizes solutions, vocabulary, and tutor responses dynamically based on your selected Study Level (High School, College, or Advanced). Change your level anytime!
+              AP Prep App customizes solutions, vocabulary, and tutor responses dynamically based on your selected Study Level (High School, College, or Advanced). Change your level anytime!
             </p>
           </div>
         </div>
@@ -2403,7 +2436,7 @@ export default function Profile({
       {/* Slide-over Panel for App Settings */}
       <AnimatePresence>
         {showSettings && (
-          <div className="absolute inset-0 z-40 flex justify-end bg-black/60 backdrop-blur-sm">
+          <div className="absolute inset-0 z-40 flex justify-end bg-black/75 transform-gpu">
             {/* Backdrop Click Close */}
             <div className="absolute inset-0 bg-transparent" onClick={() => setShowSettings(false)} />
 
@@ -2412,8 +2445,8 @@ export default function Profile({
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-sm h-full bg-[#FAF9F6] border-l border-zinc-200 flex flex-col shadow-2xl z-10 overflow-hidden"
+              transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.25 }}
+              className="relative w-full max-w-sm h-full bg-[#FAF9F6] border-l border-zinc-200 flex flex-col shadow-2xl z-10 overflow-hidden transform-gpu will-change-transform"
             >
               {/* Settings Header */}
               <header className="px-6 py-5 bg-white border-b border-zinc-200/60 flex justify-between items-center shrink-0">
@@ -2442,7 +2475,7 @@ export default function Profile({
                         Active Plan
                       </span>
                       <h4 className="text-sm font-black mt-1 flex items-center gap-1">
-                        AP Exam Pro <Crown className="w-3 h-3 text-yellow-200 fill-yellow-200" />
+                        AP Prep Pro <Crown className="w-3 h-3 text-yellow-200 fill-yellow-200" />
                       </h4>
                       <p className="text-[9px] text-white/80 font-bold leading-normal mt-0.5">Unlimited scans & speech</p>
                     </div>
@@ -2454,7 +2487,7 @@ export default function Profile({
                         <Crown className="w-4 h-4 fill-amber-100" />
                       </div>
                       <div>
-                        <h4 className="text-[11px] font-black text-zinc-900 leading-tight">AP Exam</h4>
+                        <h4 className="text-[11px] font-black text-zinc-900 leading-tight">AP Prep</h4>
                         <p className="text-[9px] text-zinc-400 font-bold mt-0.5">Upgrade for unlimited tools</p>
                       </div>
                     </div>
@@ -2546,10 +2579,10 @@ export default function Profile({
                       try {
                         if (Capacitor.isNativePlatform()) {
                           await Share.share({
-                            title: '📚 AP Exam — Smart Study App',
-                            text: '🚀 I use AP Exam App to solve homework, generate quizzes & get AI tutoring! Try it free 👇',
+                            title: '📚 AP Prep — Smart Study App',
+                            text: '🚀 I use AP Prep App to solve homework, generate quizzes & get AI tutoring! Try it free 👇',
                             url: 'https://play.google.com/store/apps/details?id=com.apexam.prep',
-                            dialogTitle: 'Share AP Exam App with friends'
+                            dialogTitle: 'Share AP Prep App with friends'
                           });
                         } else {
                           await navigator.clipboard.writeText('https://play.google.com/store/apps/details?id=com.apexam.prep');
@@ -2564,7 +2597,7 @@ export default function Profile({
                     <div className="flex items-center gap-2 text-zinc-600 font-bold text-xs">
                       <Share2 className="w-3.5 h-3.5 text-zinc-400" />
                       <div>
-                        <span className="block">Share AP Exam App</span>
+                        <span className="block">Share AP Prep App</span>
                         <span className="text-[10px] text-zinc-400 font-semibold">Invite your friends to study smarter</span>
                       </div>
                     </div>
@@ -2574,7 +2607,7 @@ export default function Profile({
                   <button 
                     onClick={() => { 
                       triggerVibration(hapticEnabled ? 15 : 0); 
-                      window.location.href = 'mailto:helpyou.ai.support@gmail.com?subject=AP%20Exam%20App%20-%20Support%20Request';
+                      window.location.href = 'mailto:aiapexam@gmail.com?subject=AP%20Prep%20App%20-%20Support%20Request';
                     }}
                     className="w-full p-4 flex justify-between items-center bg-white hover:bg-zinc-50/30 border-t border-zinc-100 transition-colors text-left"
                   >
@@ -2594,7 +2627,7 @@ export default function Profile({
                   >
                     <div className="flex items-center gap-2 text-zinc-600 font-bold text-xs">
                       <Star className="w-3.5 h-3.5 text-zinc-400" />
-                      <span>Rate AP Exam App</span>
+                      <span>Rate AP Prep App</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-zinc-400" />
                   </button>
@@ -2602,7 +2635,7 @@ export default function Profile({
                   <button 
                     onClick={() => { 
                       triggerVibration(15); 
-                      window.location.href = 'mailto:helpyou.ai.support@gmail.com?subject=AP%20Exam%20App%20-%20Bug%20Report&body=Hi%20AP%20Exam%20Team%2C%20I%20found%20a%20bug.%0ADevice%20Model%3A%20%0AOS%20Version%3A%20%0AIssue%20Description%3A%20';
+                      window.location.href = 'mailto:aiapexam@gmail.com?subject=AP%20Prep%20App%20-%20Bug%20Report&body=Hi%20AP%20Prep%20Team%2C%20I%20found%20a%20bug.%0ADevice%20Model%3A%20%0AOS%20Version%3A%20%0AIssue%20Description%3A%20';
                     }}
                     className="w-full p-4 flex justify-between items-center bg-white hover:bg-zinc-50/30 border-t border-zinc-100 transition-colors text-left"
                   >
@@ -2740,7 +2773,7 @@ export default function Profile({
                 <div className="flex flex-col items-center gap-1 pt-2 pb-2">
                   <div className="flex items-center gap-1.5">
                     <Info className="w-3 h-3 text-zinc-300" />
-                    <span className="text-[10px] font-bold text-zinc-350 tracking-wide">AP Exam • Version 1.0.0</span>
+                    <span className="text-[10px] font-bold text-zinc-350 tracking-wide">AP Prep • Version 1.0.0</span>
                   </div>
                   <span className="text-[9px] text-zinc-300 font-semibold">Made with ❤️ for students worldwide</span>
                 </div>
@@ -2751,15 +2784,16 @@ export default function Profile({
         )}
       </AnimatePresence>
 
-      {/* DETAILED MODAL OVERLAYS */}
+      {/* DETAILED MODAL OVERLAYS (EXCLUDES FULL-SCREEN LEGAL MODAL) */}
       <AnimatePresence>
-        {activeModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+        {activeModal && activeModal !== 'privacy' && activeModal !== 'terms' && (
+          <div className="fixed inset-0 bg-black/75 z-[100] flex items-center justify-center p-4">
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              initial={{ opacity: 0, scale: 0.96, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className={`bg-white rounded-[2.5rem] border border-zinc-200 w-full overflow-hidden p-6 shadow-2xl relative flex flex-col ${activeModal === 'privacy' || activeModal === 'terms' ? 'max-w-md' : 'max-w-sm'}`}
+              exit={{ opacity: 0, scale: 0.96, y: 10 }}
+              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-white rounded-[2.5rem] border border-zinc-200 w-full overflow-hidden p-6 shadow-2xl relative flex flex-col max-w-sm"
             >
               {/* Modal Close Button */}
               <button 
@@ -2783,12 +2817,6 @@ export default function Profile({
                   )}
                   {activeModal === 'manage_sub' && (
                     <><Crown className="w-4 h-4 text-amber-500" /> <span>Manage Plan</span></>
-                  )}
-                  {activeModal === 'privacy' && (
-                    <><Shield className="w-4 h-4 text-purple-600" /> <span>Privacy Policy</span></>
-                  )}
-                  {activeModal === 'terms' && (
-                    <><FileText className="w-4 h-4 text-purple-600" /> <span>Terms of Service</span></>
                   )}
                 </h3>
               </div>
@@ -2970,7 +2998,7 @@ export default function Profile({
                         <li>Open the Google Play Store app.</li>
                         <li>Tap your Profile icon at the top right.</li>
                         <li>Tap on Payments &amp; subscriptions &gt; Subscriptions.</li>
-                        <li>Select AP Exam and tap Cancel subscription.</li>
+                        <li>Select AP Prep and tap Cancel subscription.</li>
                       </ol>
                     </div>
                     <div className="flex flex-col gap-2 pt-2">
@@ -2993,301 +3021,29 @@ export default function Profile({
                   </div>
                 )}
 
-                {/* 10. Privacy Policy */}
-                {activeModal === 'privacy' && (
-                  <div className="space-y-5 text-left py-1 text-zinc-700">
-                    <div className="flex items-center justify-between pb-2 border-b border-zinc-100">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                        🛡️ US Legal &amp; AI Privacy Standard
-                      </span>
-                      <a
-                        href="/privacy.html"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[11px] font-bold text-blue-600 hover:text-blue-700 underline"
-                      >
-                        Open Full Web Page ↗
-                      </a>
-                    </div>
-
-                    <p className="text-xs font-semibold leading-relaxed text-zinc-600">
-                      At AP Exam App, student privacy and total algorithmic transparency are our highest priorities. We operate under strict compliance with US Federal and State privacy laws, including COPPA, FERPA principles, and CCPA/CPRA.
-                    </p>
-
-                    <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-2xl p-3.5">
-                      <h5 className="text-xs font-black text-emerald-950 flex items-center gap-1.5 uppercase tracking-wide">
-                        🌟 100% Ad-Free &amp; Zero Data Selling Pledge
-                      </h5>
-                      <p className="text-[11px] leading-relaxed text-emerald-900 mt-1 font-medium">
-                        We do <strong>NOT</strong> sell your personal data, we do <strong>NOT</strong> license student information to third-party data brokers, and we do <strong>NOT</strong> serve third-party behavioral advertisements.
-                      </p>
-                    </div>
-
-                    <div className="space-y-4">
-                      {/* Section 1: AI Data Handling & Model Training */}
-                      <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-3.5 space-y-2">
-                        <h4 className="text-xs font-black text-blue-950 flex items-center gap-1.5 uppercase tracking-wide">
-                          🤖 1. AI Data Handling &amp; Zero-Training Guarantee
-                        </h4>
-                        <p className="text-[11px] leading-relaxed text-blue-900 font-medium">
-                          AP Exam App utilizes high-performance enterprise <strong>Google Gemini AI APIs</strong> to provide real-time step-by-step explanations, handwriting scoring, and distractor trap analysis.
-                        </p>
-                        <ul className="text-[11px] leading-relaxed text-zinc-700 pl-4 space-y-1.5 list-disc">
-                          <li>
-                            <strong className="text-zinc-900">Zero Model Training:</strong> Under our enterprise API terms, <strong>your prompts, uploaded homework images, student handwriting photos, and voice transcripts are NEVER used by Google or AP Exam App to train, retrain, fine-tune, or improve public AI models</strong>.
-                          </li>
-                          <li>
-                            <strong className="text-zinc-900">Ephemeral In-Memory Inference:</strong> Student queries and scans are processed strictly in-memory during real-time streaming. Once the explanation finishes, the active inference session is immediately closed.
-                          </li>
-                          <li>
-                            <strong className="text-zinc-900">Automatic 1-Hour Photo Purge:</strong> Images of handwritten FRQs or textbook questions captured via your camera are temporarily buffered in secure memory and <strong>automatically and permanently purged within 1 hour</strong>. We do not archive student handwriting or build photo repositories.
-                          </li>
-                          <li>
-                            <strong className="text-zinc-900">No Biometric Voiceprints:</strong> Voice Tutor audio is converted to transient text in memory and immediately discarded. We never generate or store biometric voiceprints or vocal templates.
-                          </li>
-                        </ul>
-                      </div>
-
-                      {/* Section 2: Data We Collect */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          📊 2. Direct Account Data &amp; Cloud Storage
-                        </h4>
-                        <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
-                          <li>
-                            <span className="font-bold text-zinc-800">Account Profile:</span> Email address and display name collected via Firebase Auth / Google Sign-In solely for account management and cross-device sync.
-                          </li>
-                          <li>
-                            <span className="font-bold text-zinc-800">Study History &amp; Mistake Vault:</span> Saved review notes, quiz battle history, and coin records are securely stored in Google Cloud Firestore protected by AES-256 encryption at rest.
-                          </li>
-                          <li>
-                            <span className="font-bold text-zinc-800">Single Active Device ID:</span> We store an active session token to protect your account against credential sharing across multiple devices.
-                          </li>
-                        </ul>
-                      </div>
-
-                      {/* Section 3: Third-Party Infrastructure */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          🔒 3. Enterprise Infrastructure Partners
-                        </h4>
-                        <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
-                          <li>
-                            <span className="font-bold text-zinc-800">Google Cloud &amp; Firebase:</span> SOC 2 certified cloud database, TLS 1.3 encrypted data transit, and secure authentication.
-                          </li>
-                          <li>
-                            <span className="font-bold text-zinc-800">Google Play Billing / Apple StoreKit:</span> In-app subscription processing. <em>We never see or store your credit card numbers.</em>
-                          </li>
-                        </ul>
-                      </div>
-
-                      {/* Section 4: COPPA & FERPA */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          👶 4. Children's Privacy (COPPA) &amp; FERPA
-                        </h4>
-                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          AP Exam App is designed strictly for individuals aged <strong>13 and older</strong>. We do not knowingly collect personal data from children under 13. If any account belonging to a child under 13 is identified, it will be immediately purged. Student-created study data is handled in strict alignment with FERPA educational confidentiality principles.
-                        </p>
-                      </div>
-
-                      {/* Section 5: State Privacy Rights */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          🐻 5. US State Privacy Rights (CCPA / CPRA)
-                        </h4>
-                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          Residents of California and other US states have the right to request access to their personal data, request permanent deletion, and exercise their rights free from discrimination. We do not sell or share personal data with advertisers or data brokers.
-                        </p>
-                      </div>
-
-                      {/* Section 6: Data Deletion */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          🗑️ 6. Instant Account Deletion
-                        </h4>
-                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          You retain full ownership of your data. You can permanently delete your entire account and all cloud records instantly via Profile Settings &gt; "Delete Account", or by contacting our privacy desk at:
-                        </p>
-                        <p className="text-[11px] font-black text-purple-600 pl-4 mt-1">
-                          helpyou.ai.support@gmail.com
-                        </p>
-                      </div>
-                    </div>
-
-                    <button 
-                      onClick={() => { triggerVibration(10); setActiveModal(null); }}
-                      className="w-full bg-zinc-950 hover:bg-zinc-900 text-white font-extrabold text-xs py-3.5 rounded-2xl cursor-pointer transition-all mt-6 shadow-md"
-                    >
-                      I Understand &amp; Agree
-                    </button>
-                  </div>
-                )}
-
-                {/* 11. Terms of Service */}
-                {activeModal === 'terms' && (
-                  <div className="space-y-5 text-left py-1 text-zinc-700">
-                    <div className="flex items-center justify-between pb-2 border-b border-zinc-100">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
-                        ⚖️ US Legal Jurisdiction
-                      </span>
-                      <a
-                        href="/terms.html"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[11px] font-bold text-blue-600 hover:text-blue-700 underline"
-                      >
-                        Open Full Web Page ↗
-                      </a>
-                    </div>
-
-                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5">
-                      <h5 className="text-xs font-black text-amber-900 flex items-center gap-1.5 uppercase tracking-wide">
-                        🏛️ College Board® Non-Affiliation Disclaimer
-                      </h5>
-                      <p className="text-[11px] leading-relaxed text-amber-900 mt-1 font-medium">
-                        <strong>AP® and Advanced Placement®</strong> are registered trademarks of the <strong>College Board</strong>, which is not affiliated with, does not sponsor, and was not involved in the creation or endorsement of this application.
-                      </p>
-                    </div>
-
-                    <div className="space-y-4">
-                      {/* Section 1: Agreement & Eligibility */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          📝 1. Binding Agreement &amp; Eligibility (13+)
-                        </h4>
-                        <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
-                          <li>
-                            <span className="font-bold text-zinc-800">Binding Contract:</span> By downloading, registering, or using AP Exam App, you enter into a legally binding agreement under the laws of the State of Delaware, United States.
-                          </li>
-                          <li>
-                            <span className="font-bold text-zinc-800">Age Requirement:</span> You must be at least 13 years old. If you are between 13 and 17, your parent or legal guardian must review and agree to these Terms on your behalf.
-                          </li>
-                        </ul>
-                      </div>
-
-                      {/* Section 2: AI Educational Disclaimers */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          ⚠️ 2. AI Study Aid &amp; Academic Integrity
-                        </h4>
-                        <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
-                          <li>
-                            <span className="font-bold text-zinc-800">Supplemental Learning Aid:</span> All AI explanations, rubric checks, and study notes are generated dynamically for personal educational study only.
-                          </li>
-                          <li>
-                            <span className="font-bold text-zinc-800">No Score Guarantee:</span> We do not guarantee specific AP scores (e.g. 5, 4, 3) or college credit awards.
-                          </li>
-                          <li>
-                            <span className="font-bold text-zinc-800">Honor Code Compliance:</span> You agree not to use this app during live school exams or formal testing where unauthorized digital assistance is prohibited.
-                          </li>
-                        </ul>
-                      </div>
-
-                      {/* Section 3: Subscriptions & Cancellation */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          💎 3. Subscriptions &amp; Cancellation (California ARL)
-                        </h4>
-                        <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
-                          <li>
-                            <span className="font-bold text-zinc-800">Auto-Renewal:</span> In accordance with the California Automatic Renewal Law, subscriptions automatically renew at the end of each period ($14.99/mo or $99.99/yr) unless cancelled at least 24 hours prior to billing.
-                          </li>
-                          <li>
-                            <span className="font-bold text-zinc-800">Managing Subscriptions:</span> Subscriptions must be cancelled directly via your Google Play Store or Apple ID account settings.
-                          </li>
-                          <li>
-                            <span className="font-bold text-zinc-800">Store Refund Policies:</span> All in-app purchases are handled by Google Play / Apple and are governed by their respective refund policies.
-                          </li>
-                        </ul>
-                      </div>
-
-                      {/* Section 4: Single Active Device Policy */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          📱 4. Single Active Device Policy
-                        </h4>
-                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          Each account is licensed for <strong>one active mobile device at a time</strong>. Logging in on a second device will automatically sign out any prior session to safeguard your account against unauthorized sharing.
-                        </p>
-                      </div>
-
-                      {/* Section 5: Acceptable Use & DMCA */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          🛡️ 5. Acceptable Use &amp; DMCA Copyright Agent
-                        </h4>
-                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          You agree not to decompile, reverse engineer, or deploy automated bots against our AI infrastructure. Pursuant to 17 U.S.C. § 512, copyright infringement notices should be directed to our designated DMCA agent at:
-                        </p>
-                        <p className="text-[11px] font-black text-purple-600 pl-4 mt-1">
-                          helpyou.ai.support@gmail.com
-                        </p>
-                      </div>
-
-                      {/* Section 6: Warranty Disclaimers & Liability */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          🛑 6. Disclaimer of Warranties &amp; Liability Cap
-                        </h4>
-                        <p className="text-[11px] leading-relaxed mt-1 text-zinc-600 pl-4">
-                          The Service is provided on an "AS IS" and "AS AVAILABLE" basis without warranty of any kind. Under no circumstances shall AP Exam App or its creators be liable for indirect, incidental, or consequential damages. Maximum aggregate liability is strictly capped at $100 USD or amounts paid in the preceding 12 months.
-                        </p>
-                      </div>
-
-                      {/* Section 7: Binding Arbitration & Class Action Waiver */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          ⚖️ 7. Mandatory Binding Arbitration &amp; Class Action Waiver
-                        </h4>
-                        <ul className="text-[11px] leading-relaxed mt-2 text-zinc-600 pl-4 space-y-1.5 list-disc">
-                          <li>
-                            <span className="font-bold text-zinc-800">Delaware Governing Law:</span> These Terms are governed by the laws of the State of Delaware and the US Federal Arbitration Act.
-                          </li>
-                          <li>
-                            <span className="font-bold text-zinc-800">AAA Arbitration:</span> Any disputes shall be resolved through individual binding arbitration under American Arbitration Association (AAA) Consumer Rules rather than court litigation.
-                          </li>
-                          <li>
-                            <span className="font-bold text-zinc-800">Class Action Waiver:</span> YOU EXPRESSLY AGREE TO WAIVE ANY RIGHT TO PARTICIPATE IN A CLASS ACTION, MASS LITIGATION, OR REPRESENTATIVE PROCEEDING AGAINST AP EXAM APP.
-                          </li>
-                        </ul>
-                      </div>
-
-                      {/* Section 8: Legal Support */}
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-900 flex items-center gap-1.5 uppercase tracking-wide">
-                          📬 8. Legal Notices &amp; Inquiries
-                        </h4>
-                        <p className="text-[11px] font-black text-purple-600 pl-4 mt-1">
-                          helpyou.ai.support@gmail.com
-                        </p>
-                      </div>
-                    </div>
-
-                    <button 
-                      onClick={() => { triggerVibration(10); setActiveModal(null); }}
-                      className="w-full bg-zinc-950 hover:bg-zinc-900 text-white font-extrabold text-xs py-3.5 rounded-2xl cursor-pointer transition-all mt-6 shadow-md"
-                    >
-                      I Accept Terms &amp; Conditions
-                    </button>
-                  </div>
-                )}
-
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
+      {/* FULL-SCREEN LEGAL MODAL (PRIVACY POLICY & TERMS OF SERVICE) */}
+      <FullScreenLegalModal 
+        isOpen={activeModal === 'privacy' || activeModal === 'terms'}
+        type={activeModal === 'privacy' ? 'privacy' : (activeModal === 'terms' ? 'terms' : null)}
+        onClose={() => setActiveModal(null)}
+      />
+
       {/* Full App Optimization Modal */}
       <AnimatePresence>
         {showOptimizationModal && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[110] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/80 transform-gpu z-[110] flex items-center justify-center p-4">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.94, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white rounded-[2.5rem] border border-zinc-200 w-full max-w-sm overflow-hidden p-6 shadow-2xl relative flex flex-col items-center text-center"
+              exit={{ opacity: 0, scale: 0.94, y: 12 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-white rounded-[2.5rem] border border-zinc-200 w-full max-w-sm overflow-hidden p-6 shadow-2xl relative flex flex-col items-center text-center transform-gpu will-change-transform"
             >
               {/* Close Button (only active when not currently optimizing) */}
               {!isOptimizing && (
@@ -3330,7 +3086,7 @@ export default function Profile({
 
               {/* Header Title */}
               <h3 className="text-lg font-black text-zinc-900 tracking-tight">
-                {isOptimizing ? "Optimizing AP Exam App..." : "⚡ 100% Fully Optimized!"}
+                {isOptimizing ? "Optimizing AP Prep App..." : "⚡ 100% Fully Optimized!"}
               </h3>
               <p className="text-[11px] font-bold text-zinc-500 mt-1 max-w-xs leading-relaxed">
                 {optimizationStepText}
@@ -3407,7 +3163,7 @@ export default function Profile({
       {/* Slide-over Panel for Streak Days Details */}
       <AnimatePresence>
         {showStreakDetails && (
-          <div className="absolute inset-0 z-40 flex justify-end bg-black/60 backdrop-blur-sm">
+          <div className="absolute inset-0 z-40 flex justify-end bg-black/75 transform-gpu">
             {/* Backdrop Click Close */}
             <div className="absolute inset-0 bg-transparent" onClick={() => setShowStreakDetails(false)} />
 
@@ -3416,8 +3172,8 @@ export default function Profile({
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-sm h-full bg-[#FAF9F6] border-l border-zinc-200 flex flex-col shadow-2xl z-10 overflow-hidden"
+              transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.25 }}
+              className="relative w-full max-w-sm h-full bg-[#FAF9F6] border-l border-zinc-200 flex flex-col shadow-2xl z-10 overflow-hidden transform-gpu will-change-transform"
             >
               {/* Streak Header */}
               <header className="px-6 py-5 bg-white border-b border-zinc-200/60 flex justify-between items-center shrink-0">

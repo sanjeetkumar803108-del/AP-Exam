@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AP Exam App - Store Screenshot Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=Space+Grotesk:wght@700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #121826;
+      --border: #1f293d;
+      --primary: #6366f1;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-title h1 {
+      font-size: 24px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a5b4fc, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .badge {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 10px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      border-radius: 9999px;
+      font-weight: 700;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(99, 102, 241, 0.45);
+    }
+
+    .btn-secondary {
+      background: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+    }
+
+    .btn-secondary:hover {
+      background: #334155;
+      color: white;
+    }
+
+    /* Style Switcher */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 14px 20px;
+      border-radius: 14px;
+      margin-bottom: 24px;
+    }
+
+    .tool-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tool-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    select,
+    input[type="text"] {
+      background: #0b0f19;
+      border: 1px solid #28334e;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    select:focus,
+    input[type="text"]:focus {
+      border-color: #6366f1;
+    }
+
+    /* Studio Carousel Container */
+    .slides-viewport {
+      overflow-x: auto;
+      padding-bottom: 24px;
+    }
+
+    .slides-container {
+      display: flex;
+      gap: 24px;
+      width: max-content;
+      padding: 10px;
+    }
+
+    /* Individual Store Card (1080x1920 Aspect: 9:16) */
+    .slide-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 340px;
+    }
+
+    .slide-controls {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 12px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .slide-controls label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .slide-controls input {
+      width: 100%;
+    }
+
+    .slide-card {
+      width: 340px;
+      height: 604px;
+      /* 340 * 16/9 = 604px */
+      border-radius: 36px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 20px 0 20px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: transform 0.25s ease;
+    }
+
+    .slide-card:hover {
+      transform: translateY(-4px);
+    }
+
+    /* THEME 1: NIBBLE VIBRANT PURPLE */
+    .theme-nibble {
+      background: linear-gradient(180deg, #6b21a8 0%, #4c1d95 60%, #311042 100%);
+      color: white;
+    }
+
+    /* THEME 2: SLOPES PANORAMIC INDIGO */
+    .theme-slopes {
+      background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 50%, #090d16 100%);
+      color: white;
+    }
+
+    /* THEME 3: CYBER EDTECH EMERALD/BLUE */
+    .theme-cyber {
+      background: linear-gradient(180deg, #064e3b 0%, #0f172a 60%, #022c22 100%);
+      color: white;
+    }
+
+    /* Floating ambient decorative shapes */
+    .ambient-glow {
+      position: absolute;
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(0, 0, 0, 0) 70%);
+      top: -50px;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(30px);
+    }
+
+    .star-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fde047;
+      margin-bottom: 10px;
+      z-index: 2;
+    }
+
+    .star-badge svg {
+      fill: #fde047;
+    }
+
+    .slide-header {
+      text-align: center;
+      z-index: 2;
+      margin-bottom: 18px;
+    }
+
+    .slide-title {
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1.18;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    .slide-subtitle {
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0.85;
+      line-height: 1.35;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+
+    /* Phone Mockup Frame (iPhone 16 Pro Style with Dynamic Island) */
+    .phone-mockup {
+      width: 240px;
+      height: 480px;
+      background: #000;
+      border-radius: 40px;
+      border: 6px solid #2d3748;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.15);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+
+    .dynamic-island {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 65px;
+      height: 18px;
+      background: #000;
+      border-radius: 12px;
+      z-index: 10;
+      box-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
+    }
+
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      background: #0f172a;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .screen-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+    }
+
+    /* Floating Callout Badges like Slopes & Nibble */
+    .floating-card {
+      position: absolute;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 14px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+      z-index: 5;
+      animation: float 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes float {
+      from {
+        transform: translateY(0px);
+      }
+
+      to {
+        transform: translateY(-6px);
+      }
+    }
+
+    .floating-card-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .floating-card-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .floating-card-text .title {
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .floating-card-text .sub {
+      font-size: 9px;
+      color: #94a3b8;
+    }
+
+    /* Custom positioning of badges for specific slides */
+    .badge-pos-1 {
+      bottom: 110px;
+      right: 10px;
+    }
+
+    .badge-pos-2 {
+      top: 90px;
+      left: 10px;
+    }
+
+    .badge-pos-3 {
+      bottom: 85px;
+      left: 15px;
+    }
+
+    /* Drag & Drop Overlays */
+    .upload-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      cursor: pointer;
+      z-index: 20;
+    }
+
+    .phone-screen:hover .upload-overlay {
+      opacity: 1;
+    }
+
+    .upload-overlay span {
+      font-size: 11px;
+      font-weight: 700;
+      color: #a5b4fc;
+      background: rgba(99, 102, 241, 0.2);
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px dashed #6366f1;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    /* Guide & Instructions Box */
+    .guide-box {
+      margin-top: 30px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .guide-box h2 {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .guide-item {
+      background: #0b0f19;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid #1e293b;
+    }
+
+    .guide-item h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #a5b4fc;
+      margin-bottom: 6px;
+    }
+
+    .guide-item p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Canvas hidden for high-res rendering */
+    #exportCanvas {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="header-title">
+      <img src="../public/logo.png" alt="AP Exam Logo"
+        style="width: 38px; height: 38px; border-radius: 10px; object-fit: contain;">
+      <div>
+        <h1>AP Exam - Store Screenshot Studio</h1>
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">
+          Create Apple App Store & Google Play screenshots styled like <strong>Nibble & Slopes</strong>
+        </p>
+      </div>
+      <span class="badge">9:16 Ultra HD</span>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-secondary" onclick="resetToDefaults()">
+        ↺ Reset Text
+      </button>
+      <button class="btn btn-primary" onclick="exportCurrentSlide(1)">
+        📥 Download Slide 1 (PNG)
+      </button>
+      <button class="btn btn-primary" onclick="exportAllSlides()">
+        ⚡ Download All 5 Slides
+      </button>
+    </div>
+  </header>
+
+  <!-- Studio Settings Toolbar -->
+  <div class="toolbar">
+    <div class="tool-group">
+      <label for="themeSelect">🎨 Background Style:</label>
+      <select id="themeSelect" onchange="changeTheme(this.value)">
+        <option value="theme-nibble">Nibble Style (Vibrant Royal Purple)</option>
+        <option value="theme-slopes">Slopes Style (Midnight Indigo & Snow Mesh)</option>
+        <option value="theme-cyber">Apex Style (Emerald & Dark Slate)</option>
+      </select>
+    </div>
+
+    <div class="tool-group">
+      <label for="badgeSelect">🏆 Slide 1 Badge:</label>
+      <select id="badgeSelect" onchange="changeBadge(this.value)">
+        <option value="★ 4.9 RATED • 38+ AP COURSES">★ 4.9 RATED • 38+ AP COURSES</option>
+        <option value="⚡ AI-POWERED AP STUDY COMPANION">⚡ AI-POWERED AP STUDY COMPANION</option>
+        <option value="🎯 94% SCORE A 4 OR 5">🎯 94% SCORE A 4 OR 5</option>
+        <option value="🏆 #1 AP EXAM PREP APP">🏆 #1 AP EXAM PREP APP</option>
+      </select>
+    </div>
+
+    <div class="tool-group">
+      <label>📱 Export Resolution:</label>
+      <span style="font-size: 13px; color: #38bdf8; font-weight: 700;">1080 × 1920 px (Play Store & App Store
+        Ready)</span>
+    </div>
+  </div>
+
+  <!-- Carousel Slides -->
+  <div class="slides-viewport">
+    <div class="slides-container" id="slidesContainer">
+
+      <!-- SLIDE 1: MAIN VALUE PROPOSITION (NIBBLE STYLE HOOK) -->
+      <div class="slide-wrapper">
+        <div class="slide-controls">
+          <label>Slide 1: Hero & Value Prop</label>
+          <input type="text" id="title-1" value="Score a 5 on Your APs" oninput="updateSlide(1)">
+          <input type="text" id="sub-1" value="Master AP Calc, Bio, History & 35+ more in 10 mins/day"
+            oninput="updateSlide(1)">
+          <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 10px;"
+            onclick="exportCurrentSlide(1)">⬇ Export Slide 1</button>
+        </div>
+
+        <div class="slide-card theme-nibble" id="card-1">
+          <div class="ambient-glow"></div>
+          <div class="star-badge" id="card-badge">★ 4.9 RATED • 38+ AP COURSES</div>
+
+          <div class="slide-header">
+            <h2 class="slide-title" id="text-title-1">Score a 5 on Your APs</h2>
+            <p class="slide-subtitle" id="text-sub-1">Master AP Calc, Bio, History & 35+ more in 10 mins/day</p>
+          </div>
+
+          <!-- Floating Badge like Slopes -->
+          <div class="floating-card badge-pos-1">
+            <div class="floating-card-icon">⚡</div>
+            <div class="floating-card-text">
+              <span class="title">College Board Aligned</span>
+              <span class="sub">Updated for 2025-2026</span>
+            </div>
+          </div>
+
+          <div class="phone-mockup">
+            <div class="dynamic-island"></div>
+            <div class="phone-screen" onclick="triggerUpload(1)">
+              <img id="img-1" src="screenshot_1.jpg" alt="Screen 1" class="screen-img"
+                onerror="this.src='../public/logo.png'; this.style.objectFit='contain';">
+              <div class="upload-overlay">
+                <span>📁 Click to Replace Screenshot</span>
+              </div>
+              <input type="file" id="file-1" class="file-input" accept="image/*" onchange="loadCustomImage(1, event)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 2: 24/7 AI TUTOR (PROFESSOR PANG) -->
+      <div class="slide-wrapper">
+        <div class="slide-controls">
+          <label>Slide 2: AI Tutor Feature</label>
+          <input type="text" id="title-2" value="24/7 Personal AI Tutor" oninput="updateSlide(2)">
+          <input type="text" id="sub-2" value="Ask anything. Get step-by-step clarity with Professor Pang"
+            oninput="updateSlide(2)">
+          <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 10px;"
+            onclick="exportCurrentSlide(2)">⬇ Export Slide 2</button>
+        </div>
+
+        <div class="slide-card theme-nibble" id="card-2">
+          <div class="ambient-glow"></div>
+
+          <div class="slide-header">
+            <h2 class="slide-title" id="text-title-2">24/7 Personal AI Tutor</h2>
+            <p class="slide-subtitle" id="text-sub-2">Ask anything. Get step-by-step clarity with Professor Pang</p>
+          </div>
+
+          <!-- Floating Mascot Chip -->
+          <div class="floating-card badge-pos-2">
+            <img src="../public/professor-pang-white-sm.png"
+              style="width: 24px; height: 24px; border-radius: 6px; object-fit: contain;"
+              onerror="this.style.display='none'">
+            <div class="floating-card-text">
+              <span class="title">Professor Pang</span>
+              <span class="sub">Instant Socratic Hints</span>
+            </div>
+          </div>
+
+          <div class="phone-mockup">
+            <div class="dynamic-island"></div>
+            <div class="phone-screen" onclick="triggerUpload(2)">
+              <img id="img-2" src="screenshot_2.jpg" alt="Screen 2" class="screen-img"
+                onerror="this.src='../public/logo.png'; this.style.objectFit='contain';">
+              <div class="upload-overlay">
+                <span>📁 Click to Replace Screenshot</span>
+              </div>
+              <input type="file" id="file-2" class="file-input" accept="image/*" onchange="loadCustomImage(2, event)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 3: INSTANT FRQ GRADER -->
+      <div class="slide-wrapper">
+        <div class="slide-controls">
+          <label>Slide 3: FRQ Rubric Grader</label>
+          <input type="text" id="title-3" value="Instant Rubric FRQ Grader" oninput="updateSlide(3)">
+          <input type="text" id="sub-3" value="Snap a pic of your handwritten essay or math FRQ & get graded"
+            oninput="updateSlide(3)">
+          <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 10px;"
+            onclick="exportCurrentSlide(3)">⬇ Export Slide 3</button>
+        </div>
+
+        <div class="slide-card theme-nibble" id="card-3">
+          <div class="ambient-glow"></div>
+
+          <div class="slide-header">
+            <h2 class="slide-title" id="text-title-3">Instant Rubric FRQ Grader</h2>
+            <p class="slide-subtitle" id="text-sub-3">Snap a pic of your handwritten essay or math FRQ & get graded</p>
+          </div>
+
+          <!-- Floating Rubric Badge -->
+          <div class="floating-card badge-pos-3">
+            <div class="floating-card-icon" style="background: linear-gradient(135deg, #10b981, #059669);">✓</div>
+            <div class="floating-card-text">
+              <span class="title">Official AP Rubric</span>
+              <span class="sub">Score: 5/5 Points</span>
+            </div>
+          </div>
+
+          <div class="phone-mockup">
+            <div class="dynamic-island"></div>
+            <div class="phone-screen" onclick="triggerUpload(3)">
+              <img id="img-3" src="screenshot_3.jpg" alt="Screen 3" class="screen-img"
+                onerror="this.src='../public/logo.png'; this.style.objectFit='contain';">
+              <div class="upload-overlay">
+                <span>📁 Click to Replace Screenshot</span>
+              </div>
+              <input type="file" id="file-3" class="file-input" accept="image/*" onchange="loadCustomImage(3, event)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 4: 1v1 QUIZ BATTLES (GAMIFICATION) -->
+      <div class="slide-wrapper">
+        <div class="slide-controls">
+          <label>Slide 4: 1v1 Battles</label>
+          <input type="text" id="title-4" value="Live 1v1 AP Quiz Battles" oninput="updateSlide(4)">
+          <input type="text" id="sub-4" value="Challenge classmates, win coins & climb the global leaderboard"
+            oninput="updateSlide(4)">
+          <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 10px;"
+            onclick="exportCurrentSlide(4)">⬇ Export Slide 4</button>
+        </div>
+
+        <div class="slide-card theme-nibble" id="card-4">
+          <div class="ambient-glow"></div>
+
+          <div class="slide-header">
+            <h2 class="slide-title" id="text-title-4">Live 1v1 AP Quiz Battles</h2>
+            <p class="slide-subtitle" id="text-sub-4">Challenge classmates, win coins & climb the global leaderboard</p>
+          </div>
+
+          <!-- Floating Battle Badge -->
+          <div class="floating-card badge-pos-1">
+            <div class="floating-card-icon" style="background: linear-gradient(135deg, #ec4899, #8b5cf6);">⚔️</div>
+            <div class="floating-card-text">
+              <span class="title">Multiplayer Mode</span>
+              <span class="sub">Real-Time Quiz Duel</span>
+            </div>
+          </div>
+
+          <div class="phone-mockup">
+            <div class="dynamic-island"></div>
+            <div class="phone-screen" onclick="triggerUpload(4)">
+              <img id="img-4" src="screenshot_1.jpg" alt="Screen 4" class="screen-img"
+                onerror="this.src='../public/logo.png'; this.style.objectFit='contain';">
+              <div class="upload-overlay">
+                <span>📁 Click to Replace Screenshot</span>
+              </div>
+              <input type="file" id="file-4" class="file-input" accept="image/*" onchange="loadCustomImage(4, event)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 5: TRAP RADAR & HIGH YIELD NOTES -->
+      <div class="slide-wrapper">
+        <div class="slide-controls">
+          <label>Slide 5: Trap Radar & Notes</label>
+          <input type="text" id="title-5" value="Spot College Board Traps" oninput="updateSlide(5)">
+          <input type="text" id="sub-5" value="Radar alerts for tricky distractors + High-yield unit cheat sheets"
+            oninput="updateSlide(5)">
+          <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 10px;"
+            onclick="exportCurrentSlide(5)">⬇ Export Slide 5</button>
+        </div>
+
+        <div class="slide-card theme-nibble" id="card-5">
+          <div class="ambient-glow"></div>
+
+          <div class="slide-header">
+            <h2 class="slide-title" id="text-title-5">Spot College Board Traps</h2>
+            <p class="slide-subtitle" id="text-sub-5">Radar alerts for tricky distractors + High-yield unit cheat sheets
+            </p>
+          </div>
+
+          <!-- Floating Radar Badge -->
+          <div class="floating-card badge-pos-3">
+            <div class="floating-card-icon" style="background: linear-gradient(135deg, #ef4444, #f97316);">🎯</div>
+            <div class="floating-card-text">
+              <span class="title">Trap Radar Active</span>
+              <span class="sub">Avoid 90% common mistakes</span>
+            </div>
+          </div>
+
+          <div class="phone-mockup">
+            <div class="dynamic-island"></div>
+            <div class="phone-screen" onclick="triggerUpload(5)">
+              <img id="img-5" src="screenshot_2.jpg" alt="Screen 5" class="screen-img"
+                onerror="this.src='../public/logo.png'; this.style.objectFit='contain';">
+              <div class="upload-overlay">
+                <span>📁 Click to Replace Screenshot</span>
+              </div>
+              <input type="file" id="file-5" class="file-input" accept="image/*" onchange="loadCustomImage(5, event)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Studio Instructions & Best Practices -->
+  <div class="guide-box">
+    <h2>🚀 Nibble & Slopes Style Screenshots - Quick Rules & Best Practices</h2>
+    <div class="guide-grid">
+      <div class="guide-item">
+        <h3>1. The 3-Second Rule (Slide 1 Hook)</h3>
+        <p>A user spends less than 3 seconds on the Play Store page. Slide 1 must state the ultimate dream benefit:
+          <strong>"Score a 5 on Your APs"</strong> along with social proof (Rating / Courses).</p>
+      </div>
+
+      <div class="guide-item">
+        <h3>2. Benefit-Driven Copy, Not Feature Names</h3>
+        <p>Don't write "Chat Module". Write <strong>"24/7 Personal AI Tutor"</strong>. Don't write "Camera OCR". Write
+          <strong>"Instant Rubric FRQ Grader"</strong>. Always explain how it saves their GPA.</p>
+      </div>
+
+      <div class="guide-item">
+        <h3>3. High Contrast & Clean Device Bezels</h3>
+        <p>Use modern curved phone frames with Dynamic Island and subtle drop shadows. Floating callouts (badges) draw
+          the eye to key elements that might otherwise look tiny on mobile screens.</p>
+      </div>
+
+      <div class="guide-item">
+        <h3>4. Google Play & App Store Specs</h3>
+        <p>This studio outputs pixel-perfect <strong>1080 × 1920 px (9:16)</strong> PNGs, which are 100% compliant with
+          Google Play Console and scale cleanly for iOS (1242 × 2688 px).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden Canvas for High-Resolution Export -->
+  <canvas id="exportCanvas" width="1080" height="1920"></canvas>
+
+  <script>
+    function updateSlide(num) {
+      const titleInput = document.getElementById(`title-${num}`);
+      const subInput = document.getElementById(`sub-${num}`);
+      const titleElem = document.getElementById(`text-title-${num}`);
+      const subElem = document.getElementById(`text-sub-${num}`);
+      if (titleInput && titleElem) titleElem.textContent = titleInput.value;
+      if (subInput && subElem) subElem.textContent = subInput.value;
+    }
+
+    function changeTheme(themeClass) {
+      for (let i = 1; i <= 5; i++) {
+        const card = document.getElementById(`card-${i}`);
+        if (card) {
+          card.className = `slide-card ${themeClass}`;
+        }
+      }
+    }
+
+    function changeBadge(badgeText) {
+      const badgeElem = document.getElementById('card-badge');
+      if (badgeElem) badgeElem.textContent = badgeText;
+    }
+
+    function triggerUpload(num) {
+      const fileInput = document.getElementById(`file-${num}`);
+      if (fileInput) fileInput.click();
+    }
+
+    function loadCustomImage(num, event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = document.getElementById(`img-${num}`);
+        if (img) img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function resetToDefaults() {
+      const defaults = [
+        { t: "Score a 5 on Your APs", s: "Master AP Calc, Bio, History & 35+ more in 10 mins/day" },
+        { t: "24/7 Personal AI Tutor", s: "Ask anything. Get step-by-step clarity with Professor Pang" },
+        { t: "Instant Rubric FRQ Grader", s: "Snap a pic of your handwritten essay or math FRQ & get graded" },
+        { t: "Live 1v1 AP Quiz Battles", s: "Challenge classmates, win coins & climb the global leaderboard" },
+        { t: "Spot College Board Traps", s: "Radar alerts for tricky distractors + High-yield unit cheat sheets" }
+      ];
+
+      defaults.forEach((d, idx) => {
+        const num = idx + 1;
+        document.getElementById(`title-${num}`).value = d.t;
+        document.getElementById(`sub-${num}`).value = d.s;
+        updateSlide(num);
+      });
+    }
+
+    // High-resolution Canvas Renderer for 1080x1920 Output
+    async function renderSlideToCanvas(num) {
+      const canvas = document.getElementById('exportCanvas');
+      const ctx = canvas.getContext('2d');
+      const W = 1080;
+      const H = 1920;
+      canvas.width = W;
+      canvas.height = H;
+
+      const theme = document.getElementById('themeSelect').value;
+      const title = document.getElementById(`title-${num}`).value;
+      const sub = document.getElementById(`sub-${num}`).value;
+      const imgSrc = document.getElementById(`img-${num}`).src;
+
+      // 1. Draw Background Gradient
+      let bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+      if (theme === 'theme-nibble') {
+        bgGrad.addColorStop(0, '#581c87');
+        bgGrad.addColorStop(0.5, '#3b0764');
+        bgGrad.addColorStop(1, '#1e0538');
+      } else if (theme === 'theme-slopes') {
+        bgGrad.addColorStop(0, '#0f172a');
+        bgGrad.addColorStop(0.4, '#1e1b4b');
+        bgGrad.addColorStop(1, '#090d16');
+      } else {
+        bgGrad.addColorStop(0, '#064e3b');
+        bgGrad.addColorStop(0.6, '#0f172a');
+        bgGrad.addColorStop(1, '#022c22');
+      }
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // 2. Ambient top glow
+      let glowGrad = ctx.createRadialGradient(W / 2, 200, 10, W / 2, 200, 600);
+      glowGrad.addColorStop(0, 'rgba(192, 132, 252, 0.35)');
+      glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = glowGrad;
+      ctx.fillRect(0, 0, W, 800);
+
+      // 3. Top Badge (on Slide 1)
+      let currentY = 160;
+      if (num === 1) {
+        const badgeText = document.getElementById('badgeSelect').value;
+        ctx.save();
+        ctx.font = 'bold 30px "Plus Jakarta Sans", sans-serif';
+        const badgeW = ctx.measureText(badgeText).width + 60;
+        const badgeX = (W - badgeW) / 2;
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.14)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+        ctx.lineWidth = 2;
+        roundRect(ctx, badgeX, currentY, badgeW, 60, 30, true, true);
+
+        ctx.fillStyle = '#fde047';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(badgeText, W / 2, currentY + 30);
+        ctx.restore();
+        currentY += 100;
+      } else {
+        currentY += 40;
+      }
+
+      // 4. Draw Title
+      ctx.save();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 68px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 15;
+      ctx.shadowOffsetY = 4;
+      ctx.fillText(title, W / 2, currentY + 50);
+      ctx.restore();
+
+      // 5. Draw Subtitle
+      ctx.save();
+      ctx.fillStyle = 'rgba(241, 245, 249, 0.88)';
+      ctx.font = '600 34px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'center';
+      wrapText(ctx, sub, W / 2, currentY + 120, 880, 46);
+      ctx.restore();
+
+      // 6. Draw Phone Mockup Frame
+      const phoneW = 760;
+      const phoneH = 1380;
+      const phoneX = (W - phoneW) / 2;
+      const phoneY = 480;
+
+      // Outer Phone Shadow
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
+      ctx.shadowBlur = 60;
+      ctx.shadowOffsetY = 30;
+      ctx.fillStyle = '#0f172a';
+      roundRect(ctx, phoneX, phoneY, phoneW, phoneH, 72, true, false);
+      ctx.restore();
+
+      // Phone Border
+      ctx.save();
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 14;
+      roundRect(ctx, phoneX, phoneY, phoneW, phoneH, 72, false, true);
+      ctx.restore();
+
+      // Phone Inner Clip & Screenshot Draw
+      ctx.save();
+      roundRect(ctx, phoneX + 8, phoneY + 8, phoneW - 16, phoneH - 16, 64, false, false);
+      ctx.clip();
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      await new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve;
+        img.src = imgSrc;
+      });
+
+      if (img.width > 0) {
+        // Draw image covering phone screen
+        ctx.drawImage(img, phoneX + 8, phoneY + 8, phoneW - 16, phoneH - 16);
+      } else {
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(phoneX + 8, phoneY + 8, phoneW - 16, phoneH - 16);
+      }
+
+      // Draw Dynamic Island on top
+      ctx.fillStyle = '#000000';
+      const islandW = 190;
+      const islandH = 46;
+      roundRect(ctx, W / 2 - islandW / 2, phoneY + 24, islandW, islandH, 23, true, false);
+
+      ctx.restore();
+
+      return canvas;
+    }
+
+    function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+      if (fill) ctx.fill();
+      if (stroke) ctx.stroke();
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      let currentY = y;
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+        if (testWidth > maxWidth && n > 0) {
+          ctx.fillText(line, x, currentY);
+          line = words[n] + ' ';
+          currentY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, x, currentY);
+    }
+
+    async function exportCurrentSlide(num) {
+      const canvas = await renderSlideToCanvas(num);
+      const link = document.createElement('a');
+      link.download = `ap_exam_screenshot_${num}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    async function exportAllSlides() {
+      for (let i = 1; i <= 5; i++) {
+        await exportCurrentSlide(i);
+        await new Promise(r => setTimeout(r, 600)); // small delay between downloads
+      }
+    }
+  </script>
+</body>
+
+</html>

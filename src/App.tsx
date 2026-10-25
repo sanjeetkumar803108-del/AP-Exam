@@ -13,11 +13,11 @@ import { billingService } from './services/BillingService';
 import { auth, db } from './lib/firebase';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { collection, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, getDocs } from 'firebase/firestore';
-import { 
-  subscribeToSessionRevocation, 
-  claimUserSession, 
-  getLocalSessionToken, 
-  clearLocalSessionToken 
+import {
+  subscribeToSessionRevocation,
+  claimUserSession,
+  getLocalSessionToken,
+  clearLocalSessionToken
 } from './utils/sessionManager';
 import { triggerVibration } from './utils/vibrate';
 import { Capacitor } from '@capacitor/core';
@@ -90,7 +90,7 @@ let isRevenueCatConfigured = false;
 export default function App() {
   const [activeTab, setActiveTab] = useState('notes');
   const [activeTool, setActiveTool] = useState<string | null>(null);
-  
+
   // Only show welcoming onboarding for brand new users — never for returning/old users
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isDeveloperMode, setIsDeveloperMode] = useState<boolean>(() => {
@@ -103,6 +103,40 @@ export default function App() {
     };
     window.addEventListener('developer-auth-changed', handleDevAuth);
     return () => window.removeEventListener('developer-auth-changed', handleDevAuth);
+  }, []);
+
+  // Idle Background Preloader: Preloads all feature chunks in the background so every feature page opens instantly
+  useEffect(() => {
+    const preloadAllFeatures = () => {
+      const loaders = [
+        () => import('./components/APNotes'),
+        () => import('./components/TestPrep'),
+        () => import('./components/APMindMap'),
+        () => import('./components/APTrapRadar'),
+        () => import('./components/LearningIsland'),
+        () => import('./components/APQuizBattle'),
+        () => import('./components/AITutor'),
+        () => import('./components/Profile'),
+        () => import('./components/FRQGrader'),
+        () => import('./components/CoinPage'),
+        () => import('./components/StreakDetailsPage'),
+        () => import('./components/VIPPass')
+      ];
+
+      loaders.forEach((loader, index) => {
+        setTimeout(() => {
+          loader().catch(() => { });
+        }, index * 200);
+      });
+    };
+
+    if (typeof window !== 'undefined') {
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(preloadAllFeatures, { timeout: 3500 });
+      } else {
+        setTimeout(preloadAllFeatures, 1500);
+      }
+    }
   }, []);
 
   const [networkStatus, setNetworkStatus] = useState<{
@@ -139,7 +173,7 @@ export default function App() {
           resetAllLazyChunks();
           try {
             window.dispatchEvent(new CustomEvent('app-force-refresh'));
-          } catch (_) {}
+          } catch (_) { }
           setTimeout(() => {
             handleForceSync().catch(err => console.warn('[App] Auto-sync notice on reconnect:', err));
           }, 100);
@@ -231,15 +265,15 @@ export default function App() {
     // Check if the app just performed a full performance optimization restart
     try {
       const isFreshBoot = sessionStorage.getItem('just_optimized_fresh_boot') === 'true' ||
-                          localStorage.getItem('just_optimized_fresh_boot') === 'true';
+        localStorage.getItem('just_optimized_fresh_boot') === 'true';
       if (isFreshBoot) {
-        try { sessionStorage.removeItem('just_optimized_fresh_boot'); } catch (_) {}
-        try { localStorage.removeItem('just_optimized_fresh_boot'); } catch (_) {}
+        try { sessionStorage.removeItem('just_optimized_fresh_boot'); } catch (_) { }
+        try { localStorage.removeItem('just_optimized_fresh_boot'); } catch (_) { }
         setTimeout(() => {
           showToast('⚡ App 100% Fully Optimized! Lag & Slowdown Fixed • Fresh 60fps Experience 🚀', 'success');
         }, 600);
       }
-    } catch (_) {}
+    } catch (_) { }
   }, []);
 
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -301,7 +335,7 @@ export default function App() {
   const [mobileToast, setMobileToast] = useState<string | null>(null);
   const [sessionRevokedNotice, setSessionRevokedNotice] = useState<string | null>(null);
   const sessionRevokeUnsubRef = useRef<(() => void) | null>(null);
-  
+
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     return safeGetItem('study_dark_mode') === 'true';
   });
@@ -394,7 +428,7 @@ export default function App() {
     scrubTransientData();
     // Warm up PaywallModal chunk during idle so Flash Sale and Pro modals open instantly with zero lag
     const timer = setTimeout(() => {
-      import('./components/PaywallModal').catch(() => {});
+      import('./components/PaywallModal').catch(() => { });
     }, 1500);
     return () => clearTimeout(timer);
   }, []);
@@ -417,8 +451,8 @@ export default function App() {
         // restored background cache / IndexedDB persistence, or unauthenticated state).
         // This stops stale background cache / IndexedDB persistence from auto-logging into
         // a random/stale email and auto-opening the app dashboard without user consent.
-        const isExplicitlyAuthenticated = 
-          safeGetItem('apexam_user_authenticated') === 'true' && 
+        const isExplicitlyAuthenticated =
+          safeGetItem('apexam_user_authenticated') === 'true' &&
           safeGetItem('last_logged_in_user') === currentUser.uid;
 
         const isLoginInProgress = safeGetItem('apexam_login_in_progress') === 'true';
@@ -429,10 +463,10 @@ export default function App() {
           setIsVip(false);
           setAuthLoading(false);
           if (Capacitor.isNativePlatform()) {
-            try { await FirebaseAuthentication.signOut(); } catch (_) {}
-            try { await clearGoogleCredentialState(); } catch (_) {}
+            try { await FirebaseAuthentication.signOut(); } catch (_) { }
+            try { await clearGoogleCredentialState(); } catch (_) { }
           }
-          try { await signOut(auth); } catch (_) {}
+          try { await signOut(auth); } catch (_) { }
           return;
         } else {
           safeRemoveItem('apexam_login_in_progress');
@@ -487,19 +521,34 @@ export default function App() {
       if (currentUser) {
         setSessionRevokedNotice(null);
         refillDailyCoins();
-        
+
         // Sync user with RevenueCat if already configured (never re-call configure)
         if (Capacitor.isNativePlatform() && isRevenueCatConfigured) {
           Purchases.logIn({ appUserID: currentUser.uid }).catch(err => {
             console.warn('RevenueCat logIn notice on auth state change:', err);
           });
         }
-        
+
         // 1. Initially set to specific user cached state or false (prevent leak from other sessions)
         const cachedUserVip = safeGetItem(`study_is_vip_${currentUser.uid}`) === 'true';
         setIsVip(cachedUserVip);
-        
-        // 2. Fresh Fetch on Login: Try Firestore first to ensure high consistency with user profile
+
+        // INSTANT OFFLINE-FIRST HYDRATION:
+        // If this returning user already completed setup locally, unblock UI immediately (0.05s boot)!
+        // Network sync runs smoothly in the background without blocking the student.
+        const isKnownCompleted =
+          safeGetItem(`onboarding_completed_${currentUser.uid}`) === 'true' ||
+          safeGetItem(`academic_setup_completed_${currentUser.uid}`) === 'true' ||
+          safeGetItem(`isOnboardingComplete_${currentUser.uid}`) === 'true' ||
+          safeGetItem('onboarding_completed') === 'true';
+
+        if (isKnownCompleted) {
+          setShowOnboarding(false);
+          setShowAcademicSetup(false);
+          setAuthLoading(false);
+        }
+
+        // 2. Fresh Fetch on Login: Runs asynchronously in background to ensure high consistency with user profile
         const fetchPromise = (async () => {
           try {
             // Determine onboarding routing using unified single-source-of-truth
@@ -580,7 +629,7 @@ export default function App() {
               const userKey = `study_daily_limit_${currentUser.uid}`;
               safeSetItem(userKey, String(initialCoins));
               window.dispatchEvent(new CustomEvent('study-coins-updated', { detail: initialCoins }));
-              
+
               await setDoc(doc(db, 'users', currentUser.uid), {
                 userId: currentUser.uid,
                 email: currentUser.email || '',
@@ -624,8 +673,8 @@ export default function App() {
           safeSetItem('study_is_vip', String(verifiedVal));
         })();
 
-        // 2000ms max wait time to prevent loading screens under flaky network
-        const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 2000));
+        // Fast fallback for brand new unverified accounts: max 350ms wait so slow internet never freezes the app
+        const timeoutPromise = new Promise((resolve) => setTimeout(resolve, isKnownCompleted ? 0 : 350));
 
         Promise.race([fetchPromise, timeoutPromise])
           .finally(() => {
@@ -637,7 +686,7 @@ export default function App() {
         setIsVip(false);
         setUser(null);
         setAuthLoading(false);
-        
+
         // Log out from RevenueCat
         if (Capacitor.isNativePlatform() && isRevenueCatConfigured) {
           Purchases.logOut().catch(err => {
@@ -701,7 +750,7 @@ export default function App() {
             if (Array.isArray(parsed) && parsed.length > 0) {
               setPocketItems(parsed);
             }
-          } catch (_) {}
+          } catch (_) { }
         }
       }
     });
@@ -711,7 +760,7 @@ export default function App() {
   // Manual force sync handler for Pull-to-Refresh
   const handleForceSync = async () => {
     console.log('[ForceSync] Running manual pull-to-refresh sync...');
-    try { triggerVibration(15); } catch (_) {}
+    try { triggerVibration(15); } catch (_) { }
 
     // 1. Invalidate and refresh all dynamic lazy chunks
     resetAllLazyChunks();
@@ -719,7 +768,7 @@ export default function App() {
     // 2. Dispatch global app-force-refresh event across all active views and error boundaries
     try {
       window.dispatchEvent(new CustomEvent('app-force-refresh'));
-    } catch (_) {}
+    } catch (_) { }
 
     // 3. Refresh connection status
     if (typeof navigator !== 'undefined' && navigator.onLine) {
@@ -816,7 +865,7 @@ export default function App() {
               currentStreak: updatedStreak,
               lastActiveDate: todayStr
             }, { merge: true });
-            
+
             // Sync locally
             safeSetItem('study_punches', String(updatedStreak));
             safeSetItem('study_last_punch_date', todayStr);
@@ -863,6 +912,7 @@ export default function App() {
   const showVipModalRef = useRef(showVipModal);
   const showPaywallModalRef = useRef(showPaywallModal);
   const showAcademicSetupRef = useRef(showAcademicSetup);
+  const showWelcomeCelebrationRef = useRef(showWelcomeCelebration);
 
   useEffect(() => {
     activeToolRef.current = activeTool;
@@ -872,6 +922,7 @@ export default function App() {
     showVipModalRef.current = showVipModal;
     showPaywallModalRef.current = showPaywallModal;
     showAcademicSetupRef.current = showAcademicSetup;
+    showWelcomeCelebrationRef.current = showWelcomeCelebration;
   });
 
   // Native back button navigation handler - attached ONCE on mount to eliminate bridge race conditions
@@ -887,6 +938,10 @@ export default function App() {
         return;
       }
 
+      if (showWelcomeCelebrationRef.current) {
+        setShowWelcomeCelebration(false);
+        return;
+      }
       if (showLoginModalRef.current) {
         setShowLoginModal(false);
         return;
@@ -933,7 +988,7 @@ export default function App() {
     });
 
     return () => {
-      backButtonListener.then(l => l.remove()).catch(() => {});
+      backButtonListener.then(l => l.remove()).catch(() => { });
     };
   }, []);
 
@@ -1015,426 +1070,424 @@ export default function App() {
         fallbackSkeleton={<FullPageSkeleton />}
       >
         <div className={`w-full flex flex-col h-[100dvh] ${Capacitor.isNativePlatform() ? 'max-w-none m-0 rounded-none border-0' : 'max-w-md mx-auto landscape:max-w-none landscape:w-full landscape:h-[100dvh] landscape:m-0 landscape:rounded-none landscape:border-0 sm:rounded-[2rem] sm:h-[90vh] sm:mt-[5vh] sm:border'} ${isDarkMode ? 'dark bg-zinc-950 text-zinc-100 sm:border-zinc-800' : 'bg-[#FAF9F6] text-zinc-900 sm:border-zinc-200'} font-sans overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.15)] relative`}>
-        {/* Global Network Status Banner */}
-        <AnimatePresence>
-          {networkStatus.visible && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className={`w-full py-2 px-4 z-[999] shrink-0 overflow-hidden flex items-center justify-center gap-2 text-xs font-bold shadow-md select-none ${
-                !networkStatus.connected
-                  ? 'bg-red-600 text-white dark:bg-red-950 dark:text-red-200 border-b border-red-500/30'
-                  : 'bg-emerald-600 text-white dark:bg-emerald-950 dark:text-emerald-200 border-b border-emerald-500/30'
-              }`}
-            >
-              {!networkStatus.connected ? (
-                <>
-                  <WifiOff className="w-3.5 h-3.5" />
-                  <span>Currently Offline</span>
-                </>
-              ) : (
-                <>
-                  <Wifi className="w-3.5 h-3.5" />
-                  <span>Back Online</span>
-                </>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      {activeTab !== 'scanner' && activeTab !== 'frqgrader' && activeTab !== 'aitutor' && activeTab !== 'notes' && activeTab !== 'profile' && activeTool === null && (
-        <header className="px-6 py-5 bg-white border-b border-zinc-200/60 z-10 flex justify-between items-center">
-          <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-amber-500 bg-clip-text text-transparent">AP Exam</h1>
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => {
-                triggerVibration(15);
-                setActiveTab('profile');
-              }}
-              className="w-10 h-10 rounded-full flex items-center justify-center bg-zinc-100 text-zinc-600 hover:text-zinc-900 transition-colors shadow-sm border border-zinc-200/40"
-            >
-              {user ? (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-                  {user.email?.[0].toUpperCase() || 'U'}
-                </div>
-              ) : (
-                <UserCircle className="w-6 h-6" />
-              )}
-            </button>
-          </div>
-        </header>
-      )}
-      
-      <main className={`w-full ${(Capacitor.isNativePlatform() || activeTool !== null) ? 'max-w-none' : 'max-w-md mx-auto landscape:max-w-none'} flex-1 min-h-0 relative z-0 ${(activeTab === 'frqgrader' || activeTab === 'scanner' || activeTab === 'aitutor' || activeTab === 'teacher' || activeTool !== null) ? 'overflow-hidden flex flex-col' : 'overflow-y-auto pb-20'} bg-[#FAF9F6]`}>
-        {/* FRQ Grader Tab (Replaces legacy Scan second section) */}
-        {/* FRQ Grader Tab (Mounted strictly when active to prevent background camera access) */}
-        {activeTab === 'frqgrader' && activeTool === null && (
-          <div className="h-full flex flex-col flex-1 min-h-0">
-            <ErrorBoundary featureName="FRQ Grader" onClose={() => setActiveTab('notes')}>
-              <Suspense fallback={<FullPageSkeleton />}>
-                <FRQGrader 
-                  isActive={activeTab === 'frqgrader' && activeTool === null}
-                  onBack={() => {
-                    setActiveTab('notes');
-                    setActiveTool(null);
-                  }} 
-                />
-              </Suspense>
-            </ErrorBoundary>
-          </div>
-        )}
-
-        {/* AI Tutor Tab */}
-        <div className={activeTab === 'aitutor' ? 'h-full flex flex-col flex-1 min-h-0' : 'hidden'}>
-          <ErrorBoundary featureName="AI Tutor" onClose={() => setActiveTab('notes')}>
-            <Suspense fallback={<FullPageSkeleton />}>
-              <AITutor isVip={isVip} isActive={activeTab === 'aitutor'} />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
-
-        {/* Home/Notes Tab */}
-        <div className={activeTab === 'notes' ? 'h-full flex flex-col flex-1 min-h-0' : 'hidden'}>
-          <div className={activeTool === null ? "h-full flex flex-col flex-1 min-h-0" : "hidden"}>
-            <ErrorBoundary featureName="Home Dashboard" onRetry={() => resetAllLazyChunks()}>
-              <Suspense fallback={<FullPageSkeleton />}>
-                <ToolsDashboard 
-                  isVip={isVip} 
-                  user={user}
-                  pocketItems={pocketItems}
-                  onOpenVip={handleOpenVipFromDashboard}
-                  onOpenProfile={handleOpenProfileFromDashboard}
-                  onOpenLogin={handleOpenLoginFromDashboard}
-                  onSelectTool={handleSelectToolFromDashboard} 
-                  activeTab={activeTab}
-                  onForceSync={handleForceSync}
-                />
-              </Suspense>
-            </ErrorBoundary>
-          </div>
-          {/* Active Tool Rendering isolated and keyed to prevent state/boundary reuse hitch */}
-          {activeTool !== null && (
-            <div className="w-full h-full flex flex-col flex-1 min-h-0 overflow-hidden">
-              <ErrorBoundary 
-                key={`active-tool-boundary-${activeTool}`} 
-                featureName={`Tool: ${activeTool}`} 
-                onClose={() => setActiveTool(null)} 
-                onReset={() => setActiveTool(null)}
+          {/* Global Network Status Banner */}
+          <AnimatePresence>
+            {networkStatus.visible && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className={`w-full py-2 px-4 z-[999] shrink-0 overflow-hidden flex items-center justify-center gap-2 text-xs font-bold shadow-md select-none ${!networkStatus.connected
+                    ? 'bg-red-600 text-white dark:bg-red-950 dark:text-red-200 border-b border-red-500/30'
+                    : 'bg-emerald-600 text-white dark:bg-emerald-950 dark:text-emerald-200 border-b border-emerald-500/30'
+                  }`}
               >
-                <Suspense key={`active-tool-suspense-${activeTool}`} fallback={<FullPageSkeleton />}>
-                {activeTool === 'apnotes' && (
-                <ErrorBoundary featureName="AP Notes" onClose={() => setActiveTool(null)}>
-                  <APNotes 
-                    onBack={() => setActiveTool(null)} 
-                    onNavigateToTab={(tab) => {
-                      setActiveTool(null);
-                      setActiveTab(tab);
-                    }}
-                    isVip={isVip}
-                  />
-                </ErrorBoundary>
-              )}
-              {activeTool === 'testprep' && (
-                <ErrorBoundary 
-                  featureName="AP Sample Paper Sets"
-                  fallbackMessage="Unable to load AP Sample Paper Sets. Tap below to auto-repair or return to dashboard."
-                  onClose={() => setActiveTool(null)}
-                  onRetry={() => resetAllLazyChunks()}
-                  cacheKeysToPurgeOnCrash={['ap_test_prep_history']}
+                {!networkStatus.connected ? (
+                  <>
+                    <WifiOff className="w-3.5 h-3.5" />
+                    <span>Currently Offline</span>
+                  </>
+                ) : (
+                  <>
+                    <Wifi className="w-3.5 h-3.5" />
+                    <span>Back Online</span>
+                  </>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {activeTab !== 'scanner' && activeTab !== 'frqgrader' && activeTab !== 'aitutor' && activeTab !== 'notes' && activeTab !== 'profile' && activeTool === null && (
+            <header className="px-6 py-5 bg-white border-b border-zinc-200/60 z-10 flex justify-between items-center">
+              <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-amber-500 bg-clip-text text-transparent">AP Exam</h1>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    triggerVibration(15);
+                    setActiveTab('profile');
+                  }}
+                  className="w-10 h-10 rounded-full flex items-center justify-center bg-zinc-100 text-zinc-600 hover:text-zinc-900 transition-colors shadow-sm border border-zinc-200/40"
                 >
-                  <TestPrep 
-                    onBack={() => setActiveTool(null)} 
-                    isVip={isVip}
-                    onOpenVip={() => setShowVipModal(true)}
-                    onNavigateToTab={(tab) => {
-                      setActiveTool(null);
-                      setActiveTab(tab);
-                    }}
-                  />
-                </ErrorBoundary>
-              )}
-              {activeTool === 'quizbattle' && (
-                <div className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
-                  <ErrorBoundary 
-                    featureName="1v1 Quiz Battle"
-                    fallbackMessage="Unable to load 1v1 Battle Arena. Tap below to return."
-                    onClose={() => setActiveTool(null)}
-                    onRetry={() => resetAllLazyChunks()}
-                  >
-                    <APQuizBattle 
-                      onBack={() => setActiveTool(null)} 
-                      user={user} 
-                      isVip={isVip} 
-                    />
-                  </ErrorBoundary>
-                </div>
-              )}
-              {activeTool === 'learningisland' && (
-                <div className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
-                  <ErrorBoundary 
-                    featureName="Learning Island"
-                    fallbackMessage="Unable to load Learning Island. Tap below to auto-repair or return to dashboard."
-                    onClose={() => setActiveTool(null)}
-                    onRetry={() => resetAllLazyChunks()}
-                    cacheKeysToPurgeOnCrash={['learning_island_temp_']}
-                  >
-                    <LearningIsland onBack={() => setActiveTool(null)} user={user} />
-                  </ErrorBoundary>
-                </div>
-              )}
+                  {user ? (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                      {user.email?.[0].toUpperCase() || 'U'}
+                    </div>
+                  ) : (
+                    <UserCircle className="w-6 h-6" />
+                  )}
+                </button>
+              </div>
+            </header>
+          )}
 
-              {activeTool === 'trapradar' && (
-                <ErrorBoundary featureName="Trap Radar" onClose={() => setActiveTool(null)}>
-                  <APTrapRadar 
-                    onBack={() => setActiveTool(null)} 
-                    isVip={isVip}
-                  />
-                </ErrorBoundary>
-              )}
-              {activeTool === 'mindmap' && (
-                <ErrorBoundary featureName="Short Notes" onClose={() => setActiveTool(null)}>
-                  <APMindMap 
-                    onBack={() => setActiveTool(null)} 
-                    isVip={isVip}
-                  />
-                </ErrorBoundary>
-              )}
-              {activeTool === 'frqgrader' && (
-                <div className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
-                  <ErrorBoundary featureName="FRQ Grader" onClose={() => setActiveTool(null)}>
-                    <FRQGrader 
-                      isActive={activeTool === 'frqgrader'}
-                      onBack={() => setActiveTool(null)} 
+          <main className={`w-full ${(Capacitor.isNativePlatform() || activeTool !== null) ? 'max-w-none' : 'max-w-md mx-auto landscape:max-w-none'} flex-1 min-h-0 relative z-0 ${(activeTab === 'frqgrader' || activeTab === 'scanner' || activeTab === 'aitutor' || activeTab === 'teacher' || activeTool !== null) ? 'overflow-hidden flex flex-col' : 'overflow-y-auto pb-20'} bg-[#FAF9F6]`}>
+            {/* FRQ Grader Tab (Replaces legacy Scan second section) */}
+            {/* FRQ Grader Tab (Mounted strictly when active to prevent background camera access) */}
+            {activeTab === 'frqgrader' && activeTool === null && (
+              <div className="h-full flex flex-col flex-1 min-h-0">
+                <ErrorBoundary featureName="FRQ Grader" onClose={() => setActiveTab('notes')}>
+                  <Suspense fallback={<FullPageSkeleton />}>
+                    <FRQGrader
+                      isActive={activeTab === 'frqgrader' && activeTool === null}
+                      onBack={() => {
+                        setActiveTab('notes');
+                        setActiveTool(null);
+                      }}
                     />
-                  </ErrorBoundary>
-                </div>
-              )}
-              {activeTool === 'coinpage' && (
-                <ErrorBoundary featureName="Coin Page" onClose={() => setActiveTool(null)}>
-                  <CoinPage 
-                    isVip={isVip}
-                    onClose={() => setActiveTool(null)} 
-                    onSelectTool={(tool) => {
-                      if (tool === 'tab:scanner' || tool === 'tab:frqgrader' || tool === 'frqgrader') {
-                        setActiveTab('frqgrader');
-                        setActiveTool(null);
-                      } else if (tool === 'tab:aitutor') {
-                        setActiveTab('aitutor');
-                        setActiveTool(null);
-                      } else {
-                        setActiveTool(tool);
-                      }
-                    }} 
-                  />
+                  </Suspense>
                 </ErrorBoundary>
-              )}
-              {activeTool === 'streakpage' && (
-                <ErrorBoundary featureName="Streak Details" onClose={() => setActiveTool(null)}>
-                  <StreakDetailsPage onBack={() => setActiveTool(null)} />
-                </ErrorBoundary>
-              )}
+              </div>
+            )}
+
+            {/* AI Tutor Tab */}
+            <div className={activeTab === 'aitutor' ? 'h-full flex flex-col flex-1 min-h-0' : 'hidden'}>
+              <ErrorBoundary featureName="AI Tutor" onClose={() => setActiveTab('notes')}>
+                <Suspense fallback={<FullPageSkeleton />}>
+                  <AITutor isVip={isVip} isActive={activeTab === 'aitutor'} />
                 </Suspense>
               </ErrorBoundary>
             </div>
+
+            {/* Home/Notes Tab */}
+            <div className={activeTab === 'notes' ? 'h-full flex flex-col flex-1 min-h-0' : 'hidden'}>
+              <div className={activeTool === null ? "h-full flex flex-col flex-1 min-h-0" : "hidden"}>
+                <ErrorBoundary featureName="Home Dashboard" onRetry={() => resetAllLazyChunks()}>
+                  <Suspense fallback={<FullPageSkeleton />}>
+                    <ToolsDashboard
+                      isVip={isVip}
+                      user={user}
+                      pocketItems={pocketItems}
+                      onOpenVip={handleOpenVipFromDashboard}
+                      onOpenProfile={handleOpenProfileFromDashboard}
+                      onOpenLogin={handleOpenLoginFromDashboard}
+                      onSelectTool={handleSelectToolFromDashboard}
+                      activeTab={activeTab}
+                      onForceSync={handleForceSync}
+                    />
+                  </Suspense>
+                </ErrorBoundary>
+              </div>
+              {/* Active Tool Rendering isolated and keyed to prevent state/boundary reuse hitch */}
+              {activeTool !== null && (
+                <div className="w-full h-full flex flex-col flex-1 min-h-0 overflow-hidden">
+                  <ErrorBoundary
+                    key={`active-tool-boundary-${activeTool}`}
+                    featureName={`Tool: ${activeTool}`}
+                    onClose={() => setActiveTool(null)}
+                    onReset={() => setActiveTool(null)}
+                  >
+                    <Suspense key={`active-tool-suspense-${activeTool}`} fallback={<FullPageSkeleton />}>
+                      {activeTool === 'apnotes' && (
+                        <ErrorBoundary featureName="AP Notes" onClose={() => setActiveTool(null)}>
+                          <APNotes
+                            onBack={() => setActiveTool(null)}
+                            onNavigateToTab={(tab) => {
+                              setActiveTool(null);
+                              setActiveTab(tab);
+                            }}
+                            isVip={isVip}
+                          />
+                        </ErrorBoundary>
+                      )}
+                      {activeTool === 'testprep' && (
+                        <ErrorBoundary
+                          featureName="AP Sample Paper Sets"
+                          fallbackMessage="Unable to load AP Sample Paper Sets. Tap below to auto-repair or return to dashboard."
+                          onClose={() => setActiveTool(null)}
+                          onRetry={() => resetAllLazyChunks()}
+                          cacheKeysToPurgeOnCrash={['ap_test_prep_history']}
+                        >
+                          <TestPrep
+                            onBack={() => setActiveTool(null)}
+                            isVip={isVip}
+                            onOpenVip={() => setShowVipModal(true)}
+                            onNavigateToTab={(tab) => {
+                              setActiveTool(null);
+                              setActiveTab(tab);
+                            }}
+                          />
+                        </ErrorBoundary>
+                      )}
+                      {activeTool === 'quizbattle' && (
+                        <div className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
+                          <ErrorBoundary
+                            featureName="1v1 Quiz Battle"
+                            fallbackMessage="Unable to load 1v1 Battle Arena. Tap below to return."
+                            onClose={() => setActiveTool(null)}
+                            onRetry={() => resetAllLazyChunks()}
+                          >
+                            <APQuizBattle
+                              onBack={() => setActiveTool(null)}
+                              user={user}
+                              isVip={isVip}
+                            />
+                          </ErrorBoundary>
+                        </div>
+                      )}
+                      {activeTool === 'learningisland' && (
+                        <div className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
+                          <ErrorBoundary
+                            featureName="Learning Island"
+                            fallbackMessage="Unable to load Learning Island. Tap below to auto-repair or return to dashboard."
+                            onClose={() => setActiveTool(null)}
+                            onRetry={() => resetAllLazyChunks()}
+                            cacheKeysToPurgeOnCrash={['learning_island_temp_']}
+                          >
+                            <LearningIsland onBack={() => setActiveTool(null)} user={user} />
+                          </ErrorBoundary>
+                        </div>
+                      )}
+
+                      {activeTool === 'trapradar' && (
+                        <ErrorBoundary featureName="Trap Radar" onClose={() => setActiveTool(null)}>
+                          <APTrapRadar
+                            onBack={() => setActiveTool(null)}
+                            isVip={isVip}
+                          />
+                        </ErrorBoundary>
+                      )}
+                      {activeTool === 'mindmap' && (
+                        <ErrorBoundary featureName="Short Notes" onClose={() => setActiveTool(null)}>
+                          <APMindMap
+                            onBack={() => setActiveTool(null)}
+                            isVip={isVip}
+                          />
+                        </ErrorBoundary>
+                      )}
+                      {activeTool === 'frqgrader' && (
+                        <div className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
+                          <ErrorBoundary featureName="FRQ Grader" onClose={() => setActiveTool(null)}>
+                            <FRQGrader
+                              isActive={activeTool === 'frqgrader'}
+                              onBack={() => setActiveTool(null)}
+                            />
+                          </ErrorBoundary>
+                        </div>
+                      )}
+                      {activeTool === 'coinpage' && (
+                        <ErrorBoundary featureName="Coin Page" onClose={() => setActiveTool(null)}>
+                          <CoinPage
+                            isVip={isVip}
+                            onClose={() => setActiveTool(null)}
+                            onSelectTool={(tool) => {
+                              if (tool === 'tab:scanner' || tool === 'tab:frqgrader' || tool === 'frqgrader') {
+                                setActiveTab('frqgrader');
+                                setActiveTool(null);
+                              } else if (tool === 'tab:aitutor') {
+                                setActiveTab('aitutor');
+                                setActiveTool(null);
+                              } else {
+                                setActiveTool(tool);
+                              }
+                            }}
+                          />
+                        </ErrorBoundary>
+                      )}
+                      {activeTool === 'streakpage' && (
+                        <ErrorBoundary featureName="Streak Details" onClose={() => setActiveTool(null)}>
+                          <StreakDetailsPage onBack={() => setActiveTool(null)} />
+                        </ErrorBoundary>
+                      )}
+                    </Suspense>
+                  </ErrorBoundary>
+                </div>
+              )}
+            </div>
+
+            {/* Profile Tab */}
+            <div className={activeTab === 'profile' ? 'h-full flex flex-col flex-1 min-h-0' : 'hidden'}>
+              <ErrorBoundary featureName="Profile" onClose={() => setActiveTab('notes')}>
+                <Suspense fallback={<FullPageSkeleton />}>
+                  <Profile
+                    user={user}
+                    isVip={isVip}
+                    setIsVip={handleSetIsVip}
+                    onClose={() => setActiveTab('notes')}
+                    isDarkMode={isDarkMode}
+                    onToggleDarkMode={toggleDarkMode}
+                    isTabMode={true}
+                    onOpenLogin={() => setShowLoginModal(true)}
+                    onNavigateToCoinPage={() => {
+                      setActiveTab('notes');
+                      setActiveTool('coinpage');
+                    }}
+                    onNavigateToStreakPage={() => {
+                      setActiveTab('notes');
+                      setActiveTool('streakpage');
+                    }}
+                  />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+          </main>
+
+          {activeTool === null && (
+            <nav className="absolute bottom-0 w-full border-t pb-safe z-20 transition-all duration-300 bg-white/95 dark:bg-zinc-950/95 border-zinc-200/60 dark:border-zinc-800/80 backdrop-blur-2xl">
+              <div className="flex justify-around items-center px-2 py-0.5 max-w-md mx-auto landscape:max-w-lg">
+                <NavItem
+                  icon={<Home className="w-5 h-5" />}
+                  label="Home"
+                  isActive={activeTab === 'notes'}
+                  onClick={() => setActiveTab('notes')}
+                  isLightTheme={!isDarkMode}
+                />
+                <NavItem
+                  icon={<Camera className="w-5 h-5" />}
+                  label="Scan"
+                  isActive={activeTab === 'frqgrader'}
+                  onClick={() => {
+                    setActiveTab('frqgrader');
+                    setActiveTool(null);
+                  }}
+                  isLightTheme={!isDarkMode}
+                />
+                <NavItem
+                  icon={<UserCircle className="w-5 h-5" />}
+                  label="Profile"
+                  isActive={activeTab === 'profile'}
+                  onClick={() => setActiveTab('profile')}
+                  isLightTheme={!isDarkMode}
+                />
+              </div>
+            </nav>
           )}
+
+          {/* Floating Circular AI Magic Tutor Penguin on Homepage */}
+          <FloatingTutorPenguin
+            isVisible={activeTab === 'notes' && activeTool === null && !showWelcomeCelebration}
+            onOpenTutor={() => {
+              setActiveTab('aitutor');
+              setActiveTool(null);
+            }}
+          />
+
+          <AnimatePresence>
+            {showVipModal && !isVip && (
+              <motion.div key="vip"
+                initial={{ opacity: 0, y: '100%' }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="absolute inset-0 z-50 bg-[#FAF9F6]"
+              >
+                <Suspense fallback={<FullPageSkeleton />}>
+                  <VIPPass
+                    isVip={isVip}
+                    onUpgrade={() => {
+                      setShowVipModal(false);
+                      window.dispatchEvent(new CustomEvent('open-paywall-modal', { detail: { featureName: "PRO Benefits" } }));
+                    }}
+                    onClose={() => setShowVipModal(false)}
+                  />
+                </Suspense>
+              </motion.div>
+            )}
+
+            {showLoginModal && (
+              <motion.div key="login"
+                initial={{ opacity: 0, y: '100%' }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="absolute inset-0 z-[60] bg-[#FAF9F6]"
+              >
+                <Suspense fallback={<FullPageSkeleton />}>
+                  <Login
+                    onClose={() => setShowLoginModal(false)}
+                    onLoginSuccess={(target) => {
+                      setShowLoginModal(false);
+                      if (target === 'developer') {
+                        setIsDeveloperMode(true);
+                        return;
+                      }
+                      if (target === 'setup') {
+                        setShowAcademicSetup(true);
+                      } else if (target === 'onboarding') {
+                        setShowOnboarding(true);
+                      }
+                    }}
+                  />
+                </Suspense>
+              </motion.div>
+            )}
+
+            {/* Profile modal removed since it is now a main tab */}
+          </AnimatePresence>
+
+          {/* Floating Mobile Toast Notification */}
+          <AnimatePresence>
+            {mobileToast && (
+              <motion.div
+                initial={{ opacity: 0, y: 30, scale: 0.92 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 15, scale: 0.92 }}
+                transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[9999] bg-zinc-900/95 dark:bg-zinc-800/95 text-white px-4 py-2 rounded-full shadow-2xl border border-zinc-700/60 backdrop-blur-md flex items-center gap-2.5 whitespace-nowrap pointer-events-auto"
+              >
+                <span className="text-xs font-black tracking-tight whitespace-nowrap">
+                  {mobileToast}
+                </span>
+                <button
+                  onClick={() => setMobileToast(null)}
+                  className="w-5 h-5 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
+                  title="Close notification"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <Suspense fallback={null}>
+            <PaywallModal
+              isOpen={showPaywallModal}
+              onClose={() => setShowPaywallModal(false)}
+              featureName={paywallFeature}
+              onSubscribe={(cycle, _hasTrial) => {
+                setShowPaywallModal(false);
+                triggerConfetti();
+                setMobileToast("🚀 Welcome to AP Exam PRO!");
+              }}
+            />
+          </Suspense>
+
+          <WelcomeCelebrationModal
+            isOpen={showWelcomeCelebration}
+            onClose={() => {
+              setShowWelcomeCelebration(false);
+            }}
+            userId={user?.uid}
+            userName={user?.displayName || 'Scholar'}
+          />
         </div>
-
-        {/* Profile Tab */}
-        <div className={activeTab === 'profile' ? 'h-full flex flex-col flex-1 min-h-0' : 'hidden'}>
-          <ErrorBoundary featureName="Profile" onClose={() => setActiveTab('notes')}>
-            <Suspense fallback={<FullPageSkeleton />}>
-              <Profile 
-                user={user}
-                isVip={isVip}
-                setIsVip={handleSetIsVip}
-                onClose={() => setActiveTab('notes')} 
-                isDarkMode={isDarkMode}
-                onToggleDarkMode={toggleDarkMode}
-                isTabMode={true}
-                onOpenLogin={() => setShowLoginModal(true)}
-                onNavigateToCoinPage={() => {
-                  setActiveTab('notes');
-                  setActiveTool('coinpage');
-                }}
-                onNavigateToStreakPage={() => {
-                  setActiveTab('notes');
-                  setActiveTool('streakpage');
-                }}
-              />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
-      </main>
-
-      {activeTool === null && (
-        <nav className="absolute bottom-0 w-full border-t pb-safe z-20 transition-all duration-300 bg-white/95 dark:bg-zinc-950/95 border-zinc-200/60 dark:border-zinc-800/80 backdrop-blur-2xl">
-          <div className="flex justify-around items-center px-2 py-0.5 max-w-md mx-auto landscape:max-w-lg">
-            <NavItem 
-              icon={<Home className="w-5 h-5" />} 
-              label="Home" 
-              isActive={activeTab === 'notes'} 
-              onClick={() => setActiveTab('notes')} 
-              isLightTheme={!isDarkMode}
-            />
-            <NavItem 
-              icon={<Camera className="w-5 h-5" />} 
-              label="Scan" 
-              isActive={activeTab === 'frqgrader'} 
-              onClick={() => {
-                setActiveTab('frqgrader');
-                setActiveTool(null);
-              }} 
-              isLightTheme={!isDarkMode}
-            />
-            <NavItem 
-              icon={<UserCircle className="w-5 h-5" />} 
-              label="Profile" 
-              isActive={activeTab === 'profile'} 
-              onClick={() => setActiveTab('profile')} 
-              isLightTheme={!isDarkMode}
-            />
-          </div>
-        </nav>
-      )}
-
-      {/* Floating Circular AI Magic Tutor Penguin on Homepage */}
-      <FloatingTutorPenguin
-        isVisible={activeTab === 'notes' && activeTool === null && !showWelcomeCelebration}
-        onOpenTutor={() => {
-          setActiveTab('aitutor');
-          setActiveTool(null);
-        }}
-      />
-
-      <AnimatePresence>
-        {showVipModal && !isVip && (
-          <motion.div key="vip" 
-            initial={{ opacity: 0, y: '100%' }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="absolute inset-0 z-50 bg-[#FAF9F6]"
-          >
-            <Suspense fallback={<FullPageSkeleton />}>
-              <VIPPass 
-                isVip={isVip} 
-                onUpgrade={() => { 
-                  setShowVipModal(false); 
-                  window.dispatchEvent(new CustomEvent('open-paywall-modal', { detail: { featureName: "PRO Benefits" } }));
-                }} 
-                onClose={() => setShowVipModal(false)} 
-              />
-            </Suspense>
-          </motion.div>
-        )}
-
-        {showLoginModal && (
-          <motion.div key="login" 
-            initial={{ opacity: 0, y: '100%' }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="absolute inset-0 z-[60] bg-[#FAF9F6]"
-          >
-            <Suspense fallback={<FullPageSkeleton />}>
-              <Login 
-                onClose={() => setShowLoginModal(false)} 
-                onLoginSuccess={(target) => {
-                  setShowLoginModal(false);
-                  if (target === 'developer') {
-                    setIsDeveloperMode(true);
-                    return;
-                  }
-                  if (target === 'setup') {
-                    setShowAcademicSetup(true);
-                  } else if (target === 'onboarding') {
-                    setShowOnboarding(true);
-                  }
-                }} 
-              />
-            </Suspense>
-          </motion.div>
-        )}
-
-        {/* Profile modal removed since it is now a main tab */}
-      </AnimatePresence>
-
-      {/* Floating Mobile Toast Notification */}
-      <AnimatePresence>
-        {mobileToast && (
-          <motion.div
-            initial={{ opacity: 0, y: 30, scale: 0.92 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 15, scale: 0.92 }}
-            transition={{ type: "spring", stiffness: 400, damping: 28 }}
-            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[9999] bg-zinc-900/95 dark:bg-zinc-800/95 text-white px-4 py-2 rounded-full shadow-2xl border border-zinc-700/60 backdrop-blur-md flex items-center gap-2.5 whitespace-nowrap pointer-events-auto"
-          >
-            <span className="text-xs font-black tracking-tight whitespace-nowrap">
-              {mobileToast}
-            </span>
-            <button 
-              onClick={() => setMobileToast(null)} 
-              className="w-5 h-5 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
-              title="Close notification"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <Suspense fallback={null}>
-        <PaywallModal 
-          isOpen={showPaywallModal} 
-          onClose={() => setShowPaywallModal(false)} 
-          featureName={paywallFeature}
-          onSubscribe={(cycle, _hasTrial) => {
-            setShowPaywallModal(false);
-            triggerConfetti();
-            setMobileToast("🚀 Welcome to AP Exam PRO!");
-          }}
-        />
-      </Suspense>
-
-      <WelcomeCelebrationModal 
-        isOpen={showWelcomeCelebration} 
-        onClose={() => {
-          setShowWelcomeCelebration(false);
-        }} 
-        userId={user?.uid}
-        userName={user?.displayName || 'Scholar'}
-      />
-      </div>
       </AuthGuard>
     </>
   );
 }
 
-function NavItem({ 
-  icon, 
-  label, 
-  isActive, 
-  onClick, 
-  isLightTheme 
-}: { 
-  icon: ReactNode, 
-  label: string, 
-  isActive: boolean, 
-  onClick: () => void, 
-  isLightTheme: boolean 
+function NavItem({
+  icon,
+  label,
+  isActive,
+  onClick,
+  isLightTheme
+}: {
+  icon: ReactNode,
+  label: string,
+  isActive: boolean,
+  onClick: () => void,
+  isLightTheme: boolean
 }) {
   return (
-    <button 
+    <button
       onClick={() => {
         triggerVibration(15);
         onClick();
       }}
-      className={`flex flex-col items-center py-0.5 px-1 rounded-lg transition-all duration-300 ease-in-out w-16 ${
-        isActive 
-          ? isLightTheme ? 'text-zinc-950 font-black' : 'text-purple-400 font-extrabold' 
+      className={`flex flex-col items-center py-0.5 px-1 rounded-lg transition-all duration-300 ease-in-out w-16 ${isActive
+          ? isLightTheme ? 'text-zinc-950 font-black' : 'text-purple-400 font-extrabold'
           : isLightTheme ? 'text-zinc-500 font-bold hover:text-zinc-800' : 'text-zinc-400 hover:text-zinc-100 font-semibold'
-      }`}
+        }`}
     >
       <div className={`mb-0 transition-transform duration-300 ${isActive ? 'scale-105' : ''}`}>
         {icon}

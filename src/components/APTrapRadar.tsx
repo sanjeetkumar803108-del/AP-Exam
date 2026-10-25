@@ -47,6 +47,7 @@ import { safeGetItem, safeSetItem, safeJsonParse } from '../utils/storage';
 import { getUserHistory, saveUserHistory } from '../utils/userHistory';
 import { getUserProfileData } from '../utils/profile';
 import { saveMistakeToVault } from '../utils/mistakes';
+import { getCoins, deductCoins, hasEnoughCoins, isProUser } from '../utils/coins';
 import SafePdfViewer from './SafePdfViewer';
 import { generateTrapRadarPDF } from '../utils/apQuestionPaperPdfExporter';
 import { savePDFMobile, sharePDFMobile } from '../utils/mobileSaver';
@@ -54,6 +55,7 @@ import { FileText, Download, Share2, HelpCircle } from 'lucide-react';
 import { takeNativePhoto, pickNativeFiles } from '../utils/mobilePicker';
 import { Capacitor } from '@capacitor/core';
 import { formatAiAnswerText } from '../utils/apRadarFormatter';
+import { compressImage } from '../utils/imageCompressor';
 
 export interface TrapRadarHistoryItem {
   id: string;
@@ -361,7 +363,7 @@ function RealRadarLoadingScreen({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
-      className="fixed inset-0 z-[120] bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 sm:p-6 select-none overflow-y-auto"
+      className="fixed inset-0 z-[120] bg-white dark:bg-zinc-950 transform-gpu flex flex-col items-center justify-center p-4 sm:p-6 select-none overflow-y-auto"
     >
       <AIThinkingLoader
         title={title}
@@ -428,6 +430,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
   const [frqAttachedImages, setFrqAttachedImages] = useState<Record<string, string[]>>({});
   const [frqEvaluating, setFrqEvaluating] = useState<boolean>(false);
   const [frqAiFeedback, setFrqAiFeedback] = useState<Record<string, string>>({});
+  const [frqSubmissionError, setFrqSubmissionError] = useState<Record<string, string>>({});
   const frqCameraInputRef = useRef<HTMLInputElement>(null);
   const frqGalleryInputRef = useRef<HTMLInputElement>(null);
   const [vaultFilter, setVaultFilter] = useState<'all' | 'objective' | 'subjective'>('all');
@@ -757,7 +760,8 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       try {
         const picked = await takeNativePhoto();
         if (picked && picked.dataUrl) {
-          handleFrqImagePicked(picked.dataUrl);
+          const compressed = await compressImage(picked.dataUrl, 1400, 0.8);
+          handleFrqImagePicked(compressed);
         }
       } catch (err: any) {
         console.warn('[APTrapRadar] FRQ Camera error:', err);
@@ -775,9 +779,12 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       try {
         const picked = await pickNativeFiles({ types: 'image', multiple: true });
         if (picked && picked.length > 0) {
-          picked.forEach(p => {
-            if (p.dataUrl) handleFrqImagePicked(p.dataUrl);
-          });
+          for (const p of picked) {
+            if (p.dataUrl) {
+              const compressed = await compressImage(p.dataUrl, 1400, 0.8);
+              handleFrqImagePicked(compressed);
+            }
+          }
         }
       } catch (err: any) {
         console.warn('[APTrapRadar] FRQ Gallery error:', err);
@@ -794,6 +801,10 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       ...prev,
       [qKey]: [...(prev[qKey] || []), dataUrl]
     }));
+    setFrqSubmissionError(prev => ({
+      ...prev,
+      [qKey]: ''
+    }));
     triggerVibration(15);
     showToast('Photo of work attached to scratchpad', 'success');
   };
@@ -809,6 +820,16 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
   // Fetch Challenge Questions
   const handleStartChallenge = async () => {
+    // Coins check: 1 coin per question requested (only for freemium users)
+    if (!isProUser()) {
+      const currentCoins = getCoins();
+      if (currentCoins < questionCount) {
+        triggerVibration(25);
+        showToast(`⚠️ Insufficient coins! You have ${currentCoins} coins, but need ${questionCount} coins to generate ${questionCount} questions.`, 'warning');
+        window.dispatchEvent(new CustomEvent('open-paywall-modal', { detail: { featureName: `AP Trap Radar (${questionCount} Qs)`, cost: questionCount } }));
+        return;
+      }
+    }
     triggerVibration(15);
     setLoading(true);
     setQuestions([]);
@@ -822,6 +843,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
     try {
       const _radarChallengeProfile = getUserProfileData();
+      const finalCount = questionFormat === 'subjective' && questionCount > 5 ? 5 : questionCount;
       let response: Response;
       try {
         response = await fetch(getApiUrl('/api/ap-trap-radar'), {
@@ -832,7 +854,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
             action: 'generate_challenge',
             subject: selectedSubject.name,
             unit: selectedUnit,
-            count: questionCount,
+            count: finalCount,
             gradeLevel: _radarChallengeProfile.gradeLevel,
             format: questionFormat
           })
@@ -862,6 +884,11 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
         await new Promise(r => setTimeout(r, 220));
         setQuestions(sanitized);
         setChallengeStep('active');
+
+        // Freemium coin deduction (1 coin per question generated)
+        if (!isProUser()) {
+          deductCoins(sanitized.length || questionCount, `AP Trap Radar (${sanitized.length || questionCount} Qs)`);
+        }
         saveToHistory({
           id: `challenge_${Date.now()}`,
           timestamp: Date.now(),
@@ -930,8 +957,26 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     // Subjective (FRQ) Evaluation Path: Strictly require student answer before AI evaluation
     if (!hasStudentWork) {
       triggerVibration(50);
+      setFrqSubmissionError(prev => ({
+        ...prev,
+        [qKey]: 'Please write your response or attach a photo of your handwritten paper before checking.'
+      }));
       showToast('Please type your answer or attach a photo of your work before checking with AI!', 'warning');
       return;
+    }
+
+    // Client-side instant check for keyboard spam / gibberish when no images
+    if (images.length === 0) {
+      const isSpam = draftText.length < 5 || /^(?:asdf|qwer|zxcv|test|hi|hello|ok|xyz|lol|haha|none|no|\.+|\?+|\s*)$/i.test(draftText);
+      if (isSpam) {
+        triggerVibration([50, 50]);
+        setFrqSubmissionError(prev => ({
+          ...prev,
+          [qKey]: '⚠️ Submission rejected: Please enter a meaningful answer attempt or step-by-step reasoning related to this AP question.'
+        }));
+        showToast('Please enter a valid academic answer to be evaluated.', 'warning');
+        return;
+      }
     }
 
     setFrqEvaluating(true);
@@ -956,6 +1001,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
         questionText,
         userAnswer: draftText || 'Student submitted handwritten calculation work in attached photo.',
         image: images[0] || '',
+        images: images,
         subject: selectedSubject?.name || 'AP High School Exam Standard',
         userGrade: _radarEvalProfile.gradeLevel,
         totalPoints: radarPoints,
@@ -974,17 +1020,28 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       }
 
       const data = await response.json();
+
+      // Check if submission was flagged as irrelevant or junk by AI Chief Reader Gate
+      if (data.isIrrelevant || data.error === 'IRRELEVANT_SUBMISSION') {
+        const errReason = data.message || data.reason || '⚠️ Submission Rejected: The uploaded text or image is not related to this AP question. Please submit genuine academic work to receive Chief Reader scoring.';
+        setFrqSubmissionError(prev => ({ ...prev, [qKey]: errReason }));
+        triggerVibration([60, 40, 60]);
+        showToast(errReason, 'error');
+        return;
+      }
+
       const evalFeedback = data.evaluation || data.feedback || '';
       setFrqAiFeedback(prev => ({ ...prev, [qKey]: evalFeedback }));
+      setFrqSubmissionError(prev => ({ ...prev, [qKey]: '' }));
       triggerVibration([20, 60, 20]);
       showToast('AI Chief Reader evaluated your answer!', 'success');
+      setIsRadarRevealed(true);
     } catch (err: any) {
       console.error('[APTrapRadar] FRQ Evaluation error:', err);
-      showToast('Revealing official College Board rubric & model solution.', 'info');
+      showToast('Evaluation failed. Please check your network and try again.', 'error');
     } finally {
       setFrqEvaluating(false);
       setIsScanningAnimation(false);
-      setIsRadarRevealed(true);
     }
   };
 
@@ -1600,7 +1657,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                       onClick={() => {
                         triggerVibration(10);
                         setQuestionFormat('subjective');
-                        if (![3, 5, 10].includes(questionCount)) {
+                        if (questionCount > 5 || ![3, 5].includes(questionCount)) {
                           setQuestionCount(5);
                         }
                       }}
@@ -1647,12 +1704,18 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                     2. How Many Questions?
                   </label>
 
-                  <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
-                    {[
-                      { count: 3, label: questionFormat === 'subjective' ? '3 FRQs' : '3 Questions' },
-                      { count: 5, label: questionFormat === 'subjective' ? '5 FRQs' : '5 Questions' },
-                      { count: 10, label: questionFormat === 'subjective' ? '10 FRQs' : '10 Questions' }
-                    ].map(item => (
+                  <div className={`grid ${questionFormat === 'subjective' ? 'grid-cols-2' : 'grid-cols-3'} gap-2 sm:gap-2.5`}>
+                    {(questionFormat === 'subjective'
+                      ? [
+                          { count: 3, label: '3 FRQs' },
+                          { count: 5, label: '5 FRQs' }
+                        ]
+                      : [
+                          { count: 3, label: '3 Questions' },
+                          { count: 5, label: '5 Questions' },
+                          { count: 10, label: '10 Questions' }
+                        ]
+                    ).map(item => (
                       <button
                         key={item.count}
                         onClick={() => {
@@ -1666,9 +1729,22 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                         }`}
                       >
                         <div className="font-black text-xs sm:text-sm">{item.label}</div>
+                        {!isProUser() && (
+                          <div className={`text-[10px] font-semibold mt-0.5 ${questionCount === item.count ? 'text-amber-300' : 'text-zinc-500'}`}>
+                            {item.count} Coins
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>
+                  {!isProUser() && getCoins() < questionCount && (
+                    <div className="bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2 animate-in fade-in">
+                      <span className="text-sm">⚠️</span>
+                      <span>
+                        Insufficient balance: You have <strong>{getCoins()} coins</strong>, but selected <strong>{questionCount} questions</strong> ({questionCount} coins required).
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}
@@ -1689,7 +1765,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                     className="w-2/3 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-emerald-600 to-teal-600 hover:opacity-95 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 active:scale-98 transition-all cursor-pointer"
                   >
                     <Radar className="w-4 h-4" />
-                    <span>GENERATE</span>
+                    <span>GENERATE {!isProUser() ? `(${questionCount} Coins)` : ''}</span>
                   </button>
                 </div>
               </motion.div>
@@ -1949,9 +2025,14 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                           if (!files || files.length === 0) return;
                           Array.from(files).forEach((file: any) => {
                             const reader = new FileReader();
-                            reader.onload = () => {
+                            reader.onload = async () => {
                               if (typeof reader.result === 'string') {
-                                handleFrqImagePicked(reader.result);
+                                try {
+                                  const compressed = await compressImage(reader.result, 1400, 0.8);
+                                  handleFrqImagePicked(compressed);
+                                } catch {
+                                  handleFrqImagePicked(reader.result);
+                                }
                               }
                             };
                             reader.readAsDataURL(file);
@@ -1970,9 +2051,14 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                           if (!files || files.length === 0) return;
                           Array.from(files).forEach((file: any) => {
                             const reader = new FileReader();
-                            reader.onload = () => {
+                            reader.onload = async () => {
                               if (typeof reader.result === 'string') {
-                                handleFrqImagePicked(reader.result);
+                                try {
+                                  const compressed = await compressImage(reader.result, 1400, 0.8);
+                                  handleFrqImagePicked(compressed);
+                                } catch {
+                                  handleFrqImagePicked(reader.result);
+                                }
                               }
                             };
                             reader.readAsDataURL(file);
@@ -2057,7 +2143,13 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
                           <textarea
                             value={userFrqDraft[String(activeQuestion.id || currentIndex)] || ''}
-                            onChange={e => setUserFrqDraft(prev => ({ ...prev, [String(activeQuestion.id || currentIndex)]: e.target.value }))}
+                            onChange={e => {
+                              const val = e.target.value;
+                              setUserFrqDraft(prev => ({ ...prev, [String(activeQuestion.id || currentIndex)]: val }));
+                              if (frqSubmissionError[String(activeQuestion.id || currentIndex)]) {
+                                setFrqSubmissionError(prev => ({ ...prev, [String(activeQuestion.id || currentIndex)]: '' }));
+                              }
+                            }}
                             placeholder="Type your final answer, steps, and formulas here, or attach a photo of your handwritten paper above..."
                             rows={3}
                             className="w-full p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-sans"
@@ -2084,6 +2176,23 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                 </div>
                               ))}
                             </div>
+                          )}
+
+                          {/* Submission Rejection Error Banner */}
+                          {frqSubmissionError[String(activeQuestion.id || currentIndex)] && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-start gap-2.5 shadow-xs select-none"
+                            >
+                              <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                              <div className="flex-1 leading-snug">
+                                <span className="font-black text-rose-950 block text-[11px] uppercase tracking-wider mb-0.5">
+                                  Evaluation Rejected
+                                </span>
+                                <span className="text-rose-700 leading-normal">{frqSubmissionError[String(activeQuestion.id || currentIndex)]}</span>
+                              </div>
+                            </motion.div>
                           )}
                         </div>
                       )}
@@ -3083,7 +3192,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4"
+            className="fixed inset-0 z-50 bg-black/75 transform-gpu flex items-center justify-center p-3 sm:p-4"
             onClick={() => setShowHistoryModal(false)}
           >
             <motion.div
@@ -3235,7 +3344,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
 
       {/* Fullscreen In-App PDF Preview Reader Modal */}
       {previewPdfUri && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex flex-col items-center justify-center p-2 sm:p-4">
+        <div className="fixed inset-0 z-50 bg-black/85 transform-gpu flex flex-col items-center justify-center p-2 sm:p-4">
           <div className="bg-zinc-900 w-full max-w-4xl h-[94vh] rounded-3xl flex flex-col overflow-hidden border border-zinc-700 shadow-2xl">
             {/* Header bar */}
             <div className="px-5 py-3.5 border-b border-zinc-800 flex items-center justify-between bg-zinc-950">
@@ -3385,7 +3494,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
               </div>
 
               {/* Subject Scrollable List */}
-              <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2.5">
+              <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2">
                 {filteredSubjects.length === 0 ? (
                   <div className="py-12 text-center text-zinc-400 space-y-1">
                     <p className="text-sm font-bold text-zinc-600">No matching subjects found</p>
@@ -3405,48 +3514,30 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                           setShowSubjectModal(false);
                           showToast(`Selected ${subj.shortCode}`, 'success');
                         }}
-                        className={`w-full p-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 text-left cursor-pointer active:scale-[0.99] ${
+                        className={`w-full py-2.5 px-3 sm:px-3.5 rounded-xl border transition-all flex items-center justify-between gap-3 text-left cursor-pointer active:scale-[0.99] ${
                           isSelected
-                            ? 'bg-amber-50/70 border-amber-500 shadow-sm ring-1 ring-amber-500/20'
+                            ? 'bg-amber-50/70 border-amber-500 shadow-2xs ring-1 ring-amber-500/20'
                             : 'bg-white border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/60'
                         }`}
                       >
-                        <div className="flex items-center gap-3.5 min-w-0">
-                          <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-xl shrink-0 border ${
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 border ${
                             isSelected ? 'bg-amber-100 border-amber-300' : 'bg-zinc-50 border-zinc-200'
                           }`}>
                             {subj.icon}
                           </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-zinc-900 text-white">
-                                {subj.shortCode}
-                              </span>
-                              {subj.badge && (
-                                <span className="text-[9px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">
-                                  {subj.badge}
-                                </span>
-                              )}
-                              <span className="text-[10px] text-zinc-400 font-semibold truncate">
-                                {subj.category}
-                              </span>
-                            </div>
-                            <h4 className="text-xs sm:text-sm font-black text-zinc-900 truncate">
-                              {subj.name}
-                            </h4>
-                            <p className="text-[10px] text-zinc-500 font-medium mt-0.5">
-                              {subj.units.length} High-Yield Units • Authentic Distractor Traps
-                            </p>
-                          </div>
+                          <h4 className="text-xs sm:text-sm font-bold text-zinc-900 truncate">
+                            {subj.name}
+                          </h4>
                         </div>
 
                         <div className="shrink-0">
                           {isSelected ? (
-                            <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
-                              <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                              <Check className="w-3 h-3 stroke-[3]" />
                             </div>
                           ) : (
-                            <div className="w-6 h-6 rounded-full border border-zinc-300" />
+                            <div className="w-5 h-5 rounded-full border border-zinc-300" />
                           )}
                         </div>
                       </button>
@@ -3505,7 +3596,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
               </div>
 
               {/* Unit Scrollable List */}
-              <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2.5 momentum-scroll overscroll-contain">
+              <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 momentum-scroll overscroll-contain">
                 {/* All Units Option */}
                 <button
                   type="button"
@@ -3514,38 +3605,28 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                     setSelectedUnit('All Units');
                     setShowUnitModal(false);
                   }}
-                  className={`w-full p-3.5 rounded-2xl border-2 transition-colors duration-150 flex items-center justify-between gap-3 text-left cursor-pointer active:scale-[0.98] ${
+                  className={`w-full py-2.5 px-3 sm:px-3.5 rounded-xl border transition-all flex items-center justify-between gap-3 text-left cursor-pointer active:scale-[0.99] ${
                     selectedUnit === 'All Units'
-                      ? 'bg-emerald-50/70 border-emerald-500 shadow-sm ring-1 ring-emerald-500/20'
+                      ? 'bg-emerald-50/70 border-emerald-500 shadow-2xs ring-1 ring-emerald-500/20'
                       : 'bg-white border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/60'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center justify-center font-black text-sm shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center justify-center font-black text-sm shrink-0">
                       🎯
                     </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-900 px-1.5 py-0.2 rounded border border-emerald-300">
-                          Full Exam Simulation
-                        </span>
-                      </div>
-                      <h4 className="text-xs sm:text-sm font-black text-zinc-900">
-                        All High-Yield Units (Exam Simulation)
-                      </h4>
-                      <p className="text-[10px] text-zinc-500 font-medium mt-0.5">
-                        Randomized mix across all CED units with high-frequency distractor traps.
-                      </p>
-                    </div>
+                    <h4 className="text-xs sm:text-sm font-bold text-zinc-900 truncate">
+                      All High-Yield Units (Exam Simulation)
+                    </h4>
                   </div>
 
                   <div className="shrink-0">
                     {selectedUnit === 'All Units' ? (
-                      <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                      <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
                         <Check className="w-3.5 h-3.5 stroke-[3]" />
                       </div>
                     ) : (
-                      <div className="w-6 h-6 rounded-full border border-zinc-300" />
+                      <div className="w-5 h-5 rounded-full border border-zinc-300" />
                     )}
                   </div>
                 </button>
@@ -3562,33 +3643,28 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                         setSelectedUnit(u.title);
                         setShowUnitModal(false);
                       }}
-                      className={`w-full p-3.5 rounded-2xl border-2 transition-colors duration-150 flex items-center justify-between gap-3 text-left cursor-pointer active:scale-[0.98] ${
+                      className={`w-full py-2.5 px-3 sm:px-3.5 rounded-xl border transition-all flex items-center justify-between gap-3 text-left cursor-pointer active:scale-[0.99] ${
                         isSelected
-                          ? 'bg-emerald-50/70 border-emerald-500 shadow-sm ring-1 ring-emerald-500/20'
+                          ? 'bg-emerald-50/70 border-emerald-500 shadow-2xs ring-1 ring-emerald-500/20'
                           : 'bg-white border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/60'
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center justify-center font-black text-xs shrink-0">
+                        <div className="w-9 h-9 rounded-xl bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center justify-center font-black text-xs shrink-0">
                           {u.id.toUpperCase()}
                         </div>
-                        <div className="min-w-0">
-                          <h4 className="text-xs sm:text-sm font-black text-zinc-900 truncate">
-                            {u.title}
-                          </h4>
-                          <p className="text-[10px] text-zinc-500 font-medium line-clamp-1 mt-0.5">
-                            {u.description}
-                          </p>
-                        </div>
+                        <h4 className="text-xs sm:text-sm font-bold text-zinc-900 truncate">
+                          {u.title}
+                        </h4>
                       </div>
 
                       <div className="shrink-0">
                         {isSelected ? (
-                          <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                          <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
                             <Check className="w-3.5 h-3.5 stroke-[3]" />
                           </div>
                         ) : (
-                          <div className="w-6 h-6 rounded-full border border-zinc-300" />
+                          <div className="w-5 h-5 rounded-full border border-zinc-300" />
                         )}
                       </div>
                     </button>

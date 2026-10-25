@@ -7,6 +7,7 @@ import { safeGetItem } from '../utils/storage';
 import { auth } from '../lib/firebase';
 import { billingService } from '../services/BillingService';
 import { Purchases, PurchasesPackage } from '@revenuecat/purchases-capacitor';
+import FullScreenLegalModal from './FullScreenLegalModal';
 
 export interface LocalizedPlanPricing {
   symbol: string;
@@ -21,57 +22,57 @@ export interface LocalizedPlanPricing {
 export const localizedPricingMap: Record<string, LocalizedPlanPricing> = {
   'United States': {
     symbol: '$',
-    monthlyOriginal: '$49.99',
-    monthlyDiscounted: '$14.99',
-    yearlyOriginal: '$599.88',
+    monthlyOriginal: '$29.99',
+    monthlyDiscounted: '$9.99',
+    yearlyOriginal: '$359.88',
     yearlyDiscounted: '$99.99',
-    monthlySavings: '70% OFF',
-    yearlySavings: 'SAVE 83%',
+    monthlySavings: '67% OFF',
+    yearlySavings: 'SAVE 72%',
   },
   'United Kingdom': {
     symbol: '£',
-    monthlyOriginal: '£39.99',
-    monthlyDiscounted: '£11.99',
-    yearlyOriginal: '£479.88',
+    monthlyOriginal: '£24.99',
+    monthlyDiscounted: '£7.99',
+    yearlyOriginal: '£299.88',
     yearlyDiscounted: '£79.99',
-    monthlySavings: '70% OFF',
-    yearlySavings: 'SAVE 83%',
+    monthlySavings: '68% OFF',
+    yearlySavings: 'SAVE 73%',
   },
   'Canada': {
     symbol: 'CA$',
-    monthlyOriginal: 'CA$69.99',
-    monthlyDiscounted: 'CA$19.99',
-    yearlyOriginal: 'CA$839.88',
-    yearlyDiscounted: 'CA$139.99',
-    monthlySavings: '71% OFF',
-    yearlySavings: 'SAVE 83%',
+    monthlyOriginal: 'CA$39.99',
+    monthlyDiscounted: 'CA$13.99',
+    yearlyOriginal: 'CA$479.88',
+    yearlyDiscounted: 'CA$129.99',
+    monthlySavings: '65% OFF',
+    yearlySavings: 'SAVE 73%',
   },
   'Australia': {
     symbol: 'AU$',
-    monthlyOriginal: 'AU$74.99',
-    monthlyDiscounted: 'AU$22.99',
-    yearlyOriginal: 'AU$899.88',
+    monthlyOriginal: 'AU$44.99',
+    monthlyDiscounted: 'AU$14.99',
+    yearlyOriginal: 'AU$539.88',
     yearlyDiscounted: 'AU$149.99',
-    monthlySavings: '69% OFF',
-    yearlySavings: 'SAVE 83%',
+    monthlySavings: '67% OFF',
+    yearlySavings: 'SAVE 72%',
   },
   'Others / International': {
     symbol: '$',
-    monthlyOriginal: '$49.99',
-    monthlyDiscounted: '$14.99',
-    yearlyOriginal: '$599.88',
+    monthlyOriginal: '$29.99',
+    monthlyDiscounted: '$9.99',
+    yearlyOriginal: '$359.88',
     yearlyDiscounted: '$99.99',
-    monthlySavings: '70% OFF',
-    yearlySavings: 'SAVE 83%',
+    monthlySavings: '67% OFF',
+    yearlySavings: 'SAVE 72%',
   },
 };
 
 export const pricingMap: Record<string, string> = {
-  'United States': '$14.99',
-  'United Kingdom': '£11.99',
-  'Canada': 'CA$19.99',
-  'Australia': 'AU$22.99',
-  'Others / International': '$14.99',
+  'United States': '$9.99',
+  'United Kingdom': '£7.99',
+  'Canada': 'CA$13.99',
+  'Australia': 'AU$14.99',
+  'Others / International': '$9.99',
 };
 
 const PRO_FLAGSHIP_FEATURES = [
@@ -109,6 +110,7 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
   const [selectedCycle, setSelectedCycle] = useState<'monthly' | 'yearly'>('yearly');
   const [isPurchasing, setIsPurchasing] = useState<boolean>(false);
   const [isRestoring, setIsRestoring] = useState<boolean>(false);
+  const [legalModal, setLegalModal] = useState<'privacy' | 'terms' | null>(null);
 
   const { 
     pricing, 
@@ -308,7 +310,7 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
               </div>
 
               <h2 className="text-xl sm:text-2xl font-black text-center leading-tight mb-1">
-                Unlock AP Exam Pro
+                Unlock AP Prep Pro
               </h2>
               <p className="text-center text-white/90 font-bold text-xs max-w-[300px] mx-auto">
                 {featureName?.includes('Flash') 
@@ -379,7 +381,7 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
 
                     {/* Catchy Value Hook for Monthly */}
                     <div className="mt-2.5 pt-2 border-t border-zinc-100 flex items-center gap-1 text-[8.5px] font-black text-amber-800 bg-amber-50/80 px-2 py-1 rounded-lg">
-                      <span>☕ Price of 3 coffees • &lt;50¢/day</span>
+                      <span>☕ Less than a single coffee • ~33¢/day</span>
                     </div>
                   </button>
 
@@ -463,29 +465,34 @@ export default function PaywallModal({ isOpen, onClose, featureName, onSubscribe
                     {isRestoring ? "Restoring..." : "Restore Purchases"}
                   </button>
                   <span>•</span>
-                  <a 
-                    href="/terms.html" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="hover:text-zinc-600 transition-colors underline touch-manipulation"
+                  <button 
+                    type="button"
+                    onClick={() => setLegalModal('terms')}
+                    className="hover:text-zinc-600 transition-colors underline touch-manipulation cursor-pointer border-none bg-transparent"
                   >
                     Terms of Use
-                  </a>
+                  </button>
                   <span>•</span>
-                  <a 
-                    href="/privacy.html" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="hover:text-zinc-600 transition-colors underline touch-manipulation"
+                  <button 
+                    type="button"
+                    onClick={() => setLegalModal('privacy')}
+                    className="hover:text-zinc-600 transition-colors underline touch-manipulation cursor-pointer border-none bg-transparent"
                   >
                     Privacy Policy
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>
           </motion.div>
         </motion.div>
       )}
+
+      {/* Full-Screen In-App Legal Modal */}
+      <FullScreenLegalModal 
+        isOpen={!!legalModal} 
+        type={legalModal} 
+        onClose={() => setLegalModal(null)} 
+      />
     </AnimatePresence>
   );
 }

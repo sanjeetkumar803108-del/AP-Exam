@@ -229,7 +229,7 @@ export default function CoinPage({ onClose, onSelectTool, isVip: propIsVip }: Co
                     <Check className="w-3 h-3 text-zinc-600 stroke-[3]" />
                   </div>
                   <p className="text-[11px] font-bold text-zinc-600 leading-normal">
-                    Each AI tool request or tutor query consumes exactly 1 Coin.
+                    Usage rates for free users: <strong>AI Tutor</strong> (1 Coin), <strong>AP Trap Radar</strong> (1 Coin/Question), <strong>FRQ Grader</strong> (3 Coins), and <strong>1v1 Quiz Battle</strong> (5 Coins).
                   </p>
                 </li>
                 <li className="flex gap-3">
@@ -250,13 +250,13 @@ export default function CoinPage({ onClose, onSelectTool, isVip: propIsVip }: Co
       {/* Modal: History of transactions */}
       <AnimatePresence>
         {showHistoryModal && (
-          <div className="fixed inset-0 z-[100] bg-zinc-950/80 backdrop-blur-sm flex items-end">
+          <div className="fixed inset-0 z-[100] bg-black/75 transform-gpu flex items-end">
             <motion.div 
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25 }}
-              className="bg-white w-full rounded-t-[2.5rem] border-t border-zinc-200 flex flex-col max-h-[80vh]"
+              transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.25 }}
+              className="bg-white w-full rounded-t-[2.5rem] border-t border-zinc-200 flex flex-col max-h-[80vh] transform-gpu will-change-transform"
             >
               <div className="px-6 py-5 border-b border-zinc-100 flex justify-between items-center">
                 <h3 className="text-lg font-black text-zinc-900">Coin Activity History</h3>

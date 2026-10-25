@@ -797,7 +797,7 @@ const PERSONAS = {
     name: 'Professor Pang',
     title: 'Professor Pang Protocol',
     emoji: '🐧',
-    avatarImg: '/professor-pang-white.png',
+    avatarImg: '/professor-pang-white-sm.png',
     color: 'from-purple-500 to-indigo-600',
     borderColor: 'border-purple-500/30',
     bgLight: 'bg-purple-500/10',
@@ -1305,12 +1305,12 @@ Please evaluate this answer strictly according to your system rubric.`;
 
     if (!queryText.trim() && !activeAttachedFile) return;
 
-    // ELITE ROUTING LOGIC: Pro vs Free (AI Tutor charges 2 coins on output generation)
+    // ELITE ROUTING LOGIC: Pro vs Free (AI Tutor charges 1 coin on output generation)
     if (!isProUser()) {
       const coins = getCoins();
-      if (coins < 2) {
+      if (coins < 1) {
         // BLOCK & TRIGGER PAYWALL
-        window.dispatchEvent(new CustomEvent('open-paywall-modal', { detail: { featureName: "AI Tutoring Chat", cost: 2 } }));
+        window.dispatchEvent(new CustomEvent('open-paywall-modal', { detail: { featureName: "AI Tutoring Chat", cost: 1 } }));
         return;
       }
     }
@@ -1756,7 +1756,7 @@ Please evaluate this answer strictly according to your system rubric.`;
 
       // Freemium/Free user coin deduction after successful output generation
       if (!isProUser()) {
-        deductCoins(2, "AI Chat Session");
+        deductCoins(1, "AI Tutor Chat");
       }
 
       hapticNotification('SUCCESS');
@@ -1967,7 +1967,7 @@ Please evaluate this answer strictly according to your system rubric.`;
     <div className="flex flex-col h-full bg-[#FAF9F6] relative text-zinc-900 overflow-hidden">
       
       {/* Header section */}
-      <div className={`flex items-center justify-between p-4 border-b border-zinc-200 bg-[#FAF9F6]/95 backdrop-blur-md sticky top-0 shrink-0 transition-all ${personaModalOpen ? 'z-[1001]' : 'z-10'}`}>
+      <div className={`flex items-center justify-between p-4 border-b border-zinc-200 bg-[#FAF9F6]/95 backdrop-blur-md sticky top-0 shrink-0 ${personaModalOpen ? 'z-[1001]' : 'z-10'}`}>
         <div className="flex items-center gap-2.5">
           <button 
             onClick={() => setHistoryOpen(true)}
@@ -1997,7 +1997,7 @@ Please evaluate this answer strictly according to your system rubric.`;
               <span className="flex items-center gap-1.5">
                 {!isVip && <Lock className="w-2.5 h-2.5 text-amber-400" />}
                 {PERSONAS[activePersona].avatarImg ? (
-                  <img src={PERSONAS[activePersona].avatarImg} alt={PERSONAS[activePersona].name} className="w-4 h-4 rounded-full object-cover inline-block" />
+                  <img src={PERSONAS[activePersona].avatarImg} alt={PERSONAS[activePersona].name} loading="eager" decoding="async" className="w-4 h-4 rounded-full object-cover inline-block" />
                 ) : (
                   <span>{PERSONAS[activePersona].emoji}</span>
                 )}
@@ -2009,20 +2009,22 @@ Please evaluate this answer strictly according to your system rubric.`;
             <AnimatePresence>
               {personaModalOpen && (
                 <>
-                  {/* High-visibility backdrop to focus on selection */}
+                  {/* High-performance backdrop without expensive real-time blur shaders */}
                   <motion.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[1100] bg-zinc-950/40 backdrop-blur-sm" 
+                    transition={{ duration: 0.15 }}
+                    className="fixed inset-0 z-[1100] bg-black/60 transform-gpu" 
                     onClick={() => setPersonaModalOpen(false)}
                   />
                   
                   <motion.div
-                    initial={{ opacity: 0, y: 20, scale: 0.95, x: '50%' }}
-                    animate={{ opacity: 1, y: 0, scale: 1, x: '0%' }}
-                    exit={{ opacity: 0, y: 20, scale: 0.95, x: '0%' }}
-                    className="fixed sm:absolute right-4 sm:right-0 top-20 sm:top-full mt-3 w-[calc(100vw-2rem)] sm:w-85 bg-white dark:bg-zinc-900 border-2 border-amber-200 dark:border-amber-500/40 rounded-[2.5rem] shadow-[0_40px_100px_rgba(0,0,0,0.3)] p-4 z-[1200] overflow-visible"
+                    initial={{ opacity: 0, y: -10, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.97 }}
+                    transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                    className="fixed sm:absolute right-4 sm:right-0 top-20 sm:top-full mt-2 w-[calc(100vw-2rem)] sm:w-85 bg-white dark:bg-zinc-900 border-2 border-amber-200 dark:border-amber-500/40 rounded-[2.5rem] shadow-2xl shadow-black/25 p-4 z-[1200] overflow-visible transform-gpu will-change-transform"
                   >
                     {/* Arrow tip for the dropdown - hidden on mobile */}
                     <div className="hidden sm:block absolute -top-2.5 right-8 w-5 h-5 bg-white dark:bg-zinc-900 border-t-2 border-l-2 border-amber-200 dark:border-amber-500/40 rotate-45 z-[-1]" />
@@ -2060,9 +2062,9 @@ Please evaluate this answer strictly according to your system rubric.`;
                               setPersonaModalOpen(false);
                               triggerVibration(25);
                             }}
-                            className={`w-full text-left p-4 rounded-[1.5rem] transition-all duration-300 flex items-center gap-4 border-2 relative group overflow-hidden ${
+                            className={`w-full text-left p-3.5 sm:p-4 rounded-[1.5rem] transition-colors duration-150 flex items-center gap-4 border-2 relative group overflow-hidden ${
                               isActive 
-                                ? 'bg-amber-50 dark:bg-amber-950/50 border-amber-400 dark:border-amber-500 text-amber-950 dark:text-amber-100 shadow-md ring-4 ring-amber-100/50 dark:ring-amber-900/30' 
+                                ? 'bg-amber-50 dark:bg-amber-950/50 border-amber-400 dark:border-amber-500 text-amber-950 dark:text-amber-100 shadow-sm ring-2 ring-amber-200 dark:ring-amber-900/30' 
                                 : 'bg-white dark:bg-zinc-850/80 border-zinc-100 dark:border-zinc-800 hover:border-amber-200 dark:hover:border-amber-500/40 hover:bg-amber-50/20 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200'
                             }`}
                           >
@@ -2073,9 +2075,9 @@ Please evaluate this answer strictly according to your system rubric.`;
                               </div>
                             )}
 
-                            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${p.color} flex items-center justify-center text-3xl shrink-0 shadow-lg border-2 border-white dark:border-zinc-700 group-hover:scale-110 transition-transform duration-500 overflow-hidden`}>
+                            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${p.color} flex items-center justify-center text-3xl shrink-0 shadow-md border-2 border-white dark:border-zinc-700 overflow-hidden`}>
                               {p.avatarImg ? (
-                                <img src={p.avatarImg} alt={p.name} className="w-full h-full object-cover bg-white" />
+                                <img src={p.avatarImg} alt={p.name} loading="eager" decoding="async" className="w-full h-full object-cover bg-white" />
                               ) : (
                                 p.emoji
                               )}
@@ -2129,7 +2131,7 @@ Please evaluate this answer strictly according to your system rubric.`;
       {/* History Drawer Overlay (Slides in from Left) */}
       <AnimatePresence>
         {historyOpen && (
-          <div className="absolute inset-0 z-50 flex justify-start bg-black/70 backdrop-blur-sm">
+          <div className="absolute inset-0 z-50 flex justify-start bg-black/75 transform-gpu">
             {/* Backdrop click to close */}
             <div className="absolute inset-0 bg-transparent" onClick={() => setHistoryOpen(false)} />
             
@@ -2138,8 +2140,8 @@ Please evaluate this answer strictly according to your system rubric.`;
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-xs sm:max-w-sm h-full bg-[#FAF9F6] border-r border-zinc-200 flex flex-col shadow-2xl z-10"
+              transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.25 }}
+              className="relative w-full max-w-xs sm:max-w-sm h-full bg-[#FAF9F6] border-r border-zinc-200 flex flex-col shadow-2xl z-10 transform-gpu will-change-transform"
             >
               {/* Drawer Header */}
               <div className="p-4 border-b border-zinc-200 flex items-center justify-between bg-[#FAF9F6]">
@@ -2374,7 +2376,7 @@ Please evaluate this answer strictly according to your system rubric.`;
                           onClick={handleRetryMessage}
                           className="text-xs bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white border border-purple-500/30 px-4 py-2 rounded-full transition-all flex items-center gap-1.5 font-bold shadow-md shadow-purple-500/20 active:scale-95"
                         >
-                          <span>🔄</span> Try Again
+                          Try Again
                         </button>
                         {failedAttachment && (
                           <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200/60 rounded-xl px-3 py-1.5 flex items-center gap-1.5 animate-pulse">
@@ -2746,7 +2748,7 @@ Please evaluate this answer strictly according to your system rubric.`;
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[2000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[2000] bg-black/95 transform-gpu flex items-center justify-center p-4"
             onClick={() => setFullscreenPreviewUrl(null)}
           >
             <button 

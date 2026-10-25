@@ -51,6 +51,7 @@ import { appendProfileToFormData, getUserProfileData } from '../utils/profile';
 import { auth, db } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { getUserHistory, saveUserHistory } from '../utils/userHistory';
+import { getCoins, deductCoins, hasEnoughCoins, isProUser } from '../utils/coins';
 
 function cleanOptionText(text: string | undefined, optionLetter: string): string {
   if (!text) return '';
@@ -130,6 +131,8 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraPermissionError, setCameraPermissionError] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [shutterFlash, setShutterFlash] = useState(false);
 
   // Multi-page state
   const [uploadedPages, setUploadedPages] = useState<UploadedPage[]>([]);
@@ -168,6 +171,7 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
   const resultsContainerRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const torchOnRef = useRef<boolean>(false);
 
   // Safely stop all camera tracks and release hardware back to the OS immediately
   const stopCamera = useCallback(() => {
@@ -176,7 +180,7 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
         streamRef.current.getTracks().forEach((track) => {
           try {
             // Turn off torch before stopping track
-            if (torchOn) {
+            if (torchOnRef.current) {
               (track as any).applyConstraints?.({ advanced: [{ torch: false }] }).catch(() => {});
             }
             track.stop();
@@ -204,10 +208,11 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
     } catch (err) {
       console.warn("[FRQGrader] Error stopping camera stream:", err);
     } finally {
+      torchOnRef.current = false;
       setCameraActive(false);
       setTorchOn(false);
     }
-  }, [torchOn]);
+  }, []);
 
   // Hardware Android Back Button Navigation (Step-by-step)
   useEffect(() => {
@@ -250,42 +255,41 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
     }
 
     try {
-      if (Capacitor.isNativePlatform()) {
-        const checkStatus = await CapCamera.checkPermissions();
-        if (checkStatus.camera !== 'granted') {
-          const req = await CapCamera.requestPermissions({ permissions: ['camera'] });
-          if (req.camera !== 'granted') {
-            setCameraPermissionError(true);
-            return;
-          }
-        }
-      }
-
       // Re-verify guards before getUserMedia
       if (!isActive || uploadedPages.length > 0 || isGrading || result !== null || (typeof document !== 'undefined' && document.hidden)) {
         return;
       }
 
-      // Multi-tier high compatibility stream acquisition (1080p full HD ideal -> environment -> basic)
+      // Fast, lightweight mobile stream acquisition (1280x720 ideal -> 1080p max for instant startup)
       let mediaStream: MediaStream;
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: { ideal: 'environment' },
-            width: { ideal: 1920, max: 2560 },
-            height: { ideal: 1080, max: 1440 }
+            width: { ideal: 1280, max: 1920 },
+            height: { ideal: 720, max: 1080 }
           },
           audio: false
         });
       } catch (err1) {
-        console.warn("[FRQGrader] Preferred video constraints failed, trying basic environment:", err1);
+        // If native permission was not yet granted, request via Capacitor Camera plugin
+        if (Capacitor.isNativePlatform()) {
+          try {
+            const req = await CapCamera.requestPermissions({ permissions: ['camera'] });
+            if (req.camera !== 'granted') {
+              setCameraPermissionError(true);
+              return;
+            }
+          } catch (_) {}
+        }
+        console.warn("[FRQGrader] Preferred video constraints fallback:", err1);
         try {
           mediaStream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: 'environment' },
             audio: false
           });
         } catch (err2) {
-          console.warn("[FRQGrader] Environment constraints failed, trying fallback:", err2);
+          console.warn("[FRQGrader] Environment constraints fallback, using basic video:", err2);
           mediaStream = await navigator.mediaDevices.getUserMedia({
             video: true,
             audio: false
@@ -314,7 +318,6 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
 
       if (videoRef.current) {
         const video = videoRef.current;
-        video.pause();
         video.muted = true;
         video.defaultMuted = true;
         video.playsInline = true;
@@ -341,11 +344,13 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
 
       setCameraActive(true);
       setCameraPermissionError(false);
+      torchOnRef.current = false;
       setTorchOn(false);
     } catch (err: any) {
       console.warn("[FRQGrader] Camera access fallback:", err);
       setCameraPermissionError(true);
       setCameraActive(false);
+      torchOnRef.current = false;
       setTorchOn(false);
     }
   }, [isActive, uploadedPages.length, isGrading, result]);
@@ -405,40 +410,44 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
     }
   }, [isGrading, result]);
 
-  // Toggle Torch/Flashlight
+  // Toggle Torch/Flashlight smoothly without interrupting live camera feed
   const toggleTorch = async () => {
     triggerVibration(15);
     if (!streamRef.current) {
       showToast('Camera stream is not active', 'info');
+      torchOnRef.current = false;
       setTorchOn(false);
       return;
     }
     const track = streamRef.current.getVideoTracks()[0];
     if (!track) {
       showToast('Camera track not found', 'info');
+      torchOnRef.current = false;
       setTorchOn(false);
       return;
     }
 
-    const capabilities = typeof track.getCapabilities === 'function' ? (track.getCapabilities() as any) : null;
-    if (capabilities && !('torch' in capabilities)) {
-      showToast('Flashlight is not supported on this camera lens', 'info', 2000);
+    const isFrontCamera = track.getSettings?.().facingMode === 'user';
+    if (isFrontCamera) {
+      showToast('Flashlight not available on front camera', 'info', 2000);
+      torchOnRef.current = false;
       setTorchOn(false);
       return;
     }
 
+    const nextState = !torchOnRef.current;
     try {
-      const nextState = !torchOn;
       await (track as any).applyConstraints({
         advanced: [{ torch: nextState }]
       });
+      torchOnRef.current = nextState;
       setTorchOn(nextState);
-      showToast(nextState ? 'Torch ON' : 'Torch OFF', 'info', 1000);
+      showToast(nextState ? '🔦 Flashlight ON' : '🔦 Flashlight OFF', 'info', 1000);
     } catch (err) {
       console.warn('[FRQGrader] Torch toggle failed:', err);
-      // Strictly set to false on error - never flip to true when hardware failed
+      torchOnRef.current = false;
       setTorchOn(false);
-      showToast('Flashlight not supported on this device', 'info', 2000);
+      showToast('Flashlight is not supported on this camera lens', 'info', 2000);
     }
   };
 
@@ -477,43 +486,70 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
     });
   };
 
-  // Capture photo from live camera stream with instant canvas grab & native fallback
+  // Capture photo from live camera stream with instant frame grab
   const handleCapturePhoto = async () => {
+    if (isCapturing) return;
+
     triggerVibration(25);
     hapticImpact('MEDIUM');
+    setIsCapturing(true);
 
-    // 1. Direct high-speed snapshot from active live camera video stream
-    const video = videoRef.current;
-    if (video && video.videoWidth > 0 && video.videoHeight > 0) {
+    // Trigger instant white shutter flash animation
+    setShutterFlash(true);
+    setTimeout(() => setShutterFlash(false), 90);
+
+    const grabLiveFrame = (): boolean => {
+      const video = videoRef.current;
+      if (!video) return false;
+      const w = video.videoWidth;
+      const h = video.videoHeight;
+      if (w <= 0 || h <= 0) return false;
+
       try {
         const canvas = canvasRef.current || document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        canvas.width = w;
+        canvas.height = h;
         const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          canvas.toBlob(async (blob) => {
-            if (!blob) return;
-            const file = new File([blob], `frq_page_${uploadedPages.length + 1}_${Date.now()}.jpg`, { type: 'image/jpeg' });
-            const previewUrl = URL.createObjectURL(file);
-            addPage(file, previewUrl, file.name);
-          }, 'image/jpeg', 0.92);
-          return;
-        }
-      } catch (snapErr) {
-        console.warn("[FRQGrader] Canvas live snapshot failed, falling back to native:", snapErr);
+        if (!ctx) return false;
+
+        ctx.drawImage(video, 0, 0, w, h);
+        canvas.toBlob((blob) => {
+          setIsCapturing(false);
+          if (!blob) return;
+          const file = new File([blob], `frq_page_${uploadedPages.length + 1}_${Date.now()}.jpg`, { type: 'image/jpeg' });
+          const previewUrl = URL.createObjectURL(file);
+          addPage(file, previewUrl, file.name);
+        }, 'image/jpeg', 0.90);
+        return true;
+      } catch (err) {
+        console.warn("[FRQGrader] Canvas live snapshot note:", err);
+        return false;
+      }
+    };
+
+    // 1. Try immediate live canvas snapshot
+    if (grabLiveFrame()) {
+      return;
+    }
+
+    // 2. If video was just warming up its first frame (e.g. videoWidth was 0 for 50-100ms), wait briefly and retry
+    if (streamRef.current && videoRef.current) {
+      await new Promise(resolve => setTimeout(resolve, 150));
+      if (grabLiveFrame()) {
+        return;
       }
     }
 
-    // 2. Fallback to native camera if stream was not producing active video dimensions
+    // 3. Fallback to native camera only if live camera stream is not available or errored
     if (Capacitor.isNativePlatform()) {
       try {
         stopCamera();
         const picked = await takeNativePhoto();
+        setIsCapturing(false);
         if (picked) {
           if ('error' in picked) {
             if (picked.error === 'blocked') {
-              showToast("Camera Permission Blocked: Please enable Camera in Device Settings → Apps → AP Exam", "warning", 4500);
+              showToast("Camera Permission Blocked: Please enable Camera in Device Settings → Apps → AP Prep", "warning", 4500);
             } else if (picked.error === 'denied') {
               showToast("Camera Permission Needed: Please allow camera access to scan FRQ answers.", "warning", 4000);
             }
@@ -526,6 +562,7 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
           startCamera();
         }
       } catch (err) {
+        setIsCapturing(false);
         console.warn("[FRQGrader] Native capture cancelled or failed:", err);
         if (uploadedPages.length === 0 && isActive) {
           startCamera();
@@ -534,24 +571,8 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
       return;
     }
 
-    // 3. Fallback for desktop/web input
-    if (videoRef.current) {
-      const v = videoRef.current;
-      const canvas = canvasRef.current || document.createElement('canvas');
-      canvas.width = v.videoWidth || 1280;
-      canvas.height = v.videoHeight || 720;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(async (blob) => {
-          if (!blob) return;
-          const file = new File([blob], `frq_page_${uploadedPages.length + 1}_${Date.now()}.jpg`, { type: 'image/jpeg' });
-          const previewUrl = URL.createObjectURL(file);
-          addPage(file, previewUrl, file.name);
-        }, 'image/jpeg', 0.88);
-        return;
-      }
-    }
+    // 4. Fallback for desktop/web input
+    setIsCapturing(false);
     cameraCaptureInputRef.current?.click();
   };
 
@@ -651,6 +672,14 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
       return;
     }
 
+    // 3 Coins required for freemium users to grade FRQ
+    if (!isProUser() && !hasEnoughCoins(3)) {
+      triggerVibration(25);
+      showToast("⚠️ 3 Coins required for FRQ Grading. Insufficient balance!", "warning");
+      window.dispatchEvent(new CustomEvent('open-paywall-modal', { detail: { featureName: "AP FRQ Grader", cost: 3 } }));
+      return;
+    }
+
     triggerVibration(25);
     hapticImpact('MEDIUM');
     setIsGrading(true);
@@ -714,6 +743,11 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
       await new Promise(r => setTimeout(r, 220));
       setResult(data);
       setIsGrading(false);
+
+      // Freemium coin deduction (3 coins)
+      if (!isProUser()) {
+        deductCoins(3, "AP FRQ Grader");
+      }
 
       // Auto-save evaluation to user history
       const historyItem: FRQHistoryItem = {
@@ -914,7 +948,7 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4 pt-[calc(1rem+var(--offline-banner-height,0px))]"
+            className="fixed inset-0 z-50 bg-black/95 transform-gpu flex flex-col justify-between p-4 pt-[calc(1rem+var(--offline-banner-height,0px))]"
             onClick={() => setViewingFullImageUrl(null)}
           >
             <div className="flex items-center justify-between z-10">
@@ -964,19 +998,12 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
             />
           </div>
 
-          {/* Scanner Reticle Overlay */}
-          <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-6 z-10">
-            <div className="w-full max-w-[280px] sm:max-w-xs aspect-[3/4] border-2 border-emerald-400/50 rounded-3xl relative overflow-hidden shadow-[0_0_25px_rgba(52,211,153,0.15)]">
-              {/* Corner Reticles */}
-              <div className="absolute top-0 left-0 w-5 h-5 border-t-[3px] border-l-[3px] border-emerald-400 rounded-tl-xl" />
-              <div className="absolute top-0 right-0 w-5 h-5 border-t-[3px] border-r-[3px] border-emerald-400 rounded-tr-xl" />
-              <div className="absolute bottom-0 left-0 w-5 h-5 border-b-[3px] border-l-[3px] border-emerald-400 rounded-bl-xl" />
-              <div className="absolute bottom-0 right-0 w-5 h-5 border-b-[3px] border-r-[3px] border-emerald-400 rounded-br-xl" />
-            </div>
-            <p className="text-white/90 text-[11px] font-bold mt-4 tracking-wide bg-black/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/15 shadow-md">
-              Align FRQ answer sheet inside frame
-            </p>
-          </div>
+          {/* Shutter White Flash Animation */}
+          {shutterFlash && (
+            <div className="absolute inset-0 z-30 bg-white/70 pointer-events-none transition-opacity duration-100" />
+          )}
+
+
 
           {/* Floating Top Header */}
           <header className="relative z-20 w-full p-4 pt-safe flex items-center justify-between bg-gradient-to-b from-black/80 via-black/40 to-transparent">
@@ -1083,11 +1110,14 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
 
               {/* Shutter Capture Button */}
               <button
+                disabled={isCapturing}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleCapturePhoto();
                 }}
                 className={`w-20 h-20 rounded-full border-[3.5px] p-1 flex items-center justify-center active:scale-95 transition-all cursor-pointer group ${
+                  isCapturing ? 'opacity-80 scale-95' : ''
+                } ${
                   scannerMode === 'frq'
                     ? 'border-emerald-400 shadow-[0_0_30px_rgba(52,211,153,0.6)]'
                     : 'border-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.6)]'
@@ -1099,7 +1129,13 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
                     ? 'bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 group-hover:from-emerald-400 group-hover:to-teal-500'
                     : 'bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 group-hover:from-amber-400 group-hover:to-orange-500'
                 }`}>
-                  {scannerMode === 'frq' ? <Camera className="w-8 h-8" /> : <Radar className="w-8 h-8" />}
+                  {isCapturing ? (
+                    <Loader2 className="w-8 h-8 animate-spin" />
+                  ) : scannerMode === 'frq' ? (
+                    <Camera className="w-8 h-8" />
+                  ) : (
+                    <Radar className="w-8 h-8" />
+                  )}
                 </div>
               </button>
 
@@ -2168,12 +2204,13 @@ export default function FRQGrader({ onBack, isActive = true }: FRQGraderProps) {
       {/* FRQ EVALUATION HISTORY DRAWER / MODAL */}
       <AnimatePresence>
         {showHistoryModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 transform-gpu">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              initial={{ opacity: 0, scale: 0.96, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-[#FAF9F6] border border-zinc-200 rounded-3xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+              exit={{ opacity: 0, scale: 0.96, y: 10 }}
+              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-[#FAF9F6] border border-zinc-200 rounded-3xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl overflow-hidden transform-gpu will-change-transform"
             >
               {/* Modal Header */}
               <div className="p-4 border-b border-zinc-200 flex items-center justify-between bg-white shrink-0">

@@ -1,12 +1,13 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ArrowLeft, Eye, EyeOff, Share2, ChevronDown, ChevronUp, ChevronRight,
   AlertTriangle, Search, CheckCircle2, RotateCcw,
   FileDown, Loader2, X, CheckCircle, Sparkles,
-  BookOpen, Layers, Compass, Brain, Zap, Target, Check, HelpCircle
+  BookOpen, Layers, Compass, Brain, Zap, Target, Check, HelpCircle, Lock, Crown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { triggerVibration } from '../utils/vibrate';
+import { isProUser } from '../utils/coins';
 import { 
   getAllMindMapSubjects, 
   getMindMapsForSubject, 
@@ -257,13 +258,16 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
   const [selectedNodeForModal, setSelectedNodeForModal] = useState<{ node: MindMapLeafNode; branch: MindMapBranch } | null>(null);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [fullScreenPdfData, setFullScreenPdfData] = useState<{ uri: string; title: string; unitNumber: number } | null>(null);
+  const [lockedUnitModal, setLockedUnitModal] = useState<{ unitNumber: number; title: string; subjectName: string } | null>(null);
 
   // Hardware Android Back Button Navigation (Step-by-step)
   useEffect(() => {
     const handleHardwareBack = (e: Event) => {
       e.preventDefault();
       triggerVibration(10);
-      if (fullScreenPdfData) {
+      if (lockedUnitModal) {
+        setLockedUnitModal(null);
+      } else if (fullScreenPdfData) {
         setFullScreenPdfData(null);
       } else if (selectedNodeForModal) {
         setSelectedNodeForModal(null);
@@ -277,11 +281,21 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
     };
     window.addEventListener('appBackButton', handleHardwareBack);
     return () => window.removeEventListener('appBackButton', handleHardwareBack);
-  }, [fullScreenPdfData, selectedNodeForModal, showCramSheet, step, onBack]);
+  }, [lockedUnitModal, fullScreenPdfData, selectedNodeForModal, showCramSheet, step, onBack]);
 
   // Resiliently open selected unit mind map
-  const openUnitMap = (subjectId: string, unitId: string, unitNum: number) => {
+  const openUnitMap = (subjectId: string, unitId: string, unitNum: number, unitTitle?: string, subjectName?: string) => {
     triggerVibration(15);
+    // For freemium users, ONLY Unit 1 is unlocked!
+    if (!isProUser() && unitNum !== 1) {
+      triggerVibration(25);
+      setLockedUnitModal({
+        unitNumber: unitNum,
+        title: unitTitle || `Unit ${unitNum}`,
+        subjectName: subjectName || 'AP Course'
+      });
+      return;
+    }
     setSelectedSubjectId(subjectId);
     const maps = getMindMapsForSubject(subjectId);
     const match = maps.find(m => m.unitId === unitId || m.unitNumber === unitNum);
@@ -482,79 +496,89 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
           </div>
 
           {/* Subjects Accordion List */}
-          <div className="space-y-3 pt-1">
+          <div className="space-y-2.5 pt-1">
             {filteredSubjects.map(subj => {
               const isExpanded = expandedSubjectIds.has(subj.subjectId);
               return (
                 <div
                   key={subj.subjectId}
-                  className="bg-white rounded-3xl border border-[#DFD8CE] overflow-hidden shadow-2xs transition-all"
+                  className="bg-white rounded-2xl border border-zinc-200/90 shadow-2xs overflow-hidden transition-all duration-200 hover:border-zinc-300"
                 >
                   {/* Subject Header Card */}
-                  <div
+                  <button
                     onClick={() => toggleSubjectExpanded(subj.subjectId)}
-                    className="p-4 sm:p-5 flex items-center justify-between cursor-pointer hover:bg-zinc-50/50 transition-colors select-none"
+                    className="w-full py-2.5 px-3.5 sm:py-3 sm:px-4 flex items-center justify-between text-left hover:bg-zinc-50/50 transition-colors cursor-pointer select-none"
                   >
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs">
-                        {subj.shortCode.slice(0, 3)}
+                    <div className="flex items-center gap-3 min-w-0 pr-2">
+                      <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-lg sm:text-xl shrink-0 bg-gradient-to-br ${subj.gradient || 'from-indigo-500 to-purple-600'} text-white shadow-xs`}>
+                        {subj.icon || '📝'}
                       </div>
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[10px] font-black uppercase text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200/60">
-                            {subj.category}
-                          </span>
-                          <span className="text-[11px] font-bold text-zinc-400">
-                            {subj.notes.length} Units
-                          </span>
-                        </div>
-                        <h3 className="text-sm sm:text-base font-black text-zinc-900 tracking-tight truncate mt-0.5">
+                        <h3 className="text-sm sm:text-base font-bold text-zinc-900 truncate">
                           {subj.subjectName}
                         </h3>
                       </div>
                     </div>
 
-                    <button className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-500 shrink-0 transition-colors">
-                      {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    </button>
-                  </div>
+                    <div className="flex items-center gap-1.5 shrink-0 text-zinc-400">
+                      <span className="text-xs sm:text-sm font-bold text-zinc-500">
+                        {subj.notes.length} Units
+                      </span>
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-zinc-700' : ''}`} />
+                    </div>
+                  </button>
 
                   {/* Units Expanded List - 60fps CSS Grid Accordion */}
                   <div className={`smooth-accordion border-t border-zinc-100 ${isExpanded ? 'is-open' : ''}`}>
                     <div className="smooth-accordion-inner bg-zinc-50/40 p-3 flex flex-col gap-2 w-full">
-                      {subj.notes.map(unit => (
-                        <div
-                          key={unit.unitId}
-                          className="w-full bg-white border border-zinc-200/80 hover:bg-zinc-50 hover:border-indigo-300 py-2.5 px-3.5 rounded-2xl flex items-center justify-between transition-all group/unit shadow-xs"
-                        >
-                          {/* Main Unit Click Target to Open Direct Mind Map */}
-                          <button
-                            onClick={() => openUnitMap(subj.subjectId, unit.unitId, unit.unitNumber)}
-                            className="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer pr-2"
-                          >
-                            <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-200/70 text-indigo-700 font-black text-xs flex items-center justify-center shrink-0">
-                              U{unit.unitNumber}
-                            </div>
-                            <div className="min-w-0">
-                              <span className="font-bold text-xs text-zinc-900 group-hover/unit:text-indigo-600 transition-colors truncate block">
-                                Unit {unit.unitNumber}: {unit.title}
-                              </span>
-                              <span className="text-[10px] text-zinc-400 truncate block">
-                                {unit.examWeight || 'CED Exam Core'} • {unit.sections.length} Concept Nodes
-                              </span>
-                            </div>
-                          </button>
+                      {subj.notes.map(unit => {
+                        const isLocked = !isProUser() && unit.unitNumber !== 1;
 
-                          {/* Arrow Button */}
-                          <button
-                            onClick={() => openUnitMap(subj.subjectId, unit.unitId, unit.unitNumber)}
-                            className="w-8 h-8 rounded-xl bg-zinc-50 hover:bg-indigo-50 hover:text-indigo-700 text-zinc-400 group-hover/unit:text-indigo-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
-                            title={`Open Unit ${unit.unitNumber} Short Notes`}
+                        const handleOpen = () => {
+                          openUnitMap(subj.subjectId, unit.unitId, unit.unitNumber, unit.title, subj.subjectName);
+                        };
+
+                        return (
+                          <div
+                            key={unit.unitId}
+                            className="w-full bg-white border border-zinc-200/80 hover:bg-zinc-50 hover:border-indigo-300 py-2.5 px-3.5 rounded-2xl flex items-center justify-between transition-all group/unit shadow-xs"
                           >
-                            <ChevronRight className="w-4 h-4 group-hover/unit:translate-x-0.5 transition-all" />
-                          </button>
-                        </div>
-                      ))}
+                            {/* Main Unit Click Target to Open Direct Mind Map */}
+                            <button
+                              onClick={handleOpen}
+                              className="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer pr-2"
+                            >
+                              <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-200/70 text-indigo-700 font-black text-xs flex items-center justify-center shrink-0">
+                                U{unit.unitNumber}
+                              </div>
+                              <div className="min-w-0">
+                                <span className="font-bold text-xs text-zinc-900 group-hover/unit:text-indigo-600 transition-colors truncate block">
+                                  Unit {unit.unitNumber}: {unit.title}
+                                </span>
+                              </div>
+                            </button>
+
+                            {/* Arrow or PRO lock button */}
+                            {isLocked ? (
+                              <button
+                                onClick={handleOpen}
+                                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-black uppercase tracking-wider cursor-pointer active:scale-95 shrink-0"
+                              >
+                                <Lock className="w-3 h-3 text-amber-600" />
+                                <span>PRO</span>
+                              </button>
+                            ) : (
+                              <button
+                                onClick={handleOpen}
+                                className="w-8 h-8 rounded-xl bg-zinc-50 hover:bg-indigo-50 hover:text-indigo-700 text-zinc-400 group-hover/unit:text-indigo-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                                title={`Open Unit ${unit.unitNumber} Short Notes`}
+                              >
+                                <ChevronRight className="w-4 h-4 group-hover/unit:translate-x-0.5 transition-all" />
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -1205,6 +1229,66 @@ export default function APMindMap({ onBack, isVip }: APMindMapProps) {
           </div>
         </div>
       )}
+
+      {/* Freemium Locked Short Notes Modal */}
+      <AnimatePresence>
+        {lockedUnitModal && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <motion.div
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 50, opacity: 0 }}
+              className="w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-6 border border-zinc-200 shadow-2xl text-center relative"
+            >
+              <button
+                onClick={() => setLockedUnitModal(null)}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-500 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="w-16 h-16 rounded-3xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-600 mx-auto mb-3 shadow-sm">
+                <Lock className="w-8 h-8" />
+              </div>
+
+              <span className="inline-block px-3 py-1 bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-black uppercase tracking-wider rounded-full mb-2">
+                PRO Member Feature
+              </span>
+
+              <h3 className="text-lg font-black text-zinc-900">
+                Unit {lockedUnitModal.unitNumber} Short Notes Locked
+              </h3>
+              <p className="text-xs text-zinc-600 font-semibold mt-1 leading-relaxed">
+                Free plan users have access to <strong>Unit 1</strong> short notes. Upgrade to PRO to unlock concept revision maps, high-yield cram sheets, and formula summaries for all units!
+              </p>
+
+              <div className="mt-5 space-y-2.5">
+                <button
+                  onClick={() => {
+                    triggerVibration(15);
+                    setLockedUnitModal(null);
+                    window.dispatchEvent(new CustomEvent('open-vip-modal'));
+                  }}
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:opacity-95 text-zinc-950 font-black text-xs uppercase tracking-wider shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <Crown className="w-4 h-4 fill-zinc-950" />
+                  <span>Upgrade to PRO</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    triggerVibration(10);
+                    setLockedUnitModal(null);
+                  }}
+                  className="w-full py-3 rounded-2xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-xs cursor-pointer active:scale-95"
+                >
+                  Keep Free (Go Back)
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

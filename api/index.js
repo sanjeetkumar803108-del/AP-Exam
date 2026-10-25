@@ -63,7 +63,7 @@ var securityLog = (event, details, req) => {
 };
 
 // src/server/reportAiRoutes.ts
-var DEVELOPER_SUPPORT_EMAIL = "helpyou.ai.support@gmail.com";
+var DEVELOPER_SUPPORT_EMAIL = "aiapexam@gmail.com";
 var AI_REPORTS_FILE = path.join(process.cwd(), "data", "ai_reports_vault.json");
 if (!fs.existsSync(path.join(process.cwd(), "data"))) {
   try {
@@ -26933,6 +26933,8 @@ function verifyMathAndFeasibility(q, subjectId) {
 function verifyBlindSolvability(q) {
   const issues = [];
   const prompt = String(q.prompt || q.question || "");
+  const partsText = Array.isArray(q.parts) ? q.parts.map((p) => `${p.task || ""} ${p.scoringCriteria || ""}`).join(" ") : "";
+  const fullPromptText = `${prompt} ${partsText}`;
   const diagramSvg = q.diagramSvg || "";
   const refersToVisual = /\b(?:graph\s+shown\s+below|figure\s+shown\s+below|on\s+the\s+provided\s+grid|shown\s+in\s+the\s+figure)\b/i.test(prompt);
   const hasCoordinatesOrFormula = /\b(?:consisting\s+of|f\(x\)\s*=|from\s+x\s*=\s*-?\d+\s+to\s+x\s*=\s*-?\d+|line\s+segments?\s+and|semicircle|quarter\s+circle)\b/i.test(prompt);
@@ -26948,9 +26950,9 @@ function verifyBlindSolvability(q) {
   if (/\b(?:DBQ|Document-Based\s+Question)\b/i.test(prompt) && (!prompt.includes("Document 1") || !prompt.includes("Document 7"))) {
     issues.push("AP World History DBQ Blind Solver Failure: Prompt is a DBQ but Documents 1 through 7 are not fully embedded in the prompt.");
   }
-  const hasTaskVerbs = /\b(?:find|calculate|determine|explain|justify|show\s+that|evaluate|identify|synthesize|analyze|argue|write\s+an\s+essay)\b/i.test(prompt);
+  const hasTaskVerbs = /\b(?:find|calculate|determine|explain|justify|show\s+that|evaluate|identify|synthesize|analyze|argue|write\s+an\s+essay|state|derive|predict)\b/i.test(fullPromptText);
   if (!hasTaskVerbs) {
-    issues.push("Missing authentic College Board directive verbs (Find, Calculate, Determine, Justify, Explain, Synthesize, Analyze, Argue).");
+    issues.push("Missing authentic College Board directive verbs (Find, Calculate, Determine, Justify, Explain, Synthesize, Analyze, Argue, State, Derive, Predict).");
   }
   return {
     isSolvable: issues.length === 0,
@@ -28381,6 +28383,9 @@ function runMultiStageVerificationPipeline(rawQuestions, subjectId, targetTopic)
     const promptStr = String(processedQ.prompt || processedQ.question || "");
     const canonical = resolveCanonicalUnit(subjectId, processedQ.unitNumber || processedQ.unitTitle || targetTopic, promptStr);
     const getFallback = (qIndex) => {
+      if (processedQ.format === "subjective" || Array.isArray(processedQ.parts)) {
+        return processedQ;
+      }
       if (isAphg) {
         return getAphgPristineUnitQuestion(canonical.unitNumber, targetTopic, qIndex);
       }
@@ -28448,6 +28453,20 @@ function runMultiStageVerificationPipeline(rawQuestions, subjectId, targetTopic)
   };
 }
 
+// ALLOWED_ORIGINS.ts
+var ALLOWED_ORIGINS = /* @__PURE__ */ new Set([
+  "https://ap-exam-five.vercel.app",
+  "capacitor://localhost",
+  "http://localhost",
+  "https://localhost",
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:3001"
+]);
+
 // server.ts
 dotenv.config();
 try {
@@ -28463,20 +28482,10 @@ process.on("uncaughtException", (err) => {
 var app = express();
 app.set("trust proxy", 1);
 var PORT = process.env.PORT || 3e3;
-var ALLOWED_ORIGINS = /* @__PURE__ */ new Set([
-  "https://ap-exam-five.vercel.app",
-  "capacitor://localhost",
-  "http://localhost",
-  "https://localhost",
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "http://127.0.0.1:5173",
-  "http://127.0.0.1:3000"
-]);
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (ALLOWED_ORIGINS.has(origin) || origin.endsWith(".vercel.app") || origin.startsWith("http://192.168.") || origin.startsWith("http://10.")) {
+    if (ALLOWED_ORIGINS.has(origin) || origin.endsWith(".vercel.app") || origin.startsWith("http://192.168.") || origin.startsWith("http://10.") || origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) {
       return callback(null, true);
     }
     console.warn(`[CORS Guard] Blocked unauthorized origin: ${origin}`);
@@ -31711,13 +31720,17 @@ Return ONLY a valid JSON array of objects with this exact structure:
             gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
             model: "gemini-flash-lite-latest",
             timeoutMs: 25e3,
-            contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Batch Seed: ${seed}.
+            contents: {
+              parts: [{
+                text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Batch Seed: ${seed}.
 Generate EXACTLY ${batchCount} authentic College Board AP Exam Multiple Choice Questions (MCQs) for this batch.
 Target Archetypes for this batch:
 ${batchArchetypePlan}
 IMPORTANT: Ensure 100% diversity and fresh non-repetitive problems with unique functions, numbers, and scenarios. Do not repeat standard textbook clich\xE9s!
 Return ALL ${batchCount} items in the JSON array!
-If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or AP Statistics, provide an authentic College Board standard SVG in "diagramSvg" (viewBox='0 0 400 220') for questions that genuinely require visual graph analysis (at least 1 question per batch), and set diagramSvg to "" for purely symbolic, algebraic, or text-based questions so generation is ultra-fast!` }] },
+If this is AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Economics, or AP Statistics, provide an authentic College Board standard SVG in "diagramSvg" (viewBox='0 0 400 220') for questions that genuinely require visual graph analysis (at least 1 question per batch), and set diagramSvg to "" for purely symbolic, algebraic, or text-based questions so generation is ultra-fast!`
+              }]
+            },
             config: {
               systemInstruction: { parts: [{ text: systemInstruction }] },
               responseMimeType: "application/json",
@@ -32496,11 +32509,15 @@ NEVER include multiple-choice options A/B/C/D in subjective output.`;
             model: "gemini-flash-lite-latest",
             timeoutMs: 2e4,
             // Reduced from 25s → 20s per FRQ call to fail fast before Vercel 60s limit
-            contents: { parts: [{ text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Batch Seed: ${seed}.
+            contents: {
+              parts: [{
+                text: `Subject: ${subject}. Unit/Topic: ${targetTopic}. Batch Seed: ${seed}.
 Generate exactly ${batchCount} authentic College Board AP Exam Free Response / Subjective Questions for this batch.
 Target Archetypes for this batch:
 ${batchArchetypePlan}
-Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP ${subject} curriculum!` }] },
+Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP ${subject} curriculum!`
+              }]
+            },
             config: {
               systemInstruction: { parts: [{ text: systemInstruction }] },
               responseMimeType: "application/json",
@@ -33116,7 +33133,7 @@ ${errorDesc.replace(/^input is not a valid AP multiple-choice question\.\s*/i, "
     };
     const targetTopic = [topic, unit, subject].filter(Boolean).join(" - ");
     if (format === "subjective") {
-      const requestedCount2 = Math.min(Math.max(parseInt(count) || 3, 1), 20);
+      const requestedCount2 = Math.min(Math.max(parseInt(count) || 3, 1), 5);
       const assignedTargets2 = getTargetTopicsForBatches(subject, unit, topic, requestedCount2);
       const isAllUnitsMode2 = !unit || /^all(\s*units)?$/i.test(unit.trim()) || unit.toLowerCase().includes("all high-yield units");
       const subjectGuidelines2 = getCollegeBoardSubjectGuidelines(subject, "subjective");
@@ -33134,12 +33151,21 @@ ${errorDesc.replace(/^input is not a valid AP multiple-choice question\.\s*/i, "
           unitLabel: unit || subject,
           subtopicFocus: "Core AP Concepts"
         };
-        const batchSystemInstruction = `You are an elite Senior College Board AP Exam Chief Reader, Lead Item Writer, and Free-Response (FRQ) Scoring Director.
-The student is training with the "AP TRAP RADAR\u2122" to achieve a Score 5 in AP ${subject} on Section II (Free Response Questions / FRQs).
-Your mission: Generate exactly ${batchCount} ultra-authentic, high-caliber College Board AP Exam Free Response Question(s) strictly for:
+        const subjectiveArchetypes = [
+          "Empirical Experimental Investigation & Tabular Data Analysis",
+          "Rigorous Graphical Representation & Rate-of-Change Interpretation",
+          "Primary Source Document / Classical Scientific Excerpt & Contextual Evaluation",
+          "Multi-Step Analytical Derivation & Boundary Limit Sensitivity",
+          "Applied Real-World Modern System (Engineering, Biochemical Pathway, or Policy Shock)"
+        ];
+        const assignedArchetype = subjectiveArchetypes[bIdx % subjectiveArchetypes.length];
+        const batchSystemInstruction = `You are an elite Senior College Board AP Exam Chief Reader, Lead Item Writer, and Free-Response Question (FRQ) Scoring Director.
+The student is training with the "AP TRAP RADAR\u2122" to achieve a flawless Score 5 in AP ${subject} on Section II (Free Response Questions / FRQs).
+Your mission: Generate exactly ${batchCount} ultra-authentic, high-caliber, original College Board AP Exam Free Response Question(s) strictly for:
 \u{1F3AF} ASSIGNED TARGET: "${targetInfo.targetTopic}"
 ${targetInfo.unitNumber ? `\u{1F4CC} MANDATORY AP UNIT: Unit ${targetInfo.unitNumber}` : ""}
 \u{1F511} SPECIFIC CONCEPT FOCUS: "${targetInfo.subtopicFocus}"
+\u{1F3A8} MANDATORY STIMULUS ARCHETYPE: "${assignedArchetype}"
 
 COLLEGE BOARD OFFICIAL COURSE & EXAM GUIDELINES FOR AP ${subject.toUpperCase()}:
 ${subjectGuidelines2}
@@ -33152,69 +33178,67 @@ ${isAllUnitsMode2 ? `FULL CURRICULUM SIMULATION MODE ACTIVE:
 - The specific focus is: "${targetInfo.subtopicFocus}".
 - Do NOT bring in unrelated concepts from other units.`}
 
-ANTI-FRANKENSTEIN UNIFIED SCENARIO MANDATE (STRICTLY ENFORCED):
-- NEVER EVER mash together or combine unrelated mathematical or scientific domains into a single question.
-- FOR EXAMPLE: NEVER connect particle motion/kinematics with power series, or polar curves with logistic differential equations, or electrochemistry with acid-base titrations.
-- The stimulus and all parts (a, b, c) MUST form one unified, coherent real-world or theoretical scenario that fits 100% within the assigned AP unit.
+================================================================================
+CRITICAL DIRECTIVE 1: STRICT ANTI-REPETITION & SCENARIO DIVERSIFICATION
+================================================================================
+- ZERO REPETITION MANDATE: Never reuse standard textbook clich\xE9s, identical numbers, or repetitive scenarios.
+  \u2022 DO NOT default to standard particle velocity $v(t) = t^2 - 4t + 3$, simple projectile drops, or generic catalase experiments.
+  \u2022 Use fresh, creative, academically rigorous contexts (e.g. realistic space telemetries, geothermal thermodynamics, metabolic feedback loops, novel demographic shifts, authentic historical treaties).
+- UNIFIED COHESIVE SCENARIO (NO FRANKENSTEINING):
+  \u2022 NEVER mash together unrelated domains (e.g., never mix electrochemistry with acid-base buffers, or polar graphs with logistic populations).
+  \u2022 All subparts (a, b, c) MUST explore ONE coherent, logically unfolding problem scenario within ${targetInfo.unitLabel}.
 
-CONTEXTUAL UNITS & RUBRIC REALITY MANDATE:
-- ONLY include a 'Missing Units Trap' if the problem scenario explicitly provides physical real-world measurement units (e.g. meters, seconds, ft/min, \xB0C, grams, Molarity).
-- IF THE PROBLEM IS PURE ABSTRACT MATHEMATICS (e.g. evaluating an integral $\\int f(x)dx$, finding a Taylor polynomial, calculating a derivative, or determining radius of convergence where variables are unitless numbers):
-  DO NOT invent a fake 'Missing Units Trap'.
-  Instead, use legitimate College Board rubric traps such as:
-  \u{1FAA4} The Missing Endpoint / Boundary Test Trap (testing open vs closed interval).
-  \u{1FAA4} The Premature Rounding / Precision Slip Trap.
-  \u{1FAA4} The Missing Justification / Intermediate Theorem Trap (e.g. failing to verify continuity for IVT/MVT).
-  \u{1FAA4} The Formula Setup / Incomplete Work Trap.
+================================================================================
+CRITICAL DIRECTIVE 2: 100% MATHEMATICAL & FACTUAL PRE-VERIFICATION PROTOCOL
+================================================================================
+- ZERO CALCULATION / FACTUAL ERRORS:
+  \u2022 You MUST internally verify all arithmetic, calculus integrations, derivatives, chemical stoichiometries, and physics equations BEFORE outputting JSON.
+  \u2022 Double-check signs (positive vs negative work, increasing vs decreasing rates, exothermic vs endothermic $\\Delta H$).
+  \u2022 If units are given in the problem, ensure all dimensional units in the model answer and rubric match precisely.
+- CLEAN LATEX FORMATTING:
+  \u2022 Write all math, physics, and chemistry equations using pristine LaTeX notation: $f'(x)$, $\\int_{a}^{b} f(x)\\,dx$, $\\Delta G^{\\circ}$, $\\text{H}_3\\text{O}^+$.
+  \u2022 Never leave broken LaTeX delimiters or unescaped backslashes.
 
-INTERVAL OF CONVERGENCE & MATHEMATICAL RIGOR (IF APPLICABLE):
-- When testing Power Series / Interval of Convergence:
-  Always explicitly test both endpoints independently.
-  Show whether each endpoint converges conditionally, absolutely, or diverges with the exact convergence test named.
-  Never invert bracket notation (e.g. do not write [-1, 5) if the lower endpoint diverges and upper converges\u2014write (-1, 5]).
-  Ensure the center $c$ and radius $R$ are mathematically exact.
+================================================================================
+CRITICAL DIRECTIVE 3: RIGOROUS STEP-BY-STEP SOLUTIONS & COLLEGE BOARD TASK VERBS
+================================================================================
+- Task Verbs:
+  \u2022 Part (a): "Identify", "Calculate", or "State" [1 point].
+  \u2022 Part (b): "Explain", "Determine with justification", or "Derive" [1-2 points].
+  \u2022 Part (c): "Justify", "Evaluate", or "Predict the effect on..." [1 point].
+- MANDATORY STEP-BY-STEP BREAKDOWN IN "modelAnswer":
+  \u2022 For Quantitative / Calculation Tasks:
+    - Step 1 (Formula Setup & Concept): State the governing law, integral setup, or fundamental formula before substituting numbers.
+    - Step 2 (Substitution & Work): Show explicit intermediate values and algebraic steps.
+    - Step 3 (Evaluation & Final Result): State the exact computed final value with precision (3 decimals for AP Calc/Stats, correct sig figs for Chem/Physics) and units.
+    - Step 4 (Contextual Justification): 1 concluding sentence explaining the practical meaning in context.
+  \u2022 For Qualitative / Conceptual Tasks:
+    - Part 1: Direct Claim / Identification.
+    - Part 2: Explicit evidence citation referencing stimulus data or excerpt text.
+    - Part 3: Deep causal reasoning connecting the evidence to the broader concept.
+  \u2022 NEVER output a short 1-line answer for a calculation point.
 
-SCRATCHPAD & THINKING SUPPRESSION MANDATE (MANDATORY):
-- Do NOT output internal monologues, drafting self-talk, or reasoning commentary (such as 'Wait, let\\'s verify...', 'Let me double check...', 'Hold on, let me recalculate...').
-- Every string field in the JSON (prompt, stimulus, task, scoringCriteria, modelAnswer, trapDescription, etc.) must contain ONLY the polished final text intended for the student and teacher.
-- Verify all arithmetic and calculus derivations internally BEFORE producing the final JSON output.
-
-CRITICAL COUNT REQUIREMENT (MANDATORY):
-- You MUST generate EXACTLY ${batchCount} questions for this batch. Outputting fewer than ${batchCount} questions is strictly forbidden.
-- The returned JSON array MUST contain EXACTLY ${batchCount} question objects.
-
-RAPID GENERATION & HIGH-YIELD CONCISENESS DIRECTIVE:
-- Generate high-yield, punchy, and academically rigorous questions WITHOUT verbose filler or conversational padding.
-- Provide exactly 2 to 3 targeted parts per question (e.g. Part a and Part b, or a, b, c).
-- Keep each Chief Reader trap description to 1 crisp sentence explaining the mistake and 1 crisp sentence for the full-credit fix.
-
-MANDATORY STEP-BY-STEP SOLUTIONS FOR CALCULATION & QUANTITATIVE PROBLEMS:
-- FOR ANY CALCULATION, DERIVATION, OR QUANTITATIVE TASK (e.g. Calculus, Physics, Chemistry, Statistics, Macro/Microeconomics):
-  THE "modelAnswer" MUST BE BROKEN DOWN STRICTLY STEP-BY-STEP, displaying full mathematical rigor as required by College Board Chief Readers:
-  \u2022 Step 1 [Formula Setup & Concept]: Write the fundamental equation, theorem, integral/derivative setup, or physical law before plugging in numbers.
-  \u2022 Step 2 [Value Substitution & Work]: Show explicit substitution of numerical values with standard units (if applicable). Show all intermediate algebraic/calculus work step-by-step.
-  \u2022 Step 3 [Evaluation & Final Result]: Calculate the exact final answer, rounded to standard College Board precision (3 decimal places for AP Calculus/Stats, or appropriate significant figures for Chemistry/Physics) with units if problem had units.
-  \u2022 Step 4 [Interpretation / Justification]: Provide 1 clear concluding sentence connecting the numerical result back to the context of the problem.
-- FOR QUALITATIVE / EXPLANATORY PROBLEMS (e.g. History, Gov, Human Geography, Biology conceptual):
-  Structure the model answer with clear sub-points:
-  \u2022 Part 1: Direct Claim / Identification.
-  \u2022 Part 2: Evidence citation directly referencing the stimulus text or data.
-  \u2022 Part 3: Explicit causal reasoning connecting the evidence to the broader concept.
-- NEVER PROVIDE A SHORT 1-LINE ANSWER FOR A CALCULATION. Every single calculation point MUST have its setup and intermediate work clearly visible.
-
-AUTHENTIC CHIEF READER RUBRIC TRAPS:
-Every part of the FRQ MUST diagnose the exact real-world pitfalls documented in College Board Chief Reader reports:
+================================================================================
+CRITICAL DIRECTIVE 4: AUTHENTIC CHIEF READER RUBRIC TRAPS
+================================================================================
+Every subpart must diagnose legitimate pitfalls documented in College Board Chief Reader reports:
 \u{1FAA4} The Unjustified Claim / Data Citation Gap Trap (failing to cite specific numerical data points or direct textual evidence from the stimulus).
 \u{1FAA4} The Circular Reasoning / Prompt Echo Trap (restating the prompt's premise instead of explaining the causal mechanism).
 \u{1FAA4} The Ambiguous Reference / Vague Pronoun Trap (writing "it", "they", or "this factor" without explicitly naming the chemical species or variable).
 \u{1FAA4} The Task Verb Misalignment Trap (answering an "Explain" prompt with merely an "Identify" statement).
 \u{1FAA4} The Scope Creep / Wrong Scale Trap (discussing the wrong geographic scale or outside historical era).
 \u{1FAA4} The Endpoint Exclusion Trap / Boundary Slip Trap (omitting boundary convergence tests).
-\u{1FAA4} The Naked Number / Missing Units Trap (ONLY if units are present in the problem stem).
+\u{1FAA4} The Naked Number / Missing Units Trap (ONLY if physical units are present in the problem stem).
 \u{1FAA4} The Parameter Omission Trap [AP Statistics]: Using sample statistics (x-bar or p-hat) in hypotheses instead of population parameters (mu or p), or omitting parameter definitions in context.
-\u{1FAA4} The Unverified Condition Trap [AP Statistics]: Checking conditions with mere checkmarks without showing the actual numerical calculation (e.g. 50 * 0.3 = 15 >= 10).
+\u{1FAA4} The Unverified Condition Trap [AP Statistics]: Checking conditions with mere checkmarks without showing the actual numerical calculation.
 \u{1FAA4} The Dogmatic Conclusion Trap [AP Statistics]: Concluding that the test "proves" the alternative hypothesis is true or "accepts" the null hypothesis.
-\u{1FAA4} The Naked Slope / Scope Creep Trap [AP Statistics]: Interpreting slope without the word "predicted" or "on average", or asserting causality from an observational study.
+
+SCRATCHPAD & THINKING SUPPRESSION MANDATE:
+- Do NOT output internal monologues, drafting self-talk, or reasoning commentary.
+- Every string field in the JSON must contain ONLY the polished final text intended for the student and teacher.
+
+CRITICAL COUNT REQUIREMENT:
+- You MUST generate EXACTLY ${batchCount} questions for this batch in the returned JSON array.
 
 STRICT JSON OUTPUT FORMAT:
 Return ONLY a valid JSON array of ${batchCount} question objects:
@@ -33252,11 +33276,14 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
             gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
             model: "gemini-flash-lite-latest",
             timeoutMs: 25e3,
-            contents: { parts: [{ text: `Generate EXACTLY ${batchCount} authentic AP ${subject} Free Response Trap Radar question(s) strictly for: ${targetInfo.targetTopic}. Batch Seed: ${seed}. Return ALL ${batchCount} items in the JSON array!` }] },
+            contents: { parts: [{ text: `Generate EXACTLY ${batchCount} original, non-repetitive AP ${subject} Free Response Trap Radar question(s) strictly for: ${targetInfo.targetTopic}.
+Stimulus Archetype: ${assignedArchetype}.
+Batch Seed: ${seed}.
+Ensure 100% calculation accuracy, rigorous multi-step model answer, and authentic Chief Reader traps. Return ALL ${batchCount} items in the JSON array!` }] },
             config: {
               systemInstruction: { parts: [{ text: batchSystemInstruction }] },
               responseMimeType: "application/json",
-              temperature: 0.2,
+              temperature: 0.65,
               maxOutputTokens: 3500
             }
           });
@@ -33422,9 +33449,19 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
       const startIdx = batchSizes.slice(0, bIdx).reduce((a, b) => a + b, 0);
       const batchAssigned = assignedTargets.slice(startIdx, startIdx + batchCount);
       const questionsTargetsDesc = batchAssigned.map((t, i) => `\u2022 Question ${i + 1}: ${t.targetTopic}`).join("\n");
-      const batchSystemInstruction = `You are a Senior College Board AP Exam Chief Psychometrician, Lead Item Writer, and Master Distractor Architect.
-The student is training with the "AP TRAP RADAR\u2122" to achieve a Score 5 in AP ${subject}.
-Your mission: Generate exactly ${batchCount} ultra-authentic, high-caliber College Board AP Exam Multiple Choice Questions with DECEPTIVELY ENGINEERED PSYCHOMETRIC DISTRACTOR TRAPS.
+      const objectiveArchetypes = [
+        "Tabular Empirical Data & Experimental Measurement Systems",
+        "Piecewise Graphical Curves & Derivative/Accumulation Rate Shifts",
+        "Direct Primary Source Text / Classical Scientific Treatise Excerpt",
+        "Multi-Step Symbolic Systems, Parameter Limits & Boundary Exceptions",
+        "Novel Applied Engineering, Biomedical, or Macro-Policy Scenarios",
+        "Counter-Intuitive Equilibrium & Edge-Case Distractor Traps"
+      ];
+      const assignedArchetype = objectiveArchetypes[bIdx % objectiveArchetypes.length];
+      const batchSystemInstruction = `You are the Senior College Board AP Exam Chief Psychometrician, Lead Item Writer, and Master Distractor Architect.
+The student is training with the "AP TRAP RADAR\u2122" to achieve a flawless Score 5 in AP ${subject}.
+Your mission: Generate exactly ${batchCount} ultra-authentic, high-caliber, 100% original College Board AP Exam Multiple Choice Questions with DECEPTIVELY ENGINEERED PSYCHOMETRIC DISTRACTOR TRAPS.
+\u{1F3A8} MANDATORY STIMULUS ARCHETYPE: "${assignedArchetype}"
 
 COLLEGE BOARD OFFICIAL COURSE & EXAM GUIDELINES FOR AP ${subject.toUpperCase()}:
 ${subjectGuidelines}
@@ -33437,72 +33474,78 @@ All ${batchCount} questions MUST focus strictly on: "${assignedTargets[0]?.unitL
 Each question MUST test a distinct concept from this unit:
 ${questionsTargetsDesc}`}
 
-ANTI-FRANKENSTEIN SCENARIO MANDATE:
-- Never combine unrelated curriculum areas into a single question.
-- Every question must test legitimate College Board syllabus principles matching its assigned unit.
+================================================================================
+CRITICAL DIRECTIVE 1: STRICT ANTI-REPETITION & SCENARIO DIVERSIFICATION
+================================================================================
+- ZERO REPETITION GUARANTEE:
+  \u2022 NEVER generate the same question premise, standard clich\xE9 textbook setup, identical function, or identical numerical values across calls or within the same batch.
+  \u2022 FORBIDDEN CLICH\xC9S:
+    - AP Calculus: Do NOT repeatedly use basic polynomial motion (e.g. $v(t) = t^2 - 4t + 3$) or simple parabolas.
+    - AP Physics: Do NOT default to a simple cart rolling down an incline or a standard dropped rock.
+    - AP Biology: Do NOT default exclusively to catalase / hydrogen peroxide or standard pea-plant genetics.
+    - AP Chemistry: Do NOT default exclusively to standard HCl/NaOH titration or simple gas law expansion.
+    - AP History/Gov: Do NOT reuse the same famous excerpt repeatedly.
+- ROTATION OF STIMULUS ARCHETYPES:
+  \u2022 Tabular Empirical Data: A realistic observation table with 3-5 rows requiring rate-of-change, ratio, or trend analysis.
+  \u2022 Graphical/Visual Description: Rigorous piecewise curve, reaction coordinate, or economic shift.
+  \u2022 Primary / Secondary Excerpt: Direct historical document or scientific report with formal attribution (Author, Title, Year).
+  \u2022 Multi-Step Analytical/Symbolic System: Pure algebraic derivation testing boundary limits or parameter sensitivity.
+  \u2022 Novel Applied Scenario: Emerging modern contexts (aerospace telemetry, biopharmaceuticals, renewable grids, macro shocks).
+- ANTI-FRANKENSTEIN MANDATE:
+  \u2022 Never combine unrelated curriculum areas into a single question.
+
+================================================================================
+CRITICAL DIRECTIVE 2: 100% MATHEMATICAL & FACTUAL PRE-VERIFICATION PROTOCOL
+================================================================================
+- ZERO CALCULATION / FACTUAL ERRORS:
+  \u2022 You MUST solve and verify the problem from scratch internally before finalizing the JSON.
+  \u2022 Derivatives, integrals, stoichiometric ratios, and statistical test statistics MUST be mathematically exact.
+  \u2022 Historical chronology, court rulings, and author attributions must be indisputable.
+  \u2022 Exactly ONE option is factually and mathematically correct.
+- CLEAN LATEX FORMATTING:
+  \u2022 Format all mathematical and chemical formulas in valid LaTeX ($...$ or $$...$$) without breaks inside delimiters.
+  \u2022 Ensure 'correctAnswer' matches the EXACT string of one of the 4 options.
+
+================================================================================
+CRITICAL DIRECTIVE 3: 25% BALANCED KEYS & PSYCHOMETRIC PERCENTAGE LAW
+================================================================================
+- 25% BALANCED ANSWER DISTRIBUTION:
+  \u2022 Distribute the correct target option EVENLY across all 4 positions (A, B, C, D) with roughly 25% probability each.
+  \u2022 OVER-RELIANCE ON OPTION B IS STRICTLY FORBIDDEN. Ensure Option C, Option D, and Option A are evenly chosen as correct targets.
+- PSYCHOMETRIC PERCENTAGES SUM TO EXACTLY 100%:
+  \u2022 Every single option MUST have a strictly UNIQUE, DIFFERENT percentage.
+  \u2022 For the 1 Correct Target Option:
+    "vulnerabilityRate": "Target Answer (44% correct)" (realistic range 36%-52%).
+  \u2022 For the 3 Distractor Trap Options:
+    Their percentages MUST sum to the remaining (100% - target%).
+    Example: Target: 44%, Trap 1: 28%, Trap 2: 18%, Trap 3: 10%. (44 + 28 + 18 + 10 = 100%).
+    Format distractor rate strictly as: "[X]% of AP test-takers pick this".
+
+================================================================================
+CRITICAL DIRECTIVE 4: AUTHENTIC PSYCHOMETRIC DISTRACTOR TAXONOMY
+================================================================================
+Distractors MUST NOT be silly or obvious. They must exploit genuine student misconceptions:
+\u{1FAA4} The Reverse Logic / Sign Flip Trap (inverted derivative/integral sign, reciprocal, flipped cause-and-effect).
+\u{1FAA4} The Half-Truth / Scope Creep Trap (factually true in real life, BUT does not answer the stimulus excerpt or exceeds CED scope).
+\u{1FAA4} The Chronological / Evolutionary Anachronism Trap (correct historical event or biological mechanism, but out of historical order or incorrect phase).
+\u{1FAA4} The Absolute Qualifier Trap ('always', 'solely', 'invariably' turning a plausible assertion into an invalid claim).
+\u{1FAA4} The Pseudo-Vocabulary Jargon Salad Trap (strings together legitimate unit keywords into a mechanism that makes no logical sense).
+\u{1FAA4} The Intermediate Calculation Stop Trap (stops after finding an intermediate variable $x$ or moles $n$, rather than the final requested quantity).
+\u{1FAA4} The Variance Subtraction Fallacy [AP Statistics]: Calculating $\\text{Var}(X - Y) = \\text{Var}(X) - \\text{Var}(Y)$ instead of adding variances.
+\u{1FAA4} The Null Parameter Inversion Trap [AP Statistics]: Using sample proportion $\\hat{p}$ instead of hypothesized null parameter $p_0$ in the denominator standard error.
+\u{1FAA4} The Disjoint vs Independent Conflation [AP Statistics]: Assuming mutually exclusive (disjoint) events are independent.
+\u{1FAA4} The Inverse Conditional Fallacy [AP Statistics]: Confusing $P(A|B)$ with $P(B|A)$.
+\u{1FAA4} The CLT Misinterpretation Trap [AP Statistics]: Claiming CLT makes the population normal rather than the sampling distribution.
+\u{1FAA4} The Causal Scope Creep Trap [AP Statistics]: Claiming causality from an observational study.
+\u{1FAA4} The Naked Slope Trap [AP Statistics]: Omitting 'predicted' or 'on average' in linear regression slope interpretation.
+\u{1FAA4} The Acceptance Fallacy [AP Statistics]: Concluding to 'accept $H_0$' instead of 'fail to reject $H_0$'.
 
 SCRATCHPAD & THINKING SUPPRESSION MANDATE:
-- Do NOT output internal monologues, drafting self-talk, or reasoning commentary (such as 'Wait, let\\'s verify...', 'Let me double check...').
+- Do NOT output internal monologues, drafting self-talk, or reasoning commentary.
 - All string values must be polished, professional text directly suitable for student practice.
 
-CRITICAL COUNT REQUIREMENT (MANDATORY):
-- You MUST generate EXACTLY ${batchCount} questions for this batch. Outputting fewer than ${batchCount} questions is strictly forbidden.
-- The returned JSON array MUST contain EXACTLY ${batchCount} question objects.
-
-RAPID HIGH-SPEED GENERATION RULES:
-- Generate with ultra-high speed and razor-sharp clarity. Keep each trapDescription to 1 crisp, direct sentence.
-- Keep each collegeBoardMindset to 1 concise sentence.
-- Keep disarmStrategy to 1 sharp, high-yield heuristic.
-- No conversational preambles or filler. Output strictly valid JSON array directly.
-
-MANDATORY 25% BALANCED ANSWER DISTRIBUTION (CRITICAL RULE):
-- YOU MUST DISTRIBUTE THE CORRECT TARGET OPTION EVENLY ACROSS ALL 4 POSITIONS (A, B, C, D) WITH ROUGHLY 25% PROBABILITY EACH.
-- OVER-RELIANCE ON OPTION B IS STRICTLY FORBIDDEN. Ensure Option C, Option D, and Option A are evenly chosen as correct targets.
-- Ensure varied correct target positions without consecutive identical answers.
-
-MANDATORY PSYCHOMETRIC PERCENTAGE RULES (CRITICAL MATHEMATICAL LAW):
-- Every question has 4 options whose student selection percentages MUST SUM TO EXACTLY 100%.
-- EVERY SINGLE OPTION MUST HAVE A STRICTLY UNIQUE, DIFFERENT PERCENTAGE. NEVER REPEAT THE SAME PERCENTAGE (NEVER output 35% across multiple options).
-- FOR THE 1 CORRECT TARGET OPTION:
-  "vulnerabilityRate": "Target Answer (46% correct)" (use realistic 38%-56% range).
-- FOR THE 3 DISTRACTOR TRAP OPTIONS:
-  Their percentages MUST sum to the remaining (100% - target%).
-  Distribute realistically among the 3 traps with different magnitudes (e.g., Primary trap: 26%-32%, Secondary trap: 14%-19%, Minor trap: 7%-12%).
-  Example distribution: Target: 46%, Trap 1: 29%, Trap 2: 16%, Trap 3: 9%. Sum = 46 + 29 + 16 + 9 = 100%.
-  Format distractor rate strictly as: "[X]% of AP test-takers pick this".
-
-AUTHENTIC COLLEGE BOARD AP EXAM STANDARDS (STRICT REQUIREMENT):
-1. REAL AP STIMULUS-BASED FORMAT:
-   - AP History / Social Sciences (APUSH, World History, Euro, Gov, Human Geography): Every question MUST feature an authentic historical primary/secondary source excerpt (with author attribution, document title, and date e.g. "Source: John Locke, Two Treatises of Government, 1689"), historical treaty, political speech, map interpretation, or economic data table.
-   - AP STEM Sciences (Biology, Chemistry, Physics, Environmental Science): Every question MUST feature a realistic laboratory experiment scenario, biological feedback pathway, reaction coordinate, data observation table, or physical system with formal variables.
-   - AP Calculus (AB/BC): Questions MUST use rigorous College Board mathematical notation ($f(x)$, derivatives, Riemann sums, differential equations, polar/series) testing conceptual theorems (MVT, IVT, EVT) or rate-of-change tables.
-   - AP Statistics (College Board Fall 2026 Redesigned 5-Unit Framework): Questions MUST test authentic real-world scenarios (clinical randomized trials, observational surveys, two-way tables, sampling distributions, bivariate regression outputs, confidence intervals, hypothesis testing). Questions MUST use rigorous statistical notation ($\bar{x}, s, mu, sigma, hat{p}, p_0, z^*, t^*, 	ext{df}, r, r^2, 	ext{SE}$).
-   - AP Computer Science (CSA, CSP): Questions MUST contain authentic AP Java Subset code snippets (e.g. 2D arrays, ArrayList, object references, off-by-one loop boundaries, boolean logic) requiring precise execution tracing.
-   - AP Economics (Macroeconomics, Microeconomics): Questions MUST test multi-step fiscal/monetary chain reactions, curve shifts, elasticity calculations, or market equilibrium models.
-
-2. AUTHENTIC COLLEGE BOARD DISTRACTOR TRAPS (NO OBVIOUS / SILLY WRONG ANSWERS):
-   Every question MUST feature 4 options (A, B, C, D):
-   - EXACTLY 1 OPTION: The 100% verified, mathematically/historically sound College Board Target.
-   - THE OTHER 3 OPTIONS: Must be genuine psychometric traps designed to exploit standard high-school misconceptions that 40%-60% of AP test-takers pick:
-     \u{1FAA4} The Reverse Logic / Arithmetic Slip Trap (inverted derivative/integral sign, reciprocal, flipped cause-and-effect).
-     \u{1FAA4} The Half-Truth / Scope Creep Trap (factually true in real life, BUT does not answer the stimulus excerpt or exceeds CED scope).
-     \u{1FAA4} The Chronological / Evolutionary Anachronism Trap (correct historical event or biological mechanism, but out of historical order or incorrect phase).
-     \u{1FAA4} The Absolute Qualifier Trap ('always', 'solely', 'invariably' turning a plausible assertion into an invalid claim).
-     \u{1FAA4} The Pseudo-Vocabulary Jargon Salad Trap (strings together legitimate unit keywords into a mechanism that makes no logical sense).
-     \u{1FAA4} The Intermediate Calculation Stop Trap (stops after finding an intermediate variable $x$ or moles $n$, rather than the final requested quantity).
-     \u{1FAA4} The Variance Subtraction Fallacy [AP Statistics]: Calculating $	ext{Var}(X - Y) = 	ext{Var}(X) - 	ext{Var}(Y)$ instead of adding variances.
-     \u{1FAA4} The Null Parameter Inversion Trap [AP Statistics]: Using sample proportion $hat{p}$ instead of hypothesized null parameter $p_0$ in the denominator standard error.
-     \u{1FAA4} The Disjoint vs Independent Conflation [AP Statistics]: Assuming mutually exclusive (disjoint) events are independent.
-     \u{1FAA4} The Inverse Conditional Fallacy [AP Statistics]: Confusing $P(A|B)$ with $P(B|A)$, e.g. $P(	ext{Disease} mid 	ext{Positive})$ vs $P(	ext{Positive} mid 	ext{Disease})$.
-     \u{1FAA4} The CLT Misinterpretation Trap [AP Statistics]: Claiming CLT makes the population or individual observations normal, rather than the sampling distribution of $\bar{x}$.
-     \u{1FAA4} The Causal Scope Creep Trap [AP Statistics]: Claiming cause-and-effect from an observational study without random assignment, or confusing correlation with causation.
-     \u{1FAA4} The Naked Slope Trap [AP Statistics]: Omitting 'predicted' or 'on average' in linear regression slope interpretation.
-     \u{1FAA4} The Acceptance Fallacy [AP Statistics]: Concluding to 'accept $H_0$' instead of 'fail to reject $H_0$'.
-
-3. SCORING & DISARMING SECRETS:
-   - Provide the "5-Second Disarm Secret": A sharp, pragmatic mental heuristic used by AP 5-scorers to neutralize and cross out the distractors in seconds.
-   - Format ALL math and chemistry formulas with clean LaTeX ($...$ or $$...$$) without breaks inside delimiters.
-   - Ensure EXACTLY ONE OPTION is correct and 'correctAnswer' matches the exact string in 'options'.
+CRITICAL COUNT REQUIREMENT:
+- You MUST generate EXACTLY ${batchCount} questions for this batch in the returned JSON array.
 
 STRICT JSON OUTPUT FORMAT:
 Return ONLY a valid JSON array of ${batchCount} question objects:
@@ -33527,7 +33570,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
         "trapType": "\u{1F3AF} Official College Board Target",
         "trapDescription": "Why this option is the sole CED-compliant answer.",
         "collegeBoardMindset": "Evaluates foundational CED objective...",
-        "vulnerabilityRate": "Target Answer (46% correct)"
+        "vulnerabilityRate": "Target Answer (44% correct)"
       },
       {
         "option": "B",
@@ -33535,7 +33578,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
         "trapType": "\u{1FAA4} The Reverse Logic / Sign Flip Trap",
         "trapDescription": "Why students fall for this...",
         "collegeBoardMindset": "Designed for students who missed the negative sign...",
-        "vulnerabilityRate": "29% of AP test-takers pick this"
+        "vulnerabilityRate": "28% of AP test-takers pick this"
       },
       {
         "option": "C",
@@ -33543,7 +33586,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
         "trapType": "\u{1FAA4} The Half-Truth / Scope Creep Trap",
         "trapDescription": "Why students fall for this...",
         "collegeBoardMindset": "Exploits superficial reading of the passage...",
-        "vulnerabilityRate": "16% of AP test-takers pick this"
+        "vulnerabilityRate": "18% of AP test-takers pick this"
       },
       {
         "option": "D",
@@ -33551,7 +33594,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
         "trapType": "\u{1FAA4} The Absolute Qualifier Trap",
         "trapDescription": "Why students fall for this...",
         "collegeBoardMindset": "Baits students with extreme language...",
-        "vulnerabilityRate": "9% of AP test-takers pick this"
+        "vulnerabilityRate": "10% of AP test-takers pick this"
       }
     ],
     "disarmStrategy": "\u26A1 5-Second Disarm Secret: The exact heuristic to eliminate distractors instantly on exam day.",
@@ -33563,13 +33606,15 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
           gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
           model: "gemini-flash-lite-latest",
           timeoutMs: 25e3,
-          contents: { parts: [{ text: `Generate EXACTLY ${batchCount} authentic AP ${subject} Trap Radar questions covering:
+          contents: { parts: [{ text: `Generate EXACTLY ${batchCount} authentic, non-repetitive AP ${subject} Trap Radar questions covering:
 ${questionsTargetsDesc}
-Batch Seed: ${seed}. Return ALL ${batchCount} items with complete distractor traps in the JSON array!` }] },
+Stimulus Archetype: ${assignedArchetype}.
+Batch Seed: ${seed}.
+Ensure 100% verified accuracy, balanced keys, and psychometric distractor percentages summing to 100%. Return ALL ${batchCount} items in the JSON array!` }] },
           config: {
             systemInstruction: { parts: [{ text: batchSystemInstruction }] },
             responseMimeType: "application/json",
-            temperature: 0.2,
+            temperature: 0.65,
             maxOutputTokens: 4096
           }
         });
@@ -33843,73 +33888,85 @@ app.post("/api/evaluate-answer", async (req, res) => {
     const questionText = req.body.questionText || req.body.question || "";
     const userAnswer = req.body.userAnswer || req.body.answer || "";
     const userGrade = req.body.userGrade || req.body.gradeLevel;
-    const curriculum = req.body.curriculum;
-    const subject = req.body.subject;
+    const subject = req.body.subject || "AP High School Exam Standard";
     const image = req.body.image || req.body.imageBase64 || "";
+    const rawImages = Array.isArray(req.body.images) && req.body.images.length > 0 ? req.body.images : image ? [image] : [];
     const scoringRubric = req.body.scoringRubric;
     const modelAnswer = req.body.modelAnswer;
     const totalPoints = req.body.totalPoints ? Number(req.body.totalPoints) : null;
     if (!questionText) {
       return res.status(400).json({ error: "Missing questionText" });
     }
-    if ((!userAnswer || !userAnswer.trim()) && !image) {
-      return res.status(400).json({ error: "Please write an answer or attach a photo of your work before submitting for evaluation!" });
+    const trimmedAnswer = (userAnswer || "").trim();
+    if (!trimmedAnswer && rawImages.length === 0) {
+      return res.status(400).json({
+        isIrrelevant: true,
+        error: "IRRELEVANT_SUBMISSION",
+        message: "Please write your answer or attach a clear photo of your handwritten work before checking with AI!"
+      });
+    }
+    if (rawImages.length === 0 && (trimmedAnswer.length < 5 || /^(?:asdf|qwer|zxcv|test|hi|hello|ok|xyz|lol|haha|none|no|\.+|\?+|\s*)$/i.test(trimmedAnswer))) {
+      return res.json({
+        isIrrelevant: true,
+        error: "IRRELEVANT_SUBMISSION",
+        message: "\u26A0\uFE0F Incomplete or irrelevant text detected. Please type your actual solution, steps, or formulas for this AP question."
+      });
     }
     const isApExam = userGrade === "AP High School Exam Standard" || typeof userGrade === "string" && userGrade.includes("AP") || Boolean(subject && subject.includes("AP"));
     const expectedPointsLabel = totalPoints ? `${totalPoints}` : "[Total Rubric Points]";
     const systemInstruction = isApExam ? `You are an official College Board AP Exam Chief Reader, Senior AP Table Leader, and Master AP High School Educator.
-Your role is to rigorously assess, grade, and coach the student on their Free Response / Subjective submission with the authentic discipline, precision, and pedagogical standard of the College Board.
+Your role is to rigorously assess, grade, and coach the student on their Free Response / Subjective submission with authentic College Board scoring discipline.
 
-GRADING & SCORING RULES:
-1. RIGOROUS AP RUBRIC POINT-BY-POINT BREAKDOWN:
-   - For every sub-part (e.g. Part (a), Part (b), Part (c), Part (d)):
-     - Award exact points: [X / Y Points].
-     - Provide unambiguous justification citing the student's exact mathematical work, equations, units, or evidence.
-     - Cite official AP grading conventions (e.g. "+1 point for correct chain rule derivative; +1 point for equating f'(x)=0; 0 points for sign chart alone without concluding sentence").
-2. TOTAL OFFICIAL AP SCORE & PERCENTAGE:
-   - Tally the total points earned against the official maximum points for this question (EXACTLY ${expectedPointsLabel} Points Max).
-   - The total points possible MUST BE EXACTLY ${expectedPointsLabel}! NEVER invent or change the total points possible.
-   - The sum of points across all sub-parts MUST equal [Earned Points] and can NEVER exceed ${expectedPointsLabel}.
-3. AUTHENTIC COLLEGE BOARD AP SCALE CONVERSION (1 to 5):
-   - Translate their performance on this standard into the official 1-5 AP scale:
-     - 5: Extremely Well Qualified (Top 10-15% caliber)
-     - 4: Well Qualified (College Credit Ready)
-     - 3: Qualified (Passing Standard)
-     - 2: Possibly Qualified (Foundational Gaps)
-     - 1: No Recommendation
-4. PROFESSIONAL TEACHER COACHING:
-   - What was done brilliantly (proper AP notation, clear justification).
-   - Costly AP Traps to avoid (missing units, incomplete theorem hypotheses like continuity/differentiability).
-   - High-Scoring Exemplary Revision (how to write it on exam day to guarantee 100% full credit).
+================================================================================
+CRITICAL STEP 1: PRE-GRADING RELEVANCE & AUTHENTICITY GATE (MANDATORY)
+================================================================================
+First, inspect the student's submission (both typed text and any attached images):
+- Evaluate whether this submission represents a genuine, good-faith academic attempt to solve or answer this specific AP question.
+- REJECT AS IRRELEVANT IF:
+  1. The typed text is random gibberish, keyboard mash, filler, or unrelated chat (e.g., 'asdfgh', 'I don't know', random jokes, food/shopping chats, song lyrics).
+  2. The attached image(s) show non-academic photos (e.g., selfies, pets, cars, cups, blank/pitch-black screen, blurry walls, memes, or photos with zero visible mathematical, scientific, or academic writing).
+  3. The work has zero connection to the AP subject or the prompt asked.
+- IF REJECTED AS IRRELEVANT OR JUNK:
+  You MUST return ONLY a valid JSON object (no markdown, no preamble):
+  {
+    "isIrrelevant": true,
+    "reason": "1 clear sentence explaining why the submission was rejected (e.g., 'The submitted work does not contain relevant calculations or answers for this AP question. Please provide an authentic solution or clear handwritten work.')"
+  }
 
-OUTPUT FORMAT: Output strictly using this clean Markdown structure:
+================================================================================
+CRITICAL STEP 2: AUTHENTIC COLLEGE BOARD CHIEF READER SCORING
+================================================================================
+If the submission is a genuine attempt (even if incorrect, partial, or containing misconceptions):
+DO NOT return JSON! Output strictly in clean, professional Markdown using this exact scorecard structure:
 
 # \u{1F393} AP\xAE Chief Reader & Teacher Evaluation
 
 ### \u{1F4CA} Official Scorecard
 - **Total AP Points:** **[Earned Points] / ${expectedPointsLabel} Points ([Percentage]%)**
 - **Projected AP Exam Score:** **AP Score [1-5] \u2022 [Extremely Well Qualified / Well Qualified / Qualified / Needs Review]**
-- **Teacher Verdict:** [Brief, professional, encouraging teacher verdict]
+- **Teacher Verdict:** [Crisp 1-2 sentence diagnostic verdict on student's performance]
 
 ---
 
 ### \u{1F4CB} Official Rubric Point-by-Point Breakdown
-(CRITICAL: Every sub-part MUST be on its own separate bullet point with an empty line between each. NEVER concatenate or merge Part (a) and Part (b) onto the same line!)
+(CRITICAL: Every sub-part MUST be on its own separate bullet point with an empty line between each. Explicitly reference student's handwritten work or typed text):
 - **Part (a) [[Earned]/[Total] pts]:** [Specific College Board justification referencing student's work]
 
 - **Part (b) [[Earned]/[Total] pts]:** [Specific College Board justification referencing student's work]
 
 - **Part (c) [[Earned]/[Total] pts]:** [Specific College Board justification referencing student's work]
-(include Part (d) if present)
+(include any further sub-parts as needed)
 
 ---
 
 ### \u{1F468}\u200D\u{1F3EB} Professional Teacher Feedback & AP Exam Fixes
-- **\u{1F31F} Key Strengths:** [What was done accurately with proper terminology/notation]
+- **\u{1F31F} Key Strengths:** [What was done accurately with proper AP terminology/notation]
 
 - **\u26A0\uFE0F Costly Traps & Where Points Were Lost:** [Specific slips, missing conditions, or flawed notation]
 
-- **\u{1F3AF} Full-Credit College Board Standard:** [How to write or format this on the actual May AP exam to guarantee full credit]` : `You are a strict academic examiner for a ${userGrade || "High School"} student. DO NOT act as a standard tutor. Grade the student's answer calibrated to the standards and expectations of ${userGrade || "High School"} level. YOU MUST output strictly using this format:
+- **\u{1F3AF} Full-Credit College Board Standard:** [How to write or format this on the actual May AP exam to guarantee full credit]` : `You are a strict academic examiner for a ${userGrade || "High School"} student. DO NOT act as a standard tutor. Grade the student's answer calibrated to the standards and expectations of ${userGrade || "High School"} level.
+If the submission is junk, spam, or a non-academic photo, output strictly: {"isIrrelevant": true, "reason": "Please provide an actual academic attempt."}.
+Otherwise, output strictly using this format:
 
 ## Grade-Level Assessment
 [Pass/Fail/Needs Improvement for ${userGrade || "this grade"} level]
@@ -33925,11 +33982,11 @@ OUTPUT FORMAT: Output strictly using this clean Markdown structure:
 ## Examiner Feedback & Ideal Solution
 [Explain mistakes and provide the perfect 10/10 mathematical solution]`;
     const parts = [];
-    if (image) {
+    rawImages.slice(0, 3).forEach((imgStr) => {
       let mimeType = "image/jpeg";
-      let cleanBase64 = image;
-      if (image.startsWith("data:")) {
-        const matches = image.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);
+      let cleanBase64 = imgStr;
+      if (imgStr.startsWith("data:")) {
+        const matches = imgStr.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);
         if (matches) {
           mimeType = matches[1];
           cleanBase64 = matches[2];
@@ -33941,18 +33998,23 @@ OUTPUT FORMAT: Output strictly using this clean Markdown structure:
           data: cleanBase64
         }
       });
-    }
+    });
     parts.push({
-      text: `Evaluate the student's answer for: "${questionText}".
+      text: `Evaluate the student's answer for this AP question:
+
+${questionText}
+
 ${totalPoints ? `OFFICIAL MAXIMUM SCORE: EXACTLY ${totalPoints} Points Max. You MUST grade this response strictly out of ${totalPoints} total points!
-` : ""}Student's Written/Typed Answer: "${userAnswer || "No typed text provided; student submitted handwritten work in the attached image."}".${Array.isArray(scoringRubric) && scoringRubric.length > 0 ? `
 
-Official College Board Scoring Rubric:
-${scoringRubric.join("\n")}` : ""}${modelAnswer ? `
+` : ""}Student's Typed / Written Text: "${trimmedAnswer || "No typed text provided; student submitted handwritten work in attached photo(s)."}"
 
-Official Exemplary Model Solution:
-${modelAnswer}` : ""}
-${image ? "IMPORTANT: The student has provided an attached photo containing their handwritten calculations, work, or steps. Thoroughly inspect and evaluate the handwritten solution in the image against the scoring rubric." : ""}`
+${Array.isArray(scoringRubric) && scoringRubric.length > 0 ? `Official College Board Scoring Rubric:
+${scoringRubric.join("\n")}
+
+` : ""}${modelAnswer ? `Official Exemplary Model Solution:
+${modelAnswer}
+
+` : ""}${rawImages.length > 0 ? `NOTE: The student attached ${rawImages.length} photo(s) of their handwritten work. Carefully OCR and evaluate all handwritten steps, formulas, and diagrams in the attached image(s).` : ""}`
     });
     const response = await safeGenerateContent({
       gradeLevel: userGrade,
@@ -33960,12 +34022,22 @@ ${image ? "IMPORTANT: The student has provided an attached photo containing thei
       contents: { parts },
       config: {
         systemInstruction: { parts: [{ text: systemInstruction }] },
-        temperature: 0.2,
-        maxOutputTokens: 1500
+        temperature: 0.1,
+        maxOutputTokens: 1800
       }
     });
-    const text = response.text || "Failed to evaluate response.";
-    res.json({ evaluation: text, feedback: text });
+    const text = (response.text || "").trim();
+    if (text.startsWith("{") && text.endsWith("}")) {
+      const parsedRejection = safeParseJSON(text, "object");
+      if (parsedRejection && parsedRejection.isIrrelevant) {
+        return res.json({
+          isIrrelevant: true,
+          error: "IRRELEVANT_SUBMISSION",
+          message: parsedRejection.reason || "\u26A0\uFE0F Irrelevant or unclear work detected! Please provide an actual solution or a clear photo of your handwritten calculations for this AP question."
+        });
+      }
+    }
+    res.json({ evaluation: text, feedback: text, isIrrelevant: false });
   } catch (error) {
     if (error.message === "GEMINI_QUOTA_EXHAUSTED") {
       return res.status(429).json({

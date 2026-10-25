@@ -2,10 +2,11 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { 
   ArrowLeft, Search, X, ChevronDown, ChevronRight, FileText, 
   Download, ExternalLink, Printer, Sparkles, Clock, CheckCircle2,
-  Star, Eye, BookOpen
+  Star, Eye, BookOpen, Lock, Crown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { triggerVibration } from '../utils/vibrate';
+import { isProUser } from '../utils/coins';
 import { 
   ALL_TEST_PREP_SUBJECTS, 
   TestPrepSubject, 
@@ -46,6 +47,11 @@ export default function TestPrep({ onBack }: TestPrepProps) {
     unit: TestPrepUnit;
   } | null>(null);
 
+  const [lockedUnitModal, setLockedUnitModal] = useState<{
+    subject: TestPrepSubject;
+    unit: TestPrepUnit;
+  } | null>(null);
+
   // Trigger state to re-render when new PDFs are uploaded or deleted from Developer Portal
   const [, setRefreshCount] = useState(0);
 
@@ -60,6 +66,31 @@ export default function TestPrep({ onBack }: TestPrepProps) {
       window.removeEventListener('sample-papers-updated', handleUpdate);
     };
   }, []);
+
+  // Hardware Android Back Button Navigation (Step-by-step)
+  useEffect(() => {
+    const handleHardwareBack = (e: Event) => {
+      if (lockedUnitModal) {
+        e.preventDefault();
+        triggerVibration(10);
+        setLockedUnitModal(null);
+      } else if (activePdfModal) {
+        e.preventDefault();
+        triggerVibration(10);
+        setActivePdfModal(null);
+      } else if (comingSoonModal) {
+        e.preventDefault();
+        triggerVibration(10);
+        setComingSoonModal(null);
+      } else {
+        e.preventDefault();
+        triggerVibration(10);
+        onBack();
+      }
+    };
+    window.addEventListener('appBackButton', handleHardwareBack);
+    return () => window.removeEventListener('appBackButton', handleHardwareBack);
+  }, [lockedUnitModal, activePdfModal, comingSoonModal, onBack]);
 
   const categories = [
     'All', 
@@ -86,6 +117,15 @@ export default function TestPrep({ onBack }: TestPrepProps) {
   // Unit click handler
   const handleUnitClick = (subject: TestPrepSubject, unit: TestPrepUnit) => {
     triggerVibration(12);
+
+    // For freemium users, ONLY Unit 1 sample paper set is unlocked!
+    // Unit 0 (Master Set) and Unit 2+ are locked.
+    if (!isProUser() && unit.unitNumber !== 1) {
+      triggerVibration(25);
+      setLockedUnitModal({ subject, unit });
+      return;
+    }
+
     const pdfData = getUnitPdf(subject.id, unit.unitNumber);
     if (pdfData) {
       setActivePdfModal({
@@ -233,28 +273,22 @@ export default function TestPrep({ onBack }: TestPrepProps) {
               return (
                 <div
                   key={subject.id}
-                  className="bg-white rounded-3xl border border-zinc-200/90 shadow-xs overflow-hidden transition-all duration-200 hover:border-zinc-300"
+                  className="bg-white rounded-2xl border border-zinc-200/90 shadow-2xs overflow-hidden transition-all duration-200 hover:border-zinc-300"
                 >
-                  {/* Subject Accordion Header Card (Exact AP Notes Image 1 Design) */}
+                  {/* Subject Accordion Header Card */}
                   <button
                     onClick={() => toggleSubject(subject.id)}
-                    className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-zinc-50/50 transition-colors cursor-pointer"
+                    className="w-full py-2.5 px-3.5 sm:py-3 sm:px-4 flex items-center justify-between text-left hover:bg-zinc-50/50 transition-colors cursor-pointer"
                   >
-                    <div className="flex items-center gap-3.5 sm:gap-4 min-w-0 pr-2">
-                      {/* Subject 3D Gradient Icon Badge (Matches AP Notes Image 1) */}
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 bg-gradient-to-br ${visual.gradient} text-white shadow-md shadow-zinc-950/10`}>
+                    <div className="flex items-center gap-3 min-w-0 pr-2">
+                      <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-lg sm:text-xl shrink-0 bg-gradient-to-br ${visual.gradient} text-white shadow-xs`}>
                         {visual.icon}
                       </div>
                       
                       <div className="min-w-0">
-                        <h3 className="text-base sm:text-lg font-black text-zinc-900 truncate">
+                        <h3 className="text-sm sm:text-base font-bold text-zinc-900 truncate">
                           {subject.name}
                         </h3>
-                        {visual.description && (
-                          <p className="text-[11px] sm:text-xs text-zinc-400 mt-0.5 truncate hidden sm:block">
-                            {visual.description}
-                          </p>
-                        )}
                       </div>
                     </div>
 
@@ -262,7 +296,7 @@ export default function TestPrep({ onBack }: TestPrepProps) {
                       <span className="text-xs sm:text-sm font-bold text-zinc-500">
                         {subject.units.length} Units
                       </span>
-                      <ChevronDown className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-zinc-700' : ''}`} />
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-zinc-700' : ''}`} />
                     </div>
                   </button>
 
@@ -273,12 +307,13 @@ export default function TestPrep({ onBack }: TestPrepProps) {
                         const unitPdf = getUnitPdf(subject.id, unit.unitNumber);
                         const pdfUploaded = Boolean(unitPdf);
                         const isFullCourse = unit.unitNumber === 0;
+                        const isLocked = !isProUser() && unit.unitNumber !== 1;
 
                         return (
                           <div
                             key={unit.unitNumber}
                             onClick={() => handleUnitClick(subject, unit)}
-                            className="w-full bg-white border border-zinc-200/80 hover:border-indigo-400 hover:bg-indigo-50/20 py-3.5 px-4 rounded-2xl flex items-center justify-between transition-all cursor-pointer group shadow-2xs"
+                            className="w-full bg-white border border-zinc-200/80 hover:border-indigo-400 hover:bg-indigo-50/20 py-3 px-4 rounded-2xl flex items-center justify-between transition-all cursor-pointer group shadow-2xs"
                           >
                             <div className="flex items-center gap-3.5 min-w-0 pr-2">
                               {/* Unit Badge (FULL / U1, U2, ...) */}
@@ -294,15 +329,19 @@ export default function TestPrep({ onBack }: TestPrepProps) {
                                 <span className="font-bold text-xs sm:text-sm text-zinc-900 group-hover:text-indigo-600 transition-colors truncate block">
                                   {isFullCourse ? unit.title : `Unit ${unit.unitNumber}: ${unit.title}`}
                                 </span>
-                                <p className="text-[11px] text-zinc-500 font-medium truncate mt-0.5">
-                                  {unit.weight?.startsWith('Weight:') ? unit.weight : `Weight: ${unit.weight}`}
-                                </p>
                               </div>
                             </div>
 
                             {/* Right Action */}
                             <div className="flex items-center gap-2 shrink-0">
-                              <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
+                              {isLocked ? (
+                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-black uppercase tracking-wider">
+                                  <Lock className="w-3 h-3 text-amber-600" />
+                                  <span>PRO</span>
+                                </div>
+                              ) : (
+                                <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
+                              )}
                             </div>
                           </div>
                         );
@@ -378,12 +417,13 @@ export default function TestPrep({ onBack }: TestPrepProps) {
       {/* ========================================================================= */}
       <AnimatePresence>
         {comingSoonModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/50 backdrop-blur-xs animate-fade-in">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 transform-gpu animate-fade-in">
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.94, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border border-zinc-200 relative"
+              exit={{ scale: 0.94, opacity: 0 }}
+              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border border-zinc-200 relative transform-gpu will-change-transform"
             >
               <button
                 onClick={() => setComingSoonModal(null)}
@@ -425,6 +465,68 @@ export default function TestPrep({ onBack }: TestPrepProps) {
               >
                 Got It
               </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Freemium Locked Sample Paper Set Modal */}
+      <AnimatePresence>
+        {lockedUnitModal && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <motion.div
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 50, opacity: 0 }}
+              className="w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-6 border border-zinc-200 shadow-2xl text-center relative"
+            >
+              <button
+                onClick={() => setLockedUnitModal(null)}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-500 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="w-16 h-16 rounded-3xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-600 mx-auto mb-3 shadow-sm">
+                <Lock className="w-8 h-8" />
+              </div>
+
+              <span className="inline-block px-3 py-1 bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-black uppercase tracking-wider rounded-full mb-2">
+                PRO Member Feature
+              </span>
+
+              <h3 className="text-lg font-black text-zinc-900">
+                {lockedUnitModal.unit.unitNumber === 0
+                  ? 'Master Exam Set is Locked'
+                  : `Unit ${lockedUnitModal.unit.unitNumber} Practice Set is Locked`}
+              </h3>
+              <p className="text-xs text-zinc-600 font-semibold mt-1 leading-relaxed">
+                Free plan users have access to <strong>Unit 1</strong> practice sets. Upgrade to PRO to unlock all unit master sets, timed practice papers, and full course exam packs!
+              </p>
+
+              <div className="mt-5 space-y-2.5">
+                <button
+                  onClick={() => {
+                    triggerVibration(15);
+                    setLockedUnitModal(null);
+                    window.dispatchEvent(new CustomEvent('open-vip-modal'));
+                  }}
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:opacity-95 text-zinc-950 font-black text-xs uppercase tracking-wider shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <Crown className="w-4 h-4 fill-zinc-950" />
+                  <span>Upgrade to PRO</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    triggerVibration(10);
+                    setLockedUnitModal(null);
+                  }}
+                  className="w-full py-3 rounded-2xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-xs cursor-pointer active:scale-95"
+                >
+                  Keep Free (Go Back)
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

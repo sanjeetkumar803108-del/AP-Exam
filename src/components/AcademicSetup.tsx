@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Check, GraduationCap, Rocket, HeartPulse, BarChart3, Palette, Cpu, ArrowLeft, ArrowRight } from 'lucide-react';
 import { triggerVibration } from '../utils/vibrate';
-import { safeSetItem } from '../utils/storage';
+import { safeGetItem, safeSetItem } from '../utils/storage';
 import { auth, db } from '../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 

@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.apexam.prep',
-  appName: 'AP Exam',
+  appName: 'AP Prep',
   webDir: 'dist',
   server: {
     androidScheme: 'https',

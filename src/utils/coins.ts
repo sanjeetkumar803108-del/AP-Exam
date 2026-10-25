@@ -39,6 +39,13 @@ export function isProUser(): boolean {
   return isVip;
 }
 
+// Check if user has sufficient coins for a feature (Pro users always return true)
+export function hasEnoughCoins(amount: number): boolean {
+  if (isProUser()) return true;
+  const targetUid = auth.currentUser?.uid || 'guest_user';
+  return getCoins(targetUid) >= amount;
+}
+
 // Deduct from daily limit for a feature usage. Returns true if successful, false if insufficient.
 export function deductCoins(amount: number, featureName: string): boolean {
   if (isProUser()) return true; // Pro users bypass all limits

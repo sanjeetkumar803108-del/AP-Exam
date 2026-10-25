@@ -38,14 +38,5 @@ googleProvider.setCustomParameters({
   prompt: 'select_account'
 });
 
-// Connection test as per firebase-integration skill
-async function testConnection() {
-  try {
-    await getDocFromServer(doc(db, '_connection_test', 'status'));
-    console.log("Firestore connection verified.");
-  } catch (error: any) {
-    // Graceful offline/local mode notice
-    console.log("Firestore initialized in responsive hybrid mode.");
-  }
-}
-testConnection();
+// Firestore initialized in offline-first, highly responsive hybrid mode
+console.log("[Firebase] Initialized with offline-first persistence.");

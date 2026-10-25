@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, ArrowRight, BookOpen, Share2, Sparkles, CheckCircle2, 
   ChevronDown, ChevronRight, AlertTriangle, Lightbulb, Zap, Bookmark, Layers, Search, Loader2,
-  HelpCircle, Check, Eye, Maximize2, X, ChevronLeft, FileText, HardDrive
+  HelpCircle, Check, Eye, Maximize2, X, ChevronLeft, FileText, HardDrive, Lock, Crown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { triggerVibration } from '../utils/vibrate';
+import { isProUser } from '../utils/coins';
 import { 
   AP_NOTES_REGISTRY, 
   getAllSupportedNoteSubjects, 
@@ -545,11 +546,16 @@ export default function APNotes({ onBack }: APNotesProps) {
   const [isSharing, setIsSharing] = useState<boolean>(false);
   const [selectedDiagram, setSelectedDiagram] = useState<APNoteDiagram | null>(null);
   const [fullScreenPdfData, setFullScreenPdfData] = useState<{ uri: string; title: string; unitNumber: number } | null>(null);
+  const [lockedUnitModal, setLockedUnitModal] = useState<{ unit: APUnitNote; subject: APSubjectNoteEntry } | null>(null);
 
   // Hardware Android Back Button Navigation (Step-by-step)
   useEffect(() => {
     const handleHardwareBack = (e: Event) => {
-      if (fullScreenPdfData) {
+      if (lockedUnitModal) {
+        e.preventDefault();
+        triggerVibration(10);
+        setLockedUnitModal(null);
+      } else if (fullScreenPdfData) {
         e.preventDefault();
         triggerVibration(10);
         setFullScreenPdfData(null);
@@ -569,7 +575,7 @@ export default function APNotes({ onBack }: APNotesProps) {
     };
     window.addEventListener('appBackButton', handleHardwareBack);
     return () => window.removeEventListener('appBackButton', handleHardwareBack);
-  }, [fullScreenPdfData, selectedDiagram, step, onBack]);
+  }, [lockedUnitModal, fullScreenPdfData, selectedDiagram, step, onBack]);
 
 
   const allSupportedSubjects = getAllSupportedNoteSubjects();
@@ -1708,38 +1714,35 @@ export default function APNotes({ onBack }: APNotesProps) {
                   </div>
 
                   {/* Course Cards Accordion List */}
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     {filteredSubjects.map(subj => {
                       const isExpanded = expandedSubjectIds.has(subj.subjectId) || Boolean(q);
                       return (
                         <div
                           key={subj.subjectId}
-                          className="bg-white rounded-3xl border border-zinc-200/90 shadow-xs overflow-hidden transition-all duration-200 hover:border-zinc-300"
+                          className="bg-white rounded-2xl border border-zinc-200/90 shadow-2xs overflow-hidden transition-all duration-200 hover:border-zinc-300"
                         >
                           {/* Accordion Header */}
                           <button
                             onClick={() => toggleSubjectExpanded(subj.subjectId)}
-                            className="w-full p-4 flex items-center justify-between text-left transition-colors cursor-pointer hover:bg-zinc-50/50"
+                            className="w-full py-2.5 px-3.5 sm:py-3 sm:px-4 flex items-center justify-between text-left transition-colors cursor-pointer hover:bg-zinc-50/50"
                           >
-                            <div className="flex items-center gap-3.5 min-w-0 pr-2">
-                              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 bg-gradient-to-br ${subj.gradient} text-white shadow-md shadow-zinc-950/10`}>
+                            <div className="flex items-center gap-3 min-w-0 pr-2">
+                              <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-lg sm:text-xl shrink-0 bg-gradient-to-br ${subj.gradient} text-white shadow-xs`}>
                                 {subj.icon}
                               </div>
                               <div className="min-w-0">
-                                <h4 className="font-black text-sm text-zinc-900 truncate">
+                                <h3 className="text-sm sm:text-base font-bold text-zinc-900 truncate">
                                   {subj.subjectName}
-                                </h4>
-                                <p className="text-[11px] text-zinc-400 mt-0.5 truncate hidden sm:block">
-                                  {subj.description}
-                                </p>
+                                </h3>
                               </div>
                             </div>
 
                             <div className="flex items-center gap-1.5 shrink-0 text-zinc-400">
-                              <span className="text-xs font-bold text-zinc-500 hidden sm:inline">
+                              <span className="text-xs sm:text-sm font-bold text-zinc-500">
                                 {subj.notes.length} Units
                               </span>
-                              <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-zinc-700' : ''}`} />
+                              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-zinc-700' : ''}`} />
                             </div>
                           </button>
 
@@ -1747,6 +1750,21 @@ export default function APNotes({ onBack }: APNotesProps) {
                           <div className={`smooth-accordion border-t border-zinc-100 ${isExpanded ? 'is-open' : ''}`}>
                             <div className="smooth-accordion-inner bg-zinc-50/40 p-3 flex flex-col gap-2">
                               {subj.notes.map(unit => {
+                                const isLocked = !isProUser() && unit.unitNumber !== 1;
+
+                                const handleOpenUnit = () => {
+                                  if (isLocked) {
+                                    triggerVibration(25);
+                                    setLockedUnitModal({ unit, subject: subj });
+                                    return;
+                                  }
+                                  triggerVibration(15);
+                                  setSelectedSubjectId(subj.subjectId);
+                                  setSelectedUnitId(unit.unitId);
+                                  setActiveTab('all');
+                                  setStep('reading');
+                                };
+
                                 return (
                                   <div
                                     key={unit.unitId}
@@ -1754,60 +1772,53 @@ export default function APNotes({ onBack }: APNotesProps) {
                                   >
                                     {/* Main Unit Click Target to Open Direct Notes */}
                                     <button
-                                      onClick={() => {
-                                        triggerVibration(15);
-                                        setSelectedSubjectId(subj.subjectId);
-                                        setSelectedUnitId(unit.unitId);
-                                        setActiveTab('all');
-                                        setStep('reading');
-                                      }}
+                                      onClick={handleOpenUnit}
                                       className="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer pr-2"
                                     >
                                       <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-200/70 text-indigo-700 font-black text-xs flex items-center justify-center shrink-0">
                                         U{unit.unitNumber}
                                       </div>
                                       <div className="min-w-0">
-                                        <div className="flex items-center gap-2">
-                                          <span className="font-bold text-xs text-zinc-900 group-hover/unit:text-indigo-600 transition-colors truncate">
-                                            Unit {unit.unitNumber}: {unit.title}
-                                          </span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                                          <span className="text-[10px] text-zinc-500 font-medium truncate">
-                                            {unit.examWeight}
-                                          </span>
-                                        </div>
+                                        <span className="font-bold text-xs text-zinc-900 group-hover/unit:text-indigo-600 transition-colors truncate block">
+                                          Unit {unit.unitNumber}: {unit.title}
+                                        </span>
                                       </div>
                                     </button>
 
                                     {/* Direct Actions: Share + Open */}
                                     <div className="flex items-center gap-1 shrink-0">
-                                      {/* Share Button */}
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleShareUnitPDF(unit, subj);
-                                        }}
-                                        className="w-8 h-8 rounded-xl bg-zinc-100 hover:bg-purple-100 hover:text-purple-700 text-zinc-600 flex items-center justify-center transition-colors cursor-pointer active:scale-95"
-                                        title={`Share ${subj.shortCode} Unit ${unit.unitNumber} Notes`}
-                                      >
-                                        <Share2 className="w-3.5 h-3.5" />
-                                      </button>
+                                      {/* Share Button (Only if unlocked) */}
+                                      {!isLocked && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleShareUnitPDF(unit, subj);
+                                          }}
+                                          className="w-8 h-8 rounded-xl bg-zinc-100 hover:bg-purple-100 hover:text-purple-700 text-zinc-600 flex items-center justify-center transition-colors cursor-pointer active:scale-95"
+                                          title={`Share ${subj.shortCode} Unit ${unit.unitNumber} Notes`}
+                                        >
+                                          <Share2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      )}
 
-                                      {/* Open PDF Arrow */}
-                                      <button
-                                        onClick={() => {
-                                          triggerVibration(15);
-                                          setSelectedSubjectId(subj.subjectId);
-                                          setSelectedUnitId(unit.unitId);
-                                          setActiveTab('all');
-                                          setStep('reading');
-                                        }}
-                                        className="w-8 h-8 rounded-xl bg-zinc-50 hover:bg-zinc-100 text-zinc-400 group-hover/unit:text-indigo-600 flex items-center justify-center transition-colors cursor-pointer"
-                                        title={`Open Unit ${unit.unitNumber} PDF`}
-                                      >
-                                        <ArrowRight className="w-4 h-4 group-hover/unit:translate-x-0.5 transition-all" />
-                                      </button>
+                                      {/* Open / Locked Action */}
+                                      {isLocked ? (
+                                        <button
+                                          onClick={handleOpenUnit}
+                                          className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-black uppercase tracking-wider cursor-pointer active:scale-95"
+                                        >
+                                          <Lock className="w-3 h-3 text-amber-600" />
+                                          <span>PRO</span>
+                                        </button>
+                                      ) : (
+                                        <button
+                                          onClick={handleOpenUnit}
+                                          className="w-8 h-8 rounded-xl bg-zinc-50 hover:bg-zinc-100 text-zinc-400 group-hover/unit:text-indigo-600 flex items-center justify-center transition-colors cursor-pointer"
+                                          title={`Open Unit ${unit.unitNumber} PDF`}
+                                        >
+                                          <ArrowRight className="w-4 h-4 group-hover/unit:translate-x-0.5 transition-all" />
+                                        </button>
+                                      )}
                                     </div>
                                   </div>
                                 );
@@ -1952,8 +1963,14 @@ export default function APNotes({ onBack }: APNotesProps) {
                 disabled={safeUnitIndex === currentSubjectUnits.length - 1}
                 onClick={() => {
                   if (safeUnitIndex < currentSubjectUnits.length - 1) {
+                    const nextUnit = currentSubjectUnits[safeUnitIndex + 1];
+                    if (!isProUser() && nextUnit.unitNumber !== 1) {
+                      triggerVibration(25);
+                      setLockedUnitModal({ unit: nextUnit, subject: currentSubjectEntry });
+                      return;
+                    }
                     triggerVibration(10);
-                    setSelectedUnitId(currentSubjectUnits[safeUnitIndex + 1].unitId);
+                    setSelectedUnitId(nextUnit.unitId);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }
                 }}
@@ -1962,8 +1979,9 @@ export default function APNotes({ onBack }: APNotesProps) {
                   backgroundColor: currentSubjectEntry.accentColor || '#6366f1'
                 }}
               >
-                <span className="hidden sm:inline">Next Unit</span>
-                <span className="sm:hidden">Next</span>
+                {!isProUser() && safeUnitIndex === 0 && <Lock className="w-3.5 h-3.5 text-amber-300" />}
+                <span className="hidden sm:inline">Next Unit {!isProUser() && safeUnitIndex === 0 ? '(PRO)' : ''}</span>
+                <span className="sm:hidden">Next {!isProUser() && safeUnitIndex === 0 ? '(PRO)' : ''}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -2035,6 +2053,66 @@ export default function APNotes({ onBack }: APNotesProps) {
           </div>
         </div>
       )}
+
+      {/* Freemium Locked Unit Notes Modal */}
+      <AnimatePresence>
+        {lockedUnitModal && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <motion.div
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 50, opacity: 0 }}
+              className="w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-6 border border-zinc-200 shadow-2xl text-center relative"
+            >
+              <button
+                onClick={() => setLockedUnitModal(null)}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-500 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="w-16 h-16 rounded-3xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-600 mx-auto mb-3 shadow-sm">
+                <Lock className="w-8 h-8" />
+              </div>
+
+              <span className="inline-block px-3 py-1 bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-black uppercase tracking-wider rounded-full mb-2">
+                PRO Member Feature
+              </span>
+
+              <h3 className="text-lg font-black text-zinc-900">
+                Unit {lockedUnitModal.unit.unitNumber} Notes Locked
+              </h3>
+              <p className="text-xs text-zinc-600 font-semibold mt-1 leading-relaxed">
+                Free plan users have access to <strong>Unit 1</strong> notes. Upgrade to PRO to unlock complete authentic curriculum notes, downloadable PDFs, formula cheat sheets, and trap alerts for all units!
+              </p>
+
+              <div className="mt-5 space-y-2.5">
+                <button
+                  onClick={() => {
+                    triggerVibration(15);
+                    setLockedUnitModal(null);
+                    window.dispatchEvent(new CustomEvent('open-vip-modal'));
+                  }}
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:opacity-95 text-zinc-950 font-black text-xs uppercase tracking-wider shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <Crown className="w-4 h-4 fill-zinc-950" />
+                  <span>Upgrade to PRO</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    triggerVibration(10);
+                    setLockedUnitModal(null);
+                  }}
+                  className="w-full py-3 rounded-2xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-xs cursor-pointer active:scale-95"
+                >
+                  Keep Free (Go Back)
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

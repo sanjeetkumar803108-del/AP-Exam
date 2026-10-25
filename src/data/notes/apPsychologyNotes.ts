@@ -1,530 +1,490 @@
 import { APUnitNote } from './types';
 
 export const AP_PSYCHOLOGY_NOTES: APUnitNote[] = [
-  // ==========================================
-  // UNIT 1: BIOLOGICAL BASES OF BEHAVIOR
-  // ==========================================
   {
-    unitId: 'u1',
-    unitNumber: 1,
-    title: 'Biological Bases of Behavior',
-    examWeight: '18%–24% of AP Exam',
-    bigIdea: 'All human thought, emotion, and action originate in biological structures—specifically the electrochemical transmission of neurons and neuroendocrine systems.',
-    keyTheorems: [
+    "unitId": "u1",
+    "unitNumber": 1,
+    "title": "Biological Bases of Behavior",
+    "examWeight": "18%–24% of AP Exam",
+    "bigIdea": "All human thought, emotion, and action originate in biological structures—specifically the electrochemical transmission of neurons and neuroendocrine systems.",
+    "keyTheorems": [
       {
-        name: 'The All-or-None Principle of Neural Firing',
-        conditions: 'Depolarization of a neuron membrane past threshold potential.',
-        conclusion: 'An action potential is generated if and only if membrane depolarization reaches the threshold ($\\approx -55\\text{ mV}$ from resting $-70\\text{ mV}$). The neuron fires completely at full electrical amplitude or not at all; a stronger stimulus increases firing *frequency*, never individual action potential *intensity*.',
-        apTip: 'Students frequently mistakenly claim that a harder pinch causes "bigger" electrical pulses. It causes MORE FREQUENT action potentials, not larger ones!'
+        "name": "The All-or-None Principle of Neural Firing",
+        "conditions": "Depolarization of a neuron membrane past threshold potential.",
+        "conclusion": "An action potential is generated if and only if membrane depolarization reaches the threshold ($\\approx -55\\text{ mV}$ from resting $-70\\text{ mV}$). The neuron fires completely at full electrical amplitude or not at all; a stronger stimulus increases firing *frequency*, never individual action potential *intensity*.",
+        "apTip": "Students frequently mistakenly claim that a harder pinch causes \"bigger\" electrical pulses. It causes MORE FREQUENT action potentials, not larger ones!"
       },
       {
-        name: 'Brain Lateralization and Hemispheric Specialization',
-        conditions: 'Severing the corpus callosum (Split-Brain Patients: Sperry & Gazzaniga).',
-        conclusion: 'The left hemisphere specializes in language production (Broca’s area), language comprehension (Wernicke’s area), and sequential logic. The right hemisphere specializes in spatial processing, facial recognition, and emotional perception. Sensory and motor pathways are contralateral (opposite-sided).',
-        apTip: 'If a word is flashed to the LEFT visual field of a split-brain patient, it travels to the RIGHT hemisphere. The patient cannot verbally name the object, but can draw or pick it up with their LEFT hand!'
+        "name": "Brain Lateralization and Hemispheric Specialization",
+        "conditions": "Severing the corpus callosum (Split-Brain Patients: Sperry & Gazzaniga).",
+        "conclusion": "The left hemisphere specializes in language production (Broca’s area), language comprehension (Wernicke’s area), and sequential logic. The right hemisphere specializes in spatial processing, facial recognition, and emotional perception. Sensory and motor pathways are contralateral (opposite-sided).",
+        "apTip": "If a word is flashed to the LEFT visual field of a split-brain patient, it travels to the RIGHT hemisphere. The patient cannot verbally name the object, but can draw or pick it up with their LEFT hand!"
       }
     ],
-    formulas: [
+    "formulas": [
       {
-        name: 'Resting Membrane Potential & Action Threshold',
-        latex: 'V_{\\text{rest}} \\approx -70\\text{ mV} \\xrightarrow{\\text{Depolarization Threshold } \\approx -55\\text{ mV}} V_{\\text{peak}} \\approx +40\\text{ mV}',
-        explanation: 'Sodium ions ($\\text{Na}^+$) rush in during depolarization; potassium ions ($\\text{K}^+$) exit during repolarization.'
+        "name": "Resting Membrane Potential & Action Threshold",
+        "latex": "V_{\\text{rest}} \\approx -70\\text{ mV} \\xrightarrow{\\text{Depolarization Threshold } \\approx -55\\text{ mV}} V_{\\text{peak}} \\approx +40\\text{ mV}",
+        "explanation": "Sodium ions ($\\text{Na}^+$) rush in during depolarization; potassium ions ($\\text{K}^+$) exit during repolarization."
       }
     ],
-    sections: [
+    "sections": [
       {
-        heading: '1. Master Neurotransmitter Cheat Table & Agonist/Antagonist Guide',
-        content: `Comprehensive guide to neurochemicals, psychological roles, deficit/surplus pathologies, and clinical pharmacology:
-
-| Neurotransmitter | Primary Function / Psychological Role | Deficit Disease (Too Little) | Surplus Disease (Too Much) | Clinical & Pharmacology Links (Agonist vs Antagonist) |
-| :--- | :--- | :--- | :--- | :--- |
-| **Dopamine** | Reward pathway, pleasure, fine motor control, anticipation | Parkinson’s Disease (tremors, bradykinesia, muscle rigidity) | Schizophrenia (auditory hallucinations, delusions), addiction | **Agonist**: L-Dopa, Amphetamines, Cocaine. **Antagonist**: Haloperidol, Thorazine (antipsychotics). |
-| **Serotonin** | Mood regulation, sleep-wake cycles, appetite, emotional arousal | Major Depressive Disorder (MDD), OCD, generalized anxiety | Serotonin Syndrome (hyperthermia, tremors, shivering, seizures) | **Agonist / Reuptake Inhibitor**: SSRIs (Fluoxetine/Prozac, Zoloft block reuptake into axon terminal). |
-| **Acetylcholine (ACh)** | Muscle contraction (PNS), motor learning, memory encoding (CNS) | Alzheimer’s Disease (degeneration of cholinergic neurons in cortex) | Severe muscle spasms, convulsions (organophosphate pesticide toxicity) | **Agonist**: Nicotine, Black Widow spider venom. **Antagonist**: Curare (paralysis), Botulinum toxin (Botox blocks release). |
-| **GABA** (Gamma-aminobutyric acid) | Primary **inhibitory** neurotransmitter; calms central nervous system | Insomnia, seizures, tremors, severe chronic anxiety | Extreme lethargy, sedation, coma, respiratory arrest | **Agonist**: Alcohol, Barbiturates, Benzodiazepines (Xanax, Valium boost GABA receptor opening). |
-| **Glutamate** | Primary **excitatory** neurotransmitter; synaptic plasticity, LTP | Cognitive fog, exhaustion, impaired memory consolidation | Excitotoxicity, migraines, seizures (stroke-induced cell death; MSG avoidance) | **Antagonist**: Ketamine, PCP (blocks NMDA receptor ion channels). |
-| **Norepinephrine** | Alertness, physiological arousal, sympathetic fight-or-flight | Depressive moods, fatigue, lack of focus (ADHD) | Anxiety, hypertension, panic attacks, tachycardia | **Agonist**: Adderall, SNRIs. **Antagonist**: Beta-blockers (propranolol blunts stage-fright heart spikes). |
-| **Endorphins** | Natural opioid peptide; pain suppression, 'runner’s high' | Hyperalgesia (chronic pain hypersensitivity) | Insensitivity to physiological injury signals | **Agonist**: Morphine, Heroin, Oxycodone (mimic endorphins). **Antagonist**: Naloxone (Narcan reverses opioid overdose). |
-
-* **The Agonist vs. Antagonist Rule of Thumb**:
-  * **Agonists**: Molecules that excite neurons by mimicking a neurotransmitter or blocking its reuptake (e.g., SSRIs leave more serotonin in the synapse; morphine fits endorphin receptors).
-  * **Antagonists**: Molecules that inhibit neurons by occupying receptor sites without activating them, physically blocking normal neurotransmission (e.g., Curare blocks ACh receptors, causing fatal paralysis).`
+        "heading": "1. Master Neurotransmitter Cheat Table & Agonist/Antagonist Guide",
+        "content": "Comprehensive guide to neurochemicals, psychological roles, deficit/surplus pathologies, and clinical pharmacology:\n\n| Neurotransmitter | Primary Function / Psychological Role | Deficit Disease (Too Little) | Surplus Disease (Too Much) | Clinical & Pharmacology Links (Agonist vs Antagonist) |\n| :--- | :--- | :--- | :--- | :--- |\n| **Dopamine** | Reward pathway, pleasure, fine motor control, anticipation | Parkinson’s Disease (tremors, bradykinesia, muscle rigidity) | Schizophrenia (auditory hallucinations, delusions), addiction | **Agonist**: L-Dopa, Amphetamines, Cocaine. **Antagonist**: Haloperidol, Thorazine (antipsychotics). |\n| **Serotonin** | Mood regulation, sleep-wake cycles, appetite, emotional arousal | Major Depressive Disorder (MDD), OCD, generalized anxiety | Serotonin Syndrome (hyperthermia, tremors, shivering, seizures) | **Agonist / Reuptake Inhibitor**: SSRIs (Fluoxetine/Prozac, Zoloft block reuptake into axon terminal). |\n| **Acetylcholine (ACh)** | Muscle contraction (PNS), motor learning, memory encoding (CNS) | Alzheimer’s Disease (degeneration of cholinergic neurons in cortex) | Severe muscle spasms, convulsions (organophosphate pesticide toxicity) | **Agonist**: Nicotine, Black Widow spider venom. **Antagonist**: Curare (paralysis), Botulinum toxin (Botox blocks release). |\n| **GABA** (Gamma-aminobutyric acid) | Primary **inhibitory** neurotransmitter; calms central nervous system | Insomnia, seizures, tremors, severe chronic anxiety | Extreme lethargy, sedation, coma, respiratory arrest | **Agonist**: Alcohol, Barbiturates, Benzodiazepines (Xanax, Valium boost GABA receptor opening). |\n| **Glutamate** | Primary **excitatory** neurotransmitter; synaptic plasticity, LTP | Cognitive fog, exhaustion, impaired memory consolidation | Excitotoxicity, migraines, seizures (stroke-induced cell death; MSG avoidance) | **Antagonist**: Ketamine, PCP (blocks NMDA receptor ion channels). |\n| **Norepinephrine** | Alertness, physiological arousal, sympathetic fight-or-flight | Depressive moods, fatigue, lack of focus (ADHD) | Anxiety, hypertension, panic attacks, tachycardia | **Agonist**: Adderall, SNRIs. **Antagonist**: Beta-blockers (propranolol blunts stage-fright heart spikes). |\n| **Endorphins** | Natural opioid peptide; pain suppression, 'runner’s high' | Hyperalgesia (chronic pain hypersensitivity) | Insensitivity to physiological injury signals | **Agonist**: Morphine, Heroin, Oxycodone (mimic endorphins). **Antagonist**: Naloxone (Narcan reverses opioid overdose). |\n\n* **The Agonist vs. Antagonist Rule of Thumb**:\n  * **Agonists**: Molecules that excite neurons by mimicking a neurotransmitter or blocking its reuptake (e.g., SSRIs leave more serotonin in the synapse; morphine fits endorphin receptors).\n  * **Antagonists**: Molecules that inhibit neurons by occupying receptor sites without activating them, physically blocking normal neurotransmission (e.g., Curare blocks ACh receptors, causing fatal paralysis)."
       },
       {
-        heading: '2. Neuroanatomy Scaffolding: Brainstem, Limbic System & Cerebral Cortex (CED 1.3-1.4)',
-        content: `Structural hierarchy of the human central nervous system:
-
-* **Brainstem & Hindbrain (Old Brain - Survival Basics)**:
-  * **Medulla Oblongata**: Controls automatic life-support functions: Heart rate, respiration, blood pressure, vomiting, and swallowing. Damage is immediately fatal.
-  * **Pons**: Bridges cerebellum and cortex; regulates facial expressions, sleep cycles, dreaming, and bladder control.
-  * **Reticular Formation**: Network of neurons ascending the brainstem; regulates alertness, arousal, and filters incoming sensory stimuli. Severing it causes an irreversible, permanent coma.
-  * **Cerebellum ("Little Brain")**: Coordinates voluntary motor movements, procedural balance, fine-motor agility, and implicit procedural memories (e.g., riding a bike, playing an instrument).
-* **The Sensory Switchboard**:
-  * **Thalamus**: The brain's sensory relay hub sitting atop the brainstem. Directs incoming sensory streams for vision, hearing, touch, and taste to their specialized cortical regions.
-  * **CRITICAL AP EXCEPTION**: **Olfaction (Smell) completely BYPASSES the Thalamus**! Smell signals route straight to the olfactory bulb near the limbic system, explaining why aromas trigger intense, vivid emotional memories.
-* **The Limbic System (Emotion, Motivation & Memory - "HOME")**:
-  * **Hippocampus**: Encodes and consolidates conscious, explicit (declarative) memories into long-term storage. Damage results in anterograde amnesia (inability to form new declarative memories).
-  * **Amygdala**: Two almond-shaped clusters regulating primal emotions—especially fear appraisal, defensive aggression, and emotional memory valence.
-  * **Hypothalamus**: Maintains internal bodily homeostasis; controls the autonomic nervous system and the 'Four Fs' (Fighting, Fleeing, Feeding, and Reproduction); commands the endocrine master pituitary gland.
-* **Cerebral Cortex Lobes & Functional Cortices**:
-  * **Frontal Lobe**: Prefrontal executive planning, judgment, impulse inhibition, motor strip (voluntary movement), and **Broca's Area** (left frontal only: motor production of fluent speech).
-  * **Parietal Lobe**: Houses the primary somatosensory cortex processing tactile touch, pain, temperature, and body positioning.
-  * **Occipital Lobe**: Houses the primary visual cortex (striate cortex); feature detectors isolate angles, edges, and movement.
-  * **Temporal Lobe**: Houses the primary auditory cortex and **Wernicke's Area** (left temporal only: speech comprehension and coherent semantic syntax).
-* **Split-Brain Research (Roger Sperry & Michael Gazzaniga)**:
-  * Severing the **corpus callosum** prevents communication between the cerebral hemispheres.
-  * Contralateral wiring: The right visual field feeds into the left hemisphere (speech capable); the left visual field feeds into the right hemisphere (cannot speak, but can touch/draw with left hand)!`
+        "heading": "2. Neuroanatomy Scaffolding: Brainstem, Limbic System & Cerebral Cortex (CED 1.3-1.4)",
+        "content": "Structural hierarchy of the human central nervous system:\n\n* **Brainstem & Hindbrain (Old Brain - Survival Basics)**:\n  * **Medulla Oblongata**: Controls automatic life-support functions: Heart rate, respiration, blood pressure, vomiting, and swallowing. Damage is immediately fatal.\n  * **Pons**: Bridges cerebellum and cortex; regulates facial expressions, sleep cycles, dreaming, and bladder control.\n  * **Reticular Formation**: Network of neurons ascending the brainstem; regulates alertness, arousal, and filters incoming sensory stimuli. Severing it causes an irreversible, permanent coma.\n  * **Cerebellum (\"Little Brain\")**: Coordinates voluntary motor movements, procedural balance, fine-motor agility, and implicit procedural memories (e.g., riding a bike, playing an instrument).\n* **The Sensory Switchboard**:\n  * **Thalamus**: The brain's sensory relay hub sitting atop the brainstem. Directs incoming sensory streams for vision, hearing, touch, and taste to their specialized cortical regions.\n  * **CRITICAL AP EXCEPTION**: **Olfaction (Smell) completely BYPASSES the Thalamus**! Smell signals route straight to the olfactory bulb near the limbic system, explaining why aromas trigger intense, vivid emotional memories.\n* **The Limbic System (Emotion, Motivation & Memory - \"HOME\")**:\n  * **Hippocampus**: Encodes and consolidates conscious, explicit (declarative) memories into long-term storage. Damage results in anterograde amnesia (inability to form new declarative memories).\n  * **Amygdala**: Two almond-shaped clusters regulating primal emotions—especially fear appraisal, defensive aggression, and emotional memory valence.\n  * **Hypothalamus**: Maintains internal bodily homeostasis; controls the autonomic nervous system and the 'Four Fs' (Fighting, Fleeing, Feeding, and Reproduction); commands the endocrine master pituitary gland.\n* **Cerebral Cortex Lobes & Functional Cortices**:\n  * **Frontal Lobe**: Prefrontal executive planning, judgment, impulse inhibition, motor strip (voluntary movement), and **Broca's Area** (left frontal only: motor production of fluent speech).\n  * **Parietal Lobe**: Houses the primary somatosensory cortex processing tactile touch, pain, temperature, and body positioning.\n  * **Occipital Lobe**: Houses the primary visual cortex (striate cortex); feature detectors isolate angles, edges, and movement.\n  * **Temporal Lobe**: Houses the primary auditory cortex and **Wernicke's Area** (left temporal only: speech comprehension and coherent semantic syntax).\n* **Split-Brain Research (Roger Sperry & Michael Gazzaniga)**:\n  * Severing the **corpus callosum** prevents communication between the cerebral hemispheres.\n  * Contralateral wiring: The right visual field feeds into the left hemisphere (speech capable); the left visual field feeds into the right hemisphere (cannot speak, but can touch/draw with left hand)!"
+      },
+      {
+        "heading": "3. Action Potential Biophysics & Ion Channel Dynamics (CED 1.1)",
+        "content": "The nerve impulse is an electrochemical event governed by selective membrane permeability and concentration gradients:\n\n* **Resting Membrane Potential ($-70\\text{ mV}$)**:\n  * The interior of the resting axon is negatively charged relative to the extracellular fluid.\n  * Driven by the **$\\text{Na}^+/\\text{K}^+$ ATPase pump**, which hydrolyzes 1 ATP to export $3\\text{ Na}^+$ ions out of the cell for every $2\\text{ K}^+$ ions imported inside.\n  * High intracellular concentration of large, negatively charged protein anions ($A^-$) and high permeability to leaking $\\text{K}^+$ keeps the inside polarized at $-70\\text{ mV}$.\n* **The Threshold of Excitation ($-55\\text{ mV}$)**:\n  * Incoming excitatory postsynaptic potentials (EPSPs) cause local depolarization (voltage moves closer to zero).\n  * If the axon hillock reaches approximately $-55\\text{ mV}$, voltage-gated sodium channels burst open simultaneously.\n* **Depolarization Phase ($-55\\text{ mV} \\rightarrow +40\\text{ mV}$)**:\n  * $\\text{Na}^+$ ions rush into the axon driven by both electrostatic attraction (attracted to negative interior) and concentration gradient (high outside, low inside).\n  * Membrane voltage spikes upward, peaking at approximately $+30$ to $+40\\text{ mV}$.\n* **Repolarization Phase ($+40\\text{ mV} \\rightarrow -70\\text{ mV}$)**:\n  * Inactivation gates slam shut on voltage-gated $\\text{Na}^+$ channels; voltage-gated $\\text{K}^+$ channels swing open.\n  * $\\text{K}^+$ ions rapidly exit the cell down their electrochemical gradient, restoring negative charge inside.\n* **Hyperpolarization & Refractory Periods**:\n  * Potassium gates close sluggishly, causing the potential to dip below resting level (around $-75$ to $-80\\text{ mV}$, termed the *undershoot*).\n  * **Absolute Refractory Period**: Voltage-gated sodium channels are completely inactivated. No stimulus, regardless of intensity, can trigger an action potential.\n  * **Relative Refractory Period**: Sodium channels have reset, but membrane is hyperpolarized; only an exceptionally strong stimulus can trigger another spike.\n* **Saltatory Conduction**:\n  * In myelinated axons (wrapped by Schwann cells in PNS, Oligodendrocytes in CNS), action potentials leap between the unmyelinated **Nodes of Ranvier**, accelerating impulse velocity up to $120\\text{ m/s}$ (compared to $1\\text{ m/s}$ in unmyelinated fibers). Loss of myelin causes Multiple Sclerosis (MS)."
+      },
+      {
+        "heading": "4. Neuroimaging & Brain Recording Diagnostic Matrix (CED 1.3)",
+        "content": "Master comparison table of modern techniques used to study the brain in vivo:\n\n| Technique | Acronym / Full Name | Method / Physics | Temporal Resolution | Spatial Resolution | AP Diagnostic Strengths & Limitations |\n| :--- | :--- | :--- | :--- | :--- | :--- |\n| **Electroencephalogram** | **EEG** | Electrodes placed on scalp measure collective electrical wave voltage fluctuations from cortical pyramidal neurons. | **Millisecond (Best)** | **Poor** (Cannot pinpoint deep subcortical structures) | Excellent for tracking sleep stages, epilepsy, and Event-Related Potentials (ERPs). Non-invasive and inexpensive. |\n| **Functional Magnetic Resonance Imaging** | **fMRI** | Detects changes in blood oxygenation and flow (**BOLD** signal - Blood Oxygen Level Dependent); active areas consume oxygen. | Seconds (Moderate) | **High (1-2 mm)** | Correlates cognitive tasks with precise cerebral activation in real time. Requires lying still inside claustrophobic magnetic bore. |\n| **Positron Emission Tomography** | **PET** | Injects radioactive tracer (typically fluorodeoxyglucose $[^{18}\\text{F}]\\text{FDG}$); active neurons metabolize glucose, emitting positrons. | Minutes (Slow) | Moderate | Maps metabolic function, neurotransmitter receptor density, and tumor growth. Involves ionizing radiation exposure. |\n| **Computed Tomography** | **CT / CAT** | Series of X-ray beams rotated around head at multiple angles; computer reconstructs cross-sectional structural slices. | N/A (Static image) | Moderate | Fast emergency triage for acute cerebral hemorrhage, skull fractures, and large tumors. Reveals brain anatomy, NOT brain function. |\n| **Magnetic Resonance Imaging** | **MRI** | Powerful magnetic field aligns hydrogen protons in tissue; radiofrequency pulses cause protons to emit signals based on tissue density. | N/A (Static image) | **Superb (< 1 mm)** | Pristine soft-tissue anatomical resolution (gray vs white matter, multiple sclerosis lesions). Does not show real-time metabolic activity. |\n| **Transcranial Magnetic Stimulation** | **TMS** | Magnetic coil placed against scalp induces targeted electrical currents in underlying cortical neurons. | Millisecond | Moderate | **Causal tool**: Can temporarily activate or deactivate specific cortical regions (virtual lesion). Approved clinical therapy for treatment-resistant depression. |"
+      },
+      {
+        "heading": "5. Circadian Architecture, Polysomnography & Sleep Stages (CED 1.5)",
+        "content": "The neurobiology of the 24-hour circadian clock and the 90-minute ultradian sleep cycle:\n\n* **The Master Biological Pacemaker**:\n  * Light strikes photoreceptors in retina $\\rightarrow$ sends action potentials via retinohypothalamic tract $\\rightarrow$ excites the **Suprachiasmatic Nucleus (SCN)** in the hypothalamus.\n  * In daylight: SCN suppresses the **Pineal Gland**, blunting the synthesis of **melatonin**.\n  * At night: SCN ceases suppression $\\rightarrow$ pineal gland floods bloodstream with melatonin, inducing drowsiness.\n* **The 90-Minute Sleep Cycle Architecture**:\n  * A typical adult experiences 4–6 cycles per night, progressing through NREM 1 $\\rightarrow$ NREM 2 $\\rightarrow$ NREM 3 $\\rightarrow$ NREM 2 $\\rightarrow$ REM.\n  * As the night progresses, deep NREM 3 slow-wave sleep diminishes, and REM episodes lengthen (up to 40–50 minutes near morning).\n* **Sleep Stage Electrophysiology**:\n  * **Alert Waking State**: **Beta waves** (high frequency $13–30\\text{ Hz}$, low amplitude, desynchronized active thinking).\n  * **Relaxed / Drowsy State**: **Alpha waves** ($8–12\\text{ Hz}$, synchronized calm relaxation with eyes closed).\n  * **NREM Stage 1 (N1)**: Light sleep lasting 5–10 minutes. Dominated by **theta waves** ($4–7\\text{ Hz}$). Hypnagogic sensations (feeling of falling, hypnic jerks).\n  * **NREM Stage 2 (N2)**: Baseline true sleep (~50% of total sleep time). Characterized by **Sleep Spindles** (rapid bursts of $12–14\\text{ Hz}$ activity involved in memory consolidation) and **K-complexes** (large single voltage deflections protecting sleep from external noise).\n  * **NREM Stage 3 (N3 / Slow-Wave Sleep)**: Deepest restorative sleep. Dominated by large, slow **Delta waves** ($0.5–2\\text{ Hz}, >75\\mu\\text{V}$). Pituitary gland releases human growth hormone (HGH); tissue repair and immune restoration occur. Night terrors, somnambulism (sleepwalking), and nocturnal enuresis occur here, NOT during REM!\n  * **REM (Rapid Eye Movement / Paradoxical Sleep)**:\n    * Brain waves mimic active waking state (sawtooth beta/theta waves), heart rate spikes, rapid saccadic eye movements.\n    * **Muscle Atonia**: The brainstem (pons) sends inhibitory signals down spinal cord to motor neurons, completely paralyzing major voluntary skeletal muscles (prevents acting out dreams).\n    * Vivid narrative dreaming occurs; critical for emotional regulation and cognitive memory consolidation."
+      },
+      {
+        "heading": "6. The Neuroendocrine System & Selye’s General Adaptation Syndrome (CED 1.6)",
+        "content": "The parallel endocrine communication channel and biological stress response:\n\n* **Neural vs. Endocrine Signaling**:\n  * Nervous system uses neurotransmitters across microscopic synaptic clefts (ultrafast millisecond transmission, localized, short-lived effects).\n  * Endocrine system secretes **hormones** directly into the bloodstream (slower onset, widespread systemic distribution, enduring long-lasting effects).\n  * **The Master Gland**: The **Pituitary Gland** (controlled directly by the hypothalamus via neurohormones) regulates thyroid, adrenal cortex, and gonads.\n* **Dual Stress Axes**:\n  * **Fast Acute Stress Axis (Sympathomedullary / SAM Axis)**:\n    * Threat perception $\\rightarrow$ Hypothalamus stimulates sympathetic nervous system $\\rightarrow$ signals **Adrenal Medulla** to secrete **Epinephrine (Adrenaline)** and **Norepinephrine**.\n    * Immediate fight-or-flight: Dilated pupils, bronchiolar dilation, tachycardia, glucose dumped into blood from liver, gastrointestinal motility halted.\n  * **Slow Chronic Stress Axis (HPA Axis)**:\n    * Hypothalamus secretes Corticotropin-Releasing Hormone (CRH) $\\rightarrow$ Anterior Pituitary releases Adrenocorticotropic Hormone (ACTH) $\\rightarrow$ **Adrenal Cortex** secretes **Cortisol** (glucocorticoid).\n    * Mobilizes glucose and suppresses inflammatory immune responses. Sustained chronic elevation shrinks hippocampal dendrites and impairs cellular immunity.\n* **Hans Selye’s General Adaptation Syndrome (GAS)**:\n  * **Phase 1: Alarm Reaction**: Sudden activation of sympathetic nervous system; heart rate surges, shock temporary drop in resistance followed by intense arousal.\n  * **Phase 2: Resistance**: Temperature, blood pressure, and cortisol stay elevated. The organism adapts to sustained stressor, using bodily resources at maximum metabolic cost.\n  * **Phase 3: Exhaustion**: Prolonged stress drains physiological reserves. Susceptibility to cardiovascular disease, clinical burnout, hypertension, and vulnerability to viral collapse."
       }
     ],
-    workedExamples: [
+    "workedExamples": [
       {
-        title: 'Split-Brain Contralateral Visual Processing (FRQ Classic)',
-        topicRef: 'CED 1.3 Brain Hemispheric Lateralization',
-        question: 'A split-brain patient stares at a central fixation cross. The word "KEY" is flashed to the left visual field, and the word "RING" is flashed to the right visual field. (a) What word can the patient verbally report seeing? (b) Which hand can the patient use to select the physical object behind a screen without looking?',
-        solutionSteps: [
-          'Step 1: Trace right visual field ("RING"): Light falls on the left half of each retina and travels to the LEFT hemisphere.',
-          'Step 2: Check language capability: The LEFT hemisphere contains Broca’s area (speech production). The patient can verbally say "RING".',
-          'Step 3: Trace left visual field ("KEY"): Light travels to the RIGHT hemisphere.',
-          'Step 4: Check motor control: The RIGHT hemisphere controls the LEFT hand (contralateral control). The patient can feel behind the screen and pick up the "KEY" with their LEFT hand.',
-          'Step 5: Synthesize complete answer: Verbally states "RING"; physically picks up the "KEY" with the left hand.'
+        "title": "Split-Brain Contralateral Visual Processing (FRQ Classic)",
+        "topicRef": "CED 1.3 Brain Hemispheric Lateralization",
+        "question": "A split-brain patient stares at a central fixation cross. The word \"KEY\" is flashed to the left visual field, and the word \"RING\" is flashed to the right visual field. (a) What word can the patient verbally report seeing? (b) Which hand can the patient use to select the physical object behind a screen without looking?",
+        "solutionSteps": [
+          "Step 1: Trace right visual field (\"RING\"): Light falls on the left half of each retina and travels to the LEFT hemisphere.",
+          "Step 2: Check language capability: The LEFT hemisphere contains Broca’s area (speech production). The patient can verbally say \"RING\".",
+          "Step 3: Trace left visual field (\"KEY\"): Light travels to the RIGHT hemisphere.",
+          "Step 4: Check motor control: The RIGHT hemisphere controls the LEFT hand (contralateral control). The patient can feel behind the screen and pick up the \"KEY\" with their LEFT hand.",
+          "Step 5: Synthesize complete answer: Verbally states \"RING\"; physically picks up the \"KEY\" with the left hand."
         ],
-        finalAnswer: '(a) The patient verbally reports seeing "RING". (b) The patient picks up the "KEY" using their LEFT hand.',
-        apScoringTip: 'Remember the formula: Right Visual Field $\\rightarrow$ Left Hemisphere $\\rightarrow$ Speech (can say it). Left Visual Field $\\rightarrow$ Right Hemisphere $\\rightarrow$ Left Hand (can draw/touch it).'
+        "finalAnswer": "(a) The patient verbally reports seeing \"RING\". (b) The patient picks up the \"KEY\" using their LEFT hand.",
+        "apScoringTip": "Remember the formula: Right Visual Field $\\rightarrow$ Left Hemisphere $\\rightarrow$ Speech (can say it). Left Visual Field $\\rightarrow$ Right Hemisphere $\\rightarrow$ Left Hand (can draw/touch it)."
       }
     ],
-    diagrams: [
+    "diagrams": [
       {
-        id: 'neuron_synapse',
-        title: 'Electrochemical Synaptic Transmission',
-        subtitle: 'Vesicle Exocytosis, Reuptake Transporters, and Postsynaptic Receptors',
-        type: 'synapse_diagram',
-        description: 'Diagram showing terminal button releasing neurotransmitter molecules across the 20nm synaptic cleft to bind with ligand-gated receptors on the postsynaptic dendrite.',
-        takeaway: 'Neural communication is electrical within the neuron (action potential) and chemical between neurons (neurotransmitters across the synapse).'
+        "id": "neuron_synapse",
+        "title": "Electrochemical Synaptic Transmission",
+        "subtitle": "Vesicle Exocytosis, Reuptake Transporters, and Postsynaptic Receptors",
+        "type": "synapse_diagram",
+        "description": "Diagram showing terminal button releasing neurotransmitter molecules across the 20nm synaptic cleft to bind with ligand-gated receptors on the postsynaptic dendrite.",
+        "takeaway": "Neural communication is electrical within the neuron (action potential) and chemical between neurons (neurotransmitters across the synapse)."
       }
     ],
-    commonTraps: [
-      'Believing we only use 10% of our brain. Neuroimaging (fMRI, PET) proves virtually the entire brain is active across various tasks.',
-      'Confusing the sympathetic and parasympathetic nervous systems. Sympathetic = Fight or Flight (arouses; pupils dilate, heart rate spikes); Parasympathetic = Rest and Digest (calms; stimulates digestion).',
-      'Confusing Broca’s Area (speech production in frontal lobe) with Wernicke’s Area (language comprehension in temporal lobe).'
+    "commonTraps": [
+      "Believing we only use 10% of our brain. Neuroimaging (fMRI, PET) proves virtually the entire brain is active across various tasks.",
+      "Confusing the sympathetic and parasympathetic nervous systems. Sympathetic = Fight or Flight (arouses; pupils dilate, heart rate spikes); Parasympathetic = Rest and Digest (calms; stimulates digestion).",
+      "Confusing Broca’s Area (speech production in frontal lobe) with Wernicke’s Area (language comprehension in temporal lobe)."
     ],
-    cramSheet: [
-      'Action potential: All-or-None; $-70\\text{ mV} \\rightarrow -55\\text{ mV threshold} \\rightarrow +40\\text{ mV}$.',
-      'Dopamine: High = Schizophrenia, Low = Parkinson’s.',
-      'Serotonin: Low = Depression; Acetylcholine: Low = Alzheimer’s.',
-      'Sympathetic = Arousal/Fight; Parasympathetic = Calming/Digest.',
-      'Broca = Speech production; Wernicke = Language comprehension.'
+    "cramSheet": [
+      "Action potential: All-or-None; $-70\\text{ mV} \\rightarrow -55\\text{ mV threshold} \\rightarrow +40\\text{ mV}$.",
+      "Dopamine: High = Schizophrenia, Low = Parkinson’s.",
+      "Serotonin: Low = Depression; Acetylcholine: Low = Alzheimer’s.",
+      "Sympathetic = Arousal/Fight; Parasympathetic = Calming/Digest.",
+      "Broca = Speech production; Wernicke = Language comprehension."
     ]
   },
-
-  // ==========================================
-  // UNIT 2: COGNITION & MEMORY
-  // ==========================================
   {
-    unitId: 'u2',
-    unitNumber: 2,
-    title: 'Cognition & Memory',
-    examWeight: '18%–24% of AP Exam',
-    bigIdea: 'Human memory is constructive rather than photographic, operating through multi-stage encoding, storage, and retrieval vulnerable to cognitive heuristics and biases.',
-    keyTheorems: [
+    "unitId": "u2",
+    "unitNumber": 2,
+    "title": "Cognition & Memory",
+    "examWeight": "18%–24% of AP Exam",
+    "bigIdea": "Human memory is constructive rather than photographic, operating through multi-stage encoding, storage, and retrieval vulnerable to cognitive heuristics and biases.",
+    "keyTheorems": [
       {
-        name: 'Atkinson-Shiffrin Three-Stage Memory Model',
-        conditions: 'Information processing from external environment into permanent storage.',
-        conclusion: 'Sensory Memory (iconic <1s, echoic 3–4s) $\\xrightarrow{\\text{Selective Attention}}$ Short-Term/Working Memory (capacity $7 \\pm 2$ chunks, duration ~20–30s without rehearsal) $\\xrightarrow{\\text{Elaborative Rehearsal}}$ Long-Term Memory (virtually unlimited capacity and permanent duration).',
-        apTip: 'Maintenance rehearsal (repeating a phone number) keeps data in working memory; elaborative rehearsal (connecting it to personal meaning) encodes it into long-term memory.'
+        "name": "Atkinson-Shiffrin Three-Stage Memory Model",
+        "conditions": "Information processing from external environment into permanent storage.",
+        "conclusion": "Sensory Memory (iconic <1s, echoic 3–4s) $\\xrightarrow{\\text{Selective Attention}}$ Short-Term/Working Memory (capacity $7 \\pm 2$ chunks, duration ~20–30s without rehearsal) $\\xrightarrow{\\text{Elaborative Rehearsal}}$ Long-Term Memory (virtually unlimited capacity and permanent duration).",
+        "apTip": "Maintenance rehearsal (repeating a phone number) keeps data in working memory; elaborative rehearsal (connecting it to personal meaning) encodes it into long-term memory."
       },
       {
-        name: 'Elizabeth Loftus Misinformation Effect & Constructive Memory',
-        conditions: 'Eyewitness testimony and memory retrieval following suggestive post-event information.',
-        conclusion: 'Memory is not a video recording. Exposing witnesses to misleading post-event information (e.g. asking "How fast were the cars going when they *smashed* vs. *hit* each other?") reconstructs the original memory trace, leading participants to falsely recall non-existent broken glass.',
-        apTip: 'Source Amnesia is attributing an event to the wrong source—believing you personally experienced something you merely heard in a story or dreamed.'
+        "name": "Elizabeth Loftus Misinformation Effect & Constructive Memory",
+        "conditions": "Eyewitness testimony and memory retrieval following suggestive post-event information.",
+        "conclusion": "Memory is not a video recording. Exposing witnesses to misleading post-event information (e.g. asking \"How fast were the cars going when they *smashed* vs. *hit* each other?\") reconstructs the original memory trace, leading participants to falsely recall non-existent broken glass.",
+        "apTip": "Source Amnesia is attributing an event to the wrong source—believing you personally experienced something you merely heard in a story or dreamed."
       }
     ],
-    formulas: [
+    "formulas": [
       {
-        name: 'Ebbinghaus Forgetting Curve',
-        latex: 'R = e^{-\\frac{t}{S}}',
-        explanation: 'Retention ($R$) drops exponentially within the first 24–48 hours unless reinforced by spaced retrieval practice.'
+        "name": "Ebbinghaus Forgetting Curve",
+        "latex": "R = e^{-\\frac{t}{S}}",
+        "explanation": "Retention ($R$) drops exponentially within the first 24–48 hours unless reinforced by spaced retrieval practice."
       }
     ],
-    sections: [
+    "sections": [
       {
-        heading: '1. Long-Term Memory Taxonomy',
-        content: `Classification of human long-term memory systems:
-
-| Memory Category | Sub-Type | Anatomical Brain Structure | Concrete Example |
-| :--- | :--- | :--- | :--- |
-| **Explicit (Declarative)** | **Episodic** | Hippocampus & Prefrontal Cortex | Recalling what you ate for breakfast or your 16th birthday party |
-| **Explicit (Declarative)** | **Semantic** | Hippocampus & Neocortex | Knowing that Paris is the capital of France or that $E=mc^2$ |
-| **Implicit (Non-declarative)** | **Procedural** | Cerebellum & Basal Ganglia | Muscle memory for riding a bicycle, swimming, or typing |
-| **Implicit (Non-declarative)** | **Conditioning** | Amygdala & Cerebellum | Flinching at the sound of a dentist's drill or salivating at food smells |`
-      }
-    ,
+        "heading": "1. Long-Term Memory Taxonomy",
+        "content": "Classification of human long-term memory systems:\n\n| Memory Category | Sub-Type | Anatomical Brain Structure | Concrete Example |\n| :--- | :--- | :--- | :--- |\n| **Explicit (Declarative)** | **Episodic** | Hippocampus & Prefrontal Cortex | Recalling what you ate for breakfast or your 16th birthday party |\n| **Explicit (Declarative)** | **Semantic** | Hippocampus & Neocortex | Knowing that Paris is the capital of France or that $E=mc^2$ |\n| **Implicit (Non-declarative)** | **Procedural** | Cerebellum & Basal Ganglia | Muscle memory for riding a bicycle, swimming, or typing |\n| **Implicit (Non-declarative)** | **Conditioning** | Amygdala & Cerebellum | Flinching at the sound of a dentist's drill or salivating at food smells |"
+      },
       {
-        heading: '2. Heuristics, Cognitive Biases & Language Acquisition (CED 2.3-2.4)',
-        content: `Problem-solving strategies, systemic cognitive distortions, and linguistic development:
-
-* **Algorithms vs. Heuristics**:
-  * **Algorithm**: Step-by-step exhaustive rule guaranteed to produce a correct solution (slow, resource-intensive).
-  * **Heuristic**: Mental shortcut / 'rule of thumb' providing rapid problem-solving but prone to predictable errors.
-
-* **Master Cognitive Biases & Heuristics Matrix**:
-
-| Cognitive Bias / Heuristic | Psychological Mechanism | AP Exam Scenario Example | Memory Anchor / Trigger |
-| :--- | :--- | :--- | :--- |
-| **Availability Heuristic** | Judging likelihood based on how easily examples pop into memory. | Fearing plane crashes or shark attacks after watching viral news, while driving daily without anxiety. | *"If it's vivid & fresh in mind, I assume it's common."* |
-| **Representativeness Heuristic** | Estimating probability by matching a description to an internal stereotype. | Assuming a quiet, bespectacled poetry lover is an Ivy League English professor rather than a truck driver (ignoring base rates). | *"Matches my prototype / stereotype."* |
-| **Confirmation Bias** | Actively hunting for information that validates existing beliefs while ignoring contradictory facts. | A student who believes coffee improves focus only reads blogs praising caffeine while ignoring medical studies on anxiety. | *"Looking only for evidence that agrees with me."* |
-| **Belief Perseverance** | Clinging to an initial belief even AFTER the supporting evidence has been completely disproven. | Maintaining that a political candidate is guilty of a crime even after official investigators admit the document was forged. | *"Refusing to abandon a belief after it is debunked."* |
-| **Anchoring Bias** | Over-relying on the first number or piece of data presented when making subsequent estimates. | A car sticker lists $40,000; when the dealer agrees to $32,000, the buyer feels they scored a massive bargain. | *"Mentally tethered to the initial anchor number."* |
-| **Framing Effect** | Changing decisions based on how the choices or numerical data are linguistically presented. | Preferring ground beef labeled "85% Lean" over beef labeled "15% Fat", even though they are chemically identical. | *"Same exact reality, different emotional frame."* |
-| **Functional Fixedness** | The inability to view an everyday tool or object as having uses beyond its designated traditional purpose. | Searching everywhere for a screwdriver while failing to realize a dime, butter knife, or car key could tighten the screw. | *"Blind to an object's unconventional uses."* |
-| **Mental Set** | Approaching a problem using ONLY strategies that worked in the past, even when ineffective for the new problem. | Trying the same algebraic formula repeatedly on a geometry problem because it succeeded on previous homework. | *"Trapped in past problem-solving habits."* |
-| **Hindsight Bias** | The post-outcome belief that one foresaw or could have easily predicted the outcome all along. | Proclaiming *"I knew they were going to lose the game all along!"* only after the final whistle blows. | *"The 'I-knew-it-all-along' effect."* |
-
-* **Language Structural Hierarchy**:
-  * **Phoneme**: Smallest distinctive unit of sound in a language (e.g. /k/, /a/, /t/; English has ~40 phonemes).
-  * **Morpheme**: Smallest unit of language that carries meaning (e.g. 'un-', 'break-', '-able'; root words and prefixes/suffixes).
-  * **Syntax**: Rules governing how words are arranged into grammatically valid sentences.
-  * **Semantics**: Rules by which we derive meaning from morphemes, words, and sentences.
-  * **Noam Chomsky's Nativist Theory**: Humans possess an innate biological Language Acquisition Device (LAD) with universal grammar principles, opposing B.F. Skinner's purely behaviorist operant conditioning and imitation model.`
+        "heading": "2. Heuristics, Cognitive Biases & Language Acquisition (CED 2.3-2.4)",
+        "content": "Problem-solving strategies, systemic cognitive distortions, and linguistic development:\n\n* **Algorithms vs. Heuristics**:\n  * **Algorithm**: Step-by-step exhaustive rule guaranteed to produce a correct solution (slow, resource-intensive).\n  * **Heuristic**: Mental shortcut / 'rule of thumb' providing rapid problem-solving but prone to predictable errors.\n\n* **Master Cognitive Biases & Heuristics Matrix**:\n\n| Cognitive Bias / Heuristic | Psychological Mechanism | AP Exam Scenario Example | Memory Anchor / Trigger |\n| :--- | :--- | :--- | :--- |\n| **Availability Heuristic** | Judging likelihood based on how easily examples pop into memory. | Fearing plane crashes or shark attacks after watching viral news, while driving daily without anxiety. | *\"If it's vivid & fresh in mind, I assume it's common.\"* |\n| **Representativeness Heuristic** | Estimating probability by matching a description to an internal stereotype. | Assuming a quiet, bespectacled poetry lover is an Ivy League English professor rather than a truck driver (ignoring base rates). | *\"Matches my prototype / stereotype.\"* |\n| **Confirmation Bias** | Actively hunting for information that validates existing beliefs while ignoring contradictory facts. | A student who believes coffee improves focus only reads blogs praising caffeine while ignoring medical studies on anxiety. | *\"Looking only for evidence that agrees with me.\"* |\n| **Belief Perseverance** | Clinging to an initial belief even AFTER the supporting evidence has been completely disproven. | Maintaining that a political candidate is guilty of a crime even after official investigators admit the document was forged. | *\"Refusing to abandon a belief after it is debunked.\"* |\n| **Anchoring Bias** | Over-relying on the first number or piece of data presented when making subsequent estimates. | A car sticker lists $40,000; when the dealer agrees to $32,000, the buyer feels they scored a massive bargain. | *\"Mentally tethered to the initial anchor number.\"* |\n| **Framing Effect** | Changing decisions based on how the choices or numerical data are linguistically presented. | Preferring ground beef labeled \"85% Lean\" over beef labeled \"15% Fat\", even though they are chemically identical. | *\"Same exact reality, different emotional frame.\"* |\n| **Functional Fixedness** | The inability to view an everyday tool or object as having uses beyond its designated traditional purpose. | Searching everywhere for a screwdriver while failing to realize a dime, butter knife, or car key could tighten the screw. | *\"Blind to an object's unconventional uses.\"* |\n| **Mental Set** | Approaching a problem using ONLY strategies that worked in the past, even when ineffective for the new problem. | Trying the same algebraic formula repeatedly on a geometry problem because it succeeded on previous homework. | *\"Trapped in past problem-solving habits.\"* |\n| **Hindsight Bias** | The post-outcome belief that one foresaw or could have easily predicted the outcome all along. | Proclaiming *\"I knew they were going to lose the game all along!\"* only after the final whistle blows. | *\"The 'I-knew-it-all-along' effect.\"* |\n\n* **Language Structural Hierarchy**:\n  * **Phoneme**: Smallest distinctive unit of sound in a language (e.g. /k/, /a/, /t/; English has ~40 phonemes).\n  * **Morpheme**: Smallest unit of language that carries meaning (e.g. 'un-', 'break-', '-able'; root words and prefixes/suffixes).\n  * **Syntax**: Rules governing how words are arranged into grammatically valid sentences.\n  * **Semantics**: Rules by which we derive meaning from morphemes, words, and sentences.\n  * **Noam Chomsky's Nativist Theory**: Humans possess an innate biological Language Acquisition Device (LAD) with universal grammar principles, opposing B.F. Skinner's purely behaviorist operant conditioning and imitation model."
+      },
+      {
+        "heading": "3. Information Architecture: Atkinson-Shiffrin vs. Baddeley’s Working Memory (CED 2.1-2.2)",
+        "content": "The structural and dynamic models of human memory encoding and retention:\n\n* **The Atkinson-Shiffrin Three-Stage Memory Model**:\n  * **Sensory Memory**:\n    * **Iconic Memory**: Visual sensory register holding exact visual snapshots for $\\approx 0.25–0.5$ seconds (George Sperling partial-report experiment: flashed $3 \\times 4$ letter grids proved visual iconic capacity is nearly infinite but decays within milliseconds).\n    * **Echoic Memory**: Auditory sensory register holding sound traces for $3–4$ seconds (allows recalling last words heard when distracted).\n  * **Short-Term Memory (STM)**:\n    * Limited capacity: George Miller's \"Magical Number\" $7 \\pm 2$ discrete chunks (modern research by Nelson Cowan indicates $4 \\pm 1$ without rehearsal).\n    * Limited duration: $\\approx 15–30$ seconds without active maintenance rehearsal (Peterson & Peterson brown-peterson distractor task).\n  * **Long-Term Memory (LTM)**: Theoretically infinite storage capacity and permanent duration.\n* **Alan Baddeley's Multicomponent Working Memory Model**:\n  * Replaced passive STM with an active, multicomponent mental workspace:\n  * **Central Executive**: Allocates attentional focus, coordinates subordinate subsystems, makes executive decisions, and integrates information from long-term memory.\n  * **Phonological Loop**: Processes verbal and auditory information via the *phonological store* (\"inner ear\") and *articulatory rehearsal loop* (\"inner voice\").\n  * **Visuospatial Sketchpad**: Caches and manipulates mental images, three-dimensional spatial coordinates, and visual features (\"inner eye\").\n  * **Episodic Buffer**: Integrates multimodal inputs (visual, phonological, chronological) into unified chronological perceptual episodes with time-stamping.\n* **Taxonomy of Long-Term Memory**:\n  * **Explicit (Declarative) Memory** [Consciously recalled, processed by Hippocampus and Frontal Lobes]:\n    * **Episodic Memory**: Personally experienced autobiographical events, mental time travel (e.g., your 16th birthday party).\n    * **Semantic Memory**: Facts, general world knowledge, vocabulary, mathematical rules without biographical context (e.g., knowing Paris is the capital of France).\n  * **Implicit (Nondeclarative) Memory** [Retrieved automatically without conscious awareness, processed by Cerebellum & Basal Ganglia]:\n    * **Procedural Memory**: Motor skills, muscle memory, habituated motor programs (e.g., riding a bicycle, touch typing, playing piano).\n    * **Classically Conditioned Associations**: Conditioned emotional fears or salivary responses (e.g., dentist drill phobia).\n    * **Priming**: Enhanced identification of objects/words triggered by recent subliminal or conscious exposure."
+      },
+      {
+        "heading": "4. Forgetting Curves, Interference & Clinical Amnesia (CED 2.3)",
+        "content": "The mathematical mechanics of memory decay and real-world failure points:\n\n* **Hermann Ebbinghaus Forgetting Curve**:\n  * Memorized lists of nonsense syllables (e.g., BOK, YEP, ZID).\n  * Found that memory loss is steepest immediately after learning (nearly 60% lost within the first hour), after which forgetting decelerates and levels off asymptotically.\n  * **Spaced Repetition & The Spacing Effect**: Distributed study yields vastly superior long-term retention compared to massed practice (\"cramming\").\n* **Interference Theories of Forgetting**:\n  * **Proactive Interference**: Old information disrupts the retrieval of newly learned information (Mnemonic **PORN**: **P**roactive = **O**ld disrupts new; **R**etroactive = **N**ew disrupts old).\n    * *Example*: Typing your old email password after resetting it to a new one.\n  * **Retroactive Interference**: Newly acquired information blocks recall of older stored memories.\n    * *Example*: Learning new French vocabulary causes you to forget the Spanish terms you studied last semester.\n* **The Constructive Nature of Memory (Elizabeth Loftus)**:\n  * Memories are not video recordings; they are reconstructed at retrieval, making them susceptible to distortion.\n  * **Misinformation Effect**: Exposure to misleading post-event information alters eyewitness testimony. In Loftus & Palmer (1974), subjects who heard the verb \"smashed\" estimated car speeds at $40.5\\text{ mph}$ and falsely remembered broken glass, while those who heard \"hit\" estimated $34.0\\text{ mph}$ with no broken glass.\n  * **Source Amnesia (Source Misattribution)**: Correctly recalling a factual claim but attributing it to the wrong source (e.g., believing you lived an event when you actually saw it in a film).\n* **Clinical Amnesia: Patient H.M. (Henry Molaison)**:\n  * Underwent bilateral surgical excision of the **hippocampus** and medial temporal lobes to cure intractable epilepsy.\n  * Developed severe **Anterograde Amnesia**: Inability to form any new conscious, explicit (declarative) long-term memories.\n  * Crucially, his **implicit procedural memory remained intact**: When trained on the mirror-tracing task daily, his physical performance improved steadily, even though he had zero conscious memory of ever seeing the apparatus before!"
+      },
+      {
+        "heading": "5. Heuristics, Cognitive Biases & Problem-Solving Traps (CED 2.5)",
+        "content": "Algorithmic rigor versus heuristic shortcuts in human cognitive decision making:\n\n* **Algorithms vs. Heuristics**:\n  * **Algorithm**: Step-by-step, methodical rule or computational procedure that guarantees an accurate solution if executed correctly (e.g., searching every aisle systematically; quadratic formula). High accuracy, high time cost.\n  * **Heuristic**: Mental shortcut, thumb-rule, or cognitive simplification that allows rapid, efficient decisions under uncertainty. Fast, low cognitive load, but prone to systematic errors.\n* **Core Cognitive Biases Tested on the AP Exam**:\n  * **Availability Heuristic**: Estimating the likelihood of an event based on how easily examples of it come to mind. If memories are vivid or fresh in news coverage (airplane crashes, shark attacks), people vastly overestimate their statistical probability while underestimating common silent killers (diabetes, car accidents).\n  * **Representativeness Heuristic**: Judging the probability of an item or person belonging to a category based on how closely they match our internal mental prototype, while completely ignoring baseline statistical probabilities (e.g., assuming a quiet man who reads poetry is an Ivy League classics professor rather than a truck driver, ignoring that truck drivers outnumber classics professors 1000 to 1).\n  * **Confirmation Bias**: The tendency to actively search for, interpret, and remember evidence that confirms preexisting beliefs while ignoring or discrediting contradictory data.\n  * **Anchoring and Adjustment Bias**: Over-relying on the first piece of information encountered (the \"anchor\") when making subsequent quantitative estimates (e.g., a car sticker marked down from $40,000 to $32,000 feels like a bargain, even if true market value is $25,000).\n  * **Framing Effect**: The way an issue is posed radically shifts human judgment. Consumers prefer ground beef described as \"80% lean\" over beef described as \"20% fat\", even though the formulations are chemically identical.\n  * **Functional Fixedness**: The inability to perceive an object being used for anything other than its traditional designated purpose (e.g., failing to see that a metal butter knife can serve as a flathead screwdriver).\n  * **Mental Set**: Rigorous tendency to persist in using problem-solving strategies that worked successfully in past scenarios, even when a novel approach is required."
+      },
+      {
+        "heading": "6. Psycholinguistics: Structural Hierarchy & Language Development (CED 2.6)",
+        "content": "The universal building blocks and developmental milestones of human speech:\n\n* **Structural Hierarchy of Language**:\n  * **Phoneme**: The smallest distinctive unit of sound in a spoken language (English uses $\\approx 44$ phonemes, such as $/t/, /ch/, /p/$). Changing a phoneme changes the word (\"cat\" vs \"bat\").\n  * **Morpheme**: The smallest unit of language that carries semantic meaning or grammatical function. Includes root words and affixes (prefixes/suffixes). For example, the word **\"unbreakable\"** contains 3 morphemes: \"un-\" (not), \"break\" (root), and \"-able\" (can be done).\n  * **Syntax**: The grammatical system of rules for organizing words into sensible, meaningful sentences (e.g., in English adjectives precede nouns: \"white house\"; in Spanish nouns precede adjectives: \"casa blanca\").\n  * **Semantics**: The set of rules governing the derived meaning from morphemes, words, and sentences.\n* **Developmental Chronology of Language Acquisition**:\n  * **Babbling Stage (4–10 months)**: Spontaneous vocalization of phonemes. At 4 months, infants vocalize sounds from all global languages; by 10 months, phoneme production narrows strictly to the household native dialect.\n  * **One-Word (Holophrastic) Stage (12 months)**: Single isolated words convey entire thoughts (\"Juice!\", \"Up!\").\n  * **Two-Word (Telegraphic) Stage (18–24 months)**: Utterances mimic telegrams, using mostly nouns and verbs in syntactic order (\"Go car\", \"Want cookie\").\n  * **Overregularization / Overextension of Grammar**: Demonstrates internal rule acquisition rather than mere mimicry. Young children apply grammatical rules universally without recognizing irregular exceptions (e.g., \"I goed to the park\", \"My two feets hurted\").\n* **Theoretical Debates in Language Acquisition**:\n  * **B.F. Skinner (Behaviorist Approach)**: Argued language is learned purely through associative learning, operant conditioning (parental reinforcement of approximations), and environmental modeling.\n  * **Noam Chomsky (Nativist Approach)**: Demonstrated children learn complex syntax too rapidly for trial-and-error reinforcement alone (**Poverty of the Stimulus**). Postulated humans are born with an innate **Language Acquisition Device (LAD)** and pre-wired **Universal Grammar**.\n  * **Critical Period Hypothesis (Eric Lenneberg)**: Childhood represents a biologically constrained window for fluent first-language acquisition (as demonstrated by isolated children like Genie; past puberty, native syntactic mastery becomes biologically impossible)."
       }
     ],
-    workedExamples: [
+    "workedExamples": [
       {
-        title: 'Differentiating Proactive vs. Retroactive Interference',
-        topicRef: 'CED 2.4 Retrieval Failure & Interference',
-        question: 'Sarah studied Spanish for 3 years in middle school. Now in high school, she is enrolled in French. During her French exam, she accidentally writes Spanish words instead of French words. Which type of interference is occurring, and why?',
-        solutionSteps: [
-          'Step 1: Identify OLD learning: Spanish vocabulary.',
-          'Step 2: Identify NEW learning: French vocabulary.',
-          'Step 3: Identify what is being interfered with: Her ability to recall the NEW French vocabulary is impaired by the OLD Spanish.',
-          'Step 4: Apply the PORN mnemonic: **P**ROACTIVE = **O**LD interferes with new; **R**ETROACTIVE = **N**EW interferes with old.',
-          'Step 5: Conclude: Old Spanish blocks New French $\\implies$ **Proactive Interference**.'
+        "title": "Differentiating Proactive vs. Retroactive Interference",
+        "topicRef": "CED 2.4 Retrieval Failure & Interference",
+        "question": "Sarah studied Spanish for 3 years in middle school. Now in high school, she is enrolled in French. During her French exam, she accidentally writes Spanish words instead of French words. Which type of interference is occurring, and why?",
+        "solutionSteps": [
+          "Step 1: Identify OLD learning: Spanish vocabulary.",
+          "Step 2: Identify NEW learning: French vocabulary.",
+          "Step 3: Identify what is being interfered with: Her ability to recall the NEW French vocabulary is impaired by the OLD Spanish.",
+          "Step 4: Apply the PORN mnemonic: **P**ROACTIVE = **O**LD interferes with new; **R**ETROACTIVE = **N**EW interferes with old.",
+          "Step 5: Conclude: Old Spanish blocks New French $\\implies$ **Proactive Interference**."
         ],
-        finalAnswer: 'Proactive Interference; past learning (Spanish) disrupts retrieval of recently learned information (French).',
-        apScoringTip: 'Memorize the mnemonic PORN: Proactive = Old breaks new; Retroactive = New breaks old.'
+        "finalAnswer": "Proactive Interference; past learning (Spanish) disrupts retrieval of recently learned information (French).",
+        "apScoringTip": "Memorize the mnemonic PORN: Proactive = Old breaks new; Retroactive = New breaks old."
       }
     ],
-    diagrams: [
+    "diagrams": [
       {
-        id: 'ebbinghaus_curve',
-        title: 'Ebbinghaus Forgetting Curve & Spacing Effect',
-        subtitle: 'Exponential Decay vs. Spaced Repetition Reinforcement',
-        type: 'forgetting_curve',
-        description: 'Graph showing rapid initial memory loss stabilizing over time, with spaced reviews flattening the decay curve to achieve near-100% permanent retention.',
-        takeaway: 'Cramming causes rapid decay; distributed practice builds durable long-term memory traces.'
+        "id": "ebbinghaus_curve",
+        "title": "Ebbinghaus Forgetting Curve & Spacing Effect",
+        "subtitle": "Exponential Decay vs. Spaced Repetition Reinforcement",
+        "type": "forgetting_curve",
+        "description": "Graph showing rapid initial memory loss stabilizing over time, with spaced reviews flattening the decay curve to achieve near-100% permanent retention.",
+        "takeaway": "Cramming causes rapid decay; distributed practice builds durable long-term memory traces."
       }
     ],
-    commonTraps: [
-      'Confusing the availability heuristic with the representativeness heuristic. Availability = based on how easily examples come to mind (e.g. fearing plane crashes after seeing news). Representativeness = based on stereotypes or prototypical similarity (e.g. assuming a quiet glasses-wearer is a librarian).',
-      'Confusing retrograde amnesia (cannot remember past memories before injury) with anterograde amnesia (cannot form new long-term explicit memories, like patient H.M.).',
-      'Believing algorithm vs. heuristic: Algorithms guarantee a solution (step-by-step formula); heuristics are fast mental shortcuts prone to systematic bias.'
+    "commonTraps": [
+      "Confusing the availability heuristic with the representativeness heuristic. Availability = based on how easily examples come to mind (e.g. fearing plane crashes after seeing news). Representativeness = based on stereotypes or prototypical similarity (e.g. assuming a quiet glasses-wearer is a librarian).",
+      "Confusing retrograde amnesia (cannot remember past memories before injury) with anterograde amnesia (cannot form new long-term explicit memories, like patient H.M.).",
+      "Believing algorithm vs. heuristic: Algorithms guarantee a solution (step-by-step formula); heuristics are fast mental shortcuts prone to systematic bias."
     ],
-    cramSheet: [
-      'PORN: Proactive (Old interferes with new) | Retroactive (New interferes with old).',
-      'Implicit memory (procedural) = Cerebellum & Basal Ganglia.',
-      'Explicit memory (episodic & semantic) = Hippocampus.',
-      'Availability Heuristic = memory recency/vividness; Representativeness = prototype matching.',
-      'Loftus: Leading questions alter memory reconstruction (Misinformation Effect).'
+    "cramSheet": [
+      "PORN: Proactive (Old interferes with new) | Retroactive (New interferes with old).",
+      "Implicit memory (procedural) = Cerebellum & Basal Ganglia.",
+      "Explicit memory (episodic & semantic) = Hippocampus.",
+      "Availability Heuristic = memory recency/vividness; Representativeness = prototype matching.",
+      "Loftus: Leading questions alter memory reconstruction (Misinformation Effect)."
     ]
   },
-
-  // ==========================================
-  // UNIT 3: DEVELOPMENT & LEARNING
-  // ==========================================
   {
-    unitId: 'u3',
-    unitNumber: 3,
-    title: 'Development & Learning',
-    examWeight: '16%–22% of AP Exam',
-    bigIdea: 'Human cognition and behavior evolve across the lifespan through biological maturation, classical and operant conditioning, and social observational modeling.',
-    keyTheorems: [
+    "unitId": "u3",
+    "unitNumber": 3,
+    "title": "Development & Learning",
+    "examWeight": "16%–22% of AP Exam",
+    "bigIdea": "Human cognition and behavior evolve across the lifespan through biological maturation, classical and operant conditioning, and social observational modeling.",
+    "keyTheorems": [
       {
-        name: 'Classical Conditioning Principles (Ivan Pavlov)',
-        conditions: 'Associative learning pairing a neutral stimulus with an unconditioned stimulus.',
-        conclusion: 'An Unconditioned Stimulus (UCS: food) naturally triggers an Unconditioned Response (UCR: salivation). Repeatedly pairing a Neutral Stimulus (NS: bell) before the UCS turns the NS into a Conditioned Stimulus (CS), triggering a Conditioned Response (CR: salivation to bell alone).',
-        apTip: 'The Unconditioned Response (UCR) and Conditioned Response (CR) are usually the exact same physiological behavior (e.g. salivation, fear); they differ ONLY in what stimulus triggers them!'
+        "name": "Classical Conditioning Principles (Ivan Pavlov)",
+        "conditions": "Associative learning pairing a neutral stimulus with an unconditioned stimulus.",
+        "conclusion": "An Unconditioned Stimulus (UCS: food) naturally triggers an Unconditioned Response (UCR: salivation). Repeatedly pairing a Neutral Stimulus (NS: bell) before the UCS turns the NS into a Conditioned Stimulus (CS), triggering a Conditioned Response (CR: salivation to bell alone).",
+        "apTip": "The Unconditioned Response (UCR) and Conditioned Response (CR) are usually the exact same physiological behavior (e.g. salivation, fear); they differ ONLY in what stimulus triggers them!"
       },
       {
-        name: 'Operant Conditioning & Schedules of Reinforcement (B.F. Skinner)',
-        conditions: 'Shaping voluntary behavior via consequences (reinforcement vs. punishment).',
-        conclusion: 'Positive adds a stimulus; Negative removes a stimulus. Reinforcement increases behavior; Punishment decreases behavior. Variable-Ratio schedules produce the highest rates of responding and greatest resistance to extinction (e.g. slot machines).',
-        apTip: 'Negative reinforcement is NOT punishment! Negative reinforcement INCREASES a behavior by removing an unpleasant stimulus (e.g. taking an aspirin removes a headache, so you take aspirin again in the future).'
+        "name": "Operant Conditioning & Schedules of Reinforcement (B.F. Skinner)",
+        "conditions": "Shaping voluntary behavior via consequences (reinforcement vs. punishment).",
+        "conclusion": "Positive adds a stimulus; Negative removes a stimulus. Reinforcement increases behavior; Punishment decreases behavior. Variable-Ratio schedules produce the highest rates of responding and greatest resistance to extinction (e.g. slot machines).",
+        "apTip": "Negative reinforcement is NOT punishment! Negative reinforcement INCREASES a behavior by removing an unpleasant stimulus (e.g. taking an aspirin removes a headache, so you take aspirin again in the future)."
       }
     ],
-    formulas: [
+    "formulas": [
       {
-        name: 'Operant Consequence Matrix Formula',
-        latex: '\\text{Operant Effect} = (\\text{Positive [Add]} \\mid \\text{Negative [Remove]}) \\times (\\text{Reinforcement } [\\uparrow] \\mid \\text{Punishment } [\\downarrow])',
-        explanation: 'Four quadrant matrix: Positive Reinforcement ($+\\uparrow$), Negative Reinforcement ($-\\uparrow$), Positive Punishment ($+\\downarrow$), Negative Punishment ($-\\downarrow$).'
+        "name": "Operant Consequence Matrix Formula",
+        "latex": "\\text{Operant Effect} = (\\text{Positive [Add]} \\mid \\text{Negative [Remove]}) \\times (\\text{Reinforcement } [\\uparrow] \\mid \\text{Punishment } [\\downarrow])",
+        "explanation": "Four quadrant matrix: Positive Reinforcement ($+\\uparrow$), Negative Reinforcement ($-\\uparrow$), Positive Punishment ($+\\downarrow$), Negative Punishment ($-\\downarrow$)."
       }
     ],
-    sections: [
+    "sections": [
       {
-        heading: '1. Developmental Stages Synthesis (Piaget, Erikson, Kohlberg)',
-        content: `Cross-paradigm comparison of lifelong developmental milestones:
-
-| Developmental Stage | Piaget (Cognitive) | Erikson (Psychosocial Crisis) | Kohlberg (Moral Reasoning) |
-| :--- | :--- | :--- | :--- |
-| **Infancy (0–2)** | **Sensorimotor**: Object permanence acquired (~8 mo), stranger anxiety | **Trust vs. Mistrust**: Needs met reliably by caregiver | N/A (Pre-moral) |
-| **Early Childhood (2–7)** | **Preoperational**: Egocentrism, animism, lack conservation | **Autonomy vs. Shame** / **Initiative vs. Guilt** | **Preconventional**: Avoid punishment, gain tangible reward |
-| **Middle Childhood (7–11)**| **Concrete Operational**: Conservation mastered, mathematical operations | **Industry vs. Inferiority**: Competence in peer tasks | **Conventional**: Gain social approval ("good boy/girl"), obey law/order |
-| **Adolescence (12–18)** | **Formal Operational**: Abstract hypotheses, moral reasoning | **Identity vs. Role Confusion**: Refining sense of self | **Postconventional**: Social contract, universal ethical principles |
-| **Adulthood (19+)** | Formal Operational continues; post-formal dialectical thought | **Intimacy vs. Isolation** $\\rightarrow$ **Generativity** $\\rightarrow$ **Integrity vs. Despair** | Postconventional: Autonomous ethical conscience |`
-      }
-    ,
+        "heading": "1. Developmental Stages Synthesis (Piaget, Erikson, Kohlberg)",
+        "content": "Cross-paradigm comparison of lifelong developmental milestones:\n\n| Developmental Stage | Piaget (Cognitive) | Erikson (Psychosocial Crisis) | Kohlberg (Moral Reasoning) |\n| :--- | :--- | :--- | :--- |\n| **Infancy (0–2)** | **Sensorimotor**: Object permanence acquired (~8 mo), stranger anxiety | **Trust vs. Mistrust**: Needs met reliably by caregiver | N/A (Pre-moral) |\n| **Early Childhood (2–7)** | **Preoperational**: Egocentrism, animism, lack conservation | **Autonomy vs. Shame** / **Initiative vs. Guilt** | **Preconventional**: Avoid punishment, gain tangible reward |\n| **Middle Childhood (7–11)**| **Concrete Operational**: Conservation mastered, mathematical operations | **Industry vs. Inferiority**: Competence in peer tasks | **Conventional**: Gain social approval (\"good boy/girl\"), obey law/order |\n| **Adolescence (12–18)** | **Formal Operational**: Abstract hypotheses, moral reasoning | **Identity vs. Role Confusion**: Refining sense of self | **Postconventional**: Social contract, universal ethical principles |\n| **Adulthood (19+)** | Formal Operational continues; post-formal dialectical thought | **Intimacy vs. Isolation** $\\rightarrow$ **Generativity** $\\rightarrow$ **Integrity vs. Despair** | Postconventional: Autonomous ethical conscience |"
+      },
       {
-        heading: '2. Operant Reinforcement Schedules & Observational Learning (CED 3.2 & 3.4)',
-        content: `Behavioral conditioning schedules and social learning dynamics:
-
-* **The 4 Schedules of Partial Reinforcement**:
-  * **Fixed-Ratio (FR)**: Reward delivered after an invariant, set number of responses (e.g. factory piecework bonus every 10 items; produces high response rates with brief post-reinforcement pauses).
-  * **Variable-Ratio (VR)**: Reward delivered after an unpredictable, varying number of responses (e.g. slot machines, lottery tickets; produces the **highest, steepest rate of responding** and greatest resistance to extinction!).
-  * **Fixed-Interval (FI)**: Reward delivered for first response after a fixed period of time (e.g. checking mail every 24 hours, studying before scheduled Friday exams; produces a distinctive **scalloped response curve**).
-  * **Variable-Interval (VI)**: Reward delivered for first response after unpredictable time durations (e.g. checking phone notifications, fishing; produces slow, steady, persistent responding).
-* **Albert Bandura's Social Learning Theory**:
-  * Children observing aggressive adult models striking an inflatable Bobo Doll exhibited novel aggressive behaviors through **observational modeling**, even without receiving direct reinforcement!
-  * Driven by internal **vicarious reinforcement** and biological mirror neuron systems.`
+        "heading": "2. Operant Reinforcement Schedules & Observational Learning (CED 3.2 & 3.4)",
+        "content": "Behavioral conditioning schedules and social learning dynamics:\n\n* **The 4 Schedules of Partial Reinforcement**:\n  * **Fixed-Ratio (FR)**: Reward delivered after an invariant, set number of responses (e.g. factory piecework bonus every 10 items; produces high response rates with brief post-reinforcement pauses).\n  * **Variable-Ratio (VR)**: Reward delivered after an unpredictable, varying number of responses (e.g. slot machines, lottery tickets; produces the **highest, steepest rate of responding** and greatest resistance to extinction!).\n  * **Fixed-Interval (FI)**: Reward delivered for first response after a fixed period of time (e.g. checking mail every 24 hours, studying before scheduled Friday exams; produces a distinctive **scalloped response curve**).\n  * **Variable-Interval (VI)**: Reward delivered for first response after unpredictable time durations (e.g. checking phone notifications, fishing; produces slow, steady, persistent responding).\n* **Albert Bandura's Social Learning Theory**:\n  * Children observing aggressive adult models striking an inflatable Bobo Doll exhibited novel aggressive behaviors through **observational modeling**, even without receiving direct reinforcement!\n  * Driven by internal **vicarious reinforcement** and biological mirror neuron systems."
+      },
+      {
+        "heading": "3. Classical & Operant Conditioning Conditioning Paradigms (CED 3.1–3.4)",
+        "content": "Behavioral psychology mechanisms governing acquired responses:\n- **Classical Conditioning (Pavlovian Stimulus Association):**\n  - **Unconditioned Stimulus (UCS):** Naturally elicits reflexive biological response (food).\n  - **Unconditioned Response (UCR):** Involuntary reflex (salivation to food).\n  - **Conditioned Stimulus (CS):** Previously neutral stimulus that, through repeated pairing with UCS, triggers a conditioned reflex (bell tone).\n  - **Conditioned Response (CR):** Learned response to CS alone (salivation to bell).\n  - **Key Phenomena:** Acquisition, Extinction (repeated CS without UCS causes CR to fade), Spontaneous Recovery (reappearance of extinguished CR after rest pause), Stimulus Generalization vs. Discrimination.\n- **Operant Conditioning (Consequence Reinforcement vs. Punishment):**\n  - **Positive Reinforcement:** Adding a desirable stimulus to *increase* behavior (giving praise).\n  - **Negative Reinforcement:** Removing an aversive stimulus to *increase* behavior (fastening seatbelt to stop annoying beeping sound!).\n  - **Positive Punishment:** Adding an aversive stimulus to *decrease* behavior (issuing a speeding ticket).\n  - **Negative Punishment:** Removing a desirable stimulus to *decrease* behavior (revoking phone privileges).\n- **Schedules of Reinforcement:**\n  - **Fixed-Ratio (FR):** Reward after fixed number of responses (free coffee after 10 purchases).\n  - **Variable-Ratio (VR):** Reward after unpredictable average number of responses (slot machines). **Yields highest response rate and greatest resistance to extinction!**\n  - **Fixed-Interval (FI):** Reward for first response after fixed time interval (cramming right before weekly Friday quiz; scalloped response curve).\n  - **Variable-Interval (VI):** Reward after unpredictable time interval (checking email for unexpected messages)."
+      },
+      {
+        "heading": "4. Piaget’s Cognitive & Erikson’s Psychosocial Development Stages (CED 3.5–3.7)",
+        "content": "Major developmental theories spanning infancy through late adulthood:\n- **Jean Piaget’s Cognitive Development Stages:**\n  1. **Sensorimotor (0–2 yrs):** Experiences world via sensory/motor actions. Attains **Object Permanence** (realization that objects continue to exist when hidden) around 8 months. Stranger anxiety.\n  2. **Preoperational (2–7 yrs):** Symbolic play, language expansion. Characterized by **Egocentrism** (inability to perceive perspectives other than one's own) and lack of **Conservation** (centration on superficial appearance; e.g. tall thin glass vs short wide glass).\n  3. **Concrete Operational (7–11 yrs):** Master conservation and reversibility; performs logical operations on concrete, tangible physical objects.\n  4. **Formal Operational (12+ yrs):** Abstract logic, hypothetical-deductive reasoning, moral introspection.\n- **Erik Erikson’s 8 Psychosocial Crises:**\n  - Infancy: *Trust vs. Mistrust* (secure caregiving).\n  - Toddlerhood: *Autonomy vs. Shame/Doubt* (independent exploration).\n  - Early Childhood: *Initiative vs. Guilt* (initiating tasks).\n  - Middle Childhood: *Industry vs. Inferiority* (applying self to skills/schoolwork).\n  - Adolescence: *Identity vs. Role Confusion* (refining personal sense of self).\n  - Young Adulthood: *Intimacy vs. Isolation* (forming deep loving partnerships).\n  - Middle Adulthood: *Generativity vs. Stagnation* (contributing to family and society).\n  - Late Adulthood: *Integrity vs. Despair* (reflecting on life with fulfillment vs regret)."
+      },
+      {
+        "heading": "5. Attachment Theory & Kohlberg’s Moral Reasoning (CED 3.8–3.10)",
+        "content": "Social-emotional bonding and moral reasoning trajectories:\n- **Mary Ainsworth’s Strange Situation (Attachment Styles):**\n  - **Secure Attachment:** Infant explores comfortably in mother's presence; distressed when mother departs; easily comforted upon her return. Fosters high self-esteem and healthy adult relationships.\n  - **Insecure-Avoidant:** Avoids intimacy; shows little distress upon maternal departure and ignores her return.\n  - **Insecure-Resistant / Ambivalent:** Clings anxious, becomes inconsolable when mother leaves, and pushes her away angrily upon return.\n- **Lawrence Kohlberg’s Levels of Moral Development:**\n  1. **Preconventional Morality (Children):** Self-interest; decisions guided by avoiding punishment (\"I won't steal because I'll go to jail\") or gaining concrete rewards.\n  2. **Conventional Morality (Adolescents):** Guided by social conformity (\"I want to be seen as a good boy/girl\") and upholding societal law and order (\"Stealing is against the law, so it is wrong\").\n  3. **Postconventional Morality (Adults):** Guided by abstract ethical principles, basic human rights, and internal universal justice that may supersede societal statutes."
+      },
+      {
+        "heading": "4. Piagetian Cognitive Stages & Vygotsky’s Sociocultural Model (CED 3.2)",
+        "content": "Master framework of cognitive maturation from infancy through abstract reasoning:\n\n* **Jean Piaget’s Constructivist Epistemology**:\n  * Children actively construct mental frameworks called **schemas** to organize experiences.\n  * **Assimilation**: Interpreting new experiences in terms of existing schemas (e.g., a toddler with a \"four-legged dog\" schema sees a cat and calls it a \"doggy\").\n  * **Accommodation**: Modifying existing schemas or creating new ones when incoming information disconfirms old rules (e.g., discovering cats meow and climb trees, adapting the schema to distinguish cats from dogs).\n* **Piaget’s Four Invariant Developmental Stages**:\n  * **1. Sensorimotor Stage (Birth to 2 years)**:\n    * Exploration through sensory perception and motor manipulation.\n    * Major milestone: **Object Permanence** (~8 months) — the realization that physical entities continue to exist even when hidden from sight.\n    * A-not-B error: Infants search for a hidden object where they previously found it (location A), even after seeing it moved to a new hiding place (location B).\n  * **2. Preoperational Stage (2 to 7 years)**:\n    * Symbolic thought emerges; language blossoms; pretend play.\n    * **Egocentrism**: Cognitive inability to perceive situations from another person’s visual or psychological perspective (Piaget’s Three-Mountain Task).\n    * **Animism**: Believing inanimate objects possess conscious feelings and intentions (\"The sidewalk was mad and tripped me\").\n    * **Centration & Lack of Conservation**: Fixating on one salient physical dimension while ignoring others; children fail **conservation tasks** (e.g., believing pouring liquid into a taller, thinner glass increases the amount of water).\n  * **3. Concrete Operational Stage (7 to 11 years)**:\n    * Mastery of **Conservation** (understanding mass, volume, and number remain constant despite superficial perceptual transformations).\n    * Development of **Reversibility** (mentally tracing mathematical operations backward).\n    * Logical reasoning tied strictly to tangible, concrete physical objects; struggle with purely abstract, hypothetical counterfactuals.\n  * **4. Formal Operational Stage (12 years through Adulthood)**:\n    * Abstract thinking, hypothetical-deductive reasoning, metacognition.\n    * Ability to systematically isolate variables in scientific experiments (Piaget’s Pendulum Task).\n* **Lev Vygotsky’s Sociocultural Cognitive Model**:\n  * Countered Piaget by arguing cognitive development is fundamentally driven by social dialogue and cultural mentors.\n  * **Zone of Proximal Development (ZPD)**: The cognitive gap between what a learner can accomplish independently and what they can achieve with skilled adult guidance.\n  * **Scaffolding (Jerome Bruner)**: Temporary pedagogical support structures provided by mentors that are progressively dismantled as the student gains mastery.\n  * **Private Speech**: Self-directed audible self-talk in young children that eventually internalizes into silent thought, serving as a tool for behavioral self-regulation."
+      },
+      {
+        "heading": "5. Erik Erikson’s Eight Psychosocial Lifespan Crises (CED 3.3)",
+        "content": "The comprehensive developmental continuum of ego identity across the human lifespan:\n\n| Stage & Approximate Age | Psychosocial Crisis / Conflict | Favorable Developmental Resolution (Ego Virtue) | Unfavorable Outcome / Maladaptive Pathology | Real-World Clinical Example |\n| :--- | :--- | :--- | :--- | :--- |\n| **Infancy** (0–1 yr) | **Trust vs. Mistrust** | **Hope**: Consistent, affectionate caretaking instills basic trust in the world. | Suspicion, chronic anxiety, apprehension toward environment. | An infant whose crying is consistently ignored fails to develop secure basic trust. |\n| **Early Childhood** (1–3 yrs) | **Autonomy vs. Shame & Doubt** | **Will**: Learning self-control and personal agency over motor choices. | Self-doubt, dependency, fear of failure. | Toddlers allowed to dress themselves gain autonomy; overly punitive potty training fosters shame. |\n| **Preschool** (3–6 yrs) | **Initiative vs. Guilt** | **Purpose**: Initiating tasks, planning games, asserting interpersonal power. | Guilt over desires, passivity, fear of reprimand. | Children who create their own imaginary games develop initiative. |\n| **School Age** (6–12 yrs) | **Industry vs. Inferiority** | **Competence**: Pride in mastering academic, athletic, and social skills. | Feelings of inadequacy, inferiority, defeatist attitude. | Receiving constructive feedback for schoolwork fosters a sense of productive industry. |\n| **Adolescence** (12–18 yrs) | **Identity vs. Role Confusion** | **Fidelity**: Integrating values, career goals, and personal identities. | Identity confusion, drifting, social alienation. | Teenagers exploring diverse peer groups, subcultures, and political values. |\n| **Young Adulthood** (20s–30s) | **Intimacy vs. Isolation** | **Love**: Capacity for profound emotional vulnerability and mutual commitment. | Social isolation, emotional guardedness, superficial bonds. | Forming deep romantic partnerships and enduring adult friendships. |\n| **Middle Adulthood** (40s–60s) | **Generativity vs. Stagnation** | **Care**: Mentoring the next generation, productive career, civic contribution. | Self-absorption, midlife crisis, stagnation, boredom. | Guiding younger colleagues at work or raising children fosters generativity. |\n| **Late Adulthood** (65+ yrs) | **Integrity vs. Despair** | **Wisdom**: Sense of fulfillment and acceptance when reviewing life achievements. | Regret, bitterness, despair over missed opportunities and mortality. | Elderly individuals looking back on their life trajectory with peaceful self-worth. |\n\n* **James Marcia’s Four Identity Statuses (Adolescence)**:\n  * **Identity Diffusion**: No crisis experienced, no commitment made; carefree apathy or confusion.\n  * **Identity Foreclosure**: Commitment made to an identity without exploring alternatives (adopting parents' religion/career without question).\n  * **Identity Moratorium**: Active state of crisis and exploration without having made a firm commitment.\n  * **Identity Achievement**: Successfully explored multiple life paths and committed independently to chosen values and goals."
+      },
+      {
+        "heading": "6. Kohlberg’s Moral Stages & Gilligan’s Ethic of Care (CED 3.4)",
+        "content": "The cognitive progression of moral reasoning and ethical decision-making:\n\n* **Lawrence Kohlberg’s Heinz Dilemma**:\n  * Heinz’s wife is dying of rare cancer. A local druggist charges $2000 for a cure that costs $200 to produce. Heinz cannot afford it, and the druggist refuses to negotiate. Heinz breaks into the store to steal the drug.\n  * **CRITICAL AP EXAM NOTE**: Kohlberg did NOT care whether a subject answered that Heinz *should* or *should not* steal the medicine. The score depends purely on the **structural moral reasoning** behind the justification!\n* **Kohlberg’s Three Levels & Six Stages of Moral Development**:\n  * **Level 1: Preconventional Morality (Typical of young children; self-centered consequences)**:\n    * *Stage 1: Punishment and Obedience Orientation*: Rules obeyed strictly to avoid direct physical punishment (\"Don't steal, you'll go to jail\").\n    * *Stage 2: Instrumental Relativist / Self-Interest*: Decisions driven by reciprocal personal benefit (\"Heinz should steal it so his wife can cook for him\"; \"You scratch my back, I scratch yours\").\n  * **Level 2: Conventional Morality (Early adolescence; societal laws and conformity)**:\n    * *Stage 3: Interpersonal Concordance (\"Good Boy / Nice Girl\")*: Actions guided by winning social approval and avoiding peer disapproval (\"Steal it so people don't think you're a heartless husband\").\n    * *Stage 4: Law and Order / Authority Orientation*: Moral duty to maintain social order and respect authority without exception (\"Stealing is illegal; if everyone broke laws when desperate, society would collapse\").\n  * **Level 3: Postconventional Morality (Abstract universal ethics; achieved by a minority of adults)**:\n    * *Stage 5: Social Contract Orientation*: Laws are social contracts that should be democratic and flexible; if a law violates human rights, it must be reformed (\"Human life transcends property rights\").\n    * *Stage 6: Universal Ethical Principles*: Conscience governed by self-chosen abstract ethical principles of universal justice and equality, regardless of legal statutes or personal risk.\n* **Carol Gilligan’s Critique of Kohlberg**:\n  * Pointed out that Kohlberg’s original sample consisted entirely of privileged males.\n  * Postulated that males gravitate toward an **Ethic of Justice** (abstract rules, rights, and legalistic hierarchies), whereas females frequently socialized toward an **Ethic of Care** (preserving interpersonal relationships, empathy, and mitigating harm to loved ones). Demonstrates that differing moral frameworks are valid, not inferior."
+      },
+      {
+        "heading": "7. Attachment Paradigms, Harlow’s Monkeys & Parenting Styles (CED 3.5)",
+        "content": "Social-emotional bonding in early childhood and long-term socioemotional consequences:\n\n* **Harry Harlow’s Surrogate Mother Experiments (1958)**:\n  * Separated infant rhesus macaques from biological mothers; placed them with two artificial surrogates: a bare wire mother dispensing milk, and a soft terrycloth mother providing no food.\n  * **Finding**: The monkeys spent 17–18 hours a day clinging to the cloth mother, only visiting the wire mother briefly to feed.\n  * **Conclusion**: Proved attachment is driven primarily by **Contact Comfort**, thoroughly dismantling the behaviorist belief that infant bonding is merely a secondary drive conditioned by food reward.\n* **Mary Ainsworth’s Strange Situation Paradigm**:\n  * Observed 1-year-old infants in a playroom during a sequence of separations and reunions with mother and an unfamiliar stranger:\n  * **1. Secure Attachment (~65%)**:\n    * Explores freely with mother present; shows distress when mother departs; readily comforted upon her return.\n    * Etiology: Sensitive, responsive, attuned caregiving. Leads to higher resilience and social competence in adult relationships.\n  * **2. Insecure-Avoidant Attachment (~20%)**:\n    * Explores without referencing mother; shows minimal overt distress when she leaves; actively avoids or ignores her upon reunion.\n    * Etiology: Cold, rejecting, or over-stimulating caregiving.\n  * **3. Insecure-Ambivalent / Resistant Attachment (~10–15%)**:\n    * Anxiously clings to mother; extremely distressed by separation; upon reunion, seeks contact but angrily pushes mother away, inconsolable.\n    * Etiology: Inconsistent, unpredictable parental responsiveness.\n  * **4. Disorganized-Disoriented Attachment (<5%)**:\n    * Shows dazed, confused, fearful, or contradictory behaviors upon reunion (freezing, approaching while looking away).\n    * Etiology: Severe neglect, abuse, or frightened/frightening parental behavior.\n* **Diana Baumrind’s Four Parenting Styles**:\n  * Evaluated along two axes: **Demandingness / Control** and **Responsiveness / Warmth**:\n  * **Authoritative (High Control, High Warmth)**: Sets clear, consistent boundaries while explaining rationale; open discussion and emotional warmth. Correlated with the highest academic self-esteem, autonomy, and social competence.\n  * **Authoritarian (High Control, Low Warmth)**: Rigid rules, expects blind obedience, relies on punitive discipline (\"Because I said so!\"). Children often exhibit anxiety, low self-esteem, and rebellious defiance outside the home.\n  * **Permissive / Indulgent (Low Control, High Warmth)**: Highly affectionate but sets few rules or demands; acts as a peer rather than parent. Children prone to poor impulse control, impulsivity, and entitlement.\n  * **Neglectful / Uninvolved (Low Control, Low Warmth)**: Emotionally detached, absent, indifferent to child’s needs. Associated with severe academic and socioemotional deficits."
       }
     ],
-    workedExamples: [
+    "workedExamples": [
       {
-        title: 'Classifying Operant Schedules and Conditioning Mechanisms',
-        topicRef: 'CED 3.2 Operant Conditioning Schedules',
-        question: 'Identify the reinforcement schedule in each scenario: (1) A telemarketer receives a commission after an unpredictable number of successful sales calls. (2) A student receives a grade every Friday after submitting weekly homework.',
-        solutionSteps: [
-          'Step 1: Scenario 1 - Check if reinforcer depends on number of responses or time elapsed: Depends on number of sales calls $\\implies$ Ratio schedule.',
-          'Step 2: Check if predictability is constant or variable: Unpredictable number $\\implies$ **Variable-Ratio (VR)**.',
-          'Step 3: Scenario 2 - Check dependency: Depends on time elapsed (every Friday) $\\implies$ Interval schedule.',
-          'Step 4: Check predictability: Set, predictable time every week $\\implies$ **Fixed-Interval (FI)**.'
+        "title": "Classifying Operant Schedules and Conditioning Mechanisms",
+        "topicRef": "CED 3.2 Operant Conditioning Schedules",
+        "question": "Identify the reinforcement schedule in each scenario: (1) A telemarketer receives a commission after an unpredictable number of successful sales calls. (2) A student receives a grade every Friday after submitting weekly homework.",
+        "solutionSteps": [
+          "Step 1: Scenario 1 - Check if reinforcer depends on number of responses or time elapsed: Depends on number of sales calls $\\implies$ Ratio schedule.",
+          "Step 2: Check if predictability is constant or variable: Unpredictable number $\\implies$ **Variable-Ratio (VR)**.",
+          "Step 3: Scenario 2 - Check dependency: Depends on time elapsed (every Friday) $\\implies$ Interval schedule.",
+          "Step 4: Check predictability: Set, predictable time every week $\\implies$ **Fixed-Interval (FI)**."
         ],
-        finalAnswer: '(1) Variable-Ratio (VR) schedule. (2) Fixed-Interval (FI) schedule.',
-        apScoringTip: 'Remember: Ratio = Number of behaviors; Interval = Clock/Time elapsed. Variable = Average/Unpredictable; Fixed = Set/Consistent.'
+        "finalAnswer": "(1) Variable-Ratio (VR) schedule. (2) Fixed-Interval (FI) schedule.",
+        "apScoringTip": "Remember: Ratio = Number of behaviors; Interval = Clock/Time elapsed. Variable = Average/Unpredictable; Fixed = Set/Consistent."
       }
     ],
-    diagrams: [
+    "diagrams": [
       {
-        id: 'reinforcement_schedules',
-        title: 'Cumulative Response Graph for Reinforcement Schedules',
-        subtitle: 'Variable-Ratio vs. Fixed-Ratio vs. Variable-Interval vs. Fixed-Interval',
-        type: 'reinforcement_curves',
-        description: 'Graph showing steep, steady response line for Variable-Ratio (slot machine), scalloped pause-and-burst curve for Fixed-Interval (studying before Friday exam).',
-        takeaway: 'Variable-Ratio yields the highest sustained response rate and is the most resistant to extinction.'
+        "id": "reinforcement_schedules",
+        "title": "Cumulative Response Graph for Reinforcement Schedules",
+        "subtitle": "Variable-Ratio vs. Fixed-Ratio vs. Variable-Interval vs. Fixed-Interval",
+        "type": "reinforcement_curves",
+        "description": "Graph showing steep, steady response line for Variable-Ratio (slot machine), scalloped pause-and-burst curve for Fixed-Interval (studying before Friday exam).",
+        "takeaway": "Variable-Ratio yields the highest sustained response rate and is the most resistant to extinction."
       }
     ],
-    commonTraps: [
-      'Assuming "negative reinforcement" means punishment. Reinforcement always increases behavior; negative means removing something averse.',
-      'Confusing Piaget’s assimilation with accommodation. Assimilation = interpreting new experiences into existing schemas (calling a moose a "cow"). Accommodation = changing the schema to incorporate new information (creating a separate "moose" category).',
-      'Thinking Bandura’s Bobo doll experiment proved only that kids copy aggression. It proved vicarious reinforcement—children were more aggressive when the model was rewarded, and restrained when the model was punished.'
+    "commonTraps": [
+      "Assuming \"negative reinforcement\" means punishment. Reinforcement always increases behavior; negative means removing something averse.",
+      "Confusing Piaget’s assimilation with accommodation. Assimilation = interpreting new experiences into existing schemas (calling a moose a \"cow\"). Accommodation = changing the schema to incorporate new information (creating a separate \"moose\" category).",
+      "Thinking Bandura’s Bobo doll experiment proved only that kids copy aggression. It proved vicarious reinforcement—children were more aggressive when the model was rewarded, and restrained when the model was punished."
     ],
-    cramSheet: [
-      'Classical conditioning = involuntary associations (Pavlov); Operant = voluntary behaviors & consequences (Skinner).',
-      'Positive = ADD; Negative = REMOVE; Reinforce = INCREASE; Punish = DECREASE.',
-      'Schedules: VR (gambling, highest rate), FR (piecework), VI (pop quiz), FI (weekly paycheck).',
-      'Piaget stages: Sensorimotor $\\rightarrow$ Preoperational $\\rightarrow$ Concrete $\\rightarrow$ Formal.',
-      'Harlow monkey study: Contact comfort is preferred over food/nourishment alone.'
+    "cramSheet": [
+      "Classical conditioning = involuntary associations (Pavlov); Operant = voluntary behaviors & consequences (Skinner).",
+      "Positive = ADD; Negative = REMOVE; Reinforce = INCREASE; Punish = DECREASE.",
+      "Schedules: VR (gambling, highest rate), FR (piecework), VI (pop quiz), FI (weekly paycheck).",
+      "Piaget stages: Sensorimotor $\\rightarrow$ Preoperational $\\rightarrow$ Concrete $\\rightarrow$ Formal.",
+      "Harlow monkey study: Contact comfort is preferred over food/nourishment alone."
     ]
   },
-
-  // ==========================================
-  // UNIT 4: SOCIAL PSYCHOLOGY & PERSONALITY
-  // ==========================================
   {
-    unitId: 'u4',
-    unitNumber: 4,
-    title: 'Social Psychology & Personality',
-    examWeight: '16%–22% of AP Exam',
-    bigIdea: 'Social environments, group dynamics, attribution biases, and personality traits dynamically govern interpersonal behavior and conformity.',
-    keyTheorems: [
+    "unitId": "u4",
+    "unitNumber": 4,
+    "title": "Social Psychology & Personality",
+    "examWeight": "16%–22% of AP Exam",
+    "bigIdea": "Social environments, group dynamics, attribution biases, and personality traits dynamically govern interpersonal behavior and conformity.",
+    "keyTheorems": [
       {
-        name: 'The Fundamental Attribution Error (FAE)',
-        conditions: 'Explaining the observed behaviors of others versus ourselves.',
-        conclusion: 'When analyzing others’ behavior, observers systematically overestimate dispositional (internal personality) traits and underestimate situational (external environmental) factors. For our own failures, the Actor-Observer Bias and Self-Serving Bias cause us to blame external circumstances while crediting internal traits for our successes.',
-        apTip: 'If someone cuts you off in traffic, thinking "They are a reckless jerk" is the Fundamental Attribution Error. Acknowledging "Maybe their passenger has a medical emergency" accounts for the situational factor.'
+        "name": "The Fundamental Attribution Error (FAE)",
+        "conditions": "Explaining the observed behaviors of others versus ourselves.",
+        "conclusion": "When analyzing others’ behavior, observers systematically overestimate dispositional (internal personality) traits and underestimate situational (external environmental) factors. For our own failures, the Actor-Observer Bias and Self-Serving Bias cause us to blame external circumstances while crediting internal traits for our successes.",
+        "apTip": "If someone cuts you off in traffic, thinking \"They are a reckless jerk\" is the Fundamental Attribution Error. Acknowledging \"Maybe their passenger has a medical emergency\" accounts for the situational factor."
       },
       {
-        name: 'Milgram Obedience & Asch Conformity Experiments',
-        conditions: 'Social pressure from authority figures or unanimous peer groups.',
-        conclusion: 'Solomon Asch proved ~75% of participants conform to an obviously incorrect unanimous group line judgment at least once. Stanley Milgram proved ~65% of normal adult participants delivered maximum lethal-level 450-volt shocks to an innocent learner under direct commands from an authoritative experimenter in a white lab coat.',
-        apTip: 'Obedience drops dramatically when the authority figure is physically distant, when the victim is visible in the same room, or when an ally rebels.'
+        "name": "Milgram Obedience & Asch Conformity Experiments",
+        "conditions": "Social pressure from authority figures or unanimous peer groups.",
+        "conclusion": "Solomon Asch proved ~75% of participants conform to an obviously incorrect unanimous group line judgment at least once. Stanley Milgram proved ~65% of normal adult participants delivered maximum lethal-level 450-volt shocks to an innocent learner under direct commands from an authoritative experimenter in a white lab coat.",
+        "apTip": "Obedience drops dramatically when the authority figure is physically distant, when the victim is visible in the same room, or when an ally rebels."
       }
     ],
-    formulas: [
+    "formulas": [
       {
-        name: 'Cognitive Dissonance Resolution Model (Festinger)',
-        latex: '\\Delta \\text{Dissonance} = |\\text{Belief} - \\text{Behavior}| \\implies \\text{Align Beliefs to Match Behavior}',
-        explanation: 'When behavior conflicts with internal beliefs, individuals experience psychological discomfort and rationalize by altering their beliefs.'
+        "name": "Cognitive Dissonance Resolution Model (Festinger)",
+        "latex": "\\Delta \\text{Dissonance} = |\\text{Belief} - \\text{Behavior}| \\implies \\text{Align Beliefs to Match Behavior}",
+        "explanation": "When behavior conflicts with internal beliefs, individuals experience psychological discomfort and rationalize by altering their beliefs."
       }
     ],
-    sections: [
+    "sections": [
       {
-        heading: '1. Group Dynamics and Social Influence Matrix',
-        content: `Key social psychological phenomena:
-
-| Phenomenon | Definition | Real-World / Experimental Example |
-| :--- | :--- | :--- |
-| **Social Facilitation** | Improved performance on simple/well-learned tasks in the presence of an audience | A skilled violinist plays faster and more accurately in front of a packed concert hall |
-| **Social Loafing** | Tendency to exert less effort when pooling efforts toward a common group goal | Group project where one student slacks off because individual contributions are not measured |
-| **Deindividuation** | Loss of self-awareness and self-restraint in anonymous, high-arousal group settings | Rioting fans overturning cars, cyberbullying behind anonymous usernames, KKK hoods |
-| **Group Polarization** | Enhancement of a group's prevailing inclinations through mutual discussion | A group of moderately eco-friendly students becomes radical activists after discussing climate policy |
-| **Groupthink** | Mode of thinking that occurs when desire for harmony overrides realistic appraisal | Bay of Pigs invasion, Challenger shuttle launch; dissenting voices remain silent |
-| **Bystander Effect** | Tendency for any given bystander to be less likely to give aid if other bystanders are present | Kitty Genovese case; diffusion of responsibility ("Someone else will call 911") |`
-      }
-    ,
+        "heading": "1. Group Dynamics and Social Influence Matrix",
+        "content": "Key social psychological phenomena:\n\n| Phenomenon | Definition | Real-World / Experimental Example |\n| :--- | :--- | :--- |\n| **Social Facilitation** | Improved performance on simple/well-learned tasks in the presence of an audience | A skilled violinist plays faster and more accurately in front of a packed concert hall |\n| **Social Loafing** | Tendency to exert less effort when pooling efforts toward a common group goal | Group project where one student slacks off because individual contributions are not measured |\n| **Deindividuation** | Loss of self-awareness and self-restraint in anonymous, high-arousal group settings | Rioting fans overturning cars, cyberbullying behind anonymous usernames, KKK hoods |\n| **Group Polarization** | Enhancement of a group's prevailing inclinations through mutual discussion | A group of moderately eco-friendly students becomes radical activists after discussing climate policy |\n| **Groupthink** | Mode of thinking that occurs when desire for harmony overrides realistic appraisal | Bay of Pigs invasion, Challenger shuttle launch; dissenting voices remain silent |\n| **Bystander Effect** | Tendency for any given bystander to be less likely to give aid if other bystanders are present | Kitty Genovese case; diffusion of responsibility (\"Someone else will call 911\") |"
+      },
       {
-        heading: '2. The Big Five Traits & Classic Social Influence Experiments (CED 4.3 & 4.4)',
-        content: `Trait personality models and landmark social psychological paradigms:
-
-* **The Big Five Personality Dimensions (OCEAN Trait Model)**:
-  * **O - Openness to Experience**: Curiosity, intellectual exploration, and artistic appreciation vs. conventionality.
-  * **C - Conscientiousness**: Self-discipline, organization, dependability, and goal-directed persistence.
-  * **E - Extraversion**: Sociability, assertiveness, talkativeness, and outward energy stimulation.
-  * **A - Agreeableness**: Empathy, trust, cooperativeness, and altruistic concern for others.
-  * **N - Neuroticism**: Emotional instability, anxiety, vulnerability to stress, and negative emotionality.
-* **Landmark Social Psychology Experiments**:
-  * **Stanley Milgram (Obedience Study)**: Over $65\%$ of ordinary participants complied with instructions from a perceived legitimate authority figure to administer what they believed were dangerous $450\\text{V}$ electric shocks to an innocent confederate.
-  * **Solomon Asch (Conformity Study)**: Over $75\%$ of participants conformed to an obviously erroneous majority line-judgment at least once, demonstrating **normative social influence** (desire to gain social approval and avoid rejection).
-  * **Philip Zimbardo (Stanford Prison Experiment)**: Healthy college students randomly assigned to roles of guards or prisoners rapidly internalized simulated social roles, illustrating the power of situational demands and **deindividuation**.`
+        "heading": "2. The Big Five Traits & Classic Social Influence Experiments (CED 4.3 & 4.4)",
+        "content": "Trait personality models and landmark social psychological paradigms:\n\n* **The Big Five Personality Dimensions (OCEAN Trait Model)**:\n  * **O - Openness to Experience**: Curiosity, intellectual exploration, and artistic appreciation vs. conventionality.\n  * **C - Conscientiousness**: Self-discipline, organization, dependability, and goal-directed persistence.\n  * **E - Extraversion**: Sociability, assertiveness, talkativeness, and outward energy stimulation.\n  * **A - Agreeableness**: Empathy, trust, cooperativeness, and altruistic concern for others.\n  * **N - Neuroticism**: Emotional instability, anxiety, vulnerability to stress, and negative emotionality.\n* **Landmark Social Psychology Experiments**:\n  * **Stanley Milgram (Obedience Study)**: Over $65%$ of ordinary participants complied with instructions from a perceived legitimate authority figure to administer what they believed were dangerous $450\\text{V}$ electric shocks to an innocent confederate.\n  * **Solomon Asch (Conformity Study)**: Over $75%$ of participants conformed to an obviously erroneous majority line-judgment at least once, demonstrating **normative social influence** (desire to gain social approval and avoid rejection).\n  * **Philip Zimbardo (Stanford Prison Experiment)**: Healthy college students randomly assigned to roles of guards or prisoners rapidly internalized simulated social roles, illustrating the power of situational demands and **deindividuation**."
+      },
+      {
+        "heading": "3. Social Thinking, Attribution Traps & Cognitive Dissonance (CED 4.1–4.4)",
+        "content": "How individuals interpret the causes of human behaviors:\n- **Attribution Theory (Fritz Heider):**\n  - **Dispositional (Internal) Attribution:** Explaining behavior through personality traits, abilities, or motives.\n  - **Situational (External) Attribution:** Explaining behavior through environmental pressures or context.\n- **Cognitive Attribution Biases on AP Exam:**\n  - **Fundamental Attribution Error (FAE):** The pervasive tendency for observers to underestimate situational influences and overestimate internal dispositional factors when analyzing *another person's* behavior (e.g. assuming a rude cashier is inherently mean, rather than overworked).\n  - **Self-Serving Bias:** Attributing one's own personal successes to internal dispositions (\"I got an A because I am brilliant\") while blaming failures on external situations (\"I failed because the test was unfair\").\n  - **Just-World Phenomenon:** Believing the world is just and people get what they deserve, frequently leading to victim-blaming.\n- **Cognitive Dissonance Theory (Leon Festinger):**\n  - The psychological discomfort experienced when holding contradictory cognitions or when behavior conflicts with attitudes.\n  - To alleviate dissonance, individuals rarely change their past behavior; instead, they **alter their internal attitudes** to justify the behavior!"
+      },
+      {
+        "heading": "4. Conformity, Obedience & Group Dynamics (CED 4.5–4.8)",
+        "content": "Social influence experiments and group behavior phenomena:\n- **Seminal Social Influence Studies:**\n  - **Solomon Asch (Conformity):** Demonstrated that subjects conformed to obviously incorrect perceptual judgments of line lengths $\\sim 37\\%$ of the time when faced with a unanimous group of confederates.\n    - *Normative Social Influence:* Conforming to gain social approval or avoid rejection.\n    - *Informational Social Influence:* Conforming because one believes the group has superior knowledge.\n  - **Stanley Milgram (Obedience):** Over $65\\%$ of normal participants delivered maximum, potentially lethal $450\\text{-volt}$ electric shocks to a learner when instructed by an authoritative experimenter in a lab coat. Obedience was highest when the authority figure was nearby and legitimate.\n- **Group Dynamics in Action:**\n  - **Social Facilitation:** Presence of others enhances performance on simple/well-learned tasks, but impairs performance on complex/new tasks (Social Inhibition).\n  - **Social Loafing:** Individuals exert less personal effort when pooling contributions toward a group goal than when held individually accountable.\n  - **Group Polarization:** Group discussions among like-minded individuals intensify their prevailing opinions, driving them toward more extreme positions.\n  - **Groupthink (Irving Janis):** Desire for group harmony suppresses realistic appraisal of alternatives, leading to disastrous collective decisions.\n  - **Bystander Effect & Diffusion of Responsibility:** The presence of other onlookers decreases the likelihood that any single individual will intervene to help a victim."
+      },
+      {
+        "heading": "5. Personality Theories: Psychodynamic, Trait & Social-Cognitive (CED 4.9–4.12)",
+        "content": "Major psychological models of personality structure:\n- **Freud’s Psychodynamic Model:**\n  - **Id:** Primitive, unconscious; operates on the **Pleasure Principle** (immediate gratification).\n  - **Ego:** Conscious, rational mediator; operates on the **Reality Principle**.\n  - **Superego:** Moral conscience and internalized societal ideals.\n  - *Ego Defense Mechanisms:* Repression (banishing anxiety to unconscious), Projection (attributing own unacceptable impulses to others), Displacement (redirecting anger onto safer targets), Reaction Formation (displaying opposite emotion), Sublimation (channeling impulses into socially valued creative activities).\n- **The Trait Perspective & The Big Five (OCEAN):**\n  - **O**penness to experience (curiosity, imagination vs. routine).\n  - **C**onscientiousness (discipline, organization vs. carelessness).\n  - **E**xtraversion (sociability, assertiveness vs. introversion/solitude).\n  - **A**greeableness (compassion, trust vs. skepticism/antagonism).\n  - **N**euroticism (emotional instability, anxiety vs. calm resilience).\n- **Bandura’s Social-Cognitive Theory & Reciprocal Determinism:**\n  - Personality is forged by continuous mutual interaction among cognitive factors, behavioral choices, and environmental contexts."
+      },
+      {
+        "heading": "4. Landmark Social Psychology Empirical Paradigms & Ethical Milestones (CED 4.1)",
+        "content": "The gold-standard experiments illustrating the immense power of situational forces over individual behavior:\n\n* **Solomon Asch Conformity Experiments (1951)**:\n  * Participants judged which of three comparison lines matched a standard line. Confederates unanimously gave the wrong answer on critical trials.\n  * **Finding**: Over 75% of participants conformed to the obviously incorrect majority on at least one trial; overall conformity rate was 37%.\n  * **Factors affecting conformity**: Unanimity of the group (a single dissenting ally reduced conformity by 80%), group size (conformity peaked at 3–5 confederates), and public vs. private responding.\n  * **Normative Social Influence**: Conforming to gain social acceptance or avoid ostracism.\n  * **Informational Social Influence**: Conforming because we believe the group possesses superior knowledge in an ambiguous situation.\n* **Stanley Milgram Obedience Studies (1963)**:\n  * Deceived subjects into believing they were \"teachers\" delivering escalating electric shocks (15V to 450V \"XXX\") to a \"learner\" (confederate) for incorrect answers.\n  * **Prediction**: Psychiatrists predicted fewer than 1% (only clinical psychopaths) would administer the maximum 450V shock.\n  * **Result**: **65% of participants delivered the lethal 450V maximum shock**, obeying the experimenter’s standard prods (\"The experiment requires that you continue\").\n  * **Boundary Conditions**: Obedience dropped dramatically when the experimenter gave orders by phone (20%), when the teacher had to physically hold the learner’s hand onto the shock plate (30%), or when an ordinary person gave instructions instead of a lab-coated authority (20%).\n* **Philip Zimbardo’s Stanford Prison Experiment (1971)**:\n  * 24 psychologically healthy male college students randomly assigned to play \"guards\" or \"prisoners\" in a mock basement prison.\n  * Demonstrates the corrosive power of **Social Roles** and **Deindividuation**: Guards rapidly adopted abusive, sadistic tactics; prisoners became submissive and showed acute emotional breakdowns. The study was aborted after only 6 days (scheduled for 14).\n* **John Darley & Bibb Latané Bystander Effect Studies (1968)**:\n  * Prompted by the murder of Kitty Genovese. Tested college students in intercom discussions where an actor faked an epileptic seizure.\n  * **Finding**: 85% of subjects who believed they were alone rushed to help within 1 minute; only 31% responded when they believed four other students heard the emergency.\n  * **Mechanisms**:\n    * **Diffusion of Responsibility**: The psychological burden of taking action divides across all observers; each individual feels less personal culpability.\n    * **Pluralistic Ignorance**: In ambiguous emergencies, bystanders look to others; seeing everyone calm, they mistakenly infer no emergency exists."
+      },
+      {
+        "heading": "5. Attribution Dynamics, Cognitive Dissonance & Persuasion Routes (CED 4.2)",
+        "content": "How individuals interpret social causes, resolve internal hypocrisy, and are persuaded:\n\n* **Attribution Theory (Fritz Heider & Harold Kelley)**:\n  * **Dispositional (Internal) Attribution**: Attributing behavior to enduring personality traits, motives, or abilities.\n  * **Situational (External) Attribution**: Attributing behavior to environmental context, luck, or peer pressure.\n  * **Fundamental Attribution Error (FAE)**: The universal cognitive tendency for observers to underestimate situational influences and overestimate dispositional traits when judging *others'* undesirable actions (e.g., seeing a driver cut you off and concluding they are an aggressive jerk, rather than considering they might be rushing to an emergency room).\n  * **Actor-Observer Bias**: Attributing our own failures to situational constraints (\"I was late because of traffic\"), but attributing others’ identical failures to personality flaws (\"They were late because they are irresponsible\").\n  * **Self-Serving Bias**: Attributing personal successes to internal dispositions (\"I got an A because I am brilliant\"), while attributing personal failures to external situations (\"I failed because the teacher made an unfair test\").\n  * **Just-World Phenomenon**: The cognitive belief that the world is fundamentally fair, leading to the dangerous error of blaming the victim for their misfortune (\"Bad things only happen to bad people\").\n* **Leon Festinger’s Theory of Cognitive Dissonance (1957)**:\n  * Psychological discomfort experienced when holding two contradictory beliefs or when behavior conflicts with an attitude.\n  * **Classic $1 vs. $20 Experiment (Festinger & Carlsmith, 1959)**:\n    * Subjects performed a mind-numbing peg-turning task for an hour.\n    * Paid either $1 or $20 to lie to the next participant that the task was thrilling and fun.\n    * **Result**: Those paid $1 later rated the task as genuinely enjoyable, whereas those paid $20 admitted it was boring!\n    * **Explanation**: The $20 group had ample *external justification* for lying (\"I did it for the cash\"). The $1 group lacked sufficient external justification, causing intense dissonance (\"I wouldn't lie for a single dollar; therefore, the task must actually have been interesting\"), resolving dissonance by altering their internal attitude!\n* **Dual-Process Persuasion: Elaboration Likelihood Model (Petty & Cacioppo)**:\n  * **Central Route to Persuasion**: Focuses on substantive arguments, data, logic, and scientific facts. Highly effective when the audience is motivated, analytical, and invested. Produces enduring, attitude changes.\n  * **Peripheral Route to Persuasion**: Relies on superficial cues, emotional appeals, celebrity endorsements, attractive spokespeople, and catchy music. Effective when the audience is distracted or uninterested. Produces rapid, transient attitude changes."
+      },
+      {
+        "heading": "6. Psychodynamic, Humanistic & Trait Personality Theories (CED 4.3)",
+        "content": "The three major theoretical pillars of human personality architecture:\n\n* **Sigmund Freud’s Psychoanalytic Architecture**:\n  * **Id**: Present at birth; unconscious; operates entirely on the **Pleasure Principle** (immediate gratification of instinctual sexual [Eros] and aggressive [Thanatos] drives).\n  * **Ego**: Develops during infancy; conscious/preconscious; operates on the **Reality Principle** (mediates between id impulses and superego moral demands).\n  * **Superego**: Emerges around age 4–5; moral conscience; internalizes societal and parental values.\n  * **Freudian Ego Defense Mechanisms**:\n    * **Repression**: Pushing threatening thoughts into the unconscious (the foundation of all defense mechanisms).\n    * **Projection**: Attributing one's own unacceptable impulses onto others (e.g., an unfaithful partner accusing their spouse of cheating).\n    * **Reaction Formation**: Unconsciously switching unacceptable impulses into their exact opposites (e.g., being excessively friendly to someone you despise).\n    * **Displacement**: Shifting aggressive impulses toward a less threatening target (e.g., getting yelled at by a boss and coming home to kick the dog).\n    * **Sublimation**: Channeling unacceptable impulses into socially praiseworthy outlets (e.g., channeling aggressive energy into contact sports or surgical careers).\n    * **Rationalization**: Generating self-justifying excuses to obscure the true unconscious motive.\n    * **Regression**: Retreating to an earlier psychosexual infantile stage of behavior under acute stress (e.g., a thumb-sucking tantrum).\n* **Carl Rogers & Abraham Maslow’s Humanistic Perspective**:\n  * Emphasizes conscious self-determination, free will, human potential, and healthy growth.\n  * **Maslow’s Hierarchy of Needs**: Physiological $\\rightarrow$ Safety $\\rightarrow$ Belongingness $\\rightarrow$ Esteem $\\rightarrow$ Self-Actualization (reaching one's fullest potential).\n  * **Carl Rogers’ Person-Centered Theory**:\n    * Core postulate: Healthy development requires **Unconditional Positive Regard** (complete acceptance without preconditions from mentors).\n    * **Congruence vs. Incongruence**: Congruence occurs when the *Real Self* aligns closely with the *Ideal Self*, producing self-worth; incongruence breeds neurosis.\n* **The Trait Perspective & The Big Five (Five-Factor Model - OCEAN)**:\n  * **Openness to Experience**: Imaginative, intellectually curious, artistic vs. practical, conventional, routine-bound.\n  * **Conscientiousness**: Organized, disciplined, goal-driven, dependable vs. impulsive, disorganized, careless.\n  * **Extraversion**: Sociable, assertive, energetic, outgoing vs. reserved, solitary, introspective.\n  * **Agreeableness**: Trusting, compassionate, cooperative, empathetic vs. suspicious, competitive, antagonistic.\n  * **Neuroticism (Emotional Instability)**: Anxious, insecure, emotionally reactive vs. calm, poised, emotionally stable.\n  * Tested via objective inventories like the **NEO-PI-R** or the **MMPI-2** (Minnesota Multiphasic Personality Inventory, which features validity scales to catch faking)."
       }
     ],
-    workedExamples: [
+    "workedExamples": [
       {
-        title: 'Evaluating the Big Five Personality Inventory (OCEAN)',
-        topicRef: 'CED 4.4 Trait Theories of Personality',
-        question: 'A candidate scores high in Openness and Conscientiousness, moderate in Extraversion, and low in Neuroticism. Describe their characteristic workplace behaviors.',
-        solutionSteps: [
-          'Step 1: Openness (High): Highly imaginative, curious, receptive to novel ideas, intellectual variety.',
-          'Step 2: Conscientiousness (High): Organized, disciplined, dependable, detail-oriented, goal-driven.',
-          'Step 3: Extraversion (Moderate): Balanced between collaborative team projects and quiet independent focus.',
-          'Step 4: Neuroticism (Low): Emotionally stable, calm under intense pressure, resilient against anxiety.',
-          'Step 5: Synthesize workplace profile: An innovative, highly organized, and emotionally composed project leader.'
+        "title": "Evaluating the Big Five Personality Inventory (OCEAN)",
+        "topicRef": "CED 4.4 Trait Theories of Personality",
+        "question": "A candidate scores high in Openness and Conscientiousness, moderate in Extraversion, and low in Neuroticism. Describe their characteristic workplace behaviors.",
+        "solutionSteps": [
+          "Step 1: Openness (High): Highly imaginative, curious, receptive to novel ideas, intellectual variety.",
+          "Step 2: Conscientiousness (High): Organized, disciplined, dependable, detail-oriented, goal-driven.",
+          "Step 3: Extraversion (Moderate): Balanced between collaborative team projects and quiet independent focus.",
+          "Step 4: Neuroticism (Low): Emotionally stable, calm under intense pressure, resilient against anxiety.",
+          "Step 5: Synthesize workplace profile: An innovative, highly organized, and emotionally composed project leader."
         ],
-        finalAnswer: 'A disciplined, creative, and calm professional who handles stress effectively and delivers structured innovation.',
-        apScoringTip: 'Remember the OCEAN acronym: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism.'
+        "finalAnswer": "A disciplined, creative, and calm professional who handles stress effectively and delivers structured innovation.",
+        "apScoringTip": "Remember the OCEAN acronym: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism."
       }
     ],
-    diagrams: [
+    "diagrams": [
       {
-        id: 'bystander_diffusion',
-        title: 'The Bystander Effect and Diffusion of Responsibility',
-        subtitle: 'Probability of Helping as a Function of Group Size',
-        type: 'bystander_curve',
-        description: 'Bar graph showing lone bystanders helping within 45 seconds (85% intervention rate) dropping to under 30% when in groups of 5 or more.',
-        takeaway: 'As group size grows, individual responsibility diffuses, paralyzing prosocial action.'
+        "id": "bystander_diffusion",
+        "title": "The Bystander Effect and Diffusion of Responsibility",
+        "subtitle": "Probability of Helping as a Function of Group Size",
+        "type": "bystander_curve",
+        "description": "Bar graph showing lone bystanders helping within 45 seconds (85% intervention rate) dropping to under 30% when in groups of 5 or more.",
+        "takeaway": "As group size grows, individual responsibility diffuses, paralyzing prosocial action."
       }
     ],
-    commonTraps: [
-      'Confusing deindividuation with social loafing. Deindividuation = anonymous bad behavior (rioting); Social Loafing = slacking off on group work.',
-      'Confusing foot-in-the-door (small request first $\\rightarrow$ larger request later) with door-in-the-face (unreasonable huge request first rejected $\\rightarrow$ compromise smaller request accepted).',
-      'Assuming Milgram tested conformity. Milgram tested OBEDIENCE to authority; Asch tested CONFORMITY to peers.'
+    "commonTraps": [
+      "Confusing deindividuation with social loafing. Deindividuation = anonymous bad behavior (rioting); Social Loafing = slacking off on group work.",
+      "Confusing foot-in-the-door (small request first $\\rightarrow$ larger request later) with door-in-the-face (unreasonable huge request first rejected $\\rightarrow$ compromise smaller request accepted).",
+      "Assuming Milgram tested conformity. Milgram tested OBEDIENCE to authority; Asch tested CONFORMITY to peers."
     ],
-    cramSheet: [
-      'Big Five (OCEAN): Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism.',
-      'Milgram = Obedience (65% to 450V); Asch = Conformity (line test ~75% conformed).',
-      'Fundamental Attribution Error: Blame personality for others, blame situation for self.',
-      'Cognitive dissonance: Discomfort from conflicting beliefs and actions leads to changing beliefs.',
-      'Bystander effect is caused by diffusion of responsibility and pluralistic ignorance.'
+    "cramSheet": [
+      "Big Five (OCEAN): Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism.",
+      "Milgram = Obedience (65% to 450V); Asch = Conformity (line test ~75% conformed).",
+      "Fundamental Attribution Error: Blame personality for others, blame situation for self.",
+      "Cognitive dissonance: Discomfort from conflicting beliefs and actions leads to changing beliefs.",
+      "Bystander effect is caused by diffusion of responsibility and pluralistic ignorance."
     ]
   },
-
-  // ==========================================
-  // UNIT 5: MENTAL & PHYSICAL HEALTH
-  // ==========================================
   {
-    unitId: 'u5',
-    unitNumber: 5,
-    title: 'Mental & Physical Health',
-    examWeight: '18%–24% of AP Exam',
-    bigIdea: 'Psychological disorders are classified via the DSM-5 through the biopsychosocial model and treated using evidence-based medical and psychotherapy modalities.',
-    keyTheorems: [
+    "unitId": "u5",
+    "unitNumber": 5,
+    "title": "Mental & Physical Health",
+    "examWeight": "18%–24% of AP Exam",
+    "bigIdea": "Psychological disorders are classified via the DSM-5 through the biopsychosocial model and treated using evidence-based medical and psychotherapy modalities.",
+    "keyTheorems": [
       {
-        name: 'The Biopsychosocial Model and Diathesis-Stress Theory',
-        conditions: 'Etiology and onset of psychological disorders.',
-        conclusion: 'Mental illness cannot be reduced to a single cause. The Diathesis-Stress model posits that an individual inherits a biological predisposition (diathesis: genetic vulnerability, neurochemical imbalance) that remains latent until triggered by environmental stress (trauma, poverty, grief).',
-        apTip: 'Identical twins discordant for schizophrenia prove the Diathesis-Stress model: both possess the genetic vulnerability, but differing environmental stressors trigger symptoms.'
+        "name": "The Biopsychosocial Model and Diathesis-Stress Theory",
+        "conditions": "Etiology and onset of psychological disorders.",
+        "conclusion": "Mental illness cannot be reduced to a single cause. The Diathesis-Stress model posits that an individual inherits a biological predisposition (diathesis: genetic vulnerability, neurochemical imbalance) that remains latent until triggered by environmental stress (trauma, poverty, grief).",
+        "apTip": "Identical twins discordant for schizophrenia prove the Diathesis-Stress model: both possess the genetic vulnerability, but differing environmental stressors trigger symptoms."
       },
       {
-        name: 'Cognitive-Behavioral Therapy (CBT) Mechanics',
-        conditions: 'Treating depression, anxiety, and obsessive-compulsive disorders (Aaron Beck & Albert Ellis).',
-        conclusion: 'Psychological distress is maintained by cognitive distortions (catastrophizing, all-or-nothing thinking). CBT actively reframes maladaptive automatic thoughts and combines cognitive restructuring with behavioral activation and exposure therapy to break self-reinforcing cycles.',
-        apTip: 'Systematic desensitization (Joseph Wolpe) treats phobias through classical counter-conditioning: pairing relaxation techniques with a graduated anxiety hierarchy.'
+        "name": "Cognitive-Behavioral Therapy (CBT) Mechanics",
+        "conditions": "Treating depression, anxiety, and obsessive-compulsive disorders (Aaron Beck & Albert Ellis).",
+        "conclusion": "Psychological distress is maintained by cognitive distortions (catastrophizing, all-or-nothing thinking). CBT actively reframes maladaptive automatic thoughts and combines cognitive restructuring with behavioral activation and exposure therapy to break self-reinforcing cycles.",
+        "apTip": "Systematic desensitization (Joseph Wolpe) treats phobias through classical counter-conditioning: pairing relaxation techniques with a graduated anxiety hierarchy."
       }
     ],
-    formulas: [
+    "formulas": [
       {
-        name: 'General Adaptation Syndrome (GAS) Stages',
-        latex: '\\text{Stress Encounter} \\rightarrow \\text{1. Alarm (Fight/Flight)} \\rightarrow \\text{2. Resistance (Cortisol)} \\rightarrow \\text{3. Exhaustion (Immune Collapse)}',
-        explanation: 'Hans Selye’s three-stage model showing the physical body’s physiological response to chronic stress.'
+        "name": "General Adaptation Syndrome (GAS) Stages",
+        "latex": "\\text{Stress Encounter} \\rightarrow \\text{1. Alarm (Fight/Flight)} \\rightarrow \\text{2. Resistance (Cortisol)} \\rightarrow \\text{3. Exhaustion (Immune Collapse)}",
+        "explanation": "Hans Selye’s three-stage model showing the physical body’s physiological response to chronic stress."
       }
     ],
-    sections: [
+    "sections": [
       {
-        heading: '1. DSM-5 Major Psychological Disorders Taxonomy',
-        content: `Diagnostic criteria, symptom profiles, and clinical evidence:
-
-| Disorder Category | Diagnostic Entity | Hallmark Symptoms | Primary Neurological / Etiological Factors |
-| :--- | :--- | :--- | :--- |
-| **Mood Disorders** | **Major Depressive Disorder (MDD)** | Depressed mood, anhedonia (loss of pleasure), fatigue, suicidal ideation for $>2$ weeks | Low serotonin & norepinephrine; hyperactive amygdala, shrunken hippocampus |
-| **Mood Disorders** | **Bipolar Disorder** | Alternating periods of major depressive episodes and mania (hyperactivity, euphoria, flight of ideas) | Strong genetic heritability; treated with Lithium carbonate |
-| **Anxiety Disorders** | **Generalized Anxiety Disorder (GAD)** | Chronic, unexplainable worry lasting $>6$ months, muscle tension, autonomic arousal | Deficiency in inhibitory neurotransmitter GABA; hyper-reactive autonomic nervous system |
-| **Anxiety Disorders** | **Panic Disorder & Agoraphobia** | Recurrent unprovoked panic attacks (chest pain, choking) leading to fear of public spaces | Abrupt sympathetic surge; misinterpretation of physiological sensations |
-| **Obsessive-Compulsive** | **OCD** | Obsessions (intrusive unwanted thoughts) causing anxiety relieved by Compulsions (repetitive rituals) | Hyperactive anterior cingulate cortex; orbitofrontal cortex dysfunction |
-| **Psychotic Disorders** | **Schizophrenia** | Positive: Hallucinations (auditory), delusions (persecution/grandeur). Negative: Flat affect, catatonia | Excess dopamine receptor density ($D_2$); enlarged fluid-filled brain ventricles |
-| **Trauma & Stress** | **PTSD** | Flashbacks, hypervigilance, nightmare reliving, emotional numbing $>1$ month | Persistent sympathetic activation, traumatic memory consolidation failure |`
-      }
-    ,
+        "heading": "1. DSM-5 Major Psychological Disorders Taxonomy",
+        "content": "Diagnostic criteria, symptom profiles, and clinical evidence:\n\n| Disorder Category | Diagnostic Entity | Hallmark Symptoms | Primary Neurological / Etiological Factors |\n| :--- | :--- | :--- | :--- |\n| **Mood Disorders** | **Major Depressive Disorder (MDD)** | Depressed mood, anhedonia (loss of pleasure), fatigue, suicidal ideation for $>2$ weeks | Low serotonin & norepinephrine; hyperactive amygdala, shrunken hippocampus |\n| **Mood Disorders** | **Bipolar Disorder** | Alternating periods of major depressive episodes and mania (hyperactivity, euphoria, flight of ideas) | Strong genetic heritability; treated with Lithium carbonate |\n| **Anxiety Disorders** | **Generalized Anxiety Disorder (GAD)** | Chronic, unexplainable worry lasting $>6$ months, muscle tension, autonomic arousal | Deficiency in inhibitory neurotransmitter GABA; hyper-reactive autonomic nervous system |\n| **Anxiety Disorders** | **Panic Disorder & Agoraphobia** | Recurrent unprovoked panic attacks (chest pain, choking) leading to fear of public spaces | Abrupt sympathetic surge; misinterpretation of physiological sensations |\n| **Obsessive-Compulsive** | **OCD** | Obsessions (intrusive unwanted thoughts) causing anxiety relieved by Compulsions (repetitive rituals) | Hyperactive anterior cingulate cortex; orbitofrontal cortex dysfunction |\n| **Psychotic Disorders** | **Schizophrenia** | Positive: Hallucinations (auditory), delusions (persecution/grandeur). Negative: Flat affect, catatonia | Excess dopamine receptor density ($D_2$); enlarged fluid-filled brain ventricles |\n| **Trauma & Stress** | **PTSD** | Flashbacks, hypervigilance, nightmare reliving, emotional numbing $>1$ month | Persistent sympathetic activation, traumatic memory consolidation failure |"
+      },
       {
-        heading: '2. Stress Physiology (Selye\'s GAS) & Evidence-Based Therapies (CED 5.3-5.5)',
-        content: `Somatic stress mechanisms and clinical therapeutic interventions:
-
-* **Hans Selye's General Adaptation Syndrome (GAS)**:
-  * **Stage 1: Alarm Reaction**: Immediate sympathetic nervous system 'fight-or-flight' surge; release of epinephrine, norepinephrine, and cortisol; heart rate and respiration escalate.
-  * **Stage 2: Resistance**: Body remains on physiological high alert to cope with ongoing chronic stressor; glucose levels and blood pressure remain elevated while non-essential digestive functions suppress.
-  * **Stage 3: Exhaustion**: Prolonged stress depletes bodily reserves; severe vulnerability to physical illness, immunosuppression, organ damage, and chronic depression.
-* **Evidence-Based Therapeutic Approaches**:
-  * **Cognitive-Behavioral Therapy (CBT - Beck & Ellis)**: Pinpoints and restructures irrational cognitive distortions (e.g. catastrophizing, black-and-white thinking) through collaborative cognitive reappraisal and behavioral activation.
-  * **Behavioral Therapy (Wolpe)**: Systematic desensitization pairing progressive relaxation with an anxiety hierarchy to eliminate conditioned phobias through counterconditioning.
-  * **Biological Psychopharmacology**:
-    * **SSRIs (Selective Serotonin Reuptake Inhibitors)**: Prolong serotonin availability in the synaptic cleft to treat major depressive and anxiety disorders.
-    * **Antipsychotics (Neuroleptics)**: Antagonize dopamine $D_2$ receptors to manage positive symptoms of schizophrenia.`
+        "heading": "2. Stress Physiology (Selye's GAS) & Evidence-Based Therapies (CED 5.3-5.5)",
+        "content": "Somatic stress mechanisms and clinical therapeutic interventions:\n\n* **Hans Selye's General Adaptation Syndrome (GAS)**:\n  * **Stage 1: Alarm Reaction**: Immediate sympathetic nervous system 'fight-or-flight' surge; release of epinephrine, norepinephrine, and cortisol; heart rate and respiration escalate.\n  * **Stage 2: Resistance**: Body remains on physiological high alert to cope with ongoing chronic stressor; glucose levels and blood pressure remain elevated while non-essential digestive functions suppress.\n  * **Stage 3: Exhaustion**: Prolonged stress depletes bodily reserves; severe vulnerability to physical illness, immunosuppression, organ damage, and chronic depression.\n* **Evidence-Based Therapeutic Approaches**:\n  * **Cognitive-Behavioral Therapy (CBT - Beck & Ellis)**: Pinpoints and restructures irrational cognitive distortions (e.g. catastrophizing, black-and-white thinking) through collaborative cognitive reappraisal and behavioral activation.\n  * **Behavioral Therapy (Wolpe)**: Systematic desensitization pairing progressive relaxation with an anxiety hierarchy to eliminate conditioned phobias through counterconditioning.\n  * **Biological Psychopharmacology**:\n    * **SSRIs (Selective Serotonin Reuptake Inhibitors)**: Prolong serotonin availability in the synaptic cleft to treat major depressive and anxiety disorders.\n    * **Antipsychotics (Neuroleptics)**: Antagonize dopamine $D_2$ receptors to manage positive symptoms of schizophrenia."
+      },
+      {
+        "heading": "3. Clinical Psychological Disorders & DSM-5 Diagnostic Criteria (CED 5.1–5.6)",
+        "content": "Classifying mental illness using the Diagnostic and Statistical Manual (DSM-5):\n- **Depressive & Bipolar Disorders:**\n  - **Major Depressive Disorder (MDD):** Persistent depressed mood or anhedonia (loss of interest in pleasurable activities) lasting $\\ge 2\\text{ weeks}$, accompanied by fatigue, appetite changes, insomnia/hypersomnia, and feelings of worthlessness.\n  - **Bipolar I Disorder:** Alternating between depressive episodes and **manic episodes** (hyperactivity, decreased need for sleep, grandiose delusions, reckless behavior).\n- **Anxiety, OCD & Trauma Disorders:**\n  - **Generalized Anxiety Disorder (GAD):** Chronic, uncontrollable worry about life events lasting $\\ge 6\\text{ months}$.\n  - **Panic Disorder:** Unpredictable recurrent panic attacks characterized by chest pain, palpitations, and intense terror.\n  - **Obsessive-Compulsive Disorder (OCD):** Driven by **Obsessions** (intrusive, repetitive, unwanted anxiety-provoking thoughts) and **Compulsions** (ritualistic repetitive behaviors performed to temporarily neutralize the anxiety).\n  - **Post-Traumatic Stress Disorder (PTSD):** Triggered by exposure to actual/threatened death, resulting in flashbacks, nightmares, hypervigilance, and emotional numbing.\n- **Schizophrenia Spectrum:**\n  - **Positive Symptoms (Excesses):** Auditory hallucinations (hearing voices), delusions of grandeur/persecution, disorganized speech (word salad).\n  - **Negative Symptoms (Deficits):** Flat affect (expressionless face), avolition (lack of initiative), catatonia.\n  - *Dopamine Hypothesis:* Positive symptoms linked to excess dopamine $D_2$ receptor activity."
+      },
+      {
+        "heading": "4. Psychotherapeutic Approaches: Psychoanalytic, CBT & Humanistic (CED 5.7–5.9)",
+        "content": "Major modalities for treating psychological distress:\n- **Psychoanalysis / Psychodynamic (Freud):**\n  - Assumes psychological symptoms stem from repressed childhood conflicts.\n  - Techniques: Free association, dream interpretation (latent vs. manifest content), analyzing resistance, and managing **transference** (patient redirecting feelings toward analyst).\n- **Humanistic / Client-Centered Therapy (Carl Rogers):**\n  - Fosters personal growth and self-actualization.\n  - Therapist provides a non-judgmental environment through **Unconditional Positive Regard**, active empathic listening, and congruence.\n- **Behavioral Therapies:**\n  - Focuses on modifying maladaptive observable behaviors through conditioning principles:\n  - **Systematic Desensitization (Joseph Wolpe):** Pairs relaxation techniques with a gradual hierarchy of anxiety-provoking stimuli to extinguish phobias (counterconditioning).\n  - **Exposure Therapy & Flooding:** Rapid or prolonged exposure to feared stimuli without opportunity for escape until anxiety naturally extinguishes.\n  - **Token Economy:** Operant conditioning using secondary reinforcers (tokens) exchanged for privileges.\n- **Cognitive-Behavioral Therapy (CBT - Aaron Beck & Albert Ellis):**\n  - Identifies and reframes irrational cognitive distortions (catastrophizing, all-or-nothing thinking). Combines cognitive restructuring with behavioral assignments."
+      },
+      {
+        "heading": "5. Biomedical Treatments & Psychopharmacology (CED 5.10)",
+        "content": "Biological interventions targeting neurotransmitter receptor systems:\n- **Antidepressants (SSRIs & SNRIs):**\n  - Selective Serotonin Reuptake Inhibitors (e.g. Fluoxetine/Prozac, Sertraline/Zoloft) block the reuptake transporter pump on the presynaptic axon terminal, prolonging serotonin presence in the synaptic cleft.\n- **Antianxiety Medications (Anxiolytics):**\n  - Benzodiazepines (e.g. Xanax, Valium) act as GABA receptor agonists, enhancing inhibitory neural firing to rapidly quell acute panic. High risk of tolerance and psychological/physical dependence.\n- **Antipsychotics (Neuroleptics):**\n  - First-generation drugs (Haloperidol, Thorazine) act as dopamine receptor antagonists, reducing hallucinations and delusions. Long-term use carries risk of *tardive dyskinesia* (involuntary facial and tongue tics).\n- **Mood Stabilizers:**\n  - Lithium carbonate effectively prevents manic episodes in Bipolar Disorder.\n- **Electroconvulsive Therapy (ECT):**\n  - Delivers controlled brief electrical currents through the brain to induce a therapeutic seizure under general anesthesia; highly effective for severe, treatment-resistant depression."
+      },
+      {
+        "heading": "4. DSM-5-TR Differential Diagnostic Reference & Clinical Nosology (CED 5.1-5.3)",
+        "content": "Diagnostic boundaries, symptomatic profiles, and clinical criteria according to the DSM-5-TR:\n\n| Clinical Disorder Category | Specific Disorder | Key Diagnostic Criteria (DSM-5-TR) | Essential Differential Diagnostic Rules |\n| :--- | :--- | :--- | :--- |\n| **Depressive & Bipolar Disorders** | **Major Depressive Disorder (MDD)** | Must exhibit $\\ge 5$ symptoms for $\\ge 2$ consecutive weeks; at least one symptom must be **Depressed Mood** or **Anhedonia** (loss of interest/pleasure). Weight changes, insomnia/hypersomnia, psychomotor agitation, fatigue, worthlessness, suicidal ideation. | Must NOT be attributable to substance abuse, medical condition, or bereavement. |\n| | **Bipolar I Disorder** | At least one lifetime full **Manic Episode** (grandiosity, flight of ideas, decreased need for sleep, hyper-talkative, risky behavior lasting $\\ge 1$ week). Depressive episodes common but not technically required for diagnosis. | Contrasted with **Bipolar II**: Requires at least one Major Depressive Episode AND at least one **Hypomanic** episode (less severe, no hospitalization, no psychosis). Full mania disqualifies Bipolar II. |\n| **Anxiety Disorders** | **Generalized Anxiety Disorder (GAD)** | Excessive, uncontrollable worry across multiple life domains for at least 6 months. Accompanied by muscle tension, restlessness, fatigue, irritability. | \"Free-floating anxiety\" — not tied to a specific phobic trigger or social situation. |\n| | **Panic Disorder** | Recurrent unexpected **Panic Attacks** (abrupt surge of intense fear with palpitations, sweating, trembling, chest pain, fear of dying) followed by $\\ge 1$ month of persistent worry about future attacks. | Frequently accompanied by **Agoraphobia** (fear of open, enclosed, or crowded spaces where escape might be difficult during an attack). |\n| **Obsessive-Compulsive & Related** | **OCD** | Presence of **Obsessions** (recurrent, persistent, intrusive, anxiety-provoking thoughts/urges) and/or **Compulsions** (repetitive, ritualized mental or physical behaviors aimed at reducing anxiety). | Distinct from OCPD (Obsessive-Compulsive Personality Disorder), which is ego-syntonic (the person sees their perfectionism as correct and desirable). |\n| **Trauma & Stressor-Related** | **PTSD** | Exposure to actual or threatened death, serious injury, or sexual violence. Symptoms persist $>1$ month: Intrusion (flashbacks, nightmares), Avoidance of trauma cues, Negative alterations in mood/cognition, Hyperarousal (hypervigilance, exaggerated startle response). | If symptoms resolve within 1 month, the diagnosis is **Acute Stress Disorder (ASD)**. |\n| **Schizophrenia Spectrum** | **Schizophrenia** | $\\ge 2$ core symptoms present for $\\ge 1$ month (with continuous disturbance $>6$ months): Delusions, Hallucinations, Disorganized speech, Disorganized behavior, Negative symptoms. | **Positive Symptoms** (excesses/distortions): Hallucinations (auditory most common), Delusions (persecution, grandeur). **Negative Symptoms** (deficits): Flat affect, alogia (poverty of speech), avolition (lack of goal-directed motivation). |"
+      },
+      {
+        "heading": "5. Neurobiological Etiologies & Diathesis-Stress Framework (CED 5.4)",
+        "content": "The neurochemical, structural, and genetic underpinnings of psychiatric conditions:\n\n* **The Diathesis-Stress Model**:\n  * Postulates that psychological disorders result from an interaction between an inherent **Diathesis** (biological genetic vulnerability, neurochemical imbalance, or temperament) and environmental **Stressors** (childhood trauma, bereavement, relationship collapse).\n  * Neither factor alone is sufficient: A person with high genetic risk may never develop schizophrenia without environmental stress triggers; conversely, severe trauma may trigger depression in an individual with moderate genetic predisposition.\n* **Neurochemical Systems in Psychopathology**:\n  * **Schizophrenia - The Dopamine Hypothesis**:\n    * Hyperactive dopamine transmission in the mesolimbic pathway produces **positive symptoms** (hallucinations/delusions); supported by the fact that dopamine antagonists (chlorpromazine) reduce psychosis, while dopamine agonists (amphetamines) can induce paranoid psychosis.\n    * Hypoactive dopamine transmission in the prefrontal mesocortical pathway is associated with **negative/cognitive symptoms**.\n    * Brain structural abnormalities: Enlarged cerebral lateral ventricles (fluid-filled cavities indicating cortical atrophy).\n  * **Depression - Monoamine Hypothesis & Neurogenesis**:\n    * Deficiencies in synaptic availability of **Serotonin**, **Norepinephrine**, and **Dopamine**.\n    * Modern research indicates clinical depression involves impaired hippocampal neurogenesis (brain-derived neurotrophic factor [BDNF] depletion); antidepressant efficacy mirrors the 3–4 week timeline required for hippocampal cellular neurogenesis.\n  * **Anxiety Disorders & PTSD**:\n    * Hyperactivity of the **Amygdala** coupled with hypoactivity of the ventromedial prefrontal cortex (impaired fear extinction).\n    * Under-functioning of the inhibitory neurotransmitter **GABA** prevents the brain from calming autonomic sympathetic arousal."
+      },
+      {
+        "heading": "6. Evidence-Based Psychotherapy & Clinical Psychopharmacology (CED 5.5)",
+        "content": "The therapeutic interventions and biomedical modalities for psychological disorders:\n\n* **Cognitive-Behavioral Therapies (CBT)**:\n  * **Aaron Beck’s Cognitive Therapy**:\n    * Targets the **Cognitive Triad of Depression**: Negative automatic thoughts about the *Self* (\"I am worthless\"), the *World* (\"Everyone is hostile\"), and the *Future* (\"Things will never get better\").\n    * Identifies and reframes cognitive distortions (e.g., Catastrophizing, Overgeneralization, All-or-Nothing thinking) through cognitive restructuring.\n  * **Albert Ellis’s Rational Emotive Behavior Therapy (REBT)**:\n    * Highly direct, confrontational therapy identifying irrational, dogmatic beliefs.\n    * **The ABCDE Model**: **A**ctivating Event $\\rightarrow$ **B**elief about the event $\\rightarrow$ Emotional **C**onsequence $\\rightarrow$ **D**isputing the irrational belief $\\rightarrow$ **E**ffective new philosophical outlook.\n* **Behavioral Counterconditioning Therapies**:\n  * **Joseph Wolpe’s Systematic Desensitization**:\n    * Relies on Mary Cover Jones’s principle of **counterconditioning** and reciprocal inhibition (one cannot be simultaneously completely relaxed and panicked).\n    * Three steps: 1) Progressive deep muscle relaxation training; 2) Construction of an **Anxiety Hierarchy** (rank-ordered list of feared stimuli from 1 to 10); 3) Pairing deep relaxation with imagined or in vivo exposure to each step until desensitized.\n  * **Exposure and Response Prevention (ERP)**: Gold standard for OCD. Patients are exposed to obsession triggers (e.g., touching a doorknob) while strictly prevented from executing their neutralizing compulsive ritual (e.g., handwashing), extinguishing the conditioned anxiety loop.\n* **Master Clinical Psychopharmacology Table**:\n  * **Antidepressants (SSRIs / SNRIs)**: Fluoxetine (Prozac), Sertraline (Zoloft). Block serotonin reuptake transporters, increasing synaptic residence time. Used for MDD, OCD, and Panic Disorder.\n  * **Mood Stabilizers**: **Lithium Carbonate**. Gold-standard treatment for bipolar manic episodes; mitigates suicide risk.\n  * **Antianxiety Agents (Anxiolytics)**: Benzodiazepines (Xanax, Valium, Ativan). Act as **GABA agonists**, boosting inhibitory neuronal firing. Fast-acting; carry high risk for physiological tolerance, dependence, and addiction.\n  * **Antipsychotics (Neuroleptics)**:\n    * First-Generation (Typical - Thorazine, Haldol): Potent dopamine D2 receptor antagonists. Highly effective for positive symptoms; carry risk of **Tardive Dyskinesia** (involuntary, irreversible grimacing and tongue protrusion).\n    * Second-Generation (Atypical - Clozaril, Risperdal, Zyprexa): Target both dopamine and serotonin receptors; fewer motor side effects."
       }
     ],
-    workedExamples: [
+    "workedExamples": [
       {
-        title: 'Prescribing Treatment Modalities for Clinical Presentations',
-        topicRef: 'CED 5.5 Biomedical and Psychological Therapies',
-        question: 'A patient presents with a paralyzing phobia of flying (aerophobia) that threatens their career. Compare how a psychoanalyst, a behavioral therapist, and a psychiatrist would approach treatment.',
-        solutionSteps: [
-          'Step 1: Psychoanalytic Approach (Freud): Trace the phobia back to repressed childhood trauma or unconscious psychosexual conflicts through free association and dream analysis.',
-          'Step 2: Behavioral Approach (Wolpe/Watson): Treat the phobia as a learned conditioned response. Apply Systematic Desensitization: teach diaphragmatic breathing and progressively expose the patient from reading flight schedules up to virtual reality cockpit simulations.',
-          'Step 3: Biomedical Approach (Psychiatrist): Treat the neurochemical symptom. Prescribe a fast-acting GABA agonist (e.g. benzodiazepine like Xanax) for situational use immediately before boarding.',
-          'Step 4: Contrast efficacy: Behavioral therapy produces permanent extinction of the fear response; medication offers immediate short-term relief without addressing the conditioned trigger.'
+        "title": "Prescribing Treatment Modalities for Clinical Presentations",
+        "topicRef": "CED 5.5 Biomedical and Psychological Therapies",
+        "question": "A patient presents with a paralyzing phobia of flying (aerophobia) that threatens their career. Compare how a psychoanalyst, a behavioral therapist, and a psychiatrist would approach treatment.",
+        "solutionSteps": [
+          "Step 1: Psychoanalytic Approach (Freud): Trace the phobia back to repressed childhood trauma or unconscious psychosexual conflicts through free association and dream analysis.",
+          "Step 2: Behavioral Approach (Wolpe/Watson): Treat the phobia as a learned conditioned response. Apply Systematic Desensitization: teach diaphragmatic breathing and progressively expose the patient from reading flight schedules up to virtual reality cockpit simulations.",
+          "Step 3: Biomedical Approach (Psychiatrist): Treat the neurochemical symptom. Prescribe a fast-acting GABA agonist (e.g. benzodiazepine like Xanax) for situational use immediately before boarding.",
+          "Step 4: Contrast efficacy: Behavioral therapy produces permanent extinction of the fear response; medication offers immediate short-term relief without addressing the conditioned trigger."
         ],
-        finalAnswer: 'Psychoanalysis seeks unconscious childhood origins; Behavioral therapy uses systematic desensitization; Biomedical therapy uses GABA-enhancing anxiolytics.',
-        apScoringTip: 'On FRQs, never just name a therapy. Always explain the *exact mechanism* (e.g. "Systematic desensitization pairs relaxation with a fear hierarchy to extinguish the conditioned fear").'
+        "finalAnswer": "Psychoanalysis seeks unconscious childhood origins; Behavioral therapy uses systematic desensitization; Biomedical therapy uses GABA-enhancing anxiolytics.",
+        "apScoringTip": "On FRQs, never just name a therapy. Always explain the *exact mechanism* (e.g. \"Systematic desensitization pairs relaxation with a fear hierarchy to extinguish the conditioned fear\")."
       }
     ],
-    diagrams: [
+    "diagrams": [
       {
-        id: 'selve_gas_model',
-        title: 'Hans Selye’s General Adaptation Syndrome (GAS)',
-        subtitle: 'Physiological Resistance Over Time Under Chronic Stress',
-        type: 'gas_curve',
-        description: 'Waveform curve displaying immediate dip in Alarm stage, prolonged high plateau during Resistance, and catastrophic plunge into Exhaustion.',
-        takeaway: 'Prolonged high cortisol during the Resistance stage eventually exhausts adrenal reserves, inducing systemic illness.'
+        "id": "selve_gas_model",
+        "title": "Hans Selye’s General Adaptation Syndrome (GAS)",
+        "subtitle": "Physiological Resistance Over Time Under Chronic Stress",
+        "type": "gas_curve",
+        "description": "Waveform curve displaying immediate dip in Alarm stage, prolonged high plateau during Resistance, and catastrophic plunge into Exhaustion.",
+        "takeaway": "Prolonged high cortisol during the Resistance stage eventually exhausts adrenal reserves, inducing systemic illness."
       }
     ],
-    commonTraps: [
-      'Confusing obsessions and compulsions. Obsessions are intrusive THOUGHTS; Compulsions are repetitive physical/mental BEHAVIORS enacted to reduce the anxiety.',
-      'Confusing positive and negative symptoms of schizophrenia. Positive symptoms are ADDED behaviors (hallucinations, delusions); Negative symptoms are SUBTRACTED normal behaviors (flat affect, catatonia, alogia).',
-      'Confusing Bipolar I (full manic episodes) with Major Depression (unipolar; no mania).'
+    "commonTraps": [
+      "Confusing obsessions and compulsions. Obsessions are intrusive THOUGHTS; Compulsions are repetitive physical/mental BEHAVIORS enacted to reduce the anxiety.",
+      "Confusing positive and negative symptoms of schizophrenia. Positive symptoms are ADDED behaviors (hallucinations, delusions); Negative symptoms are SUBTRACTED normal behaviors (flat affect, catatonia, alogia).",
+      "Confusing Bipolar I (full manic episodes) with Major Depression (unipolar; no mania)."
     ],
-    cramSheet: [
-      'Diathesis-Stress Model: Genetic predisposition + environmental trigger = disorder.',
-      'Schizophrenia: Excess dopamine, enlarged ventricles, hallucinations (auditory most common).',
-      'Depression: Low serotonin/norepinephrine; treated with SSRIs (Prozac, Zoloft).',
-      'General Adaptation Syndrome (GAS): Alarm $\\rightarrow$ Resistance $\\rightarrow$ Exhaustion.',
-      'OCD: Obsession = thought; Compulsion = repetitive behavior.'
+    "cramSheet": [
+      "Diathesis-Stress Model: Genetic predisposition + environmental trigger = disorder.",
+      "Schizophrenia: Excess dopamine, enlarged ventricles, hallucinations (auditory most common).",
+      "Depression: Low serotonin/norepinephrine; treated with SSRIs (Prozac, Zoloft).",
+      "General Adaptation Syndrome (GAS): Alarm $\\rightarrow$ Resistance $\\rightarrow$ Exhaustion.",
+      "OCD: Obsession = thought; Compulsion = repetitive behavior."
     ]
   }
 ];

@@ -74,6 +74,27 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
     loadPapers();
   }, []);
 
+  // Hardware Android Back Button Navigation (Step-by-step)
+  useEffect(() => {
+    const handleHardwareBack = (e: Event) => {
+      if (previewPaper) {
+        e.preventDefault();
+        triggerVibration(10);
+        setPreviewPaper(null);
+      } else if (showUploadSheet) {
+        e.preventDefault();
+        triggerVibration(10);
+        setShowUploadSheet(false);
+      } else {
+        e.preventDefault();
+        triggerVibration(10);
+        onLogout();
+      }
+    };
+    window.addEventListener('appBackButton', handleHardwareBack);
+    return () => window.removeEventListener('appBackButton', handleHardwareBack);
+  }, [previewPaper, showUploadSheet, onLogout]);
+
   const loadPapers = async () => {
     setLoading(true);
     try {

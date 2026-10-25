@@ -6,7 +6,7 @@ import xss from "xss";
 import nodemailer from "nodemailer";
 import { parseFirebaseToken, securityLog } from "./authHelper";
 
-export const DEVELOPER_SUPPORT_EMAIL = "helpyou.ai.support@gmail.com";
+export const DEVELOPER_SUPPORT_EMAIL = "aiapexam@gmail.com";
 const AI_REPORTS_FILE = path.join(process.cwd(), "data", "ai_reports_vault.json");
 
 // Ensure data folder exists
@@ -36,7 +36,7 @@ export const saveAiReportsToDisk = () => {
 };
 
 /**
- * Automatically dispatches the AI report email directly to the developer at helpyou.ai.support@gmail.com
+ * Automatically dispatches the AI report email directly to the developer at aiapexam@gmail.com
  * Uses Nodemailer if SMTP is configured, and automatically uses FormSubmit AJAX relay as a zero-config fallback.
  */
 export async function dispatchReportEmail(reportData: {

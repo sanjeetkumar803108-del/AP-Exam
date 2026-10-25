@@ -104,11 +104,11 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 </button>
               ) : (
                 <div className="w-7 h-7 rounded-xl bg-white border border-zinc-200/80 shadow-xs flex items-center justify-center p-1">
-                  <img src={appLogo} alt="AP Exam" className="w-full h-full object-contain" />
+                  <img src={appLogo} alt="AP Prep" className="w-full h-full object-contain" />
                 </div>
               )}
               <span className="text-xs font-black tracking-wider text-zinc-900 uppercase">
-                AP EXAM <span className="text-amber-500 font-extrabold">2027</span>
+                AP PREP <span className="text-amber-500 font-extrabold">2027</span>
               </span>
             </div>
 

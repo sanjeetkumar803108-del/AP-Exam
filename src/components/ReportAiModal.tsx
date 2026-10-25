@@ -30,7 +30,7 @@ export interface ReportAiModalProps {
   questionText?: string;
 }
 
-export const DEVELOPER_EMAIL = 'helpyou.ai.support@gmail.com';
+export const DEVELOPER_EMAIL = 'aiapexam@gmail.com';
 
 const REPORT_REASONS = [
   { id: 'inaccurate', label: 'Inaccurate or Incorrect Math / Facts', icon: '❌', desc: 'Wrong calculation, false historical fact, or erroneous concept' },
@@ -77,7 +77,7 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
   const { emailSubject, emailBody } = useMemo(() => {
     const reason = REPORT_REASONS.find(r => r.id === selectedReason) || REPORT_REASONS[0];
     const userMail = studentEmail || currentUser?.email || 'student@ap-exam.app';
-    const subject = `[AP Exam AI Report] ${reason.label} (${context})`;
+    const subject = `[AP Prep AI Report] ${reason.label} (${context})`;
 
     // Prevent OS mailto length limitation overflows by capping snippet if extremely long
     const maxMailtoLen = 1400;
@@ -87,7 +87,7 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
 
     const body = [
       `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-      `🚨 AP EXAM APP - AI CONTENT REPORT`,
+      `🚨 AP PREP APP - AI CONTENT REPORT`,
       `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
       `• Developer Recipient: ${DEVELOPER_EMAIL}`,
       `• Sender / Student Email: ${userMail}`,
@@ -109,7 +109,7 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
       ``,
       `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
       `📱 SYSTEM DETAILS:`,
-      `• Application: AP Exam Preparation (Android / Web)`,
+      `• Application: AP Prep (Android / Web)`,
       `• Platform: ${Capacitor.isNativePlatform() ? 'Android Native App' : 'Web Browser'}`,
       `• Timestamp: ${new Date().toISOString()}`,
       `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
@@ -121,13 +121,13 @@ export const ReportAiModal: React.FC<ReportAiModalProps> = ({
   // Compute encoded mailto and gmail URLs strictly on-demand
   const getMailtoUrl = (reasonId = selectedReason) => {
     const reason = REPORT_REASONS.find(r => r.id === reasonId) || REPORT_REASONS[0];
-    const subject = `[AP Exam AI Report] ${reason.label} (${context})`;
+    const subject = `[AP Prep AI Report] ${reason.label} (${context})`;
     return `mailto:${DEVELOPER_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
   };
 
   const getGmailUrl = (reasonId = selectedReason) => {
     const reason = REPORT_REASONS.find(r => r.id === reasonId) || REPORT_REASONS[0];
-    const subject = `[AP Exam AI Report] ${reason.label} (${context})`;
+    const subject = `[AP Prep AI Report] ${reason.label} (${context})`;
     return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(DEVELOPER_EMAIL)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
   };
 

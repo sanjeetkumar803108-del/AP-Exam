@@ -1,10 +1,9 @@
 /**
  * Helper to compress and downscale an image to optimize base64 and binary size for fast Gemini API delivery.
  */
-export function compressImage(file: File, maxDimension = 1200, quality = 0.75): Promise<string> {
+export function compressImage(file: File | string, maxDimension = 1200, quality = 0.75): Promise<string> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
+    const processSrc = (src: string) => {
       const img = new window.Image();
       img.onload = () => {
         let width = img.width;
@@ -27,7 +26,7 @@ export function compressImage(file: File, maxDimension = 1200, quality = 0.75): 
 
         const ctx = canvas.getContext("2d");
         if (!ctx) {
-          resolve(event.target?.result as string); // Fallback to raw if canvas context is null
+          resolve(src); // Fallback to raw if canvas context is null
           return;
         }
 
@@ -39,10 +38,19 @@ export function compressImage(file: File, maxDimension = 1200, quality = 0.75): 
       img.onerror = () => {
         reject(new Error("Failed to load image for compression"));
       };
-      img.src = event.target?.result as string;
+      img.src = src;
     };
-    reader.onerror = () => reject(new Error("Failed to read file"));
-    reader.readAsDataURL(file);
+
+    if (typeof file === 'string') {
+      processSrc(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        processSrc(event.target?.result as string);
+      };
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
+    }
   });
 }
 

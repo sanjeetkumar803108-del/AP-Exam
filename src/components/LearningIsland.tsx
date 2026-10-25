@@ -29,8 +29,10 @@ import {
   RefreshCw,
   Shield,
   Zap,
-  BookOpen
+  BookOpen,
+  Crown
 } from 'lucide-react';
+import { isProUser } from '../utils/coins';
 import confetti from 'canvas-confetti';
 import { TOP_10_AP_SUBJECTS, APSubject } from '../utils/apCurriculum';
 import { triggerVibration } from '../utils/vibrate';
@@ -430,6 +432,7 @@ export default function LearningIsland({ onBack, user: propUser }: LearningIslan
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
   const [selectedLevel, setSelectedLevel] = useState<UnitQuestLevel | null>(null);
   const [lockedNotice, setLockedNotice] = useState<string | null>(null);
+  const [lockedLevelModal, setLockedLevelModal] = useState<UnitQuestLevel | null>(null);
   const [activeUnitInView, setActiveUnitInView] = useState<number>(1);
   // Active mountain biome atmosphere based on currently viewed unit
   const activeAtmosphere = useMemo(() => {
@@ -476,7 +479,9 @@ export default function LearningIsland({ onBack, user: propUser }: LearningIslan
     const handleHardwareBack = (e: Event) => {
       e.preventDefault();
       triggerVibration(10);
-      if (showSubjectModal) {
+      if (lockedLevelModal) {
+        setLockedLevelModal(null);
+      } else if (showSubjectModal) {
         setShowSubjectModal(false);
       } else if (completedUnitDiagnostic) {
         setCompletedUnitDiagnostic(null);
@@ -694,9 +699,13 @@ export default function LearningIsland({ onBack, user: propUser }: LearningIslan
   }, [currentUnits]);
 
   // Check if a level is unlocked
-  // RULE: Level 1 of ANY unit is ALWAYS unlocked!
+  // Freemium users: ONLY Unit 1, Level 1 of the subject is unlocked.
+  // PRO users: Unlocked by progression (Level 1 of each unit is unlocked by default).
   const isLevelUnlocked = (lvl: UnitQuestLevel): boolean => {
     if (!lvl) return false;
+    if (!isProUser()) {
+      return lvl.unitIndex === 1 && lvl.levelNumber === 1;
+    }
     if (lvl.levelNumber === 1) return true; // Always unlocked!
     const unlocked = Array.isArray(progress?.unlockedLevels) ? progress.unlockedLevels : [];
     return unlocked.includes(lvl.id);
@@ -875,8 +884,12 @@ export default function LearningIsland({ onBack, user: propUser }: LearningIslan
       setLockedNotice(null);
     } else {
       triggerVibration(30);
-      setLockedNotice(`🔒 Level ${lvl.levelNumber} is locked! Clear Level ${lvl.levelNumber - 1} of ${lvl.topicNumber} to unlock.`);
-      setTimeout(() => setLockedNotice(null), 3000);
+      if (!isProUser()) {
+        setLockedLevelModal(lvl);
+      } else {
+        setLockedNotice(`🔒 Level ${lvl.levelNumber} is locked! Clear Level ${lvl.levelNumber - 1} of ${lvl.topicNumber} to unlock.`);
+        setTimeout(() => setLockedNotice(null), 3000);
+      }
     }
   };
 
@@ -1285,10 +1298,21 @@ Please structure your response into these 4 clear sections:
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-rose-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-xl border border-rose-400 flex items-center gap-2"
+            className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-rose-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-xl border border-rose-400 flex items-center gap-2 max-w-[92vw]"
           >
             <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{lockedNotice}</span>
+            <span className="truncate">{lockedNotice}</span>
+            {!isProUser() && (
+              <button
+                onClick={() => {
+                  triggerVibration(15);
+                  window.dispatchEvent(new CustomEvent('open-vip-modal'));
+                }}
+                className="bg-amber-400 hover:bg-amber-300 text-zinc-950 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider shrink-0 cursor-pointer shadow-xs active:scale-95"
+              >
+                Upgrade to PRO
+              </button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -1572,12 +1596,13 @@ Please structure your response into these 4 clear sections:
             {/* In-Quiz Cheat Sheet Overlay Modal (Idea 1) */}
             <AnimatePresence>
               {showInQuizCheatSheet && activeQuizLevel && (
-                <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs">
+                <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/75 transform-gpu">
                   <motion.div
-                    initial={{ scale: 0.95, opacity: 0, y: 15 }}
+                    initial={{ scale: 0.96, opacity: 0, y: 10 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.95, opacity: 0, y: 15 }}
-                    className="w-full max-w-md bg-white rounded-3xl p-5 border-2 border-amber-300 shadow-2xl relative max-h-[85vh] flex flex-col overflow-hidden"
+                    exit={{ scale: 0.96, opacity: 0, y: 10 }}
+                    transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                    className="w-full max-w-md bg-white rounded-3xl p-5 border-2 border-amber-300 shadow-2xl relative max-h-[85vh] flex flex-col overflow-hidden transform-gpu will-change-transform"
                   >
                     <div className="flex items-center justify-between pb-3 border-b border-zinc-200 shrink-0">
                       <div className="flex items-center gap-2">
@@ -2037,15 +2062,28 @@ Please structure your response into these 4 clear sections:
                     <div className="space-y-2 pt-1">
                       {/* Advance Button (Only if passed and next level exists) */}
                       {isPassed && nextLvl ? (
-                        <button
-                          onClick={() => {
-                            handleStartQuiz(nextLvl);
-                          }}
-                          className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-sm shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
-                        >
-                          <span>Continue to Level {nextLvl.levelNumber}</span>
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
+                        !isProUser() ? (
+                          <button
+                            onClick={() => {
+                              triggerVibration(15);
+                              window.dispatchEvent(new CustomEvent('open-vip-modal'));
+                            }}
+                            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:opacity-95 text-zinc-950 font-black text-xs uppercase tracking-wider shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                          >
+                            <Crown className="w-4 h-4 fill-zinc-950" />
+                            <span>Upgrade to PRO to Unlock Level {nextLvl.levelNumber}</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              handleStartQuiz(nextLvl);
+                            }}
+                            className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-sm shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                          >
+                            <span>Continue to Level {nextLvl.levelNumber}</span>
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        )
                       ) : !isPassed ? (
                         <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs font-bold text-center">
                           🔒 Next level is locked until you score at least 1/3!
@@ -2177,12 +2215,13 @@ Please structure your response into these 4 clear sections:
       {/* ========================================================================= */}
       <AnimatePresence>
         {completedUnitDiagnostic && (
-          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs">
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 transform-gpu">
             <motion.div
-              initial={{ scale: 0.85, opacity: 0, y: 20 }}
+              initial={{ scale: 0.92, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.85, opacity: 0, y: 20 }}
-              className="w-full max-w-sm bg-white rounded-3xl p-6 border-2 border-indigo-400 shadow-2xl relative overflow-hidden text-center light-surface"
+              exit={{ scale: 0.92, opacity: 0, y: 10 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full max-w-sm bg-white rounded-3xl p-6 border-2 border-indigo-400 shadow-2xl relative overflow-hidden text-center light-surface transform-gpu will-change-transform"
             >
               <button
                 onClick={() => setCompletedUnitDiagnostic(null)}
@@ -2349,6 +2388,66 @@ Please structure your response into these 4 clear sections:
                     </div>
                   );
                 })}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Freemium Locked Level Modal */}
+      <AnimatePresence>
+        {lockedLevelModal && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <motion.div
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 50, opacity: 0 }}
+              className="w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-6 border border-zinc-200 shadow-2xl text-center relative"
+            >
+              <button
+                onClick={() => setLockedLevelModal(null)}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-500 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="w-16 h-16 rounded-3xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-600 mx-auto mb-3 shadow-sm">
+                <Lock className="w-8 h-8" />
+              </div>
+
+              <span className="inline-block px-3 py-1 bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-black uppercase tracking-wider rounded-full mb-2">
+                PRO Member Feature
+              </span>
+
+              <h3 className="text-lg font-black text-zinc-900">
+                Level {lockedLevelModal.levelNumber} is Locked
+              </h3>
+              <p className="text-xs text-zinc-600 font-semibold mt-1 leading-relaxed">
+                Free plan users have access to <strong>Level 1</strong> of every subject. Upgrade to PRO to unlock all levels, advanced units, and comprehensive AP exam practice!
+              </p>
+
+              <div className="mt-5 space-y-2.5">
+                <button
+                  onClick={() => {
+                    triggerVibration(15);
+                    setLockedLevelModal(null);
+                    window.dispatchEvent(new CustomEvent('open-vip-modal'));
+                  }}
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:opacity-95 text-zinc-950 font-black text-xs uppercase tracking-wider shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <Crown className="w-4 h-4 fill-zinc-950" />
+                  <span>Upgrade to PRO</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    triggerVibration(10);
+                    setLockedLevelModal(null);
+                  }}
+                  className="w-full py-3 rounded-2xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-xs cursor-pointer active:scale-95"
+                >
+                  Keep Free (Go Back)
+                </button>
               </div>
             </motion.div>
           </div>

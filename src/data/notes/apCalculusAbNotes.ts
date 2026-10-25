@@ -2,1147 +2,1022 @@ import { APNoteFormula, APNoteTheorem, APNoteSection, APNoteWorkedExample, APNot
 export type { APNoteFormula, APNoteTheorem, APNoteSection, APNoteWorkedExample, APNoteDiagram, APUnitNote };
 
 export const AP_CALCULUS_AB_NOTES: APUnitNote[] = [
-  // ==========================================
-  // UNIT 1: LIMITS AND CONTINUITY (CED 1.1 - 1.16)
-  // ==========================================
   {
-    unitId: 'u1',
-    unitNumber: 1,
-    title: 'Limits and Continuity',
-    examWeight: '10%–12% of AP Exam',
-    bigIdea: 'Limits describe behavior of functions near a point rather than at the point, laying the rigorous foundation for continuity and calculus.',
-    keyTheorems: [
+    "unitId": "u1",
+    "unitNumber": 1,
+    "title": "Limits and Continuity",
+    "examWeight": "10%–12% of AP Exam",
+    "bigIdea": "Limits describe the local behavior of functions near a point rather than at the point itself, establishing the analytical foundation for continuity, derivatives, and definite integrals.",
+    "keyTheorems": [
       {
-        name: 'Intermediate Value Theorem (IVT)',
-        conditions: 'f(x) must be continuous on the closed interval [a, b].',
-        conclusion: 'For any value d strictly between f(a) and f(b), there exists at least one number c in (a, b) such that f(c) = d.',
-        apTip: 'On FRQs, you MUST explicitly state that f is continuous on [a, b] before invoking IVT. Without writing "Since f is continuous on [a, b]", you will lose the justification point!'
+        "name": "Intermediate Value Theorem (IVT)",
+        "conditions": "f(x) must be continuous on the closed interval [a, b].",
+        "conclusion": "For any value d strictly between f(a) and f(b), there exists at least one number c in the open interval (a, b) such that f(c) = d.",
+        "apTip": "On FRQs, you MUST explicitly write \"Since f is continuous on [a, b]...\" before invoking IVT. Missing this hypothesis forfeits the justification point!"
       },
       {
-        name: 'Squeeze (Sandwich) Theorem',
-        conditions: 'g(x) <= f(x) <= h(x) for all x in an open interval containing c (except possibly at c itself), and lim_{x->c} g(x) = lim_{x->c} h(x) = L.',
-        conclusion: 'lim_{x->c} f(x) = L.',
-        apTip: 'Used on AP exams to evaluate limits involving bounded oscillating functions, such as lim_{x->0} x^2 * sin(1/x) = 0.'
+        "name": "Squeeze (Sandwich) Theorem",
+        "conditions": "g(x) <= f(x) <= h(x) for all x in an open interval containing c (except possibly at c), and lim_{x->c} g(x) = lim_{x->c} h(x) = L.",
+        "conclusion": "lim_{x->c} f(x) = L.",
+        "apTip": "Commonly tested with bounded oscillating trigonometric factors, such as lim_{x->0} x^2 * sin(1/x) = 0 because -x^2 <= x^2*sin(1/x) <= x^2."
+      },
+      {
+        "name": "Extreme Value Theorem (EVT - Continuity Foundation)",
+        "conditions": "f(x) is continuous on a closed interval [a, b].",
+        "conclusion": "f(x) must attain an absolute maximum value and an absolute minimum value at least once on [a, b].",
+        "apTip": "Both hypotheses are non-negotiable: if the interval is open (a, b) or f has a discontinuity, EVT does not guarantee extrema."
       }
     ],
-    formulas: [
+    "formulas": [
       {
-        name: 'Limit Definition of Continuity at a Point',
-        latex: '\\lim_{x \\to c} f(x) = f(c)',
-        explanation: 'Requires 3 independent checks: (1) f(c) is defined, (2) lim_{x->c} f(x) exists (left limit equals right limit), and (3) lim_{x->c} f(x) equals f(c).'
+        "name": "Three-Part Continuity Definition at a Point",
+        "latex": "\\lim_{x \\to c} f(x) = f(c)",
+        "explanation": "Requires 3 independent checks: (1) f(c) is defined, (2) lim_{x->c} f(x) exists (left-hand limit = right-hand limit), and (3) lim_{x->c} f(x) equals f(c)."
       },
       {
-        name: 'Fundamental Trigonometric Limit',
-        latex: '\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1 \\quad \\text{and} \\quad \\lim_{x \\to 0} \\frac{1 - \\cos x}{x} = 0',
-        explanation: 'Angles must be measured in radians. For general multiplier: lim_{x->0} sin(kx)/x = k.'
+        "name": "Fundamental Trigonometric Limits",
+        "latex": "\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1 \\quad \\text{and} \\quad \\lim_{x \\to 0} \\frac{1 - \\cos x}{x} = 0",
+        "explanation": "Angles must be in radians. Generalized form: lim_{x->0} sin(kx)/x = k and lim_{x->0} sin(kx)/sin(mx) = k/m."
       },
       {
-        name: 'Horizontal Asymptote Definition (Limits at Infinity)',
-        latex: '\\lim_{x \\to \\infty} f(x) = L \\quad \\text{or} \\quad \\lim_{x \\to -\\infty} f(x) = L \\implies y = L',
-        explanation: 'Degree rules: if num deg = den deg, ratio of leading coefficients; if num < den, y = 0; if num > den, no horizontal asymptote.'
+        "name": "Horizontal Asymptotes (End Behavior at Infinity)",
+        "latex": "\\lim_{x \\to \\infty} f(x) = L \\quad \\text{or} \\quad \\lim_{x \\to -\\infty} f(x) = L \\implies y = L",
+        "explanation": "A rational or algebraic function can have at most TWO horizontal asymptotes (one for +infinity, one for -infinity)."
       },
       {
-        name: 'Vertical Asymptote Definition (Infinite Limits)',
-        latex: '\\lim_{x \\to c^+} f(x) = \\pm\\infty \\quad \\text{or} \\quad \\lim_{x \\to c^-} f(x) = \\pm\\infty \\implies x = c',
-        explanation: 'Occurs where denominator is zero and numerator is non-zero after canceling all common factors.'
+        "name": "Vertical Asymptotes (Infinite Discontinuities)",
+        "latex": "\\lim_{x \\to c^+} f(x) = \\pm\\infty \\quad \\text{or} \\quad \\lim_{x \\to c^-} f(x) = \\pm\\infty \\implies x = c",
+        "explanation": "Occurs at non-removable zeros of the denominator where the numerator does not cancel to zero."
       }
     ],
-    sections: [
+    "sections": [
       {
-        heading: '1. Defining Limits & Limit Notation (CED 1.1–1.2)',
-        content: `A limit $\\lim_{x \\to c} f(x) = L$ means that as $x$ gets arbitrarily close to $c$ (from both sides), $f(x)$ approaches the value $L$.
-- **Crucial Concept:** The limit describes what happens **near** $x = c$, NOT what happens **at** $x = c$. $f(c)$ does not even need to exist for $\\lim_{x \\to c} f(x)$ to exist!
-- **One-Sided Limits:**
-  - Left-hand limit: $\\lim_{x \\to c^-} f(x)$ (approaching from $x < c$)
-  - Right-hand limit: $\\lim_{x \\to c^+} f(x)$ (approaching from $x > c$)
-- **Two-Sided Limit Existence:**
-  $$\\lim_{x \\to c} f(x) = L \\iff \\lim_{x \\to c^-} f(x) = \\lim_{x \\to c^+} f(x) = L$$
-- If left limit $\\neq$ right limit, the two-sided limit **Does Not Exist (DNE)**.`
+        "heading": "1. Defining Limits & Limit Notation (CED 1.1–1.2)",
+        "content": "A limit $\\lim_{x \\to c} f(x) = L$ means that as $x$ gets arbitrarily close to $c$ (from both sides), $f(x)$ approaches the value $L$.\n- **Crucial Distinction:** The limit describes what happens **near** $x = c$, NOT what happens **at** $x = c$. $f(c)$ does not even need to exist for $\\lim_{x \\to c} f(x)$ to exist!\n- **One-Sided Limits:**\n  - Left-hand limit: $\\lim_{x \\to c^-} f(x)$ (approaching from $x < c$)\n  - Right-hand limit: $\\lim_{x \\to c^+} f(x)$ (approaching from $x > c$)\n- **Two-Sided Limit Existence Theorem:**\n  $$\\lim_{x \\to c} f(x) = L \\iff \\lim_{x \\to c^-} f(x) = \\lim_{x \\to c^+} f(x) = L$$\n- If left-hand limit $\\neq$ right-hand limit, the two-sided limit **Does Not Exist (DNE)**."
       },
       {
-        heading: '2. Estimating Limits from Graphs & Numerical Tables (CED 1.3–1.4)',
-        content: `On AP Multiple Choice questions, limits are frequently presented graphically or numerically:
-- **Graphical Estimation:**
-  1. Trace your pencil along the curve toward $x = c$ from the left side. Note the $y$-value approached: this is $\\lim_{x \\to c^-} f(x)$.
-  2. Trace your pencil along the curve toward $x = c$ from the right side. Note the $y$-value approached: this is $\\lim_{x \\to c^+} f(x)$.
-  3. If both pencil traces head toward the same $y$-height, that height is the limit (even if there is an open hole at that exact coordinate!).
-  4. If there is a jump gap between the two sides, the two-sided limit is **DNE**.
-
-- **Official AP Numerical Table Estimation:**
-| $x$ (Left Approach $\\to$) | 1.9 | 1.99 | 1.999 | $x = 2$ | 2.001 | 2.01 | 2.1 ($\\leftarrow$ Right Approach) |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| $f(x) = \\frac{x^2 - 4}{x - 2}$ | 3.900 | 3.990 | 3.999 | **Hole (Undefined)** | 4.001 | 4.010 | 4.100 |
-
-**Conclusion from Table:** As $x \\to 2^-$ from left, $f(x) \\to 4$. As $x \\to 2^+$ from right, $f(x) \\to 4$. Because both sides converge to $4$, $\\lim_{x \\to 2} f(x) = 4$ despite $f(2)$ being undefined!`
+        "heading": "2. Algebraic Limit Evaluation Strategies (CED 1.5–1.7)",
+        "content": "Always attempt direct substitution first. If substitution yields a real number $L$, that is your limit. If substitution yields $\\frac{k}{0}$ (where $k \\neq 0$), the limit is $\\pm\\infty$ (Vertical Asymptote) or DNE.\n\nIf substitution yields the indeterminate form $\\frac{0}{0}$, apply these four algebraic tools:\n\n| Strategy | When to Use | Typical AP Technique |\n| :--- | :--- | :--- |\n| **Factoring & Canceling** | Rational polynomial expressions | Factor numerator and denominator; cancel $(x - c)$ hole. |\n| **Rationalizing Conjugates** | Radicals in numerator/denominator | Multiply top and bottom by $(\\sqrt{A} + B)$ to eliminate difference of squares. |\n| **Complex Fractions** | Fractions within fractions | Multiply all terms by the common denominator of internal fractions. |\n| **Trigonometric Identities** | Expressions with $\\sin, \\cos, \\tan$ | Use $\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1$ or rewrite $\\tan x = \\frac{\\sin x}{\\cos x}$. |\n\n*Important AP Communication Rule:* NEVER write \"$= \\frac{0}{0}$\" as an equation! In AP grading, $\\frac{0}{0}$ is undefined. State: *\"Because $\\lim_{x\\to c} f(x) = 0$ and $\\lim_{x\\to c} g(x) = 0$, the limit produces indeterminate form $0/0$.\"*"
       },
       {
-        heading: '3. Limit Properties (Limit Laws) (CED 1.5)',
-        content: `If $\\lim_{x \\to c} f(x) = L$ and $\\lim_{x \\to c} g(x) = M$, the following algebraic properties hold:
-- **Sum & Difference:** $\\lim_{x \\to c} [f(x) \\pm g(x)] = L \\pm M$
-- **Constant Multiple:** $\\lim_{x \\to c} [k \\cdot f(x)] = k \\cdot L$
-- **Product:** $\\lim_{x \\to c} [f(x) \\cdot g(x)] = L \\cdot M$
-- **Quotient:** $\\lim_{x \\to c} \\left[\\frac{f(x)}{g(x)}\\right] = \\frac{L}{M}$, provided $M \\neq 0$
-- **Power & Radical:** $\\lim_{x \\to c} [f(x)]^n = L^n$, and $\\lim_{x \\to c} \\sqrt[n]{f(x)} = \\sqrt[n]{L}$ (for $L > 0$ when $n$ is even).`
+        "heading": "3. Limits at Infinity & Horizontal Asymptotes (CED 1.14–1.15)",
+        "content": "To evaluate $\\lim_{x \\to \\pm\\infty} \\frac{P(x)}{Q(x)}$ for rational functions, compare the degrees of numerator ($n$) and denominator ($d$):\n\n1. **Bottom-Heavy ($n < d$):** $\\lim_{x \\to \\pm\\infty} f(x) = 0 \\implies$ Horizontal Asymptote at $y = 0$.\n2. **Equal Degrees ($n = d$):** $\\lim_{x \\to \\pm\\infty} f(x) = \\frac{a_n}{b_d}$ (ratio of leading coefficients) $\\implies$ Horizontal Asymptote at $y = \\frac{a_n}{b_d}$.\n3. **Top-Heavy ($n > d$):** $\\lim_{x \\to \\pm\\infty} f(x) = \\pm\\infty \\implies$ No Horizontal Asymptote (Slant or polynomial growth).\n\n*The Radical Trap on Negative Infinity:*\nRemember that $\\sqrt{x^2} = |x|$. When $x \\to -\\infty$, $x$ is negative, so $\\sqrt{x^2} = -x$!\n$$\\lim_{x \\to -\\infty} \\frac{4x - 1}{\\sqrt{9x^2 + 2}} = \\lim_{x \\to -\\infty} \\frac{4x}{\\sqrt{x^2} \\cdot \\sqrt{9 + \\frac{2}{x^2}}} = \\lim_{x \\to -\\infty} \\frac{4x}{-x \\cdot \\sqrt{9}} = -\\frac{4}{3}$$\nThus, this function has TWO horizontal asymptotes: $y = \\frac{4}{3}$ as $x \\to \\infty$, and $y = -\\frac{4}{3}$ as $x \\to -\\infty$."
       },
       {
-        heading: '4. Algebraic Strategies for Indeterminate 0/0 (CED 1.6–1.7)',
-        content: `Always start by attempting **Direct Substitution**: plug in $x = c$.
-- If you get a real number $\\frac{k}{m}$, you are done! That is the limit.
-- If you get non-zero over zero $\\frac{k}{0}$ ($k \\neq 0$), there is a **Vertical Asymptote**; limit is $\\infty$, $-\\infty$, or DNE.
-- If you get $\\frac{0}{0}$ (**Indeterminate Form**), you MUST do more algebraic work:
-  1. **Factoring:** Factor numerator and denominator completely. Cancel the common $(x - c)$ factor that creates the zero, then substitute $x = c$ again.
-  2. **Conjugate Multiplication (Radicals):** If the expression contains square roots like $(\\sqrt{x+5} - 3)$, multiply numerator and denominator by its conjugate $(\\sqrt{x+5} + 3)$ using $(A - B)(A + B) = A^2 - B^2$.
-  3. **Complex Fractions (LCD):** Multiply every term in numerator and denominator by the common denominator to clear inner fractions.
-  4. **Trigonometric Limits:** Use $\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1$ and $\\lim_{x \\to 0} \\frac{1 - \\cos x}{x} = 0$.`
+        "heading": "4. Three-Part Definition of Continuity & Discontinuities (CED 1.10–1.13)",
+        "content": "A function $f(x)$ is continuous at $x = c$ if and only if:\n1. $f(c)$ is defined ($c$ is in the domain of $f$).\n2. $\\lim_{x \\to c} f(x)$ exists ($\\lim_{x \\to c^-} f(x) = \\lim_{x \\to c^+} f(x) = L$).\n3. $\\lim_{x \\to c} f(x) = f(c)$ (the limit value equals the function value).\n\n**Classification of Discontinuities:**\n- **Removable (Hole):** $\\lim_{x \\to c} f(x)$ exists, but $f(c)$ is undefined or $f(c) \\neq \\lim_{x \\to c} f(x)$.\n- **Jump Discontinuity:** $\\lim_{x \\to c^-} f(x) \\neq \\lim_{x \\to c^+} f(x)$ (both one-sided limits are finite numbers, but unequal). Common in piecewise functions.\n- **Infinite Discontinuity:** One or both one-sided limits approach $\\pm\\infty$ ($x = c$ is a vertical asymptote).\n- **Essential / Oscillating:** Function oscillates infinitely fast as $x \\to c$ (e.g., $f(x) = \\sin(1/x)$ at $x = 0$)."
       },
       {
-        heading: '5. Squeeze Theorem (CED 1.8)',
-        content: `If $g(x) \\leq f(x) \\leq h(x)$ for all $x$ near $c$, and $\\lim_{x \\to c} g(x) = \\lim_{x \\to c} h(x) = L$, then $\\lim_{x \\to c} f(x) = L$.
-- **Standard AP Example:** Evaluate $\\lim_{x \\to 0} x^2 \\sin\\left(\\frac{1}{x}\\right)$.
-  - Since $-1 \\leq \\sin\\left(\\frac{1}{x}\\right) \\leq 1$, multiplying by $x^2 \\geq 0$ gives $-x^2 \\leq x^2 \\sin\\left(\\frac{1}{x}\\right) \\leq x^2$.
-  - Because $\\lim_{x \\to 0} (-x^2) = 0$ and $\\lim_{x \\to 0} (x^2) = 0$, by the Squeeze Theorem the limit must be $0$.`
-      },
-      {
-        heading: '6. The 3-Part Continuity Test & Discontinuity Classification (CED 1.10–1.13)',
-        content: `A function $f$ is continuous at $x = c$ if and only if ALL THREE conditions are met:
-1. $f(c)$ is **defined** (there is a point at $x = c$).
-2. $\\lim_{x \\to c} f(x)$ **exists** (left limit = right limit = finite number).
-3. $\\lim_{x \\to c} f(x) = f(c)$ (the limit value equals the function value).
-
-**Official AP Discontinuity Comparison Table:**
-| Discontinuity Type | Left Limit $\\lim_{x \\to c^-}$ | Right Limit $\\lim_{x \\to c^+}$ | Two-Sided Limit $\\lim_{x \\to c}$ | Value $f(c)$ | Can it be Removed? | Classic Example |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Removable (Hole)** | $L$ | $L$ | Exists ($= L$) | Undefined or $\\neq L$ | **YES** (Define $f(c) = L$) | $f(x) = \\frac{x^2 - 4}{x - 2}$ at $x = 2$ |
-| **Jump** | $L_1$ | $L_2$ ($L_1 \\neq L_2$) | **DNE** | May exist | **NO** (Gap between lines) | $f(x) = \\frac{\|x\|}{x}$ at $x = 0$ |
-| **Infinite (VA)** | $\\pm\\infty$ | $\\pm\\infty$ | **DNE** (Unbounded) | Undefined | **NO** (Blows up) | $f(x) = \\frac{1}{x - 3}$ at $x = 3$ |
-| **Oscillating** | Oscillates $\\pm 1$ | Oscillates $\\pm 1$ | **DNE** | May exist | **NO** | $f(x) = \\sin(1/x)$ at $x = 0$ |`
-      },
-      {
-        heading: '7. Infinite Limits & End Behavior at Infinity (CED 1.14–1.15)',
-        content: `- **Vertical Asymptotes ($x = c$):** Occur where $\\lim_{x \\to c^-} f(x) = \\pm\\infty$ or $\\lim_{x \\to c^+} f(x) = \\pm\\infty$.
-- **Horizontal Asymptotes ($y = L$):** Occur as $x \\to \\infty$ or $x \\to -\\infty$.
-
-**Rational Functions End-Behavior & Asymptote Rules:**
-| Degree Comparison on $\\frac{P(x)}{Q(x)}$ | Dominance Growth | Horizontal Asymptote ($x \\to \\pm\\infty$) | AP Exam Behavior |
-| :--- | :---: | :---: | :---: |
-| **Bottom Heavy:** $\\text{deg}(P) < \\text{deg}(Q)$ | Denominator dominates | $y = 0$ ($x$-axis) | $\\lim_{x \\to \\pm\\infty} f(x) = 0$ |
-| **Equal Degrees:** $\\text{deg}(P) = \\text{deg}(Q)$ | Balanced growth | $y = \\frac{a_n}{b_m}$ | Ratio of leading coefficients |
-| **Top Heavy:** $\\text{deg}(P) > \\text{deg}(Q)$ | Numerator dominates | **No Horizontal Asymptote** | Shoots to $\\pm\\infty$ (or slant asymptote) |
-
-- **AP Exam Warning:** For functions involving $\\sqrt{x^2}$, remember that $\\sqrt{x^2} = |x|$. When $x \\to -\\infty$, $\\sqrt{x^2} = -x$, producing a negative horizontal asymptote on the left side!`
-      },
-      {
-        heading: '8. Intermediate Value Theorem (IVT) Free-Response Protocol (CED 1.16)',
-        content: `On AP Free Response Questions (FRQ), IVT is graded strictly on a 4-step justification rubric:
-1. **Hypothesis Check:** State explicitly that "$f(x)$ is continuous on the closed interval $[a, b]$". (If given as a differentiable function, note: "Differentiable implies continuous").
-2. **Compute Endpoints:** State numeric values $f(a)$ and $f(b)$.
-3. **Inequality Check:** State that target value $d$ lies strictly between the endpoints: $f(a) < d < f(b)$ (or $f(b) < d < f(a)$).
-4. **Official Conclusion:** "Therefore, by the Intermediate Value Theorem, there exists at least one number $c \\in (a, b)$ such that $f(c) = d$."`
+        "heading": "5. Intermediate Value Theorem (IVT) Protocol (CED 1.16)",
+        "content": "The Intermediate Value Theorem states that if $f$ is continuous on $[a, b]$, it must take on every value between $f(a)$ and $f(b)$.\n\n**The Official 3-Step FRQ Answer Template:**\n1. **State Continuity:** *\"Since $f(x)$ is continuous on the closed interval $[a, b]$...\"*\n2. **Evaluate Endpoints & State Inequality:** Calculate $f(a)$ and $f(b)$, then show that target value $d$ lies between them: *\"Because $f(a) < d < f(b)$ (or $f(b) < d < f(a)$)...\"*\n3. **Invoke IVT & Conclude:** *\"...by the Intermediate Value Theorem (IVT), there exists at least one value $c$ in $(a, b)$ such that $f(c) = d$.\"*\n\n*Roots Corollary:* If $f(a)$ and $f(b)$ have opposite signs ($f(a) \\cdot f(b) < 0$), then $f(x)$ has at least one root $c \\in (a, b)$ where $f(c) = 0$."
       }
     ],
-    workedExamples: [
+    "workedExamples": [
       {
-        title: 'Evaluating Indeterminate Limit with Radical Conjugate',
-        topicRef: 'CED 1.6',
-        question: 'Evaluate the limit: \\lim_{x \\to 4} \\frac{\\sqrt{x} - 2}{x - 4}',
-        solutionSteps: [
-          'Step 1 (Direct Substitution): Plug in x = 4. Numerator: sqrt(4) - 2 = 0. Denominator: 4 - 4 = 0. We have the indeterminate form 0/0.',
-          'Step 2 (Multiply by Conjugate): The radical conjugate of (sqrt(x) - 2) is (sqrt(x) + 2). Multiply both top and bottom by (sqrt(x) + 2).',
-          'Step 3 (Simplify Numerator): [sqrt(x) - 2][sqrt(x) + 2] = (sqrt(x))^2 - (2)^2 = x - 4.',
-          'Step 4 (Cancel Common Factor): The fraction becomes (x - 4) / [(x - 4)(sqrt(x) + 2)]. Cancel (x - 4) from numerator and denominator, leaving 1 / (sqrt(x) + 2).',
-          'Step 5 (Re-evaluate Limit): lim_{x -> 4} [1 / (sqrt(x) + 2)] = 1 / (sqrt(4) + 2) = 1 / (2 + 2) = 1/4.'
+        "title": "Evaluating Limits with Conjugate Radicals",
+        "topicRef": "CED 1.6 Algebraic Manipulation",
+        "question": "Evaluate $\\lim_{x \\to 0} \\frac{\\sqrt{x + 9} - 3}{x}$.",
+        "solutionSteps": [
+          "Step 1: Substitute x = 0: (\\sqrt{0+9} - 3)/0 = (3 - 3)/0 = 0/0 (indeterminate form).",
+          "Step 2: Multiply numerator and denominator by conjugate (\\sqrt{x + 9} + 3):",
+          "\\frac{(\\sqrt{x+9} - 3)(\\sqrt{x+9} + 3)}{x(\\sqrt{x+9} + 3)} = \\frac{(x + 9) - 9}{x(\\sqrt{x+9} + 3)} = \\frac{x}{x(\\sqrt{x+9} + 3)}",
+          "Step 3: Cancel common factor of x for x != 0:",
+          "\\lim_{x \\to 0} \\frac{1}{\\sqrt{x + 9} + 3}",
+          "Step 4: Direct substitute x = 0: \\frac{1}{\\sqrt{9} + 3} = \\frac{1}{3 + 3} = \\frac{1}{6}."
         ],
-        finalAnswer: '1/4',
-        apScoringTip: 'Never write "= 0/0" directly in your equality chain on an AP FRQ! State "Since lim of numerator is 0 and lim of denominator is 0, we apply algebraic simplification."'
+        "finalAnswer": "1/6",
+        "apScoringTip": "Never leave intermediate equal signs pointing to 0/0. Show the factoring and algebraic cancellation explicitly."
       },
       {
-        title: 'Continuity of Piecewise Function Border Point',
-        topicRef: 'CED 1.11',
-        question: 'Find the value of the constant k that makes f(x) continuous at x = 2, where f(x) = { 2x + k for x <= 2, and x^2 - 1 for x > 2 }.',
-        solutionSteps: [
-          'Step 1 (Left-hand limit & Value): For x <= 2, f(x) = 2x + k. So lim_{x -> 2^-} f(x) = f(2) = 2(2) + k = 4 + k.',
-          'Step 2 (Right-hand limit): For x > 2, f(x) = x^2 - 1. So lim_{x -> 2^+} f(x) = (2)^2 - 1 = 4 - 1 = 3.',
-          'Step 3 (Apply 3-Step Continuity Test): For f(x) to be continuous at x = 2, the left-hand limit and right-hand limit must be equal.',
-          'Step 4 (Equate and Solve): Set 4 + k = 3  ==>  k = 3 - 4 = -1.'
+        "title": "Determining Values of Constants for Piecewise Continuity",
+        "topicRef": "CED 1.11 Defining Continuity at a Point",
+        "question": "Find constants a and b such that f(x) is continuous everywhere: f(x) = { 2x + a for x < 1; 5 for x = 1; b*x^2 - 3 for x > 1 }.",
+        "solutionSteps": [
+          "Step 1: For f to be continuous at x = 1, lim_{x->1^-} f(x) = f(1) and lim_{x->1^+} f(x) = f(1).",
+          "Step 2: Left-hand limit: lim_{x->1^-} (2x + a) = 2(1) + a = 2 + a.",
+          "Step 3: Equate left limit to f(1) = 5: 2 + a = 5 ==> a = 3.",
+          "Step 4: Right-hand limit: lim_{x->1^+} (b*x^2 - 3) = b(1)^2 - 3 = b - 3.",
+          "Step 5: Equate right limit to f(1) = 5: b - 3 = 5 ==> b = 8."
         ],
-        finalAnswer: 'k = -1',
-        apScoringTip: 'Always show both one-sided limits explicitly: lim_{x -> 2^-} f(x) = 4 + k and lim_{x -> 2^+} f(x) = 3. AP readers award 1 point for setting the limits equal.'
-      },
-      {
-        title: 'Intermediate Value Theorem Root Justification',
-        topicRef: 'CED 1.16',
-        question: 'Show that the polynomial equation x^3 + 2x - 5 = 0 has at least one real solution in the interval (1, 2).',
-        solutionSteps: [
-          'Step 1 (Define function & Check Continuity): Let f(x) = x^3 + 2x - 5. Since f(x) is a polynomial, f is continuous on the closed interval [1, 2].',
-          'Step 2 (Evaluate Endpoints): Compute f(1) = 1^3 + 2(1) - 5 = 1 + 2 - 5 = -2. Compute f(2) = 2^3 + 2(2) - 5 = 8 + 4 - 5 = +7.',
-          'Step 3 (Compare with Target Value d = 0): Notice that f(1) = -2 < 0 and f(2) = 7 > 0, so 0 is strictly between f(1) and f(2).',
-          'Step 4 (Conclusion by IVT): By the Intermediate Value Theorem, since f is continuous on [1, 2] and f(1) < 0 < f(2), there exists at least one c in (1, 2) such that f(c) = 0.'
-        ],
-        finalAnswer: 'Proven: Guaranteed root c in (1, 2) such that f(c) = 0.',
-        apScoringTip: 'Failure to explicitly state that f(x) is continuous on [1, 2] will automatically forfeit the justification point on the AP exam!'
+        "finalAnswer": "a = 3, b = 8",
+        "apScoringTip": "Show both one-sided limits separately before setting them equal to f(1). AP readers look for the explicit limit statements."
       }
     ],
-    diagrams: [
+    "diagrams": [
       {
-        id: 'hole_discontinuity',
-        title: 'Removable Discontinuity (Hole)',
-        subtitle: 'Limit exists, but function has an open hole at x = c',
-        type: 'hole_discontinuity',
-        description: 'The curve approaches a single y-value L from both the left and right, so lim_{x -> c} f(x) = L exists. However, f(c) is undefined or defined as an isolated point elsewhere.',
-        takeaway: 'Removable because defining f(c) = L restores continuity.'
-      },
-      {
-        id: 'jump_discontinuity',
-        title: 'Jump Discontinuity',
-        subtitle: 'Left-hand limit != Right-hand limit (Gap between branches)',
-        type: 'jump_discontinuity',
-        description: 'The left branch approaches a finite height L1 while the right branch approaches a different finite height L2. The two-sided limit Does Not Exist (DNE).',
-        takeaway: 'Cannot be fixed by redefining a single point. Typical in piecewise functions.'
-      },
-      {
-        id: 'vertical_asymptote',
-        title: 'Infinite Discontinuity (Vertical Asymptote)',
-        subtitle: 'Curve shoots to +infinity or -infinity at x = c',
-        type: 'vertical_asymptote',
-        description: 'As x approaches c, the values of f(x) grow without bound. Occurs at zeros of the denominator that cannot be canceled.',
-        takeaway: 'Line x = c is a vertical asymptote; limit does not exist as a finite number.'
-      },
-      {
-        id: 'corner_not_differentiable',
-        title: 'Sharp Corner / Cusp (f(x) = |x|)',
-        subtitle: 'Continuous everywhere, but NOT differentiable at the sharp corner',
-        type: 'corner_not_differentiable',
-        description: 'The function f(x) = |x| has no holes, jumps, or asymptotes, so it is 100% continuous at x = 0. However, the slope from the left is -1 and from the right is +1, meaning f\'(0) DNE.',
-        takeaway: 'Proves that Continuity does NOT imply Differentiability.'
-      },
-      {
-        id: 'ivt_guarantee',
-        title: 'Intermediate Value Theorem (IVT)',
-        subtitle: 'Continuous curve cannot skip any intermediate y-value d',
-        type: 'ivt_guarantee',
-        description: 'If f is continuous on [a, b], a pencil cannot travel from (a, f(a)) to (b, f(b)) without crossing every horizontal line y = d between f(a) and f(b).',
-        takeaway: 'Guarantees the existence of at least one input c in (a, b) where f(c) = d.'
+        "id": "hole_jump_asymptote_comparison",
+        "title": "The Three Types of Discontinuities",
+        "subtitle": "Removable (Hole) vs Jump vs Infinite (Vertical Asymptote)",
+        "type": "discontinuity_types",
+        "description": "Hole: two-sided limit exists but f(c) != L. Jump: one-sided limits are finite but unequal. Vertical asymptote: values shoot to +/- infinity.",
+        "takeaway": "Only removable discontinuities can be repaired by defining or redefining f(c)."
       }
     ],
-        commonTraps: [
-      'Trap 1: Writing "= 0/0" in equality chains. In AP grading, $\\frac{0}{0}$ is strictly undefined and NOT a real number. Write: "Because $\\lim f(x) = 0$ and $\\lim g(x) = 0$, this yields indeterminate form $\\frac{0}{0}$. Applying algebraic simplification / L\'Hôpital\'s Rule..." to avoid losing communication points.',
-      'Trap 2: Evaluating $\\lim_{x \\to 2} \\frac{|x - 2|}{x - 2}$ without directional tests. From left ($x \\to 2^-$), $-\\frac{x-2}{x-2} = -1$. From right ($x \\to 2^+$), $+\\frac{x-2}{x-2} = +1$. Because $-1 \\neq +1$, the overall two-sided limit DNE.',
-      'Trap 3: Assuming continuity guarantees differentiability. Sharp turn corners (e.g., $f(x) = |x|$ at $x = 0$) are perfectly continuous yet non-differentiable because left and right tangent slopes disagree.',
-      'Trap 4: Miscalculating $\\sqrt{x^2}$ when $x \\to -\\infty$. Remember $\\sqrt{x^2} = |x|$. When $x < 0$, $\\sqrt{x^2} = -x$. Factoring out in the denominator introduces a mandatory negative sign: $$\\lim_{x \\to -\\infty} \\frac{3x - 1}{\\sqrt{4x^2 + 5}} = \\frac{3}{-\\sqrt{4}} = -\\frac{3}{2}$$'
+    "commonTraps": [
+      "Writing \"= 0/0\" in equality chains on FRQs. 0/0 is undefined. State: \"Since lim numerator = 0 and lim denominator = 0, applying algebraic simplification...\"",
+      "Assuming continuity implies differentiability. Sharp turns like f(x) = |x| at x = 0 are continuous but NOT differentiable.",
+      "Forgetting the negative sign when evaluating limits at -infinity involving radicals: sqrt(x^2) = -x for x < 0.",
+      "Using IVT without verifying and stating that f is continuous on the closed interval [a, b]."
     ],
-    cramSheet: [
-      'Rule 01 (Existence of a Two-Sided Limit): lim_{x->c} f(x) = L exists if and only if lim_{x->c^-} f(x) = lim_{x->c^+} f(x) = L.',
-      'Rule 02 (Three-Step Continuity Definition): Function f is continuous at x = c <=> (1) f(c) is defined, (2) lim_{x->c} f(x) exists, and (3) lim_{x->c} f(x) = f(c).',
-      'Rule 03 (Indeterminate 0/0 Directive): 0/0 does NOT mean 0 or DNE. It means DO MORE WORK: Factor & Cancel, Conjugate Radical, Trig Identities, or L\'Hôpital\'s Rule.',
-      'Rule 04 (Intermediate Value Theorem - IVT): Must state continuity on closed interval [a, b]. IVT guarantees an OUTPUT value d satisfying f(c) = d, never an input coordinate!'
+    "cramSheet": [
+      "Limit exists <=> Left-hand limit = Right-hand limit.",
+      "Continuous at c <=> f(c) defined, lim exists, and lim f(x) = f(c).",
+      "Horizontal Asymptote: lim_{x->+/-inf} f(x) = L. Bottom heavy = 0, Equal degrees = ratio of leading coefficients.",
+      "IVT guarantees a y-value (output), NEVER an x-value (input).",
+      "lim_{x->0} sin(x)/x = 1, lim_{x->0} (1 - cos x)/x = 0."
     ]
   },
-
-  // ==========================================
-  // UNIT 2: DIFFERENTIATION: DEFINITION AND FUNDAMENTAL PROPERTIES
-  // ==========================================
   {
-    unitId: 'u2',
-    unitNumber: 2,
-    title: 'Differentiation: Definition & Properties',
-    examWeight: '10%–12% of AP Exam',
-    bigIdea: 'The derivative measures the instantaneous rate of change of a function, defined rigorously as the limit of the average rate of change.',
-    keyTheorems: [
+    "unitId": "u2",
+    "unitNumber": 2,
+    "title": "Differentiation: Definition and Fundamental Properties",
+    "examWeight": "10%–12% of AP Exam",
+    "bigIdea": "The derivative quantifies the instantaneous rate of change of a function, defined as the limit of secant slopes. Differentiability requires local smoothness and strict continuity.",
+    "keyTheorems": [
       {
-        name: 'Differentiability Implies Continuity',
-        conditions: 'f(x) is differentiable at x = c (f\'(c) exists).',
-        conclusion: 'f(x) is guaranteed to be continuous at x = c.',
-        apTip: 'The converse is FALSE! Continuity does NOT imply differentiability (e.g., sharp turns, corners, cusps, and vertical tangents are continuous but not differentiable).'
+        "name": "Differentiability Implies Continuity Theorem",
+        "conditions": "f(x) is differentiable at x = c (i.e. f'(c) exists as a finite real number).",
+        "conclusion": "f(x) is guaranteed to be continuous at x = c.",
+        "apTip": "The CONVERSE IS FALSE! Continuity does NOT guarantee differentiability. Functions with sharp corners (f(x) = |x|), cusps (f(x) = x^(2/3)), or vertical tangents (f(x) = x^(1/3)) are continuous yet non-differentiable at x = 0."
+      },
+      {
+        "name": "Linearity of the Derivative Operator",
+        "conditions": "Functions f and g are differentiable; c is any constant.",
+        "conclusion": "d/dx[c*f(x)] = c*f'(x) and d/dx[f(x) +/- g(x)] = f'(x) +/- g'(x).",
+        "apTip": "Allows splitting complicated polynomials and combinations into term-by-term derivatives."
       }
     ],
-    formulas: [
+    "formulas": [
       {
-        name: 'Limit Definition of Derivative (h-form)',
-        latex: 'f\'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}',
-        explanation: 'Represents the slope of the secant line as the distance between points h approaches zero.'
+        "name": "Limit Definition of Derivative (h-form)",
+        "latex": "f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}",
+        "explanation": "Represents the limiting slope of the secant line between (x, f(x)) and (x+h, f(x+h)) as the horizontal distance h approaches 0."
       },
       {
-        name: 'Alternative Limit Definition (at a point a)',
-        latex: 'f\'(a) = \\lim_{x \\to a} \\frac{f(x) - f(a)}{x - a}',
-        explanation: 'Often tested on MCQs where College Board asks you to evaluate a limit that is actually a derivative in disguise.'
+        "name": "Alternative Limit Definition at a Specific Point x = a",
+        "latex": "f'(a) = \\lim_{x \\to a} \\frac{f(x) - f(a)}{x - a}",
+        "explanation": "Heavily tested on AP MCQs as \"derivatives in disguise\". If a limit matches this structure, avoid algebraic expansion and simply evaluate f'(a)."
       },
       {
-        name: 'Power Rule',
-        latex: '\\frac{d}{dx}[x^n] = n x^{n-1}',
-        explanation: 'Applies to any real number n (positive, negative, or fractional).'
+        "name": "Power Rule",
+        "latex": "\\frac{d}{dx}[x^n] = n x^{n-1} \\quad \\text{for any real } n",
+        "explanation": "Bring down exponent, decrease power by 1. Rewrite radicals as x^(p/q) and denominators as x^(-n) before applying!"
       },
       {
-        name: 'Product Rule',
-        latex: '\\frac{d}{dx}[f(x) g(x)] = f\'(x) g(x) + f(x) g\'(x)',
-        explanation: 'Derive first times second, plus first times derive second.'
+        "name": "Product Rule",
+        "latex": "\\frac{d}{dx}[f(x)g(x)] = f'(x)g(x) + f(x)g'(x)",
+        "explanation": "Derivative of first times second, plus first times derivative of second. NEVER multiply derivatives: (f*g)' != f'*g'!"
       },
       {
-        name: 'Quotient Rule',
-        latex: '\\frac{d}{dx}\\left[\\frac{f(x)}{g(x)}\\right] = \\frac{f\'(x) g(x) - f(x) g\'(x)}{[g(x)]^2}',
-        explanation: 'Mnemonic: (Low d-High - High d-Low) / (Low)^2.'
+        "name": "Quotient Rule",
+        "latex": "\\frac{d}{dx}\\left[\\frac{f(x)}{g(x)}\\right] = \\frac{f'(x)g(x) - f(x)g'(x)}{[g(x)]^2}",
+        "explanation": "Mnemonic: \"Low d-High minus High d-Low over Low squared\". The subtraction order in the numerator is strictly non-commutative."
       },
       {
-        name: 'Derivatives of Exponential & Logarithmic Functions',
-        latex: '\\frac{d}{dx}[e^x] = e^x, \\quad \\frac{d}{dx}[a^x] = a^x \\ln a, \\quad \\frac{d}{dx}[\\ln x] = \\frac{1}{x}',
-        explanation: 'For ln|x|, derivative is still 1/x for x != 0.'
+        "name": "Derivatives of Exponential and Logarithmic Functions",
+        "latex": "\\frac{d}{dx}[e^x] = e^x, \\quad \\frac{d}{dx}[a^x] = a^x \\ln a, \\quad \\frac{d}{dx}[\\ln x] = \\frac{1}{x}, \\quad \\frac{d}{dx}[\\log_a x] = \\frac{1}{x \\ln a}",
+        "explanation": "Base e is natural; other bases require scaling by ln(a)."
       },
       {
-        name: 'Derivatives of All 6 Trigonometric Functions',
-        latex: '\\begin{aligned} \\frac{d}{dx}[\\sin x] &= \\cos x & \\frac{d}{dx}[\\cos x] &= -\\sin x \\\\ \\frac{d}{dx}[\\tan x] &= \\sec^2 x & \\frac{d}{dx}[\\cot x] &= -\\csc^2 x \\\\ \\frac{d}{dx}[\\sec x] &= \\sec x \\tan x & \\frac{d}{dx}[\\csc x] &= -\\csc x \\cot x \\end{aligned}',
-        explanation: 'Notice that all "co-" functions (cos, cot, csc) have NEGATIVE derivatives!'
+        "name": "Derivatives of All 6 Trigonometric Functions",
+        "latex": "\\begin{aligned} \\frac{d}{dx}[\\sin x] &= \\cos x & \\frac{d}{dx}[\\cos x] &= -\\sin x \\\\ \\frac{d}{dx}[\\tan x] &= \\sec^2 x & \\frac{d}{dx}[\\cot x] &= -\\csc^2 x \\\\ \\frac{d}{dx}[\\sec x] &= \\sec x \\tan x & \\frac{d}{dx}[\\csc x] &= -\\csc x \\cot x \\end{aligned}",
+        "explanation": "All \"co-\" functions (cosine, cotangent, cosecant) produce a NEGATIVE sign in their derivative!"
       }
     ],
-    sections: [
+    "sections": [
       {
-        heading: '1. Recognizing Derivatives in Limit Disguise',
-        content: `College Board often presents limits that look complicated, but are actually testing the definition of derivative.
-- **Example:** $\\lim_{h \\to 0} \\frac{\\cos(\\pi + h) - \\cos(\\pi)}{h}$ is just the definition of $f'(\\pi)$ for $f(x) = \\cos x$.
-- Since $f'(x) = -\\sin x$, the limit equals $-\\sin(\\pi) = 0$.
-- **Example 2:** $\\lim_{x \\to 4} \\frac{x^5 - 1024}{x - 4}$ is $f'(4)$ for $f(x) = x^5$. Using power rule, $5(4)^4 = 1280$.`
+        "heading": "1. Average vs. Instantaneous Rate of Change (CED 2.1–2.2)",
+        "content": "Understanding the transition from algebra to calculus:\n- **Average Rate of Change (AROC):** Measures slope of the secant line between two distinct points $(a, f(a))$ and $(b, f(b))$:\n  $$\\text{AROC} = \\frac{f(b) - f(a)}{b - a}$$\n- **Instantaneous Rate of Change (IROC):** The slope of the tangent line at a single instant $x = a$, defined as the limit of secant slopes:\n  $$\\text{IROC} = f'(a) = \\lim_{h \\to 0} \\frac{f(a+h) - f(a)}{h} = \\lim_{x \\to a} \\frac{f(x) - f(a)}{x - a}$$\n- On AP Exam word problems, when asked for \"rate of change\", it **always means instantaneous rate** unless the word \"average\" is explicitly stated."
       },
       {
-        heading: '2. Four Failure Points for Differentiability Summary Table',
-        content: `A function fails to have a derivative at $x = c$ in four key geometric scenarios:
-| Failure Type | Geometric Feature | Left vs Right Slope | AP Example Function |
-| :--- | :--- | :--- | :--- |
-| **Corner** | Sharp turn / V-shape | Left slope $\\neq$ Right slope | $f(x) = \|x\|$ at $x=0$ |
-| **Cusp** | Sharp point / beak | Approaches $+\\infty$ vs $-\\infty$ | $f(x) = x^{2/3}$ at $x=0$ |
-| **Vertical Tangent** | Infinitely steep tangent | Both slopes approach $\\pm\\infty$ | $f(x) = x^{1/3}$ at $x=0$ |
-| **Discontinuity** | Hole, jump, or asymptote | Limit does not equal $f(c)$ | $f(x) = \\text{int}(x)$ |`
+        "heading": "2. Recognizing \"Derivatives in Disguise\" (CED 2.3)",
+        "content": "The College Board frequently tests whether students recognize standard limit structures as derivatives:\n\n| Disguised Limit Problem | Underlying Function $f(x)$ & Point $a$ | Derivative Evaluation | Correct Answer |\n| :--- | :--- | :--- | :--- |\n| $\\lim_{h \\to 0} \\frac{\\cos(\\pi + h) - \\cos(\\pi)}{h}$ | $f(x) = \\cos x$ at $a = \\pi$ | $f'(x) = -\\sin x \\implies -\\sin(\\pi)$ | **$0$** |\n| $\\lim_{x \\to 2} \\frac{x^{10} - 1024}{x - 2}$ | $f(x) = x^{10}$ at $a = 2$ | $f'(x) = 10x^9 \\implies 10(2)^9$ | **$5120$** |\n| $\\lim_{h \\to 0} \\frac{e^{3+h} - e^3}{h}$ | $f(x) = e^x$ at $a = 3$ | $f'(x) = e^x \\implies e^3$ | **$e^3$** |\n| $\\lim_{x \\to \\pi/4} \\frac{\\tan x - 1}{x - \\pi/4}$ | $f(x) = \\tan x$ at $a = \\pi/4$ | $f'(x) = \\sec^2 x \\implies \\sec^2(\\pi/4)$ | **$(\\sqrt{2})^2 = 2$** |\n\n*Exam Hack:* Never expand high powers like $(x+h)^{10}$ or use L'Hôpital's Rule unnecessarily; identify the parent function and evaluate its derivative directly!"
       },
       {
-        heading: '3. Derivative Rules Reference Matrix',
-        content: `Standard differentiation rules for all College Board CED calculus exams:
-| Rule Name | Mathematical Definition | Key AP Exam Nuance |
-| :--- | :--- | :--- |
-| **Constant Multiple** | $\\frac{d}{dx}[c \\cdot f(x)] = c \\cdot f'(x)$ | Pull constants outside the derivative operator. |
-| **Product Rule** | $\\frac{d}{dx}[uv] = u'v + uv'$ | Sum of two terms; order does not affect sign. |
-| **Quotient Rule** | $\\frac{d}{dx}[\\frac{u}{v}] = \\frac{u'v - uv'}{v^2}$ | Order matters! Low dHigh minus High dLow. |
-| **Sine / Cosine** | $\\frac{d}{dx}[\\sin x] = \\cos x, \\frac{d}{dx}[\\cos x] = -\\sin x$ | Angle must be in radians; watch for negative signs. |
-| **Tangent / Secant** | $\\frac{d}{dx}[\\tan x] = \\sec^2 x, \\frac{d}{dx}[\\sec x] = \\sec x \\tan x$ | All "co-" functions produce negative derivatives. |`
+        "heading": "3. Four Failures of Differentiability (CED 2.4)",
+        "content": "For $f'(c)$ to exist, the curve must be continuous at $c$ and have the SAME finite tangent slope from both left and right. Differentiation fails in four distinct scenarios:\n\n1. **Corner (Sharp Turn):** Left and right limits of the difference quotient exist but are unequal. Example: $f(x) = |x|$ at $x = 0$ (left slope is $-1$, right slope is $+1$).\n2. **Cusp (Sharp Point):** Secant slopes approach opposite infinities. Example: $f(x) = x^{2/3}$ at $x = 0$ (left slope $\\to -\\infty$, right slope $\\to +\\infty$).\n3. **Vertical Tangent Line:** Tangent line is perpendicular to the $x$-axis, so slope is infinite. Example: $f(x) = x^{1/3}$ at $x = 0$ (both slopes $\\to +\\infty$).\n4. **Any Discontinuity:** If $f$ is not continuous at $c$ (hole, jump, or asymptote), $f'(c)$ automatically DOES NOT EXIST."
+      },
+      {
+        "heading": "4. Estimating Derivatives from Discrete Tabular Data (CED 2.3)",
+        "content": "On AP Free Response Question 1 or 2, you are almost always given a data table and asked to estimate $f'(c)$ for a point $c$ that lies between two recorded inputs $t_1 < c < t_2$.\n\n**The Symmetric Secant Rule:**\n$$f'(c) \\approx \\frac{f(t_2) - f(t_1)}{t_2 - t_1}$$\n**Essential Rules to Earn Full AP Credit:**\n1. Choose the two data points that **immediately bracket** the target value $c$. (Do NOT use the first and last table entries!).\n2. Show the difference quotient: $\\frac{f(t_2) - f(t_1)}{t_2 - t_1}$ with the exact numbers from the table.\n3. Attach authentic units of measure: $\\frac{\\text{units of } f}{\\text{units of } t}$. (e.g., if $H(t)$ is temperature in $^\\circ\\text{F}$ and $t$ is minutes, $H'(5)$ has units $^\\circ\\text{F/min}$)."
+      },
+      {
+        "heading": "5. Tangent Line Equations & Local Approximations (CED 2.1–2.2)",
+        "content": "To write the tangent line to $y = f(x)$ at $x = a$:\n1. Find the point of tangency: $(a, f(a))$.\n2. Find the slope of tangency: $m = f'(a)$.\n3. Write the equation in **Point-Slope Form**:\n   $$y - f(a) = f'(a)(x - a)$$\n\n*AP Chief Reader Pro-Tip:* Never waste time converting to slope-intercept form ($y = mx + b$) on free response questions. Point-slope form earns 100% full credit and eliminates careless algebraic arithmetic slips!"
+      },
+      {
+        "heading": "6. Limit Definitions of Derivative Equivalence & Non-Differentiability Proofs (CED 2.1-2.4)",
+        "content": "Rigorous analysis of the two equivalent limit definitions of the derivative:\n\n* **Definition 1 (Derivative as a Function)**:\n  $$f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}$$\n* **Definition 2 (Derivative at a Specific Point $x = a$)**:\n  $$f'(a) = \\lim_{x \\to a} \\frac{f(x) - f(a)}{x - a}$$\n* **Differentiability Implies Continuity Theorem**:\n  * If a function $f$ is differentiable at $x = c$, then $f$ MUST be continuous at $x = c$.\n  * **Proof**: $\\lim_{x \\to c} [f(x) - f(c)] = \\lim_{x \\to c} \\left[\\frac{f(x)-f(c)}{x-c} \\cdot (x-c)\\right] = f'(c) \\cdot 0 = 0 \\implies \\lim_{x \\to c} f(x) = f(c)$.\n  * **The Converse is FALSE**: Continuity does NOT imply differentiability!\n* **The Four Geometric Modes of Non-Differentiability**:\n  1. **Corner**: Left-hand derivative and right-hand derivative exist but are unequal finite numbers (e.g., $f(x) = |x|$ at $x=0$, where $f'_-(0) = -1$ and $f'_+(0) = +1$).\n  2. **Cusp**: Left-hand and right-hand derivatives approach opposite infinities (e.g., $f(x) = x^{2/3}$ at $x=0$, where slopes blow up to $-\\infty$ and $+\\infty$).\n  3. **Vertical Tangent**: Secant slopes approach the same infinity: $\\lim_{x \\to a} |f'(x)| = \\infty$ (e.g., $f(x) = x^{1/3}$ at $x=0$).\n  4. **Discontinuity**: Jump, removable hole, or infinite asymptote (continuity is a strict prerequisite for differentiability)."
+      },
+      {
+        "heading": "7. Transcendental Differentiation & Logarithmic Differentiation Technique (CED 2.7-2.9)",
+        "content": "Derivatives of exponential, logarithmic, and variable-base functions:\n\n* **The Special Trigonometric Limits**:\n  $$\\lim_{\\theta \\to 0} \\frac{\\sin\\theta}{\\theta} = 1 \\quad \\text{and} \\quad \\lim_{\\theta \\to 0} \\frac{1 - \\cos\\theta}{\\theta} = 0$$\n* **General Exponential & Logarithmic Rules**:\n  * $\\frac{d}{dx}[a^x] = a^x \\ln a$ (for $a > 0, a \\neq 1$).\n  * $\\frac{d}{dx}[\\log_a x] = \\frac{1}{x \\ln a}$.\n* **The Logarithmic Differentiation Technique (Variable Base & Variable Exponent)**:\n  * When differentiating expressions of the form $y = [g(x)]^{h(x)}$ (e.g., $y = x^{\\sin x}$), neither the Power Rule nor the Exponential Rule applies!\n  * **Step-by-Step Procedure**:\n    1. Take natural logarithm of both sides: $\\ln y = \\ln[g(x)^{h(x)}] = h(x) \\cdot \\ln[g(x)]$.\n    2. Differentiate implicitly with respect to $x$: $\\frac{1}{y} \\frac{dy}{dx} = h'(x)\\ln[g(x)] + h(x) \\frac{g'(x)}{g(x)}$.\n    3. Multiply through by $y$: $\\frac{dy}{dx} = y \\left[h'(x)\\ln(g(x)) + \\frac{h(x)g'(x)}{g(x)}\\right]$.\n    4. Substitute original function $y$: $\\frac{dy}{dx} = [g(x)]^{h(x)} \\left[h'(x)\\ln(g(x)) + \\frac{h(x)g'(x)}{g(x)}\\right]$."
       }
     ],
-    workedExamples: [
+    "workedExamples": [
       {
-        title: 'Finding Tangent Line Equation to a Polynomial Curve',
-        topicRef: 'CED 2.1-2.2',
-        question: 'Find the equation of the line tangent to the graph of f(x) = 2x^3 - 4x + 1 at x = 2.',
-        solutionSteps: [
-          'Step 1 (Find the y-coordinate): Substitute x = 2 into f(x): f(2) = 2(2)^3 - 4(2) + 1 = 16 - 8 + 1 = 9. The point of tangency is (2, 9).',
-          'Step 2 (Find the general derivative): Differentiate f(x) using the power rule: f\'(x) = 6x^2 - 4.',
-          'Step 3 (Evaluate slope at x = 2): Substitute x = 2 into f\'(x): m = f\'(2) = 6(2)^2 - 4 = 24 - 4 = 20.',
-          'Step 4 (Write point-slope equation): Using y - y_1 = m(x - x_1), write y - 9 = 20(x - 2).'
+        "title": "Estimating Instantaneous Rate of Change from a Table with Units",
+        "topicRef": "CED 2.3 Estimating Derivatives",
+        "question": "A hot metal rod cools in a lab. Temperature $T(t)$ in $^\\circ\\text{C}$ is recorded over time $t$ in minutes: $T(0) = 180, T(2) = 142, T(5) = 100, T(9) = 65$. Estimate $T'(3.5)$ and interpret its meaning in context with correct units.",
+        "solutionSteps": [
+          "Step 1: Identify the two points that immediately bracket t = 3.5: t_1 = 2 and t_2 = 5.",
+          "Step 2: Set up the average rate of change secant formula: T'(3.5) \\approx \\frac{T(5) - T(2)}{5 - 2}.",
+          "Step 3: Substitute values: \\frac{100 - 142}{5 - 2} = \\frac{-42}{3} = -14 ^\\circ\\text{C/min}.",
+          "Step 4: Contextual interpretation: At time t = 3.5 minutes, the temperature of the rod is decreasing at an approximate rate of 14 ^\\circ\\text{C per minute}."
         ],
-        finalAnswer: 'y - 9 = 20(x - 2)   (or y = 20x - 31)',
-        apScoringTip: 'On AP FRQs, always leave your tangent line in point-slope form y - y_1 = m(x - x_1). You will earn full credit and avoid careless algebra errors converting to slope-intercept form!'
+        "finalAnswer": "T'(3.5) \\approx -14 ^\\circ\\text{C/min}",
+        "apScoringTip": "When using the word \"decreasing\", omit the negative sign in the verbal sentence (\"decreasing at 14 ^\\circC/min\"). If you write \"decreasing at -14\", you create a double negative which AP readers penalize."
       },
       {
-        title: 'Differentiating Quotient with Trigonometric Function',
-        topicRef: 'CED 2.8-2.9',
-        question: 'Find the derivative of g(x) = [sin(x)] / [x^2 + 1].',
-        solutionSteps: [
-          'Step 1 (Identify terms): Let u(x) = sin(x) (High) and v(x) = x^2 + 1 (Low).',
-          'Step 2 (Compute separate derivatives): u\'(x) = cos(x) and v\'(x) = 2x.',
-          'Step 3 (Apply Quotient Rule formula): g\'(x) = [u\'(x)v(x) - u(x)v\'(x)] / [v(x)]^2.',
-          'Step 4 (Substitute and group): g\'(x) = [(cos x)(x^2 + 1) - (sin x)(2x)] / [(x^2 + 1)^2] = [(x^2 + 1)cos(x) - 2x sin(x)] / (x^2 + 1)^2.'
+        "title": "Applying Quotient and Product Rules with Trigonometric Functions",
+        "topicRef": "CED 2.8–2.10",
+        "question": "Find $\\frac{dy}{dx}$ for $y = \\frac{x^2 \\sin x}{e^x + 1}$.",
+        "solutionSteps": [
+          "Step 1: Identify structure: Overall quotient u/v where u = x^2 * sin(x) and v = e^x + 1.",
+          "Step 2: Differentiate numerator u using product rule: u' = (2x)(sin x) + (x^2)(cos x).",
+          "Step 3: Differentiate denominator v: v' = e^x.",
+          "Step 4: Apply Quotient Rule: dy/dx = [u' * v - u * v'] / [v^2].",
+          "Step 5: Substitute: \\frac{[(2x \\sin x + x^2 \\cos x)(e^x + 1)] - [(x^2 \\sin x)(e^x)]}{(e^x + 1)^2}."
         ],
-        finalAnswer: 'g\'(x) = [(x^2 + 1)cos(x) - 2x sin(x)] / [(x^2 + 1)^2]',
-        apScoringTip: 'Remember the mnemonic "Low d-High minus High d-Low over Low squared". Reversing the subtraction numerator will result in a sign error deduction.'
-      },
-      {
-        title: 'Evaluating Limit Disguised Derivative',
-        topicRef: 'CED 2.3',
-        question: 'Evaluate the limit: lim_{h -> 0} [cos(pi + h) - cos(pi)] / h.',
-        solutionSteps: [
-          'Step 1 (Recognize definition of derivative): Compare with f\'(a) = lim_{h -> 0} [f(a + h) - f(a)] / h. Here f(x) = cos(x) and a = pi.',
-          'Step 2 (Find derivative of base function): For f(x) = cos(x), f\'(x) = -sin(x).',
-          'Step 3 (Evaluate at target point): f\'(pi) = -sin(pi) = 0.'
-        ],
-        finalAnswer: '0',
-        apScoringTip: 'Never spend time expanding trig identities or running L\'Hôpital\'s rule when a limit directly matches the derivative definition f\'(a). State the function and value of a directly.'
+        "finalAnswer": "\\frac{(2x \\sin x + x^2 \\cos x)(e^x + 1) - x^2 e^x \\sin x}{(e^x + 1)^2}",
+        "apScoringTip": "On AP Free Response, do NOT waste time multiplying out or simplifying algebraic numerators unless specifically instructed to solve for zero. Unsimplified correct derivatives earn full points."
       }
     ],
-    diagrams: [
+    "diagrams": [
       {
-        id: 'd_u2_1',
-        title: 'Secant to Tangent Line Transition',
-        subtitle: 'Slope of secant line approaches instantaneous derivative f\'(x) as h -> 0',
-        type: 'tangent_secant_line',
-        description: 'The derivative f\'(x) is geometrically defined as the limit of secant slopes connecting (x, f(x)) and (x+h, f(x+h)) as the distance h approaches zero.',
-        takeaway: 'Average rate of change is the secant slope Δy/h; instantaneous rate of change is the tangent slope f\'(x).'
-      },
-      {
-        id: 'd_u2_2',
-        title: 'Sharp Corner: Differentiability Failure',
-        subtitle: 'Continuous everywhere, but left and right slopes disagree',
-        type: 'corner_not_differentiable',
-        description: 'At a sharp corner such as f(x) = |x| at x = 0, the left-hand derivative is -1 while the right-hand derivative is +1. Because one-sided derivatives disagree, f\'(0) does not exist.',
-        takeaway: 'Differentiability implies continuity, but continuity does NOT guarantee differentiability!'
+        "id": "tangent_secant_limit",
+        "title": "Secant Lines Collapsing into the Tangent Line",
+        "subtitle": "Geometric Limit Definition as h -> 0",
+        "type": "tangent_limit",
+        "description": "As point Q(x+h, f(x+h)) slides along the curve toward fixed point P(x, f(x)), secant line slopes approach the instantaneous tangent line slope.",
+        "takeaway": "Derivative is the exact instantaneous rate of change and the slope of the tangent line."
       }
     ],
-    commonTraps: [
-      'Derivative of a quotient is NOT the quotient of derivatives! Always use the Quotient Rule.',
-      'Sign errors in Quotient Rule: It is Low*dHigh MINUS High*dLow. Swapping the order results in an opposite sign.',
-      'Forgetting that d/dx[pi^2] = 0 or d/dx[e^3] = 0. They are CONSTANTS, not power functions!'
+    "commonTraps": [
+      "Claiming continuity implies differentiability. |x| at x = 0 is continuous but not differentiable (sharp corner).",
+      "Quotient Rule sign reversal: Writing (High dLow - Low dHigh). The numerator is strictly (Low dHigh - High dLow).",
+      "Forgetting the negative sign on \"co-\" trig derivatives: d/dx[cos x] = -sin x, d/dx[cot x] = -csc^2 x, d/dx[csc x] = -csc x cot x.",
+      "Dropping units in tabular rate estimations. Always write (units of numerator) / (units of denominator)."
     ],
-    cramSheet: [
-      'Derivative = Instantaneous rate of change = Slope of tangent line.',
-      'Differentiable => Continuous. Continuous does NOT mean differentiable.',
-      'All "co-" trig derivatives have negative signs.',
-      'Product Rule: First dSecond + Second dFirst.',
-      'Quotient Rule: (Low dHigh - High dLow) / (Low squared).'
+    "cramSheet": [
+      "Differentiable => Continuous. Continuous does NOT mean differentiable.",
+      "Product Rule: (uv)' = u'v + uv'. Quotient Rule: (u/v)' = (u'v - uv') / v^2.",
+      "Trig: sin' = cos, cos' = -sin, tan' = sec^2, sec' = sec*tan, cot' = -csc^2, csc' = -csc*cot.",
+      "Exponentials/Logs: d/dx[e^x] = e^x, d/dx[a^x] = a^x ln(a), d/dx[ln x] = 1/x.",
+      "Point-slope tangent line: y - y_1 = m(x - x_1)."
     ]
   },
-
-  // ==========================================
-  // UNIT 3: DIFFERENTIATION: COMPOSITE, IMPLICIT, AND INVERSE FUNCTIONS
-  // ==========================================
   {
-    unitId: 'u3',
-    unitNumber: 3,
-    title: 'Composite, Implicit & Inverse Differentiation',
-    examWeight: '9%–13% of AP Exam',
-    bigIdea: 'The Chain Rule unlocks differentiation of nested compositions, implicit equations, and inverse functions.',
-    keyTheorems: [
+    "unitId": "u3",
+    "unitNumber": 3,
+    "title": "Differentiation: Composite, Implicit, and Inverse Functions",
+    "examWeight": "9%–13% of AP Exam",
+    "bigIdea": "The Chain Rule extends differentiation to composite functions, enabling differentiation of implicit equations, geometric relations, and inverse functions without solving explicitly for y.",
+    "keyTheorems": [
       {
-        name: 'The Chain Rule',
-        conditions: 'y = f(u) is differentiable at u = g(x), and u = g(x) is differentiable at x.',
-        conclusion: '\\frac{dy}{dx} = f\'(g(x)) \\cdot g\'(x) \\quad \\text{or} \\quad \\frac{dy}{dx} = \\frac{dy}{du} \\cdot \\frac{du}{dx}',
-        apTip: 'Always remember to "peel the onion": differentiate outer function leaving inside untouched, then MULTIPLY by derivative of inner function.'
+        "name": "The Chain Rule",
+        "conditions": "g is differentiable at x and f is differentiable at g(x).",
+        "conclusion": "The composite function F(x) = f(g(x)) is differentiable at x, with derivative F'(x) = f'(g(x)) * g'(x). In Leibniz notation: dy/dx = (dy/du) * (du/dx).",
+        "apTip": "Work from the outside in! Differentiate the outer function leaving the inner untouched, then multiply by the derivative of the inner."
       },
       {
-        name: 'Derivative of Inverse Functions',
-        conditions: 'f is differentiable and strictly monotonic with f(a) = b, meaning f^{-1}(b) = a, and f\'(a) \\neq 0.',
-        conclusion: '(f^{-1})\'(b) = \\frac{1}{f\'(f^{-1}(b))} = \\frac{1}{f\'(a)}',
-        apTip: 'Notice the inputs: the input to (f^{-1})\' is the OUTPUT b of original function f.'
+        "name": "Derivative of an Inverse Function Theorem",
+        "conditions": "f is differentiable and strictly monotonic (one-to-one) on an interval containing a, with f'(a) != 0, and f(a) = b (so that f^(-1)(b) = a).",
+        "conclusion": "(f^(-1))'(b) = 1 / f'(a) = 1 / f'(f^(-1)(b)).",
+        "apTip": "The classic trap: The input to the inverse derivative is b (the y-value of f), NOT a! Find the x-value where f(x) = b, compute f'(x), and take its reciprocal."
       }
     ],
-    formulas: [
+    "formulas": [
       {
-        name: 'Chain Rule with Powers / Functions',
-        latex: '\\frac{d}{dx}[g(x)]^n = n[g(x)]^{n-1} g\'(x)',
-        explanation: 'Most common error on exam is forgetting to multiply by the inner derivative g\'(x).'
+        "name": "The Chain Rule (Function & Power Forms)",
+        "latex": "\\frac{d}{dx}[f(g(x))] = f'(g(x)) \\cdot g'(x) \\quad \\text{and} \\quad \\frac{d}{dx}[(u(x))^n] = n(u(x))^{n-1} \\cdot u'(x)",
+        "explanation": "Always remember to multiply by the derivative of the inside term u'(x)."
       },
       {
-        name: 'Inverse Trigonometric Derivatives (Must Memorize)',
-        latex: '\\begin{aligned} \\frac{d}{dx}[\\arcsin x] &= \\frac{1}{\\sqrt{1 - x^2}} \\\\ \\frac{d}{dx}[\\arctan x] &= \\frac{1}{1 + x^2} \\\\ \\frac{d}{dx}[\\arccos x] &= -\\frac{1}{\\sqrt{1 - x^2}} \\end{aligned}',
-        explanation: 'arcsin and arctan appear frequently on both MCQs and FRQs.'
+        "name": "Derivative of Inverse Functions",
+        "latex": "(f^{-1})'(b) = \\frac{1}{f'(a)} \\quad \\text{where } f(a) = b",
+        "explanation": "The slope of the inverse function at (b, a) is the reciprocal of the slope of the original function at (a, b)."
       },
       {
-        name: 'Implicit Differentiation General Setup',
-        latex: '\\frac{d}{dx}[y^n] = n y^{n-1} \\frac{dy}{dx}',
-        explanation: 'Every time you differentiate a y term with respect to x, you MUST multiply by dy/dx due to the chain rule.'
+        "name": "Inverse Trigonometric Derivatives",
+        "latex": "\\begin{aligned} \\frac{d}{dx}[\\arcsin u] &= \\frac{u'}{\\sqrt{1 - u^2}} & \\frac{d}{dx}[\\arccos u] &= -\\frac{u'}{\\sqrt{1 - u^2}} \\\\ \\frac{d}{dx}[\\arctan u] &= \\frac{u'}{1 + u^2} & \\frac{d}{dx}[\\text{arcsec } u] &= \\frac{u'}{|u|\\sqrt{u^2 - 1}} \\end{aligned}",
+        "explanation": "arctan(u) is the most heavily tested on the AP exam because it does not involve radicals."
+      },
+      {
+        "name": "Logarithmic Differentiation",
+        "latex": "y = [f(x)]^{g(x)} \\implies \\ln y = g(x) \\ln(f(x)) \\implies \\frac{1}{y}\\frac{dy}{dx} = \\frac{d}{dx}[g(x)\\ln(f(x))]",
+        "explanation": "Essential for variable-base with variable-exponent functions where power and exponential rules both fail."
       }
     ],
-    sections: [
+    "sections": [
       {
-        heading: '1. Mastering Implicit Differentiation Step-by-Step',
-        content: `When $y$ cannot easily be isolated (e.g., $x^2 + y^2 - 2xy = 10$):
-1. Differentiate both sides with respect to $x$, applying the product rule to terms like $2xy$:
-   $$\\frac{d}{dx}[2xy] = 2y + 2x\\frac{dy}{dx}$$
-2. Move all terms containing $\\frac{dy}{dx}$ to the left side and all other terms to the right side.
-3. Factor out $\\frac{dy}{dx}$.
-4. Divide to solve for $\\frac{dy}{dx}$.`
+        "heading": "1. The Chain Rule & Nested Composites (CED 3.1)",
+        "content": "The Chain Rule is the engine of calculus:\n$$\\frac{d}{dx}[f(g(x))] = f'(g(x)) \\cdot g'(x)$$\n**Nested Multi-Layer Chains:**\nWhen a function has three or more layers, such as $y = \\sin^4(3x^2 - 5) = [\\sin(3x^2 - 5)]^4$:\n1. **Outer layer:** $[\\dots]^4 \\implies 4[\\dots]^3$\n2. **Middle layer:** $\\sin(\\dots) \\implies \\cos(\\dots)$\n3. **Inner layer:** $3x^2 - 5 \\implies 6x$\n$$\\frac{dy}{dx} = 4[\\sin(3x^2 - 5)]^3 \\cdot \\cos(3x^2 - 5) \\cdot (6x) = 24x \\sin^3(3x^2 - 5)\\cos(3x^2 - 5)$$"
       },
       {
-        heading: '2. Implicit Tangent Classification Matrix',
-        content: `Classifying tangent lines on implicitly defined curves:
-| Tangent Behavior | Analytical Condition | Geometric Meaning | AP Reader Verification |
-| :--- | :--- | :--- | :--- |
-| **Horizontal Tangent** | $\\text{Numerator of } \\frac{dy}{dx} = 0$ | Slope $m = 0$ | Denominator must NOT be zero! |
-| **Vertical Tangent** | $\\text{Denominator of } \\frac{dy}{dx} = 0$ | Undefined slope ($x = c$) | Numerator must NOT be zero! |
-| **Singular / Node** | Both Num = 0 and Den = 0 | Self-intersecting curve | Requires advanced limit analysis |`
+        "heading": "2. Implicit Differentiation 4-Step Protocol (CED 3.2)",
+        "content": "When equations relate $x$ and $y$ implicitly (e.g. circles, ellipses, foliums $x^3 + y^3 = 6xy$):\n1. **Differentiate both sides with respect to $x$:** Every time you differentiate a term with $y$, apply the Chain Rule and multiply by $\\frac{dy}{dx}$ (since $y$ is an implicit function of $x$).\n2. **Handle the Product Rule on Mixed Terms:** $\\frac{d}{dx}[x y] = (1)(y) + x\\frac{dy}{dx} = y + x\\frac{dy}{dx}$. (Do NOT forget the $y$ term!).\n3. **Collect all terms containing $\\frac{dy}{dx}$ on the left side** of the equation and move all non-$\\frac{dy}{dx}$ terms to the right side.\n4. **Factor out $\\frac{dy}{dx}$ and divide:**\n   $$\\frac{dy}{dx}(A) = B \\implies \\frac{dy}{dx} = \\frac{B}{A}$$"
       },
       {
-        heading: '3. Inverse Function Derivative Shortcut Table',
-        content: `Given $f(a) = b$ and $f'(a) = m$, coordinates and slopes reflect across $y = x$:
-| Metric | Original Function $f(x)$ | Inverse Function $f^{-1}(x)$ | Official CED Relationship |
-| :--- | :--- | :--- | :--- |
-| **Input / Output** | $f(a) = b$ | $f^{-1}(b) = a$ | Swapped $(x, y) \\to (y, x)$ |
-| **Slope / Tangent** | $f'(a) = m$ | $(f^{-1})'(b) = \\frac{1}{m}$ | Reciprocal slopes: $\\frac{1}{f'(a)}$ |
-| **Chain Rule Proof** | $f(f^{-1}(x)) = x$ | $(f^{-1})'(x) = \\frac{1}{f'(f^{-1}(x))}$ | Never solve for $f^{-1}$ algebraically! |`
+        "heading": "3. Higher-Order Implicit Derivatives (Finding d²y/dx²) (CED 3.6)",
+        "content": "On AP Free Response Questions, you are frequently asked to find $\\frac{d^2y}{dx^2}$ for an implicit equation:\n1. Differentiate the first derivative $\\frac{dy}{dx}$ with respect to $x$ (usually requiring the **Quotient Rule**).\n2. The resulting expression will contain both $x, y$, and $\\frac{dy}{dx}$.\n3. **MANDATORY AP STEP:** Substitute the expression for $\\frac{dy}{dx}$ found in the previous step into the second derivative so that $\\frac{d^2y}{dx^2}$ is expressed purely in terms of $x$ and $y$!\n4. Simplify the numerator by finding a common denominator."
+      },
+      {
+        "heading": "4. Horizontal and Vertical Tangents of Implicit Curves (CED 3.2)",
+        "content": "Given $\\frac{dy}{dx} = \\frac{N(x, y)}{D(x, y)}$:\n- **Horizontal Tangents:** Set numerator equal to zero: $N(x, y) = 0$ (provided $D(x, y) \\neq 0$). The slope is $0$.\n- **Vertical Tangents:** Set denominator equal to zero: $D(x, y) = 0$ (provided $N(x, y) \\neq 0$). The slope is undefined (tangent is vertical line $x = c$).\n- **Points on the Curve:** Once you find a relationship (e.g., $y = 2x$), substitute it back into the **original implicit equation** to find the actual coordinates $(x, y)$!"
+      },
+      {
+        "heading": "5. Inverse Function Derivatives Protocol (CED 3.3)",
+        "content": "Given that $g(x) = f^{-1}(x)$, find $g'(b)$:\n1. Set $f(x) = b$ and solve for $x = a$. (So $(a, b)$ is on $f$ and $(b, a)$ is on $g$).\n2. Differentiate the original function: $f'(x)$.\n3. Evaluate $f'(a)$ at the input $a$.\n4. Take the reciprocal:\n   $$g'(b) = \\frac{1}{f'(a)}$$\n*Geometric Interpretation:* Reflection across $y = x$ swaps $\\frac{\\Delta y}{\\Delta x}$ to $\\frac{\\Delta x}{\\Delta y}$, so slopes are reciprocals."
+      },
+      {
+        "heading": "6. Implicit Differentiation of Higher Derivatives & Tangency Analysis (CED 3.2)",
+        "content": "Mastering multi-stage implicit differentiation and concavity:\n\n* **Finding Second Derivatives ($d^2y/dx^2$) Implicitly**:\n  * Differentiating an implicit relation $F(x, y) = 0$ yields a first derivative: $\\frac{dy}{dx} = \\frac{P(x, y)}{Q(x, y)}$.\n  * To calculate $\\frac{d^2y}{dx^2}$:\n    1. Apply the Quotient Rule to $\\frac{dy}{dx}$: $\\frac{d^2y}{dx^2} = \\frac{Q \\cdot \\frac{d}{dx}[P] - P \\cdot \\frac{d}{dx}[Q]}{Q^2}$.\n    2. Any derivative of a $y$-term generates a factor of $\\frac{dy}{dx}$ via the Chain Rule!\n    3. **CRITICAL AP REQUIREMENT**: You MUST substitute the algebraic expression for $\\frac{dy}{dx}$ back into the equation, and simplify into a single fraction!\n* **Horizontal vs. Vertical Tangent Lines on Implicit Curves**:\n  * **Horizontal Tangents**: Set numerator of $\\frac{dy}{dx}$ equal to zero ($P(x, y) = 0$) AND verify denominator $Q(x, y) \\neq 0$. Substitute points back into original curve equation.\n  * **Vertical Tangents**: Set denominator of $\\frac{dy}{dx}$ equal to zero ($Q(x, y) = 0$) AND verify numerator $P(x, y) \\neq 0$."
+      },
+      {
+        "heading": "7. Inverse Function Derivatives & Inverse Trigonometric Derivations (CED 3.3-3.4)",
+        "content": "Differentiating inverses and geometric trigonometric derivations:\n\n* **The Inverse Function Derivative Formula**:\n  $$(f^{-1})'(b) = \\frac{1}{f'(f^{-1}(b))} = \\frac{1}{f'(a)}, \\quad \\text{where } f(a) = b$$\n  * **FRQ 4-Step Table Lookup Strategy**:\n    1. Identify target value $b$ where you need $(f^{-1})'(b)$.\n    2. Search table or function to find input $a$ such that $f(a) = b$.\n    3. Evaluate derivative of original function at that input: $f'(a)$.\n    4. Take the reciprocal: $(f^{-1})'(b) = 1/f'(a)$.\n* **Derivation of $\\frac{d}{dx}[\\arcsin x]$ via Right Triangle Geometry**:\n  * Let $y = \\arcsin x \\implies \\sin y = x$.\n  * Differentiating implicitly: $\\cos y \\cdot \\frac{dy}{dx} = 1 \\implies \\frac{dy}{dx} = \\frac{1}{\\cos y}$.\n  * In a right triangle with angle $y$, $\\text{opposite} = x$ and $\\text{hypotenuse} = 1$.\n  * By Pythagorean theorem, $\\text{adjacent} = \\sqrt{1 - x^2} \\implies \\cos y = \\sqrt{1 - x^2}$.\n  * Therefore: $\\frac{d}{dx}[\\arcsin x] = \\frac{1}{\\sqrt{1 - x^2}}$."
       }
     ],
-    workedExamples: [
+    "workedExamples": [
       {
-        title: 'Implicit Differentiation with Horizontal Tangents',
-        topicRef: 'CED 3.2',
-        question: 'For the curve x^2 + y^2 - 4x = 5, find dy/dx and all points where the curve has a horizontal tangent.',
-        solutionSteps: [
-          'Step 1 (Differentiate implicitly): Differentiate term by term with respect to x: 2x + 2y(dy/dx) - 4 = 0.',
-          'Step 2 (Isolate dy/dx): 2y(dy/dx) = 4 - 2x ==> dy/dx = (4 - 2x) / (2y) = (2 - x) / y.',
-          'Step 3 (Set numerator to zero for horizontal tangent): dy/dx = 0 ==> 2 - x = 0 ==> x = 2.',
-          'Step 4 (Find corresponding y-coordinates on curve): Substitute x = 2 into x^2 + y^2 - 4x = 5: (2)^2 + y^2 - 4(2) = 5 ==> y^2 - 4 = 5 ==> y^2 = 9 ==> y = +/- 3.',
-          'Step 5 (Verify denominator non-zero): At (2, 3) and (2, -3), y != 0, so both points yield valid horizontal tangents.'
+        "title": "Implicit Differentiation with Product Rule and Tangent Line",
+        "topicRef": "CED 3.2 Implicit Differentiation",
+        "question": "Find the equation of the tangent line to the curve $x^2 - 3xy + y^2 = 5$ at the point $(1, 4)$.",
+        "solutionSteps": [
+          "Step 1: Differentiate both sides w.r.t x: d/dx[x^2] - 3*d/dx[xy] + d/dx[y^2] = d/dx[5].",
+          "Step 2: Apply product rule to -3xy: 2x - 3(y + x*dy/dx) + 2y*dy/dx = 0.",
+          "Step 3: Expand: 2x - 3y - 3x*dy/dx + 2y*dy/dx = 0.",
+          "Step 4: Plug in point (x, y) = (1, 4) immediately to simplify arithmetic:",
+          "2(1) - 3(4) - 3(1)*dy/dx + 2(4)*dy/dx = 0 ==> 2 - 12 - 3*dy/dx + 8*dy/dx = 0.",
+          "-10 + 5*dy/dx = 0 ==> 5*dy/dx = 10 ==> dy/dx = 2.",
+          "Step 5: Write point-slope equation: y - 4 = 2(x - 1)."
         ],
-        finalAnswer: 'dy/dx = (2 - x) / y; Horizontal tangents at (2, 3) and (2, -3)',
-        apScoringTip: 'You must explicitly state that the denominator y != 0 at the points found. If the denominator were also 0, the derivative would be indeterminate rather than horizontal.'
+        "finalAnswer": "y - 4 = 2(x - 1)",
+        "apScoringTip": "Pro-Tip: Plug the numbers (x = 1, y = 4) in immediately after differentiating rather than solving algebraically for dy/dx. It saves 2 minutes and avoids algebra slips."
       },
       {
-        title: 'Derivative of Inverse Function from Tabular Data',
-        topicRef: 'CED 3.3',
-        question: 'Let f be a differentiable function with f(3) = 7, f\'(3) = 4, and f\'(7) = -2. If g(x) = f^{-1}(x), find g\'(7).',
-        solutionSteps: [
-          'Step 1 (Identify inverse coordinates): Since g = f^{-1} and f(3) = 7, it follows that g(7) = 3.',
-          'Step 2 (Apply inverse derivative formula): g\'(7) = 1 / [f\'(g(7))] = 1 / [f\'(3)].',
-          'Step 3 (Substitute known derivative value): g\'(7) = 1 / 4.'
+        "title": "Calculating Inverse Derivative from Tabular Values",
+        "topicRef": "CED 3.3 Inverse Functions",
+        "question": "Let f be a differentiable function. Selected values are: f(2) = 5, f'(2) = 3, f(5) = 8, f'(5) = 7. If g(x) = f^(-1)(x), find g'(5).",
+        "solutionSteps": [
+          "Step 1: Identify that g is the inverse of f, so g'(5) = 1 / f'(g(5)).",
+          "Step 2: Find g(5): Since f(2) = 5, by definition of inverse f^(-1)(5) = 2, so g(5) = 2.",
+          "Step 3: Evaluate f' at this input: f'(2) = 3.",
+          "Step 4: Take the reciprocal: g'(5) = 1 / f'(2) = 1 / 3."
         ],
-        finalAnswer: 'g\'(7) = 1/4',
-        apScoringTip: 'A common mistake is evaluating 1 / f\'(7) = -1/2. Always find the input to the original function that produces the target value!'
+        "finalAnswer": "g'(5) = 1/3",
+        "apScoringTip": "Do NOT use f'(5) = 7! The input to g is 5, which corresponds to input 2 for f. The answer is 1/f'(2) = 1/3, not 1/7."
       }
     ],
-    diagrams: [
+    "diagrams": [
       {
-        id: 'd_u3_1',
-        title: 'Derivative Function Relationships',
-        subtitle: 'Connecting critical slope points and rate transitions',
-        type: 'derivative_graphs_f_fprime',
-        description: 'The Chain Rule and implicit differentiation allow calculating rates of change on complex geometric relations where y cannot be isolated directly.',
-        takeaway: 'Horizontal tangents occur where dy/dx = 0 (with denominator != 0); vertical tangents occur where denominator = 0.'
+        "id": "inverse_reciprocal_slopes",
+        "title": "Geometric Symmetry of Inverse Derivatives",
+        "subtitle": "Points (a, b) and (b, a) Across the Line y = x",
+        "type": "inverse_slopes",
+        "description": "The reflection of the tangent line across y = x inverts run and rise, making the slopes exact reciprocals: m_inverse = 1 / m_original.",
+        "takeaway": "Derivative of inverse function at b is the reciprocal of the original derivative at a."
       }
     ],
-    commonTraps: [
-      'Forgetting the product rule on mixed terms like xy in implicit differentiation: d/dx[xy] = y + x(dy/dx), NOT just x(dy/dx).',
-      'Confusing the input for inverse derivatives: Computing 1/f\'(b) instead of 1/f\'(a).',
-      'Forgetting the chain rule when differentiating composite trig functions like sin^3(4x).'
+    "commonTraps": [
+      "Forgetting the product rule on mixed term xy: d/dx[xy] is y + x(dy/dx), NOT just x(dy/dx).",
+      "Inverse derivative input error: Using 1/f'(b) instead of 1/f'(a) where f(a) = b.",
+      "Forgetting the chain rule when differentiating trigonometric functions with arguments other than x: d/dx[sin(5x)] = 5*cos(5x), NOT cos(5x)."
     ],
-    cramSheet: [
-      'Chain Rule: Derivative of outer * derivative of inner.',
-      'Implicit: Append dy/dx every time you differentiate y with respect to x.',
-      '(f^{-1})\'(b) = 1 / f\'(a) where f(a) = b.',
-      'd/dx[arctan(x)] = 1 / (1 + x^2).',
-      'd/dx[arcsin(x)] = 1 / sqrt(1 - x^2).'
+    "cramSheet": [
+      "Chain Rule: d/dx[f(g(x))] = f'(g(x)) * g'(x).",
+      "Implicit: Attach dy/dx whenever differentiating y.",
+      "(f^(-1))'(b) = 1 / f'(a) where f(a) = b.",
+      "d/dx[arctan x] = 1 / (1 + x^2).",
+      "d/dx[arcsin x] = 1 / sqrt(1 - x^2)."
     ]
   },
-
-  // ==========================================
-  // UNIT 4: CONTEXTUAL APPLICATIONS OF DIFFERENTIATION
-  // ==========================================
   {
-    unitId: 'u4',
-    unitNumber: 4,
-    title: 'Contextual Applications of Differentiation',
-    examWeight: '10%–15% of AP Exam',
-    bigIdea: 'Rates of change model real-world dynamic systems, from rectilinear particle motion and related rates to local linear approximations.',
-    keyTheorems: [
+    "unitId": "u4",
+    "unitNumber": 4,
+    "title": "Contextual Applications of Differentiation",
+    "examWeight": "10%–15% of AP Exam",
+    "bigIdea": "Derivatives model physical dynamic phenomena, connecting position, velocity, and acceleration in motion, tracking geometric rates of change over time, and linearizing non-linear functions.",
+    "keyTheorems": [
       {
-        name: 'L\'Hôpital\'s Rule for Indeterminate Forms',
-        conditions: 'lim_{x->c} f(x) = 0 and lim_{x->c} g(x) = 0 (or both approach +/- infinity), and f, g are differentiable on an open interval around c.',
-        conclusion: '\\lim_{x \\to c} \\frac{f(x)}{g(x)} = \\lim_{x \\to c} \\frac{f\'(x)}{g\'(x)}',
-        apTip: 'NEVER write "= 0/0". Show lim f(x) = 0 and lim g(x) = 0 separately, state that L\'Hôpital\'s Rule applies, and THEN take derivatives.'
+        "name": "L'Hôpital's Rule for Indeterminate Forms",
+        "conditions": "f and g are differentiable near c; lim_{x->c} f(x) = 0 and lim_{x->c} g(x) = 0 (or both approach +/- infinity), and g'(x) != 0 near c.",
+        "conclusion": "\\lim_{x \\to c} \\frac{f(x)}{g(x)} = \\lim_{x \\to c} \\frac{f'(x)}{g'(x)}.",
+        "apTip": "CRITICAL AP FRQ RULE: NEVER write \"= 0/0\" or \"= inf/inf\". You MUST state: \"lim f(x) = 0 and lim g(x) = 0, so by L'Hôpital's Rule...\" Taking derivatives without establishing the indeterminate form loses the justification point."
       }
     ],
-    formulas: [
+    "formulas": [
       {
-        name: 'Kinematics / Rectilinear Particle Motion',
-        latex: 'v(t) = s\'(t) = \\frac{ds}{dt}, \\quad a(t) = v\'(t) = s\'\'(t) = \\frac{dv}{dt}, \\quad \\text{Speed} = |v(t)|',
-        explanation: 'Particle moves right/up when v(t) > 0, left/down when v(t) < 0, changes direction when v(t) changes sign.'
+        "name": "Rectilinear Particle Motion Relationships",
+        "latex": "v(t) = s'(t) = \\frac{ds}{dt}, \\quad a(t) = v'(t) = s''(t) = \\frac{dv}{dt}, \\quad \\text{Speed} = |v(t)|",
+        "explanation": "Position s(t), velocity v(t), acceleration a(t). Particle changes direction when v(t) changes sign (passes through 0 with sign change)."
       },
       {
-        name: 'Speed Increasing vs Decreasing Criterion',
-        latex: '\\text{Speed is increasing if } v(t) \\cdot a(t) > 0, \\quad \\text{Speed is decreasing if } v(t) \\cdot a(t) < 0',
-        explanation: 'Speed increases when velocity and acceleration share the SAME sign (both positive or both negative). Decreases when OPPOSITE signs.'
+        "name": "Speed Increasing vs. Decreasing Criterion",
+        "latex": "\\text{Speed Increasing: } v(t) \\cdot a(t) > 0 \\quad | \\quad \\text{Speed Decreasing: } v(t) \\cdot a(t) < 0",
+        "explanation": "Speed increases when velocity and acceleration have the SAME sign; speed decreases when velocity and acceleration have OPPOSITE signs."
       },
       {
-        name: 'Local Linearity & Tangent Line Approximation',
-        latex: 'L(x) = f(a) + f\'(a)(x - a)',
-        explanation: 'Concave down (f\'\' < 0) => tangent line is an OVERESTIMATE. Concave up (f\'\' > 0) => tangent line is an UNDERESTIMATE.'
+        "name": "Local Linear Approximation (Tangent Line Linearization)",
+        "latex": "L(x) = f(a) + f'(a)(x - a)",
+        "explanation": "Approximates f(x) near x = a using the tangent line."
+      },
+      {
+        "name": "Concavity Over/Under Estimation Rule",
+        "latex": "f''(x) > 0 \\text{ (Concave Up)} \\implies \\text{Underestimate} \\quad | \\quad f''(x) < 0 \\text{ (Concave Down)} \\implies \\text{Overestimate}",
+        "explanation": "Tangent lines sit BELOW concave-up curves (underestimate) and ABOVE concave-down curves (overestimate)."
       }
     ],
-    sections: [
+    "sections": [
       {
-        heading: '1. Related Rates 5-Step Protocol',
-        content: `Related rates problems involve quantities changing over time $t$:
-1. **Draw a Picture & Label Variables:** Distinguish between constants (quantities that never change during the process) and variables (quantities that change with time).
-2. **Identify Given Rates & Desired Rate:** Write down given derivatives like $\\frac{dh}{dt}$, $\\frac{dV}{dt}$ and the rate to find at the specific instant.
-3. **Write the Primary Equation:** Relate the geometric variables (e.g., Pythagorean theorem $x^2 + y^2 = z^2$, Volume of cone $V = \\frac{1}{3}\\pi r^2 h$, Volume of sphere $V = \\frac{4}{3}\\pi r^3$).
-4. **Eliminate Extra Variables if Needed:** In conical tank problems, use similar triangles $\\frac{r}{h} = \\frac{R_{tank}}{H_{tank}} \\implies r = \\frac{R}{H}h$ before differentiating!
-5. **Differentiate Implicitly with Respect to $t$ (Chain Rule):**
-   $$\\frac{d}{dt}[x^2] = 2x\\frac{dx}{dt}$$
-6. **Substitute Values & Solve:** ONLY substitute numbers for variables AFTER taking the derivative!`
+        "heading": "1. Rectilinear Particle Motion & Direction Changes (CED 4.2)",
+        "content": "A particle moves along a horizontal axis with position $s(t)$, velocity $v(t) = s'(t)$, and acceleration $a(t) = v'(t)$:\n\n| Velocity $v(t)$ | Acceleration $a(t)$ | Sign of $v(t) \\cdot a(t)$ | Physical Motion Description |\n| :--- | :--- | :--- | :--- |\n| **Positive (+)** | **Positive (+)** | Positive $(>0)$ | Moving Right & **Speeding Up** |\n| **Positive (+)** | **Negative (-)** | Negative $(<0)$ | Moving Right & **Slowing Down** |\n| **Negative (-)** | **Negative (-)** | Positive $(>0)$ | Moving Left & **Speeding Up** |\n| **Negative (-)** | **Positive (+)** | Negative $(<0)$ | Moving Left & **Slowing Down** |\n| **Zero ($0$)** | Any | $0$ | Instantaneously at rest |\n\n*Direction Change Test:* The particle changes direction **if and only if** $v(t) = 0$ (or undefined) AND $v(t)$ changes sign from positive to negative or negative to positive! Merely having $v(t) = 0$ does not guarantee a direction change."
       },
       {
-        heading: '2. Particle Motion Critical Sign Analysis',
-        content: `Analyzing velocity and acceleration to determine physical motion:
-| Velocity $v(t)$ | Acceleration $a(t)$ | Product $v(t) \\cdot a(t)$ | Physical Motion Status |
-| :--- | :--- | :--- | :--- |
-| **Positive (+)** | **Positive (+)** | Positive $(> 0)$ | Moving Right/Up & **Speeding Up** |
-| **Positive (+)** | **Negative (-)** | Negative $(< 0)$ | Moving Right/Up & **Slowing Down** |
-| **Negative (-)** | **Negative (-)** | Positive $(> 0)$ | Moving Left/Down & **Speeding Up** |
-| **Negative (-)** | **Positive (+)** | Negative $(< 0)$ | Moving Left/Down & **Slowing Down** |
-| **Zero ($0$)** | **Any** | Zero ($0$) | Instantaneously at Rest / Paused |`
+        "heading": "2. The 6-Step Related Rates Master Protocol (CED 4.4–4.5)",
+        "content": "Related rates problems involve geometric variables changing with respect to time $t$:\n\n1. **Draw a sketch & assign variables:** Identify quantities that vary with time ($r(t), h(t), V(t)$) vs constants that never change (e.g., ladder length $L = 10$).\n2. **List \"Given\" rates and \"Wanted\" rate:** Write derivatives with respect to time (e.g., Given $\\frac{dV}{dt} = 5$, find $\\frac{dh}{dt}$ when $h = 3$).\n3. **Write the primary geometric formula:** Relate the variables (e.g., Cone volume $V = \\frac{1}{3}\\pi r^2 h$, Pythagorean theorem $x^2 + y^2 = z^2$, Sphere $V = \\frac{4}{3}\\pi r^3$).\n4. **Eliminate unwanted variables using geometry:**\n   - In inverted conical tanks: Use similar triangles $\\frac{r}{h} = \\frac{R_{tank}}{H_{tank}} \\implies r = \\left(\\frac{R}{H}\\right)h$ so $V = \\frac{1}{3}\\pi \\left(\\frac{R}{H}h\\right)^2 h = K h^3$.\n5. **Differentiate implicitly with respect to time $t$:** Apply the Chain Rule:\n   $$\\frac{dV}{dt} = 3K h^2 \\frac{dh}{dt}$$\n6. **Substitute known numerical values and solve:** ONLY substitute numbers AFTER differentiation is complete!"
       },
       {
-        heading: '3. Tangent Line Over- vs Under-Estimation Justification',
-        content: `When asked if an approximation $L(x)$ is an overestimate or underestimate:
-- Find the second derivative $f''(x)$ on the interval.
-- If $f''(x) > 0$ (concave up), the curve bends above the tangent line, so $L(x)$ is an **UNDERESTIMATE**.
-- If $f''(x) < 0$ (concave down), the curve bends below the tangent line, so $L(x)$ is an **OVERESTIMATE**.`
+        "heading": "3. Canonical Related Rates Scenarios Reference",
+        "content": "Master equations for the most common AP exam scenarios:\n\n- **Sliding Ladder:** $x^2 + y^2 = L^2 \\implies 2x\\frac{dx}{dt} + 2y\\frac{dy}{dt} = 0$. Note: $\\frac{dy}{dt}$ will be negative as ladder slides down.\n- **Conical Reservoir:** $V = \\frac{1}{3}\\pi r^2 h$. Eliminate $r$ using similar triangles $r = \\frac{R}{H}h \\implies V = \\frac{\\pi R^2}{3H^2}h^3$.\n- **Walking Away from a Streetlight:**\n  - Let $x$ be distance from pole, $s$ be length of shadow.\n  - By similar triangles: $\\frac{H_{pole}}{x + s} = \\frac{h_{person}}{s}$.\n  - Rate shadow length is growing $= \\frac{ds}{dt}$.\n  - Rate tip of shadow is moving $= \\frac{d}{dt}[x + s] = \\frac{dx}{dt} + \\frac{ds}{dt}$."
+      },
+      {
+        "heading": "4. Local Linearity, Linearization & Over/Under Estimation (CED 4.6)",
+        "content": "The tangent line $L(x) = f(a) + f'(a)(x - a)$ provides an accurate local approximation of $f(x)$ for values of $x$ close to $a$.\n\n**Overestimate vs. Underestimate Justification:**\n- To justify whether $L(x)$ is an overestimate or underestimate, evaluate the **second derivative $f''(x)$** on the interval between $a$ and $x$:\n  - If $f''(x) > 0$ (curve is **concave up**), the curve lies above the tangent line, so $L(x)$ is an **UNDERESTIMATE**.\n  - If $f''(x) < 0$ (curve is **concave down**), the curve lies below the tangent line, so $L(x)$ is an **OVERESTIMATE**.\n- *Required AP Wording:* \"Since $f''(x) < 0$ on the interval $[a, x]$, the graph of $f$ is concave down, and therefore the tangent line approximation is an overestimate.\""
+      },
+      {
+        "heading": "5. L'Hôpital's Rule Official FRQ Presentation Protocol (CED 4.7)",
+        "content": "When evaluating $\\lim_{x \\to c} \\frac{f(x)}{g(x)}$ producing $\\frac{0}{0}$ or $\\frac{\\pm\\infty}{\\pm\\infty}$:\n\n**The 3-Step Presentation Required by AP Chief Readers:**\n1. Separately show that the limit of the numerator equals 0 (or $\\pm\\infty$):\n   $$\\lim_{x \\to c} f(x) = 0$$\n2. Separately show that the limit of the denominator equals 0 (or $\\pm\\infty$):\n   $$\\lim_{x \\to c} g(x) = 0$$\n3. State that L'Hôpital's Rule applies and take derivatives of numerator and denominator independently:\n   $$\\lim_{x \\to c} \\frac{f(x)}{g(x)} \\stackrel{\\text{L'H}}{=} \\lim_{x \\to c} \\frac{f'(x)}{g'(x)}$$\n*Do NOT use the quotient rule here! Differentiate top and bottom separately.*"
+      },
+      {
+        "heading": "6. Multi-Dimensional Related Rates Paradigms & Geometric Elimination (CED 4.4-4.5)",
+        "content": "Advanced related rates algorithms for classic AP scenarios:\n\n* **The Inverted Conical Tank Paradigm**:\n  * Water flows into an inverted cone of base radius $R_0$ and height $H_0$ at rate $\\frac{dV}{dt}$.\n  * Geometry: $V = \\frac{1}{3}\\pi r^2 h$. This has two independent variables ($r$ and $h$).\n  * **Similar Triangles Elimination**: $\\frac{r}{h} = \\frac{R_0}{H_0} \\implies r = \\left(\\frac{R_0}{H_0}\\right)h$.\n  * Substituting $r$: $V = \\frac{1}{3}\\pi \\left(\\frac{R_0}{H_0} h\\right)^2 h = \\frac{\\pi R_0^2}{3 H_0^2} h^3$.\n  * Differentiating with respect to time $t$: $\\frac{dV}{dt} = \\frac{\\pi R_0^2}{H_0^2} h^2 \\frac{dh}{dt}$.\n  * Solve directly for the rate of water level rise $\\frac{dh}{dt}$ without needing $dr/dt$!\n* **The Walking Person & Shadow Length Paradigm**:\n  * A person of height $h_p$ walks away from a street lamp of height $H_L$ at speed $\\frac{dx}{dt}$.\n  * Let $x$ be distance from lamppost to person, and $s$ be length of shadow.\n  * Similar triangles: $\\frac{s}{h_p} = \\frac{x + s}{H_L} \\implies s(H_L - h_p) = h_p x \\implies s = \\left(\\frac{h_p}{H_L - h_p}\\right) x$.\n  * Rate of shadow lengthening: $\\frac{ds}{dt} = \\left(\\frac{h_p}{H_L - h_p}\\right) \\frac{dx}{dt}$.\n  * **AP TRAP**: If asked for the rate at which the *tip of the shadow* is moving, that is $\\frac{d}{dt}(x + s) = \\frac{dx}{dt} + \\frac{ds}{dt}$!"
+      },
+      {
+        "heading": "7. Local Linearity, Tangent Line Approximations & Error Bounds (CED 4.6)",
+        "content": "Constructing tangent lines for numerical approximation:\n\n* **The Linearization Formula**:\n  $$L(x) = f(a) + f'(a)(x - a)$$\n* **Over-Approximation vs. Under-Approximation Rule**:\n  * The error of the linear approximation is determined by the **concavity** of the function:\n  * **Concave Up ($f''(x) > 0$)**: The tangent line lies strictly **BELOW** the curve of $f(x)$ $\\implies$ $L(x)$ is an **Under-approximation** ($L(x) < f(x)$).\n  * **Concave Down ($f''(x) < 0$)**: The tangent line lies strictly **ABOVE** the curve of $f(x)$ $\\implies$ $L(x)$ is an **Over-approximation** ($L(x) > f(x)$).\n  * *AP Justification Standard*: To earn the justification point on an FRQ, you must explicitly state: *\"Since $f''(x) < 0$ on the interval, the graph of $f$ is concave down, and therefore the tangent line approximation is an overestimate.\"*"
       }
     ],
-    workedExamples: [
+    "workedExamples": [
       {
-        title: 'Related Rates: Sliding Ladder Protocol',
-        topicRef: 'CED 4.4-4.5',
-        question: 'A 10-foot ladder leans against a vertical wall. The base slides away from the wall at 2 ft/sec. How fast is the top sliding down when the base is 6 ft from the wall?',
-        solutionSteps: [
-          'Step 1 (Primary geometric equation): By the Pythagorean theorem, x^2 + y^2 = 10^2 = 100, where x is base distance and y is height on wall.',
-          'Step 2 (Evaluate instant height): When x = 6, (6)^2 + y^2 = 100 ==> y^2 = 64 ==> y = 8 ft.',
-          'Step 3 (Differentiate implicitly with respect to t): 2x(dx/dt) + 2y(dy/dt) = 0 ==> x(dx/dt) + y(dy/dt) = 0.',
-          'Step 4 (Substitute known rates and solve): (6)(2) + (8)(dy/dt) = 0 ==> 12 + 8(dy/dt) = 0 ==> dy/dt = -12/8 = -1.5 ft/sec.'
+        "title": "Conical Tank Related Rates Full Solution",
+        "topicRef": "CED 4.5 Related Rates",
+        "question": "Water drains from an inverted conical tank (height 10 m, top radius 4 m) at a constant rate of 2 m^3/min. How fast is the water level dropping when the water is 6 m deep?",
+        "solutionSteps": [
+          "Step 1: Identify given rate: dV/dt = -2 m^3/min (negative because volume is decreasing).",
+          "Step 2: Relate r and h using similar triangles: r / h = 4 / 10 = 2/5 ==> r = (2/5)h.",
+          "Step 3: Substitute r into volume formula: V = (1/3)*pi*r^2*h = (1/3)*pi*[(2/5)h]^2*h = (4*pi/75)*h^3.",
+          "Step 4: Differentiate with respect to time t: dV/dt = (4*pi/75)*3*h^2*(dh/dt) = (4*pi/25)*h^2*(dh/dt).",
+          "Step 5: Substitute h = 6 and dV/dt = -2: -2 = (4*pi/25)*(6)^2*(dh/dt) = (4*pi/25)*(36)*(dh/dt) = (144*pi/25)*(dh/dt).",
+          "Step 6: Solve for dh/dt: dh/dt = -2 * (25 / (144*pi)) = -50 / (144*pi) = -25 / (72*pi) m/min."
         ],
-        finalAnswer: 'dy/dt = -1.5 ft/sec (sliding down at 1.5 ft/sec)',
-        apScoringTip: 'Remember units! AP graders award a distinct point for correct units (ft/sec). If asked "how fast is it sliding down", 1.5 ft/sec is acceptable as "sliding down" handles the negative sign.'
+        "finalAnswer": "dh/dt = -25 / (72*pi) m/min (Water level is dropping at 25/(72*pi) m/min)",
+        "apScoringTip": "State the units clearly (m/min). If the question asks \"how fast is the water level dropping\", the positive quantity 25/(72*pi) m/min is required."
       },
       {
-        title: 'Particle Motion Speed Analysis',
-        topicRef: 'CED 4.2',
-        question: 'A particle moves along the x-axis with position s(t) = t^3 - 6t^2 + 9t for t >= 0. Is the speed increasing or decreasing at t = 2?',
-        solutionSteps: [
-          'Step 1 (Find velocity function): v(t) = s\'(t) = 3t^2 - 12t + 9.',
-          'Step 2 (Find acceleration function): a(t) = v\'(t) = 6t - 12.',
-          'Step 3 (Evaluate velocity at t = 2): v(2) = 3(2)^2 - 12(2) + 9 = 12 - 24 + 9 = -3.',
-          'Step 4 (Evaluate acceleration at t = 2): a(2) = 6(2) - 12 = 12 - 12 = 0.',
-          'Step 5 (Apply speed criterion): Since a(2) = 0, the particle is neither speeding up nor slowing down at this instant.'
+        "title": "Particle Speed Analysis with Derivatives",
+        "topicRef": "CED 4.2 Straight-Line Motion",
+        "question": "A particle moves along a line with position s(t) = 2t^3 - 9t^2 + 12t - 4 for t >= 0. Determine whether the particle is speeding up or slowing down at t = 1.5.",
+        "solutionSteps": [
+          "Step 1: Find velocity v(t) = s'(t) = 6t^2 - 18t + 12.",
+          "Step 2: Evaluate velocity at t = 1.5: v(1.5) = 6(1.5)^2 - 18(1.5) + 12 = 6(2.25) - 27 + 12 = 13.5 - 27 + 12 = -1.5 < 0 (moving left).",
+          "Step 3: Find acceleration a(t) = v'(t) = 12t - 18.",
+          "Step 4: Evaluate acceleration at t = 1.5: a(1.5) = 12(1.5) - 18 = 18 - 18 = 0.",
+          "Step 5: Conclude: Since a(1.5) = 0, the particle is neither speeding up nor slowing down at this instant (speed is at an instantaneous extremum)."
         ],
-        finalAnswer: 'Speed is neither increasing nor decreasing at t = 2 (a(2) = 0)',
-        apScoringTip: 'Never say "speed increases because acceleration is positive". You MUST explicitly state that velocity and acceleration have the SAME sign for speed to increase.'
+        "finalAnswer": "Neither speeding up nor slowing down (a(1.5) = 0)",
+        "apScoringTip": "Always evaluate both v(t) and a(t) and compare their signs. Speeding up requires v and a to have the same sign; slowing down requires opposite signs."
       }
     ],
-    diagrams: [
+    "diagrams": [
       {
-        id: 'd_u4_1',
-        title: 'Linear Approximation & Concavity',
-        subtitle: 'Tangent line as local linear approximation L(x)',
-        type: 'tangent_secant_line',
-        description: 'The tangent line L(x) approximates f(x) near x = a. Concavity determines whether L(x) overestimates (f\'\' < 0) or underestimates (f\'\' > 0) the true curve value.',
-        takeaway: 'Always cite the sign of f\'\'(x) on the interval when justifying an over- or under-estimate on AP FRQs.'
+        "id": "tangent_concavity_over_under",
+        "title": "Concavity and Tangent Line Approximation Error",
+        "subtitle": "Why Concave Up Underestimates and Concave Down Overestimates",
+        "type": "concavity_tangent",
+        "description": "Concave up curves bend upward away from their tangents, leaving the tangent below the curve. Concave down curves bend downward away from their tangents, leaving the tangent above.",
+        "takeaway": "Concave up => Underestimate. Concave down => Overestimate."
       }
     ],
-    commonTraps: [
-      'Plugging in constant numbers too early in related rates! If a ladder length is 10 ft, that is constant. But the height y and distance x change with time—substituting x=6 before differentiating makes dx/dt disappear!',
-      'Saying speed increases because "acceleration is positive". Acceleration positive while velocity is negative means speed is DECREASING.',
-      'Using Quotient Rule when applying L\'Hôpital\'s Rule: You take derivative of top over derivative of bottom, NOT quotient rule!'
+    "commonTraps": [
+      "Saying \"speed is increasing because acceleration is positive\". Speed increases only when v(t) and a(t) have the SAME sign! If v < 0 and a > 0, speed is decreasing.",
+      "Plugging numbers into related rates equations before taking the derivative! Always differentiate symbolically first, then substitute numbers.",
+      "Writing \"= 0/0\" on L'Hôpital FRQ problems. Show limits of top and bottom separately.",
+      "Forgetting units on contextual word problems: ft/sec, m/min^2, gallons/hour."
     ],
-    cramSheet: [
-      'v(t) = s\'(t); a(t) = v\'(t).',
-      'Speed = |v(t)|. Speed increases when v and a have same sign.',
-      'Related rates: Substitute constants first, variables ONLY after differentiation.',
-      'Concave up => Underestimate. Concave down => Overestimate.',
-      'L\'Hôpital: lim f(x)/g(x) = lim f\'(x)/g\'(x) only for 0/0 or inf/inf.'
+    "cramSheet": [
+      "v(t) = s'(t), a(t) = v'(t), Speed = |v(t)|.",
+      "Speed increases <=> v(t) and a(t) have same sign.",
+      "Tangent Line: L(x) = f(a) + f'(a)(x - a).",
+      "f'' > 0 (concave up) => Underestimate. f'' < 0 (concave down) => Overestimate.",
+      "L'Hôpital: Show lim top = 0 and lim bottom = 0 separately before taking derivatives."
     ]
   },
-
-  // ==========================================
-  // UNIT 5: ANALYTICAL APPLICATIONS OF DIFFERENTIATION
-  // ==========================================
   {
-    unitId: 'u5',
-    unitNumber: 5,
-    title: 'Analytical Applications of Differentiation',
-    examWeight: '15%–18% of AP Exam (Highest Weight!)',
-    bigIdea: 'Derivatives reveal the complete geometric anatomy of curves: extrema, concavity, inflection points, and optimal solutions.',
-    keyTheorems: [
+    "unitId": "u5",
+    "unitNumber": 5,
+    "title": "Analytical Applications of Differentiation",
+    "examWeight": "15%–18% of AP Exam (Heaviest AB Unit)",
+    "bigIdea": "Derivatives unlock the structural anatomy of functions—identifying where functions rise and fall, finding global and local extrema, analyzing curvature through concavity, and optimizing geometric and economic systems.",
+    "keyTheorems": [
       {
-        name: 'Mean Value Theorem (MVT)',
-        conditions: 'f(x) is continuous on [a, b] AND differentiable on (a, b).',
-        conclusion: 'There exists at least one point c in (a, b) such that f\'(c) = \\frac{f(b) - f(a)}{b - a}.',
-        apTip: 'Instantaneous rate of change equals average rate of change at least once. On FRQs, state both continuity on [a, b] and differentiability on (a, b).'
+        "name": "Mean Value Theorem for Derivatives (MVT)",
+        "conditions": "f(x) must be continuous on the closed interval [a, b] AND differentiable on the open interval (a, b).",
+        "conclusion": "There exists at least one number c in (a, b) such that f'(c) = (f(b) - f(a)) / (b - a).",
+        "apTip": "The instantaneous slope at some interior point c must equal the average secant slope over [a, b]. You MUST state BOTH continuity and differentiability hypotheses on FRQs!"
       },
       {
-        name: 'Extreme Value Theorem (EVT)',
-        conditions: 'f(x) is continuous on a closed interval [a, b].',
-        conclusion: 'f(x) is guaranteed to attain both an absolute maximum and an absolute minimum on [a, b].',
-        apTip: 'Must use the Candidates Test: evaluate f(x) at all critical points AND at endpoints a and b!'
+        "name": "Rolle's Theorem (Special Case of MVT)",
+        "conditions": "f(x) is continuous on [a, b], differentiable on (a, b), and f(a) = f(b).",
+        "conclusion": "There exists at least one number c in (a, b) such that f'(c) = 0 (horizontal tangent).",
+        "apTip": "Used to prove the existence of critical points, stationary states, or uniqueness of roots."
       },
       {
-        name: 'Rolle\'s Theorem',
-        conditions: 'f continuous on [a, b], differentiable on (a, b), and f(a) = f(b).',
-        conclusion: 'There exists at least one c in (a, b) such that f\'(c) = 0.',
-        apTip: 'Special case of MVT where the average rate of change is 0.'
+        "name": "Extreme Value Theorem (EVT)",
+        "conditions": "f(x) is continuous on a closed interval [a, b].",
+        "conclusion": "f(x) is guaranteed to attain both an absolute (global) maximum value and an absolute (global) minimum value on [a, b].",
+        "apTip": "The Candidates Test is the mandatory analytical procedure to locate these extrema."
       }
     ],
-    formulas: [
+    "formulas": [
       {
-        name: 'Critical Points Definition',
-        latex: 'f\'(x) = 0 \\quad \\text{or} \\quad f\'(x) \\text{ is undefined}',
-        explanation: 'Must be inside the domain of f(x).'
+        "name": "Mean Value Theorem Equation",
+        "latex": "f'(c) = \\frac{f(b) - f(a)}{b - a} \\quad \\text{for some } c \\in (a, b)",
+        "explanation": "Guarantees a point c where the tangent line is parallel to the secant line connecting endpoints."
       },
       {
-        name: 'First Derivative Test for Relative Extrema',
-        latex: '\\begin{aligned} f\'(x) \\text{ changes from } + \\text{ to } - &\\implies \\text{Relative Maximum} \\\\ f\'(x) \\text{ changes from } - \\text{ to } + &\\implies \\text{Relative Minimum} \\end{aligned}',
-        explanation: 'If f\'(x) does not change sign, no extremum exists at that critical point.'
+        "name": "Critical Number Definition",
+        "latex": "x = c \\quad \\text{such that } f'(c) = 0 \\quad \\text{or} \\quad f'(c) \\text{ Does Not Exist}",
+        "explanation": "Critical numbers are interior domain candidates for local extrema."
       },
       {
-        name: 'Second Derivative Test for Relative Extrema',
-        latex: 'f\'(c) = 0 \\text{ and } f\'\'(c) < 0 \\implies \\text{Rel Max}; \\quad f\'(c) = 0 \\text{ and } f\'\'(c) > 0 \\implies \\text{Rel Min}',
-        explanation: 'If f\'\'(c) = 0 or undefined, test is inconclusive—must use First Derivative Test.'
+        "name": "Second Derivative Test for Local Extrema",
+        "latex": "f'(c) = 0 \\text{ and } f''(c) < 0 \\implies \\text{Local Max} \\quad | \\quad f'(c) = 0 \\text{ and } f''(c) > 0 \\implies \\text{Local Min}",
+        "explanation": "If f''(c) = 0, the test is INCONCLUSIVE (must fall back to the First Derivative Test)."
       },
       {
-        name: 'Point of Inflection Criterion',
-        latex: 'f\'\'(x) \\text{ changes sign } (+ \\to - \\text{ or } - \\to +)',
-        explanation: 'Setting f\'\'(x) = 0 is NOT enough! f\'\'(x) must actually CHANGE sign across that point.'
+        "name": "Point of Inflection Criterion",
+        "latex": "f''(c) = 0 \\text{ or undefined} \\quad \\text{AND } f''(x) \\text{ CHANGES SIGN at } x = c",
+        "explanation": "A point of inflection requires a strict change in concavity (concave up to down or down to up)."
       }
     ],
-    sections: [
+    "sections": [
       {
-        heading: '1. The Candidates Test for Absolute Extrema (FRQ Favorite)',
-        content: `To find absolute maximum/minimum of continuous $f(x)$ on $[a, b]$:
-1. Find critical points: set $f'(x) = 0$ or find where $f'(x)$ is undefined in $(a, b)$.
-2. Make a candidates table with two columns: $x$ and $f(x)$.
-3. Evaluate $f(x)$ at:
-   - Left endpoint $x = a$
-   - Right endpoint $x = b$
-   - Every interior critical point $x = c$
-4. The highest value is the **Absolute Maximum**; the lowest is the **Absolute Minimum**.`
+        "heading": "1. The Mean Value Theorem (MVT) Protocol (CED 5.1)",
+        "content": "The Mean Value Theorem bridges the average rate of change and the instantaneous rate of change:\n\n**The Official 3-Step MVT Presentation:**\n1. **Hypothesis Verification:** Explicitly write:\n   - *\"Since $f(x)$ is continuous on the closed interval $[a, b]$ and differentiable on the open interval $(a, b)$...\"*\n2. **Compute the Average Rate of Change:**\n   $$\\text{AROC} = \\frac{f(b) - f(a)}{b - a}$$\n3. **Conclude with MVT:**\n   - *\"...by the Mean Value Theorem, there exists at least one $c \\in (a, b)$ such that $f'(c) = \\frac{f(b) - f(a)}{b - a}$.\"*\n\n*Common Failure Point:* If $f(x)$ has a cusp, corner, or discontinuity inside $(a, b)$ (like $f(x) = |x|$ or $f(x) = 1/x$), MVT DOES NOT APPLY!"
       },
       {
-        heading: '2. Connecting Graphs of f, f\', and f\'\'',
-        content: `Mastering the relationship between $f$ and its derivatives:
-| Function $f(x)$ | First Derivative $f'(x)$ | Second Derivative $f''(x)$ |
-| :--- | :--- | :--- |
-| Increasing | Positive ($f' > 0$) | — |
-| Decreasing | Negative ($f' < 0$) | — |
-| Relative Max | Changes sign $+ \\to -$ | Negative if smooth ($f'' < 0$) |
-| Relative Min | Changes sign $- \\to +$ | Positive if smooth ($f'' > 0$) |
-| Concave Up | Increasing | Positive ($f'' > 0$) |
-| Concave Down | Decreasing | Negative ($f'' < 0$) |
-| Point of Inflection | Has a relative extremum | Changes sign |`
+        "heading": "2. First Derivative Test & Monotonicity (CED 5.3–5.4)",
+        "content": "Analyzing the sign of the first derivative $f'(x)$:\n- If $f'(x) > 0$ on an interval, then $f(x)$ is **strictly increasing** on that interval.\n- If $f'(x) < 0$ on an interval, then $f(x)$ is **strictly decreasing** on that interval.\n- If $f'(x) = 0$ on an interval, then $f(x)$ is **constant** on that interval.\n\n**The First Derivative Test for Local (Relative) Extrema:**\nLet $c$ be a critical number of $f$:\n- **Local Maximum:** $f'(x)$ changes sign from **positive to negative** at $x = c$.\n- **Local Minimum:** $f'(x)$ changes sign from **negative to positive** at $x = c$.\n- **No Extremum:** $f'(x)$ does not change sign at $x = c$ (e.g. $f(x) = x^3$ at $x = 0$, where $f'(x) \\ge 0$ on both sides).\n\n*AP Justification Wording:* \"Because $f'(x)$ changes from positive to negative at $x = c$, $f$ has a relative maximum at $x = c$.\" (Never just say \"because the sign chart changes\")."
       },
       {
-        heading: '3. Applied Optimization Strategy',
-        content: `1. Write the **Objective Equation** (the quantity to be maximized/minimized: Area, Cost, Volume).
-2. If it contains multiple variables, use **Constraint Equations** to express the objective in terms of a SINGLE variable.
-3. Determine the feasible physical domain (e.g., $x > 0$, dimensions cannot be negative).
-4. Differentiate, find critical numbers, and verify it is a maximum or minimum using Candidates Test or First/Second Derivative Test.`
+        "heading": "3. The Candidates Test for Absolute (Global) Extrema (CED 5.5)",
+        "content": "To find the absolute maximum and minimum values of a continuous function on a closed interval $[a, b]$, use the **Candidates Test**:\n\n1. **Find all critical numbers** in the open interval $(a, b)$ by solving $f'(x) = 0$ or where $f'(x)$ is undefined.\n2. **Discard any critical numbers outside** of the interval $[a, b]$.\n3. **Construct a 2-Column Table of Candidates:** Evaluate $f(x)$ at:\n   - The left endpoint: $x = a$\n   - All interior critical numbers: $x = c_1, c_2, \\dots$\n   - The right endpoint: $x = b$\n4. **Identify Extrema:**\n   - The **largest value** in the $f(x)$ column is the **absolute maximum**.\n   - The **smallest value** in the $f(x)$ column is the **absolute minimum**.\n\n*Warning:* A sign chart ALONE cannot earn full points for absolute extrema on closed intervals; the Candidates Test table is required!"
+      },
+      {
+        "heading": "4. Concavity, Inflection Points & Second Derivative Test (CED 5.6–5.7)",
+        "content": "The second derivative describes the curvature (bending) of the function:\n- $f''(x) > 0 \\iff f'(x)$ is increasing $\\iff f(x)$ is **Concave Up** (holds water, tangent lies below curve).\n- $f''(x) < 0 \\iff f'(x)$ is decreasing $\\iff f(x)$ is **Concave Down** (sheds water, tangent lies above curve).\n\n**Point of Inflection (POI):**\nA point $(c, f(c))$ on the curve is a Point of Inflection **if and only if**:\n1. $f(x)$ is continuous at $c$.\n2. $f''(c) = 0$ or $f''(c)$ does not exist.\n3. **$f''(x)$ strictly changes sign** (from positive to negative or negative to positive) across $x = c$.\n*Crucial Warning:* Having $f''(c) = 0$ does NOT guarantee an inflection point! For $f(x) = x^4$, $f''(0) = 0$, but $f''(x) = 12x^2 \\ge 0$ everywhere, so no sign change occurs and $x = 0$ is NOT a point of inflection!"
+      },
+      {
+        "heading": "5. Connecting the Graphs of f, f', and f'' (CED 5.8–5.9)",
+        "content": "The most common AP graphical question gives the graph of the derivative $f'(x)$ and asks about the original function $f(x)$:\n\n| Feature of $f(x)$ | Feature on the Graph of Derivative $f'(x)$ | Feature of $f''(x)$ |\n| :--- | :--- | :--- |\n| **$f$ is Increasing** | $f'$ is **above the $x$-axis** ($f' > 0$) | N/A |\n| **$f$ is Decreasing** | $f'$ is **below the $x$-axis** ($f' < 0$) | N/A |\n| **Relative Maximum** | $f'$ crosses $x$-axis from **above to below** ($+ \\to -$) | $f'' < 0$ |\n| **Relative Minimum** | $f'$ crosses $x$-axis from **below to above** ($- \\to +$) | $f'' > 0$ |\n| **$f$ is Concave Up** | $f'$ is **increasing** (positive slope) | $f'' > 0$ |\n| **$f$ is Concave Down** | $f'$ is **decreasing** (negative slope) | $f'' < 0$ |\n| **Point of Inflection** | $f'$ has a **local maximum or local minimum** | $f''$ changes sign |"
+      },
+      {
+        "heading": "6. Applied Optimization 5-Step Protocol (CED 5.10–5.11)",
+        "content": "Optimization problems require finding the absolute maximum or minimum of a real-world quantity:\n1. **Assign variables and draw a diagram:** Label quantities clearly.\n2. **Write the Primary (Objective) Equation:** The quantity to be maximized or minimized (e.g. Area $A = x y$, Volume $V = x^2 h$, Cost $C = 20(2x^2) + 12(4xh)$).\n3. **Write the Secondary (Constraint) Equation:** Relate the variables using given restrictions (e.g. Perimeter $2x + 2y = 100$, Volume $x^2 h = 500$).\n4. **Express Objective Function in a single variable:** Substitute constraint into primary equation to get $f(x)$. Determine the practical domain $[a, b]$.\n5. **Find critical points & apply Candidates Test:** Evaluate $f(x)$ at endpoints and critical numbers to verify global optimality."
       }
     ],
-    workedExamples: [
+    "workedExamples": [
       {
-        title: 'Mean Value Theorem Existence Verification',
-        topicRef: 'CED 5.1',
-        question: 'Let f(x) = x^3 - x on [0, 2]. Verify that f satisfies the hypotheses of the MVT, and find all values of c satisfying the conclusion.',
-        solutionSteps: [
-          'Step 1 (State hypotheses): f(x) is a polynomial, so f is continuous on [0, 2] and differentiable on (0, 2). MVT applies.',
-          'Step 2 (Compute average rate of change): [f(2) - f(0)] / (2 - 0) = [(8 - 2) - 0] / 2 = 6 / 2 = 3.',
-          'Step 3 (Differentiate f): f\'(x) = 3x^2 - 1.',
-          'Step 4 (Set f\'(c) equal to average rate): 3c^2 - 1 = 3 ==> 3c^2 = 4 ==> c^2 = 4/3 ==> c = 2 / sqrt(3).',
-          'Step 5 (Check interval): c = 2 / sqrt(3) is approximately 1.155, which lies strictly inside (0, 2).'
+        "title": "Candidates Test for Absolute Extrema on a Closed Interval",
+        "topicRef": "CED 5.5 Absolute Extrema",
+        "question": "Find the absolute maximum and absolute minimum values of $f(x) = 2x^3 - 3x^2 - 12x + 5$ on the closed interval $[-2, 4]$.",
+        "solutionSteps": [
+          "Step 1: Check continuity: f(x) is a polynomial, continuous everywhere on [-2, 4], so EVT guarantees absolute extrema.",
+          "Step 2: Find critical numbers: f'(x) = 6x^2 - 6x - 12 = 6(x^2 - x - 2) = 6(x - 2)(x + 1).",
+          "Set f'(x) = 0 ==> x = 2 and x = -1. Both lie inside the open interval (-2, 4).",
+          "Step 3: Construct the Candidates Table evaluating f(x) at endpoints x = -2, 4 and critical values x = -1, 2:",
+          "- f(-2) = 2(-8) - 3(4) - 12(-2) + 5 = -16 - 12 + 24 + 5 = 1.",
+          "- f(-1) = 2(-1) - 3(1) - 12(-1) + 5 = -2 - 3 + 12 + 5 = 12.",
+          "- f(2) = 2(8) - 3(4) - 12(2) + 5 = 16 - 12 - 24 + 5 = -15.",
+          "- f(4) = 2(64) - 3(16) - 12(4) + 5 = 128 - 48 - 48 + 5 = 37.",
+          "Step 4: Identify extrema from the table:",
+          "Absolute Maximum value is 37 (occurs at x = 4).",
+          "Absolute Minimum value is -15 (occurs at x = 2)."
         ],
-        finalAnswer: 'c = 2 / sqrt(3)   (or 2*sqrt(3) / 3)',
-        apScoringTip: 'You MUST explicitly write: "f is continuous on [0, 2] and differentiable on (0, 2)" before calculating c. Omitting the hypothesis justification loses an essential justification point.'
+        "finalAnswer": "Absolute Max = 37 at x = 4; Absolute Min = -15 at x = 2",
+        "apScoringTip": "Be sure to distinguish between the maximum VALUE (the y-value 37) and WHERE it occurs (the x-value 4). If the exam asks for the absolute maximum, give the y-value."
       },
       {
-        title: 'Candidates Test for Absolute Extrema',
-        topicRef: 'CED 5.4-5.5',
-        question: 'Find the absolute maximum and absolute minimum values of f(x) = 2x^3 - 3x^2 - 12x + 1 on [-2, 3].',
-        solutionSteps: [
-          'Step 1 (Find critical points): f\'(x) = 6x^2 - 6x - 12 = 6(x - 2)(x + 1) = 0 ==> critical points x = -1 and x = 2 (both in interior).',
-          'Step 2 (Evaluate f at endpoints): f(-2) = 2(-8) - 3(4) - 12(-2) + 1 = -3; f(3) = 2(27) - 3(9) - 12(3) + 1 = -8.',
-          'Step 3 (Evaluate f at critical points): f(-1) = 2(-1) - 3(1) - 12(-1) + 1 = 8; f(2) = 2(8) - 3(4) - 12(2) + 1 = -19.',
-          'Step 4 (Compare all candidate values): Values are -3, -8, 8, and -19. Maximum is 8; Minimum is -19.'
+        "title": "Reading the Graph of f' to Find Points of Inflection",
+        "topicRef": "CED 5.8 Sketching and Graph Analysis",
+        "question": "The graph of f'(x), the derivative of f, is shown. If f' has relative extrema at x = -2, x = 1, and x = 4, find all x-coordinates of the points of inflection of f(x) and justify your answer.",
+        "solutionSteps": [
+          "Step 1: Recall definition: A point of inflection on f occurs where f''(x) changes sign.",
+          "Step 2: Relate f'' to f': Since f'' is the derivative of f', f'' changes sign where f' changes between increasing and decreasing.",
+          "Step 3: A function changes between increasing and decreasing exactly at its local extrema (peaks and valleys).",
+          "Step 4: Therefore, f has points of inflection at x = -2, x = 1, and x = 4.",
+          "Step 5: Write the official justification: \"f has points of inflection at x = -2, x = 1, and x = 4 because f'(x) changes between increasing and decreasing at these points, meaning f''(x) changes sign.\""
         ],
-        finalAnswer: 'Absolute Maximum = 8 (at x = -1); Absolute Minimum = -19 (at x = 2)',
-        apScoringTip: 'Always construct a Candidates Table containing both endpoints and all interior critical numbers. Graders look specifically for your evaluation of both endpoints!'
+        "finalAnswer": "x = -2, 1, 4",
+        "apScoringTip": "Do not simply say \"because f' has a local max/min\". You must explicitly connect it to concavity by stating \"meaning f'' changes sign\"."
       }
     ],
-    diagrams: [
+    "diagrams": [
       {
-        id: 'd_u5_1',
-        title: 'Concavity & Point of Inflection',
-        subtitle: 'Geometric transition where f\'\'(x) changes sign',
-        type: 'concavity_inflection',
-        description: 'A point of inflection occurs where f\'\'(x) changes sign from positive to negative or negative to positive. The tangent line cuts through the curve at the inflection point.',
-        takeaway: 'Setting f\'\'(x) = 0 is NOT enough to guarantee an inflection point; f\'\'(x) must actually CHANGE SIGN.'
-      },
-      {
-        id: 'd_u5_2',
-        title: 'Connecting f, f\', and f\'\' Graphs',
-        subtitle: 'Zeros of derivative correspond to horizontal tangents of original function',
-        type: 'derivative_graphs_f_fprime',
-        description: 'When f(x) has a local maximum or minimum, f\'(x) = 0. When f\'(x) is increasing, f(x) is concave up (f\'\' > 0).',
-        takeaway: 'First Derivative Test: f\' changes from + to - ==> local max; f\' changes from - to + ==> local min.'
+        "id": "f_fprime_fdoubleprime_relationship",
+        "title": "The Trinity of Calculus: f, f', and f'' Relationships",
+        "subtitle": "From Function Shape to First Derivative Slope to Second Derivative Concavity",
+        "type": "derivative_trinity",
+        "description": "Side-by-side alignment showing how zeros of f' correspond to peaks/valleys of f, and zeros of f'' correspond to inflection points of f.",
+        "takeaway": "Local extrema of f occur where f' changes sign; inflection points of f occur where f' has local extrema."
       }
     ],
-    commonTraps: [
-      'Assuming f\'\'(c) = 0 guarantees a point of inflection! For f(x) = x^4, f\'\'(0) = 0, but f\'\'(x) = 12x^2 >= 0 everywhere (no sign change, so NO inflection point).',
-      'Forgetting endpoints in absolute extrema problems! Absolute extrema frequently occur at endpoints.',
-      'Confusing "relative maximum value" (the y-value) with "location of relative maximum" (the x-value).'
+    "commonTraps": [
+      "Claiming a critical point is a local extremum without verifying a sign change! If f'(c) = 0 but f' does not change sign, there is no extremum.",
+      "Forgetting endpoints in the Candidates Test. Absolute extrema frequently occur at endpoints on closed intervals!",
+      "Assuming f''(c) = 0 implies an inflection point. A point of inflection REQUIRES a sign change in f''.",
+      "Applying MVT when differentiability fails (e.g. sharp turn or vertical tangent on the interior of the interval)."
     ],
-    cramSheet: [
-      'MVT: f\'(c) = [f(b) - f(a)] / (b - a). Requires continuous [a,b] & differentiable (a,b).',
-      'Critical points: f\'(x) = 0 OR f\'(x) undefined.',
-      'Absolute Extrema on closed interval: Always use Candidates Test (endpoints + critical points).',
-      'f\' increasing => f is concave up => f\'\' > 0.',
-      'Point of inflection requires f\'\' to CHANGE SIGN.'
+    "cramSheet": [
+      "MVT: f continuous on [a, b], diff on (a, b) => f'(c) = (f(b)-f(a))/(b-a).",
+      "First Deriv Test: f' + to - => Local Max; f' - to + => Local Min.",
+      "Absolute Extrema: Candidates Test (evaluate endpoints and critical numbers in a table).",
+      "Second Deriv Test: f'(c)=0 and f''(c)<0 => Local Max; f''(c)>0 => Local Min.",
+      "Inflection Point: f'' changes sign <=> f' has a local extremum."
     ]
   },
-
-  // ==========================================
-  // UNIT 6: INTEGRATION AND ACCUMULATION OF CHANGE
-  // ==========================================
   {
-    unitId: 'u6',
-    unitNumber: 6,
-    title: 'Integration & Accumulation of Change',
-    examWeight: '17%–20% of AP Exam (Highest Weight!)',
-    bigIdea: 'Integration accumulates infinitesimal quantities, acting as the inverse operation to differentiation via the Fundamental Theorem of Calculus.',
-    keyTheorems: [
+    "unitId": "u6",
+    "unitNumber": 6,
+    "title": "Integration and Accumulation of Change",
+    "examWeight": "17%–20% of AP Exam (Core Heavyweight)",
+    "bigIdea": "Definite integrals compute total accumulation of varying quantities over an interval. The Fundamental Theorem of Calculus establishes the profound inverse relationship between differentiation and integration.",
+    "keyTheorems": [
       {
-        name: 'Fundamental Theorem of Calculus (FTC) Part 1',
-        conditions: 'f is continuous on [a, b] and F(x) = \\int_a^x f(t) dt.',
-        conclusion: 'F\'(x) = \\frac{d}{dx}\\left[\\int_a^x f(t) dt\\right] = f(x)',
-        apTip: 'With chain rule: \\frac{d}{dx}\\left[\\int_a^{u(x)} f(t) dt\\right] = f(u(x)) \\cdot u\'(x).'
+        "name": "Fundamental Theorem of Calculus (Part 1: Accumulation Functions)",
+        "conditions": "f is continuous on [a, b] and g(x) = \\int_a^x f(t) dt.",
+        "conclusion": "g is differentiable on (a, b) and g'(x) = \\frac{d}{dx}\\left[\\int_a^x f(t) dt\\right] = f(x). Generalized Leibniz Rule: \\frac{d}{dx}\\left[\\int_{u(x)}^{v(x)} f(t) dt\\right] = f(v(x))v'(x) - f(u(x))u'(x).",
+        "apTip": "Every time you differentiate an accumulation integral, plug in the upper limit and multiply by its derivative, minus plug in the lower limit multiplied by its derivative."
       },
       {
-        name: 'Fundamental Theorem of Calculus (FTC) Part 2 (Evaluation Theorem)',
-        conditions: 'f is continuous on [a, b] and F is any antiderivative of f (F\' = f).',
-        conclusion: '\\int_a^b f(x) dx = F(b) - F(a)',
-        apTip: 'The most heavily used formula in all of AP Calculus! Rearranged as: F(b) = F(a) + \\int_a^b f(x) dx.'
+        "name": "Fundamental Theorem of Calculus (Part 2: Evaluation Theorem)",
+        "conditions": "f is continuous on [a, b] and F is any antiderivative of f (so F' = f).",
+        "conclusion": "\\int_a^b f(x) dx = F(b) - F(a).",
+        "apTip": "The cornerstone of definite integration: Net accumulation of rate of change over [a, b] equals total net change of the original quantity."
+      },
+      {
+        "name": "The Net Change Theorem",
+        "conditions": "A quantity changes at rate f(t) = Q'(t) from t = a to t = b.",
+        "conclusion": "Q(b) = Q(a) + \\int_a^b Q'(t) dt = Q(a) + \\int_a^b f(t) dt.",
+        "apTip": "This is the most frequently tested formula on the entire AP Calculus exam: Future Value = Initial Value + Accumulated Net Change."
       }
     ],
-    formulas: [
+    "formulas": [
       {
-        name: 'Power Rule for Integration',
-        latex: '\\int x^n dx = \\frac{x^{n+1}}{n+1} + C \\quad (n \\neq -1)',
-        explanation: 'Add 1 to exponent, divide by new exponent, add constant of integration + C.'
+        "name": "Riemann Sum Limit Definition of Definite Integral",
+        "latex": "\\int_a^b f(x) dx = \\lim_{n \\to \\infty} \\sum_{i=1}^n f(x_i^*) \\Delta x \\quad \\text{where } \\Delta x = \\frac{b - a}{n}",
+        "explanation": "Converts infinite Riemann sums to definite integrals for instantaneous evaluation."
       },
       {
-        name: 'Logarithmic Antiderivative',
-        latex: '\\int \\frac{1}{x} dx = \\ln|x| + C',
-        explanation: 'Absolute value bars around x are MANDATORY on the AP exam.'
+        "name": "Trapezoidal Rule Approximation",
+        "latex": "\\text{Trap} = \\frac{\\Delta x}{2} [f(x_0) + 2f(x_1) + 2f(x_2) + \\dots + 2f(x_{n-1}) + f(x_n)]",
+        "explanation": "Average of Left and Right Riemann sums. For unequal subintervals, calculate each trapezoid individually: (b_i - a_i)/2 * (y_1 + y_2)."
       },
       {
-        name: 'Trigonometric Integrals',
-        latex: '\\begin{aligned} \\int \\sin x dx &= -\\cos x + C & \\int \\cos x dx &= \\sin x + C \\\\ \\int \\sec^2 x dx &= \\tan x + C & \\int \\csc^2 x dx &= -\\cot x + C \\\\ \\int \\sec x \\tan x dx &= \\sec x + C & \\int \\csc x \\cot x dx &= -\\csc x + C \\end{aligned}',
-        explanation: 'Integral of sin is NEGATIVE cos; integral of cos is POSITIVE sin.'
+        "name": "Leibniz Integral Derivative Rule (FTC 1 with Chain Rule)",
+        "latex": "\\frac{d}{dx}\\left[\\int_{u(x)}^{v(x)} f(t) dt\\right] = f(v(x)) \\cdot v'(x) - f(u(x)) \\cdot u'(x)",
+        "explanation": "Must apply the Chain Rule to non-linear upper and lower limits of integration."
       },
       {
-        name: 'Inverse Trig Integrals',
-        latex: '\\int \\frac{1}{\\sqrt{a^2 - x^2}} dx = \\arcsin\\left(\\frac{x}{a}\\right) + C, \\quad \\int \\frac{1}{a^2 + x^2} dx = \\frac{1}{a}\\arctan\\left(\\frac{x}{a}\\right) + C',
-        explanation: 'Notice that arctan gets a 1/a out front, while arcsin does not.'
+        "name": "Integration by u-Substitution (Change of Variables)",
+        "latex": "\\int f(g(x)) g'(x) dx = \\int f(u) du \\quad \\text{and} \\quad \\int_a^b f(g(x)) g'(x) dx = \\int_{g(a)}^{g(b)} f(u) du",
+        "explanation": "When applying u-sub on definite integrals, always transform the limits of integration from x to u to avoid back-substitution."
       },
       {
-        name: 'Trapezoidal Rule (Equal Subintervals)',
-        latex: '\\int_a^b f(x) dx \\approx \\frac{\\Delta x}{2}[f(x_0) + 2f(x_1) + 2f(x_2) + \\dots + 2f(x_{n-1}) + f(x_n)]',
-        explanation: 'For unequal intervals (tables), compute each trapezoid individually: (b-a)/2 * (y1 + y2).'
+        "name": "Standard Antiderivative Master Formulas",
+        "latex": "\\int x^n dx = \\frac{x^{n+1}}{n+1} + C \\; (n \\neq -1), \\quad \\int \\frac{1}{x} dx = \\ln|x| + C, \\quad \\int e^{kx} dx = \\frac{1}{k}e^{kx} + C, \\quad \\int \\frac{1}{1 + x^2} dx = \\arctan x + C",
+        "explanation": "Always remember the absolute value inside ln|x| and the +C constant for indefinite integrals."
       }
     ],
-    sections: [
+    "sections": [
       {
-        heading: '1. Riemann Sums and Approximations Matrix',
-        content: `Approximating definite integrals using rectangles or trapezoids:
-| Approximation Method | Function Monotonicity / Concavity | Geometric Chord / Edge Behavior | Over- vs Under-Estimate |
-| :--- | :--- | :--- | :--- |
-| **Left Riemann (LRAM)** | $f(x)$ strictly Increasing | Heights evaluated at left edge | **Underestimate** |
-| **Left Riemann (LRAM)** | $f(x)$ strictly Decreasing | Heights evaluated at left edge | **Overestimate** |
-| **Right Riemann (RRAM)** | $f(x)$ strictly Increasing | Heights evaluated at right edge | **Overestimate** |
-| **Right Riemann (RRAM)** | $f(x)$ strictly Decreasing | Heights evaluated at right edge | **Underestimate** |
-| **Trapezoidal Rule** | $f''(x) > 0$ (Concave Up) | Straight secant chords lie above curve | **Overestimate** |
-| **Trapezoidal Rule** | $f''(x) < 0$ (Concave Down) | Straight secant chords lie below curve | **Underestimate** |`
+        "heading": "1. Riemann Sum Approximations on Tabular Data (CED 6.2)",
+        "content": "On AP Free Response Question 1 or 2, you are almost universally asked to compute a Riemann Sum from non-uniform table data:\n\n- **Left Riemann Sum (LRAM):** Uses left endpoint of each subinterval:\n  $$\\text{Area} \\approx \\sum (x_{i} - x_{i-1}) \\cdot f(x_{i-1})$$\n- **Right Riemann Sum (RRAM):** Uses right endpoint of each subinterval:\n  $$\\text{Area} \\approx \\sum (x_{i} - x_{i-1}) \\cdot f(x_{i})$$\n- **Midpoint Riemann Sum (MRAM):** Uses the midpoint of intervals (requires equal-width pairing of subintervals).\n- **Trapezoidal Rule:**\n  $$\\text{Area} \\approx \\sum (x_{i} - x_{i-1}) \\cdot \\frac{f(x_{i-1}) + f(x_{i})}{2}$$\n\n*Warning for Unequal Widths:* The standard formula $\\frac{\\Delta x}{2}[y_0 + 2y_1 + \\dots + y_n]$ applies **ONLY** when all subintervals have the exact same width $\\Delta x$. For data tables with varying time gaps, calculate each trapezoid area separately!"
       },
       {
-        heading: '2. Definite Integral as Net Area vs Total Area',
-        content: `- **Net Area:** $\\int_a^b f(x) dx$ (regions above $x$-axis count positive, regions below count negative).
-- **Total Geometric Area:** $\\int_a^b |f(x)| dx$ (all regions count positive).
-- **Properties:**
-  - $\\int_a^a f(x)dx = 0$
-  - $\\int_b^a f(x)dx = -\\int_a^b f(x)dx$
-  - $\\int_a^c f(x)dx = \\int_a^b f(x)dx + \\int_b^c f(x)dx$`
+        "heading": "2. Riemann Sum Over/Under Estimation Rules (CED 6.2)",
+        "content": "How function characteristics govern Riemann sum errors:\n\n| Approximation Method | Function Behavior ($f$) | Overestimate vs. Underestimate |\n| :--- | :--- | :--- |\n| **Left Riemann Sum** | Strictly **Increasing** ($f' > 0$) | **Underestimate** (rectangles sit below curve) |\n| **Left Riemann Sum** | Strictly **Decreasing** ($f' < 0$) | **Overestimate** (rectangles stick above curve) |\n| **Right Riemann Sum** | Strictly **Increasing** ($f' > 0$) | **Overestimate** (rectangles stick above curve) |\n| **Right Riemann Sum** | Strictly **Decreasing** ($f' < 0$) | **Underestimate** (rectangles sit below curve) |\n| **Trapezoidal Sum** | Strictly **Concave Up** ($f'' > 0$) | **Overestimate** (trapezoid secants sit above curve) |\n| **Trapezoidal Sum** | Strictly **Concave Down** ($f'' < 0$) | **Underestimate** (trapezoid secants sit below curve) |\n\n*Key AP Exam Insight:* Left and Right sums depend **ONLY on whether $f$ is increasing or decreasing** (first derivative). Trapezoidal sums depend **ONLY on concavity** (second derivative)!"
       },
       {
-        heading: '3. Mastering u-Substitution for Definite Integrals',
-        content: `When substituting $u = g(x)$ and $du = g'(x)dx$:
-- **CRITICAL AP RULE:** You MUST change the limits of integration!
-  $$\\int_{x=a}^{x=b} f(g(x))g'(x)dx = \\int_{u=g(a)}^{u=g(b)} f(u)du$$
-- Once limits are converted to $u$, you do NOT need to switch back to $x$. Evaluate directly using the new $u$-limits.`
+        "heading": "3. Fundamental Theorem of Calculus Part 1 (Accumulation Functions) (CED 6.4)",
+        "content": "Let $g(x) = \\int_a^x f(t) dt$. The Fundamental Theorem of Calculus states that integration and differentiation are inverse operations:\n$$g'(x) = f(x) \\quad \\text{and} \\quad g''(x) = f'(x)$$\n\n**Evaluating Function Values from a Graph of $f$:**\n- $g(a) = \\int_a^a f(t) dt = 0$.\n- $g(b) = \\int_a^b f(t) dt =$ Area of geometric shapes (triangles, rectangles, semicircles) between curve and horizontal axis.\n- **Regions ABOVE the $t$-axis count as POSITIVE area.**\n- **Regions BELOW the $t$-axis count as NEGATIVE area.**\n- **Reversing Limits of Integration:** $\\int_b^a f(t) dt = -\\int_a^b f(t) dt$. If you integrate backwards from right to left, flip the signs of all areas!"
       },
       {
-        heading: '4. The Net Change Theorem (Accumulation Model)',
-        content: `The final value of a changing quantity equals initial value PLUS accumulated change:
-$$f(b) = f(a) + \\int_a^b f'(t) dt$$
-- **Example:** If $R(t)$ is the rate water enters a tank in gallons/hr, and there are 50 gallons at $t = 0$, then at $t = 5$:
-  $$\\text{Water at } t=5 = 50 + \\int_0^5 R(t) dt$$`
+        "heading": "4. Algebraic Integration Techniques (CED 6.9–6.10)",
+        "content": "When standard power rules fail, deploy these algebraic strategies:\n\n1. **$u$-Substitution (Reverse Chain Rule):** Look for an inside function $u(x)$ whose derivative $u'(x)$ appears as a multiplying factor.\n   $$\\int 2x \\cos(x^2) dx \\implies u = x^2, du = 2x dx \\implies \\int \\cos u du = \\sin(x^2) + C$$\n2. **Polynomial Long Division (Improper Rational Functions):** If the degree of the numerator is greater than or equal to the degree of the denominator ($n \\ge d$), divide before integrating:\n   $$\\int \\frac{x^2 + 1}{x - 1} dx = \\int \\left(x + 1 + \\frac{2}{x - 1}\\right) dx = \\frac{1}{2}x^2 + x + 2\\ln|x - 1| + C$$\n3. **Completing the Square (Arctan Form):**\n   $$\\int \\frac{1}{x^2 + 6x + 10} dx = \\int \\frac{1}{(x + 3)^2 + 1} dx = \\arctan(x + 3) + C$$"
+      },
+      {
+        "heading": "5. The Net Change Theorem in Contextual Modeling (CED 6.8)",
+        "content": "The Net Change Theorem states:\n$$Q(b) = Q(a) + \\int_a^b Q'(t) dt$$\n**Typical AP Scenarios:**\n- **Water in a Tank:** $\\text{Volume at time } t = V(0) + \\int_0^t (\\text{Rate In} - \\text{Rate Out}) dt$.\n- **Particle Position:** $s(b) = s(a) + \\int_a^b v(t) dt$.\n- **Temperature Cooling:** $T(t) = T(0) + \\int_0^t T'(u) du$.\n\n*Essential AP Tip:* Always remember to add the INITIAL AMOUNT $Q(a)$! The integral $\\int_a^b Q'(t) dt$ only calculates the change, not the final total."
+      },
+      {
+        "heading": "6. Riemann Sum Over/Under-Estimation Rules & Unequal Subintervals (CED 6.2-6.3)",
+        "content": "Connecting analytical properties to numerical approximation bounds:\n\n* **Riemann Sum Approximation Bounds**:\n  * **Increasing Function ($f'(x) > 0$)**:\n    * Left Riemann Sum: **Underestimate**.\n    * Right Riemann Sum: **Overestimate**.\n  * **Decreasing Function ($f'(x) < 0$)**:\n    * Left Riemann Sum: **Overestimate**.\n    * Right Riemann Sum: **Underestimate**.\n  * **Concave Up Function ($f''(x) > 0$)**:\n    * Trapezoidal Sum: **Overestimate** (secant lines lie above the curve).\n    * Midpoint Riemann Sum: **Underestimate**.\n  * **Concave Down Function ($f''(x) < 0$)**:\n    * Trapezoidal Sum: **Underestimate** (secant chords cut below the curve).\n    * Midpoint Riemann Sum: **Overestimate**.\n* **Unequal Subinterval Calculations from Data Tables**:\n  * On AP FRQ Question 1, data tables almost always have **unequal step sizes** $\\Delta x_i = x_{i} - x_{i-1}$!\n  * You CANNOT factor out a common $\\Delta x$! You must compute each rectangle or trapezoid individually:\n    $$\\text{Trapezoid Approximation} = \\sum_{i=1}^n \\left(\\frac{f(x_{i-1}) + f(x_i)}{2}\\right) (x_i - x_{i-1})$$"
+      },
+      {
+        "heading": "7. The Rate-In / Rate-Out Net Accumulation Model (CED 6.4-6.5)",
+        "content": "The dominant template of AP Calculus FRQ Question 1:\n\n* **The General Accumulation Equation**:\n  $$A(t) = A(t_0) + \\int_{t_0}^t [R_{\\text{in}}(s) - R_{\\text{out}}(s)] \\, ds$$\n  * $A(t)$: Total quantity of substance in the system at time $t$.\n  * $A(t_0)$: Initial quantity at time $t_0$.\n  * $R_{\\text{in}}(t)$: Rate at which substance enters the system (e.g., liters/hour).\n  * $R_{\\text{out}}(t)$: Rate at which substance leaves the system.\n* **Critical Points of Accumulation**:\n  * By Fundamental Theorem of Calculus: $A'(t) = R_{\\text{in}}(t) - R_{\\text{out}}(t)$.\n  * Critical points occur when $A'(t) = 0 \\implies R_{\\text{in}}(t) = R_{\\text{out}}(t)$.\n  * Amount is **increasing** when $R_{\\text{in}}(t) > R_{\\text{out}}(t)$.\n  * Amount is **decreasing** when $R_{\\text{in}}(t) < R_{\\text{out}}(t)$.\n  * Absolute maximum/minimum must be evaluated using the **Candidates Test** (checking critical points and endpoints $t = 0, t = T$)."
       }
     ],
-    workedExamples: [
+    "workedExamples": [
       {
-        title: 'FTC Part 1 with Chain Rule',
-        topicRef: 'CED 6.4',
-        question: 'Find F\'(x) for the function F(x) = integral from 2 to x^3 of sqrt(1 + t^2) dt.',
-        solutionSteps: [
-          'Step 1 (Recall FTC Part 1 formula): d/dx [integral from a to u(x) of f(t) dt] = f(u(x)) * u\'(x).',
-          'Step 2 (Identify components): Base integrand f(t) = sqrt(1 + t^2); upper limit u(x) = x^3; lower limit is constant 2.',
-          'Step 3 (Differentiate upper limit): u\'(x) = d/dx [x^3] = 3x^2.',
-          'Step 4 (Substitute u(x) into f and multiply by u\'): F\'(x) = sqrt(1 + (x^3)^2) * (3x^2) = 3x^2 * sqrt(1 + x^6).'
+        "title": "Applying FTC Part 1 with Chain Rule and Leibniz Rule",
+        "topicRef": "CED 6.4 Accumulation Functions",
+        "question": "Find $g'(x)$ if $g(x) = \\int_{2x}^{x^3} \\sqrt{1 + t^2} dt$.",
+        "solutionSteps": [
+          "Step 1: Apply the generalized Leibniz Rule: d/dx[\\int_{u(x)}^{v(x)} f(t) dt] = f(v(x))*v'(x) - f(u(x))*u'(x).",
+          "Step 2: Identify terms: f(t) = \\sqrt{1 + t^2}, upper limit v(x) = x^3 (v'(x) = 3x^2), lower limit u(x) = 2x (u'(x) = 2).",
+          "Step 3: Evaluate upper part: f(v(x))*v'(x) = \\sqrt{1 + (x^3)^2} \\cdot (3x^2) = 3x^2 \\sqrt{1 + x^6}.",
+          "Step 4: Evaluate lower part: f(u(x))*u'(x) = \\sqrt{1 + (2x)^2} \\cdot (2) = 2 \\sqrt{1 + 4x^2}.",
+          "Step 5: Subtract lower from upper: g'(x) = 3x^2 \\sqrt{1 + x^6} - 2 \\sqrt{1 + 4x^2}."
         ],
-        finalAnswer: 'F\'(x) = 3x^2 * sqrt(1 + x^6)',
-        apScoringTip: 'Do NOT attempt to evaluate the integral analytically! The AP Exam specifically chooses integrands with no elementary antiderivative to test your conceptual knowledge of FTC Part 1.'
+        "finalAnswer": "g'(x) = 3x^2 \\sqrt{1 + x^6} - 2 \\sqrt{1 + 4x^2}",
+        "apScoringTip": "Students frequently forget the Chain Rule factor on the limits (e.g. omitting the 3x^2 and 2). Both derivative factors are mandatory."
       },
       {
-        title: 'Definite Integral with u-Substitution & Bounds Change',
-        topicRef: 'CED 6.9',
-        question: 'Evaluate the definite integral: integral from 0 to 2 of x * sqrt(x^2 + 5) dx.',
-        solutionSteps: [
-          'Step 1 (Choose substitution): Let u = x^2 + 5. Then du = 2x dx ==> x dx = du / 2.',
-          'Step 2 (Convert integration limits): Lower bound: x = 0 ==> u = (0)^2 + 5 = 5. Upper bound: x = 2 ==> u = (2)^2 + 5 = 9.',
-          'Step 3 (Rewrite integral in u): integral from 5 to 9 of sqrt(u) * (du / 2) = (1/2) * integral from 5 to 9 of u^{1/2} du.',
-          'Step 4 (Antidifferentiate and evaluate): (1/2) * [(2/3) * u^{3/2}] from 5 to 9 = (1/3) * [9^{3/2} - 5^{3/2}].',
-          'Step 5 (Simplify numerical terms): 9^{3/2} = (sqrt(9))^3 = 27; 5^{3/2} = 5*sqrt(5). So (1/3) * [27 - 5*sqrt(5)] = 9 - (5/3)*sqrt(5).'
+        "title": "Trapezoidal Approximation on Unequal Intervals with Justification",
+        "topicRef": "CED 6.2 Riemann Sums",
+        "question": "The rate of oil consumption R(t) in barrels/day is measured: R(0) = 12, R(3) = 18, R(7) = 24, R(10) = 32. Use a trapezoidal sum to approximate total consumption over [0, 10]. If R is known to be concave up (R'' > 0), is this an overestimate or underestimate?",
+        "solutionSteps": [
+          "Step 1: Check interval widths: [0, 3] has width 3; [3, 7] has width 4; [7, 10] has width 3. Intervals are unequal, so calculate each trapezoid separately.",
+          "Step 2: Trapezoid 1: (3/2) * (12 + 18) = 1.5 * 30 = 45.",
+          "Step 3: Trapezoid 2: (4/2) * (18 + 24) = 2 * 42 = 84.",
+          "Step 4: Trapezoid 3: (3/2) * (24 + 32) = 1.5 * 56 = 84.",
+          "Step 5: Total sum: 45 + 84 + 84 = 213 barrels.",
+          "Step 6: Justification: Since R''(t) > 0 on [0, 10], the function is concave up. The secant line connecting points on a concave up curve lies above the curve, so the trapezoidal sum is an OVERESTIMATE."
         ],
-        finalAnswer: '9 - (5*sqrt(5)) / 3   (or [27 - 5*sqrt(5)] / 3)',
-        apScoringTip: 'AP graders award a distinct point for correctly changing the limits of integration from x to u. Writing limits of 0 to 2 while the integrand is in terms of u is considered an incorrect notation error.'
+        "finalAnswer": "Approx = 213 barrels; Overestimate because R(t) is concave up (R'' > 0)",
+        "apScoringTip": "Remember to cite CONCAVITY when justifying trapezoidal errors. Mentioning that R is increasing will not earn the error justification point for a trapezoidal sum."
       }
     ],
-    diagrams: [
+    "diagrams": [
       {
-        id: 'd_u6_1',
-        title: 'Riemann Sums & Definite Integrals',
-        subtitle: 'Approximating area under curve using finite subinterval rectangles',
-        type: 'riemann_sum_rectangles',
-        description: 'Riemann sums partition [a, b] into n intervals of width Δx = (b-a)/n. As n approaches infinity, the sum of rectangle areas converges to the exact definite integral.',
-        takeaway: 'On FRQs with tabular data, always write out the individual terms (Δx * height) before computing the final arithmetic sum.'
+        "id": "ftc_accumulation_graph",
+        "title": "Accumulation Function g(x) = Integral from a to x of f(t) dt",
+        "subtitle": "Connecting Area Under Curve to Slopes of g(x)",
+        "type": "accumulation_integral",
+        "description": "As x advances, the net signed area under f(t) accumulates, showing how zeros of f produce extrema in g, and peaks of f produce inflection points in g.",
+        "takeaway": "g(x) is the area, g'(x) = f(x) is the height, g''(x) = f'(x) is the slope of the graph of f."
       }
     ],
-    commonTraps: [
-      'Forgetting "+ C" on indefinite integrals (guaranteed 1-point deduction on FRQs!).',
-      'Not changing the limits of integration when doing u-substitution on a definite integral.',
-      'Applying the power rule to 1/x: integral(x^-1 dx) is NOT x^0 / 0; it is ln|x| + C.'
+    "commonTraps": [
+      "Forgetting the initial condition in Net Change problems: Q(b) = Q(a) + \\int_a^b Q'(t) dt. Omitting Q(a) is the #1 mistake on AP FRQ #1!",
+      "Applying the uniform trapezoidal formula when table subintervals have different widths (\\Delta x is not constant).",
+      "Citing \"increasing\" instead of \"concave up\" for trapezoidal error justifications. Trapezoids depend strictly on concavity!",
+      "Integrating backwards without flipping signs: \\int_5^0 f(t) dt = -\\int_0^5 f(t) dt."
     ],
-    cramSheet: [
-      'FTC 1: d/dx [integral from a to u(x) of f(t)dt] = f(u(x)) * u\'(x).',
-      'FTC 2: integral from a to b of f\'(x)dx = f(b) - f(a).',
-      'Accumulation: Current = Initial + integral(Rate).',
-      'Left sum on increasing func = Underestimate; Right sum = Overestimate.',
-      'Trapezoid on concave up = Overestimate; on concave down = Underestimate.'
+    "cramSheet": [
+      "FTC 1: d/dx[\\int_a^x f(t) dt] = f(x). Chain Rule: multiply by limit derivatives.",
+      "FTC 2: \\int_a^b f'(x) dx = f(b) - f(a).",
+      "Net Change: Total = Initial + \\int (Rate In - Rate Out) dt.",
+      "Trapezoid Error: Concave Up => Overestimate; Concave Down => Underestimate.",
+      "Left Sum: Increasing => Under; Decreasing => Over. Right Sum: Increasing => Over; Decreasing => Under."
     ]
   },
-
-  // ==========================================
-  // UNIT 7: DIFFERENTIAL EQUATIONS
-  // ==========================================
   {
-    unitId: 'u7',
-    unitNumber: 7,
-    title: 'Differential Equations',
-    examWeight: '6%–12% of AP Exam',
-    bigIdea: 'Differential equations link a function to its rates of change, visualized with slope fields and solved analytically via separation of variables.',
-    keyTheorems: [
+    "unitId": "u7",
+    "unitNumber": 7,
+    "title": "Differential Equations",
+    "examWeight": "6%–12% of AP Exam",
+    "bigIdea": "Differential equations model dynamic systems where the rate of change of a quantity depends on the quantity itself, solved geometrically with slope fields and analytically by separation of variables.",
+    "keyTheorems": [
       {
-        name: 'Separation of Variables Theorem',
-        conditions: 'A first-order differential equation can be factored into the form \\frac{dy}{dx} = f(x)g(y).',
-        conclusion: '\\int \\frac{1}{g(y)} dy = \\int f(x) dx',
-        apTip: 'This is a mandatory 5-to-6 point FRQ almost every single year! The very first point is awarded strictly for separating variables. If you fail to separate variables correctly, you score 0/6 on the entire question!'
-      }
-    ],
-    formulas: [
-      {
-        name: 'Exponential Growth and Decay Model',
-        latex: '\\frac{dy}{dt} = ky \\implies y = C e^{kt}',
-        explanation: 'Rate of change is directly proportional to current amount. If initial value at t=0 is y_0, then y(t) = y_0 e^{kt}.'
+        "name": "Separation of Variables Existence Theorem",
+        "conditions": "A first-order differential equation can be factored into dy/dx = g(x) * h(y) where h(y) != 0.",
+        "conclusion": "The equation can be rewritten as (1/h(y)) dy = g(x) dx and integrated directly on both sides.",
+        "apTip": "Separation of variables is tested on almost every single AP Calculus AB Free Response section (Question 4, 5, or 6, worth 5 to 6 points). Missing the initial separation step forfeits ALL subsequent points!"
       },
       {
-        name: 'Slope Field Tangent Line Slopes',
-        latex: 'm = \\left.\\frac{dy}{dx}\\right|_{(x, y)}',
-        explanation: 'Slope segments are horizontal when dy/dx = 0; vertical/undefined when denominator of dy/dx = 0.'
+        "name": "Exponential Growth and Decay Theorem",
+        "conditions": "The rate of change of a quantity y is directly proportional to the amount present: dy/dt = k*y.",
+        "conclusion": "The general solution is y(t) = y_0 * e^(k*t), where y_0 = y(0) is the initial quantity and k is the continuous growth/decay constant.",
+        "apTip": "If k > 0, it represents exponential growth (e.g. bacteria, compound interest); if k < 0, it represents exponential decay (e.g. radioactive isotopes, drug clearance)."
       }
     ],
-    sections: [
+    "formulas": [
       {
-        heading: '1. Slope Fields Mastery & Pattern Matrix',
-        content: `A slope field is a visual map of tangent line segments for a differential equation:
-| Differential Equation Form | Slope Dependence | Geometric Field Pattern | AP Exam Identification Rule |
-| :--- | :--- | :--- | :--- |
-| $\\frac{dy}{dx} = f(x)$ | Depends on $x$ only | Identical slopes along **vertical columns** | Parallel slopes at constant $x$ |
-| $\\frac{dy}{dx} = g(y)$ | Depends on $y$ only | Identical slopes along **horizontal rows** | Parallel slopes at constant $y$ |
-| $\\frac{dy}{dx} = -\\frac{x}{y}$ | Circles / Orthogonal | Tangent to concentric circles ($x^2 + y^2 = r^2$) | Zero on y-axis, vertical on x-axis |
-| $\\frac{dy}{dx} = y - x$ | Linear combination | Slopes equal zero along diagonal line $y = x$ | Slope sign changes across $y = x$ |`
+        "name": "Separation of Variables Form",
+        "latex": "\\frac{dy}{dx} = g(x)h(y) \\implies \\int \\frac{1}{h(y)} dy = \\int g(x) dx + C",
+        "explanation": "Must introduce the constant + C immediately upon integration, NOT at the very end."
       },
       {
-        heading: '2. The 6-Point Separation of Variables FRQ Blueprint',
-        content: `Follow this exact workflow to guarantee full 6/6 points:
-1. **Separate Variables (+1 pt):** Collect all $y$ and $dy$ terms on the left, all $x$ and $dx$ terms on the right:
-   $$\\frac{1}{y} dy = 2x dx$$
-2. **Antidifferentiate Both Sides (+2 pts):**
-   $$\\ln|y| = x^2 + C$$
-3. **Include Constant of Integration (+1 pt):** $+ C$ must appear immediately after integrating.
-4. **Use Initial Condition $(x_0, y_0)$ to Find C (+1 pt):** Solve for $C$ immediately while expression is simpler.
-5. **Solve for $y$ Explicitly (+1 pt):**
-   $$|y| = e^{x^2 + C} = C_1 e^{x^2} \\implies y = \\pm C_1 e^{x^2}$$
-   Choose the $+$ or $-$ sign matching the initial condition $y_0$!`
+        "name": "Exponential Growth / Decay Law",
+        "latex": "\\frac{dy}{dt} = ky \\iff y = C e^{kt}",
+        "explanation": "When dy/dt = k(y - T_a), it represents Newton's Law of Cooling with ambient temperature T_a."
+      },
+      {
+        "name": "Slope Field Tangent Line Equation",
+        "latex": "m = \\left.\\frac{dy}{dx}\\right|_{(x, y)} = f(x, y)",
+        "explanation": "At each grid point (x, y), draw a short line segment with slope m."
       }
     ],
-    workedExamples: [
+    "sections": [
       {
-        title: 'Separation of Variables Full FRQ Protocol',
-        topicRef: 'CED 7.6-7.7',
-        question: 'Solve the differential equation dy/dx = x / y with initial condition y(0) = -3. Find the particular solution y = f(x).',
-        solutionSteps: [
-          'Step 1 (Separate variables): y dy = x dx.',
-          'Step 2 (Antidifferentiate both sides): integral(y dy) = integral(x dx) ==> (1/2)y^2 = (1/2)x^2 + C_1 ==> y^2 = x^2 + C.',
-          'Step 3 (Substitute initial condition): At (0, -3): (-3)^2 = (0)^2 + C ==> 9 = C.',
-          'Step 4 (Substitute C back into equation): y^2 = x^2 + 9.',
-          'Step 5 (Solve explicitly for y and choose correct branch): y = +/- sqrt(x^2 + 9). Because y(0) = -3 is negative, choose negative branch: y = -sqrt(x^2 + 9).'
+        "heading": "1. Reading and Sketching Slope Fields (CED 7.3–7.4)",
+        "content": "A slope field is a visual representation of all possible solutions to a differential equation $\\frac{dy}{dx} = f(x, y)$:\n\n**How to Sketch a Slope Field:**\n1. Pick each designated grid point $(x, y)$.\n2. Calculate the numerical value of $\\frac{dy}{dx}$.\n3. Draw a short, accurate tangent segment through the point with that slope.\n\n**Key Diagnostic Signposts to Identify Equations:**\n- **Slopes depend ONLY on $x$ (e.g., $\\frac{dy}{dx} = x - 1$):**\n  - Slopes are identical in any vertical column (same $x$-coordinate).\n  - Slopes are horizontal ($m = 0$) along vertical line $x = 1$.\n- **Slopes depend ONLY on $y$ (e.g., $\\frac{dy}{dx} = 2 - y$):**\n  - Slopes are identical in any horizontal row (same $y$-coordinate).\n  - Slopes are horizontal ($m = 0$) along horizontal line $y = 2$ (equilibrium solution).\n- **Slopes depend on BOTH $x$ and $y$ (e.g., $\\frac{dy}{dx} = -\\frac{x}{y}$):**\n  - Slopes are 0 along the $y$-axis ($x = 0$, horizontal tangents).\n  - Slopes are undefined (vertical tangents) along the $x$-axis ($y = 0$)."
+      },
+      {
+        "heading": "2. The Separation of Variables 4-Step Protocol (CED 7.6–7.7)",
+        "content": "This is the highest-value procedure on the entire AP Free Response exam:\n\n1. **Step 1: Separate the Variables (1 Point)**\n   - Move all terms involving $y$ and $dy$ to the left side, and all terms involving $x$ and $dx$ to the right side (using multiplication or division only, never addition or subtraction):\n     $$\\frac{1}{h(y)} dy = g(x) dx$$\n   - *CRITICAL:* If you do not correctly separate variables, you score **0 out of 5** on the entire question!\n2. **Step 2: Antidifferentiate Both Sides (2 Points)**\n   - Integrate each side separately:\n     $$\\int \\frac{1}{h(y)} dy = \\int g(x) dx$$\n   - **MANDATORY:** Add the constant $+ C$ to the $x$-side **IMMEDIATELY** upon integrating!\n3. **Step 3: Solve for the Constant $C$ using the Initial Condition (1 Point)**\n   - Substitute the given initial condition $(x_0, y_0)$ right away while the equation is still simple:\n     $$G(y_0) = F(x_0) + C \\implies C = G(y_0) - F(x_0)$$\n4. **Step 4: Solve Explicitly for $y = f(x)$ (1 Point)**\n   - Isolate $y$ algebraically. When taking a square root ($y = \\pm\\sqrt{\\dots}$), choose the sign ($+$ or $-$) that matches the initial condition $y_0$!"
+      },
+      {
+        "heading": "3. Exponential Growth & Newton's Law of Cooling (CED 7.8)",
+        "content": "Whenever the rate of change is proportional to the difference between a quantity and a constant:\n- **Radioactive Decay:** $\\frac{dy}{dt} = -k y \\implies y(t) = y_0 e^{-kt}$.\n  - Half-life $t_{1/2}$: Set $y = \\frac{1}{2}y_0 \\implies \\frac{1}{2} = e^{-kt_{1/2}} \\implies t_{1/2} = \\frac{\\ln 2}{k}$.\n- **Newton's Law of Cooling:** $\\frac{dT}{dt} = -k(T - T_a)$, where $T_a$ is the ambient temperature.\n  - Separating variables yields: $\\ln|T - T_a| = -kt + C \\implies T(t) = T_a + (T_0 - T_a)e^{-kt}$."
+      },
+      {
+        "heading": "5. The Official AP Separation of Variables 5-Point Scoring Rubric (CED 7.6-7.7)",
+        "content": "Step-by-step master guide to securing all 5 points on the classic differential equation FRQ:\n\n* **The Official College Board 5-Point Rubric Breakdown**:\n  * **Point 1 (Separation of Variables)**: Collect all $y$ terms with $dy$ and all $x$ terms with $dx$ (e.g., $\\frac{1}{y}dy = k dx$). **CRITICAL**: If you fail to separate variables, you earn **0 out of 5 points**, even if the rest of your math is correct!\n  * **Point 2 & 3 (Antiderivatives)**: Integrate both sides correctly (e.g., $\\ln|y| = kx$).\n  * **Point 4 (Constant of Integration $+C$ & Initial Condition)**: Write $+C$ immediately upon antidifferentiation, and substitute the given initial point $(x_0, y_0)$ to solve for $C$.\n  * **Point 5 (Explicit Solution for $y$)**: Algebraically isolate $y = f(x)$, ensuring correct absolute value branch resolution.\n* **Resolving Absolute Value Branches**:\n  * $\\ln|y| = kx + C \\implies |y| = e^{kx + C} = e^C e^{kx} = A e^{kx}$.\n  * If initial condition has $y(0) > 0$, then $y = +A e^{kx}$.\n  * If initial condition has $y(0) < 0$, then $y = -A e^{kx}$."
+      },
+      {
+        "heading": "6. Slope Fields Analysis & Solution Curve Trajectories (CED 7.3-7.4)",
+        "content": "Visualizing differential equations without analytical solutions:\n\n* **Constructing Slope Fields**:\n  * For a given differential equation $\\frac{dy}{dx} = f(x, y)$, calculate slope value at each designated grid point $(x, y)$ and draw a short line segment with that slope.\n  * Slopes with value 0 must be drawn strictly horizontal.\n  * Undefined slopes (division by zero) must NOT have a line segment drawn.\n* **Analyzing Patterns in Slope Fields**:\n  * If slopes depend **only on $x$** (e.g., $dy/dx = 2x$), slopes are identical along any **vertical column**.\n  * If slopes depend **only on $y$** (e.g., $dy/dx = y - 1$), slopes are identical along any **horizontal row**.\n  * Equilibrium solutions occur where $dy/dx = 0$ along a horizontal line (e.g., $y = 1$)."
+      }
+    ],
+    "workedExamples": [
+      {
+        "title": "Separation of Variables with Initial Condition Protocol",
+        "topicRef": "CED 7.6–7.7 Finding Particular Solutions",
+        "question": "Find the particular solution $y = f(x)$ to the differential equation $\\frac{dy}{dx} = \\frac{2x}{y}$ with initial condition $f(1) = -2$. State the domain of the solution.",
+        "solutionSteps": [
+          "Step 1 (Separate variables): y dy = 2x dx.",
+          "Step 2 (Integrate both sides): \\int y dy = \\int 2x dx ==> (1/2)y^2 = x^2 + C_1 ==> y^2 = 2x^2 + C.",
+          "Step 3 (Solve for C using initial condition x = 1, y = -2): (-2)^2 = 2(1)^2 + C ==> 4 = 2 + C ==> C = 2.",
+          "Step 4 (Substitute C back): y^2 = 2x^2 + 2.",
+          "Step 5 (Solve for y): y = \\pm\\sqrt{2x^2 + 2}. Since f(1) = -2 is negative, we MUST choose the negative branch: y = -\\sqrt{2x^2 + 2}.",
+          "Step 6 (Domain): Since 2x^2 + 2 > 0 for all real x, the domain is all real numbers (-inf, inf)."
         ],
-        finalAnswer: 'y = -sqrt(x^2 + 9)',
-        apScoringTip: 'You MUST choose the negative square root branch because the initial condition y(0) = -3 is negative. Writing "+/-" in your final answer will cost you the final answer point!'
+        "finalAnswer": "y = -\\sqrt{2x^2 + 2}",
+        "apScoringTip": "Remember to choose the NEGATIVE square root sign! Leaving y = \\pm\\sqrt{2x^2 + 2} will lose the final answer point because a function cannot have \\pm."
       }
     ],
-    diagrams: [
+    "diagrams": [
       {
-        id: 'd_u7_1',
-        title: 'Slope Field & Solution Curve',
-        subtitle: 'Tangent slope field with continuous particular solution trajectory',
-        type: 'slope_field_solution',
-        description: 'Slope fields visualize the directional flow of all possible solutions to dy/dx. A particular solution curve follows the tangent segments smoothly through a specified initial condition.',
-        takeaway: 'When drawing a solution curve on an AP FRQ, start at the given initial condition and follow the tangent slopes smoothly without crossing vertical asymptotes.'
+        "id": "slope_field_solution_curve",
+        "title": "Slope Field with Particular Solution Curve",
+        "subtitle": "Following the Streamlines of dy/dx",
+        "type": "slope_field",
+        "description": "Grid of tangent segments showing how initial condition (x_0, y_0) acts as an anchor, determining a single continuous trajectory through the field.",
+        "takeaway": "A solution curve must pass through the initial condition and follow the flow of slopes without crossing vertical asymptotes."
       }
     ],
-    commonTraps: [
-      'Separation of variables trap: You CANNOT separate variables by addition/subtraction! dy/dx = x + y is NOT separable.',
-      'Adding "+ C" at the very end of algebraic isolation. You must add "+ C" at the instant you integrate.',
-      'Forgetting absolute values when integrating dy/y to ln|y|.'
+    "commonTraps": [
+      "The \"+C\" Disaster: Forgetting to add +C immediately upon integrating, or adding +C at the very end after solving for y. (Immediate loss of 3 points out of 5!).",
+      "Sign error in square roots: Writing y = \\pm\\sqrt{\\dots} instead of choosing the correct sign matching the initial condition.",
+      "Separation algebra failure: Trying to separate dy/dx = x + y by writing dy - y = x dx. Separation must be multiplicative/divisive!"
     ],
-    cramSheet: [
-      'Separation of variables: 1st point is separating y with dy and x with dx.',
-      'Slope depends only on x => columns have identical slopes.',
-      'Slope depends only on y => rows have identical slopes.',
-      'dy/dt = ky => y(t) = C e^{kt}.',
-      'Always use the initial condition to determine whether y is positive or negative when removing |y|.'
+    "cramSheet": [
+      "Separate variables: g(y) dy = f(x) dx. Integrate immediately: \\int g(y) dy = \\int f(x) dx + C.",
+      "Plug in initial condition immediately to find C.",
+      "Exponential Growth: dy/dt = ky <=> y = C*e^(kt).",
+      "Horizontal rows have same slope => dy/dx depends only on y.",
+      "Vertical columns have same slope => dy/dx depends only on x."
     ]
   },
-
-  // ==========================================
-  // UNIT 8: APPLICATIONS OF INTEGRATION
-  // ==========================================
   {
-    unitId: 'u8',
-    unitNumber: 8,
-    title: 'Applications of Integration',
-    examWeight: '10%–15% of AP Exam',
-    bigIdea: 'Integration calculates accumulated real-world quantities, areas enclosed between curves, and volumes of complex geometric solids.',
-    keyTheorems: [
+    "unitId": "u8",
+    "unitNumber": 8,
+    "title": "Applications of Integration",
+    "examWeight": "10%–15% of AP Exam",
+    "bigIdea": "Definite integrals measure spatial geometry and accumulated physical change, determining the average value of varying phenomena, the area between intersecting curves, and the volumes of three-dimensional solids.",
+    "keyTheorems": [
       {
-        name: 'Average Value of a Function Theorem',
-        conditions: 'f(x) is continuous on [a, b].',
-        conclusion: 'f_{\\text{avg}} = \\frac{1}{b - a} \\int_a^b f(x) dx',
-        apTip: 'Distinct from average rate of change! Average value of f is the integral of f divided by (b - a). Average rate of change of f is [f(b) - f(a)] / (b - a).'
-      },
-      {
-        name: 'Mean Value Theorem for Integrals',
-        conditions: 'f(x) is continuous on [a, b].',
-        conclusion: 'There exists a number c in [a, b] such that f(c) = f_{\\text{avg}} = \\frac{1}{b - a}\\int_a^b f(x) dx.',
-        apTip: 'Guarantees the existence of a rectangle whose area equals the area under the curve.'
+        "name": "Mean Value Theorem for Integrals",
+        "conditions": "f(x) is continuous on the closed interval [a, b].",
+        "conclusion": "There exists at least one number c in (a, b) such that f(c) = f_avg = \\frac{1}{b - a} \\int_a^b f(x) dx, meaning \\int_a^b f(x) dx = f(c)(b - a).",
+        "apTip": "Geometrically, the area under the curve equals the area of a rectangle with width (b - a) and height f(c)."
       }
     ],
-    formulas: [
+    "formulas": [
       {
-        name: 'Area Between Two Curves (dx vs dy)',
-        latex: 'A = \\int_a^b [f(x) - g(x)] dx \\quad (\\text{Top} - \\text{Bottom}) \\quad \\text{or} \\quad A = \\int_c^d [f(y) - g(y)] dy \\quad (\\text{Right} - \\text{Left})',
-        explanation: 'Integrand is always the greater function minus the lesser function to ensure positive area.'
+        "name": "Average Value of a Function on [a, b]",
+        "latex": "f_{\\text{avg}} = \\frac{1}{b - a} \\int_a^b f(x) dx",
+        "explanation": "Represents the continuous mean height of the function over the interval. Do not confuse with Average Rate of Change!"
       },
       {
-        name: 'Volume by Known Cross Sections',
-        latex: 'V = \\int_a^b A(x) dx \\quad \\text{where } s = \\text{Top} - \\text{Bottom} = f(x) - g(x)',
-        explanation: 'Cross section areas: Square: s^2; Semicircle: (pi/8)s^2; Equilateral triangle: (sqrt(3)/4)s^2; Isosceles right triangle (leg as base): (1/2)s^2.'
+        "name": "Displacement vs. Total Distance Traveled",
+        "latex": "\\text{Displacement} = \\int_{t_1}^{t_2} v(t) dt \\quad | \\quad \\text{Total Distance} = \\int_{t_1}^{t_2} |v(t)| dt",
+        "explanation": "Displacement is net change in position s(t_2) - s(t_1); Total Distance accounts for all movement regardless of direction."
       },
       {
-        name: 'Volume of Revolution: Disk Method',
-        latex: 'V = \\pi \\int_a^b [R(x)]^2 dx',
-        explanation: 'Used when the region touches the axis of revolution completely (no hole / gap).'
+        "name": "Area Between Two Curves",
+        "latex": "A = \\int_a^b [f(x) - g(x)] dx \\quad \\text{(Top - Bottom)} \\quad \\text{or} \\quad A = \\int_c^d [x_R(y) - x_L(y)] dy \\quad \\text{(Right - Left)}",
+        "explanation": "Find intersection points to determine limits of integration a and b."
       },
       {
-        name: 'Volume of Revolution: Washer Method',
-        latex: 'V = \\pi \\int_a^b \\left( [R(x)]^2 - [r(x)]^2 \\right) dx',
-        explanation: 'R(x) is outer radius (distance from axis to far curve); r(x) is inner radius (distance from axis to near curve).'
+        "name": "Volume with Known Cross Sections",
+        "latex": "V = \\int_a^b A(x) dx \\quad \\text{where } s(x) = f(x) - g(x) \\text{ is the base width}",
+        "explanation": "Square: A = s^2; Semicircle: A = (pi/8)s^2; Equilateral Triangle: A = (sqrt(3)/4)s^2; Isosceles Right Triangle (hypotenuse on base): A = (1/4)s^2."
       },
       {
-        name: 'Displacement vs Total Distance Traveled',
-        latex: '\\text{Displacement} = \\int_{t_1}^{t_2} v(t) dt, \\quad \\text{Total Distance} = \\int_{t_1}^{t_2} |v(t)| dt',
-        explanation: 'Displacement can be positive, negative, or zero. Total distance is always non-negative.'
+        "name": "Volume of Revolution: Disk Method (No Hole)",
+        "latex": "V = \\pi \\int_a^b [R(x)]^2 dx \\quad \\text{or} \\quad V = \\pi \\int_c^d [R(y)]^2 dy",
+        "explanation": "Radius R is distance from the curve to the axis of revolution."
+      },
+      {
+        "name": "Volume of Revolution: Washer Method (Hollow Interior)",
+        "latex": "V = \\pi \\int_a^b \\left( [R(x)]^2 - [r(x)]^2 \\right) dx \\quad \\text{(Outer Radius } R, \\text{ Inner Radius } r)",
+        "explanation": "CRITICAL: Integrate difference of squares [R^2 - r^2], NOT [R - r]^2!"
       }
     ],
-    sections: [
+    "sections": [
       {
-        heading: '1. Area Between Curves: Choosing dx or dy',
-        content: `To set up the area integral:
-1. Find intersection points by setting curves equal to each other.
-2. Determine which curve is "Top" and which is "Bottom" on the interval.
-3. If functions are given as $x = f(y)$, or if integrating with respect to $x$ requires splitting into multiple regions, integrate with respect to $y$:
-   $$A = \\int_c^d (\\text{Right} - \\text{Left}) dy$$`
+        "heading": "1. Average Value vs. Average Rate of Change (CED 8.1)",
+        "content": "The most frequent vocabulary trap on the AP Exam:\n\n| Concept | What It Computes | Governing Formula | Key Indicator in Problem |\n| :--- | :--- | :--- | :--- |\n| **Average Value** | The average **height** or **amount** of a function | $f_{\\text{avg}} = \\frac{1}{b - a} \\int_a^b f(x) dx$ | *\"Find the average temperature...\"* |\n| **Average Rate of Change** | The average **slope** or **rate** between two points | $\\text{AROC} = \\frac{f(b) - f(a)}{b - a}$ | *\"Find the average rate of change of temperature...\"* |\n\n*Mnemonic:* If asked for the average of $f$, you integrate $f$. If asked for the average rate of change of $f$, you find the slope of $f$!"
       },
       {
-        heading: '2. Volume Methods & Cross Section Formula Reference',
-        content: `Calculating volume of geometric solids using definite integrals:
-| Volume Method | Cross-Section Geometry | General Volume Formula | Key AP Exam Setup |
-| :--- | :--- | :--- | :--- |
-| **Disk Method** | Solid Circular Disk | $V = \\pi \\int_a^b [R(x)]^2 dx$ | Region touches axis of revolution |
-| **Washer Method** | Circular Ring with Hole | $V = \\pi \\int_a^b \\left( [R(x)]^2 - [r(x)]^2 \\right) dx$ | Outer $R(x)$ far, inner $r(x)$ near |
-| **Square Cross-Section** | Perpendicular Squares | $V = \\int_a^b [s(x)]^2 dx$ | Base length $s(x) = \\text{Top} - \\text{Bottom}$ |
-| **Semicircle Cross-Section** | Perpendicular Semicircles | $V = \\frac{\\pi}{8} \\int_a^b [s(x)]^2 dx$ | Base is diameter $s(x)$ |
-| **Equilateral Triangle** | Equilateral Triangles | $V = \\frac{\\sqrt{3}}{4} \\int_a^b [s(x)]^2 dx$ | Base side is $s(x)$ |`
+        "heading": "2. Particle Motion: Displacement vs. Total Distance (CED 8.2)",
+        "content": "For a particle with velocity $v(t)$:\n- **Net Displacement on $[t_1, t_2]$:**\n  $$\\Delta s = s(t_2) - s(t_1) = \\int_{t_1}^{t_2} v(t) dt$$\n- **Current Position at time $t_2$:**\n  $$s(t_2) = s(t_1) + \\int_{t_1}^{t_2} v(t) dt$$\n- **Total Distance Traveled on $[t_1, t_2]$:**\n  $$\\text{Distance} = \\int_{t_1}^{t_2} |v(t)| dt$$\n\n*Analytical Calculation without a Calculator:* To compute $\\int |v(t)| dt$ by hand, find all times where $v(t) = 0$, split the integral into subintervals where $v(t) > 0$ and $v(t) < 0$, and negate the negative regions:\n$$\\text{Total Distance} = \\left|\\int_{t_1}^{t_c} v(t) dt\\right| + \\left|\\int_{t_c}^{t_2} v(t) dt\\right|$$"
       },
       {
-        heading: '3. Washer Method Around Non-Axis Lines (y = k or x = h)',
-        content: `When revolving around line $y = k$:
-- If axis $y = k$ is **below** the region:
-  - Outer radius: $R(x) = f(x) - k$ (Top curve minus axis)
-  - Inner radius: $r(x) = g(x) - k$ (Bottom curve minus axis)
-- If axis $y = k$ is **above** the region:
-  - Outer radius: $R(x) = k - g(x)$ (Axis minus bottom curve)
-  - Inner radius: $r(x) = k - f(x)$ (Axis minus top curve)
-- Volume:
-  $$V = \\pi \\int_a^b \\left( [R(x)]^2 - [r(x)]^2 \\right) dx$$`
+        "heading": "3. Area Between Two Curves (CED 8.4–8.5)",
+        "content": "To find the area bounded by two intersecting curves:\n1. **Vertical Slices (integrate with respect to $x$):**\n   $$A = \\int_a^b [y_{\\text{top}} - y_{\\text{bottom}}] dx$$\n   Use when functions are easily expressed as $y = f(x)$.\n2. **Horizontal Slices (integrate with respect to $y$):**\n   $$A = \\int_c^d [x_{\\text{right}} - x_{\\text{left}}] dy$$\n   Use when functions are given as $x = g(y)$ or when vertical lines cross curves multiple times.\n3. **Multiple Crossing Regions:** If curves cross at $x = c \\in (a, b)$, split into two integrals:\n   $$A = \\int_a^c [f(x) - g(x)] dx + \\int_c^b [g(x) - f(x)] dx$$"
+      },
+      {
+        "heading": "4. Volumes with Known Geometric Cross Sections (CED 8.7)",
+        "content": "A 3D solid rests on a flat base bounded by curves $y_1$ and $y_2$. The slice thickness is $dx$, and the cross-sectional base length is $s(x) = y_{\\text{top}} - y_{\\text{bottom}}$:\n\n$$V = \\int_a^b A(x) dx$$\n\n| Cross Section Shape | Area Formula $A(x)$ in terms of Base $s(x)$ | Integral Volume Formula |\n| :--- | :--- | :--- |\n| **Square** | $A = s^2$ | $V = \\int_a^b [f(x) - g(x)]^2 dx$ |\n| **Semicircle** (diameter on base) | $A = \\frac{1}{2}\\pi r^2 = \\frac{1}{2}\\pi \\left(\\frac{s}{2}\\right)^2 = \\frac{\\pi}{8}s^2$ | $V = \\frac{\\pi}{8}\\int_a^b [f(x) - g(x)]^2 dx$ |\n| **Equilateral Triangle** | $A = \\frac{\\sqrt{3}}{4}s^2$ | $V = \\frac{\\sqrt{3}}{4}\\int_a^b [f(x) - g(x)]^2 dx$ |\n| **Isosceles Right Triangle** (leg on base) | $A = \\frac{1}{2}s^2$ | $V = \\frac{1}{2}\\int_a^b [f(x) - g(x)]^2 dx$ |\n| **Isosceles Right Triangle** (hypotenuse on base) | $A = \\frac{1}{4}s^2$ | $V = \\frac{1}{4}\\int_a^b [f(x) - g(x)]^2 dx$ |\n| **Rectangle with Height $h$** | $A = s \\cdot h$ | $V = \\int_a^b [f(x) - g(x)] \\cdot h(x) dx$ |"
+      },
+      {
+        "heading": "5. Solids of Revolution: Disk vs. Washer Method (CED 8.8)",
+        "content": "When revolving a 2D region around an axis:\n\n- **Disk Method (Solid Cylinder, No Hole):**\n  $$V = \\pi \\int_a^b [R(x)]^2 dx$$\n  Where radius $R(x) = |\\text{Curve} - \\text{Axis}|$.\n\n- **Washer Method (Hollow Solid with Hole):**\n  $$V = \\pi \\int_a^b \\left( [R_{\\text{outer}}(x)]^2 - [r_{\\text{inner}}(x)]^2 \\right) dx$$\n  - $R_{\\text{outer}}$ is the distance from the **farthest boundary** to the axis of revolution.\n  - $r_{\\text{inner}}$ is the distance from the **closest boundary** to the axis of revolution.\n\n**Revolving Around Arbitrary Lines (The Distance Formula):**\n- Revolve around $y = k$ (horizontal line below region): $R = y_{\\text{top}} - k, r = y_{\\text{bottom}} - k$.\n- Revolve around $y = k$ (horizontal line above region): $R = k - y_{\\text{bottom}}, r = k - y_{\\text{top}}$.\n- Revolve around $x = h$ (vertical line to left): $R = x_{\\text{right}} - h, r = x_{\\text{left}} - h$.\n- Revolve around $x = h$ (vertical line to right): $R = h - x_{\\text{left}}, r = h - x_{\\text{right}}$."
+      },
+      {
+        "heading": "6. Solids of Revolution: Disk, Washer & Cross-Sections Matrix (CED 8.7-8.12)",
+        "content": "Comprehensive volume integration reference formulas:\n\n* **Volumes with Known Cross-Sections (Base in $xy$-plane)**:\n  $$V = \\int_a^b A(x) \\, dx$$\n  * Let side length of cross-section be $s(x) = y_{\\text{top}} - y_{\\text{bottom}}$:\n  * **Squares**: $A(x) = [s(x)]^2$\n  * **Semicircles**: $A(x) = \\frac{\\pi}{8} [s(x)]^2$\n  * **Equilateral Triangles**: $A(x) = \\frac{\\sqrt{3}}{4} [s(x)]^2$\n  * **Isosceles Right Triangles (Leg on Base)**: $A(x) = \\frac{1}{2} [s(x)]^2$\n  * **Isosceles Right Triangles (Hypotenuse on Base)**: $A(x) = \\frac{1}{4} [s(x)]^2$\n* **Solids of Revolution (Disk & Washer Methods)**:\n  * **Revolution about Horizontal Axis $y = k$**:\n    $$V = \\pi \\int_a^b \\left( [R(x)]^2 - [r(x)]^2 \\right) \\, dx$$\n    * Outer radius: $R(x) = |y_{\\text{far}} - k|$\n    * Inner radius: $r(x) = |y_{\\text{near}} - k|$\n  * **Revolution about Vertical Axis $x = h$**:\n    $$V = \\pi \\int_c^d \\left( [R(y)]^2 - [r(y)]^2 \\right) \\, dy$$"
+      },
+      {
+        "heading": "7. Arc Length & Physical Accumulation Integrals (CED 8.13)",
+        "content": "Calculating path length and work integrals:\n\n* **Arc Length Formula of a Smooth Curve**:\n  $$L = \\int_a^b \\sqrt{1 + [f'(x)]^2} \\, dx = \\int_c^d \\sqrt{1 + [g'(y)]^2} \\, dy$$\n  * Derived from Pythagorean theorem: $dL = \\sqrt{dx^2 + dy^2} = \\sqrt{1 + (dy/dx)^2} dx$.\n* **Work Integrals for Pumping Liquids**:\n  * Pumping liquid of weight density $\\rho g$ out the top of a tank of height $H$:\n    $$W = \\int_{y_{\\min}}^{y_{\\max}} (\\text{Force on slice}) \\cdot (\\text{Distance slice travels}) = \\int_{y_{\\min}}^{y_{\\max}} \\rho g A(y) (H - y) \\, dy$$"
       }
     ],
-    workedExamples: [
+    "workedExamples": [
       {
-        title: 'Area Between Intersecting Curves',
-        topicRef: 'CED 8.4',
-        question: 'Find the area of the region enclosed by y = x^2 and y = 2x - x^2.',
-        solutionSteps: [
-          'Step 1 (Find points of intersection): Set x^2 = 2x - x^2 ==> 2x^2 - 2x = 0 ==> 2x(x - 1) = 0 ==> x = 0 and x = 1.',
-          'Step 2 (Determine Top vs Bottom curve): On (0, 1), test x = 0.5: y_1 = (0.5)^2 = 0.25; y_2 = 2(0.5) - (0.5)^2 = 0.75. So y = 2x - x^2 is Top, and y = x^2 is Bottom.',
-          'Step 3 (Set up area integral): Area = integral from 0 to 1 of [(2x - x^2) - (x^2)] dx = integral from 0 to 1 of (2x - 2x^2) dx.',
-          'Step 4 (Antidifferentiate and evaluate): [x^2 - (2/3)x^3] from 0 to 1 = [1^2 - (2/3)(1)^3] - 0 = 1 - 2/3 = 1/3.'
+        "title": "Washer Method Revolved Around an Offset Horizontal Line y = -1",
+        "topicRef": "CED 8.8 Solids of Revolution",
+        "question": "Find the volume of the solid generated when the region bounded by $y = \\sqrt{x}$, the horizontal line $y = 2$, and the $y$-axis is revolved around the line $y = -1$.",
+        "solutionSteps": [
+          "Step 1: Sketch region and find intersection: y = \\sqrt{x} intersects y = 2 at x = 4. Region extends from x = 0 to x = 4.",
+          "Step 2: Identify top and bottom curves: y_{top} = 2 and y_{bottom} = \\sqrt{x}.",
+          "Step 3: Axis of revolution is y = -1 (below the region).",
+          "Step 4: Find outer radius R(x): Distance from axis y = -1 to top curve y = 2: R(x) = 2 - (-1) = 3.",
+          "Step 5: Find inner radius r(x): Distance from axis y = -1 to bottom curve y = \\sqrt{x}: r(x) = \\sqrt{x} - (-1) = \\sqrt{x} + 1.",
+          "Step 6: Set up Washer Volume Integral: V = \\pi \\int_0^4 [R(x)^2 - r(x)^2] dx = \\pi \\int_0^4 [3^2 - (\\sqrt{x} + 1)^2] dx.",
+          "Step 7: Expand integrand: 9 - (x + 2\\sqrt{x} + 1) = 8 - x - 2x^{1/2}.",
+          "Step 8: Integrate: \\pi [8x - (1/2)x^2 - (4/3)x^{3/2}] from 0 to 4.",
+          "Step 9: Evaluate: \\pi [8(4) - (1/2)(16) - (4/3)(8)] = \\pi [32 - 8 - 32/3] = \\pi [24 - 32/3] = \\pi [72/3 - 32/3] = 40\\pi / 3."
         ],
-        finalAnswer: 'Area = 1/3',
-        apScoringTip: 'Always verify which curve is on top over the entire interval of integration. Swapping Top and Bottom produces a negative value, which will cause a point deduction on AP FRQs.'
+        "finalAnswer": "V = 40\\pi / 3",
+        "apScoringTip": "The most common Washer trap is squaring the difference: \\pi \\int (R - r)^2 dx. This scores 0 points! It must strictly be \\pi \\int (R^2 - r^2) dx."
       },
       {
-        title: 'Volume of Revolution: Disk Method',
-        topicRef: 'CED 8.9',
-        question: 'Find the volume of the solid generated when the region under y = sqrt(x) from x = 0 to x = 4 is revolved around the x-axis.',
-        solutionSteps: [
-          'Step 1 (Identify method and radius): Region completely touches the rotation axis y = 0, so use Disk Method: R(x) = sqrt(x) - 0 = sqrt(x).',
-          'Step 2 (Set up volume integral): Volume = pi * integral from 0 to 4 of [R(x)]^2 dx = pi * integral from 0 to 4 of (sqrt(x))^2 dx = pi * integral from 0 to 4 of x dx.',
-          'Step 3 (Evaluate the definite integral): pi * [(1/2)x^2] from 0 to 4 = pi * [(1/2)(16) - 0] = 8*pi.'
+        "title": "Volume with Equilateral Triangle Cross Sections",
+        "topicRef": "CED 8.7 Cross Sections",
+        "question": "The base of a solid is the region bounded by $y = x^2$ and $y = 4$. Cross sections perpendicular to the $y$-axis are equilateral triangles. Set up and evaluate the integral for volume.",
+        "solutionSteps": [
+          "Step 1: Cross sections are perpendicular to the y-axis, so integrate with respect to y from y = 0 to y = 4.",
+          "Step 2: Solve curves for x in terms of y: y = x^2 ==> x = \\pm\\sqrt{y}. Right curve is x = +\\sqrt{y}, left curve is x = -\\sqrt{y}.",
+          "Step 3: Base length s(y) = x_{right} - x_{left} = \\sqrt{y} - (-sqrt{y}) = 2\\sqrt{y}.",
+          "Step 4: Area of an equilateral triangle with side s: A(y) = (\\sqrt{3}/4) * s^2 = (\\sqrt{3}/4) * (2\\sqrt{y})^2 = (\\sqrt{3}/4) * (4y) = \\sqrt{3} * y.",
+          "Step 5: Set up volume integral: V = \\int_0^4 A(y) dy = \\int_0^4 \\sqrt{3} y dy.",
+          "Step 6: Integrate: \\sqrt{3} * [(1/2)y^2] from 0 to 4 = \\sqrt{3} * [(1/2)(16) - 0] = 8\\sqrt{3}."
         ],
-        finalAnswer: 'Volume = 8*pi',
-        apScoringTip: 'Remember the constant factor of pi! Omitting pi is the most frequent computational error on AP volume questions.'
+        "finalAnswer": "V = 8\\sqrt{3}",
+        "apScoringTip": "Notice the slicing direction: \"perpendicular to the y-axis\" requires integration with respect to y. Integrating w.r.t x loses the setup points."
       }
     ],
-    diagrams: [
+    "diagrams": [
       {
-        id: 'd_u8_1',
-        title: 'Area Between Curves & Revolution',
-        subtitle: 'Representative vertical slice dx generating area and volume',
-        type: 'area_between_curves_disc',
-        description: 'Integration accumulates vertical strips of width dx and height (Top - Bottom). Revolving the region around an axis generates cylindrical disks of volume dV = pi * [R(x)]^2 dx.',
-        takeaway: 'Area between curves is always integral(Top - Bottom) dx; Washer volume is pi * integral([R(x)]^2 - [r(x)]^2) dx.'
+        "id": "washer_cross_section_disk",
+        "title": "Washer vs. Disk Revolution Geometry",
+        "subtitle": "Outer Radius R(x) and Inner Radius r(x)",
+        "type": "washer_geometry",
+        "description": "Rotating around an offset axis creates a circular donut cross-section of area pi*(R^2 - r^2), integrated along the axis of revolution.",
+        "takeaway": "R is distance from axis to outer curve; r is distance from axis to inner curve."
       }
     ],
-    commonTraps: [
-      'Washer method trap: Writing [R(x) - r(x)]^2 instead of [R(x)]^2 - [r(x)]^2! This is the #1 most penalized mistake on AP volume FRQs.',
-      'Forgetting the factor of pi on disk and washer volumes.',
-      'Confusing Average Value (1/(b-a) * integral f dx) with Average Rate of Change ([f(b) - f(a)] / (b - a)).'
+    "commonTraps": [
+      "Writing \\pi \\int (R - r)^2 dx instead of \\pi \\int (R^2 - r^2) dx for the Washer Method. This is the #1 algebraic error on volume FRQs!",
+      "Confusing Average Value (\\frac{1}{b-a}\\int f dx) with Average Rate of Change (\\frac{f(b)-f(a)}{b-a}).",
+      "Confusing Displacement (\\int v dt) with Total Distance (\\int |v| dt).",
+      "Integrating with respect to the wrong variable when cross sections are perpendicular to the y-axis (must integrate dy, not dx!)."
     ],
-    cramSheet: [
-      'Average value = (1 / (b - a)) * integral from a to b of f(x) dx.',
-      'Area = integral(Top - Bottom) dx OR integral(Right - Left) dy.',
-      'Washer: V = pi * integral (R^2 - r^2) dx. NEVER square the difference (R - r)^2.',
-      'Radius is always: Top - Bottom OR Right - Left.',
-      'Cross sections: Square = s^2; Semicircle = (pi/8)s^2; Equilateral triangle = (sqrt(3)/4)s^2.'
+    "cramSheet": [
+      "Average Value: f_avg = \\frac{1}{b - a} \\int_a^b f(x) dx.",
+      "Total Distance = \\int_{t_1}^{t_2} |v(t)| dt; Displacement = \\int_{t_1}^{t_2} v(t) dt.",
+      "Area: \\int (y_top - y_bottom) dx or \\int (x_right - x_left) dy.",
+      "Cross sections: Square s^2, Semicircle (\\pi/8)s^2, Equilateral (\\sqrt{3}/4)s^2.",
+      "Washer: V = \\pi \\int (R^2 - r^2) dx. Disk: V = \\pi \\int R^2 dx."
     ]
   }
 ];

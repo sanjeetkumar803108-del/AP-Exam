@@ -1010,9 +1010,6 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                             </div>
                             <div className="min-w-0">
                               <div className="flex items-center gap-2 mb-0.5">
-                                <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700">
-                                  15 Battle Questions
-                                </span>
                                 <span className="text-[10px] text-zinc-400 font-semibold truncate">
                                   {subj.category}
                                 </span>

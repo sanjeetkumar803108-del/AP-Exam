@@ -23,6 +23,8 @@ import {
 import { battleSync, PlayerProfile, BattleRoom } from '../services/battleSync';
 import GlobalMarkdown, { prepareQuizMath } from './GlobalMarkdown';
 import { ReportAiButton } from './ReportAiModal';
+import { getCoins, deductCoins, hasEnoughCoins, isProUser } from '../utils/coins';
+import { showToast } from '../utils/toast';
 
 /**
  * Battle option math formatter:
@@ -460,6 +462,13 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // 2. Start Quick Match (30 seconds search, fast pairing)
   const startQuickMatch = async () => {
+    if (!isProUser() && !hasEnoughCoins(5)) {
+      triggerVibration(25);
+      showToast('⚠️ 5 Coins required for 1v1 Quiz Battle. Insufficient coins!', 'warning');
+      window.dispatchEvent(new CustomEvent('open-paywall-modal', { detail: { featureName: '1v1 Quiz Battle', cost: 5 } }));
+      return;
+    }
+
     matchCommencedRef.current = false;
     cleanupLocalBattleTimers();
     setForfeitNotice(null);
@@ -569,6 +578,13 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // 4. Friend Room: Create Room
   const handleHostFriendRoom = async () => {
+    if (!isProUser() && !hasEnoughCoins(5)) {
+      triggerVibration(25);
+      showToast('⚠️ 5 Coins required for 1v1 Quiz Battle. Insufficient coins!', 'warning');
+      window.dispatchEvent(new CustomEvent('open-paywall-modal', { detail: { featureName: '1v1 Quiz Battle', cost: 5 } }));
+      return;
+    }
+
     matchCommencedRef.current = false;
     cleanupLocalBattleTimers();
     triggerVibration(20);
@@ -638,6 +654,13 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
   // 5. Friend Room: Join Room
   const handleJoinFriendRoom = async () => {
+    if (!isProUser() && !hasEnoughCoins(5)) {
+      triggerVibration(25);
+      showToast('⚠️ 5 Coins required for 1v1 Quiz Battle. Insufficient coins!', 'warning');
+      window.dispatchEvent(new CustomEvent('open-paywall-modal', { detail: { featureName: '1v1 Quiz Battle', cost: 5 } }));
+      return;
+    }
+
     const raw = joinInputCode.trim();
     if (raw.length < 3) {
       setJoinError('Please enter the 4-digit code (e.g. 1234)');
@@ -1258,6 +1281,11 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
       triggerVibration(35);
       try { (confetti as any).reset?.(); } catch {}
     }
+
+    // Deduct 5 coins for freemium users upon successfully completing a battle
+    if (!isProUser()) {
+      deductCoins(5, '1v1 Quiz Battle');
+    }
   };
 
   // Keep callback refs synchronized on every render to eliminate stale closures
@@ -1579,9 +1607,6 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                             </div>
                             <div className="min-w-0">
                               <div className="flex items-center gap-2 mb-0.5">
-                                <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700">
-                                  15 Battle Questions
-                                </span>
                                 <span className="text-[10px] text-zinc-400 font-semibold truncate">
                                   {subj.category}
                                 </span>

@@ -435,6 +435,8 @@ export function verifyMathAndFeasibility(q: any, subjectId: string): { isValid: 
 export function verifyBlindSolvability(q: any): { isSolvable: boolean; issues: string[] } {
   const issues: string[] = [];
   const prompt = String(q.prompt || q.question || '');
+  const partsText = Array.isArray(q.parts) ? q.parts.map((p: any) => `${p.task || ''} ${p.scoringCriteria || ''}`).join(' ') : '';
+  const fullPromptText = `${prompt} ${partsText}`;
   const diagramSvg = q.diagramSvg || '';
 
   // Check for phantom graphs / grids:
@@ -463,9 +465,9 @@ export function verifyBlindSolvability(q: any): { isSolvable: boolean; issues: s
   }
 
   // Check for College Board task verbs (STEM, Social Sciences or Humanities directives)
-  const hasTaskVerbs = /\b(?:find|calculate|determine|explain|justify|show\s+that|evaluate|identify|synthesize|analyze|argue|write\s+an\s+essay)\b/i.test(prompt);
+  const hasTaskVerbs = /\b(?:find|calculate|determine|explain|justify|show\s+that|evaluate|identify|synthesize|analyze|argue|write\s+an\s+essay|state|derive|predict)\b/i.test(fullPromptText);
   if (!hasTaskVerbs) {
-    issues.push("Missing authentic College Board directive verbs (Find, Calculate, Determine, Justify, Explain, Synthesize, Analyze, Argue).");
+    issues.push("Missing authentic College Board directive verbs (Find, Calculate, Determine, Justify, Explain, Synthesize, Analyze, Argue, State, Derive, Predict).");
   }
 
   return {
@@ -1470,6 +1472,9 @@ export function runMultiStageVerificationPipeline(
     const canonical = resolveCanonicalUnit(subjectId, processedQ.unitNumber || processedQ.unitTitle || targetTopic, promptStr);
 
     const getFallback = (qIndex: number) => {
+      if (processedQ.format === 'subjective' || Array.isArray(processedQ.parts)) {
+        return processedQ;
+      }
       if (isAphg) {
         return getAphgPristineUnitQuestion(canonical.unitNumber, targetTopic, qIndex);
       }
