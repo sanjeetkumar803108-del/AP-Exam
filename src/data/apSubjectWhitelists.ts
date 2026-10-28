@@ -29,7 +29,7 @@ export const AP_SUBJECT_WHITELISTS: Record<string, APSubjectWhitelist> = {
       { unitNumber: 1, title: 'Thinking Geographically', keywords: ['gis', 'gps', 'remote sensing', 'scale of analysis', 'formal region', 'functional region', 'vernacular region', 'environmental determinism', 'possibilism', 'distance decay', 'time-space compression', 'map projection', 'choropleth'] },
       { unitNumber: 2, title: 'Population & Migration Patterns', keywords: ['demographic transition model', 'dtm', 'crude birth rate', 'cbr', 'crude death rate', 'cdr', 'natural increase rate', 'nir', 'population pyramid', 'dependency ratio', 'malthus', 'boserup', 'ravenstein', 'push factor', 'pull factor', 'refugee', 'idp', 'asylum', 'pronatalist', 'antinatalist', 'epidemiological transition'] },
       { unitNumber: 3, title: 'Cultural Patterns & Processes', keywords: ['cultural hearth', 'contagious diffusion', 'hierarchical diffusion', 'stimulus diffusion', 'relocation diffusion', 'universalizing religion', 'ethnic religion', 'language family', 'indo-european', 'isogloss', 'lingua franca', 'acculturation', 'assimilation', 'syncretism', 'cultural landscape', 'folk culture', 'pop culture'] },
-      { unitNumber: 4, title: 'Political Patterns & Processes', keywords: ['sovereignty', 'nation-state', 'stateless nation', 'multinational state', 'autonomous region', 'colonialism', 'berlin conference', 'superimposed boundary', 'relic boundary', 'unclos', 'exclusive economic zone', 'eez', 'gerrymandering', 'devolution', 'supranationalism', 'un', 'eu', 'nato', 'asean', 'balkanization'] },
+      { unitNumber: 4, title: 'Political Patterns & Processes', keywords: ['sovereignty', 'nation-state', 'stateless nation', 'multinational state', 'autonomous region', 'colonialism', 'berlin conference', 'superimposed boundary', 'relic boundary', 'unclos', 'exclusive economic zone', 'eez', 'gerrymandering', 'devolution', 'supranationalism', 'united nations', 'european union', 'nato', 'asean', 'balkanization'] },
       { unitNumber: 5, title: 'Agriculture & Rural Land-Use', keywords: ['von thunen', 'bid-rent', 'green revolution', 'subsistence agriculture', 'commercial agriculture', 'intensive farming', 'extensive farming', 'shifting cultivation', 'pastoral nomadism', 'agribusiness', 'commodity chain', 'metes and bounds', 'township and range', 'long lot', 'desertification', 'salinization'] },
       { unitNumber: 6, title: 'Cities & Urban Land-Use', keywords: ['burgess', 'concentric zone', 'hoyt sector', 'multiple nuclei', 'harris-ullman', 'galactic city', 'edge city', 'central place theory', 'christaller', 'range', 'threshold', 'rank-size rule', 'primate city', 'gentrification', 'new urbanism', 'smart growth', 'suburban sprawl', 'redlining', 'blockbusting', 'megacity', 'squatter settlement'] },
       { unitNumber: 7, title: 'Industrial & Economic Development', keywords: ['wallerstein', 'world systems', 'core', 'periphery', 'semiperiphery', 'rostow', 'stages of economic growth', 'weber', 'least cost theory', 'bulk-gaining', 'bulk-reducing', 'hdi', 'human development index', 'gni', 'gii', 'maquiladora', 'epz', 'sez', 'outsourcing', 'deindustrialization', 'agglomeration', 'un sdgs', 'microfinance'] }
@@ -52,7 +52,7 @@ export const AP_SUBJECT_WHITELISTS: Record<string, APSubjectWhitelist> = {
     canonicalUnits: [
       { unitNumber: 1, title: 'The Living World: Ecosystems', keywords: ['carbon cycle', 'nitrogen cycle', 'phosphorus cycle', 'hydrologic cycle', 'trophic level', '10% rule', 'primary productivity', 'gpp', 'npp', 'biomes'] },
       { unitNumber: 2, title: 'The Living World: Biodiversity', keywords: ['ecosystem services', 'provisioning', 'regulating', 'cultural', 'supporting', 'island biogeography', 'ecological tolerance', 'succession', 'pioneer species', 'keystone species'] },
-      { unitNumber: 3, title: 'Populations', keywords: ['generalist', 'specialist', 'r-selected', 'k-selected', 'survivorship curve', 'carrying capacity', 'k', 'rule of 70', 'doubling time', 'demographic transition', 'tfr', 'replacement level'] },
+      { unitNumber: 3, title: 'Populations', keywords: ['generalist', 'specialist', 'r-selected', 'k-selected', 'survivorship curve', 'carrying capacity', 'logistic growth', 'rule of 70', 'doubling time', 'demographic transition', 'tfr', 'replacement level'] },
       { unitNumber: 4, title: 'Earth Systems & Resources', keywords: ['plate tectonics', 'convergent', 'divergent', 'transform', 'soil horizons', 'soil texture triangle', 'atmosphere', 'troposphere', 'stratosphere', 'coriolis effect', 'el nino', 'la nina', 'watershed'] },
       { unitNumber: 5, title: 'Land & Water Use', keywords: ['tragedy of the commons', 'clearcutting', 'green revolution', 'irrigation', 'drip', 'furrow', 'flood', 'salinization', 'aquifer', 'ogallala', 'pest control', 'ipm', 'cafo', 'overfishing', 'mining', 'slag'] },
       { unitNumber: 6, title: 'Energy Resources & Consumption', keywords: ['fossil fuels', 'coal', 'petroleum', 'natural gas', 'fracking', 'nuclear fission', 'half-life', 'biomass', 'solar photovoltaic', 'wind turbine', 'hydroelectric', 'geothermal', 'hydrogen fuel cell'] },
@@ -90,10 +90,16 @@ export const AP_SUBJECT_WHITELISTS: Record<string, APSubjectWhitelist> = {
     category: 'tech',
     mathExpected: false,
     canonicalUnits: [
-      { unitNumber: 1, title: 'Primitive Types & Calling Methods', keywords: ['int', 'double', 'boolean', 'arithmetic', 'modulus', 'casting', 'Math.random', 'parameters', 'return values'] },
-      { unitNumber: 2, title: 'Control Structures & Iteration', keywords: ['boolean expressions', 'relational operators', 'if-else', 'while loop', 'for loop', 'nested loops', 'iteration bounds'] },
-      { unitNumber: 3, title: 'Class Design & Encapsulation', keywords: ['class header', 'private instance variables', 'constructors', 'accessor', 'mutator', 'this', 'String methods', 'substring', 'indexOf', 'equals'] },
-      { unitNumber: 4, title: 'Arrays, ArrayLists & 2D Arrays', keywords: ['1D array', 'ArrayList', 'add', 'get', 'set', 'remove', 'size', '2D array', 'matrix', 'nested traversal', 'bounds checking'] }
+      { unitNumber: 1, title: 'Primitive Types', keywords: ['primitive types', 'int', 'double', 'boolean', 'arithmetic operators', 'modulus', 'compound assignment', 'casting', 'operator precedence'] },
+      { unitNumber: 2, title: 'Using Objects', keywords: ['object references', 'instantiating objects', 'calling constructors', 'String methods', 'substring', 'indexOf', 'length', 'equals', 'compareTo', 'wrapper classes', 'Integer', 'Double', 'Math class', 'Math.random', 'Math.abs', 'Math.pow'] },
+      { unitNumber: 3, title: 'Boolean Expressions & if Statements', keywords: ['boolean expressions', 'relational operators', 'if statements', 'if-else', 'else-if', 'nested conditionals', 'logical operators', 'short-circuit evaluation', 'De Morgan\'s laws', 'comparing objects'] },
+      { unitNumber: 4, title: 'Iteration', keywords: ['while loops', 'for loops', 'nested loops', 'loop bounds', 'loop invariants', 'off-by-one error', 'String algorithms with loops', 'reversing a string'] },
+      { unitNumber: 5, title: 'Writing Classes', keywords: ['class structure', 'instance variables', 'private vs public', 'constructors', 'overloading', 'accessor methods', 'mutator methods', 'this reference', 'static variables', 'static methods', 'variable scope'] },
+      { unitNumber: 6, title: 'Array', keywords: ['1D array', 'array creation', 'array length', 'index bounds', 'ArrayIndexOutOfBoundsException', 'array traversal', 'for-each loop', 'finding max or min', 'reversing array', 'linear search'] },
+      { unitNumber: 7, title: 'ArrayList', keywords: ['ArrayList class', 'type parameters', 'add method', 'get method', 'set method', 'remove method', 'size method', 'concurrent modification', 'linear search', 'selection sort', 'insertion sort'] },
+      { unitNumber: 8, title: '2D Array', keywords: ['2D array declaration', 'matrix dimensions', 'row-major order', 'column-major order', 'nested loop traversal', '2D array algorithms', 'row processing', 'column processing'] },
+      { unitNumber: 9, title: 'Inheritance', keywords: ['superclass', 'subclass', 'extends keyword', 'inheritance hierarchy', 'super keyword', 'method overriding', 'polymorphism', 'dynamic binding', 'Object superclass', 'toString', 'equals'] },
+      { unitNumber: 10, title: 'Recursion', keywords: ['recursive method', 'base case', 'recursive call', 'call stack', 'stack overflow', 'recursive helper method', 'binary search', 'merge sort', 'recursive tracing'] }
     ],
     allowedDomains: ['computer science', 'java programming', 'object oriented programming', 'algorithms', 'data structures', 'matrices', 'arraylist'],
     forbiddenSignatures: [
@@ -158,8 +164,9 @@ export const AP_SUBJECT_WHITELISTS: Record<string, APSubjectWhitelist> = {
       { unitNumber: 3, title: 'Work, Energy & Power', keywords: ['kinetic energy', 'gravitational potential energy', 'elastic potential energy', 'conservation of energy', 'work-energy theorem', 'power'] },
       { unitNumber: 4, title: 'Linear Momentum', keywords: ['momentum', 'impulse', 'conservation of momentum', 'elastic collision', 'inelastic collision', 'center of mass'] },
       { unitNumber: 5, title: 'Torque & Rotational Dynamics', keywords: ['torque', 'rotational inertia', 'rotational kinetic energy', 'angular momentum', 'conservation of angular momentum', 'angular acceleration'] },
-      { unitNumber: 6, title: 'Energy & Momentum of Oscillations', keywords: ['simple harmonic motion', 'shm', 'period', 'frequency', 'simple pendulum', 'mass-spring oscillator'] },
-      { unitNumber: 7, title: 'Fluids', keywords: ['density', 'pressure', 'buoyant force', 'archimedes principle', 'continuity equation', 'bernoulli\'s equation'] }
+      { unitNumber: 6, title: 'Energy & Momentum of Rotating Systems', keywords: ['conservation of angular momentum', 'rotational kinetic energy', 'rolling without slipping', 'angular impulse'] },
+      { unitNumber: 7, title: 'Oscillations', keywords: ['simple harmonic motion', 'shm', 'period', 'frequency', 'simple pendulum', 'mass-spring oscillator', 'restoring force'] },
+      { unitNumber: 8, title: 'Fluids', keywords: ['density', 'pressure', 'buoyant force', 'archimedes principle', 'continuity equation', 'bernoulli\'s equation', 'hydrostatic pressure'] }
     ],
     allowedDomains: ['mechanics', 'forces', 'energy', 'momentum', 'rotational motion', 'oscillations', 'fluids'],
     forbiddenSignatures: [
@@ -336,7 +343,7 @@ export const AP_SUBJECT_WHITELISTS: Record<string, APSubjectWhitelist> = {
     canonicalUnits: [
       { unitNumber: 1, title: 'Basic Economic Concepts', keywords: ['scarcity', 'opportunity cost', 'production possibilities curve', 'ppc', 'comparative advantage', 'terms of trade', 'specialization'] },
       { unitNumber: 2, title: 'Economic Indicators & the Business Cycle', keywords: ['circular flow', 'gross domestic product', 'gdp', 'nominal gdp', 'real gdp', 'gdp deflator', 'unemployment rate', 'civilian labor force', 'labor force participation', 'frictional unemployment', 'structural unemployment', 'cyclical unemployment', 'natural rate of unemployment', 'cpi', 'inflation rate', 'real interest rate', 'business cycle'] },
-      { unitNumber: 3, title: 'National Income & Price Determination', keywords: ['aggregate demand', 'ad', 'short-run aggregate supply', 'sras', 'long-run aggregate supply', 'lras', 'full employment', 'recessionary gap', 'inflationary gap', 'stagflation', 'mpc', 'mps', 'spending multiplier', 'tax multiplier', 'fiscal policy', 'automatic stabilizers'] },
+      { unitNumber: 3, title: 'National Income & Price Determination', keywords: ['aggregate demand', 'short-run aggregate supply', 'sras', 'long-run aggregate supply', 'lras', 'full employment', 'recessionary gap', 'inflationary gap', 'stagflation', 'mpc', 'mps', 'spending multiplier', 'tax multiplier', 'fiscal policy', 'automatic stabilizers'] },
       { unitNumber: 4, title: 'Financial Sector', keywords: ['financial assets', 'money definitions', 'm1', 'm2', 'commercial bank balance sheet', 'required reserves', 'excess reserves', 'money multiplier', 'money market', 'money demand', 'money supply', 'nominal interest rate', 'central bank', 'federal reserve', 'monetary policy', 'open market operations', 'administered rates', 'iorb', 'discount rate', 'loanable funds', 'real interest rate'] },
       { unitNumber: 5, title: 'Long-Run Consequences of Stabilization Policies', keywords: ['crowding out', 'phillips curve', 'srpc', 'lrpc', 'expected inflation', 'quantity theory of money', 'mv=py', 'national debt', 'budget deficit', 'economic growth', 'human capital', 'physical capital', 'technology'] },
       { unitNumber: 6, title: 'Open Economy—International Trade and Finance', keywords: ['balance of payments', 'current account', 'financial account', 'capital account', 'foreign exchange', 'forex', 'exchange rate', 'currency appreciation', 'currency depreciation', 'capital flows', 'net exports'] }
@@ -348,6 +355,27 @@ export const AP_SUBJECT_WHITELISTS: Record<string, APSubjectWhitelist> = {
       /\b(?:factor\s+market|marginal\s+revenue\s+product|\bMRP\b|\bMRPL\b|marginal\s+factor\s+cost|\bMFC\b|\bMFCL\b|monopsony\s+labor|least-cost\s+rule\s+MPL\/w)\b/i,
       /\b(?:cross-price\s+elasticity|income\s+elasticity\s+of\s+demand|pigouvian\s+tax|pigouvian\s+subsidy|lorenz\s+curve|gini\s+coefficient|consumer\s+choice\s+utility\s+maximization|marginal\s+utility\s+per\s+dollar|indifference\s+curve)\b/i,
       // Calculus and Advanced Science
+      /\b(?:definite\s+integral|indefinite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|chloroplast|mitosis|rotational\s+inertia|stoichiometry)\b/i
+    ]
+  },
+  'ap-world-history': {
+    subjectId: 'ap-world-history',
+    subjectName: 'AP World History: Modern (WHAP)',
+    category: 'humanities',
+    mathExpected: false,
+    canonicalUnits: [
+      { unitNumber: 1, title: 'The Global Tapestry (c. 1200 to c. 1450)', keywords: ['song dynasty', 'confucianism', 'filial piety', 'dar al-islam', 'abbasid caliphate', 'seljuk empire', 'delhi sultanate', 'bhakti movement', 'champa rice', 'grand canal', 'feudalism', 'manorialism', 'serfdom'] },
+      { unitNumber: 2, title: 'Networks of Exchange (c. 1200 to c. 1450)', keywords: ['silk roads', 'mongol empire', 'pax mongolica', 'genghis khan', 'kublai khan', 'yam system', 'paiza', 'caravanserai', 'indian ocean trade', 'monsoon winds', 'dhow', 'junk', 'trans-saharan trade', 'mansa musa', 'mali empire', 'timbuktu', 'black death', 'marco polo', 'ibn battuta'] },
+      { unitNumber: 3, title: 'Land-Based Empires (c. 1450 to c. 1750)', keywords: ['ottoman empire', 'devshirme', 'janissaries', 'safavid empire', 'mughal empire', 'akbar', 'tax farming', 'zamindars', 'monumental architecture', 'taj mahal', 'versailles', 'manchu', 'qing dynasty', 'protestant reformation', 'counter-reformation', 'council of trent'] },
+      { unitNumber: 4, title: 'Transoceanic Interconnections (c. 1450 to c. 1750)', keywords: ['maritime exploration', 'caravel', 'astrolabe', 'magnetic compass', 'portuguese trade-post empire', 'columbian exchange', 'encomienda', 'hacienda', 'mita system', 'transatlantic slave trade', 'middle passage', 'mercantilism', 'joint-stock company', 'dutch east india company', 'voc', 'british east india company', 'eic', 'potosi silver', 'manila galleon'] },
+      { unitNumber: 5, title: 'Revolutions (c. 1750 to c. 1900)', keywords: ['enlightenment', 'john locke', 'natural rights', 'social contract', 'voltaire', 'rousseau', 'american revolution', 'french revolution', 'declaration of the rights of man', 'haitian revolution', 'toussaint louverture', 'latin american independence', 'simon bolivar', 'nationalism', 'industrial revolution', 'steam engine', 'factory system', 'urbanization', 'capitalism', 'adam smith', 'socialism', 'karl marx'] },
+      { unitNumber: 6, title: 'Consequences of Industrialization (c. 1750 to c. 1900)', keywords: ['imperialism', 'social darwinism', 'scramble for africa', 'berlin conference', 'king leopold', 'congo free state', 'opium wars', 'unequal treaties', 'spheres of influence', 'boxer rebellion', 'taiping rebellion', 'meiji restoration', 'settler colony', 'sepoy mutiny', 'ghost dance', 'indentured labor migration'] },
+      { unitNumber: 7, title: 'Global Conflict (c. 1900 to present)', keywords: ['world war i', 'militarism', 'alliances', 'imperialism', 'nationalism', 'trench warfare', 'total war', 'propaganda', 'treaty of versailles', 'russian revolution', 'lenin', 'bolsheviks', 'great depression', 'fascism', 'mussolini', 'hitler', 'nazi germany', 'world war ii', 'holocaust', 'atomic bomb'] },
+      { unitNumber: 8, title: 'Cold War & Decolonization (c. 1900 to present)', keywords: ['cold war', 'superpowers', 'containment', 'iron curtain', 'nato', 'warsaw pact', 'korean war', 'vietnam war', 'cuban missile crisis', 'non-aligned movement', 'decolonization', 'indian independence', 'gandhi', 'partition of india', 'ghana', 'kwame nkrumah', 'apartheid', 'nelson mandela'] },
+      { unitNumber: 9, title: 'Globalization (c. 1900 to present)', keywords: ['green revolution', 'medical advancements', 'internet', 'panama canal', 'greenhouse gas', 'climate change', 'free market economics', 'reaganomics', 'deng xiaoping', 'world trade organization', 'wto', 'nafta', 'united nations', 'universal declaration of human rights', 'global popular culture'] }
+    ],
+    allowedDomains: ['world history', 'trans-regional networks', 'empires', 'maritime connections', 'revolutions', 'industrialization', 'global conflicts', 'decolonization', 'globalization'],
+    forbiddenSignatures: [
       /\b(?:definite\s+integral|indefinite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|chloroplast|mitosis|rotational\s+inertia|stoichiometry)\b/i
     ]
   }
@@ -366,6 +394,7 @@ export function getSubjectWhitelist(subjectIdentifier?: string): APSubjectWhitel
   // Specific high-priority matches
   if (s.includes('micro')) return AP_SUBJECT_WHITELISTS['ap-microeconomics'];
   if (s.includes('macro')) return AP_SUBJECT_WHITELISTS['ap-macroeconomics'];
+  if (s.includes('world') || s.includes('whap')) return AP_SUBJECT_WHITELISTS['ap-world-history'];
 
   // 2. Fuzzy name match
   for (const [key, wl] of Object.entries(AP_SUBJECT_WHITELISTS)) {

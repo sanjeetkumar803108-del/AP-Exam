@@ -1642,6 +1642,58 @@ export function getGranularSubjectArchetypes(subject: string, unitOrTopic: strin
     return pool;
   }
 
+  // SPECIAL COLLEGE BOARD SECTION II REPLICA FOR AP COMPUTER SCIENCE PRINCIPLES (CREATE PERFORMANCE TASK WRITTEN RESPONSE)
+  // Official Format: Section II consists of 4 Written Response Prompts based on the student's Personalized Project Reference (PPR)
+  // Written Response 1 (WR 1 | 1 Pt): Program Design, Function, and Purpose (Input/Output behavior vs Program Purpose)
+  // Written Response 2(a) (WR 2a | 1 Pt): Algorithm Development (Iteration body logic & Boolean conditions)
+  // Written Response 2(b) (WR 2b | 1 Pt): Errors and Testing (Two calls executing distinct code segments or logic error analysis)
+  // Written Response 2(c) (WR 2c | 1 Pt): Data and Procedural Abstraction (List complexity management & scalar variable rewrite)
+  if ((s.includes('principles') || s.includes('csp') || (s.includes('computer') && s.includes('principles'))) && !detectedUnit) {
+    const cspCanonicalFour = [
+      "[Section II - CPT WR 1 | 1 Point] Program Design, Function & Purpose: Realistic student Personalized Project Reference (PPR) in Python/JavaScript (e.g. Student Gradebook, Fitness Tracker, Smart Pantry). Prompt: Identify the overall purpose of the program, describe the dynamic input provided by the user, and explain the corresponding program output/behavior in context.",
+      "[Section II - CPT WR 2a | 1 Point] Algorithm Development & Iteration Analysis: PPR code snippet featuring a student-developed procedure with sequencing, selection (if/else), and count/condition-controlled iteration traversing a list. Prompt: Describe in detail what is accomplished by the body of the iteration statement, and identify the Boolean expression in the selection statement specifying values evaluating to true and false.",
+      "[Section II - CPT WR 2b | 1 Point] Errors & Testing (Distinct Code Branches / Logic Bug): PPR procedure with multiple conditional branches. Prompt: Provide two distinct procedure calls with specific argument values that cause two different code segments to execute, OR describe a proposed code alteration that introduces a genuine logic error (not a syntax error) and explain the resulting behavioral discrepancy.",
+      "[Section II - CPT WR 2c | 1 Point] Data & Procedural Abstraction: PPR list managing data complexity. Prompt: Explain how the list uses abstraction to manage complexity in the program, and describe in detail how the program would have to be rewritten without using the list (e.g. separate individual variables and repetitive conditional logic)."
+    ];
+
+    if (count === 3) {
+      return [cspCanonicalFour[0], cspCanonicalFour[1], cspCanonicalFour[2]];
+    }
+
+    if (count === 4) {
+      return [...cspCanonicalFour];
+    }
+
+    if (count === 5) {
+      return [
+        ...cspCanonicalFour,
+        "[Section II - CPT WR 2b Cycle 2 | 1 Point] Boundary Condition & Input Validation Testing: Procedure handling list bounds and unexpected user inputs; identifying arguments that trigger edge-case branching and tracing loop terminating conditions."
+      ];
+    }
+
+    if (count === 10) {
+      return [
+        cspCanonicalFour[0],
+        cspCanonicalFour[1],
+        cspCanonicalFour[2],
+        cspCanonicalFour[3],
+        "[Section II - CPT WR 1 Cycle 2] Weather Station Telemetry Logger: Purpose and input/output behavior of daily temperature sensor averaging program.",
+        "[Section II - CPT WR 2a Cycle 2] E-Commerce Shopping Cart Discount Calculator: Iteration body analyzing subtotal and Boolean conditional coupon application.",
+        "[Section II - CPT WR 2b Cycle 2] Video Game Inventory Stacking System: Two test calls executing full-stack vs split-stack branch pathways.",
+        "[Section II - CPT WR 2c Cycle 2] Music Playlist Song Shuffler: List complexity management and explaining rewrite with individual song track variables.",
+        "[Section II - CPT WR 2a Cycle 3] Transit Bus Route Arrival Tracker: Nested conditional iteration identifying stopping condition and boundary bounds.",
+        "[Section II - CPT WR 2b Cycle 3] Hospital Patient Triage Prioritizer: Proposing a logic comparison flip (> vs >=) and tracing incorrect urgency assignment."
+      ];
+    }
+
+    const pool: string[] = [];
+    while (pool.length < count) {
+      pool.push(cspCanonicalFour[pool.length % cspCanonicalFour.length]);
+    }
+    return pool;
+  }
+
+
   // SPECIAL COLLEGE BOARD SECTION II REPLICA FOR AP MACROECONOMICS (3, 5, 10, 15 FRQs)
   if ((s.includes('macro') || s.includes('economics') || s.includes('econ')) && !detectedUnit) {
     const macroCanonicalThree = [

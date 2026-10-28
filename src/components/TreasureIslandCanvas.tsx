@@ -39,7 +39,7 @@ interface TreasureIslandCanvasProps {
   onNodeClick?: (lvl: UnitQuestLevel) => void;
 }
 
-export const TreasureIslandCanvas: React.FC<TreasureIslandCanvasProps> = ({
+export const TreasureIslandCanvas: React.FC<TreasureIslandCanvasProps> = React.memo(({
   totalMapHeight = 2400,
   levelCoordinates = [],
   unitSlabs = [],
@@ -326,4 +326,6 @@ export const TreasureIslandCanvas: React.FC<TreasureIslandCanvasProps> = ({
       })}
     </div>
   );
-};
+});
+
+TreasureIslandCanvas.displayName = 'TreasureIslandCanvas';

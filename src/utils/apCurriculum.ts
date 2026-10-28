@@ -260,7 +260,10 @@ export const TOP_10_AP_SUBJECTS: APSubject[] = [
       { id: 'u3', title: 'Unit 3: Synthesis of Multiple Sources', description: 'Synthesizing conflicting viewpoints, citations, and conversation building' },
       { id: 'u4', title: 'Unit 4: Argumentative Structure & Logic', description: 'Inductive/deductive logic, qualifying claims, and counter-arguments' },
       { id: 'u5', title: 'Unit 5: Style, Diction & Syntax', description: 'Tone, figurative language, periodic sentences, and stylistic voice' },
-      { id: 'u6', title: 'Unit 6: Multiple Choice: Reading & Revision', description: 'Deconstructing nonfiction arguments and editing prose for clarity' }
+      { id: 'u6', title: 'Unit 6: Multiple Choice: Reading & Revision', description: 'Deconstructing nonfiction arguments and editing prose for clarity' },
+      { id: 'u7', title: 'Unit 7: Complex Arguments & Qualifications', description: 'Concessions, qualifications, complexity, counterarguments, and nuanced claims' },
+      { id: 'u8', title: 'Unit 8: Style & Persuasive Voice', description: 'Metaphor, hyperbole, personification, stylistic voice, and rhetorical strategies' },
+      { id: 'u9', title: 'Unit 9: Sophistication & Holistic Synthesis', description: 'Alternative perspectives, broader contextual understanding, and holistic argumentation' }
     ]
   },
   {

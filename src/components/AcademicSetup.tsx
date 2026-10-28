@@ -5,6 +5,7 @@ import { triggerVibration } from '../utils/vibrate';
 import { safeGetItem, safeSetItem } from '../utils/storage';
 import { auth, db } from '../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
+import { setupDailyLocalNotifications } from '../utils/notifications';
 
 interface AcademicSetupProps {
   userId: string;
@@ -190,6 +191,8 @@ export default function AcademicSetup({ userId, onComplete }: AcademicSetupProps
         safeSetItem(`pending_welcome_celebration_${activeUid}`, 'true');
         window.dispatchEvent(new CustomEvent('trigger-welcome-celebration'));
       }
+      // Prompt and schedule routine study notifications aligned with device timezone
+      setupDailyLocalNotifications(true).catch(() => {});
     }
 
     onComplete();

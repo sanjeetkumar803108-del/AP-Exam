@@ -54,7 +54,7 @@ export function getUserProfileData(): UserProfileData {
     customNotes.push('Deep Focus mode is enabled: provide direct, distraction-free, high-yield academic answers.');
   }
 
-  const profileContext = `Student: ${userName} | Grade: ${gradeLevel} | Stream: ${stream} | Region: ${country} (${region}) | Level: ${studyLevel}${customNotes.length > 0 ? ' | ' + customNotes.join(' | ') : ''}`;
+  const profileContext = `Student: ${userName} | Target Exam: College Board Advanced Placement (AP) Exam Prep Only | Grade: ${gradeLevel} | AP Track/Stream: ${stream} | Region: ${country} (${region}) | Level: ${studyLevel}${customNotes.length > 0 ? ' | ' + customNotes.join(' | ') : ''}`;
 
   return {
     gradeLevel,

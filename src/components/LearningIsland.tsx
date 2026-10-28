@@ -770,11 +770,22 @@ export default function LearningIsland({ onBack, user: propUser }: LearningIslan
   }, [levelCoordinates, progress?.lastPlayedUnitIndex, progress?.lastPlayedLevelId, progress?.unlockedLevels, progress?.completedLevels]);
 
   const [isInitialPositioned, setIsInitialPositioned] = useState<boolean>(false);
+  const lastPositionedSubjectRef = useRef<string | null>(null);
+  const isProgrammaticScrollRef = useRef<boolean>(false);
+  const programmaticScrollTimerRef = useRef<any>(null);
 
   // Instant positioning to the active level on initial mount and subject changes
   // Ensures opening Learning Island opens directly at the user's active level with 0 lag/flash
   useLayoutEffect(() => {
     if (!activeLevelCoord) return;
+
+    // Only apply the forced positioning on initial mount or when the AP subject changes!
+    // Interactive unit jumps should NOT re-trigger layout jumps and timer fights.
+    if (lastPositionedSubjectRef.current === selectedSubject.id) {
+      return;
+    }
+    lastPositionedSubjectRef.current = selectedSubject.id;
+
     setActiveUnitInView(activeLevelCoord.unitIndex);
 
     const applyScrollPosition = () => {
@@ -802,7 +813,7 @@ export default function LearningIsland({ onBack, user: propUser }: LearningIslan
       clearTimeout(timer2);
       clearTimeout(timer3);
     };
-  }, [selectedSubject.id, activeLevelCoord?.id]);
+  }, [selectedSubject.id, activeLevelCoord]);
 
   // Smoothly center on the active level when closing or finishing quiz
   useEffect(() => {
@@ -817,13 +828,16 @@ export default function LearningIsland({ onBack, user: propUser }: LearningIslan
     }
   }, [activeQuizLevel]);
 
-  // Clean up canvas-confetti on unmount to prevent particle memory leaks
+  // Clean up canvas-confetti and timers on unmount to prevent particle or timeout memory leaks
   useEffect(() => {
     return () => {
       try {
         confetti.reset();
         if (scrollRaf.current !== null) {
           cancelAnimationFrame(scrollRaf.current);
+        }
+        if (programmaticScrollTimerRef.current !== null) {
+          clearTimeout(programmaticScrollTimerRef.current);
         }
       } catch (_) {}
     };
@@ -832,10 +846,13 @@ export default function LearningIsland({ onBack, user: propUser }: LearningIslan
   // Scroll listener to update activeUnitInView for the floating dock (rAF-throttled to 60fps/120fps)
   const scrollRaf = useRef<number | null>(null);
   const handleScroll = () => {
+    // If programmatic smooth scrolling or long-distance jumping is active, suppress intermediate dock updates
+    if (isProgrammaticScrollRef.current) return;
+
     if (scrollRaf.current !== null) return;
     scrollRaf.current = requestAnimationFrame(() => {
       scrollRaf.current = null;
-      if (!mapContainerRef.current) return;
+      if (!mapContainerRef.current || isProgrammaticScrollRef.current) return;
       const scrollY = mapContainerRef.current.scrollTop + mapContainerRef.current.clientHeight / 2;
 
       // Find which unit slab matches this scroll position
@@ -846,7 +863,7 @@ export default function LearningIsland({ onBack, user: propUser }: LearningIslan
     });
   };
 
-  // Jump to specific unit and remember it as active
+  // Jump to specific unit and smoothly glide to its levels with 0 stutter or white screen blinking
   const handleJumpToUnit = (unitIndex: number) => {
     triggerVibration(15);
     const unitCoords = levelCoordinates.filter(c => c.unitIndex === unitIndex);
@@ -855,17 +872,54 @@ export default function LearningIsland({ onBack, user: propUser }: LearningIslan
       || unitCoords[0];
 
     if (targetCoord && mapContainerRef.current) {
+      // 1. Immediately activate programmatic scroll lock to prevent scroll event storm
+      isProgrammaticScrollRef.current = true;
+      if (programmaticScrollTimerRef.current) {
+        clearTimeout(programmaticScrollTimerRef.current);
+      }
+
+      // 2. Immediately reflect the active unit in the dock for instant UI responsiveness
+      setActiveUnitInView(unitIndex);
+
+      // 3. Update last played unit & level in progress state
       setProgress(prev => ({
         ...prev,
         lastPlayedUnitIndex: unitIndex,
         lastPlayedLevelId: targetCoord.id
       }));
-      const containerHeight = mapContainerRef.current.clientHeight;
-      mapContainerRef.current.scrollTo({
-        top: Math.max(0, targetCoord.yPx - containerHeight / 2),
-        behavior: 'smooth'
-      });
-      setActiveUnitInView(unitIndex);
+
+      const container = mapContainerRef.current;
+      const containerHeight = container.clientHeight || window.innerHeight;
+      const targetScrollTop = Math.max(0, targetCoord.yPx - containerHeight / 2);
+      const currentScrollTop = container.scrollTop;
+      const distance = Math.abs(targetScrollTop - currentScrollTop);
+
+      // 4. Distance-Adaptive Silky Glide:
+      // For adjacent units (distance <= 1200px), a smooth scroll is buttery and fast (~200ms).
+      // For distant units (e.g. Unit 1 to Unit 10, distance > 1200px / up to 8000px):
+      // Avoid forcing the mobile GPU to rasterize 8000px of off-screen DOM during a slow 2s scroll.
+      // Pre-position to 260px from destination and smoothly glide the final approach!
+      if (distance > 1200) {
+        const approachOffset = targetScrollTop > currentScrollTop ? -260 : 260;
+        container.scrollTop = Math.max(0, targetScrollTop + approachOffset);
+
+        requestAnimationFrame(() => {
+          container.scrollTo({
+            top: targetScrollTop,
+            behavior: 'smooth'
+          });
+        });
+      } else {
+        container.scrollTo({
+          top: targetScrollTop,
+          behavior: 'smooth'
+        });
+      }
+
+      // 5. Release programmatic lock once the glide has finished (~380ms)
+      programmaticScrollTimerRef.current = setTimeout(() => {
+        isProgrammaticScrollRef.current = false;
+      }, 380);
     }
   };
 
@@ -1244,7 +1298,7 @@ Please structure your response into these 4 clear sections:
   const categories = ['All', 'STEM & Math', 'Science', 'Social Sciences', 'Humanities'];
 
   return (
-    <div className="h-full w-full flex flex-col bg-white text-zinc-950 relative overflow-hidden font-sans select-none">
+    <div className={`h-full w-full flex flex-col ${activeQuizLevel ? 'bg-white' : 'bg-[#ecdcc5]'} text-zinc-950 relative overflow-hidden font-sans select-none`}>
       {/* Top Header Bar - Authentic Pirate Treasure Map Header */}
       {!activeQuizLevel && (
         <header className="px-4 py-3 flex items-center justify-between bg-white/95 backdrop-blur-md border-b border-zinc-200/80 shrink-0 z-40 shadow-xs">
@@ -1324,14 +1378,12 @@ Please structure your response into these 4 clear sections:
       <main
         ref={mapContainerRef}
         onScroll={handleScroll}
-        className={`flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden flex flex-col items-center pt-8 px-3 relative z-10 momentum-scroll ${activeQuizLevel ? 'hidden' : ''}`}
+        className={`flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden flex flex-col items-center pt-8 px-3 relative z-10 momentum-scroll bg-[#ecdcc5] ${activeQuizLevel ? 'hidden' : ''}`}
         style={{
           WebkitOverflowScrolling: 'touch',
           paddingBottom: 'max(9.5rem, calc(env(safe-area-inset-bottom) + 7.5rem))',
           opacity: isInitialPositioned ? 1 : 0,
-          transition: 'opacity 0.15s ease-out',
-          willChange: 'scroll-position',
-          contain: 'layout'
+          transition: 'opacity 0.15s ease-out'
         }}
       >
         <TreasureIslandCanvas

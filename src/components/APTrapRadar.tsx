@@ -127,6 +127,19 @@ function cleanOptionText(text: string | undefined, optionLetter: string): string
   return text.replace(regex, '').trim();
 }
 
+function formatMistakeBullets(text: string | undefined): string {
+  if (!text) return '';
+  const trimmed = text.trim();
+  if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.includes('\n•') || trimmed.includes('\n-')) {
+    return trimmed;
+  }
+  const sentences = trimmed.split(/(?<=[.?!])\s+(?=[A-Z0-9])/).filter(Boolean);
+  if (sentences.length > 1) {
+    return sentences.map(s => `• ${s.trim()}`).join('\n\n');
+  }
+  return `• ${trimmed}`;
+}
+
 const FRONTEND_PSYCHOMETRIC_TEMPLATES: [number, number, number, number][] = [
   [48, 28, 15, 9],
   [44, 31, 16, 9],
@@ -422,8 +435,26 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
   const [isRadarRevealed, setIsRadarRevealed] = useState(false);
   const [isScanningAnimation, setIsScanningAnimation] = useState(false);
 
-  // Format Selection: Objective (MCQ) vs Subjective (FRQ)
+  // Format Selection: Objective (MCQ) vs Subjective (FRQ / Create Performance Task for AP CSP)
   const [questionFormat, setQuestionFormat] = useState<'objective' | 'subjective'>('objective');
+
+  // AP CSP Detection: AP Computer Science Principles does not use standard FRQs; it uses Create Performance Task (CPT)
+  const isCSP = useMemo(() => {
+    const name = (selectedSubject?.name || '').toLowerCase();
+    const id = (selectedSubject?.id || '').toLowerCase();
+    const code = (selectedSubject?.shortCode || '').toUpperCase();
+    return id === 'ap-computer-science-principles' || code === 'CSP' || (name.includes('computer') && (name.includes('principles') || name.includes('csp')));
+  }, [selectedSubject]);
+
+  const isCurrentQuestionCSP = useMemo(() => {
+    if (isCSP) return true;
+    const q = questions[currentIndex];
+    if (!q) return false;
+    const p = (q.prompt || '').toLowerCase();
+    const s = (q.skill || '').toLowerCase();
+    return p.includes('personalized project reference') || p.includes('create performance task') || p.includes('cpt') || s.includes('principles') || s.includes('csp');
+  }, [isCSP, questions, currentIndex]);
+
   const [userFrqDraft, setUserFrqDraft] = useState<Record<string, string>>({});
   const [frqSelfGrading, setFrqSelfGrading] = useState<Record<string, 'avoided' | 'tripped'>>({});
   const [showFrqPlusMenu, setShowFrqPlusMenu] = useState<boolean>(false);
@@ -893,8 +924,8 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
           id: `challenge_${Date.now()}`,
           timestamp: Date.now(),
           type: 'challenge',
-          title: `Trap Challenge: ${selectedSubject.name} (${questionFormat === 'subjective' ? 'FRQ' : 'MCQ'})`,
-          subtitle: `${selectedUnit} • ${sanitized.length} ${questionFormat === 'subjective' ? 'FRQ' : 'MCQ'} Questions`,
+          title: `Trap Challenge: ${selectedSubject.name} (${questionFormat === 'subjective' ? (isCSP ? 'Create PT' : 'FRQ') : 'MCQ'})`,
+          subtitle: `${selectedUnit} • ${sanitized.length} ${questionFormat === 'subjective' ? (isCSP ? 'CPT Written Responses' : 'FRQ Questions') : 'MCQ Questions'}`,
           subjectName: selectedSubject.name,
           questions: sanitized
         });
@@ -1074,7 +1105,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
     if (grade === 'avoided') {
       const pts = activeQuestion.totalPoints || activeQuestion.parts?.reduce((sum, p) => sum + (p.points || 1), 0) || 4;
       setSessionStats(prev => ({ ...prev, trapsAvoided: prev.trapsAvoided + pts }));
-      showToast('Great work! Full credit earned without falling into FRQ traps.', 'success');
+      showToast(`Great work! Full credit earned without falling into ${isCurrentQuestionCSP ? 'CPT' : 'FRQ'} traps.`, 'success');
     } else {
       setSessionStats(prev => ({ ...prev, trapsFallen: prev.trapsFallen + 1 }));
       const firstTrap = activeQuestion.parts?.[0]?.frqTraps?.[0];
@@ -1083,7 +1114,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
       saveMistakeToVault(
         'AP Trap Radar',
         activeQuestion.prompt,
-        `Tripped on FRQ Pitfall: ${trapName}`,
+        `Tripped on ${isCurrentQuestionCSP ? 'CPT' : 'FRQ'} Pitfall: ${trapName}`,
         `Scoring Criteria: ${activeQuestion.parts?.[0]?.scoringCriteria || 'Full Credit Rubric'}. Disarm Secret: ${activeQuestion.disarmStrategy}`
       );
 
@@ -1091,7 +1122,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
         ...activeQuestion,
         userTrippedTrap: trapName
       });
-      showToast('Logged to My Mistake Vault! AI will help you disarm this FRQ trap.', 'info');
+      showToast(`Logged to My Mistake Vault! AI will help you disarm this ${isCurrentQuestionCSP ? 'CPT' : 'FRQ'} trap.`, 'info');
     }
   };
 
@@ -1652,7 +1683,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                       </div>
                     </div>
 
-                    {/* Option B: Subjective (FRQ) */}
+                    {/* Option B: Subjective (FRQ / Create Performance Task for AP CSP) */}
                     <div
                       onClick={() => {
                         triggerVibration(10);
@@ -1674,14 +1705,14 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                               ? 'bg-gradient-to-br from-emerald-600 to-teal-600 text-white shadow-sm'
                               : 'bg-zinc-200 text-zinc-600'
                           }`}>
-                            ✍️
+                            {isCSP ? '💻' : '✍️'}
                           </div>
                           <div className="flex items-center gap-2">
                             <h4 className="font-black text-zinc-900 text-sm tracking-tight">
-                              Subjective (FRQ)
+                              {isCSP ? 'Create Performance Task (CPT)' : 'Subjective (FRQ)'}
                             </h4>
                             <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-300">
-                              Section II
+                              {isCSP ? 'Section II (CPT)' : 'Section II'}
                             </span>
                           </div>
                         </div>
@@ -1694,6 +1725,11 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                           {questionFormat === 'subjective' && <Check className="w-3 h-3 stroke-[3]" />}
                         </div>
                       </div>
+                      {isCSP && (
+                        <p className="text-[11px] font-medium text-emerald-700/90 mt-1.5 pl-13">
+                          Written Response Prompts based on Personalized Project Reference (PPR)
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1707,8 +1743,8 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                   <div className={`grid ${questionFormat === 'subjective' ? 'grid-cols-2' : 'grid-cols-3'} gap-2 sm:gap-2.5`}>
                     {(questionFormat === 'subjective'
                       ? [
-                          { count: 3, label: '3 FRQs' },
-                          { count: 5, label: '5 FRQs' }
+                          { count: 3, label: isCSP ? '3 CPT Tasks' : '3 FRQs' },
+                          { count: 5, label: isCSP ? '5 CPT Tasks' : '5 FRQs' }
                         ]
                       : [
                           { count: 3, label: '3 Questions' },
@@ -1778,7 +1814,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                 <div className="flex items-center justify-between bg-white border border-zinc-200 rounded-2xl px-4 py-2.5 shadow-xs">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-black text-amber-700">
-                      {activeQuestion.format === 'subjective' ? 'FRQ Question' : 'Question'} {currentIndex + 1} of {questions.length}
+                      {activeQuestion.format === 'subjective' ? (isCurrentQuestionCSP ? 'CPT Task' : 'FRQ Question') : 'Question'} {currentIndex + 1} of {questions.length}
                     </span>
                     {activeQuestion.overallTrapDifficulty && (
                       <span className="text-[10px] bg-red-100 text-red-800 border border-red-200 px-2 py-0.5 rounded font-bold">
@@ -1854,7 +1890,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                     <div className="flex items-center gap-1.5 shrink-0">
                       <ReportAiButton
                         aiOutput={`AP Trap Question: ${activeQuestion.prompt}\n${activeQuestion.stimulus ? `Stimulus:\n${activeQuestion.stimulus}\n` : ''}${activeQuestion.options ? `Options:\n${activeQuestion.options.join('\n')}\n` : ''}Correct: ${activeQuestion.correctAnswer || 'N/A'}`}
-                        context={`AP Trap Radar: ${activeQuestion.format === 'subjective' ? 'FRQ' : 'MCQ'} Question`}
+                        context={`AP Trap Radar: ${activeQuestion.format === 'subjective' ? (isCurrentQuestionCSP ? 'CPT' : 'FRQ') : 'MCQ'} Question`}
                         questionText={activeQuestion.prompt}
                         variant="icon"
                         label="Report Question"
@@ -1972,12 +2008,12 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                     </div>
                                   </div>
 
-                                  {/* FRQ Traps Autopsy */}
+                                  {/* CPT / FRQ Traps Autopsy */}
                                   {part.frqTraps && part.frqTraps.length > 0 && (
                                     <div className="space-y-2">
                                       <div className="text-[11px] font-black text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
                                         <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-                                        <span>Chief Reader Traps (Where Students Lose Points):</span>
+                                        <span>{isCurrentQuestionCSP ? 'Chief Reader CPT Traps (Where Students Lose Points):' : 'Chief Reader Traps (Where Students Lose Points):'}</span>
                                       </div>
                                       {part.frqTraps.map((ft, ftIdx) => (
                                         <div
@@ -2305,10 +2341,10 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                 <div className="flex flex-col items-center justify-center pt-2.5 pb-1 px-4 gap-1.5 border-t border-zinc-800">
                                   <ReportAiButton
                                     aiOutput={frqAiFeedback[String(activeQuestion.id || currentIndex)]}
-                                    context="AP Trap Radar FRQ Evaluation"
+                                    context={isCurrentQuestionCSP ? "AP Trap Radar CPT Evaluation" : "AP Trap Radar FRQ Evaluation"}
                                     questionText={activeQuestion.prompt}
                                     variant="compact"
-                                    label="Report FRQ Evaluation"
+                                    label={isCurrentQuestionCSP ? "Report CPT Evaluation" : "Report FRQ Evaluation"}
                                     className="text-zinc-400 hover:text-red-400"
                                   />
                                   <p className="text-[10px] text-zinc-500 font-medium select-none tracking-tight">
@@ -2323,7 +2359,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                               <div className="text-xs text-zinc-700 leading-relaxed">
                                 <p className="font-bold text-zinc-900 mb-1 flex items-center gap-1">
                                   <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                                  <span>Chief Reader's FRQ Scoring Secret:</span>
+                                  <span>{isCurrentQuestionCSP ? "Chief Reader's CPT Scoring Secret:" : "Chief Reader's FRQ Scoring Secret:"}</span>
                                 </p>
                                 <div className="min-w-0 max-w-full overflow-x-auto">
                                   <GlobalMarkdown>{formatAiAnswerText(activeQuestion.disarmStrategy)}</GlobalMarkdown>
@@ -2382,7 +2418,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                 className="px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-zinc-200"
                               >
                                 <RotateCcw className="w-3.5 h-3.5" />
-                                <span>Retry FRQ</span>
+                                <span>{isCurrentQuestionCSP ? 'Retry CPT' : 'Retry FRQ'}</span>
                               </button>
 
                               {currentIndex < questions.length - 1 ? (
@@ -2393,7 +2429,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                   }}
                                   className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
                                 >
-                                  <span>Next FRQ</span>
+                                  <span>{isCurrentQuestionCSP ? 'Next CPT' : 'Next FRQ'}</span>
                                   <ChevronRight className="w-4 h-4" />
                                 </button>
                               ) : (
@@ -2477,8 +2513,12 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                   <div className="text-xs">
                                     <div className="font-bold text-zinc-800">
                                       {inlineAi.mode === 'traps' 
-                                        ? 'AI Trap Radar is analyzing FRQ traps & scoring pitfalls...' 
-                                        : 'AI Magic Tutor is generating step-by-step FRQ model solution...'}
+                                        ? (isCurrentQuestionCSP 
+                                            ? 'AI Trap Radar is analyzing CPT rubric traps & testing pitfalls...' 
+                                            : 'AI Trap Radar is analyzing FRQ traps & scoring pitfalls...')
+                                        : (isCurrentQuestionCSP 
+                                            ? 'AI Magic Tutor is generating step-by-step CPT model solution...' 
+                                            : 'AI Magic Tutor is generating step-by-step FRQ model solution...')}
                                     </div>
                                     <div className="text-[10px] text-zinc-500">
                                       Cross-referencing Chief Reader scoring rubrics & traps...
@@ -2825,7 +2865,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                                     className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
                                   >
                                     <RotateCcw className="w-4 h-4" />
-                                    <span>New Set ({questionCount} {questionFormat === 'subjective' ? 'FRQs' : 'MCQs'})</span>
+                                    <span>New Set ({questionCount} {questionFormat === 'subjective' ? (isCSP ? 'CPT Tasks' : 'FRQs') : 'MCQs'})</span>
                                   </button>
                                 </div>
                               )}
@@ -3029,7 +3069,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                   {[
                     { id: 'all', label: `All (${vault.length})` },
                     { id: 'objective', label: `MCQ Traps (${vault.filter(v => v.format !== 'subjective').length})` },
-                    { id: 'subjective', label: `FRQ Traps (${vault.filter(v => v.format === 'subjective').length})` }
+                    { id: 'subjective', label: `${isCSP ? 'CPT' : 'FRQ'} Traps (${vault.filter(v => v.format === 'subjective').length})` }
                   ].map(tab => (
                     <button
                       key={tab.id}
@@ -3075,7 +3115,7 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                               : 'bg-amber-50 text-amber-800 border-amber-200'
                           }`}>
-                            {q.format === 'subjective' ? 'Section II FRQ' : 'Section I MCQ'}
+                            {q.format === 'subjective' ? (isCSP ? 'Section II Create PT' : 'Section II FRQ') : 'Section I MCQ'}
                           </span>
                           <span className="text-xs font-black text-zinc-800">
                             {q.skill || `Saved Question #${idx + 1}`}
@@ -3157,26 +3197,90 @@ export default function APTrapRadar({ onBack, isVip = false }: APTrapRadarProps)
                       )}
 
                       {/* AI Mistake Doctor Box or Button */}
-                      {q.aiFix ? (
-                        <div className="p-3.5 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 text-xs space-y-2">
-                          <div className="flex items-center gap-1.5 font-black text-amber-900">
-                            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                            <span>AI Mistake Doctor Diagnosis:</span>
-                          </div>
-                          <p className="text-zinc-800"><strong>Why It Happened:</strong> {q.aiFix.why_it_happened}</p>
-                          <p className="text-zinc-800"><strong>The Fix:</strong> {q.aiFix.the_fix}</p>
-                          <p className="text-amber-900 font-semibold"><strong>Pro Memory Trick:</strong> {q.aiFix.pro_memory_trick}</p>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => handleExplainMistakeWithAi(q)}
-                          disabled={explainingMistakeId === q.id}
-                          className="w-full py-2.5 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                        >
-                          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                          <span>{explainingMistakeId === q.id ? 'Analyzing Mistake with AI...' : '🤖 AI Explain & Cure My Mistake'}</span>
-                        </button>
-                      )}
+                      {(() => {
+                        const activeFix = q.aiFix || inlineAiDoctorFixes[q.id];
+                        const isCollapsed = collapsedInlineFixes[q.id];
+
+                        if (activeFix) {
+                          return (
+                            <div className="rounded-2xl border-2 border-amber-300/80 bg-gradient-to-b from-amber-50/90 via-orange-50/40 to-white overflow-hidden shadow-xs text-xs space-y-3">
+                              {/* Header Banner */}
+                              <div className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Sparkles className="w-4 h-4 text-amber-200" />
+                                  <span className="font-black text-xs tracking-tight">
+                                    AI Mistake Doctor: Clinical Autopsy & Cure
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setCollapsedInlineFixes(prev => ({ ...prev, [q.id]: !isCollapsed }))}
+                                  className="text-[11px] font-bold px-2 py-0.5 rounded bg-white/20 hover:bg-white/30 text-white cursor-pointer transition-colors"
+                                >
+                                  {isCollapsed ? 'Show Diagnosis' : 'Minimize'}
+                                </button>
+                              </div>
+
+                              {!isCollapsed && (
+                                <div className="p-3.5 sm:p-4 space-y-3">
+                                  {/* Section 1: Why It Happened (The Cognitive Trap) */}
+                                  <div className="p-3 rounded-xl bg-red-50/80 border border-red-200/80 text-red-950 space-y-1.5">
+                                    <div className="flex items-center gap-1.5 font-black text-red-900 text-[11px] uppercase tracking-wider">
+                                      <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                                      <span>Why You Picked This Trap (Cognitive Slip):</span>
+                                    </div>
+                                    <div className="text-xs text-red-950 leading-relaxed space-y-1 pl-1">
+                                      <GlobalMarkdown>{formatMistakeBullets(activeFix.why_it_happened)}</GlobalMarkdown>
+                                    </div>
+                                  </div>
+
+                                  {/* Section 2: The Clinical Fix (Step-by-Step CED Solution) */}
+                                  <div className="p-3 rounded-xl bg-emerald-50/80 border border-emerald-200/80 text-emerald-950 space-y-1.5">
+                                    <div className="flex items-center gap-1.5 font-black text-emerald-900 text-[11px] uppercase tracking-wider">
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                      <span>The Exact CED Fix (Step-by-Step Solution):</span>
+                                    </div>
+                                    <div className="text-xs text-emerald-950 leading-relaxed space-y-1 pl-1">
+                                      <GlobalMarkdown>{formatMistakeBullets(activeFix.the_fix)}</GlobalMarkdown>
+                                    </div>
+                                  </div>
+
+                                  {/* Section 3: Pro Memory Trick (5-Second Disarm Secret) */}
+                                  <div className="p-3 rounded-xl bg-amber-100/70 border border-amber-300/80 text-amber-950 space-y-1">
+                                    <div className="flex items-center gap-1.5 font-black text-amber-900 text-[11px] uppercase tracking-wider">
+                                      <Zap className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                      <span>⚡ 5-Second Score-5 Disarm Secret:</span>
+                                    </div>
+                                    <div className="text-xs font-semibold text-amber-950 leading-relaxed pl-1">
+                                      <GlobalMarkdown>{formatMistakeBullets(activeFix.pro_memory_trick)}</GlobalMarkdown>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <button
+                            onClick={() => handleExplainMistakeWithAi(q)}
+                            disabled={explainingMistakeId === q.id}
+                            className="w-full py-3 px-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 active:scale-[0.99] text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                          >
+                            {explainingMistakeId === q.id ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin text-white" />
+                                <span>Diagnosing Mistake with AI Psychometrician...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-4 h-4 text-amber-200" />
+                                <span>🤖 AI Explain & Cure My Mistake (Step-by-Step Autopsy)</span>
+                              </>
+                            )}
+                          </button>
+                        );
+                      })()}
                     </div>
                   ))}
               </div>

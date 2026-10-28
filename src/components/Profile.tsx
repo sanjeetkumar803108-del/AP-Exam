@@ -48,6 +48,11 @@ import { releaseUserSession } from '../utils/sessionManager';
 import { showToast } from '../utils/toast';
 import { clearGoogleCredentialState } from '../utils/clearGoogleCredential';
 import FullScreenLegalModal from './FullScreenLegalModal';
+import { 
+  setupDailyLocalNotifications, 
+  cancelAllDailyNotifications, 
+  sendTestNotificationNow 
+} from '../utils/notifications';
 
 interface ProfileProps {
   user: FirebaseUser | null;
@@ -184,6 +189,33 @@ export default function Profile({
   const [dailyReminders, setDailyReminders] = useState<boolean>(() => {
     return safeGetItem('pref_daily_reminders') !== 'false';
   });
+  const [isSendingTestNotif, setIsSendingTestNotif] = useState(false);
+
+  const handleToggleDailyReminders = async (enabled: boolean) => {
+    triggerVibration(15);
+    setDailyReminders(enabled);
+    safeSetItem('pref_daily_reminders', enabled ? 'true' : 'false');
+    if (enabled) {
+      await setupDailyLocalNotifications(true);
+      showToast("🔔 Routine Reminders enabled (7:45 AM, 4:45 PM, 9:30 PM)");
+    } else {
+      await cancelAllDailyNotifications();
+      showToast("🔕 Study reminders paused");
+    }
+  };
+
+  const handleSendTestNotification = async () => {
+    triggerVibration(20);
+    setIsSendingTestNotif(true);
+    const sent = await sendTestNotificationNow();
+    setIsSendingTestNotif(false);
+    if (sent) {
+      showToast("🚀 Test notification sent! Check notification bar.");
+    } else {
+      showToast("⚠️ Notifications blocked. Please check app permissions.");
+    }
+  };
+
   const [streakAlerts, setStreakAlerts] = useState<boolean>(() => {
     return safeGetItem('pref_streak_alerts') !== 'false';
   });
@@ -2564,6 +2596,70 @@ export default function Profile({
                     </div>
                   </div>
                 )}
+
+                {/* STUDY NOTIFICATIONS & ROUTINE REMINDERS */}
+                <div className="bg-white rounded-[2rem] border border-zinc-200 shadow-sm p-5 space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100 shrink-0">
+                        <Bell className="w-4 h-4" />
+                      </div>
+                      <div className="text-left">
+                        <h4 className="text-xs font-black text-zinc-900 leading-tight">Daily Study Reminders</h4>
+                        <p className="text-[9.5px] text-zinc-400 font-bold mt-0.5">Synced with local school routine</p>
+                      </div>
+                    </div>
+                    {/* Toggle Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleToggleDailyReminders(!dailyReminders)}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                        dailyReminders ? 'bg-blue-600' : 'bg-zinc-200'
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                          dailyReminders ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Routine Slots Badges */}
+                  <div className="grid grid-cols-3 gap-2 pt-0.5 text-center">
+                    <div className="bg-blue-50/70 rounded-xl p-2 border border-blue-100/60">
+                      <span className="block text-[10px] font-black text-blue-700">7:45 AM</span>
+                      <span className="block text-[8px] font-bold text-blue-500">Morning Prep</span>
+                    </div>
+                    <div className="bg-amber-50/70 rounded-xl p-2 border border-amber-100/60">
+                      <span className="block text-[10px] font-black text-amber-700">4:45 PM</span>
+                      <span className="block text-[8px] font-bold text-amber-500">Homework AI</span>
+                    </div>
+                    <div className="bg-purple-50/70 rounded-xl p-2 border border-purple-100/60">
+                      <span className="block text-[10px] font-black text-purple-700">9:30 PM</span>
+                      <span className="block text-[8px] font-bold text-purple-500">Streak Saver</span>
+                    </div>
+                  </div>
+
+                  {/* Immediate Test Button */}
+                  <button
+                    onClick={handleSendTestNotification}
+                    disabled={isSendingTestNotif}
+                    className="w-full bg-zinc-50 hover:bg-zinc-100 active:scale-98 text-zinc-700 text-xs font-black py-2.5 px-3 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer border border-zinc-200"
+                  >
+                    {isSendingTestNotif ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-600" />
+                        <span>Sending Test Notification...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                        <span>⚡ Send Test Notification Now</span>
+                      </>
+                    )}
+                  </button>
+                </div>
 
                 {/* SUPPORT & LEGAL */}
                 <div className="bg-white rounded-[2rem] border border-zinc-200 shadow-sm overflow-hidden">

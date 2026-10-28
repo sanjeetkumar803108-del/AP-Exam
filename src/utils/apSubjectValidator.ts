@@ -195,62 +195,99 @@ export function convertLatexArrayToMarkdownTable(text: string): string {
 
 
 /**
+ * Matches a keyword against target text using word boundaries for short terms (<= 4 chars)
+ * to prevent false positives like 'un' matching inside 'All Units' or 'k' inside words.
+ */
+function matchKeywordSafely(text: string, kw: string): boolean {
+  if (!text || !kw) return false;
+  const kwLower = kw.toLowerCase().trim();
+  if (kwLower.length <= 4) {
+    const escaped = kwLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(?:^|[^a-z0-9])${escaped}(?:[^a-z0-9]|$)`, 'i');
+    return regex.test(text);
+  }
+  return text.toLowerCase().includes(kwLower);
+}
+
+/**
  * Resolves the canonical unit title and unit number for a subject.
+ * Accurately prevents 'All Units' from collapsing to a single unit (e.g. Unit 4 in APHG).
  */
 export function resolveCanonicalUnit(
   subjectId: string, 
   unitInput?: string | number,
-  questionText?: string
+  questionText?: string,
+  qIndex?: number
 ): { unitNumber: number; title: string } {
   const whitelist = getSubjectWhitelist(subjectId);
   if (!whitelist || whitelist.canonicalUnits.length === 0) {
     return { unitNumber: 1, title: typeof unitInput === 'string' && unitInput.trim() ? unitInput : 'General Course Content' };
   }
 
+  // 1. Explicit numeric unit input
   if (typeof unitInput === 'number' && !isNaN(unitInput)) {
     const found = whitelist.canonicalUnits.find(u => u.unitNumber === unitInput);
     if (found) return { unitNumber: found.unitNumber, title: found.title };
   }
 
   const inputStr = String(unitInput || '').toLowerCase().trim();
-  const numMatch = inputStr.match(/\b(?:unit|period|u|p)\s*([0-9]+)\b/i) || inputStr.match(/^([0-9]+)$/);
 
-  if (numMatch) {
-    const num = parseInt(numMatch[1], 10);
-    const found = whitelist.canonicalUnits.find(u => u.unitNumber === num);
-    if (found) return { unitNumber: found.unitNumber, title: found.title };
-  }
+  // 2. Detect "All Units" / "All High-Yield Units" Sentinel
+  const isAllUnitsInput = !inputStr ||
+    /^all(\s*units)?$/i.test(inputStr) ||
+    inputStr.includes('all high-yield units') ||
+    inputStr.includes('all units') ||
+    /entire\s*(curriculum|syllabus|course)/i.test(inputStr) ||
+    /full\s*(exam|test|simulation)/i.test(inputStr);
 
-  // Search by keyword or title match in unitInput
-  for (const u of whitelist.canonicalUnits) {
-    if (inputStr.includes(u.title.toLowerCase())) {
-      return { unitNumber: u.unitNumber, title: u.title };
+  // 3. If NOT in All Units mode, inspect unitInput for explicit unit number or title/keyword match
+  if (!isAllUnitsInput) {
+    const numMatch = inputStr.match(/\b(?:unit|period|u|p)\s*([0-9]+)\b/i) || inputStr.match(/^([0-9]+)$/);
+    if (numMatch) {
+      const num = parseInt(numMatch[1], 10);
+      const found = whitelist.canonicalUnits.find(u => u.unitNumber === num);
+      if (found) return { unitNumber: found.unitNumber, title: found.title };
     }
-    for (const kw of u.keywords) {
-      if (inputStr.includes(kw.toLowerCase())) {
+
+    // Search by unit title match or safe keyword match in unitInput
+    for (const u of whitelist.canonicalUnits) {
+      if (inputStr.includes(u.title.toLowerCase())) {
         return { unitNumber: u.unitNumber, title: u.title };
+      }
+      for (const kw of u.keywords) {
+        if (matchKeywordSafely(inputStr, kw)) {
+          return { unitNumber: u.unitNumber, title: u.title };
+        }
       }
     }
   }
 
-  // If questionText is provided, infer unit from question content keywords
+  // 4. Infer unit from question content keywords if provided
   if (questionText && questionText.trim()) {
-    const qLower = questionText.toLowerCase();
     let bestUnit: typeof whitelist.canonicalUnits[0] | null = null;
     let maxScore = 0;
     for (const u of whitelist.canonicalUnits) {
       let score = 0;
-      if (qLower.includes(u.title.toLowerCase())) score += 5;
+      if (matchKeywordSafely(questionText, u.title)) score += 5;
       for (const kw of u.keywords) {
-        if (qLower.includes(kw.toLowerCase())) score += 2;
+        if (matchKeywordSafely(questionText, kw)) score += 2;
       }
       if (score > maxScore) {
         maxScore = score;
         bestUnit = u;
       }
     }
-    if (bestUnit && maxScore >= 2) {
+    // High-confidence question-content match (at least 2 keyword matches or title match)
+    if (bestUnit && maxScore >= 4) {
       return { unitNumber: bestUnit.unitNumber, title: bestUnit.title };
+    }
+  }
+
+  // 5. In All Units mode with qIndex provided, rotate deterministically across all units
+  if (isAllUnitsInput && qIndex !== undefined && qIndex >= 0) {
+    const rotated = whitelist.canonicalUnits[qIndex % whitelist.canonicalUnits.length];
+    if (rotated) {
+      return { unitNumber: rotated.unitNumber, title: rotated.title };
     }
   }
 
@@ -377,7 +414,7 @@ export function validateAndHealApQuestion(
   }, subjectId);
 
   // 5. [Bug #6 Fix] Standardize Unit Metadata (Pass cleanPrompt to accurately infer unit)
-  const canonicalUnit = resolveCanonicalUnit(subjectId, q.skill || targetTopic, cleanPrompt);
+  const canonicalUnit = resolveCanonicalUnit(subjectId, q.unitNumber ?? (q.unitTitle || q.unit || q.skill || targetTopic), cleanPrompt);
 
   // 6. [Bug #7 Fix] Track concepts for diversity
   if (whitelist) {

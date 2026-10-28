@@ -543,36 +543,52 @@ CRITICAL SAFETY & QUALITY RULES (MUST FOLLOW):
 4. If the input is a question, translate the question itself, do NOT answer it.
 5. If the input is a single word or phrase, translate it directly.
 6. Absolutely no conversational preamble. The output must be 100% clean translated text only.`;
-    } else if (mode === "All Subjects" || mode === "General") {
-      instruction = `You are the core intelligence engine for "HelpYou AI", an advanced educational and research assistant. Your primary job is to process user queries (which may contain conversational Hindi/Hinglish filler words) and provide highly structured, accurate, and context-aware responses.
+    } else if (mode === "All Subjects") {
+      instruction = `You are Professor Pang \u2014 the Senior College Board AP Exam Chief Reader, AP Test Item Writer, and Master AP Prep Expert Teacher for the AP Exam App. Your sole mission is preparing high school students to achieve a Score 5 on their College Board AP Exams.
 
-CRITICAL RULES:
-1. Keyword Extraction: Ignore conversational fillers (e.g., "Bhai", "tum", "research karo", "waha kya hua", "please batao", "bhai batao"). Extract ONLY the core subject. (e.g., "Bhai tum jeju island case pe research karo" -> "Jeju Island Incident").
-2. Domain Classification: Analyze the core subject and classify it into one of two categories:
-   - STEM (Math/Science): Physics, Chemistry, Biology, Mathematics.
-   - Humanities/General: History, Geography, Current Events, Case Studies, Social Sciences, Literature.
-3. Dynamic Output Generation:
-   - If STEM: Provide core principles, scientific mechanisms, key formulas (wrapped in LaTeX $...$ or $$...$$), and step-by-step actionable prep steps.
-   - If Humanities/General: Provide historical context, major events, real-world impact, and analytical takeaways. Strictly DO NOT generate or mention formulas, equations, or scientific mechanisms for this category.
-4. No Fake URLs: When generating verified research sources, only use root domains (e.g., en.wikipedia.org, britannica.com). Do not fabricate full URL paths.${mode === "All Subjects" ? `
+CRITICAL AP EXAM RULES (ZERO FOREIGN SYLLABUS BLEED):
+1. THIS APPLICATION IS STRICTLY AND EXCLUSIVELY FOR COLLEGE BOARD ADVANCED PLACEMENT (AP) EXAM PREPARATION.
+2. ABSOLUTELY NEVER mention, reference, compare, or mix non-AP curricula, boards, or textbooks from other countries (strictly NO CBSE, NCERT, ICSE, State Boards, JEE Main/Advanced, NEET, UK GCSE/A-Levels, IB DP, or other foreign curricula).
+3. Keyword Extraction: Ignore conversational fillers (e.g., "Bhai", "tum", "research karo", "waha kya hua", "please batao"). Extract ONLY the core AP subject topic.
+4. Domain Classification: Analyze the core subject and classify it into official College Board AP Course categories:
+   - AP STEM: AP Physics (1/2/C), AP Chemistry, AP Biology, AP Calculus (AB/BC), AP Statistics, AP Computer Science (A/CSP), AP Environmental Science.
+   - AP Humanities & Social Sciences: AP US History (APUSH), AP World History, AP Euro, AP US Gov, AP Macro/Microeconomics, AP Psychology, AP English Lang/Lit.
+5. Dynamic Output Generation:
+   - If AP STEM: Provide official College Board principles, equations from AP formula sheets (wrapped in LaTeX $...$ or $$...$$), AP Science Practices, and step-by-step AP rubric working.
+   - If AP Humanities: Provide historical/economic context, College Board CED themes, primary source analysis, and analytical takeaways. Strictly DO NOT fabricate non-AP formulas.
+6. No Fake URLs: When citing verified research sources, only use root domains (e.g., collegeboard.org, apstudents.collegeboard.org, en.wikipedia.org). Do not fabricate full URL paths.
 
 You MUST structure your response strictly using this layout:
-\u{1F3AF} Core Concept / Overview: Clear, formal academic definition & context.
-\u{1F4DD} Step-by-Step Logic / Key Events: A rigorous, sound breakdown.
-\u26A0\uFE0F Analytical Takeaway / Exam Traps: Key points to remember.` : ""}`;
-    } else {
-      instruction = `You are the core intelligence engine for "HelpYou AI", an elite educational and research assistant, SAT/ACT Expert, and Master Educator.
-Your primary job is to process user queries (which may contain conversational Hindi/Hinglish filler words) and provide highly structured, accurate, and context-aware responses.
+\u{1F3AF} AP Core Concept / Overview: Clear, official College Board academic definition & CED context.
+\u{1F4DD} Step-by-Step Logic / Key AP Evidence: A rigorous, sound breakdown aligned with AP scoring criteria.
+\u26A0\uFE0F High-Yield AP Exam Traps: Common student misconceptions documented in College Board Chief Reader Reports.`;
+    } else if (mode === "General") {
+      instruction = `You are Professor Pang \u2014 the Senior College Board AP Exam Chief Reader, AP Test Item Writer, and Master AP Prep Expert Teacher for the AP Exam App. Your sole mission is preparing high school students to achieve a Score 5 on their College Board AP Exams.
 
-CRITICAL RULES:
-1. Keyword Extraction: Ignore conversational fillers (e.g., "Bhai", "tum", "research karo", "waha kya hua", "bhai batao", "please explain"). Extract ONLY the core subject. For example, if the input is "Bhai tum jeju island case pe research karo", the core subject is "Jeju Island Incident".
-2. Domain Classification: Analyze the core subject and classify it into one of two categories:
-   - STEM (Math/Science): Physics, Chemistry, Biology, Mathematics.
-   - Humanities/General: History, Geography, Current Events, Case Studies, Social Studies, Literature.
-3. Dynamic Output Generation:
-   - If STEM: Provide core principles, scientific mechanisms, key formulas (wrapped in LaTeX $...$ or $$...$$), and step-by-step actionable problem-solving/prep steps.
-   - If Humanities/General: Provide historical context, major events, real-world impact, and analytical takeaways. Strictly DO NOT generate or mention formulas, equations, or scientific mechanisms for this category.
-4. No Fake URLs: When generating verified research sources, ONLY use root domains (e.g., en.wikipedia.org, britannica.com, history.com). Do NOT fabricate full URL paths.
+CRITICAL AP EXAM RULES (ZERO FOREIGN SYLLABUS BLEED):
+1. THIS APPLICATION IS STRICTLY AND EXCLUSIVELY FOR COLLEGE BOARD ADVANCED PLACEMENT (AP) EXAM PREPARATION.
+2. ABSOLUTELY NEVER mention, reference, compare, or mix non-AP curricula, boards, or textbooks from other countries (strictly NO CBSE, NCERT, ICSE, State Boards, JEE Main/Advanced, NEET, UK GCSE/A-Levels, IB DP, or other foreign curricula).
+3. Keyword Extraction: Ignore conversational fillers. Extract ONLY the core AP academic subject.
+4. Domain Classification: Map the query directly to its corresponding College Board AP Course and Exam Description (CED).
+5. Dynamic Output Generation:
+   - If AP STEM: Provide College Board core principles, scientific mechanisms, key formulas (wrapped in LaTeX $...$ or $$...$$), and step-by-step AP problem-solving steps.
+   - If AP Humanities: Provide historical context, major events, real-world impact, and analytical takeaways per College Board AP course themes.
+6. No Fake URLs: Only use root domains (e.g., collegeboard.org, en.wikipedia.org, britannica.com).`;
+    } else {
+      instruction = `You are Professor Pang \u2014 an elite College Board AP Exam Chief Reader, AP Test Item Writer, and Master AP Prep Expert Teacher for the AP Exam App. Your sole mission is preparing students to achieve a Score 5 on their College Board AP Exams.
+Your primary job is to process user queries (which may contain conversational Hindi/Hinglish filler words) and provide highly structured, accurate, and AP-context-aware responses.
+
+CRITICAL AP EXAM RULES (ZERO FOREIGN SYLLABUS BLEED):
+1. THIS APPLICATION IS STRICTLY AND EXCLUSIVELY FOR COLLEGE BOARD ADVANCED PLACEMENT (AP) EXAM PREPARATION.
+2. ABSOLUTELY NEVER mention, reference, compare, or mix non-AP curricula, boards, or textbooks from other countries (strictly NO CBSE, NCERT, ICSE, State Boards, JEE Main/Advanced, NEET, UK GCSE/A-Levels, IB DP, or other foreign curricula).
+3. Keyword Extraction: Ignore conversational fillers (e.g., "Bhai", "tum", "research karo", "waha kya hua", "bhai batao", "please explain"). Extract ONLY the core academic subject and map it directly to its College Board AP Course (e.g., AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Psychology, AP US History, AP Economics, etc.).
+4. Domain Classification:
+   - AP STEM (Math/Science): AP Physics (1/2/C), AP Chemistry, AP Biology, AP Calculus (AB/BC), AP Statistics, AP CSA/CSP, APES.
+   - AP Humanities & Social Studies: AP US History (APUSH), AP World History, AP US Government, AP Macro/Microeconomics, AP Psychology, AP European History, AP English.
+5. Dynamic Output Generation:
+   - If AP STEM: Provide College Board principles, equations from official AP equation sheets (wrapped in LaTeX $...$ or $$...$$), and step-by-step actionable problem-solving calibrated to AP FRQ scoring standards.
+   - If AP Humanities: Provide historical context, CED learning objectives, and analytical takeaways. Strictly DO NOT generate non-AP formulas.
+6. No Fake URLs: When generating verified research sources, ONLY use root domains (e.g., collegeboard.org, en.wikipedia.org, britannica.com). Do NOT fabricate full URL paths.
 
 Adopt an encouraging, patient, precise, and crisp tone. Use clean line breaks and emojis for visual readability.
 DO NOT use any markdown bolding syntax like "**" or emojis inside latex delimiters.
@@ -6156,6 +6172,45 @@ function getGranularSubjectArchetypes(subject, unitOrTopic, count) {
     const pool = [];
     while (pool.length < count) {
       pool.push(csaCanonicalFour[pool.length % csaCanonicalFour.length]);
+    }
+    return pool;
+  }
+  if ((s.includes("principles") || s.includes("csp") || s.includes("computer") && s.includes("principles")) && !detectedUnit) {
+    const cspCanonicalFour = [
+      "[Section II - CPT WR 1 | 1 Point] Program Design, Function & Purpose: Realistic student Personalized Project Reference (PPR) in Python/JavaScript (e.g. Student Gradebook, Fitness Tracker, Smart Pantry). Prompt: Identify the overall purpose of the program, describe the dynamic input provided by the user, and explain the corresponding program output/behavior in context.",
+      "[Section II - CPT WR 2a | 1 Point] Algorithm Development & Iteration Analysis: PPR code snippet featuring a student-developed procedure with sequencing, selection (if/else), and count/condition-controlled iteration traversing a list. Prompt: Describe in detail what is accomplished by the body of the iteration statement, and identify the Boolean expression in the selection statement specifying values evaluating to true and false.",
+      "[Section II - CPT WR 2b | 1 Point] Errors & Testing (Distinct Code Branches / Logic Bug): PPR procedure with multiple conditional branches. Prompt: Provide two distinct procedure calls with specific argument values that cause two different code segments to execute, OR describe a proposed code alteration that introduces a genuine logic error (not a syntax error) and explain the resulting behavioral discrepancy.",
+      "[Section II - CPT WR 2c | 1 Point] Data & Procedural Abstraction: PPR list managing data complexity. Prompt: Explain how the list uses abstraction to manage complexity in the program, and describe in detail how the program would have to be rewritten without using the list (e.g. separate individual variables and repetitive conditional logic)."
+    ];
+    if (count === 3) {
+      return [cspCanonicalFour[0], cspCanonicalFour[1], cspCanonicalFour[2]];
+    }
+    if (count === 4) {
+      return [...cspCanonicalFour];
+    }
+    if (count === 5) {
+      return [
+        ...cspCanonicalFour,
+        "[Section II - CPT WR 2b Cycle 2 | 1 Point] Boundary Condition & Input Validation Testing: Procedure handling list bounds and unexpected user inputs; identifying arguments that trigger edge-case branching and tracing loop terminating conditions."
+      ];
+    }
+    if (count === 10) {
+      return [
+        cspCanonicalFour[0],
+        cspCanonicalFour[1],
+        cspCanonicalFour[2],
+        cspCanonicalFour[3],
+        "[Section II - CPT WR 1 Cycle 2] Weather Station Telemetry Logger: Purpose and input/output behavior of daily temperature sensor averaging program.",
+        "[Section II - CPT WR 2a Cycle 2] E-Commerce Shopping Cart Discount Calculator: Iteration body analyzing subtotal and Boolean conditional coupon application.",
+        "[Section II - CPT WR 2b Cycle 2] Video Game Inventory Stacking System: Two test calls executing full-stack vs split-stack branch pathways.",
+        "[Section II - CPT WR 2c Cycle 2] Music Playlist Song Shuffler: List complexity management and explaining rewrite with individual song track variables.",
+        "[Section II - CPT WR 2a Cycle 3] Transit Bus Route Arrival Tracker: Nested conditional iteration identifying stopping condition and boundary bounds.",
+        "[Section II - CPT WR 2b Cycle 3] Hospital Patient Triage Prioritizer: Proposing a logic comparison flip (> vs >=) and tracing incorrect urgency assignment."
+      ];
+    }
+    const pool = [];
+    while (pool.length < count) {
+      pool.push(cspCanonicalFour[pool.length % cspCanonicalFour.length]);
     }
     return pool;
   }
@@ -24707,7 +24762,7 @@ var AP_SUBJECT_WHITELISTS = {
       { unitNumber: 1, title: "Thinking Geographically", keywords: ["gis", "gps", "remote sensing", "scale of analysis", "formal region", "functional region", "vernacular region", "environmental determinism", "possibilism", "distance decay", "time-space compression", "map projection", "choropleth"] },
       { unitNumber: 2, title: "Population & Migration Patterns", keywords: ["demographic transition model", "dtm", "crude birth rate", "cbr", "crude death rate", "cdr", "natural increase rate", "nir", "population pyramid", "dependency ratio", "malthus", "boserup", "ravenstein", "push factor", "pull factor", "refugee", "idp", "asylum", "pronatalist", "antinatalist", "epidemiological transition"] },
       { unitNumber: 3, title: "Cultural Patterns & Processes", keywords: ["cultural hearth", "contagious diffusion", "hierarchical diffusion", "stimulus diffusion", "relocation diffusion", "universalizing religion", "ethnic religion", "language family", "indo-european", "isogloss", "lingua franca", "acculturation", "assimilation", "syncretism", "cultural landscape", "folk culture", "pop culture"] },
-      { unitNumber: 4, title: "Political Patterns & Processes", keywords: ["sovereignty", "nation-state", "stateless nation", "multinational state", "autonomous region", "colonialism", "berlin conference", "superimposed boundary", "relic boundary", "unclos", "exclusive economic zone", "eez", "gerrymandering", "devolution", "supranationalism", "un", "eu", "nato", "asean", "balkanization"] },
+      { unitNumber: 4, title: "Political Patterns & Processes", keywords: ["sovereignty", "nation-state", "stateless nation", "multinational state", "autonomous region", "colonialism", "berlin conference", "superimposed boundary", "relic boundary", "unclos", "exclusive economic zone", "eez", "gerrymandering", "devolution", "supranationalism", "united nations", "european union", "nato", "asean", "balkanization"] },
       { unitNumber: 5, title: "Agriculture & Rural Land-Use", keywords: ["von thunen", "bid-rent", "green revolution", "subsistence agriculture", "commercial agriculture", "intensive farming", "extensive farming", "shifting cultivation", "pastoral nomadism", "agribusiness", "commodity chain", "metes and bounds", "township and range", "long lot", "desertification", "salinization"] },
       { unitNumber: 6, title: "Cities & Urban Land-Use", keywords: ["burgess", "concentric zone", "hoyt sector", "multiple nuclei", "harris-ullman", "galactic city", "edge city", "central place theory", "christaller", "range", "threshold", "rank-size rule", "primate city", "gentrification", "new urbanism", "smart growth", "suburban sprawl", "redlining", "blockbusting", "megacity", "squatter settlement"] },
       { unitNumber: 7, title: "Industrial & Economic Development", keywords: ["wallerstein", "world systems", "core", "periphery", "semiperiphery", "rostow", "stages of economic growth", "weber", "least cost theory", "bulk-gaining", "bulk-reducing", "hdi", "human development index", "gni", "gii", "maquiladora", "epz", "sez", "outsourcing", "deindustrialization", "agglomeration", "un sdgs", "microfinance"] }
@@ -24730,7 +24785,7 @@ var AP_SUBJECT_WHITELISTS = {
     canonicalUnits: [
       { unitNumber: 1, title: "The Living World: Ecosystems", keywords: ["carbon cycle", "nitrogen cycle", "phosphorus cycle", "hydrologic cycle", "trophic level", "10% rule", "primary productivity", "gpp", "npp", "biomes"] },
       { unitNumber: 2, title: "The Living World: Biodiversity", keywords: ["ecosystem services", "provisioning", "regulating", "cultural", "supporting", "island biogeography", "ecological tolerance", "succession", "pioneer species", "keystone species"] },
-      { unitNumber: 3, title: "Populations", keywords: ["generalist", "specialist", "r-selected", "k-selected", "survivorship curve", "carrying capacity", "k", "rule of 70", "doubling time", "demographic transition", "tfr", "replacement level"] },
+      { unitNumber: 3, title: "Populations", keywords: ["generalist", "specialist", "r-selected", "k-selected", "survivorship curve", "carrying capacity", "logistic growth", "rule of 70", "doubling time", "demographic transition", "tfr", "replacement level"] },
       { unitNumber: 4, title: "Earth Systems & Resources", keywords: ["plate tectonics", "convergent", "divergent", "transform", "soil horizons", "soil texture triangle", "atmosphere", "troposphere", "stratosphere", "coriolis effect", "el nino", "la nina", "watershed"] },
       { unitNumber: 5, title: "Land & Water Use", keywords: ["tragedy of the commons", "clearcutting", "green revolution", "irrigation", "drip", "furrow", "flood", "salinization", "aquifer", "ogallala", "pest control", "ipm", "cafo", "overfishing", "mining", "slag"] },
       { unitNumber: 6, title: "Energy Resources & Consumption", keywords: ["fossil fuels", "coal", "petroleum", "natural gas", "fracking", "nuclear fission", "half-life", "biomass", "solar photovoltaic", "wind turbine", "hydroelectric", "geothermal", "hydrogen fuel cell"] },
@@ -24769,10 +24824,16 @@ var AP_SUBJECT_WHITELISTS = {
     category: "tech",
     mathExpected: false,
     canonicalUnits: [
-      { unitNumber: 1, title: "Primitive Types & Calling Methods", keywords: ["int", "double", "boolean", "arithmetic", "modulus", "casting", "Math.random", "parameters", "return values"] },
-      { unitNumber: 2, title: "Control Structures & Iteration", keywords: ["boolean expressions", "relational operators", "if-else", "while loop", "for loop", "nested loops", "iteration bounds"] },
-      { unitNumber: 3, title: "Class Design & Encapsulation", keywords: ["class header", "private instance variables", "constructors", "accessor", "mutator", "this", "String methods", "substring", "indexOf", "equals"] },
-      { unitNumber: 4, title: "Arrays, ArrayLists & 2D Arrays", keywords: ["1D array", "ArrayList", "add", "get", "set", "remove", "size", "2D array", "matrix", "nested traversal", "bounds checking"] }
+      { unitNumber: 1, title: "Primitive Types", keywords: ["primitive types", "int", "double", "boolean", "arithmetic operators", "modulus", "compound assignment", "casting", "operator precedence"] },
+      { unitNumber: 2, title: "Using Objects", keywords: ["object references", "instantiating objects", "calling constructors", "String methods", "substring", "indexOf", "length", "equals", "compareTo", "wrapper classes", "Integer", "Double", "Math class", "Math.random", "Math.abs", "Math.pow"] },
+      { unitNumber: 3, title: "Boolean Expressions & if Statements", keywords: ["boolean expressions", "relational operators", "if statements", "if-else", "else-if", "nested conditionals", "logical operators", "short-circuit evaluation", "De Morgan's laws", "comparing objects"] },
+      { unitNumber: 4, title: "Iteration", keywords: ["while loops", "for loops", "nested loops", "loop bounds", "loop invariants", "off-by-one error", "String algorithms with loops", "reversing a string"] },
+      { unitNumber: 5, title: "Writing Classes", keywords: ["class structure", "instance variables", "private vs public", "constructors", "overloading", "accessor methods", "mutator methods", "this reference", "static variables", "static methods", "variable scope"] },
+      { unitNumber: 6, title: "Array", keywords: ["1D array", "array creation", "array length", "index bounds", "ArrayIndexOutOfBoundsException", "array traversal", "for-each loop", "finding max or min", "reversing array", "linear search"] },
+      { unitNumber: 7, title: "ArrayList", keywords: ["ArrayList class", "type parameters", "add method", "get method", "set method", "remove method", "size method", "concurrent modification", "linear search", "selection sort", "insertion sort"] },
+      { unitNumber: 8, title: "2D Array", keywords: ["2D array declaration", "matrix dimensions", "row-major order", "column-major order", "nested loop traversal", "2D array algorithms", "row processing", "column processing"] },
+      { unitNumber: 9, title: "Inheritance", keywords: ["superclass", "subclass", "extends keyword", "inheritance hierarchy", "super keyword", "method overriding", "polymorphism", "dynamic binding", "Object superclass", "toString", "equals"] },
+      { unitNumber: 10, title: "Recursion", keywords: ["recursive method", "base case", "recursive call", "call stack", "stack overflow", "recursive helper method", "binary search", "merge sort", "recursive tracing"] }
     ],
     allowedDomains: ["computer science", "java programming", "object oriented programming", "algorithms", "data structures", "matrices", "arraylist"],
     forbiddenSignatures: [
@@ -24837,8 +24898,9 @@ var AP_SUBJECT_WHITELISTS = {
       { unitNumber: 3, title: "Work, Energy & Power", keywords: ["kinetic energy", "gravitational potential energy", "elastic potential energy", "conservation of energy", "work-energy theorem", "power"] },
       { unitNumber: 4, title: "Linear Momentum", keywords: ["momentum", "impulse", "conservation of momentum", "elastic collision", "inelastic collision", "center of mass"] },
       { unitNumber: 5, title: "Torque & Rotational Dynamics", keywords: ["torque", "rotational inertia", "rotational kinetic energy", "angular momentum", "conservation of angular momentum", "angular acceleration"] },
-      { unitNumber: 6, title: "Energy & Momentum of Oscillations", keywords: ["simple harmonic motion", "shm", "period", "frequency", "simple pendulum", "mass-spring oscillator"] },
-      { unitNumber: 7, title: "Fluids", keywords: ["density", "pressure", "buoyant force", "archimedes principle", "continuity equation", "bernoulli's equation"] }
+      { unitNumber: 6, title: "Energy & Momentum of Rotating Systems", keywords: ["conservation of angular momentum", "rotational kinetic energy", "rolling without slipping", "angular impulse"] },
+      { unitNumber: 7, title: "Oscillations", keywords: ["simple harmonic motion", "shm", "period", "frequency", "simple pendulum", "mass-spring oscillator", "restoring force"] },
+      { unitNumber: 8, title: "Fluids", keywords: ["density", "pressure", "buoyant force", "archimedes principle", "continuity equation", "bernoulli's equation", "hydrostatic pressure"] }
     ],
     allowedDomains: ["mechanics", "forces", "energy", "momentum", "rotational motion", "oscillations", "fluids"],
     forbiddenSignatures: [
@@ -25015,7 +25077,7 @@ var AP_SUBJECT_WHITELISTS = {
     canonicalUnits: [
       { unitNumber: 1, title: "Basic Economic Concepts", keywords: ["scarcity", "opportunity cost", "production possibilities curve", "ppc", "comparative advantage", "terms of trade", "specialization"] },
       { unitNumber: 2, title: "Economic Indicators & the Business Cycle", keywords: ["circular flow", "gross domestic product", "gdp", "nominal gdp", "real gdp", "gdp deflator", "unemployment rate", "civilian labor force", "labor force participation", "frictional unemployment", "structural unemployment", "cyclical unemployment", "natural rate of unemployment", "cpi", "inflation rate", "real interest rate", "business cycle"] },
-      { unitNumber: 3, title: "National Income & Price Determination", keywords: ["aggregate demand", "ad", "short-run aggregate supply", "sras", "long-run aggregate supply", "lras", "full employment", "recessionary gap", "inflationary gap", "stagflation", "mpc", "mps", "spending multiplier", "tax multiplier", "fiscal policy", "automatic stabilizers"] },
+      { unitNumber: 3, title: "National Income & Price Determination", keywords: ["aggregate demand", "short-run aggregate supply", "sras", "long-run aggregate supply", "lras", "full employment", "recessionary gap", "inflationary gap", "stagflation", "mpc", "mps", "spending multiplier", "tax multiplier", "fiscal policy", "automatic stabilizers"] },
       { unitNumber: 4, title: "Financial Sector", keywords: ["financial assets", "money definitions", "m1", "m2", "commercial bank balance sheet", "required reserves", "excess reserves", "money multiplier", "money market", "money demand", "money supply", "nominal interest rate", "central bank", "federal reserve", "monetary policy", "open market operations", "administered rates", "iorb", "discount rate", "loanable funds", "real interest rate"] },
       { unitNumber: 5, title: "Long-Run Consequences of Stabilization Policies", keywords: ["crowding out", "phillips curve", "srpc", "lrpc", "expected inflation", "quantity theory of money", "mv=py", "national debt", "budget deficit", "economic growth", "human capital", "physical capital", "technology"] },
       { unitNumber: 6, title: "Open Economy\u2014International Trade and Finance", keywords: ["balance of payments", "current account", "financial account", "capital account", "foreign exchange", "forex", "exchange rate", "currency appreciation", "currency depreciation", "capital flows", "net exports"] }
@@ -25029,6 +25091,27 @@ var AP_SUBJECT_WHITELISTS = {
       // Calculus and Advanced Science
       /\b(?:definite\s+integral|indefinite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|chloroplast|mitosis|rotational\s+inertia|stoichiometry)\b/i
     ]
+  },
+  "ap-world-history": {
+    subjectId: "ap-world-history",
+    subjectName: "AP World History: Modern (WHAP)",
+    category: "humanities",
+    mathExpected: false,
+    canonicalUnits: [
+      { unitNumber: 1, title: "The Global Tapestry (c. 1200 to c. 1450)", keywords: ["song dynasty", "confucianism", "filial piety", "dar al-islam", "abbasid caliphate", "seljuk empire", "delhi sultanate", "bhakti movement", "champa rice", "grand canal", "feudalism", "manorialism", "serfdom"] },
+      { unitNumber: 2, title: "Networks of Exchange (c. 1200 to c. 1450)", keywords: ["silk roads", "mongol empire", "pax mongolica", "genghis khan", "kublai khan", "yam system", "paiza", "caravanserai", "indian ocean trade", "monsoon winds", "dhow", "junk", "trans-saharan trade", "mansa musa", "mali empire", "timbuktu", "black death", "marco polo", "ibn battuta"] },
+      { unitNumber: 3, title: "Land-Based Empires (c. 1450 to c. 1750)", keywords: ["ottoman empire", "devshirme", "janissaries", "safavid empire", "mughal empire", "akbar", "tax farming", "zamindars", "monumental architecture", "taj mahal", "versailles", "manchu", "qing dynasty", "protestant reformation", "counter-reformation", "council of trent"] },
+      { unitNumber: 4, title: "Transoceanic Interconnections (c. 1450 to c. 1750)", keywords: ["maritime exploration", "caravel", "astrolabe", "magnetic compass", "portuguese trade-post empire", "columbian exchange", "encomienda", "hacienda", "mita system", "transatlantic slave trade", "middle passage", "mercantilism", "joint-stock company", "dutch east india company", "voc", "british east india company", "eic", "potosi silver", "manila galleon"] },
+      { unitNumber: 5, title: "Revolutions (c. 1750 to c. 1900)", keywords: ["enlightenment", "john locke", "natural rights", "social contract", "voltaire", "rousseau", "american revolution", "french revolution", "declaration of the rights of man", "haitian revolution", "toussaint louverture", "latin american independence", "simon bolivar", "nationalism", "industrial revolution", "steam engine", "factory system", "urbanization", "capitalism", "adam smith", "socialism", "karl marx"] },
+      { unitNumber: 6, title: "Consequences of Industrialization (c. 1750 to c. 1900)", keywords: ["imperialism", "social darwinism", "scramble for africa", "berlin conference", "king leopold", "congo free state", "opium wars", "unequal treaties", "spheres of influence", "boxer rebellion", "taiping rebellion", "meiji restoration", "settler colony", "sepoy mutiny", "ghost dance", "indentured labor migration"] },
+      { unitNumber: 7, title: "Global Conflict (c. 1900 to present)", keywords: ["world war i", "militarism", "alliances", "imperialism", "nationalism", "trench warfare", "total war", "propaganda", "treaty of versailles", "russian revolution", "lenin", "bolsheviks", "great depression", "fascism", "mussolini", "hitler", "nazi germany", "world war ii", "holocaust", "atomic bomb"] },
+      { unitNumber: 8, title: "Cold War & Decolonization (c. 1900 to present)", keywords: ["cold war", "superpowers", "containment", "iron curtain", "nato", "warsaw pact", "korean war", "vietnam war", "cuban missile crisis", "non-aligned movement", "decolonization", "indian independence", "gandhi", "partition of india", "ghana", "kwame nkrumah", "apartheid", "nelson mandela"] },
+      { unitNumber: 9, title: "Globalization (c. 1900 to present)", keywords: ["green revolution", "medical advancements", "internet", "panama canal", "greenhouse gas", "climate change", "free market economics", "reaganomics", "deng xiaoping", "world trade organization", "wto", "nafta", "united nations", "universal declaration of human rights", "global popular culture"] }
+    ],
+    allowedDomains: ["world history", "trans-regional networks", "empires", "maritime connections", "revolutions", "industrialization", "global conflicts", "decolonization", "globalization"],
+    forbiddenSignatures: [
+      /\b(?:definite\s+integral|indefinite\s+integral|derivative|calculus|riemann|f\s*=\s*ma|titration|chloroplast|mitosis|rotational\s+inertia|stoichiometry)\b/i
+    ]
   }
 };
 function getSubjectWhitelist(subjectIdentifier) {
@@ -25037,6 +25120,7 @@ function getSubjectWhitelist(subjectIdentifier) {
   if (AP_SUBJECT_WHITELISTS[s]) return AP_SUBJECT_WHITELISTS[s];
   if (s.includes("micro")) return AP_SUBJECT_WHITELISTS["ap-microeconomics"];
   if (s.includes("macro")) return AP_SUBJECT_WHITELISTS["ap-macroeconomics"];
+  if (s.includes("world") || s.includes("whap")) return AP_SUBJECT_WHITELISTS["ap-world-history"];
   for (const [key, wl] of Object.entries(AP_SUBJECT_WHITELISTS)) {
     if (s.includes(key.replace("ap-", "")) || s.includes(wl.subjectName.toLowerCase().replace("ap ", ""))) {
       return wl;
@@ -26133,7 +26217,17 @@ ${mdLines.join("\n")}
 `;
   });
 }
-function resolveCanonicalUnit(subjectId, unitInput, questionText) {
+function matchKeywordSafely(text, kw) {
+  if (!text || !kw) return false;
+  const kwLower = kw.toLowerCase().trim();
+  if (kwLower.length <= 4) {
+    const escaped = kwLower.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(?:^|[^a-z0-9])${escaped}(?:[^a-z0-9]|$)`, "i");
+    return regex.test(text);
+  }
+  return text.toLowerCase().includes(kwLower);
+}
+function resolveCanonicalUnit(subjectId, unitInput, questionText, qIndex) {
   const whitelist = getSubjectWhitelist(subjectId);
   if (!whitelist || whitelist.canonicalUnits.length === 0) {
     return { unitNumber: 1, title: typeof unitInput === "string" && unitInput.trim() ? unitInput : "General Course Content" };
@@ -26143,39 +26237,47 @@ function resolveCanonicalUnit(subjectId, unitInput, questionText) {
     if (found) return { unitNumber: found.unitNumber, title: found.title };
   }
   const inputStr = String(unitInput || "").toLowerCase().trim();
-  const numMatch = inputStr.match(/\b(?:unit|period|u|p)\s*([0-9]+)\b/i) || inputStr.match(/^([0-9]+)$/);
-  if (numMatch) {
-    const num = parseInt(numMatch[1], 10);
-    const found = whitelist.canonicalUnits.find((u) => u.unitNumber === num);
-    if (found) return { unitNumber: found.unitNumber, title: found.title };
-  }
-  for (const u of whitelist.canonicalUnits) {
-    if (inputStr.includes(u.title.toLowerCase())) {
-      return { unitNumber: u.unitNumber, title: u.title };
+  const isAllUnitsInput = !inputStr || /^all(\s*units)?$/i.test(inputStr) || inputStr.includes("all high-yield units") || inputStr.includes("all units") || /entire\s*(curriculum|syllabus|course)/i.test(inputStr) || /full\s*(exam|test|simulation)/i.test(inputStr);
+  if (!isAllUnitsInput) {
+    const numMatch = inputStr.match(/\b(?:unit|period|u|p)\s*([0-9]+)\b/i) || inputStr.match(/^([0-9]+)$/);
+    if (numMatch) {
+      const num = parseInt(numMatch[1], 10);
+      const found = whitelist.canonicalUnits.find((u) => u.unitNumber === num);
+      if (found) return { unitNumber: found.unitNumber, title: found.title };
     }
-    for (const kw of u.keywords) {
-      if (inputStr.includes(kw.toLowerCase())) {
+    for (const u of whitelist.canonicalUnits) {
+      if (inputStr.includes(u.title.toLowerCase())) {
         return { unitNumber: u.unitNumber, title: u.title };
+      }
+      for (const kw of u.keywords) {
+        if (matchKeywordSafely(inputStr, kw)) {
+          return { unitNumber: u.unitNumber, title: u.title };
+        }
       }
     }
   }
   if (questionText && questionText.trim()) {
-    const qLower = questionText.toLowerCase();
     let bestUnit = null;
     let maxScore = 0;
     for (const u of whitelist.canonicalUnits) {
       let score = 0;
-      if (qLower.includes(u.title.toLowerCase())) score += 5;
+      if (matchKeywordSafely(questionText, u.title)) score += 5;
       for (const kw of u.keywords) {
-        if (qLower.includes(kw.toLowerCase())) score += 2;
+        if (matchKeywordSafely(questionText, kw)) score += 2;
       }
       if (score > maxScore) {
         maxScore = score;
         bestUnit = u;
       }
     }
-    if (bestUnit && maxScore >= 2) {
+    if (bestUnit && maxScore >= 4) {
       return { unitNumber: bestUnit.unitNumber, title: bestUnit.title };
+    }
+  }
+  if (isAllUnitsInput && qIndex !== void 0 && qIndex >= 0) {
+    const rotated = whitelist.canonicalUnits[qIndex % whitelist.canonicalUnits.length];
+    if (rotated) {
+      return { unitNumber: rotated.unitNumber, title: rotated.title };
     }
   }
   const first = whitelist.canonicalUnits[0];
@@ -26254,7 +26356,7 @@ function validateAndHealApQuestion(q, subjectId, targetTopic, tracker) {
     scoringRubric: cleanRubric,
     totalPoints: q.totalPoints
   }, subjectId);
-  const canonicalUnit = resolveCanonicalUnit(subjectId, q.skill || targetTopic, cleanPrompt);
+  const canonicalUnit = resolveCanonicalUnit(subjectId, q.unitNumber ?? (q.unitTitle || q.unit || q.skill || targetTopic), cleanPrompt);
   if (whitelist) {
     for (const unit of whitelist.canonicalUnits) {
       for (const kw of unit.keywords) {
@@ -26534,7 +26636,10 @@ var TOP_10_AP_SUBJECTS = [
       { id: "u3", title: "Unit 3: Synthesis of Multiple Sources", description: "Synthesizing conflicting viewpoints, citations, and conversation building" },
       { id: "u4", title: "Unit 4: Argumentative Structure & Logic", description: "Inductive/deductive logic, qualifying claims, and counter-arguments" },
       { id: "u5", title: "Unit 5: Style, Diction & Syntax", description: "Tone, figurative language, periodic sentences, and stylistic voice" },
-      { id: "u6", title: "Unit 6: Multiple Choice: Reading & Revision", description: "Deconstructing nonfiction arguments and editing prose for clarity" }
+      { id: "u6", title: "Unit 6: Multiple Choice: Reading & Revision", description: "Deconstructing nonfiction arguments and editing prose for clarity" },
+      { id: "u7", title: "Unit 7: Complex Arguments & Qualifications", description: "Concessions, qualifications, complexity, counterarguments, and nuanced claims" },
+      { id: "u8", title: "Unit 8: Style & Persuasive Voice", description: "Metaphor, hyperbole, personification, stylistic voice, and rhetorical strategies" },
+      { id: "u9", title: "Unit 9: Sophistication & Holistic Synthesis", description: "Alternative perspectives, broader contextual understanding, and holistic argumentation" }
     ]
   },
   {
@@ -27049,11 +27154,13 @@ function verifyAphgGeographicalAccuracy(q, targetTopic) {
       return { isValid: false, issues, canHeal: false };
     }
   }
-  const parts = countSubParts(prompt);
+  const rawPartsCount = Array.isArray(q.parts) && q.parts.length > 0 ? q.parts.length : 0;
+  const partsFromText = countSubParts(`${prompt} ${Array.isArray(q.parts) ? q.parts.map((p) => `${p.task || ""} ${p.partLabel || ""}`).join("\n") : ""}`);
+  const totalPartCount = Math.max(rawPartsCount, partsFromText.count);
   let canHeal = true;
-  if (parts.count > 0 && parts.count !== 7) {
-    issues.push(`APHG FRQ Structure Anomaly: Found ${parts.count} subparts instead of the mandatory 7 parts (A through G).`);
-    if (parts.count < 5) canHeal = false;
+  if (totalPartCount > 0 && totalPartCount !== 7) {
+    issues.push(`APHG FRQ Structure Anomaly: Found ${totalPartCount} subparts instead of the mandatory 7 parts (A through G).`);
+    if (totalPartCount < 5) canHeal = false;
   }
   if (/\b(?:evaluate|justify)\b/i.test(prompt)) {
     issues.push("APHG Prohibited Verb Notice: Contains 'Evaluate' or 'Justify' (auto-healed to Explain).");
@@ -28414,13 +28521,18 @@ function runMultiStageVerificationPipeline(rawQuestions, subjectId, targetTopic)
       healed++;
     }
     const promptStr = String(processedQ.prompt || processedQ.question || "");
-    const canonical = resolveCanonicalUnit(subjectId, processedQ.unitNumber || processedQ.unitTitle || targetTopic, promptStr);
+    const canonical = resolveCanonicalUnit(
+      subjectId,
+      processedQ.unitNumber ?? (processedQ.unitTitle || processedQ.unit || targetTopic),
+      promptStr,
+      idx
+    );
     const getFallback = (qIndex) => {
+      if (isAphg) {
+        return getAphgPristineUnitQuestion(canonical.unitNumber || qIndex % 7 + 1, targetTopic, qIndex);
+      }
       if (processedQ.format === "subjective" || Array.isArray(processedQ.parts)) {
         return processedQ;
-      }
-      if (isAphg) {
-        return getAphgPristineUnitQuestion(canonical.unitNumber, targetTopic, qIndex);
       }
       return goldenBank[qIndex % goldenBank.length] || processedQ;
     };
@@ -28468,9 +28580,9 @@ function runMultiStageVerificationPipeline(rawQuestions, subjectId, targetTopic)
       totalPoints: realPoints,
       prompt: stripRawSvgMarkup(processedQ.prompt || processedQ.question || ""),
       modelAnswer: stripRawSvgMarkup(processedQ.modelAnswer || ""),
-      unitNumber: canonical.unitNumber,
-      unitTitle: canonical.title,
-      skill: `Unit ${canonical.unitNumber}: ${canonical.title}`
+      unitNumber: processedQ.unitNumber && typeof processedQ.unitNumber === "number" ? processedQ.unitNumber : canonical.unitNumber,
+      unitTitle: processedQ.unitTitle || canonical.title,
+      skill: processedQ.skill && !processedQ.skill.toLowerCase().includes("all units") ? processedQ.skill : `Unit ${canonical.unitNumber}: ${canonical.title}`
     };
     verifiedQuestions.push(healedQuestion);
     passedDirect++;
@@ -29099,47 +29211,51 @@ CRITICAL SAFETY & QUALITY RULES (MUST FOLLOW):
 5. If the input is a single word or phrase, translate it directly.
 6. Absolutely no conversational preamble. The output must be 100% clean translated text only.`;
   } else if (mode === "All Subjects") {
-    instruction = `You are the core intelligence engine for "HelpYou AI", an advanced educational and research assistant. Your primary job is to process user queries (which may contain conversational Hindi/Hinglish filler words) and provide highly structured, accurate, and context-aware responses.
+    instruction = `You are Professor Pang \u2014 the Senior College Board AP Exam Chief Reader, AP Test Item Writer, and Master AP Prep Expert Teacher for the AP Exam App. Your sole mission is preparing high school students to achieve a Score 5 on their College Board AP Exams.
 
-CRITICAL RULES:
-1. Keyword Extraction: Ignore conversational fillers (e.g., "Bhai", "tum", "research karo", "waha kya hua", "please batao"). Extract ONLY the core subject. (e.g., "Bhai tum jeju island case pe research karo" -> "Jeju Island Incident").
-2. Domain Classification: Analyze the core subject and classify it into one of two categories:
-   - STEM (Math/Science): Physics, Chemistry, Biology, Mathematics.
-   - Humanities/General: History, Geography, Current Events, Case Studies, Social Sciences, Literature.
-3. Dynamic Output Generation:
-   - If STEM: Provide core principles, scientific mechanisms, key formulas (wrapped in LaTeX $...$ or $$...$$), and step-by-step actionable prep steps.
-   - If Humanities/General: Provide historical context, major events, real-world impact, and analytical takeaways. Strictly DO NOT generate or mention formulas, equations, or scientific mechanisms for this category.
-4. No Fake URLs: When generating verified research sources, only use root domains (e.g., en.wikipedia.org, britannica.com). Do not fabricate full URL paths.
+CRITICAL AP EXAM RULES (ZERO FOREIGN SYLLABUS BLEED):
+1. THIS APPLICATION IS STRICTLY AND EXCLUSIVELY FOR COLLEGE BOARD ADVANCED PLACEMENT (AP) EXAM PREPARATION.
+2. ABSOLUTELY NEVER mention, reference, compare, or mix non-AP curricula, boards, or textbooks from other countries (strictly NO CBSE, NCERT, ICSE, State Boards, JEE Main/Advanced, NEET, UK GCSE/A-Levels, IB DP, or other foreign curricula).
+3. Keyword Extraction: Ignore conversational fillers (e.g., "Bhai", "tum", "research karo", "waha kya hua", "please batao"). Extract ONLY the core AP subject topic.
+4. Domain Classification: Analyze the core subject and classify it into official College Board AP Course categories:
+   - AP STEM: AP Physics (1/2/C), AP Chemistry, AP Biology, AP Calculus (AB/BC), AP Statistics, AP Computer Science (A/CSP), AP Environmental Science.
+   - AP Humanities & Social Sciences: AP US History (APUSH), AP World History, AP Euro, AP US Gov, AP Macro/Microeconomics, AP Psychology, AP English Lang/Lit.
+5. Dynamic Output Generation:
+   - If AP STEM: Provide official College Board principles, equations from AP formula sheets (wrapped in LaTeX $...$ or $$...$$), AP Science Practices, and step-by-step AP rubric working.
+   - If AP Humanities: Provide historical/economic context, College Board CED themes, primary source analysis, and analytical takeaways. Strictly DO NOT fabricate non-AP formulas.
+6. No Fake URLs: When citing verified research sources, only use root domains (e.g., collegeboard.org, apstudents.collegeboard.org, en.wikipedia.org). Do not fabricate full URL paths.
 
 You MUST structure your response strictly using this layout:
-\u{1F3AF} Core Concept / Overview: Clear, formal academic definition & context.
-\u{1F4DD} Step-by-Step Logic / Key Events: A rigorous, sound breakdown.
-\u26A0\uFE0F Analytical Takeaway / Exam Traps: Key points to remember.`;
+\u{1F3AF} AP Core Concept / Overview: Clear, official College Board academic definition & CED context.
+\u{1F4DD} Step-by-Step Logic / Key AP Evidence: A rigorous, sound breakdown aligned with AP scoring criteria.
+\u26A0\uFE0F High-Yield AP Exam Traps: Common student misconceptions documented in College Board Chief Reader Reports.`;
   } else if (mode === "General") {
-    instruction = `You are the core intelligence engine for "HelpYou AI", an advanced educational and research assistant. Your primary job is to process user queries (which may contain conversational Hindi/Hinglish filler words) and provide highly structured, accurate, and context-aware responses.
+    instruction = `You are Professor Pang \u2014 the Senior College Board AP Exam Chief Reader, AP Test Item Writer, and Master AP Prep Expert Teacher for the AP Exam App. Your sole mission is preparing high school students to achieve a Score 5 on their College Board AP Exams.
 
-CRITICAL RULES:
-1. Keyword Extraction: Ignore conversational fillers (e.g., "Bhai", "tum", "research karo", "waha kya hua", "bhai batao"). Extract ONLY the core subject. (e.g., "Bhai tum jeju island case pe research karo" -> "Jeju Island Incident").
-2. Domain Classification: Analyze the core subject and classify it into one of two categories:
-   - STEM (Math/Science): Physics, Chemistry, Biology, Mathematics.
-   - Humanities/General: History, Geography, Current Events, Case Studies, Social Sciences, Literature.
-3. Dynamic Output Generation:
-   - If STEM: Provide core principles, scientific mechanisms, key formulas (wrapped in LaTeX $...$ or $$...$$), and step-by-step actionable prep steps.
-   - If Humanities/General: Provide historical context, major events, real-world impact, and analytical takeaways. Strictly DO NOT generate or mention formulas, equations, or scientific mechanisms for this category.
-4. No Fake URLs: When generating verified research sources, only use root domains (e.g., en.wikipedia.org, britannica.com). Do not fabricate full URL paths.`;
+CRITICAL AP EXAM RULES (ZERO FOREIGN SYLLABUS BLEED):
+1. THIS APPLICATION IS STRICTLY AND EXCLUSIVELY FOR COLLEGE BOARD ADVANCED PLACEMENT (AP) EXAM PREPARATION.
+2. ABSOLUTELY NEVER mention, reference, compare, or mix non-AP curricula, boards, or textbooks from other countries (strictly NO CBSE, NCERT, ICSE, State Boards, JEE Main/Advanced, NEET, UK GCSE/A-Levels, IB DP, or other foreign curricula).
+3. Keyword Extraction: Ignore conversational fillers. Extract ONLY the core AP academic subject.
+4. Domain Classification: Map the query directly to its corresponding College Board AP Course and Exam Description (CED).
+5. Dynamic Output Generation:
+   - If AP STEM: Provide College Board core principles, scientific mechanisms, key formulas (wrapped in LaTeX $...$ or $$...$$), and step-by-step AP problem-solving steps.
+   - If AP Humanities: Provide historical context, major events, real-world impact, and analytical takeaways per College Board AP course themes.
+6. No Fake URLs: Only use root domains (e.g., collegeboard.org, en.wikipedia.org, britannica.com).`;
   } else {
-    instruction = `You are the core intelligence engine for "HelpYou AI", an elite educational and research assistant, SAT/ACT Expert, and Master Educator.
-Your primary job is to process user queries (which may contain conversational Hindi/Hinglish filler words) and provide highly structured, accurate, and context-aware responses.
+    instruction = `You are Professor Pang \u2014 an elite College Board AP Exam Chief Reader, AP Test Item Writer, and Master AP Prep Expert Teacher for the AP Exam App. Your sole mission is preparing students to achieve a Score 5 on their College Board AP Exams.
+Your primary job is to process user queries (which may contain conversational Hindi/Hinglish filler words) and provide highly structured, accurate, and AP-context-aware responses.
 
-CRITICAL RULES:
-1. Keyword Extraction: Ignore conversational fillers (e.g., "Bhai", "tum", "research karo", "waha kya hua", "bhai batao", "please explain"). Extract ONLY the core subject. For example, if the input is "Bhai tum jeju island case pe research karo", the core subject is "Jeju Island Incident".
-2. Domain Classification: Analyze the core subject and classify it into one of two categories:
-   - STEM (Math/Science): Physics, Chemistry, Biology, Mathematics.
-   - Humanities/General: History, Geography, Current Events, Case Studies, Social Studies, Literature.
-3. Dynamic Output Generation:
-   - If STEM: Provide core principles, scientific mechanisms, key formulas (wrapped in LaTeX $...$ or $$...$$), and step-by-step actionable problem-solving/prep steps.
-   - If Humanities/General: Provide historical context, major events, real-world impact, and analytical takeaways. Strictly DO NOT generate or mention formulas, equations, or scientific mechanisms for this category.
-4. No Fake URLs: When generating verified research sources, ONLY use root domains (e.g., en.wikipedia.org, britannica.com, history.com). Do NOT fabricate full URL paths.
+CRITICAL AP EXAM RULES (ZERO FOREIGN SYLLABUS BLEED):
+1. THIS APPLICATION IS STRICTLY AND EXCLUSIVELY FOR COLLEGE BOARD ADVANCED PLACEMENT (AP) EXAM PREPARATION.
+2. ABSOLUTELY NEVER mention, reference, compare, or mix non-AP curricula, boards, or textbooks from other countries (strictly NO CBSE, NCERT, ICSE, State Boards, JEE Main/Advanced, NEET, UK GCSE/A-Levels, IB DP, or other foreign curricula).
+3. Keyword Extraction: Ignore conversational fillers (e.g., "Bhai", "tum", "research karo", "waha kya hua", "bhai batao", "please explain"). Extract ONLY the core academic subject and map it directly to its College Board AP Course (e.g., AP Calculus, AP Physics, AP Chemistry, AP Biology, AP Psychology, AP US History, AP Economics, etc.).
+4. Domain Classification:
+   - AP STEM (Math/Science): AP Physics (1/2/C), AP Chemistry, AP Biology, AP Calculus (AB/BC), AP Statistics, AP CSA/CSP, APES.
+   - AP Humanities & Social Studies: AP US History (APUSH), AP World History, AP US Government, AP Macro/Microeconomics, AP Psychology, AP European History, AP English.
+5. Dynamic Output Generation:
+   - If AP STEM: Provide College Board principles, equations from official AP equation sheets (wrapped in LaTeX $...$ or $$...$$), and step-by-step actionable problem-solving calibrated to AP FRQ scoring standards.
+   - If AP Humanities: Provide historical context, CED learning objectives, and analytical takeaways. Strictly DO NOT generate non-AP formulas.
+6. No Fake URLs: When generating verified research sources, ONLY use root domains (e.g., collegeboard.org, en.wikipedia.org, britannica.com). Do NOT fabricate full URL paths.
 
 Adopt an encouraging, patient, precise, and crisp tone. Use clean line breaks and emojis for visual readability.
 DO NOT use any markdown bolding syntax like "**" or emojis inside latex delimiters.
@@ -29292,28 +29408,28 @@ ${userMessage}`;
     const shouldEnableSearch = !hasImage && /\b(google search|search online|search the web|live weather|current weather|breaking news|live stock price|currency rate today|gold price today)\b/i.test(normalizedMsg);
     let systemInstruction = "";
     if (isEvaluation === "true" || isEvaluation === true) {
-      systemInstruction = `You are a strict academic examiner for a ${gradeLevel || "High School"} student. DO NOT act as a standard tutor. Your SOLE purpose is to grade the student's answer calibrated exactly to their grade level (${gradeLevel || "High School"}). Use vocabulary, standards, and expectations appropriate for ${gradeLevel || "High School"}. YOU MUST output strictly using this format:
+      systemInstruction = `You are a Senior College Board AP Exam Chief Reader and Lead Item Writer grading for a ${gradeLevel || "High School"} student. DO NOT act as a standard tutor. Your SOLE purpose is to grade the student's response strictly against official College Board AP Free-Response Scoring Rubrics and CED standards. Zero tolerance for non-AP terminology. YOU MUST output strictly using this format:
 
-## Grade-Level Assessment
-[Pass/Fail/Needs Improvement for this grade level]
+## College Board AP Score Assessment
+[Score: 5 (Extremely Well Qualified) / 4 (Well Qualified) / 3 (Qualified) / 2 / 1]
 
-## Step-Marking Breakdown
-- Formula Selection & Concepts: [Score]/3
-- Logical Working & Steps: [Score]/5
-- Final Answer & Units: [Score]/2
+## Official AP Step-Marking Breakdown
+- Conceptual Knowledge & Formula Selection: [Score]/3
+- Mathematical / Analytical Working & Justification: [Score]/5
+- Final Answer, Units & Significant Figures: [Score]/2
 
-## Final Score
+## Total AP Rubric Score
 **[Total Score] / 10**
 
-## Examiner Feedback & Ideal Solution
-[Explain mistakes and provide the perfect 10/10 mathematical solution]`;
+## Chief Reader Feedback & Ideal AP Scoring Solution
+[Highlight earned points, point deductions, College Board distractor traps, and provide the ideal Score 5 model solution]`;
     } else {
       systemInstruction = customSystemInstruction || getSystemInstruction(mode, targetLanguage);
       if (profileContext) {
         systemInstruction += "\n\nUSER PROFILE CONTEXT:\n" + profileContext;
       }
       if (gradeLevel) {
-        const gradeInstruction = `CRITICAL INSTRUCTION: The user you are interacting with is currently in Grade: ${gradeLevel}. You MUST strictly adapt your entire response, vocabulary, conceptual complexity, sentence structure, and examples to perfectly match the comprehension level of a ${gradeLevel} student. Absolutely DO NOT use advanced jargon, higher-level academic concepts, or complex language that exceeds this specific grade level. Keep the tone encouraging and age-appropriate.`;
+        const gradeInstruction = `CRITICAL AP EXAM INSTRUCTION: The user is preparing for College Board AP Exams in Grade: ${gradeLevel}. Maintain rigorous College Board AP academic standards, official AP terminology, and CED alignment while making concepts clear and engaging for this high school student.`;
         systemInstruction = `${gradeInstruction}
 
 ${systemInstruction}`;
@@ -32661,7 +32777,7 @@ Ensure authentic multi-part structure, point accuracy, and strictly adhere to AP
             const standardModelSvg = getStandardizedModelSvg(`${promptStr} ${stimulusStr} ${q.modelAnswer || ""}`, subject);
             if (standardModelSvg) diagramSvg = standardModelSvg;
           }
-          const canonical = resolveCanonicalUnit(subject, q.unitNumber || q.unitTitle || q.skill || targetTopic, promptStr);
+          const canonical = resolveCanonicalUnit(subject, q.unitNumber || q.unitTitle || q.skill || targetTopic, promptStr, idx);
           const chemDefaultPoints = idx < 3 ? 10 : 4;
           const bioDefaultPoints = idx < 2 ? 9 : 4;
           const phys1DefaultPoints = idx === 0 ? 10 : idx === 1 ? 12 : idx === 2 ? 10 : 8;
@@ -32756,23 +32872,40 @@ app.post("/api/ap-trap-radar", async (req, res) => {
   try {
     const { action = "generate_challenge", subject, unit, topic, count, gradeLevel, customQuestion, images, format = "objective", questionPrompt, wrongInput, correctConcept, trapType } = req.body;
     if (action === "explain_mistake") {
-      const explainSystemInstruction = `You are a world-renowned College Board AP Exam Chief Reader, Lead Psychometrician, and Master Educational Diagnostician.
+      const explainSystemInstruction = `You are a Senior College Board AP Exam Chief Reader, Lead Psychometrician, and Master Educational Diagnostician.
 A high school AP student was practicing with the "AP TRAP RADAR\u2122" and fell into a deceptive College Board distractor trap.
 Your mission is to perform an empathetic, razor-sharp, and highly actionable "AI MISTAKE AUTOPSY & CLINICAL CURE".
 
-CRITICAL PEDAGOGICAL OBJECTIVES:
-1. "why_it_happened": Explain the exact psychometric trap and cognitive illusion that led the student to pick this answer (e.g. inverted formula sign, misread stimulus timeframe, confusing correlation with causation, or superficial buzzword matching).
-2. "the_fix": Provide the rigorous College Board Course and Exam Description (CED) concept, calculation formula, or historical reasoning needed to solve it correctly every time.
-3. "pro_memory_trick": Provide an unforgettable 1-sentence mental shortcut or 5-second heuristic used by Score-5 students to instantly spot and disarm this distractor on exam day.
+================================================================================
+CRITICAL FORMATTING MANDATE: 100% BULLET POINTS ONLY (ZERO ESSAY PARAGRAPHS):
+================================================================================
+- ABSOLUTELY NO LONG NARRATIVE PARAGRAPHS OR BLOCKS OF DENSE TEXT.
+- Every single section MUST be formatted strictly as clear, concise, high-yield BULLET POINTS starting with '\u2022'.
+- Every bullet point MUST begin with a bold topic label (e.g., "\u2022 **The Cognitive Trap:** ...") for instant visual scannability on mobile screens.
 
-CRITICAL LATEX & FORMATTING RULES:
-- Wrap all math and chemical formulas with clean LaTeX ($...$ or $$...$$) without breaks inside delimiters.
+CRITICAL PEDAGOGICAL BREAKDOWN:
+1. "why_it_happened": Exactly 2 to 3 concise, bulleted points explaining:
+   \u2022 **The Cognitive Trap:** The exact mental illusion, rushed calculation slip, or inverted sign that tricked the student.
+   \u2022 **The Distractor Bait:** How College Board psychometricians deliberately engineered this answer to look deceptively plausible.
+   \u2022 **The Missing Distinction:** The crucial technical difference between what was chosen and what the CED actually requires.
+
+2. "the_fix": Exactly 3 numbered, actionable bullet points giving the clinical CED solution:
+   \u2022 **Step 1 (Anchor Constraint):** The key condition, given boundary, or stimulus phrase to circle first.
+   \u2022 **Step 2 (Apply CED Theorem / Formula):** The exact College Board rule, equation ($...$), or causal mechanism to solve it.
+   \u2022 **Step 3 (Eliminate Distractor):** The exact reason why the selected option fails under scrutiny.
+
+3. "pro_memory_trick": Exactly 1 memorable bullet point:
+   \u2022 \u26A1 **5-Second Score-5 Disarm Secret:** An unforgettable mnemonic, rule of thumb, or mental shortcut to disarm this trap in under 5 seconds on exam day.
+
+CRITICAL LATEX & FORMULA FORMATTING:
+- Wrap all math, physics, chemistry, and economics variables/formulas in standard LaTeX: $...$ for inline or $$...$$ for display formulas.
+- Never write dense unbroken text. Keep every bullet point crisp, direct, and under 30 words.
 
 STRICT JSON OUTPUT FORMAT:
 {
-  "why_it_happened": "Clear, direct explanation of why the trap was tempting and what cognitive slip occurred...",
-  "the_fix": "Exact step-by-step conceptual or mathematical rule to reach the 100% correct CED answer...",
-  "pro_memory_trick": "\u26A1 Unforgettable Score-5 rule / mnemonic to disarm this trap in 5 seconds."
+  "why_it_happened": "\u2022 **The Cognitive Trap:** ...\\n\u2022 **The Distractor Bait:** ...\\n\u2022 **The Missing Distinction:** ...",
+  "the_fix": "\u2022 **Step 1 (Anchor Constraint):** ...\\n\u2022 **Step 2 (Apply CED Rule):** ...\\n\u2022 **Step 3 (Eliminate Distractor):** ...",
+  "pro_memory_trick": "\u26A1 **5-Second Score-5 Disarm Secret:** ..."
 }`;
       const response = await safeGenerateContent({
         gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
@@ -33086,11 +33219,12 @@ ${errorDesc.replace(/^input is not a valid AP multiple-choice question\.\s*/i, "
         }
         if (matchedUnit) {
           const kwList = matchedUnit.keywords && matchedUnit.keywords.length > 0 ? matchedUnit.keywords : [matchedUnit.title];
+          const fullUnitTitle = matchedUnit.title.toLowerCase().startsWith("unit") || matchedUnit.title.toLowerCase().startsWith("period") ? matchedUnit.title : `Unit ${matchedUnit.unitNumber}: ${matchedUnit.title}`;
           for (let i = 0; i < totalItems; i++) {
             const kw = kwList[i % kwList.length] || matchedUnit.title;
             results.push({
-              targetTopic: `${matchedUnit.title} \u2014 Specific Concept: ${kw}`,
-              unitLabel: matchedUnit.title,
+              targetTopic: `${fullUnitTitle} \u2014 Specific Concept: ${kw}`,
+              unitLabel: fullUnitTitle,
               subtopicFocus: kw,
               unitNumber: matchedUnit.unitNumber
             });
@@ -33160,8 +33294,11 @@ ${errorDesc.replace(/^input is not a valid AP multiple-choice question\.\s*/i, "
         stimulus: stimulusText,
         parts,
         disarmStrategy: cleanScratchpadText(q.disarmStrategy || "\u26A1 Chief Reader Scoring Secret: State the claim, write the formula setup, and provide clear causal justification."),
-        skill: q.skill || targetInfo.unitLabel || subject,
-        unit: targetInfo.unitLabel || q.unit || subject
+        unitNumber: targetInfo.unitNumber || q.unitNumber,
+        unitTitle: targetInfo.unitLabel || q.unitTitle,
+        skill: targetInfo.unitNumber ? `Unit ${targetInfo.unitNumber}: ${targetInfo.unitLabel}` : q.skill || targetInfo.unitLabel || subject,
+        unit: targetInfo.unitLabel || q.unit || subject,
+        targetTopic: targetInfo.targetTopic || q.targetTopic
       };
     };
     const targetTopic = [topic, unit, subject].filter(Boolean).join(" - ");
@@ -33192,7 +33329,99 @@ ${errorDesc.replace(/^input is not a valid AP multiple-choice question\.\s*/i, "
           "Applied Real-World Modern System (Engineering, Biochemical Pathway, or Policy Shock)"
         ];
         const assignedArchetype = subjectiveArchetypes[bIdx % subjectiveArchetypes.length];
-        const batchSystemInstruction = `You are an elite Senior College Board AP Exam Chief Reader, Lead Item Writer, and Free-Response Question (FRQ) Scoring Director.
+        const isCspSubject = (subject || "").toLowerCase().includes("principles") || (subject || "").toLowerCase().includes("csp");
+        const isAphgSubject = (subject || "").toLowerCase().includes("geography") || (subject || "").toLowerCase().includes("aphg");
+        const batchSystemInstruction = isCspSubject ? `You are an elite Senior College Board AP Computer Science Principles (AP CSP) Chief Reader, Lead Item Writer, and Create Performance Task (CPT) Scoring Director.
+The student is practicing with the "AP TRAP RADAR\u2122" to earn a perfect Score 5 on AP Computer Science Principles Section II: Create Performance Task Written Response.
+
+================================================================================
+CRITICAL AP CSP FORMAT REQUIREMENT (ZERO TRADITIONAL FRQs):
+================================================================================
+- In AP Computer Science Principles (CSP), Section II does NOT have traditional math/science Free Response Questions (FRQs).
+- Section II is exclusively the CREATE PERFORMANCE TASK (CPT) WRITTEN RESPONSE based on the student's Personalized Project Reference (PPR).
+- Your mission: Generate exactly ${batchCount} authentic College Board AP CSP Create Performance Task Written Response challenge(s) strictly for:
+\u{1F3AF} ASSIGNED TARGET: "${targetInfo.targetTopic}"
+${targetInfo.unitNumber ? `\u{1F4CC} MANDATORY AP UNIT: Unit ${targetInfo.unitNumber}` : ""}
+\u{1F511} SPECIFIC CONCEPT FOCUS: "${targetInfo.subtopicFocus}"
+
+COLLEGE BOARD OFFICIAL COURSE & EXAM GUIDELINES FOR AP CSP:
+${subjectGuidelines2}
+
+================================================================================
+CRITICAL DIRECTIVE 1: STUDENT PERSONALIZED PROJECT REFERENCE (PPR) IN "stimulus"
+================================================================================
+In every question:
+- In "prompt", set: "College Board AP CSP Section II: Create Performance Task Written Response \u2014 [Realistic Student App Project themed around ${targetInfo.unitLabel || "AP CSP"}, e.g., ${targetInfo.unitNumber === 4 ? "Network Packet Router Simulator / Distributed Sensor Node Tracker / Bandwidth & Latency Log" : targetInfo.unitNumber === 2 ? "Hexadecimal Color Palette Decoder / Lossless Compression Run-Length Analyzer / Binary Sensor Packets" : targetInfo.unitNumber === 5 ? "Cybersecurity Password Strength & Hash Analyzer / Digital Divide Community Device Access Log" : targetInfo.unitNumber === 1 ? "Collaborative Project Milestone Tracker / Software Testing & Bug Log" : "Daily Habit Tracker / Fitness Log / Library Catalog / Weather Log / Music Playlist"}]"
+- In "stimulus", provide a complete, authentic student-authored Personalized Project Reference (PPR) code snippet in Python or JavaScript (enclosed in \`\`\`python or \`\`\`javascript):
+  1. A student-declared List / Array (containing at least 4 items) that manages data complexity in the program (contextualized to ${targetInfo.unitLabel || "AP CSP"}).
+  2. A student-developed procedure with at least ONE EXPLICIT PARAMETER.
+  3. Inside the procedure, it MUST contain both SELECTION ('if'/'else') and ITERATION ('for'/'while' loop) that traverses or filters the list elements.
+
+================================================================================
+CRITICAL DIRECTIVE 2: 4 OFFICIAL COLLEGE BOARD WRITTEN-RESPONSE PROMPTS
+================================================================================
+The "parts" array MUST contain authentic College Board Create Performance Task Written-Response Prompts:
+- Part 1 (partLabel: "WR 1", points: 1): Program Design, Function, and Purpose.
+  * Task: Identify the overall purpose of the program, describe the dynamic input provided by the user, and explain the resulting output produced by the program in context.
+  * Scoring Standard: 1 point for correctly distinguishing program purpose (the problem it solves) from function (what the code does technically) and identifying specific inputs/outputs.
+- Part 2 (partLabel: "WR 2(a)", points: 1): Algorithm Development.
+  * Task: Describe in detail what is accomplished by the body of the iteration statement, and identify the Boolean expression in the selection statement with specific values evaluating to true and false.
+  * Scoring Standard: 1 point for detailed iteration description and explicit true/false Boolean evaluation.
+- Part 3 (partLabel: "WR 2(b)", points: 1): Errors and Testing.
+  * Task: Provide two distinct procedure calls with specific argument values that cause two different code segments to execute, OR propose a code modification that introduces a LOGIC ERROR (not a syntax error) and explain the resulting behavioral deviation.
+  * Scoring Standard: 1 point for providing two distinct argument sets triggering different execution paths, or accurately describing an algorithmic logic error and its outcome.
+- Part 4 (partLabel: "WR 2(c)", points: 1): Data and Procedural Abstraction.
+  * Task: Explain how the list uses abstraction to manage complexity in the program, and explain in detail how the program would have to be rewritten without using the list (e.g. separate individual variables and repetitive conditional logic).
+  * Scoring Standard: 1 point for explaining how complexity is managed and comparing against a non-list implementation with N individual variables.
+
+================================================================================
+CRITICAL DIRECTIVE 3: AUTHENTIC CHIEF READER CPT TRAPS (frqTraps)
+================================================================================
+Every prompt part must diagnose legitimate pitfalls documented in College Board Chief Reader CPT reports:
+\u{1FAA4} The Syntax vs Logic Error Confusion Trap: Proposing a syntax error (e.g. missing colon, typo, missing parenthesis) instead of a genuine algorithmic logic error that allows the code to run but produces incorrect output.
+\u{1FAA4} The Purpose vs Function Confusion Trap: Describing line-by-line what the code does (function) instead of explaining the real-world problem or goal it achieves for the user (purpose).
+\u{1FAA4} The Trivial Iteration / No Parameter Trap: A loop that does not actually process list elements, or a procedure lacking explicit parameters.
+\u{1FAA4} The Vague Complexity Claim Trap: Stating that the list 'makes code cleaner' without explicitly contrasting against the need for multiple scalar variables and repetitive if-statements.
+\u{1FAA4} The Indistinguishable Test Argument Trap: Supplying test arguments that both evaluate to true and execute the identical conditional branch instead of testing two distinct pathways.
+
+SCRATCHPAD & THINKING SUPPRESSION MANDATE:
+- Do NOT output internal monologues, drafting self-talk, or reasoning commentary.
+- Every string field in the JSON must contain ONLY the polished final text intended for the student and teacher.
+
+CRITICAL COUNT REQUIREMENT:
+- You MUST generate EXACTLY ${batchCount} questions for this batch in the returned JSON array.
+
+STRICT JSON OUTPUT FORMAT:
+Return ONLY a valid JSON array of ${batchCount} question objects:
+[
+  {
+    "id": 1,
+    "format": "subjective",
+    "prompt": "College Board AP CSP Section II: Create Performance Task Written Response \u2014 [Scenario Name]...",
+    "stimulus": "Student's Personalized Project Reference (PPR):\\n\`\`\`python\\n# Student Code\\n...\`\`\`",
+    "totalPoints": 4,
+    "overallTrapDifficulty": "High (Level 4 CPT Trap)",
+    "parts": [
+      {
+        "partLabel": "WR 1",
+        "task": "Identify the overall purpose of the program, describe the dynamic input provided by the user, and explain the resulting output...",
+        "points": 1,
+        "scoringCriteria": "Earns 1 point for correctly distinguishing program purpose from function and identifying specific inputs/outputs...",
+        "modelAnswer": "Program Purpose: The purpose is to track...\\nUser Input: The user provides...\\nProgram Output: The program outputs...",
+        "frqTraps": [
+          {
+            "trapName": "\u{1FAA4} The Purpose vs Function Confusion Trap",
+            "howStudentsLosePoints": "Students describe what the code does line-by-line (function) instead of describing the overall problem it solves for the user (purpose).",
+            "vulnerabilityRate": "48% of students lose this point",
+            "fullCreditFix": "State the societal/practical purpose of the app first, then describe the specific user input and final displayed result."
+          }
+        ]
+      }
+    ],
+    "disarmStrategy": "\u26A1 Chief Reader CPT Secret: Always clearly distinguish overall app purpose from technical execution, and ensure test arguments trigger opposite Boolean branches.",
+    "skill": "${targetInfo.unitLabel}"
+  }
+]` : `You are an elite Senior College Board AP Exam Chief Reader, Lead Item Writer, and Free-Response Question (FRQ) Scoring Director.
 The student is training with the "AP TRAP RADAR\u2122" to achieve a flawless Score 5 in AP ${subject} on Section II (Free Response Questions / FRQs).
 Your mission: Generate exactly ${batchCount} ultra-authentic, high-caliber, original College Board AP Exam Free Response Question(s) strictly for:
 \u{1F3AF} ASSIGNED TARGET: "${targetInfo.targetTopic}"
@@ -33235,10 +33464,15 @@ CRITICAL DIRECTIVE 2: 100% MATHEMATICAL & FACTUAL PRE-VERIFICATION PROTOCOL
 ================================================================================
 CRITICAL DIRECTIVE 3: RIGOROUS STEP-BY-STEP SOLUTIONS & COLLEGE BOARD TASK VERBS
 ================================================================================
-- Task Verbs:
+${isAphgSubject ? `- AP HUMAN GEOGRAPHY SECTION II 7-PART MANDATE:
+  \u2022 In AP Human Geography, every Free-Response Question MUST have EXACTLY 7 parts: (a), (b), (c), (d), (e), (f), (g).
+  \u2022 Total points: EXACTLY 7 (1 point per subpart).
+  \u2022 Approved College Board Task Verbs ONLY: Define, Describe, Explain, Identify, Compare.
+  \u2022 STRICTLY FORBIDDEN: Do NOT use "Evaluate" or "Justify".
+  \u2022 Part (g) Requirement: Must be formulated as "Explain the degree to which..." where the student indicates the degree [low, moderate, high] and provides a causal explanation.` : `- Task Verbs:
   \u2022 Part (a): "Identify", "Calculate", or "State" [1 point].
   \u2022 Part (b): "Explain", "Determine with justification", or "Derive" [1-2 points].
-  \u2022 Part (c): "Justify", "Evaluate", or "Predict the effect on..." [1 point].
+  \u2022 Part (c): "Justify", "Evaluate", or "Predict the effect on..." [1 point].`}
 - MANDATORY STEP-BY-STEP BREAKDOWN IN "modelAnswer":
   \u2022 For Quantitative / Calculation Tasks:
     - Step 1 (Formula Setup & Concept): State the governing law, integral setup, or fundamental formula before substituting numbers.
@@ -33281,7 +33515,7 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
     "format": "subjective",
     "prompt": "Multi-part AP Free Response Question stem with background scenario and context strictly for ${targetInfo.targetTopic}...",
     "stimulus": "Primary document excerpt, laboratory data table, chemical reaction equation, or function definition...",
-    "totalPoints": 4,
+    "totalPoints": ${isAphgSubject ? 7 : 4},
     "overallTrapDifficulty": "High (Level 4 FRQ Trap)",
     "parts": [
       {
@@ -33305,14 +33539,20 @@ Return ONLY a valid JSON array of ${batchCount} question objects:
   }
 ]`;
         const makeCall = async (seed) => {
+          const callPromptText = isCspSubject ? `Generate EXACTLY ${batchCount} original, non-repetitive AP Computer Science Principles Create Performance Task (CPT) Written Response Trap Radar question(s) strictly for: ${targetInfo.targetTopic}.
+Batch Seed: ${seed}.
+Ensure complete student PPR code snippet (Python or JS with list, procedure, if/else, loop), rigorous 4-part written response prompts, and authentic Chief Reader CPT traps. Return ALL ${batchCount} items in the JSON array!` : isAphgSubject ? `Generate EXACTLY ${batchCount} original, non-repetitive College Board AP Human Geography Section II Free Response Question(s) strictly for: ${targetInfo.targetTopic}.
+Stimulus Archetype: ${assignedArchetype}.
+Batch Seed: ${seed}.
+Ensure EXACTLY 7 parts (Parts A through G for 7 points total), approved College Board task verbs only (no evaluate/justify), realistic geographic context, and authentic Chief Reader traps. Return ALL ${batchCount} items in the JSON array!` : `Generate EXACTLY ${batchCount} original, non-repetitive AP ${subject} Free Response Trap Radar question(s) strictly for: ${targetInfo.targetTopic}.
+Stimulus Archetype: ${assignedArchetype}.
+Batch Seed: ${seed}.
+Ensure 100% calculation accuracy, rigorous multi-step model answer, and authentic Chief Reader traps. Return ALL ${batchCount} items in the JSON array!`;
           const response = await safeGenerateContent({
             gradeLevel: gradeLevel || "AP High School (Advanced Placement)",
             model: "gemini-flash-lite-latest",
             timeoutMs: 25e3,
-            contents: { parts: [{ text: `Generate EXACTLY ${batchCount} original, non-repetitive AP ${subject} Free Response Trap Radar question(s) strictly for: ${targetInfo.targetTopic}.
-Stimulus Archetype: ${assignedArchetype}.
-Batch Seed: ${seed}.
-Ensure 100% calculation accuracy, rigorous multi-step model answer, and authentic Chief Reader traps. Return ALL ${batchCount} items in the JSON array!` }] },
+            contents: { parts: [{ text: callPromptText }] },
             config: {
               systemInstruction: { parts: [{ text: batchSystemInstruction }] },
               responseMimeType: "application/json",
@@ -33371,8 +33611,16 @@ Ensure 100% calculation accuracy, rigorous multi-step model answer, and authenti
       if (questionsList2.length < requestedCount2) {
         const deficit = requestedCount2 - questionsList2.length;
         console.warn(`[ap-trap-radar] Subjective deficit detected: got ${questionsList2.length}/${requestedCount2}. Backfilling ${deficit} questions from authentic curriculum fallback...`);
+        const isCspSubj = (subject || "").toLowerCase().includes("principles") || (subject || "").toLowerCase().includes("csp");
+        const isAphgSubj = (subject || "").toLowerCase().includes("geography") || (subject || "").toLowerCase().includes("aphg");
         const isStatSubj = (subject || "").toLowerCase().includes("stat");
-        const FALLBACK_FRQ_TRAP_TYPES = isStatSubj ? [
+        const FALLBACK_CSP_CPT_TRAP_TYPES = [
+          { name: "\u{1FAA4} The Syntax vs Logic Error Trap", issue: "Students propose a syntax error (e.g. missing colon, typo, undefined keyword) instead of a genuine logic error that alters program output or execution behavior.", fix: "A logic error must compile/run but produce incorrect output or an off-by-one algorithmic flaw." },
+          { name: "\u{1FAA4} The Purpose vs Technical Function Trap", issue: "Students describe line-by-line coding implementation rather than the overall user problem the app solves.", fix: "Explain the broader real-world objective or user goal before detailing technical mechanics." },
+          { name: "\u{1FAA4} The Trivial Iteration / Parameter Omission Trap", issue: "The procedure lacks explicit parameters or the loop does not actually process elements of the list.", fix: "Ensure the procedure declares an explicit parameter and the loop iterates through each item in the list." },
+          { name: "\u{1FAA4} The Vague Abstraction / Complexity Trap", issue: "Students write that the list 'makes code cleaner' without explaining how separate scalar variables would be needed.", fix: "Explicitly state that without the list, N individual variables would be required along with repetitive conditional statements." }
+        ];
+        const FALLBACK_FRQ_TRAP_TYPES = isCspSubj ? FALLBACK_CSP_CPT_TRAP_TYPES : isStatSubj ? [
           { name: "\u{1FAA4} The Parameter Omission Trap", issue: "Students use sample statistics (x-bar or p-hat) in hypotheses instead of population parameters (mu or p), or fail to define parameters in context.", fix: "Always state hypotheses in terms of population parameters (mu or p) and explicitly define them in context." },
           { name: "\u{1FAA4} The Unverified Condition Trap", issue: "Students state 'Normality holds' without showing explicit numerical verification (e.g. np0 >= 10 and n(1-p0) >= 10).", fix: "Show the exact numbers plugged into every condition equation before checking the condition." },
           { name: "\u{1FAA4} The Dogmatic Conclusion Trap", issue: "Students claim the test 'proves' the alternative hypothesis is true or 'accepts' the null hypothesis.", fix: "Always use non-dogmatic language: 'There is convincing statistical evidence that...' or 'fail to reject H0'." },
@@ -33391,70 +33639,162 @@ Ensure 100% calculation accuracy, rigorous multi-step model answer, and authenti
             subtopicFocus: "Core Concept"
           };
           const trapInfo = FALLBACK_FRQ_TRAP_TYPES[i % FALLBACK_FRQ_TRAP_TYPES.length];
-          questionsList2.push({
-            id: idx + 1,
-            format: "subjective",
-            totalPoints: 4,
-            overallTrapDifficulty: "High (Level 4 FRQ Trap)",
-            prompt: `Examine an authentic analytical scenario concerning ${targetInfo.targetTopic} in AP ${subject}:
+          if (isAphgSubj) {
+            const pristQ = getAphgPristineUnitQuestion(targetInfo.unitNumber || idx % 7 + 1, targetInfo.targetTopic, idx);
+            questionsList2.push(pristQ);
+            continue;
+          }
+          if (isCspSubj) {
+            questionsList2.push({
+              id: idx + 1,
+              format: "subjective",
+              totalPoints: 4,
+              overallTrapDifficulty: "High (Level 4 CPT Trap)",
+              prompt: `College Board AP CSP Section II: Create Performance Task Written Response \u2014 ${targetInfo.targetTopic} Project`,
+              stimulus: `Student's Personalized Project Reference (PPR):
+\`\`\`python
+# Student-developed Tracker Application
+records = [14, 28, 45, 19, 34, 52]
+
+def process_records(threshold):
+    qualified = []
+    for item in records:
+        if item >= threshold:
+            qualified.append(item * 2)
+    return qualified
+\`\`\``,
+              parts: [
+                {
+                  partLabel: "WR 1",
+                  task: "Identify the overall purpose of the program, describe the dynamic input provided by the user, and explain the resulting output.",
+                  points: 1,
+                  scoringCriteria: "Earns 1 point for distinguishing purpose from function and identifying input and resulting output.",
+                  modelAnswer: "Purpose: The program filters and normalizes student activity records exceeding a user-defined threshold.\nInput: The user passes an integer threshold into process_records.\nOutput: The function returns a new list containing doubled values for all qualifying records.",
+                  frqTraps: [
+                    {
+                      trapName: trapInfo.name,
+                      howStudentsLosePoints: trapInfo.issue,
+                      vulnerabilityRate: "46% of students lose points here",
+                      fullCreditFix: trapInfo.fix
+                    }
+                  ]
+                },
+                {
+                  partLabel: "WR 2(a)",
+                  task: "Describe in detail what is accomplished by the body of the iteration statement, and identify the Boolean expression in the selection statement with values evaluating to true and false.",
+                  points: 1,
+                  scoringCriteria: "Earns 1 point for complete iteration body explanation and explicit Boolean evaluation.",
+                  modelAnswer: "The loop inspects each element in 'records'. If the item is greater than or equal to threshold, it doubles the item and appends it to 'qualified'. For threshold=25, item=28 evaluates to True, while item=14 evaluates to False.",
+                  frqTraps: [
+                    {
+                      trapName: "\u{1FAA4} The Incomplete Boolean Evaluation Trap",
+                      howStudentsLosePoints: "Students do not provide explicit values that evaluate to both True and False.",
+                      vulnerabilityRate: "42% of students lose this point",
+                      fullCreditFix: "Always state two specific test numbers from your code: one that triggers True and one that triggers False."
+                    }
+                  ]
+                },
+                {
+                  partLabel: "WR 2(b)",
+                  task: "Provide two procedure calls with specific argument values that cause two different code segments to execute, OR describe a proposed logic error and its outcome.",
+                  points: 1,
+                  scoringCriteria: "Earns 1 point for distinct procedure calls or accurate logic error specification.",
+                  modelAnswer: "Call 1: process_records(10) causes the if-block to execute and append elements. Call 2: process_records(100) causes the condition to evaluate to False for all elements, executing without appending and returning an empty list.",
+                  frqTraps: [
+                    {
+                      trapName: "\u{1FAA4} The Indistinguishable Call Branch Trap",
+                      howStudentsLosePoints: "Students supply two arguments that both execute the exact same conditional branch.",
+                      vulnerabilityRate: "39% of students lose this point",
+                      fullCreditFix: "Provide one argument that satisfies the condition and a second argument that bypasses it."
+                    }
+                  ]
+                },
+                {
+                  partLabel: "WR 2(c)",
+                  task: "Explain how the list uses abstraction to manage complexity, and describe how the code would be rewritten without the list.",
+                  points: 1,
+                  scoringCriteria: "Earns 1 point for complexity explanation and concrete non-list comparison.",
+                  modelAnswer: "The 'records' list bundles multiple data points into a single reference so loops can process collections of arbitrary size. Without the list, six individual variables (record1, record2, etc.) would be required, along with six separate if-statements.",
+                  frqTraps: [
+                    {
+                      trapName: "\u{1FAA4} The Vague Complexity Claim Trap",
+                      howStudentsLosePoints: "Students say 'it makes code cleaner' without mentioning individual scalar variables.",
+                      vulnerabilityRate: "51% of students lose this point",
+                      fullCreditFix: "Explicitly contrast against declaring individual scalar variables and duplicate conditional logic."
+                    }
+                  ]
+                }
+              ],
+              disarmStrategy: "\u26A1 Chief Reader CPT Secret: State the overall user purpose first, test two distinct branches, and contrast list abstraction directly against individual scalar variables.",
+              skill: targetInfo.unitLabel || subject,
+              unit: targetInfo.unitLabel || subject
+            });
+          } else {
+            questionsList2.push({
+              id: idx + 1,
+              format: "subjective",
+              totalPoints: 4,
+              overallTrapDifficulty: "High (Level 4 FRQ Trap)",
+              prompt: `Examine an authentic analytical scenario concerning ${targetInfo.targetTopic} in AP ${subject}:
 
 (a) Identify and define the fundamental principle tested [1 point].
 
 (b) Explain the governing causal mechanism and analytical relationships [2 points].
 
 (c) Justify how variations in boundary conditions alter empirical outcomes [1 point].`,
-            stimulus: `College Board Course and Exam Description (CED) context for AP ${subject}: ${targetInfo.targetTopic}.`,
-            parts: [
-              {
-                partLabel: "(a)",
-                task: `Identify the foundational CED concept governing ${targetInfo.targetTopic}.`,
-                points: 1,
-                scoringCriteria: "Earns 1 point for accurate identification and definition matching CED criteria.",
-                modelAnswer: `Step 1 (Definition): The fundamental principle governing this scenario is established in the AP ${subject} curriculum frameworks (${targetInfo.unitLabel}), requiring explicit identification of the governing law.`,
-                frqTraps: [
-                  {
-                    trapName: trapInfo.name,
-                    howStudentsLosePoints: trapInfo.issue,
-                    vulnerabilityRate: "48% of students lose points here",
-                    fullCreditFix: trapInfo.fix
-                  }
-                ]
-              },
-              {
-                partLabel: "(b)",
-                task: `Explain the causal mechanism and evaluate how changes alter system state.`,
-                points: 2,
-                scoringCriteria: "Earns 1 point for describing the mechanism and 1 point for linking to systemic outcomes.",
-                modelAnswer: `Step 1: Establish governing parameters. Step 2: Trace the causal pathway showing how the primary variable drives systemic equilibrium changes in ${targetInfo.subtopicFocus}.`,
-                frqTraps: [
-                  {
-                    trapName: "\u{1FAA4} The Task Verb Misalignment Trap",
-                    howStudentsLosePoints: "Students only identify a characteristic without explaining the 'how' or 'why' causal chain.",
-                    vulnerabilityRate: "52% of students lose this point",
-                    fullCreditFix: "Connect the initial condition to the final outcome with a clear cause-and-effect transition."
-                  }
-                ]
-              },
-              {
-                partLabel: "(c)",
-                task: `Justify your conclusion using authoritative course evidence.`,
-                points: 1,
-                scoringCriteria: "Earns 1 point for complete empirical justification without vague generalizations.",
-                modelAnswer: `Step 1 (Justification): Under standard CED guidelines, the observed pattern must hold consistently across empirical and theoretical models.`,
-                frqTraps: [
-                  {
-                    trapName: "\u{1FAA4} The Vague Pronoun Trap",
-                    howStudentsLosePoints: "Students write 'it changes' or 'they increase' without identifying specific variables.",
-                    vulnerabilityRate: "44% of students lose points here",
-                    fullCreditFix: "Explicitly name the variable, species, or institution in every sentence."
-                  }
-                ]
-              }
-            ],
-            disarmStrategy: "\u26A1 Chief Reader Scoring Secret: Use the 3-step formula (Claim + Evidence + Mechanism) for every subpart to guarantee maximum rubric points.",
-            skill: targetInfo.unitLabel || subject,
-            unit: targetInfo.unitLabel || subject
-          });
+              stimulus: `College Board Course and Exam Description (CED) context for AP ${subject}: ${targetInfo.targetTopic}.`,
+              parts: [
+                {
+                  partLabel: "(a)",
+                  task: `Identify the foundational CED concept governing ${targetInfo.targetTopic}.`,
+                  points: 1,
+                  scoringCriteria: "Earns 1 point for accurate identification and definition matching CED criteria.",
+                  modelAnswer: `Step 1 (Definition): The fundamental principle governing this scenario is established in the AP ${subject} curriculum frameworks (${targetInfo.unitLabel}), requiring explicit identification of the governing law.`,
+                  frqTraps: [
+                    {
+                      trapName: trapInfo.name,
+                      howStudentsLosePoints: trapInfo.issue,
+                      vulnerabilityRate: "48% of students lose points here",
+                      fullCreditFix: trapInfo.fix
+                    }
+                  ]
+                },
+                {
+                  partLabel: "(b)",
+                  task: `Explain the causal mechanism and evaluate how changes alter system state.`,
+                  points: 2,
+                  scoringCriteria: "Earns 1 point for describing the mechanism and 1 point for linking to systemic outcomes.",
+                  modelAnswer: `Step 1: Establish governing parameters. Step 2: Trace the causal pathway showing how the primary variable drives systemic equilibrium changes in ${targetInfo.subtopicFocus}.`,
+                  frqTraps: [
+                    {
+                      trapName: "\u{1FAA4} The Task Verb Misalignment Trap",
+                      howStudentsLosePoints: "Students only identify a characteristic without explaining the 'how' or 'why' causal chain.",
+                      vulnerabilityRate: "52% of students lose this point",
+                      fullCreditFix: "Connect the initial condition to the final outcome with a clear cause-and-effect transition."
+                    }
+                  ]
+                },
+                {
+                  partLabel: "(c)",
+                  task: `Justify your conclusion using authoritative course evidence.`,
+                  points: 1,
+                  scoringCriteria: "Earns 1 point for complete empirical justification without vague generalizations.",
+                  modelAnswer: `Step 1 (Justification): Under standard CED guidelines, the observed pattern must hold consistently across empirical and theoretical models.`,
+                  frqTraps: [
+                    {
+                      trapName: "\u{1FAA4} The Vague Pronoun Trap",
+                      howStudentsLosePoints: "Students write 'it changes' or 'they increase' without identifying specific variables.",
+                      vulnerabilityRate: "44% of students lose points here",
+                      fullCreditFix: "Explicitly name the variable, species, or institution in every sentence."
+                    }
+                  ]
+                }
+              ],
+              disarmStrategy: "\u26A1 Chief Reader Scoring Secret: Use the 3-step formula (Claim + Evidence + Mechanism) for every subpart to guarantee maximum rubric points.",
+              skill: targetInfo.unitLabel || subject,
+              unit: targetInfo.unitLabel || subject
+            });
+          }
         }
       }
       const sanitizedList = questionsList2.map((q, idx) => {
@@ -33505,7 +33845,11 @@ ${questionsTargetsDesc}
 DO NOT default all questions to kinematics or a single unit. Distribute strictly according to the assignments above.` : `SINGLE UNIT FOCUS MODE ACTIVE:
 All ${batchCount} questions MUST focus strictly on: "${assignedTargets[0]?.unitLabel || targetTopic}".
 Each question MUST test a distinct concept from this unit:
-${questionsTargetsDesc}`}
+${questionsTargetsDesc}
+
+STRICT UNIT CURRICULUM BOUNDARY:
+- Every single question stem, stimulus, correct answer, and distractor option MUST be derived EXCLUSIVELY from the College Board CED curriculum for "${assignedTargets[0]?.unitLabel || targetTopic}".
+- STRICTLY FORBIDDEN: Do NOT generate questions from other units. Do NOT drift into generic or out-of-scope topics.`}
 
 ================================================================================
 CRITICAL DIRECTIVE 1: STRICT ANTI-REPETITION & SCENARIO DIVERSIFICATION
@@ -33784,8 +34128,11 @@ Ensure 100% verified accuracy, balanced keys, and psychometric distractor percen
           options: Array.isArray(q.options) ? q.options.map((opt) => cleanScratchpadText(opt)) : [],
           correctAnswer: cleanScratchpadText(q.correctAnswer || ""),
           disarmStrategy: cleanScratchpadText(q.disarmStrategy || "\u26A1 5-Second Disarm Secret: Verify given conditions carefully and eliminate extreme or absolute distractors."),
-          skill: q.skill || (assigned ? assigned.unitLabel : unit || subject),
+          skill: assigned ? assigned.unitLabel : q.skill || unit || subject,
           unit: assigned ? assigned.unitLabel : unit || subject,
+          unitNumber: assigned?.unitNumber,
+          targetTopic: assigned?.targetTopic || q.targetTopic,
+          subtopicFocus: assigned?.subtopicFocus || q.subtopicFocus,
           traps: Array.isArray(q.traps) ? q.traps.map((t) => ({
             ...t,
             trapDescription: cleanScratchpadText(t.trapDescription || ""),
@@ -33946,8 +34293,61 @@ app.post("/api/evaluate-answer", async (req, res) => {
       });
     }
     const isApExam = userGrade === "AP High School Exam Standard" || typeof userGrade === "string" && userGrade.includes("AP") || Boolean(subject && subject.includes("AP"));
+    const isCspExam = Boolean(subject && ((subject || "").toLowerCase().includes("principles") || (subject || "").toLowerCase().includes("csp")));
     const expectedPointsLabel = totalPoints ? `${totalPoints}` : "[Total Rubric Points]";
-    const systemInstruction = isApExam ? `You are an official College Board AP Exam Chief Reader, Senior AP Table Leader, and Master AP High School Educator.
+    const systemInstruction = isApExam ? isCspExam ? `You are an official College Board AP Computer Science Principles (AP CSP) Chief Reader, Create Performance Task (CPT) Scoring Director, and Master AP High School Educator.
+Your role is to rigorously assess, grade, and coach the student on their Section II: Create Performance Task Written Response submission with authentic College Board scoring discipline.
+
+================================================================================
+CRITICAL STEP 1: PRE-GRADING RELEVANCE & AUTHENTICITY GATE (MANDATORY)
+================================================================================
+First, inspect the student's submission (both typed text and any attached images):
+- Evaluate whether this submission represents a genuine, good-faith academic attempt to answer this AP CSP Create Performance Task prompt.
+- REJECT AS IRRELEVANT IF:
+  1. The typed text is random gibberish, keyboard mash, filler, or unrelated chat (e.g., 'asdfgh', 'I don't know', random jokes, food/shopping chats, song lyrics).
+  2. The attached image(s) show non-academic photos (e.g., selfies, pets, cars, cups, blank/pitch-black screen, blurry walls, memes, or photos with zero visible mathematical, scientific, or academic writing).
+  3. The work has zero connection to the AP CSP curriculum or prompt asked.
+- IF REJECTED AS IRRELEVANT OR JUNK:
+  You MUST return ONLY a valid JSON object (no markdown, no preamble):
+  {
+    "isIrrelevant": true,
+    "reason": "1 clear sentence explaining why the submission was rejected (e.g., 'The submitted work does not contain relevant code or answers for this AP CSP Create Performance Task prompt. Please provide an authentic solution or clear handwritten work.')"
+  }
+
+================================================================================
+CRITICAL STEP 2: AUTHENTIC COLLEGE BOARD CPT DECISION RULES SCORING
+================================================================================
+If the submission is a genuine attempt (even if incorrect, partial, or containing misconceptions):
+DO NOT return JSON! Output strictly in clean, professional Markdown using this exact scorecard structure:
+
+# \u{1F393} AP\xAE Computer Science Principles Chief Reader Evaluation (Create Performance Task)
+
+### \u{1F4CA} Official Scorecard
+- **Total AP Points:** **[Earned Points] / ${expectedPointsLabel} Points ([Percentage]%)**
+- **Projected AP Exam Score:** **AP Score [1-5] \u2022 [Extremely Well Qualified / Well Qualified / Qualified / Needs Review]**
+- **Teacher Verdict:** [Crisp 1-2 sentence diagnostic verdict on student's performance]
+
+---
+
+### \u{1F4CB} Official CPT Rubric Point-by-Point Breakdown
+(CRITICAL: Every written-response prompt MUST be on its own separate bullet point with an empty line between each. Apply official College Board Decision Rules):
+- **Written Response 1 (Program Design, Function & Purpose) [[Earned]/1 pt]:** [Specific College Board justification evaluating app purpose vs technical function]
+
+- **Written Response 2(a) (Algorithm Development) [[Earned]/1 pt]:** [Specific College Board justification evaluating iteration body accomplishment and Boolean selection condition]
+
+- **Written Response 2(b) (Errors and Testing) [[Earned]/1 pt]:** [Specific College Board justification evaluating distinct test arguments or logic error explanation]
+
+- **Written Response 2(c) (Data and Procedural Abstraction) [[Earned]/1 pt]:** [Specific College Board justification evaluating list complexity management vs scalar variables]
+(include any further sub-parts as needed)
+
+---
+
+### \u{1F468}\u200D\u{1F3EB} Professional Teacher Feedback & CPT Exam Fixes
+- **\u{1F31F} Key Strengths:** [What was done accurately with proper computing terminology]
+
+- **\u26A0\uFE0F Costly Traps & Where Points Were Lost:** [Specific slips, syntax vs logic error confusion, missing parameters, or vague abstraction claims]
+
+- **\u{1F3AF} Full-Credit College Board Standard:** [How to write or phrase this on the actual AP exam to guarantee full credit]` : `You are an official College Board AP Exam Chief Reader, Senior AP Table Leader, and Master AP High School Educator.
 Your role is to rigorously assess, grade, and coach the student on their Free Response / Subjective submission with authentic College Board scoring discipline.
 
 ================================================================================

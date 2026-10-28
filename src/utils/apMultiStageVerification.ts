@@ -556,11 +556,13 @@ export function verifyAphgGeographicalAccuracy(q: any, targetTopic?: string): { 
   }
 
   // 5. Sub-part Structure (Must be 7 parts A through G):
-  const parts = countSubParts(prompt);
+  const rawPartsCount = Array.isArray(q.parts) && q.parts.length > 0 ? q.parts.length : 0;
+  const partsFromText = countSubParts(`${prompt} ${Array.isArray(q.parts) ? q.parts.map((p: any) => `${p.task || ''} ${p.partLabel || ''}`).join('\n') : ''}`);
+  const totalPartCount = Math.max(rawPartsCount, partsFromText.count);
   let canHeal = true;
-  if (parts.count > 0 && parts.count !== 7) {
-    issues.push(`APHG FRQ Structure Anomaly: Found ${parts.count} subparts instead of the mandatory 7 parts (A through G).`);
-    if (parts.count < 5) canHeal = false;
+  if (totalPartCount > 0 && totalPartCount !== 7) {
+    issues.push(`APHG FRQ Structure Anomaly: Found ${totalPartCount} subparts instead of the mandatory 7 parts (A through G).`);
+    if (totalPartCount < 5) canHeal = false;
   }
 
   // 6. Prohibited Task Verbs (can be auto-healed)
@@ -1469,14 +1471,19 @@ export function runMultiStageVerificationPipeline(
 
     // Resolve canonical unit early for precise fallback matching
     const promptStr = String(processedQ.prompt || processedQ.question || '');
-    const canonical = resolveCanonicalUnit(subjectId, processedQ.unitNumber || processedQ.unitTitle || targetTopic, promptStr);
+    const canonical = resolveCanonicalUnit(
+      subjectId,
+      processedQ.unitNumber ?? (processedQ.unitTitle || processedQ.unit || targetTopic),
+      promptStr,
+      idx
+    );
 
     const getFallback = (qIndex: number) => {
+      if (isAphg) {
+        return getAphgPristineUnitQuestion(canonical.unitNumber || ((qIndex % 7) + 1), targetTopic, qIndex);
+      }
       if (processedQ.format === 'subjective' || Array.isArray(processedQ.parts)) {
         return processedQ;
-      }
-      if (isAphg) {
-        return getAphgPristineUnitQuestion(canonical.unitNumber, targetTopic, qIndex);
       }
       return goldenBank[qIndex % goldenBank.length] || processedQ;
     };
@@ -1539,9 +1546,9 @@ export function runMultiStageVerificationPipeline(
       totalPoints: realPoints,
       prompt: stripRawSvgMarkup(processedQ.prompt || processedQ.question || ''),
       modelAnswer: stripRawSvgMarkup(processedQ.modelAnswer || ''),
-      unitNumber: canonical.unitNumber,
-      unitTitle: canonical.title,
-      skill: `Unit ${canonical.unitNumber}: ${canonical.title}`
+      unitNumber: (processedQ.unitNumber && typeof processedQ.unitNumber === 'number') ? processedQ.unitNumber : canonical.unitNumber,
+      unitTitle: processedQ.unitTitle || canonical.title,
+      skill: (processedQ.skill && !processedQ.skill.toLowerCase().includes('all units')) ? processedQ.skill : `Unit ${canonical.unitNumber}: ${canonical.title}`
     };
 
     verifiedQuestions.push(healedQuestion);

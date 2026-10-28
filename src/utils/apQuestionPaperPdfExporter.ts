@@ -439,7 +439,12 @@ export async function generateTestPrepPDF(options: GenerateTestPrepPDFOptions): 
       if (extP.diagramSvg) diagramSvg = extP.diagramSvg;
 
       const qPoints = getQuestionRealPoints(q, subject.id || subject.name);
-      const canonicalUnit = resolveCanonicalUnit(subject.id || subject.name || '', (q as any).unitNumber || (q as any).unitTitle || q.skill || unitTitle, promptText);
+      const canonicalUnit = resolveCanonicalUnit(
+        subject.id || subject.name || '',
+        (q as any).unitNumber ?? ((q as any).unitTitle || (q as any).unit || q.skill || unitTitle),
+        promptText,
+        idx
+      );
 
       const cleanPrompt = sanitizePdfText(promptText);
       doc.setFont('helvetica', 'bold');
@@ -771,7 +776,10 @@ export async function generateTrapRadarPDF(options: GenerateTrapRadarPDFOptions)
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(203, 213, 225);
   const effFormat = questions[0]?.format || questionFormat;
-  const formatLabel = effFormat === 'subjective' ? 'Section II (Free Response Trap Simulation)' : 'Section I (Multiple Choice Distractor Gauntlet)';
+  const isComp = isComputerSubject(subject);
+  const formatLabel = effFormat === 'subjective' 
+    ? (isComp ? 'Section II (Create Performance Task Simulation)' : 'Section II (Free Response Trap Simulation)') 
+    : 'Section I (Multiple Choice Distractor Gauntlet)';
   doc.text(`${sanitizePdfText(unitTitle)} | ${formatLabel} | ${questions.length} Questions`, margin + 6, y + 17);
   y += 28;
 
@@ -1026,7 +1034,8 @@ export async function generateTrapRadarPDF(options: GenerateTrapRadarPDFOptions)
   });
 
   const shortCode = subject.shortCode || subject.name.replace(/\s+/g, '_');
-  const filename = `AP_${shortCode}_TrapRadar_${effFormat.toUpperCase()}.pdf`;
+  const typeTag = effFormat === 'objective' ? 'MCQ' : (isComp ? 'CREATE_PT' : 'FRQ');
+  const filename = `AP_${shortCode}_TrapRadar_${typeTag}.pdf`;
   const pdfBlob = doc.output('blob');
   const blobUrl = URL.createObjectURL(pdfBlob);
 

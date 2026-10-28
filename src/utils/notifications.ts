@@ -174,16 +174,17 @@ export const MAGIC_SCANNER_MESSAGES: APNotificationMessage[] = [
 ];
 
 // Combined pools for scheduled daily slots
+const MORNING_POOL = [...PRACTICE_BOOSTER_MESSAGES];
 const AFTERNOON_POOL = [...PROFESSOR_PANG_DOUBT_MESSAGES, ...MAGIC_SCANNER_MESSAGES];
-const EVENING_POOL = [...PRACTICE_BOOSTER_MESSAGES, ...EVENING_STUDY_MESSAGES];
-const NIGHT_POOL = [...STREAK_SAVER_MESSAGES];
+const NIGHT_POOL = [...STREAK_SAVER_MESSAGES, ...EVENING_STUDY_MESSAGES];
 
 // ─── Unique Notification IDs & Storage ─────────────────────────────────────
-const NOTIFICATION_ID_SLOT_1 = 17001; // 4:45 PM (Afternoon Homework / Doubt)
-const NOTIFICATION_ID_SLOT_2 = 18001; // 7:45 PM (Evening Revision / Practice)
-const NOTIFICATION_ID_SLOT_3 = 19001; // 9:30 PM (Night Streak Saver)
+const NOTIFICATION_ID_SLOT_1 = 17001; // 7:45 AM (Morning Warmup / Practice Boost)
+const NOTIFICATION_ID_SLOT_2 = 18001; // 4:45 PM (Afternoon Homework / Doubt Solver)
+const NOTIFICATION_ID_SLOT_3 = 19001; // 9:30 PM (Night Streak Saver & Formula Review)
+const NOTIFICATION_ID_TEST   = 19999; // Instant test notification
 
-const STORAGE_KEY_SCHEDULED = 'study_daily_notification_scheduled_v5';
+const STORAGE_KEY_SCHEDULED = 'study_daily_notification_scheduled_v6';
 
 /**
  * Request notification permissions from the user.
@@ -243,11 +244,12 @@ export async function cancelAllDailyNotifications() {
       await LocalNotifications.cancel({ notifications: pending.notifications }).catch(() => {});
     }
 
-    // 2. Also cancel all legacy & current notification IDs (17000 to 19100)
+    // 2. Also cancel all legacy & current notification IDs
     const cancelIds = [
       ...Array.from({ length: 50 }, (_, i) => ({ id: 17000 + i })),
       ...Array.from({ length: 50 }, (_, i) => ({ id: 18000 + i })),
-      ...Array.from({ length: 50 }, (_, i) => ({ id: 19000 + i }))
+      ...Array.from({ length: 50 }, (_, i) => ({ id: 19000 + i })),
+      { id: NOTIFICATION_ID_TEST }
     ];
     await LocalNotifications.cancel({ notifications: cancelIds }).catch(() => {});
 
@@ -259,12 +261,70 @@ export async function cancelAllDailyNotifications() {
 }
 
 /**
- * Schedule strictly 3 daily routine-optimized notification slots (in user's local device time):
- * Slot 1: 4:45 PM (16:45) — Afternoon Homework & Professor Pang Doubt Solver
- * Slot 2: 7:45 PM (19:45) — Prime Evening AP Study & Quick Practice Booster
- * Slot 3: 9:30 PM (21:30) — Night Streak Protection & Wind-Down Quiz
+ * Send an immediate test notification to verify channel, sound, and delivery on device.
  */
-export async function scheduleDailyNotification() {
+export async function sendTestNotificationNow(): Promise<boolean> {
+  if (!Capacitor.isNativePlatform()) {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      new Notification("⚡ AP Exam Study Alert", {
+        body: "Your daily study reminders are active and synced!",
+      });
+      return true;
+    }
+    return false;
+  }
+
+  try {
+    const hasPerm = await requestNotificationPermissions(true);
+    if (!hasPerm) return false;
+
+    // Ensure channel exists
+    await LocalNotifications.createChannel({
+      id: 'study-reminders',
+      name: 'Daily AP Study & Doubt Solver',
+      description: 'Timely homework help, Professor Pang doubt solver, and streak reminders',
+      importance: 4,
+      visibility: 1,
+      sound: 'default',
+      vibration: true
+    }).catch(() => {});
+
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          id: NOTIFICATION_ID_TEST,
+          title: "⚡ AP Exam Study Alert",
+          body: "Your daily study reminders are active and synced to your timezone!",
+          channelId: 'study-reminders',
+          schedule: {
+            at: new Date(Date.now() + 1500),
+            allowWhileIdle: true
+          },
+          sound: 'default',
+          extra: { type: 'test_notification' }
+        }
+      ]
+    });
+    console.log('[NotificationService] 🚀 Immediate test notification scheduled (fires in 1.5s).');
+    return true;
+  } catch (e) {
+    console.error('[NotificationService] Test notification failed:', e);
+    return false;
+  }
+}
+
+/**
+ * Schedule strictly 3 daily routine-optimized notification slots in user's local device timezone:
+ * Slot 1: 7:45 AM (07:45) — Morning Prep & Quick AP Practice Booster
+ * Slot 2: 4:45 PM (16:45) — Afternoon Homework & Professor Pang Doubt Solver
+ * Slot 3: 9:30 PM (21:30) — Night Streak Protection & Formula Review
+ * 
+ * CRITICAL FIX:
+ *  - Do NOT pass `every: 'day'` together with `on: { hour, minute }` because Capacitor's
+ *    native code bypasses `on` when `every` is present and delays by Date().time + 24hr.
+ *  - Set `allowWhileIdle: true` to wake up Android in Doze mode.
+ */
+export async function scheduleDailyNotification(forceRefresh = false) {
   if (!Capacitor.isNativePlatform()) {
     console.log('[NotificationService] Web: Skipping native notification schedule.');
     localStorage.setItem(STORAGE_KEY_SCHEDULED, 'true');
@@ -272,6 +332,15 @@ export async function scheduleDailyNotification() {
   }
 
   try {
+    // If already scheduled and not force refreshed, verify pending count
+    if (!forceRefresh && localStorage.getItem(STORAGE_KEY_SCHEDULED) === 'true') {
+      const pending = await LocalNotifications.getPending();
+      if (pending.notifications && pending.notifications.length >= 3) {
+        console.log('[NotificationService] ✅ 3 Daily routine notifications already active in AlarmManager.');
+        return;
+      }
+    }
+
     // Setup Android Notification Channel with sound & vibration
     try {
       await LocalNotifications.createChannel({
@@ -287,7 +356,7 @@ export async function scheduleDailyNotification() {
       console.warn('[NotificationService] Channel creation notice:', chanErr);
     }
 
-    // 1. Purge all existing/pending notifications to prevent duplicate spam
+    // 1. Purge legacy notification IDs
     await cancelAllDailyNotifications();
 
     // 2. Dynamically rotate message based on day of year
@@ -295,11 +364,11 @@ export async function scheduleDailyNotification() {
     const startOfYear = new Date(today.getFullYear(), 0, 0);
     const dayOfYear = Math.floor((today.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
 
-    const slot1Msg = AFTERNOON_POOL[dayOfYear % AFTERNOON_POOL.length];
-    const slot2Msg = EVENING_POOL[dayOfYear % EVENING_POOL.length];
+    const slot1Msg = MORNING_POOL[dayOfYear % MORNING_POOL.length];
+    const slot2Msg = AFTERNOON_POOL[dayOfYear % AFTERNOON_POOL.length];
     const slot3Msg = NIGHT_POOL[dayOfYear % NIGHT_POOL.length];
 
-    // 3. Schedule EXACTLY THREE (3) routine notifications per day (never more than 3)
+    // 3. Schedule EXACTLY THREE (3) routine notifications per day (in user's local timezone)
     const notifications = [
       {
         id: NOTIFICATION_ID_SLOT_1,
@@ -307,11 +376,11 @@ export async function scheduleDailyNotification() {
         body: slot1Msg.body,
         channelId: 'study-reminders',
         schedule: {
-          every: 'day' as const,
           on: {
-            hour: 16, // 4:45 PM (After-school homework & doubts)
+            hour: 7, // 7:45 AM (Morning AP practice before school)
             minute: 45
-          }
+          },
+          allowWhileIdle: true
         },
         sound: 'default',
         extra: { type: slot1Msg.category }
@@ -322,11 +391,11 @@ export async function scheduleDailyNotification() {
         body: slot2Msg.body,
         channelId: 'study-reminders',
         schedule: {
-          every: 'day' as const,
           on: {
-            hour: 19, // 7:45 PM (Peak evening study block)
+            hour: 16, // 4:45 PM (After-school homework & doubts)
             minute: 45
-          }
+          },
+          allowWhileIdle: true
         },
         sound: 'default',
         extra: { type: slot2Msg.category }
@@ -337,11 +406,11 @@ export async function scheduleDailyNotification() {
         body: slot3Msg.body,
         channelId: 'study-reminders',
         schedule: {
-          every: 'day' as const,
           on: {
-            hour: 21, // 9:30 PM (Bedtime streak saver)
+            hour: 21, // 9:30 PM (Bedtime streak saver & formulas)
             minute: 30
-          }
+          },
+          allowWhileIdle: true
         },
         sound: 'default',
         extra: { type: slot3Msg.category }
@@ -351,7 +420,7 @@ export async function scheduleDailyNotification() {
     await LocalNotifications.schedule({ notifications });
 
     localStorage.setItem(STORAGE_KEY_SCHEDULED, 'true');
-    console.log(`[NotificationService] ✅ Successfully scheduled 3 daily US-routine notifications: 4:45 PM (Doubt/Homework), 7:45 PM (Study/Practice), and 9:30 PM (Streak Saver).`);
+    console.log(`[NotificationService] ✅ Successfully scheduled 3 daily routine notifications: 7:45 AM (Morning), 4:45 PM (Doubt/Homework), and 9:30 PM (Streak Saver).`);
   } catch (error) {
     console.error('[NotificationService] Failed to schedule daily notifications:', error);
   }
@@ -360,14 +429,13 @@ export async function scheduleDailyNotification() {
 /**
  * Initialize and trigger the setup workflow.
  * Checks permissions, requests if needed, and schedules the notifications.
- * Called on app startup from App.tsx.
  */
-export async function setupDailyLocalNotifications(forcePrompt = true) {
-  console.log('[NotificationService] Starting setup of daily local notifications...');
+export async function setupDailyLocalNotifications(forcePrompt = false) {
+  console.log('[NotificationService] Checking status of daily local notifications...');
   const hasPermission = await requestNotificationPermissions(forcePrompt);
   if (hasPermission) {
     await scheduleDailyNotification();
   } else {
-    console.log('[NotificationService] Notification permission not granted or dismissed.');
+    console.log('[NotificationService] Notification permission not granted yet.');
   }
 }
