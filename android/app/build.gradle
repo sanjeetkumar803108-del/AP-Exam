@@ -16,6 +16,14 @@ android {
              ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~:!*.map:!server.cjs*:!test_server*'
         }
     }
+    signingConfigs {
+        debug {
+            storeFile file('ap_exam_debug.keystore')
+            storePassword 'apexampass'
+            keyAlias 'apexamkey'
+            keyPassword 'apexampass'
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
@@ -23,6 +31,7 @@ android {
             matchingFallbacks = ['release', 'debug']
         }
         debug {
+            signingConfig signingConfigs.debug
             matchingFallbacks = ['debug', 'release']
         }
     }
