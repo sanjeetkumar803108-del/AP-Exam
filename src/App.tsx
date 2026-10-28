@@ -127,15 +127,15 @@ export default function App() {
       loaders.forEach((loader, index) => {
         setTimeout(() => {
           loader().catch(() => { });
-        }, index * 200);
+        }, 1000 + index * 400);
       });
     };
 
     if (typeof window !== 'undefined') {
       if ('requestIdleCallback' in window) {
-        (window as any).requestIdleCallback(preloadAllFeatures, { timeout: 3500 });
+        (window as any).requestIdleCallback(preloadAllFeatures, { timeout: 6000 });
       } else {
-        setTimeout(preloadAllFeatures, 1500);
+        setTimeout(preloadAllFeatures, 4000);
       }
     }
   }, []);
@@ -285,7 +285,10 @@ export default function App() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(() => {
+    // Offline-first: If no authenticated session exists in storage, show Login screen instantly (0s delay)
+    return safeGetItem('apexam_user_authenticated') === 'true';
+  });
   const [pocketItems, setPocketItems] = useState<any[]>(() => {
     return getUserHistory<any[]>('stale_pocket_items', []);
   });

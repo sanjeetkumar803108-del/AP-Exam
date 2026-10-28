@@ -53,70 +53,76 @@ export async function initUnitPdfsSync(force = false): Promise<void> {
     console.warn('[UnitPdfService] IndexedDB initial load notice:', err);
   }
 
-  // 2. Second Pass: Cloud Firestore sync
-  try {
-    const snapshot = await getDocs(collection(db, FIRESTORE_COLLECTION));
-    if (!snapshot.empty) {
-      const recordsToStore: StoredUnitPdfRecord[] = [];
+  // 2. Second Pass: Cloud Firestore sync (runs smoothly in background, zero blocking on app boot)
+  const syncFromCloud = async () => {
+    try {
+      if (typeof navigator !== 'undefined' && !navigator.onLine) return;
+      const snapshot = await getDocs(collection(db, FIRESTORE_COLLECTION));
+      if (!snapshot.empty) {
+        const recordsToStore: StoredUnitPdfRecord[] = [];
 
-      for (const docSnap of snapshot.docs) {
-        const data = docSnap.data() as any;
-        const key = docSnap.id || data.key;
-        if (!key) continue;
+        for (const docSnap of snapshot.docs) {
+          const data = docSnap.data() as any;
+          const key = docSnap.id || data.key;
+          if (!key) continue;
 
-        let fullPdfUrl = data.pdfData?.pdfUrl || '';
+          let fullPdfUrl = data.pdfData?.pdfUrl || '';
 
-        // If paper was stored in multiple chunks (>500KB)
-        if (data.isChunked && data.chunkCount && data.chunkCount > 0) {
-          try {
-            const chunkPromises: Promise<any>[] = [];
-            for (let i = 0; i < data.chunkCount; i++) {
-              chunkPromises.push(getDoc(doc(db, CHUNKS_COLLECTION, `${key}_chunk_${i}`)));
+          // If paper was stored in multiple chunks (>500KB)
+          if (data.isChunked && data.chunkCount && data.chunkCount > 0) {
+            try {
+              const chunkPromises: Promise<any>[] = [];
+              for (let i = 0; i < data.chunkCount; i++) {
+                chunkPromises.push(getDoc(doc(db, CHUNKS_COLLECTION, `${key}_chunk_${i}`)));
+              }
+              const chunkSnaps = await Promise.all(chunkPromises);
+              fullPdfUrl = chunkSnaps.map(cs => cs.data()?.chunk || '').join('');
+            } catch (chunkErr) {
+              console.warn(`[UnitPdfService] Failed to reassemble chunks for ${key}:`, chunkErr);
             }
-            const chunkSnaps = await Promise.all(chunkPromises);
-            fullPdfUrl = chunkSnaps.map(cs => cs.data()?.chunk || '').join('');
-          } catch (chunkErr) {
-            console.warn(`[UnitPdfService] Failed to reassemble chunks for ${key}:`, chunkErr);
+          }
+
+          if (fullPdfUrl) {
+            const resolvedPdfData: UploadedUnitPdf = {
+              ...data.pdfData,
+              pdfUrl: fullPdfUrl,
+            };
+
+            registerUnitPdf(key, resolvedPdfData);
+
+            recordsToStore.push({
+              key,
+              subjectId: data.subjectId,
+              subjectName: data.subjectName,
+              unitNumber: data.unitNumber,
+              pdfData: resolvedPdfData,
+              updatedAt: data.updatedAt || Date.now(),
+              isCustomUpload: true,
+            });
           }
         }
 
-        if (fullPdfUrl) {
-          const resolvedPdfData: UploadedUnitPdf = {
-            ...data.pdfData,
-            pdfUrl: fullPdfUrl,
-          };
+        // Persist merged papers to IndexedDB for permanent offline access
+        if (recordsToStore.length > 0) {
+          const existing: StoredUnitPdfRecord[] = (await idbGet(IDB_UNIT_PDFS_KEY)) || [];
+          const map = new Map<string, StoredUnitPdfRecord>();
+          existing.forEach(r => map.set(r.key, r));
+          recordsToStore.forEach(r => map.set(r.key, r));
+          const merged = Array.from(map.values());
+          await idbSet(IDB_UNIT_PDFS_KEY, merged);
 
-          registerUnitPdf(key, resolvedPdfData);
-
-          recordsToStore.push({
-            key,
-            subjectId: data.subjectId,
-            subjectName: data.subjectName,
-            unitNumber: data.unitNumber,
-            pdfData: resolvedPdfData,
-            updatedAt: data.updatedAt || Date.now(),
-            isCustomUpload: true,
-          });
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('unit-pdfs-updated'));
+          }
         }
       }
-
-      // Persist merged papers to IndexedDB for permanent offline access
-      if (recordsToStore.length > 0) {
-        const existing: StoredUnitPdfRecord[] = (await idbGet(IDB_UNIT_PDFS_KEY)) || [];
-        const map = new Map<string, StoredUnitPdfRecord>();
-        existing.forEach(r => map.set(r.key, r));
-        recordsToStore.forEach(r => map.set(r.key, r));
-        const merged = Array.from(map.values());
-        await idbSet(IDB_UNIT_PDFS_KEY, merged);
-
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('unit-pdfs-updated'));
-        }
-      }
+    } catch (cloudErr) {
+      console.warn('[UnitPdfService] Firestore sync notice (offline or permission):', cloudErr);
     }
-  } catch (cloudErr) {
-    console.warn('[UnitPdfService] Firestore sync notice (offline or permission):', cloudErr);
-  }
+  };
+
+  // Run in background without blocking caller
+  syncFromCloud().catch(() => {});
 }
 
 /**

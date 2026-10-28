@@ -25,6 +25,8 @@ public class MainActivity extends BridgeActivity {
             settings.setAllowContentAccess(true);
             settings.setDomStorageEnabled(true);
             settings.setDatabaseEnabled(true);
+            settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+            webView.setBackgroundColor(0xFFFAF9F6);
         }
     }
 }
