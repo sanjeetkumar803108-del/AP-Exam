@@ -16,6 +16,7 @@ import {
   getUnitPdf,
   getTestPrepSubjectVisual
 } from '../data/testPrepUnitsData';
+import { initUnitPdfsSync } from '../services/unitPdfService';
 import SafePdfViewer from './SafePdfViewer';
 
 interface TestPrepProps {
@@ -56,6 +57,7 @@ export default function TestPrep({ onBack }: TestPrepProps) {
   const [, setRefreshCount] = useState(0);
 
   useEffect(() => {
+    initUnitPdfsSync(true).catch(err => console.warn('[TestPrep] Sync unit pdfs notice:', err));
     const handleUpdate = () => {
       setRefreshCount(c => c + 1);
     };

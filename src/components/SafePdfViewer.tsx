@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FileText, WifiOff } from 'lucide-react';
+import { FileText, WifiOff, Download, Share2, RefreshCw } from 'lucide-react';
 
 interface SafePdfViewerProps {
   pdfUrlOrBase64?: string; // can be blob URL or data:application/pdf;base64...
@@ -15,6 +15,41 @@ declare global {
 // Global promise to coordinate concurrent PDF.js script loading and avoid race conditions
 let pdfjsLoadPromise: Promise<any> | null = null;
 
+function getLocalAssetUrl(relativePath: string): string {
+  try {
+    const clean = relativePath.replace(/^\/+/, '');
+    return new URL(clean, document.baseURI || window.location.href).href;
+  } catch (_) {
+    return '/' + relativePath.replace(/^\/+/, '');
+  }
+}
+
+async function configurePdfWorker(lib: any): Promise<void> {
+  if (!lib || !lib.GlobalWorkerOptions) return;
+  
+  // 1. Try to fetch the local worker script and create an in-memory same-origin Blob URL.
+  // This guarantees 0 cross-origin or file:// worker security restrictions in Android Capacitor WebView!
+  try {
+    const localWorkerUrl = getLocalAssetUrl('vendor/pdfjs/pdf.worker.min.js');
+    const res = await fetch(localWorkerUrl);
+    if (res.ok) {
+      const code = await res.text();
+      const blob = new Blob([code], { type: 'application/javascript' });
+      lib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
+      return;
+    }
+  } catch (err) {
+    console.warn('[SafePdfViewer] Blob worker setup notice:', err);
+  }
+
+  // 2. Fallback to direct local URL or reliable CDN worker
+  try {
+    lib.GlobalWorkerOptions.workerSrc = getLocalAssetUrl('vendor/pdfjs/pdf.worker.min.js');
+  } catch (_) {
+    lib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+  }
+}
+
 function loadPdfJs(): Promise<any> {
   if (window.pdfjsLib) {
     return Promise.resolve(window.pdfjsLib);
@@ -27,13 +62,13 @@ function loadPdfJs(): Promise<any> {
     // 1. Try Local Asset First (100% offline, zero network dependence, instant rendering)
     const script = document.createElement('script');
     script.id = 'pdfjs-script';
-    script.src = '/vendor/pdfjs/pdf.min.js';
+    script.src = getLocalAssetUrl('vendor/pdfjs/pdf.min.js');
     
-    script.onload = () => {
-      const lib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+    script.onload = async () => {
+      const lib = window.pdfjsLib || (window as any)['pdfjs-dist/build/pdf'];
       if (lib) {
         window.pdfjsLib = lib;
-        lib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js';
+        await configurePdfWorker(lib);
         resolve(lib);
       } else {
         tryJsDelivrFallback(resolve, reject);
@@ -59,7 +94,7 @@ function tryJsDelivrFallback(resolve: (value: any) => void, reject: (reason: any
   script.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/build/pdf.min.js';
 
   script.onload = () => {
-    const lib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+    const lib = window.pdfjsLib || (window as any)['pdfjs-dist/build/pdf'];
     if (lib) {
       window.pdfjsLib = lib;
       lib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/build/pdf.worker.min.js';
@@ -85,7 +120,7 @@ function tryCdnjsFallback(resolve: (value: any) => void, reject: (reason: any) =
   script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js';
 
   script.onload = () => {
-    const lib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+    const lib = window.pdfjsLib || (window as any)['pdfjs-dist/build/pdf'];
     if (lib) {
       window.pdfjsLib = lib;
       lib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
@@ -108,6 +143,7 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl }: SafePdfViewerP
   const targetUrl = pdfUrlOrBase64 || pdfUrl || '';
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -115,21 +151,34 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl }: SafePdfViewerP
 
     const loadAndRender = async () => {
       try {
-        if (!targetUrl) return;
+        const trimmed = (targetUrl || '').trim();
+        if (!trimmed) {
+          if (active) {
+            setLoading(false);
+            setError('No PDF document was attached to this unit set.');
+          }
+          return;
+        }
+
         setLoading(true);
         setError(null);
 
-        // A. Load the PDF.js library from the optimized dual-CDN fallback engine
+        // A. Load PDF.js engine
         const pdfjs = await loadPdfJs();
         if (!active) return;
 
-        // B. Parse PDF source data entirely in memory (no network fetch if Base64)
+        // B. Parse PDF source data robustly:
+        // Handles data URLs, raw base64 strings (starting with JVBERi0... or raw bytes), blob URLs, and HTTP/local links
         let pdfData: Uint8Array;
-        if (targetUrl.startsWith('data:')) {
-          const base64Parts = targetUrl.split(',');
-          const base64Data = base64Parts[1] || base64Parts[0];
-          // Strip any whitespace, newlines, or formatting noise
-          const cleanedBase64 = base64Data.replace(/\s/g, '');
+
+        const isBase64 = 
+          trimmed.startsWith('data:') || 
+          trimmed.startsWith('JVBERi') || 
+          (!trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.startsWith('blob:') && !trimmed.startsWith('/') && trimmed.length > 50);
+
+        if (isBase64) {
+          const base64Data = trimmed.includes(',') ? trimmed.split(',')[1] : trimmed;
+          const cleanedBase64 = base64Data.replace(/[\s\r\n]+/g, '');
           const binaryString = atob(cleanedBase64);
           const len = binaryString.length;
           pdfData = new Uint8Array(len);
@@ -137,18 +186,24 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl }: SafePdfViewerP
             pdfData[i] = binaryString.charCodeAt(i);
           }
         } else {
-          // If it's a blob url, fetch locally
-          const response = await fetch(targetUrl);
+          const response = await fetch(trimmed);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch PDF: ${response.status} ${response.statusText}`);
+          }
           const arrayBuffer = await response.arrayBuffer();
           pdfData = new Uint8Array(arrayBuffer);
         }
 
         if (!active) return;
 
-        // C. Load document into the rendering engine
-        const loadingTask = pdfjs.getDocument({ data: pdfData });
-        const pdf = await loadingTask.promise;
+        // C. Load document into the rendering engine (with fake worker fallback)
+        const loadingTask = pdfjs.getDocument({
+          data: pdfData,
+          isEvalSupported: false,
+          disableFontFace: false,
+        });
 
+        const pdf = await loadingTask.promise;
         if (!active) return;
 
         // D. Render all pages consecutively
@@ -167,8 +222,8 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl }: SafePdfViewerP
           pageCard.className = 'w-full max-w-4xl mx-auto mb-3 sm:mb-4 bg-white shadow-xs border-b sm:border border-zinc-200/70 flex flex-col items-center overflow-hidden last:mb-0';
 
           // Render canvas with optimized mobile retina sharpness without memory exhaustion
-          const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1.5), 2.2);
-          const targetScale = dpr; // Crystal-clear 180-220 DPI retina text with safe memory footprint
+          const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1.5), 2.0);
+          const targetScale = dpr;
           const viewport = page.getViewport({ scale: targetScale });
           const canvas = document.createElement('canvas');
           canvas.className = 'w-full h-auto bg-white border-0 block';
@@ -199,7 +254,7 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl }: SafePdfViewerP
       } catch (err: any) {
         console.error('[PDFViewer] Critical preview error:', err);
         if (active) {
-          setError('Oops! Something went wrong on our end. Please try again.');
+          setError(err?.message || 'Unable to render PDF document visually in-app.');
           setLoading(false);
         }
       }
@@ -210,7 +265,7 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl }: SafePdfViewerP
     return () => {
       active = false;
     };
-  }, [targetUrl]);
+  }, [targetUrl, retryKey]);
 
   return (
     <div className="w-full h-full flex flex-col bg-zinc-100/90 overflow-y-auto momentum-scroll px-0 sm:px-4 py-0 sm:py-3 items-center justify-start min-h-[300px]">
@@ -229,19 +284,20 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl }: SafePdfViewerP
           <div className="w-14 h-14 bg-zinc-800 border border-zinc-700/80 text-rose-500 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
             <WifiOff className="w-6 h-6" />
           </div>
-          <h5 className="text-sm font-extrabold text-zinc-200">Offline Preview Mode</h5>
+          <h5 className="text-sm font-extrabold text-zinc-200">Document Preview Notice</h5>
           <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-            Due to active network restrictions or offline status, visual pages could not render in-app.
+            {error.includes('No PDF') 
+              ? error 
+              : 'Visual page rendering encountered a restriction. The PDF file content is ready in local memory.'}
           </p>
-          <div className="mt-5 p-3.5 bg-zinc-950/80 rounded-xl border border-zinc-800 w-full text-left">
-            <div className="flex items-center gap-2 mb-1.5">
-              <FileText className="w-4 h-4 text-emerald-500 shrink-0" />
-              <span className="text-[11px] font-black text-zinc-300 uppercase tracking-wider">File Status: Ready</span>
-            </div>
-            <p className="text-[10px] text-zinc-400 leading-normal">
-              Your compiled PDF document is fully intact and saved! Tap <strong className="text-zinc-200">Download</strong> or <strong className="text-zinc-200">Share</strong> below to export it directly to your device storage.
-            </p>
-          </div>
+          
+          <button
+            onClick={() => setRetryKey(k => k + 1)}
+            className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95 transition-all"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Retry Rendering</span>
+          </button>
         </div>
       )}
 

@@ -60,6 +60,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ToastProvider from './components/ToastProvider';
 import WelcomeCelebrationModal from './components/WelcomeCelebrationModal';
 import FloatingTutorPenguin from './components/FloatingTutorPenguin';
+import { initUnitPdfsSync } from './services/unitPdfService';
 import './utils/toast';
 import { requestCameraPermission, requestMicrophonePermission, requestNotificationPermission } from './utils/nativePermissions';
 
@@ -245,6 +246,11 @@ export default function App() {
     // Setup daily recurring local notifications silently on startup (only if already granted)
     setupDailyLocalNotifications(false).catch(e => {
       console.warn('Local notifications setup notice:', e);
+    });
+
+    // Silently pre-sync published AP unit sample paper sets from Firestore/IndexedDB
+    initUnitPdfsSync().catch(e => {
+      console.warn('[App] Unit PDFs sync notice:', e);
     });
 
     // Initialize RevenueCat ONLY if a valid non-placeholder API key is set
@@ -797,6 +803,11 @@ export default function App() {
         console.warn('[ForceSync] Cloud pocket items sync notice (offline or network delay):', err);
       }
     }
+
+    // 5. Force refresh published AP Unit Sample Papers
+    initUnitPdfsSync(true).catch(err => {
+      console.warn('[ForceSync] Unit PDFs sync notice:', err);
+    });
   };
 
   // 3. User document listener for coins, subscriptions, and auto-calculated study streak

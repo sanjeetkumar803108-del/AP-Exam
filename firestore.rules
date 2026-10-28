@@ -107,5 +107,16 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+
+    // 11. AP Unit Sample Papers (Uploaded via Developer Portal, readable by all student users)
+    match /ap_unit_sample_papers/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /ap_unit_sample_paper_chunks/{chunkId} {
+      allow read: if true;
+      allow write: if true;
+    }
   }
 }

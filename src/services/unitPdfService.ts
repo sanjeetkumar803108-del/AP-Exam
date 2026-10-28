@@ -32,8 +32,8 @@ let syncInitialized = false;
  * 2. Fetches any newly uploaded papers from Firestore cloud database.
  * 3. Injects them into UPLOADED_UNIT_PDFS in memory.
  */
-export async function initUnitPdfsSync(): Promise<void> {
-  if (syncInitialized && typeof window !== 'undefined') return;
+export async function initUnitPdfsSync(force = false): Promise<void> {
+  if (syncInitialized && !force && typeof window !== 'undefined') return;
   syncInitialized = true;
 
   // 1. First Pass: Instant local cache from IndexedDB
