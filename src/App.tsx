@@ -285,6 +285,13 @@ export default function App() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+
+  // Guard: Automatically dismiss any login modal whenever an active user is logged in
+  useEffect(() => {
+    if (user) {
+      setShowLoginModal(false);
+    }
+  }, [user]);
   const [authLoading, setAuthLoading] = useState(() => {
     // Offline-first: If no authenticated session exists in storage, show Login screen instantly (0s delay)
     return safeGetItem('apexam_user_authenticated') === 'true';
@@ -528,6 +535,7 @@ export default function App() {
       }
       setUser(currentUser);
       if (currentUser) {
+        setShowLoginModal(false);
         setSessionRevokedNotice(null);
         refillDailyCoins();
 
@@ -1320,7 +1328,7 @@ export default function App() {
                     isDarkMode={isDarkMode}
                     onToggleDarkMode={toggleDarkMode}
                     isTabMode={true}
-                    onOpenLogin={() => setShowLoginModal(true)}
+                    onOpenLogin={() => { if (!user && !auth.currentUser) setShowLoginModal(true); }}
                     onNavigateToCoinPage={() => {
                       setActiveTab('notes');
                       setActiveTool('coinpage');
@@ -1397,7 +1405,7 @@ export default function App() {
               </motion.div>
             )}
 
-            {showLoginModal && (
+            {showLoginModal && !user && !auth.currentUser && (
               <motion.div key="login"
                 initial={{ opacity: 0, y: '100%' }}
                 animate={{ opacity: 1, y: 0 }}

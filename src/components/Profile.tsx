@@ -1361,16 +1361,14 @@ export default function Profile({
       setShowSettings(false);
       showToast("👋 Logged out successfully");
       
-      // Transition UI to Login immediately
-      if (onOpenLogin) {
-        onOpenLogin();
-      } else if (onClose) {
+      // Close profile modal if open; AuthGuard will naturally display the isolated Login screen when user state resets to null
+      if (onClose) {
         onClose();
       }
     } catch (logoutErr) {
       console.error('[Logout Error]', logoutErr);
       showToast("👋 Logged out successfully");
-      if (onOpenLogin) onOpenLogin();
+      if (onClose) onClose();
     } finally {
       setIsLoggingOut(false);
     }
