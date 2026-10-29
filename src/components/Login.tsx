@@ -47,6 +47,7 @@ import { clearGoogleCredentialState } from '../utils/clearGoogleCredential';
 import appLogo from '../assets/logo.png';
 import DeveloperLoginModal from './DeveloperPortal/DeveloperLoginModal';
 import FullScreenLegalModal from './FullScreenLegalModal';
+import AdvancedLoader from './AdvancedLoader';
 
 // React Native web-compatibility components & helpers
 const require = (path: string) => {
@@ -127,6 +128,15 @@ export default function Login({
   // Gate flag: only allow onAuthStateChanged to route user if THEY actively initiated sign-in
   const userInitiatedAuth = React.useRef(false);
 
+  // Immediate auto-dismiss if user is already authenticated when Login mounts
+  useEffect(() => {
+    if (auth.currentUser) {
+      console.log('[Login] User already authenticated on mount. Dismissing login view.');
+      onLoginSuccess('main');
+      onClose();
+    }
+  }, []);
+
   const routeUserAfterAuth = async (currentUser: User) => {
     if (isRoutingRef.current) return;
     isRoutingRef.current = true;
@@ -140,12 +150,28 @@ export default function Login({
         safeSetItem('last_logged_in_user_email', currentUser.email.toLowerCase().trim());
       }
 
-      // Claim single active session for this device
-      await claimUserSession(currentUser.uid);
+      // Claim single active session in background without delaying user navigation
+      claimUserSession(currentUser.uid).catch(console.warn);
 
-      // Determine whether user is a brand new user with a new email, or existing user
-      const routeResult = await determineUserOnboardingRoute(currentUser);
-      console.log(`[Login] Routing result for ${currentUser.email}: ${routeResult.targetScreen} (${routeResult.reason})`);
+      // Fast-path: If account was created more than 2 minutes ago, it is 100% an existing user
+      const creationTime = currentUser.metadata.creationTime ? new Date(currentUser.metadata.creationTime).getTime() : 0;
+      const accountAgeMs = creationTime > 0 ? (Date.now() - creationTime) : 0;
+      if (accountAgeMs > 2 * 60 * 1000) {
+        console.log(`[Login] Fast routing existing user ${currentUser.email} directly to main`);
+        onLoginSuccess('main');
+        onClose();
+        return;
+      }
+
+      // For truly fresh accounts, race determineUserOnboardingRoute against a 1.2s timeout
+      const routeResult = await Promise.race([
+        determineUserOnboardingRoute(currentUser),
+        new Promise<{ targetScreen: 'main' | 'setup' | 'onboarding' }>(resolve => 
+          setTimeout(() => resolve({ targetScreen: 'main' }), 1200)
+        )
+      ]);
+
+      console.log(`[Login] Routing result for ${currentUser.email}: ${routeResult.targetScreen}`);
       onLoginSuccess(routeResult.targetScreen);
       onClose();
       return;
@@ -591,8 +617,15 @@ export default function Login({
     }
   };
 
-  if (user) {
-    return null;
+  if (user || isRoutingRef.current) {
+    return (
+      <div className="w-full h-full min-h-[500px] flex flex-col items-center justify-center p-6 bg-[#FAF9F6] text-zinc-800">
+        <AdvancedLoader type="orb" context="dashboard" />
+        <p className="mt-4 text-sm font-black text-zinc-700 animate-pulse tracking-wide">
+          Loading your learning dashboard...
+        </p>
+      </div>
+    );
   }
 
   return (
