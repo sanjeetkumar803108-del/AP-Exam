@@ -1,17 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { 
-  FileText, 
-  WifiOff, 
-  Download, 
+  ArrowLeft, 
   Share2, 
-  RefreshCw, 
+  MoreVertical, 
+  Download, 
   ExternalLink, 
-  ZoomIn, 
-  ZoomOut, 
-  Printer,
-  ChevronLeft,
-  ChevronRight,
-  Sparkles
+  Printer, 
+  RefreshCw, 
+  AlertCircle 
 } from 'lucide-react';
 import { savePDFMobile } from '../utils/mobileSaver';
 import { triggerVibration } from '../utils/vibrate';
@@ -21,6 +17,7 @@ interface SafePdfViewerProps {
   pdfUrlOrBase64?: string;
   pdfUrl?: string;
   title?: string;
+  onBack?: () => void;
 }
 
 declare global {
@@ -29,7 +26,7 @@ declare global {
   }
 }
 
-// Global promise to coordinate concurrent PDF.js script loading and avoid race conditions
+// Global promise to coordinate concurrent PDF.js script loading
 let pdfjsLoadPromise: Promise<any> | null = null;
 
 function getLocalAssetUrl(relativePath: string): string {
@@ -60,7 +57,7 @@ function isHtmlDocument(source: string): boolean {
 }
 
 /**
- * Robustly load PDF.js engine.
+ * Robustly load PDF.js engine with FakeWorker in-thread fallback.
  */
 function loadPdfJs(): Promise<any> {
   if (window.pdfjsLib) {
@@ -71,7 +68,6 @@ function loadPdfJs(): Promise<any> {
   }
 
   pdfjsLoadPromise = new Promise((resolve, reject) => {
-    // 1. Try Local Asset First
     const script = document.createElement('script');
     script.id = 'pdfjs-script';
     script.src = getLocalAssetUrl('vendor/pdfjs/pdf.min.js');
@@ -80,7 +76,6 @@ function loadPdfJs(): Promise<any> {
       const lib = window.pdfjsLib || (window as any)['pdfjs-dist/build/pdf'];
       if (lib) {
         window.pdfjsLib = lib;
-        // Point worker to local vendor script
         try {
           lib.GlobalWorkerOptions.workerSrc = getLocalAssetUrl('vendor/pdfjs/pdf.worker.min.js');
         } catch (_) {
@@ -118,67 +113,131 @@ function tryCdnFallback(resolve: (value: any) => void, reject: (reason: any) => 
       resolve(lib);
     } else {
       pdfjsLoadPromise = null;
-      reject(new Error('PDF engine not found after CDN load.'));
+      reject(new Error('PDF engine not found.'));
     }
   };
 
   script.onerror = () => {
     pdfjsLoadPromise = null;
-    reject(new Error('Network offline or PDF engine CDN blocked.'));
+    reject(new Error('Network offline or PDF CDN blocked.'));
   };
 
   document.head.appendChild(script);
 }
 
-export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl, title }: SafePdfViewerProps) {
+export default function SafePdfViewer({ 
+  pdfUrlOrBase64, 
+  pdfUrl, 
+  title, 
+  onBack 
+}: SafePdfViewerProps) {
   const targetUrl = (pdfUrlOrBase64 || pdfUrl || '').trim();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState<number>(0);
-  const [totalPages, setTotalPages] = useState<number>(0);
-  const [scale, setScale] = useState<number>(1.2);
-  const [isOpeningNative, setIsOpeningNative] = useState<boolean>(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  
+  // Dropdown menu state
+  const [showMenu, setShowMenu] = useState<boolean>(false);
+
+  // Double-tap zoom state
+  const [isZoomed, setIsZoomed] = useState<boolean>(false);
+  const [zoomOrigin, setZoomOrigin] = useState<{ x: number; y: number }>({ x: 50, y: 50 });
+  const lastTapRef = useRef<{ time: number; x: number; y: number }>({ time: 0, x: 0, y: 0 });
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const pagesContainerRef = useRef<HTMLDivElement>(null);
 
   const isHtml = isHtmlDocument(targetUrl);
+  const cleanTitle = (title || 'AP_Exam_Master').replace(/[^a-zA-Z0-9_\-\. ]/g, '').trim();
 
-  // External Action Handlers
-  const handleOpenExternal = async () => {
-    triggerVibration(15);
-    setIsOpeningNative(true);
-    try {
-      const fileName = (title || 'AP_Exam_Master_Paper').replace(/[^a-zA-Z0-9_-]/g, '_') + (isHtml ? '.html' : '.pdf');
-      const success = await savePDFMobile(targetUrl, fileName, {
-        openImmediately: true,
-        customToast: 'Opening in device document reader...',
-      });
-      if (!success) {
-        showToast('Unable to launch native viewer.', 'error');
-      }
-    } catch (err: any) {
-      console.error('[SafePdfViewer] External open error:', err);
-      showToast('Failed to open document: ' + (err.message || 'Unknown error'), 'error');
-    } finally {
-      setIsOpeningNative(false);
-    }
-  };
+  // Close menu when clicking outside
+  useEffect(() => {
+    if (!showMenu) return;
+    const handleClickOutside = () => setShowMenu(false);
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, [showMenu]);
 
-  const handleDownload = async () => {
+  // Share handler (Top right share icon)
+  const handleShare = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     triggerVibration(15);
+    setShowMenu(false);
     try {
-      const fileName = (title || 'AP_Exam_Master_Paper').replace(/[^a-zA-Z0-9_-]/g, '_') + (isHtml ? '.html' : '.pdf');
+      const fileName = cleanTitle + (isHtml ? '.html' : '.pdf');
       await savePDFMobile(targetUrl, fileName, {
         openImmediately: false,
-        customToast: '✅ Document downloaded successfully!',
+        customToast: 'Sharing / Downloading PDF...',
       });
     } catch (err: any) {
-      console.error('[SafePdfViewer] Download error:', err);
-      showToast('Download error: ' + (err.message || 'Unknown error'), 'error');
+      console.error('[SafePdfViewer] Share error:', err);
+      showToast('Share error: ' + (err.message || 'Unknown error'), 'error');
     }
   };
 
-  // Render Effect
+  // Open in external native PDF reader
+  const handleOpenExternal = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    triggerVibration(15);
+    setShowMenu(false);
+    try {
+      const fileName = cleanTitle + (isHtml ? '.html' : '.pdf');
+      const ok = await savePDFMobile(targetUrl, fileName, {
+        openImmediately: true,
+        customToast: 'Opening in device reader...',
+      });
+      if (!ok) showToast('Unable to launch native viewer.', 'error');
+    } catch (err: any) {
+      showToast('Failed to open: ' + (err.message || err), 'error');
+    }
+  };
+
+  // Print document
+  const handlePrint = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    triggerVibration(15);
+    setShowMenu(false);
+    if (typeof window !== 'undefined') {
+      window.print();
+    }
+  };
+
+  // Handle double-tap on mobile touch screens
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    const touch = e.changedTouches[0];
+    if (!touch) return;
+    const now = Date.now();
+    const prev = lastTapRef.current;
+
+    // Detect double-tap within 300ms and 30px distance
+    if (now - prev.time < 300 && Math.hypot(touch.clientX - prev.x, touch.clientY - prev.y) < 30) {
+      e.preventDefault();
+      triggerVibration(15);
+
+      const targetRect = e.currentTarget.getBoundingClientRect();
+      const originX = Math.max(0, Math.min(100, ((touch.clientX - targetRect.left) / targetRect.width) * 100));
+      const originY = Math.max(0, Math.min(100, ((touch.clientY - targetRect.top) / targetRect.height) * 100));
+
+      setZoomOrigin({ x: originX, y: originY });
+      setIsZoomed(prevZoom => !prevZoom);
+      lastTapRef.current = { time: 0, x: 0, y: 0 };
+    } else {
+      lastTapRef.current = { time: now, x: touch.clientX, y: touch.clientY };
+    }
+  }, []);
+
+  // Handle double-click for desktop mouse users
+  const handleDoubleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    triggerVibration(15);
+    const targetRect = e.currentTarget.getBoundingClientRect();
+    const originX = Math.max(0, Math.min(100, ((e.clientX - targetRect.left) / targetRect.width) * 100));
+    const originY = Math.max(0, Math.min(100, ((e.clientY - targetRect.top) / targetRect.height) * 100));
+
+    setZoomOrigin({ x: originX, y: originY });
+    setIsZoomed(prevZoom => !prevZoom);
+  }, []);
+
+  // Render document
   useEffect(() => {
     let active = true;
 
@@ -191,14 +250,13 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl, title }: SafePdf
 
       setLoading(true);
       setError(null);
+      setIsZoomed(false);
 
-      // If document is HTML, iframe takes care of rendering
       if (isHtml) {
         setLoading(false);
         return;
       }
 
-      // Render PDF using PDF.js
       try {
         const pdfjs = await loadPdfJs();
         if (!active) return;
@@ -231,7 +289,7 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl, title }: SafePdf
 
         if (!active) return;
 
-        // Load document into PDF.js engine with worker fallback
+        // Load document into PDF.js engine with in-thread FakeWorker fallback
         let pdf: any;
         try {
           const loadingTask = pdfjs.getDocument({
@@ -241,8 +299,7 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl, title }: SafePdf
           });
           pdf = await loadingTask.promise;
         } catch (workerErr) {
-          console.warn('[SafePdfViewer] Standard worker failed, switching to FakeWorker in-thread mode:', workerErr);
-          // Fallback to in-thread fake worker
+          console.warn('[SafePdfViewer] Standard worker failed, switching to FakeWorker mode:', workerErr);
           pdfjs.GlobalWorkerOptions.workerSrc = '';
           const fallbackTask = pdfjs.getDocument({
             data: pdfData,
@@ -253,28 +310,31 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl, title }: SafePdf
         }
 
         if (!active) return;
-        setTotalPages(pdf.numPages);
 
-        const container = containerRef.current;
+        const container = pagesContainerRef.current;
         if (!container) return;
         container.innerHTML = ''; // Clear prior renders
 
         setLoading(false);
 
-        // Render each page into a canvas
+        // Mobile screen width edge-to-edge calculation
+        const containerWidth = scrollContainerRef.current?.clientWidth || window.innerWidth || 390;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2.0);
+
+        // Render each page into a canvas filling 100% of mobile screen width
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
           if (!active) return;
           const page = await pdf.getPage(pageNum);
 
-          const pageCard = document.createElement('div');
-          pageCard.className = 'w-full max-w-4xl mx-auto mb-4 bg-white shadow-md rounded-xl border border-zinc-200 flex flex-col items-center overflow-hidden transition-all';
+          const unscaledViewport = page.getViewport({ scale: 1.0 });
+          const fitScale = (containerWidth / unscaledViewport.width) * dpr;
+          const viewport = page.getViewport({ scale: fitScale });
 
-          const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1.5), 2.0);
-          const viewport = page.getViewport({ scale: scale * dpr });
           const canvas = document.createElement('canvas');
-          canvas.className = 'w-full h-auto bg-white border-0 block';
+          canvas.className = 'w-full h-auto bg-white block border-0 mb-1 last:mb-0 shadow-xs';
           canvas.style.width = '100%';
           canvas.style.height = 'auto';
+          canvas.style.display = 'block';
 
           canvas.height = Math.floor(viewport.height);
           canvas.width = Math.floor(viewport.width);
@@ -285,15 +345,7 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl, title }: SafePdf
             ctx.imageSmoothingQuality = 'high';
           }
 
-          pageCard.appendChild(canvas);
-
-          // Page Number Indicator
-          const pageFoot = document.createElement('div');
-          pageFoot.className = 'w-full py-1 px-3 bg-zinc-50 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-400 font-mono';
-          pageFoot.innerHTML = `<span>Page ${pageNum} of ${pdf.numPages}</span><span class="text-emerald-600 font-semibold">AP Verified</span>`;
-          pageCard.appendChild(pageFoot);
-
-          container.appendChild(pageCard);
+          container.appendChild(canvas);
 
           if (ctx) {
             await page.render({
@@ -305,7 +357,7 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl, title }: SafePdf
       } catch (err: any) {
         console.error('[SafePdfViewer] Render failed:', err);
         if (active) {
-          setError(err?.message || 'Unable to render PDF visual pages in-app.');
+          setError(err?.message || 'Unable to open PDF document.');
           setLoading(false);
         }
       }
@@ -316,131 +368,143 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl, title }: SafePdf
     return () => {
       active = false;
     };
-  }, [targetUrl, retryKey, scale, isHtml]);
+  }, [targetUrl, retryKey, isHtml]);
 
   return (
-    <div className="w-full h-full flex flex-col bg-zinc-900 select-text overflow-hidden relative">
-      {/* Top Floating Control Bar */}
-      <div className="px-3 sm:px-4 py-2 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800 flex items-center justify-between z-30 shrink-0 gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-400 font-bold text-[10px] tracking-wider uppercase border border-indigo-500/30">
-            {isHtml ? 'Web Exam Paper' : 'Official PDF'}
-          </span>
-          {totalPages > 0 && (
-            <span className="text-xs text-zinc-400 font-medium hidden sm:inline">
-              {totalPages} Pages
-            </span>
-          )}
-        </div>
-
-        {/* Action Controls */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {!isHtml && !error && (
-            <>
+    <div className="w-full h-full bg-black flex flex-col select-none overflow-hidden relative">
+      {/* ── Native Pure-Black Android PDF Top Bar (Matching Screenshot Exactly) ── */}
+      {(onBack || title) && (
+        <div className="w-full h-14 bg-black px-3.5 flex items-center justify-between shrink-0 z-30 select-none border-b border-zinc-900/60">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
+            {onBack && (
               <button
-                onClick={() => setScale(s => Math.max(0.8, s - 0.2))}
-                className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-all active:scale-95 cursor-pointer"
-                title="Zoom Out"
+                onClick={() => {
+                  triggerVibration(10);
+                  onBack();
+                }}
+                className="w-10 h-10 -ml-1 rounded-full flex items-center justify-center text-white active:bg-zinc-800 transition-colors cursor-pointer"
+                title="Back"
               >
-                <ZoomOut className="w-4 h-4" />
+                <ArrowLeft className="w-5 h-5 stroke-[2.2]" />
               </button>
-              <button
-                onClick={() => setScale(s => Math.min(2.0, s + 0.2))}
-                className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-all active:scale-95 cursor-pointer"
-                title="Zoom In"
+            )}
+            <h2 className="text-white text-base sm:text-lg font-medium tracking-tight truncate">
+              {title || 'AP_Exam_Master...'}
+            </h2>
+          </div>
+
+          {/* Right Action Icons: Share & Options (Three dots) */}
+          <div className="flex items-center gap-0.5 shrink-0 relative">
+            <button
+              onClick={handleShare}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-white active:bg-zinc-800 transition-colors cursor-pointer"
+              title="Share"
+            >
+              <Share2 className="w-5 h-5 stroke-[2]" />
+            </button>
+            
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerVibration(10);
+                setShowMenu(m => !m);
+              }}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-white active:bg-zinc-800 transition-colors cursor-pointer"
+              title="More options"
+            >
+              <MoreVertical className="w-5 h-5 stroke-[2]" />
+            </button>
+
+            {/* Three-dots Menu Popover */}
+            {showMenu && (
+              <div 
+                onClick={(e) => e.stopPropagation()}
+                className="absolute right-0 top-12 w-48 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl py-1.5 z-50 text-xs font-semibold text-zinc-200 animate-in fade-in zoom-in-95 duration-100"
               >
-                <ZoomIn className="w-4 h-4" />
-              </button>
-            </>
-          )}
-
-          <button
-            onClick={handleDownload}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold transition-all active:scale-95 cursor-pointer border border-zinc-700"
-            title="Download document"
-          >
-            <Download className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">Download</span>
-          </button>
-
-          <button
-            onClick={handleOpenExternal}
-            disabled={isOpeningNative}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-md shadow-indigo-600/20"
-            title="Open in device document reader"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            <span>Open in App</span>
-          </button>
+                <button
+                  onClick={handleShare}
+                  className="w-full px-3.5 py-2.5 text-left flex items-center gap-2.5 hover:bg-zinc-800 transition-colors cursor-pointer"
+                >
+                  <Download className="w-4 h-4 text-emerald-400" />
+                  <span>Save to Device</span>
+                </button>
+                <button
+                  onClick={handleOpenExternal}
+                  className="w-full px-3.5 py-2.5 text-left flex items-center gap-2.5 hover:bg-zinc-800 transition-colors cursor-pointer"
+                >
+                  <ExternalLink className="w-4 h-4 text-indigo-400" />
+                  <span>Open with...</span>
+                </button>
+                <button
+                  onClick={handlePrint}
+                  className="w-full px-3.5 py-2.5 text-left flex items-center gap-2.5 hover:bg-zinc-800 transition-colors cursor-pointer"
+                >
+                  <Printer className="w-4 h-4 text-zinc-400" />
+                  <span>Print</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Main Content Area */}
-      <div className="flex-1 w-full h-full overflow-y-auto momentum-scroll bg-zinc-950 p-0 sm:p-4 relative">
+      {/* ── Document Canvas Viewport (100% Mobile Edge-to-Edge with Double-Tap Zoom) ── */}
+      <div 
+        ref={scrollContainerRef}
+        className={`flex-1 w-full h-full bg-black relative ${
+          isZoomed ? 'overflow-auto' : 'overflow-y-auto overflow-x-hidden'
+        } momentum-scroll`}
+        style={{
+          touchAction: isZoomed ? 'pan-x pan-y pinch-zoom' : 'pan-y',
+        }}
+      >
+        {/* Loading Spinner */}
         {loading && (
-          <div className="flex flex-col items-center justify-center py-28 text-center text-zinc-300 gap-3">
-            <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-            <div>
-              <p className="text-sm font-bold text-white">Opening AP Examination Set</p>
-              <p className="text-xs text-zinc-400 mt-0.5">Preparing questions and high-res layout...</p>
-            </div>
+          <div className="flex flex-col items-center justify-center min-h-[70vh] text-center gap-3">
+            <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
           </div>
         )}
 
-        {/* HTML Document View (Direct Embedded Responsive Frame) */}
-        {isHtml && (
+        {/* HTML Document View (Full Mobile Screen) */}
+        {isHtml && !loading && (
           <iframe
-            ref={iframeRef}
             src={targetUrl.startsWith('<') ? undefined : getLocalAssetUrl(targetUrl)}
             srcDoc={targetUrl.startsWith('<') ? targetUrl : undefined}
-            className="w-full h-full min-h-[500px] border-0 bg-white rounded-none sm:rounded-2xl shadow-xl"
-            title={title || 'AP Examination Master Paper'}
+            className="w-full h-full min-h-[100vh] border-0 bg-white"
+            title={title || 'AP Examination Paper'}
             sandbox="allow-scripts allow-same-origin allow-modals allow-downloads allow-popups"
           />
         )}
 
-        {/* Fallback / Error Recovery Screen */}
+        {/* Error Fallback */}
         {error && !isHtml && (
-          <div className="flex flex-col items-center justify-center my-auto py-16 px-6 max-w-md mx-auto text-center">
-            <div className="w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center text-amber-400 mb-4 shadow-xl">
-              <FileText className="w-8 h-8" />
+          <div className="flex flex-col items-center justify-center min-h-[70vh] px-6 text-center">
+            <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center text-rose-400 mb-3 shadow-md">
+              <AlertCircle className="w-6 h-6" />
             </div>
-            <h4 className="text-base font-black text-white">AP Document Ready</h4>
-            <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-              The exam set was successfully retrieved. You can view it directly in Google Drive, Adobe Acrobat, or your default device PDF reader without restrictions.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center gap-2.5 mt-6 w-full max-w-xs">
-              <button
-                onClick={handleOpenExternal}
-                className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95 transition-all"
-              >
-                <ExternalLink className="w-4 h-4" />
-                <span>Open in Device Reader</span>
-              </button>
-
-              <button
-                onClick={handleDownload}
-                className="w-full py-2.5 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold rounded-xl flex items-center justify-center gap-2 cursor-pointer border border-zinc-700 active:scale-95 transition-all"
-              >
-                <Download className="w-4 h-4 text-emerald-400" />
-                <span>Download PDF</span>
-              </button>
-            </div>
-
+            <p className="text-xs text-zinc-400 max-w-xs">{error}</p>
             <button
               onClick={() => setRetryKey(k => k + 1)}
-              className="mt-4 text-[11px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1 cursor-pointer transition-colors"
+              className="mt-4 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95 transition-all"
             >
-              <RefreshCw className="w-3 h-3" />
-              <span>Retry in-app canvas rendering</span>
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Retry</span>
             </button>
           </div>
         )}
 
-        {/* PDF Page Canvas Stream */}
+        {/* Clean PDF Pages Stream with Double-Tap Zoom */}
         {!isHtml && !error && (
-          <div ref={containerRef} className="w-full flex flex-col items-center pb-8" />
+          <div
+            ref={pagesContainerRef}
+            onTouchEnd={handleTouchEnd}
+            onDoubleClick={handleDoubleClick}
+            className="w-full flex flex-col items-center cursor-zoom-in transition-transform duration-250 ease-out origin-center"
+            style={{
+              transform: isZoomed ? 'scale(2.2)' : 'scale(1)',
+              transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%`,
+            }}
+          />
         )}
       </div>
     </div>

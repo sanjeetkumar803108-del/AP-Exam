@@ -2,11 +2,12 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { 
   ArrowLeft, Search, X, ChevronDown, ChevronRight, FileText, 
   Download, ExternalLink, Printer, Sparkles, Clock, CheckCircle2,
-  Star, Eye, BookOpen, Lock, Crown
+  Star, Eye, BookOpen, Lock, Crown, Share2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { triggerVibration } from '../utils/vibrate';
 import { isProUser } from '../utils/coins';
+import { savePDFMobile } from '../utils/mobileSaver';
 import { 
   ALL_TEST_PREP_SUBJECTS, 
   TestPrepSubject, 
@@ -367,49 +368,20 @@ export default function TestPrep({ onBack }: TestPrepProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.12 }}
-            className="fixed inset-0 z-50 w-full h-full bg-zinc-950 flex flex-col overflow-hidden select-text"
+            className="fixed inset-0 z-50 w-full h-full bg-black flex flex-col overflow-hidden"
           >
-            {/* Minimalist Top Bar: Back Button & Subject/Unit Heading ONLY */}
-            <div className="px-4 py-3 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between shrink-0 z-20">
-              <div className="flex items-center gap-3 min-w-0 pr-3">
-                <button
-                  onClick={() => {
-                    triggerVibration(10);
-                    setActivePdfModal(null);
-                  }}
-                  className="w-8 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0"
-                  title="Back"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-                <div className="flex items-center gap-2 min-w-0">
-                  <FileText className="w-4 h-4 text-indigo-400 shrink-0" />
-                  <h2 className="text-sm sm:text-base font-black text-white truncate">
-                    {activePdfModal.subject.name} • {activePdfModal.unit.unitNumber === 0
-                      ? activePdfModal.unit.title
-                      : `Unit ${activePdfModal.unit.unitNumber}: ${activePdfModal.unit.title}`}
-                  </h2>
-                </div>
-              </div>
-
-              <button
-                onClick={() => {
-                  triggerVibration(10);
-                  setActivePdfModal(null);
-                }}
-                className="w-8 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0"
-                title="Close"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Direct Full-Screen PDF Viewer */}
-            <div className="flex-1 w-full h-full overflow-hidden bg-zinc-100 relative">
-              <SafePdfViewer
-                pdfUrlOrBase64={activePdfModal.pdfData.pdfUrl || activePdfModal.pdfData.htmlUrl}
-              />
-            </div>
+            <SafePdfViewer
+              pdfUrlOrBase64={activePdfModal.pdfData.pdfUrl || activePdfModal.pdfData.htmlUrl}
+              title={
+                activePdfModal.unit.unitNumber === 0
+                  ? `${activePdfModal.subject.name} • ${activePdfModal.unit.title}`
+                  : `${activePdfModal.subject.name} • Unit ${activePdfModal.unit.unitNumber}`
+              }
+              onBack={() => {
+                triggerVibration(10);
+                setActivePdfModal(null);
+              }}
+            />
           </motion.div>
         )}
       </AnimatePresence>
