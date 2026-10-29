@@ -28670,6 +28670,9 @@ app.all(["/api/health", "/health", "/api/status"], (req, res) => {
 });
 var sanitizeInput = (obj) => {
   if (typeof obj === "string") {
+    if (obj.startsWith("data:") || obj.length > 2e3 && !obj.includes("<") && !obj.includes(">")) {
+      return obj;
+    }
     return (0, import_xss2.default)(obj);
   }
   if (Array.isArray(obj)) {
@@ -28825,9 +28828,6 @@ var lastQuotaExceededTime2 = 0;
 var rateLimitedModels2 = {};
 var rateLimitedModelsCooldown2 = {};
 app.use((req, res, next) => {
-  if (req.body) {
-    req.body = sanitizeInput(req.body);
-  }
   if (req.query) {
     req.query = sanitizeInput(req.query);
   }
@@ -35628,14 +35628,20 @@ function loadUnitPdfsFromDisk() {
   console.log(`[UnitPdfVault] Total loaded unit PDFs from disk: ${unitPdfsVault.length}`);
 }
 function saveUnitPdfsToDisk() {
-  const json = JSON.stringify(unitPdfsVault, null, 2);
+  const json = JSON.stringify(unitPdfsVault);
   try {
     const dir = import_path3.default.dirname(PRIMARY_UNIT_PDFS_FILE);
     if (!import_fs3.default.existsSync(dir)) import_fs3.default.mkdirSync(dir, { recursive: true });
-    import_fs3.default.writeFileSync(PRIMARY_UNIT_PDFS_FILE, json, "utf-8");
+    import_fs3.default.writeFile(PRIMARY_UNIT_PDFS_FILE, json, "utf-8", (primaryErr) => {
+      if (primaryErr) {
+        import_fs3.default.writeFile(TMP_UNIT_PDFS_FILE, json, "utf-8", () => {
+        });
+      }
+    });
   } catch (primaryErr) {
     try {
-      import_fs3.default.writeFileSync(TMP_UNIT_PDFS_FILE, json, "utf-8");
+      import_fs3.default.writeFile(TMP_UNIT_PDFS_FILE, json, "utf-8", () => {
+      });
     } catch (tmpErr) {
       console.warn("[UnitPdfVault] Write notice:", tmpErr);
     }

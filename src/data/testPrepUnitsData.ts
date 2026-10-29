@@ -194,7 +194,7 @@ export const ALL_TEST_PREP_SUBJECTS: TestPrepSubject[] = [
     category: 'STEM & Math',
     badgeColor: 'bg-[#7c3aed]',
     units: [
-      { unitNumber: 0, title: 'Full Course Mixed Master Practice Set (Units 1–10 Comprehensive 250Q)', weight: 'Weight: 100%' },
+      { unitNumber: 0, title: 'Full Course Mixed Master Set (Units 1–10 Comprehensive)', weight: 'Weight: 100%' },
       { unitNumber: 1, title: 'Limits and Continuity', weight: 'Weight: 4%–7%' },
       { unitNumber: 2, title: 'Differentiation: Definition & Fundamental Properties', weight: 'Weight: 4%–7%' },
       { unitNumber: 3, title: 'Composite, Implicit, and Inverse Functions', weight: 'Weight: 4%–7%' },
@@ -214,6 +214,7 @@ export const ALL_TEST_PREP_SUBJECTS: TestPrepSubject[] = [
     category: 'STEM & Math',
     badgeColor: 'bg-[#2563eb]',
     units: [
+      { unitNumber: 0, title: 'Full Course Mixed Master Set (Units 1–5 Comprehensive)', weight: 'Weight: 100%' },
       { unitNumber: 1, title: 'Exploring One-Variable Data and Collecting Data', weight: 'Weight: 20%–30%' },
       { unitNumber: 2, title: 'Probability, Random Variables, and Probability Distributions', weight: 'Weight: 15%–25%' },
       { unitNumber: 3, title: 'Inference for Categorical Data: Proportions', weight: 'Weight: 15%–25%' },
@@ -230,6 +231,7 @@ export const ALL_TEST_PREP_SUBJECTS: TestPrepSubject[] = [
     category: 'Sciences',
     badgeColor: 'bg-[#6366f1]',
     units: [
+      { unitNumber: 0, title: 'Full Course Mixed Master Set (Units 1–8 Comprehensive)', weight: 'Weight: 100%' },
       { unitNumber: 1, title: 'Kinematics: 1D & 2D Motion', weight: 'Weight: 12%–18%' },
       { unitNumber: 2, title: 'Force and Translational Dynamics', weight: 'Weight: 16%–20%' },
       { unitNumber: 3, title: 'Work, Energy, and Power', weight: 'Weight: 16%–24%' },
@@ -247,6 +249,7 @@ export const ALL_TEST_PREP_SUBJECTS: TestPrepSubject[] = [
     category: 'Sciences',
     badgeColor: 'bg-[#a855f7]',
     units: [
+      { unitNumber: 0, title: 'Full Course Mixed Master Set (Units 1–9 Comprehensive)', weight: 'Weight: 100%' },
       { unitNumber: 1, title: 'Atomic Structure and Properties', weight: 'Weight: 7%–9%' },
       { unitNumber: 2, title: 'Molecular and Ionic Compound Structure', weight: 'Weight: 7%–9%' },
       { unitNumber: 3, title: 'Intermolecular Forces and Properties', weight: 'Weight: 18%–22%' },
@@ -265,7 +268,7 @@ export const ALL_TEST_PREP_SUBJECTS: TestPrepSubject[] = [
     category: 'Sciences',
     badgeColor: 'bg-[#10b981]',
     units: [
-      { unitNumber: 0, title: 'Full Curriculum Mixed Master Set (Units 1–8 Comprehensive)', weight: 'Weight: 100%' },
+      { unitNumber: 0, title: 'Full Course Mixed Master Set (Units 1–8 Comprehensive)', weight: 'Weight: 100%' },
       { unitNumber: 1, title: 'Chemistry of Life (Water, Carbon, Macromolecules)', weight: 'Weight: 8%–11%' },
       { unitNumber: 2, title: 'Cell Structure and Function', weight: 'Weight: 10%–13%' },
       { unitNumber: 3, title: 'Cellular Energetics (Photosynthesis & Respiration)', weight: 'Weight: 12%–16%' },
@@ -283,7 +286,7 @@ export const ALL_TEST_PREP_SUBJECTS: TestPrepSubject[] = [
     category: 'Sciences',
     badgeColor: 'bg-[#15803d]',
     units: [
-      { unitNumber: 0, title: 'Full Course Mixed Master Practice Set (Units 1–9 Comprehensive 250Q)', weight: 'Weight: 100%' },
+      { unitNumber: 0, title: 'Full Course Mixed Master Set (Units 1–9 Comprehensive)', weight: 'Weight: 100%' },
       { unitNumber: 1, title: 'The Living World: Ecosystems', weight: 'Weight: 6%–8%' },
       { unitNumber: 2, title: 'The Living World: Biodiversity', weight: 'Weight: 6%–8%' },
       { unitNumber: 3, title: 'Populations & Demographic Transition', weight: 'Weight: 10%–15%' },
@@ -304,7 +307,7 @@ export const ALL_TEST_PREP_SUBJECTS: TestPrepSubject[] = [
     category: 'Humanities & Social Sciences',
     badgeColor: 'bg-[#ea580c]',
     units: [
-      { unitNumber: 0, title: 'Full Course Mixed Master Practice Set (Units 1–7 Comprehensive 250Q)', weight: 'Weight: 100%' },
+      { unitNumber: 0, title: 'Full Course Mixed Master Set (Units 1–7 Comprehensive)', weight: 'Weight: 100%' },
       { unitNumber: 1, title: 'Thinking Geographically & Spatial Analysis', weight: 'Weight: 8%–10%' },
       { unitNumber: 2, title: 'Population and Migration Patterns & Processes', weight: 'Weight: 12%–17%' },
       { unitNumber: 3, title: 'Cultural Patterns and Processes (Language, Religion)', weight: 'Weight: 12%–17%' },
@@ -321,6 +324,7 @@ export const ALL_TEST_PREP_SUBJECTS: TestPrepSubject[] = [
     category: 'Humanities & Social Sciences',
     badgeColor: 'bg-[#db2777]',
     units: [
+      { unitNumber: 0, title: 'Full Course Mixed Master Set (Units 1–5 Comprehensive)', weight: 'Weight: 100%' },
       { unitNumber: 1, title: 'Biological Bases of Behavior & Brain Structures', weight: 'Weight: 15%–25%' },
       { unitNumber: 2, title: 'Cognition, Memory, Intelligence & Problem Solving', weight: 'Weight: 15%–25%' },
       { unitNumber: 3, title: 'Development and Learning Across the Lifespan', weight: 'Weight: 15%–25%' },
@@ -335,6 +339,7 @@ export const ALL_TEST_PREP_SUBJECTS: TestPrepSubject[] = [
     category: 'Humanities & Social Sciences',
     badgeColor: 'bg-[#dc2626]',
     units: [
+      { unitNumber: 0, title: 'Full Course Mixed Master Set (Periods 1–9 Comprehensive)', weight: 'Weight: 100%' },
       { unitNumber: 1, title: 'Period 1: 1491–1607 (Pre-Columbian & First Contact)', weight: 'Weight: 4%–6%' },
       { unitNumber: 2, title: 'Period 2: 1607–1754 (Colonial America)', weight: 'Weight: 6%–8%' },
       { unitNumber: 3, title: 'Period 3: 1754–1800 (Revolution & Early Republic)', weight: 'Weight: 10%–17%' },
@@ -353,6 +358,7 @@ export const ALL_TEST_PREP_SUBJECTS: TestPrepSubject[] = [
     category: 'Humanities & Social Sciences',
     badgeColor: 'bg-[#d97706]',
     units: [
+      { unitNumber: 0, title: 'Full Course Mixed Master Set (Units 1–9 Comprehensive)', weight: 'Weight: 100%' },
       { unitNumber: 1, title: 'Unit 1: The Global Tapestry (c. 1200–c. 1450)', weight: 'Weight: 8%–10%' },
       { unitNumber: 2, title: 'Unit 2: Networks of Exchange (Silk Road, Indian Ocean)', weight: 'Weight: 8%–10%' },
       { unitNumber: 3, title: 'Unit 3: Land-Based Empires (c. 1450–c. 1750)', weight: 'Weight: 12%–15%' },
@@ -371,6 +377,7 @@ export const ALL_TEST_PREP_SUBJECTS: TestPrepSubject[] = [
     category: 'Humanities & Social Sciences',
     badgeColor: 'bg-[#10b981]',
     units: [
+      { unitNumber: 0, title: 'Full Course Mixed Master Set (Units 1–6 Comprehensive)', weight: 'Weight: 100%' },
       { unitNumber: 1, title: 'Basic Economic Concepts (PPC, Trade, Scarcity)', weight: 'Weight: 12%–15%' },
       { unitNumber: 2, title: 'Supply and Demand, Elasticity & Equilibrium', weight: 'Weight: 20%–25%' },
       { unitNumber: 3, title: 'Production, Cost, and Perfect Competition', weight: 'Weight: 22%–28%' },
@@ -386,6 +393,7 @@ export const ALL_TEST_PREP_SUBJECTS: TestPrepSubject[] = [
     category: 'Humanities & Social Sciences',
     badgeColor: 'bg-[#0ea5e9]',
     units: [
+      { unitNumber: 0, title: 'Full Course Mixed Master Set (Units 1–6 Comprehensive)', weight: 'Weight: 100%' },
       { unitNumber: 1, title: 'Basic Economic Concepts (Scarcity & Opportunity Cost)', weight: 'Weight: 5%–10%' },
       { unitNumber: 2, title: 'Economic Indicators & Circular Flow (GDP, Inflation)', weight: 'Weight: 12%–17%' },
       { unitNumber: 3, title: 'AD-AS Model and Fiscal Policy', weight: 'Weight: 17%–27%' },
@@ -403,6 +411,7 @@ export const ALL_TEST_PREP_SUBJECTS: TestPrepSubject[] = [
     category: 'English & Tech',
     badgeColor: 'bg-[#4f46e5]',
     units: [
+      { unitNumber: 0, title: 'Full Course Mixed Master Set (Units 1–10 Comprehensive)', weight: 'Weight: 100%' },
       { unitNumber: 1, title: 'Primitive Types (Variables & Arithmetic)', weight: 'Weight: 2.5%–5%' },
       { unitNumber: 2, title: 'Using Objects (String, Math, Classes)', weight: 'Weight: 5%–7.5%' },
       { unitNumber: 3, title: 'Boolean Expressions and if Statements', weight: 'Weight: 15%–17.5%' },
@@ -422,7 +431,7 @@ export const ALL_TEST_PREP_SUBJECTS: TestPrepSubject[] = [
     category: 'English & Tech',
     badgeColor: 'bg-[#0891b2]',
     units: [
-      { unitNumber: 0, title: 'Full Course Mixed Master Practice Set (Big Ideas 1–5 Comprehensive 250Q)', weight: 'Weight: 100%' },
+      { unitNumber: 0, title: 'Full Course Mixed Master Set (Big Ideas 1–5 Comprehensive)', weight: 'Weight: 100%' },
       { unitNumber: 1, title: 'Creative Development & Collaboration', weight: 'Weight: 10%–13%' },
       { unitNumber: 2, title: 'Data Representation & Compression', weight: 'Weight: 17%–22%' },
       { unitNumber: 3, title: 'Algorithms and Programming (Pseudocode)', weight: 'Weight: 30%–35%' },
@@ -437,6 +446,7 @@ export const ALL_TEST_PREP_SUBJECTS: TestPrepSubject[] = [
     category: 'English & Tech',
     badgeColor: 'bg-[#0284c7]',
     units: [
+      { unitNumber: 0, title: 'Full Course Mixed Master Set (Skills & FRQ Comprehensive)', weight: 'Weight: 100%' },
       { unitNumber: 1, title: 'Rhetorical Situation: Claims & Exigence', weight: 'Weight: 11%–14%' },
       { unitNumber: 2, title: 'Appeals, Audience & Line of Reasoning', weight: 'Weight: 11%–14%' },
       { unitNumber: 3, title: 'Synthesis: Evaluating Multiple Sources', weight: 'Weight: 33% FRQ' },
