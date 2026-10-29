@@ -73,9 +73,10 @@ interface PassiveUsageItem {
   dateString: string;
 }
 
-const ActivityIndicator = ({ color }: { color?: string }) => {
+const ActivityIndicator = ({ color, size = "sm" }: { color?: string; size?: "sm" | "md" | "lg" }) => {
+  const sizeClasses = size === "lg" ? "h-8 w-8" : size === "md" ? "h-6 w-6" : "h-4 w-4";
   return (
-    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <svg className={`animate-spin ${sizeClasses}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke={color || "currentColor"} strokeWidth="4"></circle>
       <path className="opacity-75" fill={color || "currentColor"} d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
     </svg>
@@ -231,6 +232,7 @@ export default function Profile({
   // Settings Slideover Panel
   const [showSettings, setShowSettings] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showStreakDetails, setShowStreakDetails] = useState(false);
 
   const [claimedMilestones, setClaimedMilestones] = useState<{ [key: number]: boolean }>(() => {
@@ -1318,36 +1320,45 @@ export default function Profile({
   };
 
   const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
     triggerVibration(15);
-    const uid = auth.currentUser?.uid || user?.uid;
-    if (uid) {
-      await releaseUserSession(uid);
-    }
-    // Sync any unsynced focus time to Firestore before logging out
-    await syncUsageToFirestore();
-    setIsVip(false);
-    safeRemoveItem('apexam_active_user_session');
-    safeRemoveItem('apexam_user_authenticated');
-    safeRemoveItem('apexam_login_in_progress');
-    safeRemoveItem('last_logged_in_user');
-    safeRemoveItem('last_logged_in_user_email');
-    safeClearAll();
-    
-    // Clear Native Capacitor Google Auth session so that Account Chooser is shown on next login
-    if (Capacitor.isNativePlatform()) {
-      try {
-        await FirebaseAuthentication.signOut();
-      } catch (nativeSignOutErr) {
-        console.warn('[Logout] Native FirebaseAuthentication.signOut notice:', nativeSignOutErr);
+    try {
+      const uid = auth.currentUser?.uid || user?.uid;
+      if (uid) {
+        try { await releaseUserSession(uid); } catch (_) {}
       }
-      // Also clear Android Credential Manager's remembered account, otherwise
-      // the next Google Sign-In silently reuses this account without showing the picker.
-      await clearGoogleCredentialState();
+      // Sync any unsynced focus time to Firestore before logging out
+      try { await syncUsageToFirestore(); } catch (_) {}
+      setIsVip(false);
+      safeRemoveItem('apexam_active_user_session');
+      safeRemoveItem('apexam_user_authenticated');
+      safeRemoveItem('apexam_login_in_progress');
+      safeRemoveItem('last_logged_in_user');
+      safeRemoveItem('last_logged_in_user_email');
+      safeClearAll();
+      
+      // Clear Native Capacitor Google Auth session so that Account Chooser is shown on next login
+      if (Capacitor.isNativePlatform()) {
+        try {
+          await FirebaseAuthentication.signOut();
+        } catch (nativeSignOutErr) {
+          console.warn('[Logout] Native FirebaseAuthentication.signOut notice:', nativeSignOutErr);
+        }
+        // Also clear Android Credential Manager's remembered account, otherwise
+        // the next Google Sign-In silently reuses this account without showing the picker.
+        try { await clearGoogleCredentialState(); } catch (_) {}
+      }
+      
+      await signOut(auth);
+      setShowSettings(false);
+      showToast("👋 Logged out successfully");
+    } catch (logoutErr) {
+      console.error('[Logout Error]', logoutErr);
+      showToast("❌ Logout notice: session cleared.");
+    } finally {
+      setIsLoggingOut(false);
     }
-    
-    await signOut(auth);
-    setShowSettings(false);
-    showToast("👋 Logged out successfully");
   };
 
   const triggerConfetti = () => {
@@ -2826,10 +2837,20 @@ export default function Profile({
                   {user ? (
                     <button 
                       onClick={handleLogout}
-                      className="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white py-3.5 rounded-2xl font-black shadow-md shadow-red-500/10 active:scale-99 transition-all cursor-pointer text-xs uppercase tracking-wide"
+                      disabled={isLoggingOut || isDeleting}
+                      className="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white py-3.5 rounded-2xl font-black shadow-md shadow-red-500/10 active:scale-99 transition-all cursor-pointer text-xs uppercase tracking-wide disabled:opacity-60"
                     >
-                      <LogOut className="w-4 h-4" />
-                      <span>Log Out</span>
+                      {isLoggingOut ? (
+                        <>
+                          <ActivityIndicator color="#FFFFFF" />
+                          <span>Logging Out...</span>
+                        </>
+                      ) : (
+                        <>
+                          <LogOut className="w-4 h-4" />
+                          <span>Log Out</span>
+                        </>
+                      )}
                     </button>
                   ) : onOpenLogin && (
                     <button 
@@ -3455,6 +3476,25 @@ export default function Profile({
           </div>
         )}
       </AnimatePresence>
+
+      {/* Global Action Processing Overlay for Logout & Account Deletion */}
+      {(isLoggingOut || isDeleting) && (
+        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-6 max-w-xs w-full shadow-2xl flex flex-col items-center gap-4 border border-zinc-100">
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${isDeleting ? 'bg-rose-50 text-rose-600' : 'bg-red-50 text-red-600'}`}>
+              <ActivityIndicator color={isDeleting ? '#E11D48' : '#EF4444'} size="lg" />
+            </div>
+            <div>
+              <h4 className="text-base font-black text-zinc-900">
+                {isDeleting ? "Wiping Account & Data..." : "Logging Out..."}
+              </h4>
+              <p className="text-xs text-zinc-500 font-semibold mt-1">
+                {isDeleting ? "Securely erasing cloud storage and local caches..." : "Safely ending your session..."}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

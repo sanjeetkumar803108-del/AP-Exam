@@ -758,8 +758,17 @@ export default function Login({
           disabled={loading}
           className="w-full max-w-sm bg-white border border-zinc-200 text-zinc-800 font-bold py-4 rounded-2xl mt-8 flex items-center justify-center gap-3 hover:bg-zinc-50 transition-colors shadow-sm active:scale-[0.98] cursor-pointer disabled:opacity-75"
         >
-          <GoogleGIcon className="w-5 h-5 shrink-0" />
-          GOOGLE SIGN-IN
+          {loading ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="w-5 h-5 animate-spin text-zinc-600" />
+              <span>CONNECTING TO GOOGLE...</span>
+            </div>
+          ) : (
+            <>
+              <GoogleGIcon className="w-5 h-5 shrink-0" />
+              <span>GOOGLE SIGN-IN</span>
+            </>
+          )}
         </button>
 
         <div className="mt-8 text-sm text-zinc-500 font-medium">
