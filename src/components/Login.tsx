@@ -407,23 +407,50 @@ export default function Login({
             loggedUser = auth.currentUser;
           }
         } catch (nativeErr: any) {
-          console.error('[Native Google Sign-In failed]:', nativeErr);
+          console.warn('[Native Google Sign-In Notice]:', nativeErr);
           const errMsg = nativeErr?.message || String(nativeErr);
           
           // User genuinely clicked outside/cancelled the dialog
-          if (errMsg.includes('12501') || errMsg.toLowerCase().includes('cancel')) {
+          if (errMsg.includes('12501') || errMsg.toLowerCase().includes('cancel') || errMsg.includes('SIGN_IN_CANCELLED')) {
             clearTimeout(googleLoadingTimer);
             safeRemoveItem('apexam_login_in_progress');
             setLoading(false);
             return;
           }
 
-          // Code 10 Developer Error: SHA-1 mismatch or Google sign-in not enabled in Firebase Console
-          if (errMsg.includes('10') || errMsg.toLowerCase().includes('developer_error')) {
+          // Bulletproof Fallback: If native One-Tap / Credential Manager fails with 28439
+          // (User disabled the feature / rate-limited) or One-Tap is suppressed on this device:
+          if (
+            errMsg.includes('28439') || 
+            errMsg.toLowerCase().includes('user disabled the feature') || 
+            errMsg.toLowerCase().includes('one tap') ||
+            errMsg.includes('16') ||
+            errMsg.includes('12500')
+          ) {
+            console.log('[Google Auth] Native One-Tap disabled or in cooldown on device, gracefully using standard Google OAuth...');
+            try {
+              const freshProvider = new GoogleAuthProvider();
+              freshProvider.setCustomParameters({ prompt: 'select_account' });
+              const userCredential = await signInWithPopup(auth, freshProvider);
+              loggedUser = userCredential.user;
+            } catch (popupErr: any) {
+              if (popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/cancelled-popup-request') {
+                await signInWithRedirect(auth, new GoogleAuthProvider());
+                return;
+              }
+              if (popupErr.code === 'auth/cancelled-popup-request' || popupErr.message?.includes('cancelled')) {
+                clearTimeout(googleLoadingTimer);
+                safeRemoveItem('apexam_login_in_progress');
+                setLoading(false);
+                return;
+              }
+              throw new Error('Google Sign-In prompt is paused in phone settings. Please clear Google Play Services cache (Settings > Apps > Google Play Services > Clear Cache) or enable Google Sign-In prompts in Google settings.');
+            }
+          } else if (errMsg.includes('10') || errMsg.toLowerCase().includes('developer_error')) {
             throw new Error('Google Sign-In Error (Code 10): SHA-1 Fingerprint missing in Firebase Console or Google provider is disabled.');
+          } else {
+            throw new Error(errMsg || 'Google Sign-In failed on this device. Please check Google Play Services.');
           }
-
-          throw new Error(errMsg || 'Google Sign-In failed on this device. Please check Google Play Services.');
         }
       } else {
         // WEB BROWSER PATH ONLY - Force Google Account Chooser
