@@ -103,6 +103,10 @@ app.all(["/api/health", "/health", "/api/status"], (req, res) => {
 // 3. Global Input Sanitization Middleware (Injection & XSS Prevention)
 const sanitizeInput = (obj: any): any => {
   if (typeof obj === 'string') {
+    // Fast path: Skip CPU-heavy regex parsing on large raw Base64 data or data URLs that contain no HTML
+    if (obj.startsWith('data:') || (obj.length > 2000 && !obj.includes('<') && !obj.includes('>'))) {
+      return obj;
+    }
     return xss(obj); // Strips <script> and dangerous HTML
   }
   if (Array.isArray(obj)) {
@@ -315,9 +319,6 @@ const rateLimitedModelsCooldown: Record<string, number> = {};
 // express.json already registered above (50MB limit)
 
 app.use((req, res, next) => {
-  if (req.body) {
-    req.body = sanitizeInput(req.body);
-  }
   if (req.query) {
     req.query = sanitizeInput(req.query);
   }
@@ -7206,14 +7207,18 @@ function loadUnitPdfsFromDisk() {
 }
 
 function saveUnitPdfsToDisk() {
-  const json = JSON.stringify(unitPdfsVault, null, 2);
+  const json = JSON.stringify(unitPdfsVault);
   try {
     const dir = path.dirname(PRIMARY_UNIT_PDFS_FILE);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(PRIMARY_UNIT_PDFS_FILE, json, "utf-8");
+    fs.writeFile(PRIMARY_UNIT_PDFS_FILE, json, "utf-8", (primaryErr) => {
+      if (primaryErr) {
+        fs.writeFile(TMP_UNIT_PDFS_FILE, json, "utf-8", () => {});
+      }
+    });
   } catch (primaryErr) {
     try {
-      fs.writeFileSync(TMP_UNIT_PDFS_FILE, json, "utf-8");
+      fs.writeFile(TMP_UNIT_PDFS_FILE, json, "utf-8", () => {});
     } catch (tmpErr) {
       console.warn("[UnitPdfVault] Write notice:", tmpErr);
     }
