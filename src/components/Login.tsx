@@ -542,7 +542,8 @@ export default function Login({
   };
 
   const handleSendResetEmail = async (emailToReset: string) => {
-    if (!emailToReset || !emailToReset.trim()) {
+    const cleanEmail = (emailToReset || '').trim().toLowerCase();
+    if (!cleanEmail) {
       Alert.alert("Error", "Please enter your email address first.");
       setForgotError("Please enter your email address first.");
       return;
@@ -551,14 +552,15 @@ export default function Login({
     setForgotError(null);
     setForgotMessage(null);
     try {
-      await sendPasswordResetEmail(auth, emailToReset.trim());
-      Alert.alert("Check Your Email", "A password reset link has been sent to your email address. Please check your Spam box in your Email id.");
-      setForgotMessage("A password reset link has been sent to your email address. Please check your Spam box in your Email id.");
+      await sendPasswordResetEmail(auth, cleanEmail);
+      const successMsg = "A password reset link has been sent to your email. Please check your Inbox and Spam/Junk folder (Sender: noreply@ap-exam-6d92d.firebaseapp.com).";
+      Alert.alert("Check Your Email", successMsg);
+      setForgotMessage(successMsg);
     } catch (err: any) {
       console.warn('[Forgot Password Error]', err?.code, err?.message);
       let errMsg = "Failed to send reset email. Please try again.";
       if (err?.code === 'auth/user-not-found') {
-        errMsg = "No user found with this email address.";
+        errMsg = "No account found with this email. Please sign up or continue with Google.";
       } else if (err?.code === 'auth/invalid-email') {
         errMsg = "Please enter a valid email address.";
       } else if (err?.message) {
