@@ -302,15 +302,17 @@ export default function App() {
 
   const [isVip, setIsVip] = useState(() => {
     const isDevAuth = safeGetItem('is_developer_authenticated') === 'true';
-    if (isDevAuth) return true;
     const lastUser = safeGetItem('last_logged_in_user');
+    const lastUserEmail = safeGetItem('last_logged_in_user_email')?.toLowerCase()?.trim();
+    const isOwner = lastUserEmail === 'sanjeetkumar803108@gmail.com';
+    if (isOwner || isDevAuth) return true;
     if (lastUser) {
       const cachedVip = safeGetItem(`study_is_vip_${lastUser}`);
       const lockedVip = safeGetItem(`apexam_pro_lifetime_lock_${lastUser}`);
       if (cachedVip === 'true' || lockedVip === 'true') return true;
-      if (cachedVip === 'false' && lockedVip !== 'true') return false;
+      return false;
     }
-    return safeGetItem('study_is_vip') === 'true' || safeGetItem('apexam_pro_lifetime_lock') === 'true';
+    return false;
   });
   const isProUser = isVip; // Alias for consistency with new requirements
   const [showVipModal, setShowVipModal] = useState(false);
@@ -368,15 +370,20 @@ export default function App() {
 
   const handleSetIsVip = (val: boolean) => {
     setIsVip(val);
-    safeSetItem('study_is_vip', String(val));
     if (val) {
-      safeSetItem('apexam_pro_lifetime_lock', 'true');
-    }
-    if (user) {
-      safeSetItem(`study_is_vip_${user.uid}`, String(val));
-      if (val) {
+      safeSetItem('study_is_vip', 'true');
+      if (user) {
+        safeSetItem(`study_is_vip_${user.uid}`, 'true');
         safeSetItem(`apexam_pro_lifetime_lock_${user.uid}`, 'true');
         setDoc(doc(db, 'users', user.uid), { isPro: true }, { merge: true }).catch(() => {});
+      }
+    } else {
+      safeRemoveItem('study_is_vip');
+      safeRemoveItem('apexam_pro_lifetime_lock');
+      if (user) {
+        safeRemoveItem(`study_is_vip_${user.uid}`);
+        safeRemoveItem(`apexam_pro_lifetime_lock_${user.uid}`);
+        setDoc(doc(db, 'users', user.uid), { isPro: false }, { merge: true }).catch(() => {});
       }
     }
   };
@@ -389,6 +396,17 @@ export default function App() {
       colors: ['#F59E0B', '#EF4444', '#10B981', '#3B82F6']
     });
   };
+
+  useEffect(() => {
+    // One-time device hygiene: prevent stale device-wide locks from contaminating new accounts
+    const activeEmail = (auth.currentUser?.email || safeGetItem('last_logged_in_user_email') || '').toLowerCase().trim();
+    if (activeEmail !== 'sanjeetkumar803108@gmail.com') {
+      safeRemoveItem('apexam_pro_lifetime_lock');
+      if (!auth.currentUser) {
+        safeRemoveItem('study_is_vip');
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const handleOpenVip = () => {
@@ -561,14 +579,15 @@ export default function App() {
         const isOwnerEmail = (currentUser.email || '').toLowerCase() === 'sanjeetkumar803108@gmail.com';
         const cachedUserVip = 
           isOwnerEmail ||
-          safeGetItem('is_developer_authenticated') === 'true' ||
           safeGetItem(`study_is_vip_${currentUser.uid}`) === 'true' ||
-          safeGetItem(`apexam_pro_lifetime_lock_${currentUser.uid}`) === 'true' ||
-          safeGetItem('apexam_pro_lifetime_lock') === 'true';
+          safeGetItem(`apexam_pro_lifetime_lock_${currentUser.uid}`) === 'true';
         setIsVip(cachedUserVip);
         if (cachedUserVip) {
           safeSetItem('study_is_vip', 'true');
           safeSetItem(`study_is_vip_${currentUser.uid}`, 'true');
+        } else {
+          safeRemoveItem('study_is_vip');
+          safeRemoveItem('apexam_pro_lifetime_lock');
         }
 
         // INSTANT OFFLINE-FIRST HYDRATION:
@@ -610,26 +629,28 @@ export default function App() {
 
               if (userData) {
                 if (typeof userData.isPro === 'boolean') {
-                  const hasLock = 
+                  const hasUserSpecificLock = 
                     isOwnerEmail ||
-                    safeGetItem('is_developer_authenticated') === 'true' ||
                     safeGetItem(`study_is_vip_${currentUser.uid}`) === 'true' ||
-                    safeGetItem(`apexam_pro_lifetime_lock_${currentUser.uid}`) === 'true' ||
-                    safeGetItem('apexam_pro_lifetime_lock') === 'true';
+                    safeGetItem(`apexam_pro_lifetime_lock_${currentUser.uid}`) === 'true';
 
-                  if (userData.isPro === true || hasLock) {
+                  if (isOwnerEmail || (userData.isPro === true && hasUserSpecificLock)) {
                     setIsVip(true);
                     safeSetItem('study_is_vip', 'true');
                     safeSetItem(`study_is_vip_${currentUser.uid}`, 'true');
                     safeSetItem(`apexam_pro_lifetime_lock_${currentUser.uid}`, 'true');
-                    if (userData.isPro !== true) {
-                      setDoc(doc(db, 'users', currentUser.uid), { isPro: true }, { merge: true }).catch(() => {});
-                    }
                     console.log('[Auth Check] Verified specific subscription status: PRO');
-                  } else if (userData.isPro === false && !hasLock) {
+                  } else {
+                    // Freemium student (new user or expired subscription)
                     setIsVip(false);
-                    safeSetItem('study_is_vip', 'false');
-                    safeSetItem(`study_is_vip_${currentUser.uid}`, 'false');
+                    safeRemoveItem('study_is_vip');
+                    safeRemoveItem('apexam_pro_lifetime_lock');
+                    safeRemoveItem(`study_is_vip_${currentUser.uid}`);
+                    safeRemoveItem(`apexam_pro_lifetime_lock_${currentUser.uid}`);
+                    if (userData.isPro === true && !isOwnerEmail) {
+                      setDoc(doc(db, 'users', currentUser.uid), { isPro: false }, { merge: true }).catch(() => {});
+                    }
+                    console.log('[Auth Check] Verified specific subscription status: FREEMIUM');
                   }
                 }
                 if (typeof userData.coins === 'number') {
@@ -712,24 +733,22 @@ export default function App() {
             });
             if (res.ok) {
               const data = await res.json();
-              const hasLock = 
+              const hasUserSpecificLock = 
                 isOwnerEmail ||
-                safeGetItem('is_developer_authenticated') === 'true' ||
                 safeGetItem(`study_is_vip_${currentUser.uid}`) === 'true' ||
-                safeGetItem(`apexam_pro_lifetime_lock_${currentUser.uid}`) === 'true' ||
-                safeGetItem('apexam_pro_lifetime_lock') === 'true';
+                safeGetItem(`apexam_pro_lifetime_lock_${currentUser.uid}`) === 'true';
 
-              if (data?.isPro === true || hasLock) {
+              if (isOwnerEmail || (data?.isPro === true && hasUserSpecificLock)) {
                 setIsVip(true);
                 safeSetItem('study_is_vip', 'true');
                 safeSetItem(`study_is_vip_${currentUser.uid}`, 'true');
                 safeSetItem(`apexam_pro_lifetime_lock_${currentUser.uid}`, 'true');
                 console.log(`[Auth Check] Verified specific subscription status from backend: PRO`);
                 return;
-              } else if (data && typeof data.isPro === 'boolean' && !hasLock) {
-                setIsVip(data.isPro);
-                safeSetItem('study_is_vip', String(data.isPro));
-                safeSetItem(`study_is_vip_${currentUser.uid}`, String(data.isPro));
+              } else if (data && typeof data.isPro === 'boolean' && !hasUserSpecificLock) {
+                setIsVip(data.isPro && isOwnerEmail);
+                safeSetItem('study_is_vip', String(data.isPro && isOwnerEmail));
+                safeSetItem(`study_is_vip_${currentUser.uid}`, String(data.isPro && isOwnerEmail));
                 return;
               }
             }
@@ -912,25 +931,25 @@ export default function App() {
         // 2. Sync Pro status
         if (typeof userData.isPro === 'boolean') {
           const isOwner = (user.email || '').toLowerCase() === 'sanjeetkumar803108@gmail.com';
-          const hasLock = 
+          const hasUserSpecificLock = 
             isOwner ||
-            safeGetItem('is_developer_authenticated') === 'true' ||
             safeGetItem(`study_is_vip_${user.uid}`) === 'true' ||
-            safeGetItem(`apexam_pro_lifetime_lock_${user.uid}`) === 'true' ||
-            safeGetItem('apexam_pro_lifetime_lock') === 'true';
+            safeGetItem(`apexam_pro_lifetime_lock_${user.uid}`) === 'true';
 
-          if (userData.isPro === true || hasLock) {
+          if (isOwner || (userData.isPro === true && hasUserSpecificLock)) {
             setIsVip(true);
             safeSetItem('study_is_vip', 'true');
             safeSetItem(`study_is_vip_${user.uid}`, 'true');
             safeSetItem(`apexam_pro_lifetime_lock_${user.uid}`, 'true');
-            if (userData.isPro !== true) {
-              setDoc(doc(db, 'users', user.uid), { isPro: true }, { merge: true }).catch(() => {});
-            }
-          } else if (userData.isPro === false && !hasLock) {
+          } else {
             setIsVip(false);
-            safeSetItem('study_is_vip', 'false');
-            safeSetItem(`study_is_vip_${user.uid}`, 'false');
+            safeRemoveItem('study_is_vip');
+            safeRemoveItem('apexam_pro_lifetime_lock');
+            safeRemoveItem(`study_is_vip_${user.uid}`);
+            safeRemoveItem(`apexam_pro_lifetime_lock_${user.uid}`);
+            if (userData.isPro === true && !isOwner) {
+              setDoc(doc(db, 'users', user.uid), { isPro: false }, { merge: true }).catch(() => {});
+            }
           }
         }
 

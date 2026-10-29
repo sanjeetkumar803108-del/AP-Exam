@@ -1296,6 +1296,11 @@ export default function Profile({
       
       // 1. Immediately wipe all local credentials & session flags so client session terminates instantly
       setIsVip(false);
+      safeRemoveItem('study_is_vip');
+      safeRemoveItem('apexam_pro_lifetime_lock');
+      if (uid) {
+        safeRemoveItem(`study_is_vip_${uid}`);
+      }
       safeRemoveItem('apexam_active_user_session');
       safeRemoveItem('apexam_user_authenticated');
       safeRemoveItem('apexam_login_in_progress');
@@ -1459,10 +1464,11 @@ export default function Profile({
       const uid = user.uid;
 
       // 1. Detect if the user currently has an active bought subscription
+      const isOwner = user?.email?.toLowerCase() === 'sanjeetkumar803108@gmail.com';
       const hasActiveSubscription = Boolean(
-        isVip || 
-        safeGetItem('study_is_vip') === 'true' || 
-        safeGetItem(`study_is_vip_${uid}`) === 'true'
+        isOwner || 
+        safeGetItem(`study_is_vip_${uid}`) === 'true' ||
+        safeGetItem(`apexam_pro_lifetime_lock_${uid}`) === 'true'
       );
 
       // 2. Fast parallel cloud data purge (bounded by 3.5s timeout so it never hangs)

@@ -127,12 +127,13 @@ class BillingService {
       // Notify the app that the user is now VIP/PRO
       window.dispatchEvent(new CustomEvent('study-vip-updated', { detail: true }));
     } else {
-      // PROTECTIVE GUARD: Never revoke PRO if the user or device already holds a valid Pro lock!
+      // PROTECTIVE GUARD: Never revoke PRO if the user already holds a valid Pro lock!
       const isOwner = currentUser?.email?.toLowerCase() === 'sanjeetkumar803108@gmail.com';
       const hasLock = isOwner ||
-        safeGetItem('apexam_pro_lifetime_lock') === 'true' ||
-        (currentUser && safeGetItem(`apexam_pro_lifetime_lock_${currentUser.uid}`) === 'true') ||
-        (currentUser && safeGetItem(`study_is_vip_${currentUser.uid}`) === 'true');
+        Boolean(currentUser && (
+          safeGetItem(`apexam_pro_lifetime_lock_${currentUser.uid}`) === 'true' ||
+          safeGetItem(`study_is_vip_${currentUser.uid}`) === 'true'
+        ));
 
       if (hasLock) {
         console.log('[BillingService] Active Pro lock present; ignoring downgrade command.');
@@ -158,9 +159,10 @@ class BillingService {
       const currentUser = auth.currentUser;
       const isOwner = currentUser?.email?.toLowerCase() === 'sanjeetkumar803108@gmail.com';
       const hasLocalLock = isOwner ||
-        safeGetItem('apexam_pro_lifetime_lock') === 'true' ||
-        (currentUser && safeGetItem(`apexam_pro_lifetime_lock_${currentUser.uid}`) === 'true') ||
-        (currentUser && safeGetItem(`study_is_vip_${currentUser.uid}`) === 'true');
+        Boolean(currentUser && (
+          safeGetItem(`apexam_pro_lifetime_lock_${currentUser.uid}`) === 'true' ||
+          safeGetItem(`study_is_vip_${currentUser.uid}`) === 'true'
+        ));
 
       if (Capacitor.isNativePlatform()) {
         const apiKey = (import.meta.env.VITE_REVENUECAT_API_KEY as string) || 'YOUR_REVENUECAT_API_KEY_ANDROID';

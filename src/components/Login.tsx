@@ -289,6 +289,10 @@ export default function Login({
         // Grant free coins initially in local storage for instant responsiveness
         const userKey = `study_daily_limit_${newUser.uid}`;
         safeSetItem(userKey, String(initialCoins));
+        safeRemoveItem('study_is_vip');
+        safeRemoveItem('apexam_pro_lifetime_lock');
+        safeRemoveItem(`study_is_vip_${newUser.uid}`);
+        safeRemoveItem(`apexam_pro_lifetime_lock_${newUser.uid}`);
         // Dispatch global update event to keep the UI in sync
         window.dispatchEvent(new CustomEvent('study-coins-updated', { detail: initialCoins }));
 
@@ -626,7 +630,11 @@ export default function Login({
   const handleSignOut = async () => {
     try {
       const currentUid = auth.currentUser?.uid;
+      safeRemoveItem('study_is_vip');
+      safeRemoveItem('apexam_pro_lifetime_lock');
       if (currentUid) {
+        safeRemoveItem(`study_is_vip_${currentUid}`);
+        safeRemoveItem(`apexam_pro_lifetime_lock_${currentUid}`);
         await releaseUserSession(currentUid);
       }
       if (Capacitor.isNativePlatform()) {
