@@ -371,15 +371,16 @@ export default function Login({
           try { await clearGoogleCredentialState(); } catch (_) {}
 
           let result;
-          // PRIMARY: Use legacy Google Sign-In (NOT Credential Manager).
-          // Legacy flow ALWAYS shows the account picker dialog — Credential Manager
-          // auto-selects a cached account silently, which is what caused the bug.
+          // PRIMARY: Use standard Google Sign-In client
           try {
-            console.log('[Google Auth] Attempting legacy sign-in (account picker guaranteed)...');
+            console.log('[Google Auth] Attempting standard native Google Sign-In...');
             result = await FirebaseAuthentication.signInWithGoogle({ useCredentialManager: false });
-          } catch (legacyErr: any) {
-            // FALLBACK: If legacy is unavailable on this device, try Credential Manager
-            console.warn('[Google Auth] Legacy sign-in unavailable, trying Credential Manager:', legacyErr?.message);
+          } catch (firstErr: any) {
+            const firstErrMsg = firstErr?.message || String(firstErr);
+            if (firstErrMsg.includes('12501') || firstErrMsg.toLowerCase().includes('cancel') || firstErrMsg.includes('SIGN_IN_CANCELLED')) {
+              throw firstErr; // user cancelled, don't retry
+            }
+            console.warn('[Google Auth] Retrying with Credential Manager:', firstErr?.message);
             result = await FirebaseAuthentication.signInWithGoogle();
           }
 
@@ -418,36 +419,16 @@ export default function Login({
             return;
           }
 
-          // Bulletproof Fallback: If native One-Tap / Credential Manager fails with 28439
-          // (User disabled the feature / rate-limited) or One-Tap is suppressed on this device:
-          if (
+          if (errMsg.includes('10') || errMsg.toLowerCase().includes('developer_error')) {
+            throw new Error('Google Sign-In Error (Code 10): SHA-1 Fingerprint missing in Firebase Console or Google provider is disabled.');
+          } else if (
             errMsg.includes('28439') || 
             errMsg.toLowerCase().includes('user disabled the feature') || 
             errMsg.toLowerCase().includes('one tap') ||
             errMsg.includes('16') ||
             errMsg.includes('12500')
           ) {
-            console.log('[Google Auth] Native One-Tap disabled or in cooldown on device, gracefully using standard Google OAuth...');
-            try {
-              const freshProvider = new GoogleAuthProvider();
-              freshProvider.setCustomParameters({ prompt: 'select_account' });
-              const userCredential = await signInWithPopup(auth, freshProvider);
-              loggedUser = userCredential.user;
-            } catch (popupErr: any) {
-              if (popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/cancelled-popup-request') {
-                await signInWithRedirect(auth, new GoogleAuthProvider());
-                return;
-              }
-              if (popupErr.code === 'auth/cancelled-popup-request' || popupErr.message?.includes('cancelled')) {
-                clearTimeout(googleLoadingTimer);
-                safeRemoveItem('apexam_login_in_progress');
-                setLoading(false);
-                return;
-              }
-              throw new Error('Google Sign-In prompt is paused in phone settings. Please clear Google Play Services cache (Settings > Apps > Google Play Services > Clear Cache) or enable Google Sign-In prompts in Google settings.');
-            }
-          } else if (errMsg.includes('10') || errMsg.toLowerCase().includes('developer_error')) {
-            throw new Error('Google Sign-In Error (Code 10): SHA-1 Fingerprint missing in Firebase Console or Google provider is disabled.');
+            throw new Error('Google Sign-In prompt is temporarily paused in your phone settings. Please clear Google Play Services cache (Settings > Apps > Google Play Services > Clear Cache) and try again.');
           } else {
             throw new Error(errMsg || 'Google Sign-In failed on this device. Please check Google Play Services.');
           }
