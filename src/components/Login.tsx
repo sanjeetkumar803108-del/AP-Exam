@@ -288,6 +288,17 @@ export default function Login({
         safeRemoveItem('academic_setup_completed');
         safeRemoveItem('pending_welcome_celebration');
         safeRemoveItem('welcome_penguin_seen_global');
+        // Initialize brand new user strictly with 0 XP
+        safeSetItem(`study_total_xp_${newUser.uid}`, '0');
+        safeSetItem('study_total_xp', '0');
+        safeRemoveItem(`study_quest_scan_count_${newUser.uid}`);
+        safeRemoveItem(`study_quest_calc_count_${newUser.uid}`);
+        safeRemoveItem(`study_quest_note_count_${newUser.uid}`);
+        safeRemoveItem(`study_quest_tutor_count_${newUser.uid}`);
+        safeRemoveItem(`study_claimed_quests_${newUser.uid}`);
+        safeRemoveItem(`study_claimed_badges_${newUser.uid}`);
+        safeRemoveItem('study_daily_xp_earned');
+        window.dispatchEvent(new CustomEvent('study-xp-updated', { detail: { xp: 0 } }));
         // Dispatch global update event to keep the UI in sync
         window.dispatchEvent(new CustomEvent('study-coins-updated', { detail: initialCoins }));
 
@@ -297,6 +308,7 @@ export default function Login({
             userId: newUser.uid,
             email: newUser.email || cleanEmail,
             coins: initialCoins,
+            studyXP: 0,
             isPro: false,
             createdAt: new Date().toISOString()
           });

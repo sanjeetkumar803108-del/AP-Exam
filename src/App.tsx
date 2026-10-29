@@ -679,6 +679,13 @@ export default function App() {
                   window.dispatchEvent(new CustomEvent('study-coins-updated', { detail: initialCoins }));
                   await setDoc(doc(db, 'users', currentUser.uid), { coins: initialCoins }, { merge: true });
                 }
+
+                // Sync Gamification XP strictly from Firestore (defaults to 0 for fresh accounts)
+                const userXP = typeof userData.studyXP === 'number' ? userData.studyXP : 0;
+                safeSetItem(`study_total_xp_${currentUser.uid}`, String(userXP));
+                safeSetItem('study_total_xp', String(userXP));
+                window.dispatchEvent(new CustomEvent('study-xp-updated', { detail: { xp: userXP } }));
+                console.log(`[Auth Check] Synced XP from Firestore for ${currentUser.uid}: ${userXP}`);
                 return;
               }
             } else {
@@ -704,14 +711,20 @@ export default function App() {
               safeSetItem(userKey, String(initialCoins));
               window.dispatchEvent(new CustomEvent('study-coins-updated', { detail: initialCoins }));
 
+              // Brand new user initialized strictly with 0 XP
+              safeSetItem(`study_total_xp_${currentUser.uid}`, '0');
+              safeSetItem('study_total_xp', '0');
+              window.dispatchEvent(new CustomEvent('study-xp-updated', { detail: { xp: 0 } }));
+
               await setDoc(doc(db, 'users', currentUser.uid), {
                 userId: currentUser.uid,
                 email: currentUser.email || '',
                 coins: initialCoins,
+                studyXP: 0,
                 isPro: false,
                 createdAt: new Date().toISOString()
               });
-              console.log(`[Auth Check] Initialized new user document in Firestore with ${initialCoins} coins`);
+              console.log(`[Auth Check] Initialized new user document in Firestore with ${initialCoins} coins and 0 XP`);
             }
           } catch (fsErr) {
             console.warn('[Auth Check] Firestore fetch failed, falling back to REST/Cache:', fsErr);
@@ -770,6 +783,8 @@ export default function App() {
       } else {
         // Guest user state: clean up session and reset state
         safeRemoveItem('apexam_active_user_session');
+        safeSetItem('study_total_xp', '0');
+        window.dispatchEvent(new CustomEvent('study-xp-updated', { detail: { xp: 0 } }));
         setIsVip(false);
         setUser(null);
         setAuthLoading(false);

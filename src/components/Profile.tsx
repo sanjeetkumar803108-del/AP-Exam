@@ -340,16 +340,24 @@ export default function Profile({
   const [toast, setToast] = useState<string | null>(null);
 
   // Gamification: XP, Levels, Quests and Badges
-  const [studyXP, setStudyXP] = useState<number>(getStudyXP);
-  const [weeklyQuests, setWeeklyQuests] = useState<Quest[]>(getWeeklyQuests);
-  const [achievementBadges, setAchievementBadges] = useState<AchievementBadge[]>(getBadgesStatus);
+  const [studyXP, setStudyXP] = useState<number>(() => getStudyXP(user?.uid));
+  const [weeklyQuests, setWeeklyQuests] = useState<Quest[]>(() => getWeeklyQuests(user?.uid));
+  const [achievementBadges, setAchievementBadges] = useState<AchievementBadge[]>(() => getBadgesStatus(user?.uid));
   const [dailyXP, setDailyXP] = useState(getDailyXPStatus);
 
   useEffect(() => {
+    const currentUid = user?.uid;
+    setStudyXP(getStudyXP(currentUid));
+    setWeeklyQuests(getWeeklyQuests(currentUid));
+    setAchievementBadges(getBadgesStatus(currentUid));
+  }, [user?.uid]);
+
+  useEffect(() => {
     const handleXpUpdate = () => {
-      setStudyXP(getStudyXP());
-      setWeeklyQuests(getWeeklyQuests());
-      setAchievementBadges(getBadgesStatus());
+      const currentUid = user?.uid;
+      setStudyXP(getStudyXP(currentUid));
+      setWeeklyQuests(getWeeklyQuests(currentUid));
+      setAchievementBadges(getBadgesStatus(currentUid));
       setDailyXP(getDailyXPStatus());
     };
     window.addEventListener('study-xp-updated', handleXpUpdate);
@@ -360,7 +368,7 @@ export default function Profile({
       window.removeEventListener('study-daily-xp-updated', handleXpUpdate);
       window.removeEventListener('study-quests-updated', handleXpUpdate);
     };
-  }, []);
+  }, [user?.uid]);
 
   // Hardware Android Back Button Navigation (Step-by-step)
   useEffect(() => {
@@ -457,6 +465,12 @@ export default function Profile({
           // Overwrite local storage and update state
           safeSetItem('study_passive_usage_data', JSON.stringify(firestoreUsage));
           setChartData(generateChartData(firestoreUsage));
+
+          // Sync user XP strictly from Firestore (0 for new users)
+          const firestoreXP = typeof userData.studyXP === 'number' ? userData.studyXP : 0;
+          safeSetItem(`study_total_xp_${user.uid}`, String(firestoreXP));
+          safeSetItem('study_total_xp', String(firestoreXP));
+          setStudyXP(firestoreXP);
         }
       } catch (err) {
         console.error("[UsageTracker] Error loading Firestore usage stats:", err);

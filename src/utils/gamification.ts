@@ -60,14 +60,31 @@ export const ALL_BADGES: AchievementBadge[] = [
 ];
 
 /**
- * Get current total Study XP
+ * Get current total Study XP for a specific user (or currently authenticated user).
+ * New accounts or unauthenticated users strictly default to 0 XP.
  */
-export function getStudyXP(): number {
-  const xpStr = safeGetItem('study_total_xp');
-  if (!xpStr) {
+export function getStudyXP(uid?: string): number {
+  const activeUid = uid || auth.currentUser?.uid;
+  if (!activeUid) {
     return 0;
   }
-  return parseInt(xpStr, 10) || 0;
+  const userXpStr = safeGetItem(`study_total_xp_${activeUid}`);
+  if (userXpStr !== null) {
+    return parseInt(userXpStr, 10) || 0;
+  }
+  // Default strictly to 0 for a fresh user so old device data never bleeds
+  return 0;
+}
+
+/**
+ * Explicitly sync or set XP for a specific user across local storage and broadcast
+ */
+export function syncUserStudyXP(uid: string, xp: number) {
+  if (!uid) return;
+  const validXP = Math.max(0, xp || 0);
+  safeSetItem(`study_total_xp_${uid}`, String(validXP));
+  safeSetItem('study_total_xp', String(validXP));
+  window.dispatchEvent(new CustomEvent('study-xp-updated', { detail: { xp: validXP } }));
 }
 
 /**
@@ -198,13 +215,16 @@ export function addStudyXP(
   safeSetItem('study_daily_xp_date', getTodayKey());
 
   const newXP = currentXP + effectiveAmount;
+  const activeUid = auth.currentUser?.uid;
+  if (activeUid) {
+    safeSetItem(`study_total_xp_${activeUid}`, String(newXP));
+  }
   safeSetItem('study_total_xp', String(newXP));
 
   // Sync to Firestore under users/{uid} document
   try {
-    const currentUser = auth.currentUser;
-    if (currentUser) {
-      setDoc(doc(db, 'users', currentUser.uid), {
+    if (activeUid) {
+      setDoc(doc(db, 'users', activeUid), {
         studyXP: newXP
       }, { merge: true }).catch(err => {
         console.warn('[Gamification] Cloud XP sync notice:', err);
@@ -251,14 +271,18 @@ export function addStudyXP(
 /**
  * Fetch all Weekly Quests with real user progress
  */
-export function getWeeklyQuests(): Quest[] {
-  const scanCount = parseInt(safeGetItem('study_quest_scan_count') || '0', 10);
-  const calcCount = parseInt(safeGetItem('study_quest_calc_count') || '0', 10);
-  const noteCount = parseInt(safeGetItem('study_quest_note_count') || '0', 10);
-  const tutorCount = parseInt(safeGetItem('study_quest_tutor_count') || '0', 10);
-  const streakCount = parseInt(safeGetItem('study_punches') || '0', 10);
+export function getWeeklyQuests(uid?: string): Quest[] {
+  const activeUid = uid || auth.currentUser?.uid || '';
+  const scanCount = parseInt(safeGetItem(activeUid ? `study_quest_scan_count_${activeUid}` : 'study_quest_scan_count') || '0', 10);
+  const calcCount = parseInt(safeGetItem(activeUid ? `study_quest_calc_count_${activeUid}` : 'study_quest_calc_count') || '0', 10);
+  const noteCount = parseInt(safeGetItem(activeUid ? `study_quest_note_count_${activeUid}` : 'study_quest_note_count') || '0', 10);
+  const tutorCount = parseInt(safeGetItem(activeUid ? `study_quest_tutor_count_${activeUid}` : 'study_quest_tutor_count') || '0', 10);
+  const streakCount = parseInt(safeGetItem(activeUid ? `study_punches_${activeUid}` : 'study_punches') || '0', 10);
 
-  const claimedQuests = safeJsonParse<Record<string, boolean>>(safeGetItem('study_claimed_quests'), {});
+  const claimedQuests = safeJsonParse<Record<string, boolean>>(
+    safeGetItem(activeUid ? `study_claimed_quests_${activeUid}` : 'study_claimed_quests'), 
+    {}
+  );
 
   const quests: Quest[] = [
     {
@@ -335,9 +359,11 @@ export function getWeeklyQuests(): Quest[] {
  * Increment quest progress for an activity
  */
 export function trackQuestProgress(category: 'scanner' | 'calculator' | 'notes' | 'tutor', amount = 1) {
-  const key = `study_quest_${category}_count`;
+  const activeUid = auth.currentUser?.uid || '';
+  const key = activeUid ? `study_quest_${category}_count_${activeUid}` : `study_quest_${category}_count`;
   const current = parseInt(safeGetItem(key) || '0', 10);
   safeSetItem(key, String(current + amount));
+  safeSetItem(`study_quest_${category}_count`, String(current + amount));
   window.dispatchEvent(new CustomEvent('study-quests-updated'));
 }
 
@@ -345,12 +371,15 @@ export function trackQuestProgress(category: 'scanner' | 'calculator' | 'notes' 
  * Claim quest reward
  */
 export function claimQuestReward(questId: string): boolean {
-  const quests = getWeeklyQuests();
+  const activeUid = auth.currentUser?.uid || '';
+  const quests = getWeeklyQuests(activeUid);
   const quest = quests.find(q => q.id === questId);
   if (!quest || !quest.isCompleted || quest.isClaimed) return false;
 
-  const claimedQuests = safeJsonParse<Record<string, boolean>>(safeGetItem('study_claimed_quests'), {});
+  const key = activeUid ? `study_claimed_quests_${activeUid}` : 'study_claimed_quests';
+  const claimedQuests = safeJsonParse<Record<string, boolean>>(safeGetItem(key), {});
   claimedQuests[questId] = true;
+  safeSetItem(key, JSON.stringify(claimedQuests));
   safeSetItem('study_claimed_quests', JSON.stringify(claimedQuests));
 
   addStudyXP(quest.xpReward, quest.title);
@@ -371,9 +400,13 @@ export function claimQuestReward(questId: string): boolean {
 /**
  * Fetch all achievement badges with real status
  */
-export function getBadgesStatus(): AchievementBadge[] {
-  const currentXP = getStudyXP();
-  const claimedBadges = safeJsonParse<Record<string, boolean>>(safeGetItem('study_claimed_badges'), {});
+export function getBadgesStatus(uid?: string): AchievementBadge[] {
+  const activeUid = uid || auth.currentUser?.uid || '';
+  const currentXP = getStudyXP(activeUid);
+  const claimedBadges = safeJsonParse<Record<string, boolean>>(
+    safeGetItem(activeUid ? `study_claimed_badges_${activeUid}` : 'study_claimed_badges'), 
+    {}
+  );
 
   return ALL_BADGES.map(badge => ({
     ...badge,
