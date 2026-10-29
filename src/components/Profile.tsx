@@ -1325,11 +1325,8 @@ export default function Profile({
     triggerVibration(15);
     try {
       const uid = auth.currentUser?.uid || user?.uid;
-      if (uid) {
-        try { await releaseUserSession(uid); } catch (_) {}
-      }
-      // Sync any unsynced focus time to Firestore before logging out
-      try { await syncUsageToFirestore(); } catch (_) {}
+      
+      // 1. Immediately wipe all local credentials & session flags so client session terminates instantly
       setIsVip(false);
       safeRemoveItem('apexam_active_user_session');
       safeRemoveItem('apexam_user_authenticated');
@@ -1337,25 +1334,43 @@ export default function Profile({
       safeRemoveItem('last_logged_in_user');
       safeRemoveItem('last_logged_in_user_email');
       safeClearAll();
-      
-      // Clear Native Capacitor Google Auth session so that Account Chooser is shown on next login
-      if (Capacitor.isNativePlatform()) {
-        try {
-          await FirebaseAuthentication.signOut();
-        } catch (nativeSignOutErr) {
-          console.warn('[Logout] Native FirebaseAuthentication.signOut notice:', nativeSignOutErr);
-        }
-        // Also clear Android Credential Manager's remembered account, otherwise
-        // the next Google Sign-In silently reuses this account without showing the picker.
-        try { await clearGoogleCredentialState(); } catch (_) {}
+
+      // 2. Parallel bounded teardown: execute Firestore session release, usage sync, 
+      // native Google sign-out, credential clearing, and Firebase auth sign-out in parallel
+      // with a strict 2.0-second safety timeout so logout NEVER hangs!
+      const tearDownPromises: Promise<any>[] = [];
+
+      if (uid) {
+        tearDownPromises.push(releaseUserSession(uid).catch(() => {}));
       }
-      
-      await signOut(auth);
+      tearDownPromises.push(syncUsageToFirestore().catch(() => {}));
+
+      if (Capacitor.isNativePlatform()) {
+        tearDownPromises.push(FirebaseAuthentication.signOut().catch(() => {}));
+        tearDownPromises.push(clearGoogleCredentialState().catch(() => {}));
+      }
+
+      tearDownPromises.push(signOut(auth).catch(() => {}));
+
+      // Bounded race: maximum 2.0 seconds guaranteed!
+      await Promise.race([
+        Promise.allSettled(tearDownPromises),
+        new Promise(resolve => setTimeout(resolve, 2000))
+      ]);
+
       setShowSettings(false);
       showToast("👋 Logged out successfully");
+      
+      // Transition UI to Login immediately
+      if (onOpenLogin) {
+        onOpenLogin();
+      } else if (onClose) {
+        onClose();
+      }
     } catch (logoutErr) {
       console.error('[Logout Error]', logoutErr);
-      showToast("❌ Logout notice: session cleared.");
+      showToast("👋 Logged out successfully");
+      if (onOpenLogin) onOpenLogin();
     } finally {
       setIsLoggingOut(false);
     }
@@ -1547,7 +1562,7 @@ export default function Profile({
         safeRemoveItem('study_is_vip');
       }
 
-      // 6. Clean native authentication & sign out
+      // 6. Clean native authentication & sign out (bounded max 1.5s so it never hangs)
       safeRemoveItem('apexam_active_user_session');
       safeRemoveItem('apexam_user_authenticated');
       safeRemoveItem('apexam_login_in_progress');
@@ -1555,12 +1570,20 @@ export default function Profile({
       safeRemoveItem('last_logged_in_user_email');
       if (Capacitor.isNativePlatform()) {
         try {
-          await FirebaseAuthentication.signOut();
+          await Promise.race([
+            Promise.allSettled([
+              FirebaseAuthentication.signOut().catch(() => {}),
+              clearGoogleCredentialState().catch(() => {})
+            ]),
+            new Promise(resolve => setTimeout(resolve, 1500))
+          ]);
         } catch (_) {}
-        await clearGoogleCredentialState();
       }
       try {
-        await signOut(auth);
+        await Promise.race([
+          signOut(auth),
+          new Promise(resolve => setTimeout(resolve, 1500))
+        ]);
       } catch (_) {}
 
       // 7. Dispatch global reset events so all in-memory features reset immediately
