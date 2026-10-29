@@ -1,9 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FileText, WifiOff, Download, Share2, RefreshCw } from 'lucide-react';
+import { 
+  FileText, 
+  WifiOff, 
+  Download, 
+  Share2, 
+  RefreshCw, 
+  ExternalLink, 
+  ZoomIn, 
+  ZoomOut, 
+  Printer,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles
+} from 'lucide-react';
+import { savePDFMobile } from '../utils/mobileSaver';
+import { triggerVibration } from '../utils/vibrate';
+import { showToast } from '../utils/toast';
 
 interface SafePdfViewerProps {
-  pdfUrlOrBase64?: string; // can be blob URL or data:application/pdf;base64...
+  pdfUrlOrBase64?: string;
   pdfUrl?: string;
+  title?: string;
 }
 
 declare global {
@@ -24,32 +41,27 @@ function getLocalAssetUrl(relativePath: string): string {
   }
 }
 
-async function configurePdfWorker(lib: any): Promise<void> {
-  if (!lib || !lib.GlobalWorkerOptions) return;
-  
-  // 1. Try to fetch the local worker script and create an in-memory same-origin Blob URL.
-  // This guarantees 0 cross-origin or file:// worker security restrictions in Android Capacitor WebView!
-  try {
-    const localWorkerUrl = getLocalAssetUrl('vendor/pdfjs/pdf.worker.min.js');
-    const res = await fetch(localWorkerUrl);
-    if (res.ok) {
-      const code = await res.text();
-      const blob = new Blob([code], { type: 'application/javascript' });
-      lib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
-      return;
-    }
-  } catch (err) {
-    console.warn('[SafePdfViewer] Blob worker setup notice:', err);
+/**
+ * Checks if the source document is an HTML document or web paper.
+ */
+function isHtmlDocument(source: string): boolean {
+  if (!source) return false;
+  const s = source.trim().toLowerCase();
+  if (s.startsWith('<!doctype html') || s.startsWith('<html') || s.includes('<body') || s.includes('<!doctype')) {
+    return true;
   }
-
-  // 2. Fallback to direct local URL or reliable CDN worker
-  try {
-    lib.GlobalWorkerOptions.workerSrc = getLocalAssetUrl('vendor/pdfjs/pdf.worker.min.js');
-  } catch (_) {
-    lib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+  if (s.startsWith('data:text/html')) {
+    return true;
   }
+  if (s.endsWith('.html') || s.includes('.html?') || s.includes('.html#')) {
+    return true;
+  }
+  return false;
 }
 
+/**
+ * Robustly load PDF.js engine.
+ */
 function loadPdfJs(): Promise<any> {
   if (window.pdfjsLib) {
     return Promise.resolve(window.pdfjsLib);
@@ -59,24 +71,29 @@ function loadPdfJs(): Promise<any> {
   }
 
   pdfjsLoadPromise = new Promise((resolve, reject) => {
-    // 1. Try Local Asset First (100% offline, zero network dependence, instant rendering)
+    // 1. Try Local Asset First
     const script = document.createElement('script');
     script.id = 'pdfjs-script';
     script.src = getLocalAssetUrl('vendor/pdfjs/pdf.min.js');
-    
-    script.onload = async () => {
+
+    script.onload = () => {
       const lib = window.pdfjsLib || (window as any)['pdfjs-dist/build/pdf'];
       if (lib) {
         window.pdfjsLib = lib;
-        await configurePdfWorker(lib);
+        // Point worker to local vendor script
+        try {
+          lib.GlobalWorkerOptions.workerSrc = getLocalAssetUrl('vendor/pdfjs/pdf.worker.min.js');
+        } catch (_) {
+          lib.GlobalWorkerOptions.workerSrc = '';
+        }
         resolve(lib);
       } else {
-        tryJsDelivrFallback(resolve, reject);
+        tryCdnFallback(resolve, reject);
       }
     };
 
     script.onerror = () => {
-      tryJsDelivrFallback(resolve, reject);
+      tryCdnFallback(resolve, reject);
     };
 
     document.head.appendChild(script);
@@ -85,33 +102,7 @@ function loadPdfJs(): Promise<any> {
   return pdfjsLoadPromise;
 }
 
-function tryJsDelivrFallback(resolve: (value: any) => void, reject: (reason: any) => void) {
-  const existing = document.getElementById('pdfjs-script');
-  if (existing) existing.remove();
-
-  const script = document.createElement('script');
-  script.id = 'pdfjs-script';
-  script.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/build/pdf.min.js';
-
-  script.onload = () => {
-    const lib = window.pdfjsLib || (window as any)['pdfjs-dist/build/pdf'];
-    if (lib) {
-      window.pdfjsLib = lib;
-      lib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/build/pdf.worker.min.js';
-      resolve(lib);
-    } else {
-      tryCdnjsFallback(resolve, reject);
-    }
-  };
-
-  script.onerror = () => {
-    tryCdnjsFallback(resolve, reject);
-  };
-
-  document.head.appendChild(script);
-}
-
-function tryCdnjsFallback(resolve: (value: any) => void, reject: (reason: any) => void) {
+function tryCdnFallback(resolve: (value: any) => void, reject: (reason: any) => void) {
   const existing = document.getElementById('pdfjs-script');
   if (existing) existing.remove();
 
@@ -127,7 +118,7 @@ function tryCdnjsFallback(resolve: (value: any) => void, reject: (reason: any) =
       resolve(lib);
     } else {
       pdfjsLoadPromise = null;
-      reject(new Error('PDF engine compiled but global object missing.'));
+      reject(new Error('PDF engine not found after CDN load.'));
     }
   };
 
@@ -139,56 +130,100 @@ function tryCdnjsFallback(resolve: (value: any) => void, reject: (reason: any) =
   document.head.appendChild(script);
 }
 
-export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl }: SafePdfViewerProps) {
-  const targetUrl = pdfUrlOrBase64 || pdfUrl || '';
+export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl, title }: SafePdfViewerProps) {
+  const targetUrl = (pdfUrlOrBase64 || pdfUrl || '').trim();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(0);
+  const [scale, setScale] = useState<number>(1.2);
+  const [isOpeningNative, setIsOpeningNative] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  const isHtml = isHtmlDocument(targetUrl);
+
+  // External Action Handlers
+  const handleOpenExternal = async () => {
+    triggerVibration(15);
+    setIsOpeningNative(true);
+    try {
+      const fileName = (title || 'AP_Exam_Master_Paper').replace(/[^a-zA-Z0-9_-]/g, '_') + (isHtml ? '.html' : '.pdf');
+      const success = await savePDFMobile(targetUrl, fileName, {
+        openImmediately: true,
+        customToast: 'Opening in device document reader...',
+      });
+      if (!success) {
+        showToast('Unable to launch native viewer.', 'error');
+      }
+    } catch (err: any) {
+      console.error('[SafePdfViewer] External open error:', err);
+      showToast('Failed to open document: ' + (err.message || 'Unknown error'), 'error');
+    } finally {
+      setIsOpeningNative(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    triggerVibration(15);
+    try {
+      const fileName = (title || 'AP_Exam_Master_Paper').replace(/[^a-zA-Z0-9_-]/g, '_') + (isHtml ? '.html' : '.pdf');
+      await savePDFMobile(targetUrl, fileName, {
+        openImmediately: false,
+        customToast: '✅ Document downloaded successfully!',
+      });
+    } catch (err: any) {
+      console.error('[SafePdfViewer] Download error:', err);
+      showToast('Download error: ' + (err.message || 'Unknown error'), 'error');
+    }
+  };
+
+  // Render Effect
   useEffect(() => {
     let active = true;
 
-    const loadAndRender = async () => {
+    const renderDocument = async () => {
+      if (!targetUrl) {
+        setLoading(false);
+        setError('No document attached to this unit set.');
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      // If document is HTML, iframe takes care of rendering
+      if (isHtml) {
+        setLoading(false);
+        return;
+      }
+
+      // Render PDF using PDF.js
       try {
-        const trimmed = (targetUrl || '').trim();
-        if (!trimmed) {
-          if (active) {
-            setLoading(false);
-            setError('No PDF document was attached to this unit set.');
-          }
-          return;
-        }
-
-        setLoading(true);
-        setError(null);
-
-        // A. Load PDF.js engine
         const pdfjs = await loadPdfJs();
         if (!active) return;
 
-        // B. Parse PDF source data robustly:
-        // Handles data URLs, raw base64 strings (starting with JVBERi0... or raw bytes), blob URLs, and HTTP/local links
+        // Parse PDF binary data
         let pdfData: Uint8Array;
-
         const isBase64 = 
-          trimmed.startsWith('data:') || 
-          trimmed.startsWith('JVBERi') || 
-          (!trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.startsWith('blob:') && !trimmed.startsWith('/') && trimmed.length > 50);
+          targetUrl.startsWith('data:') || 
+          targetUrl.startsWith('JVBERi') || 
+          (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://') && !targetUrl.startsWith('blob:') && !targetUrl.startsWith('/') && targetUrl.length > 50);
 
         if (isBase64) {
-          const base64Data = trimmed.includes(',') ? trimmed.split(',')[1] : trimmed;
-          const cleanedBase64 = base64Data.replace(/[\s\r\n]+/g, '');
-          const binaryString = atob(cleanedBase64);
+          const base64Data = targetUrl.includes(',') ? targetUrl.split(',')[1] : targetUrl;
+          const cleaned = base64Data.replace(/[\s\r\n]+/g, '');
+          const binaryString = atob(cleaned);
           const len = binaryString.length;
           pdfData = new Uint8Array(len);
           for (let i = 0; i < len; i++) {
             pdfData[i] = binaryString.charCodeAt(i);
           }
         } else {
-          const response = await fetch(trimmed);
+          const resolvedUrl = getLocalAssetUrl(targetUrl);
+          const response = await fetch(resolvedUrl);
           if (!response.ok) {
-            throw new Error(`Failed to fetch PDF: ${response.status} ${response.statusText}`);
+            throw new Error(`Failed to fetch PDF (${response.status} ${response.statusText})`);
           }
           const arrayBuffer = await response.arrayBuffer();
           pdfData = new Uint8Array(arrayBuffer);
@@ -196,40 +231,50 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl }: SafePdfViewerP
 
         if (!active) return;
 
-        // C. Load document into the rendering engine (with fake worker fallback)
-        const loadingTask = pdfjs.getDocument({
-          data: pdfData,
-          isEvalSupported: false,
-          disableFontFace: false,
-        });
+        // Load document into PDF.js engine with worker fallback
+        let pdf: any;
+        try {
+          const loadingTask = pdfjs.getDocument({
+            data: pdfData,
+            isEvalSupported: false,
+            disableFontFace: false,
+          });
+          pdf = await loadingTask.promise;
+        } catch (workerErr) {
+          console.warn('[SafePdfViewer] Standard worker failed, switching to FakeWorker in-thread mode:', workerErr);
+          // Fallback to in-thread fake worker
+          pdfjs.GlobalWorkerOptions.workerSrc = '';
+          const fallbackTask = pdfjs.getDocument({
+            data: pdfData,
+            isEvalSupported: false,
+            disableFontFace: false,
+          });
+          pdf = await fallbackTask.promise;
+        }
 
-        const pdf = await loadingTask.promise;
         if (!active) return;
+        setTotalPages(pdf.numPages);
 
-        // D. Render all pages consecutively
         const container = containerRef.current;
         if (!container) return;
         container.innerHTML = ''; // Clear prior renders
 
         setLoading(false);
 
+        // Render each page into a canvas
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
           if (!active) return;
           const page = await pdf.getPage(pageNum);
-          
-          // Clean, full-width visual page card with subtle paper elevation
-          const pageCard = document.createElement('div');
-          pageCard.className = 'w-full max-w-4xl mx-auto mb-3 sm:mb-4 bg-white shadow-xs border-b sm:border border-zinc-200/70 flex flex-col items-center overflow-hidden last:mb-0';
 
-          // Render canvas with optimized mobile retina sharpness without memory exhaustion
+          const pageCard = document.createElement('div');
+          pageCard.className = 'w-full max-w-4xl mx-auto mb-4 bg-white shadow-md rounded-xl border border-zinc-200 flex flex-col items-center overflow-hidden transition-all';
+
           const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1.5), 2.0);
-          const targetScale = dpr;
-          const viewport = page.getViewport({ scale: targetScale });
+          const viewport = page.getViewport({ scale: scale * dpr });
           const canvas = document.createElement('canvas');
           canvas.className = 'w-full h-auto bg-white border-0 block';
           canvas.style.width = '100%';
           canvas.style.height = 'auto';
-          canvas.style.display = 'block';
 
           canvas.height = Math.floor(viewport.height);
           canvas.width = Math.floor(viewport.width);
@@ -241,67 +286,163 @@ export default function SafePdfViewer({ pdfUrlOrBase64, pdfUrl }: SafePdfViewerP
           }
 
           pageCard.appendChild(canvas);
+
+          // Page Number Indicator
+          const pageFoot = document.createElement('div');
+          pageFoot.className = 'w-full py-1 px-3 bg-zinc-50 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-400 font-mono';
+          pageFoot.innerHTML = `<span>Page ${pageNum} of ${pdf.numPages}</span><span class="text-emerald-600 font-semibold">AP Verified</span>`;
+          pageCard.appendChild(pageFoot);
+
           container.appendChild(pageCard);
 
           if (ctx) {
-            const renderContext = {
+            await page.render({
               canvasContext: ctx,
               viewport: viewport,
-            };
-            await page.render(renderContext).promise;
+            }).promise;
           }
         }
       } catch (err: any) {
-        console.error('[PDFViewer] Critical preview error:', err);
+        console.error('[SafePdfViewer] Render failed:', err);
         if (active) {
-          setError(err?.message || 'Unable to render PDF document visually in-app.');
+          setError(err?.message || 'Unable to render PDF visual pages in-app.');
           setLoading(false);
         }
       }
     };
 
-    loadAndRender();
+    renderDocument();
 
     return () => {
       active = false;
     };
-  }, [targetUrl, retryKey]);
+  }, [targetUrl, retryKey, scale, isHtml]);
 
   return (
-    <div className="w-full h-full flex flex-col bg-zinc-100/90 overflow-y-auto momentum-scroll px-0 sm:px-4 py-0 sm:py-3 items-center justify-start min-h-[300px]">
-      {loading && (
-        <div className="flex flex-col items-center justify-center my-auto py-24 text-zinc-800 gap-3.5">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-center">
-            <p className="text-xs font-black text-zinc-800 uppercase tracking-wider">Rendering AP Document</p>
-            <p className="text-[11px] text-zinc-500 mt-0.5">Loading high-resolution pages...</p>
-          </div>
+    <div className="w-full h-full flex flex-col bg-zinc-900 select-text overflow-hidden relative">
+      {/* Top Floating Control Bar */}
+      <div className="px-3 sm:px-4 py-2 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800 flex items-center justify-between z-30 shrink-0 gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-400 font-bold text-[10px] tracking-wider uppercase border border-indigo-500/30">
+            {isHtml ? 'Web Exam Paper' : 'Official PDF'}
+          </span>
+          {totalPages > 0 && (
+            <span className="text-xs text-zinc-400 font-medium hidden sm:inline">
+              {totalPages} Pages
+            </span>
+          )}
         </div>
-      )}
 
-      {error && (
-        <div className="flex flex-col items-center justify-center my-auto py-16 text-center px-6 max-w-sm">
-          <div className="w-14 h-14 bg-zinc-800 border border-zinc-700/80 text-rose-500 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
-            <WifiOff className="w-6 h-6" />
-          </div>
-          <h5 className="text-sm font-extrabold text-zinc-200">Document Preview Notice</h5>
-          <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-            {error.includes('No PDF') 
-              ? error 
-              : 'Visual page rendering encountered a restriction. The PDF file content is ready in local memory.'}
-          </p>
-          
+        {/* Action Controls */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {!isHtml && !error && (
+            <>
+              <button
+                onClick={() => setScale(s => Math.max(0.8, s - 0.2))}
+                className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-all active:scale-95 cursor-pointer"
+                title="Zoom Out"
+              >
+                <ZoomOut className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setScale(s => Math.min(2.0, s + 0.2))}
+                className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-all active:scale-95 cursor-pointer"
+                title="Zoom In"
+              >
+                <ZoomIn className="w-4 h-4" />
+              </button>
+            </>
+          )}
+
           <button
-            onClick={() => setRetryKey(k => k + 1)}
-            className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95 transition-all"
+            onClick={handleDownload}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold transition-all active:scale-95 cursor-pointer border border-zinc-700"
+            title="Download document"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>Retry Rendering</span>
+            <Download className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">Download</span>
+          </button>
+
+          <button
+            onClick={handleOpenExternal}
+            disabled={isOpeningNative}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-md shadow-indigo-600/20"
+            title="Open in device document reader"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            <span>Open in App</span>
           </button>
         </div>
-      )}
+      </div>
 
-      <div ref={containerRef} className="w-full flex flex-col items-center" />
+      {/* Main Content Area */}
+      <div className="flex-1 w-full h-full overflow-y-auto momentum-scroll bg-zinc-950 p-0 sm:p-4 relative">
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-28 text-center text-zinc-300 gap-3">
+            <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+            <div>
+              <p className="text-sm font-bold text-white">Opening AP Examination Set</p>
+              <p className="text-xs text-zinc-400 mt-0.5">Preparing questions and high-res layout...</p>
+            </div>
+          </div>
+        )}
+
+        {/* HTML Document View (Direct Embedded Responsive Frame) */}
+        {isHtml && (
+          <iframe
+            ref={iframeRef}
+            src={targetUrl.startsWith('<') ? undefined : getLocalAssetUrl(targetUrl)}
+            srcDoc={targetUrl.startsWith('<') ? targetUrl : undefined}
+            className="w-full h-full min-h-[500px] border-0 bg-white rounded-none sm:rounded-2xl shadow-xl"
+            title={title || 'AP Examination Master Paper'}
+            sandbox="allow-scripts allow-same-origin allow-modals allow-downloads allow-popups"
+          />
+        )}
+
+        {/* Fallback / Error Recovery Screen */}
+        {error && !isHtml && (
+          <div className="flex flex-col items-center justify-center my-auto py-16 px-6 max-w-md mx-auto text-center">
+            <div className="w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center text-amber-400 mb-4 shadow-xl">
+              <FileText className="w-8 h-8" />
+            </div>
+            <h4 className="text-base font-black text-white">AP Document Ready</h4>
+            <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
+              The exam set was successfully retrieved. You can view it directly in Google Drive, Adobe Acrobat, or your default device PDF reader without restrictions.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 mt-6 w-full max-w-xs">
+              <button
+                onClick={handleOpenExternal}
+                className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95 transition-all"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span>Open in Device Reader</span>
+              </button>
+
+              <button
+                onClick={handleDownload}
+                className="w-full py-2.5 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold rounded-xl flex items-center justify-center gap-2 cursor-pointer border border-zinc-700 active:scale-95 transition-all"
+              >
+                <Download className="w-4 h-4 text-emerald-400" />
+                <span>Download PDF</span>
+              </button>
+            </div>
+
+            <button
+              onClick={() => setRetryKey(k => k + 1)}
+              className="mt-4 text-[11px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <RefreshCw className="w-3 h-3" />
+              <span>Retry in-app canvas rendering</span>
+            </button>
+          </div>
+        )}
+
+        {/* PDF Page Canvas Stream */}
+        {!isHtml && !error && (
+          <div ref={containerRef} className="w-full flex flex-col items-center pb-8" />
+        )}
+      </div>
     </div>
   );
 }

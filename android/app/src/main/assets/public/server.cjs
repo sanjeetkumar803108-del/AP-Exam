@@ -35599,6 +35599,86 @@ app.delete("/api/sample-papers/:id", (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+var PRIMARY_UNIT_PDFS_FILE = import_path3.default.join(process.cwd(), "data", "unit_pdfs_vault.json");
+var TMP_UNIT_PDFS_FILE = import_path3.default.join("/tmp", "unit_pdfs_vault.json");
+var unitPdfsVault = [];
+function loadUnitPdfsFromDisk() {
+  const pdfsMap = /* @__PURE__ */ new Map();
+  try {
+    if (import_fs3.default.existsSync(PRIMARY_UNIT_PDFS_FILE)) {
+      const raw = import_fs3.default.readFileSync(PRIMARY_UNIT_PDFS_FILE, "utf-8");
+      const list = JSON.parse(raw);
+      if (Array.isArray(list)) list.forEach((p) => pdfsMap.set(p.key, p));
+    }
+  } catch (err) {
+    console.warn("[UnitPdfVault] Primary load notice:", err);
+  }
+  try {
+    if (import_fs3.default.existsSync(TMP_UNIT_PDFS_FILE)) {
+      const raw = import_fs3.default.readFileSync(TMP_UNIT_PDFS_FILE, "utf-8");
+      const list = JSON.parse(raw);
+      if (Array.isArray(list)) list.forEach((p) => pdfsMap.set(p.key, p));
+    }
+  } catch (err) {
+    console.warn("[UnitPdfVault] Tmp load notice:", err);
+  }
+  unitPdfsVault = Array.from(pdfsMap.values()).sort(
+    (a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)
+  );
+  console.log(`[UnitPdfVault] Total loaded unit PDFs from disk: ${unitPdfsVault.length}`);
+}
+function saveUnitPdfsToDisk() {
+  const json = JSON.stringify(unitPdfsVault, null, 2);
+  try {
+    const dir = import_path3.default.dirname(PRIMARY_UNIT_PDFS_FILE);
+    if (!import_fs3.default.existsSync(dir)) import_fs3.default.mkdirSync(dir, { recursive: true });
+    import_fs3.default.writeFileSync(PRIMARY_UNIT_PDFS_FILE, json, "utf-8");
+  } catch (primaryErr) {
+    try {
+      import_fs3.default.writeFileSync(TMP_UNIT_PDFS_FILE, json, "utf-8");
+    } catch (tmpErr) {
+      console.warn("[UnitPdfVault] Write notice:", tmpErr);
+    }
+  }
+}
+loadUnitPdfsFromDisk();
+app.get("/api/unit-pdfs", (req, res) => {
+  try {
+    res.json({ success: true, count: unitPdfsVault.length, records: unitPdfsVault });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+app.post("/api/unit-pdfs", (req, res) => {
+  try {
+    const record = req.body;
+    if (!record || !record.key) {
+      return res.status(400).json({ error: "Missing record or record key" });
+    }
+    const existingIndex = unitPdfsVault.findIndex((p) => p.key === record.key);
+    if (existingIndex >= 0) {
+      unitPdfsVault[existingIndex] = { ...unitPdfsVault[existingIndex], ...record, updatedAt: Date.now() };
+    } else {
+      unitPdfsVault.unshift({ ...record, updatedAt: Date.now() });
+    }
+    saveUnitPdfsToDisk();
+    console.log(`[UnitPdfVault] Saved unit PDF '${record.key}'. Total in vault: ${unitPdfsVault.length}`);
+    res.json({ success: true, count: unitPdfsVault.length, record });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+app.delete("/api/unit-pdfs/:key", (req, res) => {
+  try {
+    const { key } = req.params;
+    unitPdfsVault = unitPdfsVault.filter((p) => p.key !== key);
+    saveUnitPdfsToDisk();
+    console.log(`[UnitPdfVault] Deleted unit PDF '${key}'. Remaining: ${unitPdfsVault.length}`);
+    res.json({ success: true, count: unitPdfsVault.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 registerReportAiRoutes(app);
 registerHelpYouRoutes(app, {
   upload,
