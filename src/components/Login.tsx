@@ -322,7 +322,7 @@ export default function Login({
       safeRemoveItem('apexam_login_in_progress');
       console.warn('[Auth Error]', err?.code, err?.message);
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
-        const errMsg = 'Incorrect password, or this email is registered via Google Sign-In. Please use the Google button below.';
+        const errMsg = 'Account not found or incorrect password. If you haven\'t created an account in this new update yet, tap "Sign Up" below or tap "Continue with Google".';
         setError(errMsg);
         Alert.alert("Login Failed", errMsg);
       } else if (err.code === 'auth/user-not-found') {
