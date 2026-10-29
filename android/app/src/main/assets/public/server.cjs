@@ -35679,6 +35679,16 @@ app.delete("/api/unit-pdfs/:key", (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+app.post("/api/unit-pdfs/clear-all", (req, res) => {
+  try {
+    unitPdfsVault = [];
+    saveUnitPdfsToDisk();
+    console.log("[UnitPdfVault] Cleared all unit PDFs from vault on disk.");
+    res.json({ success: true, count: 0 });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 registerReportAiRoutes(app);
 registerHelpYouRoutes(app, {
   upload,

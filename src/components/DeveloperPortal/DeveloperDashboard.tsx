@@ -31,7 +31,8 @@ import {
   deleteUnitPdfFromApp, 
   getPublishedUnitPdfsList, 
   StoredUnitPdfRecord,
-  initUnitPdfsSync 
+  initUnitPdfsSync,
+  clearAllUnitPdfs
 } from '../../services/unitPdfService';
 import { showToast } from '../../utils/toast';
 import { triggerVibration } from '../../utils/vibrate';
@@ -294,6 +295,23 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
     }
   };
 
+  const handleClearAllPapers = async () => {
+    triggerVibration(25);
+    if (!window.confirm('Are you sure you want to delete ALL live unit sample papers from the app permanently?')) {
+      return;
+    }
+    setLoading(true);
+    try {
+      await clearAllUnitPdfs();
+      setPapers([]);
+      showToast('All sample papers permanently deleted.', 'success');
+    } catch (err: any) {
+      showToast('Failed to clear papers: ' + (err.message || err), 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-full bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none">
       {/* Hidden file input */}
@@ -390,12 +408,22 @@ export default function DeveloperDashboard({ onLogout }: DeveloperDashboardProps
               <Layers className="w-4 h-4 text-indigo-400" />
               <h3 className="text-sm font-black text-white">Live Published Unit Sets</h3>
             </div>
-            <button
-              onClick={loadPapers}
-              className="text-[11px] font-bold text-zinc-400 hover:text-white transition-colors cursor-pointer"
-            >
-              Refresh
-            </button>
+            <div className="flex items-center gap-2.5">
+              {papers.length > 0 && (
+                <button
+                  onClick={handleClearAllPapers}
+                  className="text-[11px] font-bold text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+                >
+                  Clear All
+                </button>
+              )}
+              <button
+                onClick={loadPapers}
+                className="text-[11px] font-bold text-zinc-400 hover:text-white transition-colors cursor-pointer"
+              >
+                Refresh
+              </button>
+            </div>
           </div>
 
           {loading ? (
