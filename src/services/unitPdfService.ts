@@ -80,26 +80,16 @@ export async function clearAllUnitPdfs(): Promise<void> {
 
 /**
  * Initializes synchronization of dynamically uploaded AP Sample Paper sets.
- * 1. Clears in-memory cache and obsolete faulty paper caches.
- * 2. Loads genuine developer uploads from permanent local IndexedDB storage (v3).
- * 3. Fetches newly uploaded papers from backend Server Disk Vault (/api/unit-pdfs).
- * 4. Also checks Firestore as parallel cloud source.
- * 5. Injects them into UPLOADED_UNIT_PDFS in memory.
+ * 1. Loads all existing developer uploads from permanent local IndexedDB storage (v3).
+ * 2. Fetches newly uploaded papers from backend Server Disk Vault (/api/unit-pdfs).
+ * 3. Merges records safely without ever wiping or clearing locally saved papers.
+ * 4. Only developer actions (explicit Delete button) can ever delete a paper.
  */
 export async function initUnitPdfsSync(force = false): Promise<void> {
   if (syncInitialized && !force && typeof window !== 'undefined') return;
   syncInitialized = true;
 
-  // Clear in-memory registry to ensure 0 faulty papers remain
-  for (const k in UPLOADED_UNIT_PDFS) {
-    delete UPLOADED_UNIT_PDFS[k];
-  }
-
-  // Purge legacy IndexedDB keys that stored the obsolete/faulty bundled papers
-  try {
-    await idbSet('ap_unit_sample_papers_vault_v1', []);
-    await idbSet('ap_unit_sample_papers_vault_v2', []);
-  } catch (_) {}
+  const recordsMap = new Map<string, StoredUnitPdfRecord>();
 
   // 1. First Pass: Instant local cache from IndexedDB (v3)
   try {
@@ -107,20 +97,22 @@ export async function initUnitPdfsSync(force = false): Promise<void> {
     if (Array.isArray(cached) && cached.length > 0) {
       for (const record of cached) {
         if (record && record.key && record.pdfData) {
+          recordsMap.set(record.key, record);
           registerUnitPdf(record.key, record.pdfData);
         }
       }
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('unit-pdfs-updated'));
+        window.dispatchEvent(new CustomEvent('sample-papers-updated'));
       }
     }
   } catch (err) {
     console.warn('[UnitPdfService] IndexedDB initial load notice:', err);
   }
 
-  // 2. Second Pass: Sync from Backend Server Vault & Firestore
+  // 2. Second Pass: Sync from Backend Server Vault & Firestore in background
   const syncFromRemote = async () => {
-    const recordsMap = new Map<string, StoredUnitPdfRecord>();
+    let hasRemoteUpdates = false;
 
     // A. Fetch from backend Server Disk Vault (/api/unit-pdfs)
     try {
@@ -129,11 +121,12 @@ export async function initUnitPdfsSync(force = false): Promise<void> {
       }, 6000);
       if (res.ok) {
         const json = await res.json();
-        if (Array.isArray(json.records)) {
+        if (Array.isArray(json.records) && json.records.length > 0) {
           for (const rec of json.records) {
             if (rec && rec.key && rec.pdfData) {
               recordsMap.set(rec.key, rec);
               registerUnitPdf(rec.key, rec.pdfData);
+              hasRemoteUpdates = true;
             }
           }
         }
@@ -142,7 +135,7 @@ export async function initUnitPdfsSync(force = false): Promise<void> {
       console.warn('[UnitPdfService] Server Vault sync notice:', apiErr);
     }
 
-    // B. Also attempt Cloud Firestore sync
+    // B. Also attempt Cloud Firestore sync if enabled
     try {
       if (typeof navigator !== 'undefined' && navigator.onLine) {
         const snapshot = await getDocs(collection(db, FIRESTORE_COLLECTION));
@@ -154,7 +147,7 @@ export async function initUnitPdfsSync(force = false): Promise<void> {
 
             let fullPdfUrl = data.pdfData?.pdfUrl || '';
 
-            // If paper was stored in multiple chunks (>500KB)
+            // If paper was stored in multiple chunks
             if (data.isChunked && data.chunkCount && data.chunkCount > 0) {
               try {
                 const chunkPromises: Promise<any>[] = [];
@@ -186,25 +179,28 @@ export async function initUnitPdfsSync(force = false): Promise<void> {
 
               recordsMap.set(key, record);
               registerUnitPdf(key, resolvedPdfData);
+              hasRemoteUpdates = true;
             }
           }
         }
       }
     } catch (cloudErr) {
-      console.warn('[UnitPdfService] Firestore sync notice (offline or permission):', cloudErr);
+      // Quietly ignore if Firestore API is disabled or unreachable
     }
 
-    // C. Persist merged records to IndexedDB permanently
-    try {
-      const merged = Array.from(recordsMap.values());
-      await idbSet(IDB_UNIT_PDFS_KEY, merged);
+    // C. CRITICAL GUARD: Only save if records exist! NEVER wipe out IndexedDB with empty array!
+    if (recordsMap.size > 0) {
+      try {
+        const merged = Array.from(recordsMap.values());
+        await idbSet(IDB_UNIT_PDFS_KEY, merged);
 
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('unit-pdfs-updated'));
-        window.dispatchEvent(new CustomEvent('sample-papers-updated'));
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('unit-pdfs-updated'));
+          window.dispatchEvent(new CustomEvent('sample-papers-updated'));
+        }
+      } catch (persistErr) {
+        console.warn('[UnitPdfService] Merged IndexedDB save notice:', persistErr);
       }
-    } catch (persistErr) {
-      console.warn('[UnitPdfService] Merged IndexedDB save notice:', persistErr);
     }
   };
 
@@ -388,29 +384,54 @@ export async function deleteUnitPdfFromApp(
 
 /**
  * Returns all custom uploaded Unit PDFs for Developer Dashboard listing.
+ * Combines IndexedDB, Server API vault, and in-memory registry so no published paper is ever lost.
  */
 export async function getPublishedUnitPdfsList(): Promise<StoredUnitPdfRecord[]> {
+  const map = new Map<string, StoredUnitPdfRecord>();
+
+  // 1. Local IndexedDB
   try {
     const cached: StoredUnitPdfRecord[] = (await idbGet(IDB_UNIT_PDFS_KEY)) || [];
-    if (cached.length > 0) {
-      return cached.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    if (Array.isArray(cached)) {
+      cached.forEach(c => {
+        if (c && c.key) map.set(c.key, c);
+      });
     }
   } catch (_) {}
 
-  // Fallback to Server API
+  // 2. Server Disk Vault API
   try {
-    const res = await fetch(getApiUrl('/api/unit-pdfs'), {
+    const res = await fetchWithTimeout(getApiUrl('/api/unit-pdfs'), {
       headers: { 'Accept': 'application/json' }
-    });
+    }, 5000);
     if (res.ok) {
       const json = await res.json();
       if (Array.isArray(json.records)) {
-        return json.records.sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0));
+        json.records.forEach((r: any) => {
+          if (r && r.key) {
+            map.set(r.key, r);
+            registerUnitPdf(r.key, r.pdfData);
+          }
+        });
       }
     }
   } catch (_) {}
 
-  return [];
+  // 3. In-memory registry fallback
+  for (const [key, pdfData] of Object.entries(UPLOADED_UNIT_PDFS)) {
+    if (!map.has(key) && pdfData) {
+      map.set(key, {
+        key,
+        subjectId: key.split('-').slice(0, -1).join('-'),
+        unitNumber: Number(key.split('-').slice(-1)[0]) || 0,
+        pdfData,
+        updatedAt: Date.now(),
+        isCustomUpload: true,
+      });
+    }
+  }
+
+  return Array.from(map.values()).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 }
 
 // Auto-initialize when running in browser
