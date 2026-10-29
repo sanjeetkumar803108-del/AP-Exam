@@ -153,21 +153,11 @@ export default function Login({
       // Claim single active session in background without delaying user navigation
       claimUserSession(currentUser.uid).catch(console.warn);
 
-      // Fast-path: If account was created more than 2 minutes ago, it is 100% an existing user
-      const creationTime = currentUser.metadata.creationTime ? new Date(currentUser.metadata.creationTime).getTime() : 0;
-      const accountAgeMs = creationTime > 0 ? (Date.now() - creationTime) : 0;
-      if (accountAgeMs > 2 * 60 * 1000) {
-        console.log(`[Login] Fast routing existing user ${currentUser.email} directly to main`);
-        onLoginSuccess('main');
-        onClose();
-        return;
-      }
-
-      // For truly fresh accounts, race determineUserOnboardingRoute against a 1.2s timeout
+      // Determine onboarding routing using unified single-source-of-truth helper
       const routeResult = await Promise.race([
         determineUserOnboardingRoute(currentUser),
         new Promise<{ targetScreen: 'main' | 'setup' | 'onboarding' }>(resolve => 
-          setTimeout(() => resolve({ targetScreen: 'main' }), 1200)
+          setTimeout(() => resolve({ targetScreen: 'main' }), 4000)
         )
       ]);
 
@@ -293,6 +283,11 @@ export default function Login({
         safeRemoveItem('apexam_pro_lifetime_lock');
         safeRemoveItem(`study_is_vip_${newUser.uid}`);
         safeRemoveItem(`apexam_pro_lifetime_lock_${newUser.uid}`);
+        // Clean legacy unscoped device flags so previous accounts don't bleed into fresh signup
+        safeRemoveItem('onboarding_completed');
+        safeRemoveItem('academic_setup_completed');
+        safeRemoveItem('pending_welcome_celebration');
+        safeRemoveItem('welcome_penguin_seen_global');
         // Dispatch global update event to keep the UI in sync
         window.dispatchEvent(new CustomEvent('study-coins-updated', { detail: initialCoins }));
 

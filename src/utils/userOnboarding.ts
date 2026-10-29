@@ -24,15 +24,13 @@ export async function determineUserOnboardingRoute(currentUser: User): Promise<O
   const uid = currentUser.uid;
   const email = (currentUser.email || '').toLowerCase().trim();
 
-  // 1. FAST-PATH: Local device storage check
-  const localOnboardingDone = safeGetItem(`onboarding_completed_${uid}`) === 'true';
+  // 1. FAST-PATH: Local device storage check for THIS user
   const localSetupDone = safeGetItem(`academic_setup_completed_${uid}`) === 'true';
   const localIsComplete = safeGetItem(`isOnboardingComplete_${uid}`) === 'true';
-  const localPenguinSeen = safeGetItem(`welcome_penguin_seen_${uid}`) === 'true';
   const localEmailDone = email ? safeGetItem(`onboarding_completed_email_${email}`) === 'true' : false;
 
-  if (localSetupDone || localIsComplete || (localOnboardingDone && localPenguinSeen) || localEmailDone) {
-    console.log(`[UserOnboarding] User ${uid} (${email}) already completed onboarding locally. Routing to main.`);
+  if (localSetupDone || localIsComplete || localEmailDone) {
+    console.log(`[UserOnboarding] Returning user ${uid} (${email}) already completed setup locally. Routing to main.`);
     return {
       isNewUserWithNewEmail: false,
       targetScreen: 'main',
@@ -40,14 +38,7 @@ export async function determineUserOnboardingRoute(currentUser: User): Promise<O
     };
   }
 
-  // 2. CHECK ACCOUNT AGE (Firebase Auth metadata)
-  // If the account was created more than 5 minutes ago, it is an existing user returning, NOT a fresh registration!
-  const creationTime = currentUser.metadata.creationTime ? new Date(currentUser.metadata.creationTime).getTime() : 0;
-  const now = Date.now();
-  const accountAgeMs = creationTime > 0 ? (now - creationTime) : 0;
-  const isExistingAccountByAge = accountAgeMs > 5 * 60 * 1000; // Older than 5 minutes
-
-  // 3. FIRESTORE DATABASE CHECKS
+  // 2. FIRESTORE DATABASE CHECKS
   try {
     const userDocRef = doc(db, 'users', uid);
     const userDocSnap = await getDoc(userDocRef);
@@ -58,7 +49,7 @@ export async function determineUserOnboardingRoute(currentUser: User): Promise<O
       emailDocSnap = await getDoc(emailDocRef);
     }
 
-    // Check if Firestore user document already exists
+    // Check if Firestore user document already exists and has completed setup
     if (userDocSnap.exists()) {
       const userData = userDocSnap.data();
 
@@ -67,20 +58,19 @@ export async function determineUserOnboardingRoute(currentUser: User): Promise<O
         userData?.isOnboardingComplete === true ||
         userData?.isOnboardingCompleted === true ||
         userData?.academic_setup_completed === true ||
-        userData?.welcome_penguin_seen === true ||
         Boolean(userData?.grade || userData?.academic_grade) ||
         Boolean(userData?.stream || userData?.academic_stream) ||
         Boolean(userData?.country || userData?.academic_country);
 
-      if (hasCompletedInFirestore || isExistingAccountByAge) {
-        console.log(`[UserOnboarding] Returning user detected for ${uid} in Firestore. Marking permanent completion & routing to main.`);
-        await markUserSetupAsPermanentlyCompleted(uid, email);
+      if (hasCompletedInFirestore) {
+        console.log(`[UserOnboarding] Returning user detected for ${uid} in Firestore. Routing to main.`);
+        safeSetItem(`academic_setup_completed_${uid}`, 'true');
+        safeSetItem(`isOnboardingComplete_${uid}`, 'true');
+        if (email) safeSetItem(`onboarding_completed_email_${email}`, 'true');
         return {
           isNewUserWithNewEmail: false,
           targetScreen: 'main',
-          reason: hasCompletedInFirestore 
-            ? 'Firestore document confirms setup completed' 
-            : 'Account is older than 5 minutes (existing returning user)'
+          reason: 'Firestore document confirms setup completed'
         };
       }
     }
@@ -88,43 +78,35 @@ export async function determineUserOnboardingRoute(currentUser: User): Promise<O
     // Check allocated_emails collection
     if (emailDocSnap && emailDocSnap.exists()) {
       const emailData = emailDocSnap.data();
-      const allocatedAt = emailData?.allocatedAt ? new Date(emailData.allocatedAt).getTime() : 0;
-      const emailAgeMs = allocatedAt > 0 ? (now - allocatedAt) : 0;
-
-      // If email was allocated more than 5 minutes ago or completed flags are present:
-      if (emailData?.hasCompletedOnboarding === true || emailData?.hasCompletedAcademicSetup === true || emailAgeMs > 5 * 60 * 1000) {
-        console.log(`[UserOnboarding] Email ${email} was previously registered/allocated. Routing to main.`);
-        await markUserSetupAsPermanentlyCompleted(uid, email);
+      if (emailData?.hasCompletedOnboarding === true || emailData?.hasCompletedAcademicSetup === true) {
+        console.log(`[UserOnboarding] Email ${email} was previously completed in allocated_emails. Routing to main.`);
+        safeSetItem(`academic_setup_completed_${uid}`, 'true');
+        safeSetItem(`isOnboardingComplete_${uid}`, 'true');
+        safeSetItem(`onboarding_completed_email_${email}`, 'true');
         return {
           isNewUserWithNewEmail: false,
           targetScreen: 'main',
-          reason: 'Email is an existing allocated email in database'
+          reason: 'Email is an existing completed email in database'
         };
       }
     }
 
-    // If account was created in the past, treat as existing user
-    if (isExistingAccountByAge) {
-      console.log(`[UserOnboarding] Account age (${Math.round(accountAgeMs / 1000)}s) indicates returning user. Routing to main.`);
-      await markUserSetupAsPermanentlyCompleted(uid, email);
-      return {
-        isNewUserWithNewEmail: false,
-        targetScreen: 'main',
-        reason: 'Firebase Auth metadata indicates existing account'
-      };
-    }
+    // Check if user already finished the 4 onboarding slides:
+    const localSlidesDone = 
+      safeGetItem(`onboarding_slides_completed_${uid}`) === 'true' || 
+      safeGetItem(`onboarding_completed_${uid}`) === 'true';
+    const remoteSlidesDone = userDocSnap.exists() && userDocSnap.data()?.onboarding_slides_completed === true;
 
-    // If we reached here, this is truly a BRAND NEW USER with a BRAND NEW EMAIL!
-    // Check if they already completed the 4 onboarding slides in this immediate session:
-    if (localOnboardingDone) {
+    if (localSlidesDone || remoteSlidesDone) {
       console.log(`[UserOnboarding] Brand new user ${uid} in progress: Onboarding completed, presenting AcademicSetup.`);
       return {
         isNewUserWithNewEmail: true,
         targetScreen: 'setup',
-        reason: 'New user in progress: finished onboarding, needs academic setup'
+        reason: 'New user in progress: finished onboarding slides, needs academic setup'
       };
     }
 
+    // If we reached here, this is truly a BRAND NEW USER with a BRAND NEW EMAIL!
     console.log(`[UserOnboarding] Brand new user ${uid} with new email ${email}: Showing Onboarding screen for the first time.`);
     return {
       isNewUserWithNewEmail: true,
@@ -135,20 +117,18 @@ export async function determineUserOnboardingRoute(currentUser: User): Promise<O
   } catch (err) {
     console.warn('[UserOnboarding] Database check encountered an issue, checking fallbacks:', err);
 
-    // If offline or Firestore error:
-    if (isExistingAccountByAge || localSetupDone || localOnboardingDone || localIsComplete) {
+    if (localSetupDone || localIsComplete || localEmailDone) {
       return {
         isNewUserWithNewEmail: false,
         targetScreen: 'main',
-        reason: 'Fallback: existing account age or local storage indicates returning user'
+        reason: 'Fallback: local storage confirms returning user'
       };
     }
 
-    // Default to main for safety so users are never stuck in an onboarding loop
     return {
-      isNewUserWithNewEmail: false,
-      targetScreen: 'main',
-      reason: 'Fallback: default to main to avoid blocking user'
+      isNewUserWithNewEmail: true,
+      targetScreen: 'onboarding',
+      reason: 'Fallback: show onboarding for new user'
     };
   }
 }
@@ -162,17 +142,17 @@ export async function markUserSetupAsPermanentlyCompleted(uid: string, email?: s
   
   // 1. LocalStorage
   safeSetItem(`onboarding_completed_${uid}`, 'true');
+  safeSetItem(`onboarding_slides_completed_${uid}`, 'true');
   safeSetItem(`academic_setup_completed_${uid}`, 'true');
   safeSetItem(`isOnboardingComplete_${uid}`, 'true');
   safeSetItem(`welcome_penguin_seen_${uid}`, 'true');
-  safeSetItem('welcome_penguin_seen_global', 'true');
-  safeSetItem('onboarding_completed', 'true');
   safeRemoveItem(`pending_welcome_celebration_${uid}`);
   safeRemoveItem('pending_welcome_celebration');
 
   const cleanEmail = (email || '').toLowerCase().trim();
   if (cleanEmail) {
     safeSetItem(`onboarding_completed_email_${cleanEmail}`, 'true');
+    safeSetItem(`welcome_penguin_seen_email_${cleanEmail}`, 'true');
   }
 
   // 2. Firestore Sync

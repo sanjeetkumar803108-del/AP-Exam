@@ -53,22 +53,11 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
   const handleComplete = () => {
     triggerVibration(25);
-    // Mark completed and auto-provision best defaults so user is never stalled
-    safeSetItem('onboarding_completed', 'true');
-    safeSetItem('academic_country', 'United States');
-    safeSetItem('academic_grade', '11th Grade (Junior)');
-    safeSetItem('academic_stream', 'STEM / Engineering');
-    
+    // Mark slides completed for this specific user
     if (auth.currentUser) {
       const uid = auth.currentUser.uid;
+      safeSetItem(`onboarding_slides_completed_${uid}`, 'true');
       safeSetItem(`onboarding_completed_${uid}`, 'true');
-      safeSetItem(`academic_country_${uid}`, 'United States');
-      safeSetItem(`academic_grade_${uid}`, '11th Grade (Junior)');
-      safeSetItem(`academic_stream_${uid}`, 'STEM / Engineering');
-
-      if (auth.currentUser.email) {
-        safeSetItem(`onboarding_completed_email_${auth.currentUser.email.toLowerCase().trim()}`, 'true');
-      }
 
       setDoc(doc(db, 'users', uid), {
         onboarding_slides_completed: true,

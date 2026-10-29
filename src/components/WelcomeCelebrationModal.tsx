@@ -127,6 +127,7 @@ export default function WelcomeCelebrationModal({
     if (email) {
       const cleanEmail = email.toLowerCase().trim();
       safeSetItem(`onboarding_completed_email_${cleanEmail}`, 'true');
+      safeSetItem(`welcome_penguin_seen_email_${cleanEmail}`, 'true');
       setDoc(doc(db, 'allocated_emails', cleanEmail), {
         hasSeenWelcome: true,
         hasCompletedOnboarding: true,

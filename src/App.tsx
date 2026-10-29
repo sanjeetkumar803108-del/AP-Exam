@@ -326,7 +326,7 @@ export default function App() {
       const activeUid = user?.uid;
       const alreadySeen = activeUid ? safeGetItem(`welcome_penguin_seen_${activeUid}`) === 'true' : false;
       const email = user?.email?.toLowerCase().trim();
-      const emailSeen = email ? safeGetItem(`onboarding_completed_email_${email}`) === 'true' : false;
+      const emailSeen = email ? safeGetItem(`welcome_penguin_seen_email_${email}`) === 'true' : false;
       if (!alreadySeen && !emailSeen) {
         setShowWelcomeCelebration(true);
       }
@@ -341,7 +341,7 @@ export default function App() {
       const activeUid = user.uid;
       const alreadySeen = safeGetItem(`welcome_penguin_seen_${activeUid}`) === 'true';
       const email = user?.email?.toLowerCase().trim();
-      const emailSeen = email ? safeGetItem(`onboarding_completed_email_${email}`) === 'true' : false;
+      const emailSeen = email ? safeGetItem(`welcome_penguin_seen_email_${email}`) === 'true' : false;
       const pending = safeGetItem(`pending_welcome_celebration_${activeUid}`) === 'true';
       if (pending && !alreadySeen && !emailSeen) {
         safeRemoveItem(`pending_welcome_celebration_${activeUid}`);
@@ -594,10 +594,9 @@ export default function App() {
         // If this returning user already completed setup locally, unblock UI immediately (0.05s boot)!
         // Network sync runs smoothly in the background without blocking the student.
         const isKnownCompleted =
-          safeGetItem(`onboarding_completed_${currentUser.uid}`) === 'true' ||
           safeGetItem(`academic_setup_completed_${currentUser.uid}`) === 'true' ||
           safeGetItem(`isOnboardingComplete_${currentUser.uid}`) === 'true' ||
-          safeGetItem('onboarding_completed') === 'true';
+          (currentUser.email && safeGetItem(`onboarding_completed_email_${currentUser.email.toLowerCase().trim()}`) === 'true');
 
         if (isKnownCompleted) {
           setShowOnboarding(false);
@@ -620,7 +619,6 @@ export default function App() {
             } else {
               setShowOnboarding(false);
               setShowAcademicSetup(false);
-              setShowWelcomeCelebration(false);
             }
 
             const userDocSnap = await getDoc(doc(db, 'users', currentUser.uid));
