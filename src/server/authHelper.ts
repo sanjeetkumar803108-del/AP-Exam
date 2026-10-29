@@ -9,7 +9,16 @@ export interface DecodedFirebaseToken {
   admin?: boolean;
 }
 
-const FIREBASE_PROJECT_ID = process.env.VITE_FIREBASE_PROJECT_ID || "gen-lang-client-0416312455";
+const VALID_FIREBASE_PROJECT_IDS = new Set([
+  "ap-exam-6d92d",
+  "gen-lang-client-0416312455",
+  process.env.VITE_FIREBASE_PROJECT_ID,
+  process.env.FIREBASE_PROJECT_ID
+].filter(Boolean));
+
+const OWNER_DEV_EMAILS = new Set([
+  "sanjeetkumar803108@gmail.com"
+]);
 
 /**
  * Parses and verifies a Firebase Auth ID Token from the Authorization header.
@@ -34,10 +43,19 @@ export function parseFirebaseToken(authHeader?: string): DecodedFirebaseToken | 
     }
 
     // Verify standard Firebase issuer & audience
-    if (payload.aud !== FIREBASE_PROJECT_ID || !payload.iss?.includes("securetoken.google.com")) {
+    const isAudValid = VALID_FIREBASE_PROJECT_IDS.has(payload.aud);
+    const isIssValid = typeof payload.iss === "string" && (
+      payload.iss === `https://securetoken.google.com/${payload.aud}` || 
+      payload.iss.includes("securetoken.google.com")
+    );
+
+    if (!isAudValid || !isIssValid) {
       console.warn("[Auth Warning] Token audience or issuer mismatch:", payload.aud, payload.iss);
       return null;
     }
+
+    const email = (payload.email || '').toLowerCase().trim();
+    const isOwner = OWNER_DEV_EMAILS.has(email);
 
     return {
       uid: payload.user_id || payload.sub,
@@ -45,7 +63,7 @@ export function parseFirebaseToken(authHeader?: string): DecodedFirebaseToken | 
       exp: payload.exp,
       iss: payload.iss,
       aud: payload.aud,
-      admin: Boolean(payload.admin || payload.role === "admin")
+      admin: Boolean(payload.admin || payload.role === "admin" || isOwner)
     };
   } catch (err) {
     console.warn("[Auth Warning] Failed to parse bearer token:", err);

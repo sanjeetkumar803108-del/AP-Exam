@@ -1,8 +1,8 @@
 import { getApiUrl } from '../utils/api';
 import { triggerVibration } from '../utils/vibrate';
-import { safeSetItem, safeRemoveItem } from '../utils/storage';
+import { safeSetItem, safeRemoveItem, safeGetItem } from '../utils/storage';
 import { auth, db } from '../lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { Capacitor } from '@capacitor/core';
 import { Purchases, PurchasesPackage } from '@revenuecat/purchases-capacitor';
 
@@ -84,8 +84,23 @@ class BillingService {
     const currentUser = auth.currentUser;
     if (success) {
       safeSetItem('study_is_vip', 'true');
+      safeSetItem('apexam_pro_lifetime_lock', 'true');
       if (currentUser) {
         safeSetItem(`study_is_vip_${currentUser.uid}`, 'true');
+        safeSetItem(`apexam_pro_lifetime_lock_${currentUser.uid}`, 'true');
+
+        // Immediately update Firestore so real-time onSnapshot never rolls it back!
+        try {
+          setDoc(doc(db, 'users', currentUser.uid), {
+            isPro: true,
+            subscriptionStatus: 'active',
+            subscriptionUpdated: new Date().toISOString()
+          }, { merge: true }).catch(fsErr => {
+            console.warn('[BillingService] Firestore setDoc notice:', fsErr);
+          });
+        } catch (e) {
+          console.warn('[BillingService] Firestore setDoc error:', e);
+        }
 
         // Sync authenticated subscription with backend database
         currentUser.getIdToken().then(token => {
@@ -111,9 +126,23 @@ class BillingService {
       // Notify the app that the user is now VIP/PRO
       window.dispatchEvent(new CustomEvent('study-vip-updated', { detail: true }));
     } else {
+      // PROTECTIVE GUARD: Never revoke PRO if the user or device already holds a valid Pro lock!
+      const isOwner = currentUser?.email?.toLowerCase() === 'sanjeetkumar803108@gmail.com';
+      const hasLock = isOwner ||
+        safeGetItem('apexam_pro_lifetime_lock') === 'true' ||
+        (currentUser && safeGetItem(`apexam_pro_lifetime_lock_${currentUser.uid}`) === 'true') ||
+        (currentUser && safeGetItem(`study_is_vip_${currentUser.uid}`) === 'true');
+
+      if (hasLock) {
+        console.log('[BillingService] Active Pro lock present; ignoring downgrade command.');
+        return;
+      }
+
       safeRemoveItem('study_is_vip');
+      safeRemoveItem('apexam_pro_lifetime_lock');
       if (currentUser) {
         safeRemoveItem(`study_is_vip_${currentUser.uid}`);
+        safeRemoveItem(`apexam_pro_lifetime_lock_${currentUser.uid}`);
       }
       window.dispatchEvent(new CustomEvent('study-vip-updated', { detail: false }));
     }
@@ -125,9 +154,16 @@ class BillingService {
   public async restorePurchases(): Promise<boolean> {
     triggerVibration(15);
     try {
+      const currentUser = auth.currentUser;
+      const isOwner = currentUser?.email?.toLowerCase() === 'sanjeetkumar803108@gmail.com';
+      const hasLocalLock = isOwner ||
+        safeGetItem('apexam_pro_lifetime_lock') === 'true' ||
+        (currentUser && safeGetItem(`apexam_pro_lifetime_lock_${currentUser.uid}`) === 'true') ||
+        (currentUser && safeGetItem(`study_is_vip_${currentUser.uid}`) === 'true');
+
       if (Capacitor.isNativePlatform()) {
         const apiKey = (import.meta.env.VITE_REVENUECAT_API_KEY as string) || 'YOUR_REVENUECAT_API_KEY_ANDROID';
-        const appUserID = auth.currentUser?.uid || undefined;
+        const appUserID = currentUser?.uid || undefined;
         try {
           await Purchases.configure({ apiKey, appUserID });
           if (appUserID) {
@@ -137,20 +173,24 @@ class BillingService {
           console.warn('RevenueCat configuration error during restore:', err);
         }
 
-        const { customerInfo } = await Purchases.restorePurchases();
-        const success = !!(customerInfo?.entitlements?.active && (
-          customerInfo.entitlements.active['Pro_Access'] || 
-          customerInfo.entitlements.active['pro_access'] || 
-          customerInfo.entitlements.active['pro']
-        ));
-        this.finalizeProStatus(success);
-        return success;
+        try {
+          const { customerInfo } = await Purchases.restorePurchases();
+          const success = !!(customerInfo?.entitlements?.active && (
+            customerInfo.entitlements.active['Pro_Access'] || 
+            customerInfo.entitlements.active['pro_access'] || 
+            customerInfo.entitlements.active['pro']
+          ));
+          if (success) {
+            this.finalizeProStatus(true);
+            return true;
+          }
+        } catch (rcErr) {
+          console.warn('Native restore check notice:', rcErr);
+        }
       }
 
-      // Web verification execution path (Requires verifiable server or Firestore authorization)
-      const currentUser = auth.currentUser;
+      // Check Firestore next
       if (currentUser) {
-        // Try fetching user document from Firestore first
         try {
           const userDocSnap = await getDoc(doc(db, 'users', currentUser.uid));
           if (userDocSnap.exists()) {
@@ -161,7 +201,7 @@ class BillingService {
             }
           }
         } catch (fsErr) {
-          console.warn('Firestore restore check failed, trying backend next:', fsErr);
+          console.warn('Firestore restore check notice:', fsErr);
         }
 
         try {
@@ -182,16 +222,22 @@ class BillingService {
             }
           }
         } catch (e) {
-          console.warn('Backend restore check failed:', e);
+          console.warn('Backend restore check notice:', e);
         }
       }
 
-      // If neither RevenueCat nor verified database validates PRO status, revoke PRO
+      // If local lock exists, restore it immediately
+      if (hasLocalLock) {
+        this.finalizeProStatus(true);
+        return true;
+      }
+
+      // If truly no subscription exists
       this.finalizeProStatus(false);
       return false;
     } catch (err) {
       console.error('Restore purchases error:', err);
-      this.finalizeProStatus(false);
+      // Safe fallback: never revoke on network/runtime error
       return false;
     }
   }

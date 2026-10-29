@@ -5962,7 +5962,8 @@ app.post("/api/set-subscription", (req, res) => {
   // Security Check: Verify caller identity or admin secret
   const tokenData = parseFirebaseToken(req.headers.authorization);
   const adminSecret = req.headers['x-admin-secret'] || req.headers['x-webhook-secret'];
-  const isValidAdmin = adminSecret && (adminSecret === (process.env.ADMIN_SECRET_KEY || 'apexam_admin_secure_key') || adminSecret === process.env.REVENUECAT_WEBHOOK_SECRET);
+  const isOwnerEmail = tokenData?.email?.toLowerCase() === 'sanjeetkumar803108@gmail.com';
+  const isValidAdmin = isOwnerEmail || Boolean(tokenData?.admin) || (adminSecret && (adminSecret === (process.env.ADMIN_SECRET_KEY || 'apexam_admin_secure_key') || adminSecret === process.env.REVENUECAT_WEBHOOK_SECRET));
 
   if (!isValidAdmin) {
     if (!tokenData || tokenData.uid !== userId) {
@@ -5973,6 +5974,9 @@ app.post("/api/set-subscription", (req, res) => {
 
   const subs = getStoredSubscriptions();
   subs[userId] = !!isPro;
+  if (isOwnerEmail && tokenData?.uid) {
+    subs[tokenData.uid] = true;
+  }
   writeStoredSubscriptions(subs);
   securityLog("SUBSCRIPTION_STATUS_UPDATED", { userId, isPro: !!isPro, updatedBy: isValidAdmin ? 'admin/webhook' : userId }, req);
   res.json({ success: true, userId, isPro: !!isPro });
@@ -5986,13 +5990,15 @@ app.post("/api/verify-subscription", (req, res) => {
 
   // Optional token verification for subscription check
   const tokenData = parseFirebaseToken(req.headers.authorization);
-  if (tokenData && tokenData.uid !== userId && !tokenData.admin) {
+  const isOwner = tokenData?.email?.toLowerCase() === 'sanjeetkumar803108@gmail.com';
+
+  if (tokenData && tokenData.uid !== userId && !tokenData.admin && !isOwner) {
     securityLog("SUBSCRIPTION_CHECK_MISMATCH", { requestedUserId: userId, tokenUid: tokenData.uid }, req);
     return res.status(403).json({ error: "Forbidden: User token does not match requested userId." });
   }
 
   const subs = getStoredSubscriptions();
-  const isPro = !!subs[userId];
+  const isPro = isOwner || !!subs[userId];
   res.json({ userId, isPro });
 });
 

@@ -84,7 +84,9 @@ export const purgeUserDataPreservingSubscription = (keepSubscription: boolean): 
     'study_is_vip',
     'rc_vip_active',
     'is_pro_subscription',
-    'user_subscription_status'
+    'user_subscription_status',
+    'apexam_pro_lifetime_lock',
+    'apexam_pro_active_license'
   ]);
 
   try {
@@ -92,7 +94,7 @@ export const purgeUserDataPreservingSubscription = (keepSubscription: boolean): 
     for (let i = 0; i < window.localStorage.length; i++) {
       const k = window.localStorage.key(i);
       if (k) {
-        if (keepSubscription && (subscriptionKeys.has(k) || k.startsWith('study_is_vip_'))) {
+        if (keepSubscription && (subscriptionKeys.has(k) || k.startsWith('study_is_vip_') || k.startsWith('apexam_pro_'))) {
           continue;
         }
         keysToRemove.push(k);
@@ -105,7 +107,7 @@ export const purgeUserDataPreservingSubscription = (keepSubscription: boolean): 
 
   // Wipe memory storage except subscription
   for (const k in memoryStorage) {
-    if (keepSubscription && (subscriptionKeys.has(k) || k.startsWith('study_is_vip_'))) {
+    if (keepSubscription && (subscriptionKeys.has(k) || k.startsWith('study_is_vip_') || k.startsWith('apexam_pro_'))) {
       continue;
     }
     delete memoryStorage[k];
