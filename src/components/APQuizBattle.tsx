@@ -1311,10 +1311,10 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     (s.id === "ap-physics" && selectedSubjectId === "ap-physics-1")
   ) || AP_BATTLE_SUBJECTS[0];
 
-  // ================= RENDER: LOBBY =================
+// ================= RENDER: LOBBY =================
   if (phase === 'LOBBY') {
     return (
-      <div className="w-full h-full min-h-full bg-zinc-950 text-white flex flex-col justify-between overflow-y-auto select-none font-sans p-5">
+      <div className="w-full h-full min-h-full bg-zinc-50 text-zinc-900 flex flex-col justify-between overflow-y-auto select-none font-sans p-5">
         <div className="flex items-center justify-between">
           <button
             onClick={() => {
@@ -1322,17 +1322,17 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
               triggerVibration(15);
               onBack();
             }}
-            className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300 hover:text-white active:scale-95 transition-all cursor-pointer"
+            className="w-10 h-10 rounded-full bg-white border border-zinc-200 shadow-xs flex items-center justify-center text-zinc-700 hover:text-zinc-950 active:scale-95 transition-all cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200/80 px-3 py-1 rounded-full shadow-xs">
             <span className="flex h-2.5 w-2.5 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
             </span>
-            <span className="text-xs font-bold text-emerald-400 tracking-wide uppercase">Live Battle Arena</span>
+            <span className="text-xs font-bold text-emerald-700 tracking-wide uppercase">Live Battle Arena</span>
           </div>
 
           <div className="w-10" />
@@ -1340,17 +1340,17 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
         <div className="max-w-md w-full mx-auto my-auto flex flex-col gap-6 py-4">
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-500 text-white shadow-xl shadow-indigo-500/20 mb-3">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white shadow-xl shadow-indigo-500/25 mb-3">
               <Swords className="w-8 h-8" />
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-white uppercase">1v1 Quiz Battle</h1>
-            <p className="text-xs text-zinc-400 mt-1 font-medium">Live PvP arena</p>
+            <h1 className="text-3xl font-black tracking-tight text-zinc-900 uppercase">1v1 Quiz Battle</h1>
+            <p className="text-xs text-zinc-500 mt-1 font-semibold">Live PvP arena</p>
           </div>
 
           {/* Slide-Down Subject Selector Trigger Card */}
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Select Battle Subject</span>
+              <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Select Battle Subject</span>
               <button
                 type="button"
                 onClick={() => {
@@ -1358,7 +1358,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                   setSubjectSearchQuery('');
                   setShowSubjectPicker(true);
                 }}
-                className="text-[10px] text-indigo-400 font-bold bg-indigo-950/80 hover:bg-indigo-900/80 px-2.5 py-0.5 rounded-full border border-indigo-500/30 cursor-pointer transition-colors"
+                className="text-[10px] text-indigo-600 font-bold bg-indigo-50 hover:bg-indigo-100 px-2.5 py-0.5 rounded-full border border-indigo-200 cursor-pointer transition-colors"
               >
                 Tap to Change
               </button>
@@ -1371,42 +1371,42 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                 setSubjectSearchQuery('');
                 setShowSubjectPicker(true);
               }}
-              className="w-full bg-zinc-900/90 hover:bg-zinc-850 border-2 border-zinc-800 hover:border-indigo-500/70 rounded-2xl p-3.5 flex items-center justify-between transition-all cursor-pointer shadow-md group text-left active:scale-[0.99]"
+              className="w-full bg-white hover:bg-zinc-50/80 border-2 border-zinc-200 hover:border-indigo-400 rounded-2xl p-3.5 flex items-center justify-between transition-all cursor-pointer shadow-xs group text-left active:scale-[0.99]"
             >
               <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-11 h-11 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-2xl shrink-0 group-hover:scale-105 transition-transform text-indigo-300 shadow-inner">
+                <div className="w-11 h-11 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-2xl shrink-0 group-hover:scale-105 transition-transform text-indigo-600 shadow-xs">
                   {activeSubject?.icon || '📐'}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="text-[9px] font-black uppercase tracking-wider bg-indigo-950 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-500/30">
+                    <span className="text-[9px] font-black uppercase tracking-wider bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-200/60">
                       15 Questions Bank
                     </span>
-                    <span className="text-[10px] text-zinc-400 font-medium truncate">
+                    <span className="text-[10px] text-zinc-500 font-medium truncate">
                       College Board AP
                     </span>
                   </div>
-                  <h4 className="text-sm font-black text-white truncate">
+                  <h4 className="text-sm font-black text-zinc-900 truncate">
                     {activeSubject?.name || 'AP Calculus AB'}
                   </h4>
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <span className="text-xs font-bold text-indigo-400 hidden sm:inline">Change</span>
-                <ChevronDown className="w-5 h-5 text-zinc-400 group-hover:text-indigo-400 transition-colors shrink-0" />
+                <span className="text-xs font-bold text-indigo-600 hidden sm:inline">Change</span>
+                <ChevronDown className="w-5 h-5 text-zinc-400 group-hover:text-indigo-600 transition-colors shrink-0" />
               </div>
             </button>
           </div>
 
           {/* Grade Matchmaking Tier Indicator */}
-          <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-indigo-950/40 border border-indigo-500/20 text-xs">
+          <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-indigo-50/70 border border-indigo-100 text-xs shadow-2xs">
             <div className="flex items-center gap-2">
               <span className="text-sm">🎯</span>
-              <span className="text-zinc-300 font-medium">Matchmaking Tier:</span>
+              <span className="text-zinc-700 font-medium">Matchmaking Tier:</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="font-extrabold text-indigo-300 bg-indigo-900/60 px-2.5 py-0.5 rounded-md border border-indigo-400/30 text-[11px]">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="font-extrabold text-indigo-700 bg-indigo-100/70 px-2.5 py-0.5 rounded-md border border-indigo-200 text-[11px]">
                 {myGrade} • Live AP Peers
               </span>
             </div>
@@ -1417,26 +1417,26 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={startQuickMatch}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 text-white font-extrabold text-sm uppercase tracking-wider shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 cursor-pointer transition-all"
+            className="w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 text-white font-extrabold text-sm uppercase tracking-wider shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 cursor-pointer transition-all"
           >
             <Radio className="w-4 h-4 text-emerald-300 animate-pulse" />
             <span>Find Real Player</span>
           </motion.button>
 
           {/* Action 2: Friend Room */}
-          <div className="bg-zinc-900/80 border border-zinc-800/80 rounded-2xl p-4 flex flex-col gap-3">
+          <div className="bg-white border border-zinc-200/90 rounded-2xl p-4 flex flex-col gap-3 shadow-xs">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="text-xs font-bold text-zinc-800 flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-indigo-600" />
                 <span>Play with a Friend</span>
               </span>
-              <span className="text-[10px] text-zinc-500 font-mono">CODE: {roomCode}</span>
+              <span className="text-[10px] text-zinc-400 font-mono font-bold">CODE: {roomCode}</span>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={handleHostFriendRoom}
-                className="py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 text-white text-xs font-bold transition-all cursor-pointer"
+                className="py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200/80 border border-zinc-200 text-zinc-900 text-xs font-bold transition-all cursor-pointer shadow-2xs"
               >
                 Create Room
               </button>
@@ -1449,9 +1449,9 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                     setTimeout(() => setCopied(false), 2000);
                   } catch {}
                 }}
-                className="py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 text-zinc-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                className="py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200/80 border border-zinc-200 text-zinc-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copied ? 'Copied' : 'Copy Code'}</span>
               </button>
             </div>
@@ -1466,23 +1466,23 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                 }}
                 placeholder="Enter 4-digit code (e.g. 1234)..."
                 maxLength={12}
-                className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono uppercase text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500"
+                className="flex-1 bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2 text-xs font-mono uppercase text-zinc-900 placeholder-zinc-400 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
               />
               <button
                 onClick={handleJoinFriendRoom}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 rounded-xl text-xs font-bold text-white transition-all cursor-pointer shadow-xs"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-xl text-xs font-bold text-white transition-all cursor-pointer shadow-xs"
               >
                 Join
               </button>
             </div>
 
             {joinError && (
-              <span className="text-[11px] text-rose-400 font-medium text-center">{joinError}</span>
+              <span className="text-[11px] text-rose-600 font-medium text-center">{joinError}</span>
             )}
           </div>
         </div>
 
-        <div className="text-center text-[10px] text-zinc-600">
+        <div className="text-center text-[10px] text-zinc-400 font-medium">
           5 Questions • 30s to 60s By Difficulty • Real-time Synchronized
         </div>
       
@@ -1491,7 +1491,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           {showSubjectPicker && (
             <div 
               onClick={() => setShowSubjectPicker(false)}
-              className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 animate-fade-in"
+              className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs animate-fade-in"
             >
               <motion.div
                 onClick={(e) => e.stopPropagation()}
@@ -1499,22 +1499,22 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 70, scale: 0.97 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="w-full max-w-lg bg-zinc-950 rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl border border-zinc-800 overflow-hidden flex flex-col max-h-[88vh] transform-gpu will-change-transform"
+                className="w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[88vh] transform-gpu will-change-transform"
               >
                 {/* Drag handle for mobile */}
-                <div className="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mt-3 sm:hidden" />
+                <div className="w-12 h-1.5 bg-zinc-300 rounded-full mx-auto mt-3 sm:hidden" />
 
                 {/* Modal Header */}
-                <div className="p-4 sm:p-5 border-b border-zinc-850 flex items-center justify-between bg-gradient-to-r from-zinc-900 via-indigo-950/40 to-zinc-900 shrink-0">
+                <div className="p-4 sm:p-5 border-b border-zinc-200 flex items-center justify-between bg-gradient-to-r from-zinc-50 via-indigo-50/30 to-zinc-50 shrink-0">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/30 text-lg shrink-0">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/20 text-lg shrink-0">
                       ⚔️
                     </div>
                     <div>
-                      <h3 className="font-black text-sm sm:text-base text-white leading-tight">
+                      <h3 className="font-black text-sm sm:text-base text-zinc-900 leading-tight">
                         Select Battle Subject
                       </h3>
-                      <p className="text-[11px] text-zinc-400 font-medium">
+                      <p className="text-[11px] text-zinc-500 font-medium">
                         Official AP Curriculum ({AP_BATTLE_SUBJECTS.length} Subjects)
                       </p>
                     </div>
@@ -1525,14 +1525,14 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                       triggerVibration(10);
                       setShowSubjectPicker(false);
                     }}
-                    className="w-8 h-8 rounded-full bg-zinc-900 hover:bg-zinc-850 text-zinc-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer border border-zinc-800"
+                    className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 hover:text-zinc-900 flex items-center justify-center transition-colors cursor-pointer border border-zinc-200"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
 
                 {/* Search Bar & Category Filter */}
-                <div className="p-3.5 border-b border-zinc-850 bg-zinc-900/60 shrink-0 space-y-2.5">
+                <div className="p-3.5 border-b border-zinc-200 bg-zinc-50 shrink-0 space-y-2.5">
                   <div className="relative">
                     <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
@@ -1540,12 +1540,12 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                       value={subjectSearchQuery}
                       onChange={(e) => setSubjectSearchQuery(e.target.value)}
                       placeholder="Search AP subjects (e.g. Calculus, Physics, Bio)..."
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-8 py-2 text-xs font-semibold text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                      className="w-full bg-white border border-zinc-200 rounded-xl pl-9 pr-8 py-2 text-xs font-semibold text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-2xs"
                     />
                     {subjectSearchQuery && (
                       <button
                         onClick={() => setSubjectSearchQuery('')}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-0.5"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 p-0.5"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -1565,7 +1565,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                         className={`text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all shrink-0 cursor-pointer ${
                           subjectCategoryFilter === cat
                             ? 'bg-indigo-600 text-white shadow-xs'
-                            : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:bg-zinc-850 hover:text-zinc-200'
+                            : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-100 hover:text-zinc-900'
                         }`}
                       >
                         {cat}
@@ -1575,10 +1575,10 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                 </div>
 
                 {/* Subject Scrollable List */}
-                <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 custom-scrollbar bg-zinc-50/50">
                   {filteredBattleSubjects.length === 0 ? (
                     <div className="py-12 text-center text-zinc-500 space-y-1">
-                      <p className="text-sm font-bold text-zinc-300">No matching subjects found</p>
+                      <p className="text-sm font-bold text-zinc-700">No matching subjects found</p>
                       <p className="text-xs">Try searching with a different name or keyword</p>
                     </div>
                   ) : (
@@ -1595,34 +1595,34 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                           }}
                           className={`w-full p-3 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 text-left cursor-pointer active:scale-[0.99] ${
                             isSelected
-                              ? 'bg-indigo-950/60 border-indigo-500 shadow-md ring-1 ring-indigo-500/30'
-                              : 'bg-zinc-900/70 border-zinc-850 hover:border-zinc-750 hover:bg-zinc-900'
+                              ? 'bg-indigo-50/80 border-indigo-500 shadow-xs ring-1 ring-indigo-500/20'
+                              : 'bg-white border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 shadow-2xs'
                           }`}
                         >
                           <div className="flex items-center gap-3.5 min-w-0">
                             <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-xl shrink-0 border ${
-                              isSelected ? 'bg-indigo-600/30 border-indigo-500/50 text-white' : 'bg-zinc-950 border-zinc-800 text-zinc-300'
+                              isSelected ? 'bg-indigo-100/70 border-indigo-200 text-indigo-700' : 'bg-zinc-50 border-zinc-200 text-zinc-700'
                             }`}>
                               {subj.icon}
                             </div>
                             <div className="min-w-0">
                               <div className="flex items-center gap-2 mb-0.5">
-                                <span className="text-[10px] text-zinc-400 font-semibold truncate">
+                                <span className="text-[10px] text-zinc-500 font-semibold truncate">
                                   {subj.category}
                                 </span>
                               </div>
-                              <h4 className={`text-xs sm:text-sm font-black truncate ${isSelected ? 'text-indigo-300' : 'text-white'}`}>
+                              <h4 className={`text-xs sm:text-sm font-black truncate ${isSelected ? 'text-indigo-900' : 'text-zinc-900'}`}>
                                 {subj.name}
                               </h4>
                             </div>
                           </div>
 
                           {isSelected ? (
-                            <div className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                            <div className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
                               <Check className="w-4 h-4" />
                             </div>
                           ) : (
-                            <div className="w-7 h-7 rounded-full border border-zinc-700 shrink-0" />
+                            <div className="w-7 h-7 rounded-full border border-zinc-300 shrink-0" />
                           )}
                         </button>
                       );
@@ -1633,7 +1633,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             </div>
           )}
         </AnimatePresence>
-</div>
+      </div>
     );
   }
 
@@ -1641,15 +1641,15 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   if (phase === 'MATCHMAKING') {
     const isFriendHostWaiting = !!liveRoomId && liveRoomId.startsWith('room_AP-');
     return (
-      <div className="w-full h-full min-h-full bg-zinc-950 text-white flex flex-col justify-between items-center p-6 select-none font-sans">
+      <div className="w-full h-full min-h-full bg-zinc-50 text-zinc-900 flex flex-col justify-between items-center p-6 select-none font-sans">
         <div className="w-full flex items-center justify-between max-w-md">
           <button
             onClick={handleCancelMatchmaking}
-            className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer"
+            className="w-10 h-10 rounded-full bg-white border border-zinc-200 shadow-xs flex items-center justify-center text-zinc-700 hover:text-zinc-950 cursor-pointer active:scale-95 transition-all"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+          <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
             {isFriendHostWaiting || isFriendRoomHost ? 'Private Room' : 'Searching Arena'}
           </span>
           <div className="w-10"></div>
@@ -1659,41 +1659,41 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           {/* Radar Circles */}
           <div className="relative w-48 h-48 flex items-center justify-center mb-8">
             <motion.div
-              animate={{ scale: [1, 2.2], opacity: [0.8, 0] }}
+              animate={{ scale: [1, 2.2], opacity: [0.7, 0] }}
               transition={{ repeat: Infinity, duration: 2, ease: "easeOut" }}
-              className="absolute w-24 h-24 rounded-full border border-indigo-500/40 bg-indigo-500/10"
+              className="absolute w-24 h-24 rounded-full border border-indigo-400/40 bg-indigo-50/70"
             />
             <motion.div
-              animate={{ scale: [1, 2.8], opacity: [0.6, 0] }}
+              animate={{ scale: [1, 2.8], opacity: [0.5, 0] }}
               transition={{ repeat: Infinity, duration: 2.4, ease: "easeOut", delay: 0.5 }}
-              className="absolute w-24 h-24 rounded-full border border-purple-500/30 bg-purple-500/5"
+              className="absolute w-24 h-24 rounded-full border border-purple-400/30 bg-purple-50/50"
             />
-            <div className="relative z-10 w-24 h-24 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center shadow-xl shadow-indigo-600/30 border-2 border-white/20">
+            <div className="relative z-10 w-24 h-24 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center shadow-xl shadow-indigo-600/25 border-4 border-white">
               <span className="text-3xl font-black">{myAvatar}</span>
             </div>
           </div>
 
-          <h2 className="text-xl font-extrabold text-white mb-1">
+          <h2 className="text-xl font-extrabold text-zinc-900 mb-1">
             {isFriendHostWaiting || isFriendRoomHost ? 'Waiting for Friend...' : 'Finding Opponent...'}
           </h2>
-          <p className="text-xs text-zinc-400 mb-4">
+          <p className="text-xs text-zinc-500 mb-4">
             {isFriendHostWaiting || isFriendRoomHost
-              ? `Share Room Code with your friend to start!`
+              ? 'Share Room Code with your friend to start!'
               : `Scanning active AP scholars in ${activeSubject.name} (Prioritizing ${myGrade})`}
           </p>
 
           {(isFriendHostWaiting || isFriendRoomHost) ? (
             <div className="flex flex-col items-center gap-3 mb-4 w-full">
-              <div className="bg-indigo-950/70 border border-indigo-500/50 px-5 py-3 rounded-2xl flex items-center justify-between w-full shadow-inner">
-                <span className="text-xs text-indigo-300 font-bold uppercase tracking-wider">Room Code:</span>
-                <span className="text-lg font-mono font-black text-white tracking-widest">{roomCode}</span>
+              <div className="bg-indigo-50 border border-indigo-200 px-5 py-3 rounded-2xl flex items-center justify-between w-full shadow-xs">
+                <span className="text-xs text-indigo-700 font-bold uppercase tracking-wider">Room Code:</span>
+                <span className="text-lg font-mono font-black text-indigo-950 tracking-widest">{roomCode}</span>
               </div>
 
               <div className="flex items-center gap-2 w-full">
                 <button
                   type="button"
                   onClick={() => handleCopyWaitingCode(roomCode)}
-                  className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md"
+                  className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
                 >
                   {copiedWaitingCode ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copiedWaitingCode ? 'Copied!' : 'Copy Code'}</span>
@@ -1702,14 +1702,14 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                 <button
                   type="button"
                   onClick={() => handleShareWaitingCode(roomCode)}
-                  className="flex-1 py-2.5 rounded-xl bg-zinc-850 hover:bg-zinc-800 border border-zinc-750 active:scale-95 text-zinc-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  className="flex-1 py-2.5 rounded-xl bg-white hover:bg-zinc-100 border border-zinc-200 active:scale-95 text-zinc-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
                 >
-                  <Share2 className="w-3.5 h-3.5 text-indigo-400" />
+                  <Share2 className="w-3.5 h-3.5 text-indigo-600" />
                   <span>Share</span>
                 </button>
               </div>
 
-              <div className="flex items-center gap-2 text-[11px] text-zinc-400 mt-1">
+              <div className="flex items-center gap-2 text-[11px] text-zinc-500 mt-1">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
@@ -1719,16 +1719,16 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             </div>
           ) : (
             <>
-              <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-full mb-3">
-                <Clock className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-xs font-mono font-bold text-zinc-300">
+              <div className="flex items-center gap-2 bg-white border border-zinc-200 px-4 py-2 rounded-full mb-3 shadow-xs">
+                <Clock className="w-3.5 h-3.5 text-amber-500" />
+                <span className="text-xs font-mono font-bold text-zinc-700">
                   {searchSecondsLeft}s remaining
                 </span>
               </div>
 
               {serverLatency !== null && (
-                <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 mb-4 font-mono font-semibold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <div className="flex items-center gap-1.5 text-[10px] text-emerald-600 mb-4 font-mono font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   <span>Server Connected ({serverLatency}ms)</span>
                 </div>
               )}
@@ -1738,7 +1738,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
         <button
           onClick={handleCancelMatchmaking}
-          className="max-w-xs w-full py-3.5 rounded-2xl bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-400 hover:text-white font-bold text-xs uppercase tracking-wider cursor-pointer transition-all"
+          className="max-w-xs w-full py-3.5 rounded-2xl bg-white hover:bg-zinc-100 border border-zinc-200 text-zinc-600 hover:text-zinc-900 font-bold text-xs uppercase tracking-wider cursor-pointer transition-all shadow-xs"
         >
           Cancel Matchmaking
         </button>
@@ -1749,21 +1749,14 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   // ================= RENDER: 3-2-1 COUNTDOWN & ELECTRIC VERSUS SHOWDOWN =================
   if (phase === 'COUNTDOWN') {
     return (
-      <div className="w-full h-full min-h-full bg-[#07090E] text-white flex flex-col justify-between items-center p-5 select-none font-sans relative overflow-hidden">
-        {/* Background Electric Ambience */}
+      <div className="w-full h-full min-h-full bg-zinc-50 text-zinc-900 flex flex-col justify-between items-center p-5 select-none font-sans relative overflow-hidden">
+        {/* Background Electric Ambience for Light Theme */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {/* Cyan Glow Top Left for User */}
-          <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-indigo-600/20 blur-[100px]" />
-          {/* Rose Glow Bottom Right for Opponent */}
-          <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-rose-600/20 blur-[100px]" />
-          {/* Golden Electric Aura in the center */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-cyan-500/15 blur-[90px]" />
-          
-          {/* Lightning screen flash effect */}
-          <div className="absolute inset-0 bg-cyan-400/10 lightning-screen-flash pointer-events-none" />
-          
-          {/* Electric Grid Lines */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293715_1px,transparent_1px),linear-gradient(to_bottom,#1f293715_1px,transparent_1px)] bg-[size:2.5rem_2.5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-60" />
+          <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-indigo-100/60 blur-[90px]" />
+          <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-rose-100/60 blur-[90px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-cyan-100/40 blur-[80px]" />
+          <div className="absolute inset-0 bg-cyan-500/5 lightning-screen-flash pointer-events-none" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:2.5rem_2.5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-50" />
         </div>
 
         {/* Top Header Subject Banner */}
@@ -1773,11 +1766,11 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           transition={{ duration: 0.4 }}
           className="relative z-10 w-full flex justify-center pt-2"
         >
-          <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900/90 border border-indigo-500/30 text-xs font-black tracking-wider uppercase text-indigo-300 shadow-lg shadow-indigo-500/10 backdrop-blur-md">
-            <Zap className="w-3.5 h-3.5 text-amber-400 animate-pulse fill-amber-400" />
+          <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/95 border border-indigo-200 shadow-md text-xs font-black tracking-wider uppercase text-indigo-700 backdrop-blur-md">
+            <Zap className="w-3.5 h-3.5 text-amber-500 animate-pulse fill-amber-400" />
             <span>{activeSubject.name}</span>
-            <span className="text-zinc-500 font-normal">•</span>
-            <span className="text-emerald-400 font-bold">1V1 LIVE DUEL</span>
+            <span className="text-zinc-300 font-normal">•</span>
+            <span className="text-emerald-600 font-bold">1V1 LIVE DUEL</span>
           </div>
         </motion.div>
 
@@ -1789,20 +1782,19 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             initial={{ x: -80, opacity: 0, scale: 0.9 }}
             animate={{ x: 0, opacity: 1, scale: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="w-full p-4 rounded-3xl bg-gradient-to-r from-indigo-950/90 via-zinc-900/95 to-zinc-900/90 border-2 border-indigo-500/50 shadow-[0_0_30px_rgba(99,102,241,0.25)] flex items-center justify-between gap-4 backdrop-blur-xl relative overflow-hidden"
+            className="w-full p-4 rounded-3xl bg-white border-2 border-indigo-200 shadow-lg shadow-indigo-500/10 flex items-center justify-between gap-4 relative overflow-hidden"
           >
-            {/* Ambient edge glow */}
-            <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-400 via-cyan-400 to-indigo-600" />
+            {/* Ambient edge accent */}
+            <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 via-cyan-500 to-indigo-600" />
 
             <div className="flex items-center gap-3.5 min-w-0 pl-1">
-              {/* Avatar with energetic pulsing glow */}
               <div className="relative shrink-0">
                 <motion.div
                   animate={{ scale: [1, 1.1, 1] }}
                   transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                  className="absolute inset-0 rounded-2xl bg-indigo-500/40 blur-md"
+                  className="absolute inset-0 rounded-2xl bg-indigo-500/20 blur-md"
                 />
-                <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-cyan-500 flex items-center justify-center text-2xl font-black text-white border-2 border-indigo-300/60 shadow-lg shadow-indigo-600/40">
+                <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-500 flex items-center justify-center text-2xl font-black text-white border-2 border-white shadow-md">
                   {myAvatar}
                 </div>
               </div>
@@ -1810,17 +1802,17 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
               {/* User Name & Banner */}
               <div className="min-w-0 flex flex-col gap-1 text-left">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">YOU</span>
-                  <span className="w-1 h-1 rounded-full bg-emerald-400" />
-                  <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">YOU</span>
+                  <span className="w-1 h-1 rounded-full bg-emerald-500" />
+                  <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
                     {myGrade.toUpperCase()}
                   </span>
                 </div>
-                <h3 className="text-base sm:text-lg font-black text-white tracking-wide truncate leading-tight">
+                <h3 className="text-base sm:text-lg font-black text-zinc-900 tracking-wide truncate leading-tight">
                   {myName}
                 </h3>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-400/30 text-[10px] font-extrabold text-indigo-300 w-fit">
-                  <Sparkles className="w-2.5 h-2.5 text-cyan-300" />
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[10px] font-extrabold text-indigo-700 w-fit">
+                  <Sparkles className="w-2.5 h-2.5 text-cyan-500" />
                   <span>{myGrade.toUpperCase()} SCHOLAR</span>
                 </div>
               </div>
@@ -1828,8 +1820,8 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
             {/* Battle Ready Status */}
             <div className="shrink-0 flex flex-col items-end">
-              <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+              <span className="text-[10px] font-mono font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
                 READY
               </span>
             </div>
@@ -1840,17 +1832,17 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             
             {/* Concentric Electric Shockwaves */}
             <motion.div
-              animate={{ scale: [0.7, 1.4, 2], opacity: [0.9, 0.4, 0] }}
+              animate={{ scale: [0.7, 1.4, 2], opacity: [0.7, 0.3, 0] }}
               transition={{ repeat: Infinity, duration: 1.1, ease: "easeOut" }}
-              className="absolute w-36 h-36 rounded-full border-2 border-cyan-400/60 blur-xs pointer-events-none"
+              className="absolute w-36 h-36 rounded-full border-2 border-cyan-400/50 blur-xs pointer-events-none"
             />
             <motion.div
-              animate={{ scale: [0.8, 1.6, 2.3], opacity: [0.8, 0.3, 0] }}
+              animate={{ scale: [0.8, 1.6, 2.3], opacity: [0.6, 0.25, 0] }}
               transition={{ repeat: Infinity, duration: 1.3, ease: "easeOut", delay: 0.25 }}
-              className="absolute w-40 h-40 rounded-full border-2 border-fuchsia-500/50 blur-xs pointer-events-none"
+              className="absolute w-40 h-40 rounded-full border-2 border-fuchsia-400/40 blur-xs pointer-events-none"
             />
             <motion.div
-              animate={{ scale: [0.9, 1.8, 2.6], opacity: [0.6, 0.2, 0] }}
+              animate={{ scale: [0.9, 1.8, 2.6], opacity: [0.5, 0.15, 0] }}
               transition={{ repeat: Infinity, duration: 1.5, ease: "easeOut", delay: 0.5 }}
               className="absolute w-44 h-44 rounded-full border border-amber-400/40 blur-xs pointer-events-none"
             />
@@ -1866,28 +1858,25 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                   </feMerge>
                 </filter>
               </defs>
-              {/* Electric Bolt 1: Cyan High Voltage */}
               <path
                 d="M 15 70 L 65 45 L 95 75 L 140 35 L 185 85 L 225 45 L 265 70"
-                stroke="#38bdf8"
+                stroke="#6366f1"
                 strokeWidth="3.5"
                 fill="none"
                 filter="url(#electricGlow)"
                 className="electric-lightning-arc"
               />
-              {/* Electric Bolt 2: Gold High Voltage */}
               <path
                 d="M 25 78 L 75 35 L 115 80 L 155 30 L 195 75 L 245 52"
-                stroke="#facc15"
+                stroke="#f59e0b"
                 strokeWidth="2.5"
                 fill="none"
                 filter="url(#electricGlow)"
                 className="electric-lightning-arc"
               />
-              {/* Electric Bolt 3: Hot Magenta Lightning */}
               <path
                 d="M 35 62 L 85 85 L 130 50 L 175 90 L 215 55 L 255 78"
-                stroke="#f43f5e"
+                stroke="#ec4899"
                 strokeWidth="2"
                 fill="none"
                 filter="url(#electricGlow)"
@@ -1901,8 +1890,8 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
               transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
               className="absolute w-44 h-44 pointer-events-none flex items-center justify-between"
             >
-              <Zap className="w-6 h-6 text-amber-300 drop-shadow-[0_0_12px_#fde047] fill-amber-300 animate-pulse" />
-              <Zap className="w-6 h-6 text-cyan-300 drop-shadow-[0_0_12px_#38bdf8] fill-cyan-300 animate-pulse" />
+              <Zap className="w-6 h-6 text-amber-500 drop-shadow-[0_0_8px_#f59e0b] fill-amber-400 animate-pulse" />
+              <Zap className="w-6 h-6 text-indigo-500 drop-shadow-[0_0_8px_#6366f1] fill-indigo-400 animate-pulse" />
             </motion.div>
 
             {/* THE GIGANTIC ELECTRIC "VS" TEXT */}
@@ -1922,10 +1911,10 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             </motion.div>
 
             {/* Electric Sub-Aura Tag */}
-            <div className="relative z-10 -mt-1 flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-black/60 border border-amber-400/40 text-[9px] font-black uppercase tracking-widest text-amber-300 shadow-md">
-              <Zap className="w-2.5 h-2.5 fill-amber-300 text-amber-300 animate-bounce" />
+            <div className="relative z-10 -mt-1 flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/95 border border-amber-300 shadow-sm text-[9px] font-black uppercase tracking-widest text-amber-700">
+              <Zap className="w-2.5 h-2.5 fill-amber-400 text-amber-500 animate-bounce" />
               <span>HIGH VOLTAGE CLASH</span>
-              <Zap className="w-2.5 h-2.5 fill-amber-300 text-amber-300 animate-bounce" />
+              <Zap className="w-2.5 h-2.5 fill-amber-400 text-amber-500 animate-bounce" />
             </div>
           </div>
 
@@ -1934,24 +1923,24 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             initial={{ x: 80, opacity: 0, scale: 0.9 }}
             animate={{ x: 0, opacity: 1, scale: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="w-full p-4 rounded-3xl bg-gradient-to-r from-zinc-900/90 via-zinc-900/95 to-rose-950/90 border-2 border-rose-500/50 shadow-[0_0_30px_rgba(244,63,94,0.25)] flex items-center justify-between gap-4 backdrop-blur-xl relative overflow-hidden"
+            className="w-full p-4 rounded-3xl bg-white border-2 border-rose-200 shadow-lg shadow-rose-500/10 flex items-center justify-between gap-4 relative overflow-hidden"
           >
-            {/* Ambient edge glow */}
-            <div className="absolute top-0 right-0 bottom-0 w-1.5 bg-gradient-to-b from-rose-400 via-amber-400 to-rose-600" />
+            {/* Ambient edge accent */}
+            <div className="absolute top-0 right-0 bottom-0 w-1.5 bg-gradient-to-b from-rose-500 via-amber-500 to-rose-600" />
 
             <div className="min-w-0 flex flex-col gap-1 text-left pl-1">
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-black uppercase tracking-widest text-rose-400">OPPONENT</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
-                <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-400/30">
+                <span className="text-[10px] font-black uppercase tracking-widest text-rose-600">OPPONENT</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200">
                   {((opponent as any)?.gradeLevel || (opponent as any)?.grade || 'High School').toUpperCase()}
                 </span>
               </div>
-              <h3 className="text-base sm:text-lg font-black text-white tracking-wide truncate leading-tight">
+              <h3 className="text-base sm:text-lg font-black text-zinc-900 tracking-wide truncate leading-tight">
                 {opponent?.name || 'AP Rival'}
               </h3>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/15 border border-rose-400/30 text-[10px] font-extrabold text-rose-300 w-fit truncate max-w-[190px]">
-                <Trophy className="w-2.5 h-2.5 text-rose-400 shrink-0" />
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-50 border border-rose-200 text-[10px] font-extrabold text-rose-700 w-fit truncate max-w-[190px]">
+                <Trophy className="w-2.5 h-2.5 text-rose-500 shrink-0" />
                 <span className="truncate">{getOpponentTagline()}</span>
               </div>
             </div>
@@ -1961,9 +1950,9 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.4 }}
-                className="absolute inset-0 rounded-2xl bg-rose-500/40 blur-md"
+                className="absolute inset-0 rounded-2xl bg-rose-500/20 blur-md"
               />
-              <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-700 via-rose-600 to-amber-500 flex items-center justify-center text-2xl font-black text-white border-2 border-rose-300/60 shadow-lg shadow-rose-600/40">
+              <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-600 via-rose-500 to-amber-500 flex items-center justify-center text-2xl font-black text-white border-2 border-white shadow-md">
                 {getOpponentAvatar()}
               </div>
             </div>
@@ -1978,9 +1967,8 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           transition={{ duration: 0.4 }}
           className="relative z-10 w-full max-w-sm flex flex-col items-center gap-2 pb-2 text-center"
         >
-          {/* Animated Countdown Circle / Box */}
           <div className="flex items-center gap-3">
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-zinc-400">
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-zinc-500">
               MATCH COMMENCING IN
             </span>
             <motion.div
@@ -1989,16 +1977,16 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
               animate={{ scale: 1, opacity: 1, rotate: 0 }}
               exit={{ scale: 1.6, opacity: 0 }}
               transition={{ type: "spring", stiffness: 400, damping: 15 }}
-              className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-cyan-400 flex items-center justify-center text-2xl font-black text-white shadow-lg shadow-cyan-500/30 border border-white/40"
+              className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-cyan-500 flex items-center justify-center text-2xl font-black text-white shadow-lg shadow-indigo-500/25 border-2 border-white"
             >
               {countdownNum}
             </motion.div>
           </div>
 
-          <div className="flex items-center gap-2 text-[10px] font-bold text-cyan-300 tracking-wider uppercase animate-pulse">
-            <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
+          <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-700 tracking-wider uppercase animate-pulse">
+            <Zap className="w-3 h-3 text-amber-500 fill-amber-400" />
             <span>5 QUESTIONS • REAL-TIME SYNCHRONIZED • FASTEST WINS</span>
-            <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
+            <Zap className="w-3 h-3 text-amber-500 fill-amber-400" />
           </div>
         </motion.div>
       </div>
@@ -2008,7 +1996,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   // ================= RENDER: BATTLE ARENA =================
   if (phase === 'BATTLE') {
     return (
-      <div className="w-full h-full min-h-full bg-zinc-950 text-white flex flex-col justify-between p-5 select-none font-sans overflow-y-auto">
+      <div className="w-full h-full min-h-full bg-zinc-50 text-zinc-900 flex flex-col justify-between p-5 select-none font-sans overflow-y-auto">
         {/* Top Header: Scores & Timer */}
         <div className="max-w-md w-full mx-auto flex flex-col gap-3">
           <div className="flex items-center justify-between">
@@ -2018,15 +2006,15 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                 triggerVibration(15);
                 setPhase('LOBBY');
               }}
-              className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer"
+              className="w-9 h-9 rounded-full bg-white border border-zinc-200 shadow-xs flex items-center justify-center text-zinc-700 hover:text-zinc-950 cursor-pointer active:scale-95 transition-all"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
 
             {/* Countdown Timer */}
-            <div className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 px-4 py-1.5 rounded-full">
-              <Clock className={`w-3.5 h-3.5 ${timeLeft <= 5 ? 'text-rose-400 animate-spin' : 'text-amber-400'}`} />
-              <span className={`text-sm font-mono font-black ${timeLeft <= 5 ? 'text-rose-400' : 'text-white'}`}>
+            <div className="flex items-center gap-1.5 bg-white border border-zinc-200 px-4 py-1.5 rounded-full shadow-xs">
+              <Clock className={`w-3.5 h-3.5 ${timeLeft <= 5 ? 'text-rose-600 animate-spin' : 'text-amber-500'}`} />
+              <span className={`text-sm font-mono font-black ${timeLeft <= 5 ? 'text-rose-600' : 'text-zinc-900'}`}>
                 {timeLeft}s
               </span>
             </div>
@@ -2035,15 +2023,15 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           </div>
 
           {/* Versus Scoreboard */}
-          <div className="grid grid-cols-2 gap-3 bg-zinc-900/90 border border-zinc-800/90 rounded-2xl p-3">
+          <div className="grid grid-cols-2 gap-3 bg-white border border-zinc-200/90 rounded-2xl p-3 shadow-xs">
             {/* User Side */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-white text-base">
+              <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-white text-base shadow-xs">
                 {myAvatar}
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-[11px] font-semibold text-zinc-400 truncate">You</span>
-                <span className="text-xl font-black text-white">{userScore} <span className="text-[10px] text-zinc-500 font-normal">pts</span></span>
+                <span className="text-[11px] font-semibold text-zinc-500 truncate">You</span>
+                <span className="text-xl font-black text-zinc-900">{userScore} <span className="text-[10px] text-zinc-400 font-normal">pts</span></span>
               </div>
             </div>
 
@@ -2051,21 +2039,21 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             <div className="flex items-center justify-end gap-3 text-right">
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center justify-end gap-1.5">
-                  <span className="text-[11px] font-semibold text-zinc-300 truncate max-w-[100px]">{opponent?.name || 'Rival'}</span>
+                  <span className="text-[11px] font-semibold text-zinc-700 truncate max-w-[100px]">{opponent?.name || 'Rival'}</span>
                   {opponentAnswerStatus === 'answered' ? (
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block shrink-0" title="Locked in" />
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block shrink-0" title="Locked in" />
                   ) : (
                     <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse inline-block shrink-0" title="Thinking" />
                   )}
                 </div>
                 <div className="flex items-center justify-end gap-1">
-                  <span className="text-xl font-black text-white">{opponentScore} <span className="text-[10px] text-zinc-500 font-normal">pts</span></span>
+                  <span className="text-xl font-black text-zinc-900">{opponentScore} <span className="text-[10px] text-zinc-400 font-normal">pts</span></span>
                 </div>
-                <span className="text-[9px] text-rose-400 font-medium truncate max-w-[120px]">
+                <span className="text-[9px] text-rose-600 font-medium truncate max-w-[120px]">
                   {getOpponentTagline()}
                 </span>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-rose-600 flex items-center justify-center font-bold text-white text-base shrink-0 border border-rose-400/30">
+              <div className="w-10 h-10 rounded-xl bg-rose-600 flex items-center justify-center font-bold text-white text-base shrink-0 border border-rose-300 shadow-xs">
                 {getOpponentAvatar()}
               </div>
             </div>
@@ -2077,33 +2065,33 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           {/* Question Tag */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold text-indigo-400 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">
                 {activeSubject.name}
               </span>
               {currentQ?.difficulty && (
                 <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${
                   currentQ.difficulty === 'Easy'
-                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                     : currentQ.difficulty === 'Medium'
-                    ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                    : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                    : 'bg-rose-50 text-rose-700 border-rose-200'
                 }`}>
                   {currentQ.difficulty} • {currentQ.timeLimit || 30}s
                 </span>
               )}
             </div>
-            <span className="text-[11px] font-mono text-zinc-500">
+            <span className="text-[11px] font-mono text-zinc-400 font-bold">
               Q{currentQIndex + 1} of {questions.length}
             </span>
           </div>
 
           {/* Question Text */}
-          <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-4 min-h-[100px] flex items-center max-w-full overflow-x-auto">
+          <div className="bg-white border border-zinc-200 rounded-2xl p-4 min-h-[100px] flex items-center max-w-full overflow-x-auto shadow-xs">
             <GlobalMarkdown
-              className="w-full [&_.katex]:text-zinc-100 [&_p]:text-zinc-100 [&_p]:m-0 [&_p]:text-sm sm:[&_p]:text-base [&_p]:font-semibold [&_p]:leading-relaxed [&_.katex-display]:my-2 [&_.katex-display]:overflow-x-auto"
+              className="w-full [&_.katex]:text-zinc-900 [&_p]:text-zinc-900 [&_p]:m-0 [&_p]:text-sm sm:[&_p]:text-base [&_p]:font-semibold [&_p]:leading-relaxed [&_.katex-display]:my-2 [&_.katex-display]:overflow-x-auto"
               components={{
                 p: ({ node, ...props }: any) => (
-                  <p className="text-sm sm:text-base font-semibold text-zinc-100 leading-relaxed m-0 break-words" {...props} />
+                  <p className="text-sm sm:text-base font-semibold text-zinc-900 leading-relaxed m-0 break-words" {...props} />
                 )
               }}
             >
@@ -2114,53 +2102,53 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           {/* Synchronized Round Status Banner */}
           <div className="w-full">
             {roundRevealed ? (
-              <div className={`flex items-center justify-center gap-2 py-2 px-4 rounded-xl border text-xs font-bold transition-all ${
+              <div className={`flex items-center justify-center gap-2 py-2 px-4 rounded-xl border text-xs font-bold transition-all shadow-xs ${
                 (userSelectedOption === currentQ?.correctIndex || userSelectedOptionRef.current === currentQ?.correctIndex)
-                  ? 'bg-emerald-950/80 border-emerald-500 text-emerald-300 shadow-md shadow-emerald-900/30'
+                  ? 'bg-emerald-50 border-emerald-400 text-emerald-800'
                   : (userSelectedOption !== null || userSelectedOptionRef.current !== null)
-                  ? 'bg-rose-950/80 border-rose-500 text-rose-300'
-                  : 'bg-zinc-900/90 border-zinc-750 text-amber-300'
+                  ? 'bg-rose-50 border-rose-400 text-rose-800'
+                  : 'bg-amber-50 border-amber-300 text-amber-800'
               }`}>
                 {(userSelectedOption === currentQ?.correctIndex || userSelectedOptionRef.current === currentQ?.correctIndex) ? (
                   <>
-                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                     <span>CORRECT ANSWER! (+10 PTS)</span>
                   </>
                 ) : (userSelectedOption !== null || userSelectedOptionRef.current !== null) ? (
                   <>
-                    <X className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                    <X className="w-3.5 h-3.5 text-rose-600 shrink-0" />
                     <span>INCORRECT • CORRECT ANSWER SHOWN IN GREEN</span>
                   </>
                 ) : timeLeft <= 1 ? (
                   <>
-                    <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                     <span>TIME EXPIRED • CORRECT ANSWER HIGHLIGHTED BELOW</span>
                   </>
                 ) : (
                   <>
-                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                     <span>ROUND COMPLETE • CORRECT ANSWER HIGHLIGHTED BELOW</span>
                   </>
                 )}
               </div>
             ) : (userAnswerStatus === 'answered' && opponentAnswerStatus === 'answered') ? (
-              <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 text-xs font-semibold animate-pulse">
-                <Check className="w-3.5 h-3.5 text-indigo-400" />
+              <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold animate-pulse shadow-xs">
+                <Check className="w-3.5 h-3.5 text-indigo-600" />
                 <span>Both answers locked in! Revealing results...</span>
               </div>
             ) : userAnswerStatus === 'answered' ? (
-              <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-violet-950/60 border border-violet-500/30 text-violet-300 text-xs font-semibold animate-pulse">
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-400" />
+              <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-violet-50 border border-violet-200 text-violet-700 text-xs font-semibold animate-pulse shadow-xs">
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-600" />
                 <span>Answer locked in! Waiting for opponent...</span>
               </div>
             ) : opponentAnswerStatus === 'answered' ? (
-              <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-amber-950/40 border border-amber-500/30 text-amber-300 text-xs font-semibold">
-                <Zap className="w-3.5 h-3.5 text-amber-400" />
+              <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold shadow-xs">
+                <Zap className="w-3.5 h-3.5 text-amber-500" />
                 <span>Opponent locked in! Hurry up!</span>
               </div>
             ) : (
-              <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80 text-zinc-400 text-xs font-medium">
-                <Clock className="w-3.5 h-3.5 text-zinc-500" />
+              <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-white border border-zinc-200 text-zinc-500 text-xs font-medium shadow-2xs">
+                <Clock className="w-3.5 h-3.5 text-zinc-400" />
                 <span>Select the correct answer before time runs out!</span>
               </div>
             )}
@@ -2172,18 +2160,18 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
               const isSelected = userSelectedOption === idx || userSelectedOptionRef.current === idx;
               const isCorrectAnswer = idx === currentQ.correctIndex;
 
-              let btnStyle = 'bg-zinc-900/90 border-zinc-800 text-zinc-200 hover:border-zinc-700';
+              let btnStyle = 'bg-white hover:bg-zinc-50 border-zinc-200 text-zinc-800 hover:border-indigo-300 shadow-xs';
 
               if (roundRevealed) {
                 if (isCorrectAnswer) {
-                  btnStyle = 'bg-emerald-950/80 border-emerald-500 text-emerald-100 shadow-md shadow-emerald-900/30 font-bold';
+                  btnStyle = 'bg-emerald-50 border-2 border-emerald-500 text-emerald-950 font-bold shadow-xs';
                 } else if (isSelected && !isCorrectAnswer) {
-                  btnStyle = 'bg-rose-950/80 border-rose-500 text-rose-200';
+                  btnStyle = 'bg-rose-50 border-2 border-rose-500 text-rose-950 font-medium';
                 } else {
-                  btnStyle = 'bg-zinc-900/40 border-zinc-900 text-zinc-500 opacity-60';
+                  btnStyle = 'bg-zinc-50/70 border-zinc-200 text-zinc-400 opacity-60';
                 }
               } else if (isSelected) {
-                btnStyle = 'bg-indigo-950/80 border-indigo-500 text-indigo-100 font-bold';
+                btnStyle = 'bg-indigo-50 border-2 border-indigo-600 text-indigo-950 font-bold shadow-xs';
               }
 
               return (
@@ -2196,7 +2184,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
                   }`}
                 >
                   <div className="flex items-center gap-3 w-full min-w-0">
-                    <span className="w-6 h-6 rounded-lg bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center text-[11px] font-bold text-zinc-300 shrink-0">
+                    <span className="w-6 h-6 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center text-[11px] font-bold text-zinc-700 shrink-0">
                       {String.fromCharCode(65 + idx)}
                     </span>
                     <div className="leading-normal text-xs sm:text-sm font-medium text-left flex-1 min-w-0 overflow-x-auto overflow-y-hidden scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1">
@@ -2218,15 +2206,15 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
 
                   {roundRevealed && isCorrectAnswer && (
                     <div className="flex items-center gap-1 shrink-0 ml-2">
-                      <span className="text-[10px] font-black uppercase text-emerald-300 px-2 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/30">
+                      <span className="text-[10px] font-black uppercase text-emerald-700 px-2 py-0.5 rounded-md bg-emerald-100 border border-emerald-300">
                         Correct
                       </span>
-                      <Check className="w-4 h-4 text-emerald-400" />
+                      <Check className="w-4 h-4 text-emerald-600" />
                     </div>
                   )}
 
                   {roundRevealed && isSelected && !isCorrectAnswer && (
-                    <span className="text-[10px] font-black uppercase text-rose-300 px-2 py-0.5 rounded-md bg-rose-500/20 border border-rose-500/30 shrink-0 ml-2">
+                    <span className="text-[10px] font-black uppercase text-rose-700 px-2 py-0.5 rounded-md bg-rose-100 border border-rose-300 shrink-0 ml-2">
                       Your Choice
                     </span>
                   )}
@@ -2238,14 +2226,14 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           {/* Synchronized Round Report Button */}
           {roundRevealed && currentQ && (
             <div className="flex items-center justify-between pt-1 px-1">
-              <span className="text-[10px] text-zinc-500 font-medium">Question or answer error?</span>
+              <span className="text-[10px] text-zinc-400 font-medium">Question or answer error?</span>
               <ReportAiButton
-                aiOutput={`1v1 Quiz Battle Question:\n${currentQ.stem}\n\nOptions:\n${currentQ.options.map((opt, idx) => `${String.fromCharCode(65 + idx)}: ${opt}`).join('\n')}\n\nCorrect Index: ${currentQ.correctIndex} (${currentQ.options[currentQ.correctIndex]})\n\nSubject: ${activeSubject.name}`}
+                aiOutput={`1v1 Quiz Battle Question:\\n${currentQ.stem}\\n\\nOptions:\\n${currentQ.options.map((opt, idx) => `${String.fromCharCode(65 + idx)}: ${opt}`).join('\\n')}\\n\\nCorrect Index: ${currentQ.correctIndex} (${currentQ.options[currentQ.correctIndex]})\\n\\nSubject: ${activeSubject.name}`}
                 context={`1v1 Quiz Battle - ${activeSubject.name}`}
                 questionText={currentQ.stem}
                 variant="compact"
                 label="Report Question"
-                className="text-zinc-400 hover:text-red-400 hover:bg-zinc-900 py-1 px-2.5 rounded-lg border border-zinc-800"
+                className="text-zinc-500 hover:text-red-600 hover:bg-zinc-100 py-1 px-2.5 rounded-lg border border-zinc-200"
               />
             </div>
           )}
@@ -2258,10 +2246,10 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
               key={i}
               className={`h-1 rounded-full transition-all ${
                 i === currentQIndex 
-                  ? 'w-6 bg-indigo-500' 
+                  ? 'w-6 bg-indigo-600' 
                   : i < currentQIndex 
-                  ? 'w-3 bg-zinc-600' 
-                  : 'w-3 bg-zinc-800'
+                  ? 'w-3 bg-zinc-400' 
+                  : 'w-3 bg-zinc-200'
               }`}
             />
           ))}
@@ -2275,7 +2263,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
   const isTie = isForcedWinner === null && userScore === opponentScore;
 
   return (
-    <div className="w-full h-full min-h-full bg-zinc-950 text-white flex flex-col justify-between p-6 select-none font-sans overflow-y-auto">
+    <div className="w-full h-full min-h-full bg-zinc-50 text-zinc-900 flex flex-col justify-between p-6 select-none font-sans overflow-y-auto">
       <div className="flex items-center justify-between max-w-md w-full mx-auto">
         <button
           onClick={() => {
@@ -2283,7 +2271,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             triggerVibration(15);
             onBack();
           }}
-          className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300 hover:text-white cursor-pointer"
+          className="w-10 h-10 rounded-full bg-white border border-zinc-200 shadow-xs flex items-center justify-center text-zinc-700 hover:text-zinc-950 cursor-pointer active:scale-95 transition-all"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -2300,12 +2288,12 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          className={`w-24 h-24 rounded-3xl flex items-center justify-center mb-4 shadow-2xl ${
+          className={`w-24 h-24 rounded-3xl flex items-center justify-center mb-4 shadow-xl ${
             isUserWinner
-              ? 'bg-gradient-to-tr from-amber-500 to-yellow-400 text-zinc-950 shadow-amber-500/30'
+              ? 'bg-gradient-to-tr from-amber-400 to-yellow-300 text-zinc-950 shadow-amber-400/25'
               : isTie
-              ? 'bg-gradient-to-tr from-indigo-500 to-purple-500 text-white shadow-indigo-500/30'
-              : 'bg-gradient-to-tr from-zinc-800 to-zinc-700 text-zinc-400'
+              ? 'bg-gradient-to-tr from-indigo-500 to-purple-500 text-white shadow-indigo-500/25'
+              : 'bg-gradient-to-tr from-zinc-200 to-zinc-300 text-zinc-600 shadow-md'
           }`}
         >
           {isUserWinner ? (
@@ -2313,21 +2301,21 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           ) : isTie ? (
             <Award className="w-12 h-12 text-white" />
           ) : (
-            <Target className="w-12 h-12 text-zinc-400" />
+            <Target className="w-12 h-12 text-zinc-600" />
           )}
         </motion.div>
 
         {forfeitNotice && (
-          <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-semibold mb-3">
-            <Zap className="w-4 h-4 text-amber-400 shrink-0" />
+          <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-xs font-semibold mb-3 shadow-xs">
+            <Zap className="w-4 h-4 text-amber-500 shrink-0" />
             <span>{forfeitNotice}</span>
           </div>
         )}
 
-        <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white mb-1">
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-zinc-900 mb-1">
           {isUserWinner ? 'VICTORY!' : isTie ? 'DRAW MATCH!' : 'GOOD EFFORT!'}
         </h1>
-        <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-6">
+        <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-6">
           {forfeitNotice
             ? forfeitNotice
             : isUserWinner
@@ -2338,41 +2326,41 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
         </span>
 
         {/* Score Box with Profile Banners */}
-        <div className="w-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-5 mb-6 flex items-center justify-around">
+        <div className="w-full bg-white border border-zinc-200 rounded-3xl p-5 mb-6 shadow-xs flex items-center justify-around">
           {/* User Side */}
           <div className="flex flex-col items-center gap-1">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-white text-base border border-indigo-400/30 mb-0.5">
+            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-white text-base shadow-xs mb-0.5">
               {myAvatar}
             </div>
-            <span className="text-[11px] font-bold text-indigo-400 uppercase truncate max-w-[110px]">
+            <span className="text-[11px] font-bold text-indigo-700 uppercase truncate max-w-[110px]">
               You ({myName})
             </span>
-            <span className="text-3xl font-black text-white">{userScore}</span>
+            <span className="text-3xl font-black text-zinc-900">{userScore}</span>
             <span className="text-[10px] text-zinc-400">pts</span>
           </div>
 
-          <div className="text-zinc-600 font-black text-xl">VS</div>
+          <div className="text-zinc-300 font-black text-xl">VS</div>
 
           {/* Opponent Side with Banner */}
           <div className="flex flex-col items-center gap-1">
-            <div className="w-10 h-10 rounded-xl bg-rose-600 flex items-center justify-center font-bold text-white text-base border border-rose-400/30 mb-0.5">
+            <div className="w-10 h-10 rounded-xl bg-rose-600 flex items-center justify-center font-bold text-white text-base shadow-xs mb-0.5">
               {getOpponentAvatar()}
             </div>
-            <span className="text-[11px] font-bold text-rose-400 uppercase truncate max-w-[110px]">
+            <span className="text-[11px] font-bold text-rose-700 uppercase truncate max-w-[110px]">
               {opponent?.name || 'Rival'}
             </span>
-            <span className="text-3xl font-black text-white">{opponentScore}</span>
+            <span className="text-3xl font-black text-zinc-900">{opponentScore}</span>
             <span className="text-[10px] text-zinc-400">pts</span>
-            <span className="text-[9px] text-zinc-400 font-medium px-2 py-0.5 rounded-full bg-zinc-800/80 border border-zinc-700/60 truncate max-w-[110px] mt-0.5">
+            <span className="text-[9px] text-zinc-600 font-medium px-2 py-0.5 rounded-full bg-zinc-100 border border-zinc-200 truncate max-w-[110px] mt-0.5">
               {getOpponentTagline()}
             </span>
           </div>
         </div>
 
-        {/* Rewards Earned (10 XP for Winner, 0 XP for Loser, Study Coins Removed) */}
-        <div className="inline-flex items-center gap-2 bg-zinc-900/90 border border-zinc-800 px-5 py-2.5 rounded-2xl mb-4 shadow-md">
-          <Zap className={`w-4 h-4 ${isUserWinner ? 'text-amber-400 fill-amber-400 animate-pulse' : 'text-zinc-500'}`} />
-          <span className={`text-xs font-black tracking-wider uppercase ${isUserWinner ? 'text-amber-300' : 'text-zinc-400'}`}>
+        {/* Rewards Earned */}
+        <div className="inline-flex items-center gap-2 bg-white border border-zinc-200 px-5 py-2.5 rounded-2xl mb-4 shadow-xs">
+          <Zap className={`w-4 h-4 ${isUserWinner ? 'text-amber-500 fill-amber-400 animate-pulse' : 'text-zinc-400'}`} />
+          <span className={`text-xs font-black tracking-wider uppercase ${isUserWinner ? 'text-amber-600' : 'text-zinc-500'}`}>
             {isUserWinner ? '+10 XP Points' : '+0 XP Points'}
           </span>
         </div>
@@ -2380,11 +2368,11 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
         {/* Battle Content Report */}
         <div className="mb-4">
           <ReportAiButton
-            aiOutput={`Match Summary: ${activeSubject.name} Battle\nWinner: ${isUserWinner ? myName : opponent?.name}\nFinal Score: ${userScore} - ${opponentScore}\nQuestions Count: ${questions.length}`}
+            aiOutput={`Match Summary: ${activeSubject.name} Battle\\nWinner: ${isUserWinner ? myName : opponent?.name}\\nFinal Score: ${userScore} - ${opponentScore}\\nQuestions Count: ${questions.length}`}
             context={`1v1 Quiz Battle Match - ${activeSubject.name}`}
             variant="compact"
             label="Report Battle Content"
-            className="text-zinc-500 hover:text-red-400 hover:bg-zinc-900 border border-zinc-800/80 px-3 py-1.5 rounded-xl text-xs"
+            className="text-zinc-500 hover:text-red-600 hover:bg-zinc-100 border border-zinc-200 px-3 py-1.5 rounded-xl text-xs"
           />
         </div>
       </div>
@@ -2394,7 +2382,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={startQuickMatch}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 cursor-pointer transition-all"
+          className="w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 cursor-pointer transition-all"
         >
           <RotateCcw className="w-4 h-4" />
           <span>Play Again (Rematch)</span>
@@ -2406,7 +2394,7 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
             triggerVibration(10);
             setPhase('LOBBY');
           }}
-          className="w-full py-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white font-bold text-xs uppercase tracking-wider cursor-pointer transition-colors"
+          className="w-full py-3.5 rounded-2xl bg-white hover:bg-zinc-100 border border-zinc-200 text-zinc-700 hover:text-zinc-950 font-bold text-xs uppercase tracking-wider cursor-pointer transition-colors shadow-xs"
         >
           Return to Lobby
         </button>
@@ -2414,5 +2402,6 @@ export const APQuizBattle: React.FC<APQuizBattleProps> = ({ onBack, user, isVip 
     </div>
   );
 };
+
 
 export default APQuizBattle;
