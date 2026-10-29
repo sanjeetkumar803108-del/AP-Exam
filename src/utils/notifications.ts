@@ -184,7 +184,7 @@ const NOTIFICATION_ID_SLOT_2 = 18001; // 4:45 PM (Afternoon Homework / Doubt Sol
 const NOTIFICATION_ID_SLOT_3 = 19001; // 9:30 PM (Night Streak Saver & Formula Review)
 const NOTIFICATION_ID_TEST   = 19999; // Instant test notification
 
-const STORAGE_KEY_SCHEDULED = 'study_daily_notification_scheduled_v6';
+const STORAGE_KEY_SCHEDULED = 'study_daily_notification_scheduled_v7';
 
 /**
  * Request notification permissions from the user.
@@ -380,6 +380,7 @@ export async function scheduleDailyNotification(forceRefresh = false) {
             hour: 7, // 7:45 AM (Morning AP practice before school)
             minute: 45
           },
+          repeats: true,
           allowWhileIdle: true
         },
         sound: 'default',
@@ -395,6 +396,7 @@ export async function scheduleDailyNotification(forceRefresh = false) {
             hour: 16, // 4:45 PM (After-school homework & doubts)
             minute: 45
           },
+          repeats: true,
           allowWhileIdle: true
         },
         sound: 'default',
@@ -410,6 +412,7 @@ export async function scheduleDailyNotification(forceRefresh = false) {
             hour: 21, // 9:30 PM (Bedtime streak saver & formulas)
             minute: 30
           },
+          repeats: true,
           allowWhileIdle: true
         },
         sound: 'default',
@@ -431,6 +434,9 @@ export async function scheduleDailyNotification(forceRefresh = false) {
  * Checks permissions, requests if needed, and schedules the notifications.
  */
 export async function setupDailyLocalNotifications(forcePrompt = false) {
+  try {
+    localStorage.setItem('pref_daily_reminders', 'true');
+  } catch (_) {}
   console.log('[NotificationService] Checking status of daily local notifications...');
   const hasPermission = await requestNotificationPermissions(forcePrompt);
   if (hasPermission) {
