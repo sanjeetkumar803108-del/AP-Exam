@@ -322,8 +322,14 @@ export default function Login({
         const isReviewerAccount = cleanEmail.toLowerCase().includes('tester') || cleanEmail.toLowerCase().endsWith('@apexam.app');
 
         if (!loggedUser.emailVerified && !isGoogle && !isReviewerAccount) {
-          setError('Please verify your email address before logging in.');
-          Alert.alert("Verification Required", "Please verify your email address before logging in.");
+          try {
+            await sendEmailVerification(loggedUser);
+          } catch (resendErr) {
+            console.warn('[Auth] Resend verification link notice:', resendErr);
+          }
+          const verifyMsg = `Please verify your email address before logging in. We have sent a verification link to ${cleanEmail}. Please check your inbox (including Spam folder).`;
+          setError(verifyMsg);
+          Alert.alert("Verification Required", verifyMsg);
           await signOut(auth);
           setLoading(false);
           return;
@@ -354,9 +360,27 @@ export default function Login({
       } else if (err.code === 'auth/user-not-found') {
         setError('No account found with this email. Please sign up first.');
       } else if (err.code === 'auth/email-already-in-use') {
-        const errMsg = 'An account with this email already exists. If you previously signed up using Google, please use the Google Sign-In button instead.';
-        setError(errMsg);
-        Alert.alert("Account Exists", errMsg);
+        let isUnverified = false;
+        try {
+          const cred = await signInWithEmailAndPassword(auth, cleanEmail, password);
+          if (!cred.user.emailVerified) {
+            isUnverified = true;
+            try { await sendEmailVerification(cred.user); } catch (_) {}
+            await signOut(auth);
+          }
+        } catch (_) {}
+
+        if (isUnverified) {
+          const verifyMsg = `Account already created! Please verify your email address before logging in. We have sent a verification link to ${cleanEmail}. Please check your inbox (including Spam folder).`;
+          setError(verifyMsg);
+          Alert.alert("Verification Required", verifyMsg);
+          setIsSignUp(false);
+        } else {
+          const errMsg = `An account with this email (${cleanEmail}) already exists. Please tap "Sign In" below to log in.`;
+          setError(errMsg);
+          Alert.alert("Account Exists", errMsg);
+          setIsSignUp(false);
+        }
       } else if (err.code === 'auth/weak-password') {
         setError('Password is too weak. Please use at least 6 characters.');
       } else if (err.code === 'auth/invalid-email') {
