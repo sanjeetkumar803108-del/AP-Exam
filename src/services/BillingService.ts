@@ -59,6 +59,7 @@ class BillingService {
           const success = !!(customerInfo?.entitlements?.active && (
             customerInfo.entitlements.active['Pro_Access'] || 
             customerInfo.entitlements.active['pro_access'] || 
+            customerInfo.entitlements.active['ap_prep_pro'] || 
             customerInfo.entitlements.active['pro']
           ));
           this.finalizeProStatus(success);
@@ -178,6 +179,7 @@ class BillingService {
           const success = !!(customerInfo?.entitlements?.active && (
             customerInfo.entitlements.active['Pro_Access'] || 
             customerInfo.entitlements.active['pro_access'] || 
+            customerInfo.entitlements.active['ap_prep_pro'] || 
             customerInfo.entitlements.active['pro']
           ));
           if (success) {
